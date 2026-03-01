@@ -39,7 +39,7 @@ def main() -> int:
     username = (os.getenv("ADMIN_SEED_USERNAME") or "").strip()
     password = os.getenv("ADMIN_SEED_PASSWORD") or ""
     email = (os.getenv("ADMIN_SEED_EMAIL") or "").strip()
-    role = (os.getenv("ADMIN_SEED_ROLE") or "admin").strip()
+    role = (os.getenv("ADMIN_SEED_ROLE") or "superadmin").strip().lower()
     force_reset = _env_truthy(os.getenv("ADMIN_SEED_FORCE_RESET"))
 
     if not username or not password:
@@ -47,6 +47,14 @@ def main() -> int:
             "ENSURE_ADMIN: skip (missing ADMIN_SEED_USERNAME or ADMIN_SEED_PASSWORD)"
         )
         return 0
+
+    allowed_roles = {"superadmin", "ops", "readonly", "admin", "super_admin"}
+    if role not in allowed_roles:
+        print(
+            "ENSURE_ADMIN: error (ADMIN_SEED_ROLE must be one of "
+            "superadmin|ops|readonly|admin|super_admin)"
+        )
+        return 1
 
     from backend.extensions import db
     from backend.helpchain_backend.src.app import create_app

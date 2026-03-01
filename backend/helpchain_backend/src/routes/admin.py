@@ -748,6 +748,37 @@ def admin_required(view_func):
     return wrapper
 
 
+def _admin_role_value() -> str | None:
+    raw_role = getattr(current_user, "role", None)
+    role = getattr(raw_role, "value", raw_role)
+    role = (role or "").strip().lower()
+    if role in {"admin", "super_admin", "superadmin"}:
+        return "superadmin"
+    if role in {"ops"}:
+        return "ops"
+    if role in {"readonly", "read-only"}:
+        return "readonly"
+    return None
+
+
+def admin_role_required(*allowed_roles: str):
+    allowed = {r.strip().lower() for r in allowed_roles if r}
+
+    def deco(view_func):
+        @wraps(view_func)
+        def wrapper(*args, **kwargs):
+            role = _admin_role_value()
+            if role is None:
+                abort(403)
+            if role not in allowed:
+                abort(403)
+            return view_func(*args, **kwargs)
+
+        return wrapper
+
+    return deco
+
+
 def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=None):
     """Append a RequestActivity row; swallow errors so UI flows stay smooth."""
     if not _table_has_column("request_activities", "volunteer_id"):
@@ -910,8 +941,10 @@ def _save_hashes(user, hashes: list[str]):
 
 
 def can_edit_request(req_obj, user) -> bool:
-    """Owner or super_admin can edit; if no owner, only super_admin."""
-    if getattr(user, "role", None) == "super_admin":
+    """Owner or superadmin can edit; if no owner, only superadmin."""
+    role = getattr(getattr(user, "role", None), "value", getattr(user, "role", None))
+    role = (role or "").strip().lower()
+    if role in {"super_admin", "superadmin", "admin"}:
         return True
     owner_id = getattr(req_obj, "owner_id", None)
     user_id = getattr(user, "id", None)
@@ -2794,6 +2827,7 @@ def update_status(req_id):
 
 @admin_bp.post("/requests/<int:req_id>/status")
 @admin_required
+@admin_role_required("ops", "superadmin")
 def admin_request_set_status(req_id: int):
     # Alias: keep old canonical handler, just expose the “resource” URL too.
     return update_status(req_id)
@@ -2801,6 +2835,8 @@ def admin_request_set_status(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/archive", endpoint="admin_request_archive")
 @login_required
+@admin_required
+@admin_role_required("superadmin")
 def admin_request_archive(req_id: int):
     """One-click archive/close action used by the details view button."""
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
@@ -2996,6 +3032,8 @@ def admin_sla_breakdown():
 
 @admin_bp.get("/requests")
 @login_required
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
 def admin_requests():
     admin_required_404()
     STATUS_LABELS_BG = {
@@ -3574,6 +3612,7 @@ def admin_requests_export_xlsx_anonymized():
 
 @admin_bp.get("/requests/<int:req_id>")
 @admin_required
+@admin_role_required("readonly", "ops", "superadmin")
 def admin_request_details(req_id: int):
     admin_required_404()
     activities_supported = _table_has_column("request_activities", "volunteer_id")
@@ -3819,6 +3858,7 @@ def admin_request_details(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/unlock", endpoint="admin_request_unlock")
 @admin_required
+@admin_role_required("superadmin")
 def admin_request_unlock(req_id: int):
     admin_required_404()
     admin_id = _admin_id()
@@ -3865,6 +3905,7 @@ def admin_request_unlock(req_id: int):
     endpoint="admin_interest_approve",
 )
 @admin_required
+@admin_role_required("ops", "superadmin")
 def admin_interest_approve(req_id: int, interest_id: int):
     current_app.logger.info(
         "ADMIN_APPROVE HIT req_id=%s interest_id=%s", req_id, interest_id
@@ -3950,6 +3991,7 @@ def admin_interest_approve(req_id: int, interest_id: int):
     endpoint="admin_interest_reject",
 )
 @admin_required
+@admin_role_required("ops", "superadmin")
 def admin_interest_reject(req_id: int, interest_id: int):
     admin_required_404()
     admin = current_user
@@ -4025,6 +4067,8 @@ def admin_interest_reject(req_id: int, interest_id: int):
 # --- Assign owner to request ---
 @admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
 @login_required
+@admin_required
+@admin_role_required("ops", "superadmin")
 def admin_request_assign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
@@ -4041,7 +4085,7 @@ def admin_request_assign(req_id: int):
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     takeover = False
     if req.owner_id and req.owner_id != getattr(current_user, "id", None):
-        if getattr(current_user, "role", None) != "super_admin" and not is_stale(req):
+        if _admin_role_value() != "superadmin" and not is_stale(req):
             abort(403)
         takeover = True
     old_owner = req.owner_id
@@ -4096,6 +4140,8 @@ def admin_request_assign(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/unassign", endpoint="admin_request_unassign")
 @login_required
+@admin_required
+@admin_role_required("ops", "superadmin")
 def admin_request_unassign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
@@ -4481,6 +4527,7 @@ def admin_pro_access_list():
 @admin_bp.get("/audit")
 @login_required
 @admin_required
+@admin_role_required("readonly", "ops", "superadmin")
 def admin_audit():
     action = (request.args.get("action") or "").strip()
     admin_username = (request.args.get("admin") or "").strip()
@@ -4549,6 +4596,7 @@ def admin_audit():
 @admin_bp.get("/security")
 @login_required
 @admin_required
+@admin_role_required("readonly", "ops", "superadmin")
 def admin_security():
     now = datetime.now(timezone.utc)
     since_24h = now - timedelta(hours=24)

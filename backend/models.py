@@ -30,6 +30,9 @@ def canonical_role(role: str | None) -> str:
         "admin": "admin",
         "superadmin": "superadmin",
         "super_admin": "superadmin",
+        "ops": "ops",
+        "readonly": "readonly",
+        "read-only": "readonly",
     }
     return mapping.get(r, r)
 
@@ -69,8 +72,13 @@ class AdminUser(db.Model, UserMixin):
 
     @property
     def is_admin(self) -> bool:
-        # Treat admin + superadmin variants as admins
-        return canonical_role(getattr(self, "role", None)) in ("admin", "superadmin")
+        # Treat all admin-panel roles as admins for login/access gate.
+        return canonical_role(getattr(self, "role", None)) in (
+            "admin",
+            "superadmin",
+            "ops",
+            "readonly",
+        )
 
     @property
     def role_canon(self) -> str:
