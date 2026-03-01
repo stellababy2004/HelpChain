@@ -1,7 +1,7 @@
 from functools import wraps
 
 import jwt
-from backend.helpchain_backend.src.jwt_utils import decode_token
+from ..jwt_utils import decode_token
 from flask import g, jsonify, request
 
 from ..extensions import db

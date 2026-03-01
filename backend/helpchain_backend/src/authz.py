@@ -3,7 +3,7 @@ from functools import wraps
 from flask import jsonify, request
 from sqlalchemy import and_
 
-from backend.helpchain_backend.src.jwt_utils import decode_token
+from .jwt_utils import decode_token
 
 
 def require_access_token(fn):

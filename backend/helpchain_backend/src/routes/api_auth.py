@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from flask import Blueprint, current_app, jsonify, request
 from werkzeug.security import check_password_hash
 
-from backend.helpchain_backend.src.jwt_utils import (
+from ..jwt_utils import (
     decode_token,
     encode_access_token,
     encode_refresh_token,

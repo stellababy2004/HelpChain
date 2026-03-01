@@ -1,4 +1,4 @@
-from backend.helpchain_backend.src.models import Request
+from ..models import Request
 
 
 def score_request_for_volunteer(volunteer, request):

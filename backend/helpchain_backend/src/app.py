@@ -10,14 +10,19 @@ from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from backend.extensions import babel, csrf, db, mail, migrate
-from backend.helpchain_backend.src.security_logging import log_security_event
-from backend.helpchain_backend.src.statuses import (
-    REQUEST_STATUS_META,
-    REQUEST_STATUS_ORDER,
-    normalize_request_status,
-)
-from backend.models import AdminUser
+try:
+    from backend.extensions import babel, csrf, db, mail, migrate
+except ModuleNotFoundError:
+    from .extensions import babel, csrf, db, mail, migrate
+
+from .security_logging import log_security_event
+
+from .statuses import REQUEST_STATUS_META, REQUEST_STATUS_ORDER, normalize_request_status
+
+try:
+    from backend.models import AdminUser
+except ModuleNotFoundError:
+    from models import AdminUser
 
 load_dotenv()
 
@@ -193,7 +198,10 @@ def create_app(config_object=None) -> Flask:
         template_folder=root_templates,
         static_folder=root_static,
     )
-    from backend.core.tenant import current_structure_id
+    try:
+        from backend.core.tenant import current_structure_id
+    except ModuleNotFoundError:
+        from core.tenant import current_structure_id
 
     # Config: caller overrides, then Config class, then env defaults
     if isinstance(config_object, dict):
@@ -218,6 +226,12 @@ def create_app(config_object=None) -> Flask:
             app.config.from_object(_Cfg)
     except Exception:
         pass
+
+    # Local/dev safety: if tenant fallback is not explicitly configured,
+    # keep default tenant enabled outside production.
+    if env_name not in ("prod", "production"):
+        if os.getenv("ALLOW_DEFAULT_TENANT_FALLBACK") is None:
+            app.config["ALLOW_DEFAULT_TENANT_FALLBACK"] = True
 
     if env_name in ("prod", "production") and app.config.get(
         "VOLUNTEER_DEV_BYPASS_ENABLED"
@@ -339,7 +353,7 @@ def create_app(config_object=None) -> Flask:
     # Ensure models are imported so Alembic sees them
     with app.app_context():
         # Single canonical model import (avoid multiple MetaData instances)
-        import backend.helpchain_backend.src.models  # noqa
+        from . import models  # noqa: F401
 
     # CSRF helper for Jinja (if templates call {{ csrf_token() }})
     app.jinja_env.globals["csrf_token"] = generate_csrf
@@ -401,7 +415,10 @@ def create_app(config_object=None) -> Flask:
     # Legacy but real RBAC admin routes (roles/permissions/users management).
     # Templates already reference endpoints under the `admin_roles` namespace.
     try:
-        from backend.admin_roles import admin_roles_bp
+        try:
+            from backend.admin_roles import admin_roles_bp
+        except ModuleNotFoundError:
+            from admin_roles import admin_roles_bp
 
         app.register_blueprint(admin_roles_bp, url_prefix="/admin/roles")
     except Exception as e:
@@ -511,7 +528,7 @@ def create_app(config_object=None) -> Flask:
         try:
             from flask import current_app as _ca
             try:
-                from backend.helpchain_backend.src.models import ProAccessRequest as _PAR  # type: ignore
+                from .models import ProAccessRequest as _PAR  # type: ignore
                 _pro_access_available = _PAR is not None
             except Exception:
                 _pro_access_available = False
@@ -563,7 +580,10 @@ def create_app(config_object=None) -> Flask:
                     "volunteer_notif_preview": [],
                 }
 
-            from backend.models import Notification
+            try:
+                from backend.models import Notification
+            except ModuleNotFoundError:
+                from models import Notification
 
             cnt = Notification.query.filter_by(volunteer_id=vid, is_read=False).count()
             preview_rows = (

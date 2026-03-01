@@ -1,7 +1,7 @@
 import math
 from datetime import UTC, datetime, timezone
 
-from backend.helpchain_backend.src.models import Request
+from ..models import Request
 
 
 def clamp(x, lo, hi):

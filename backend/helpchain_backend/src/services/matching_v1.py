@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from backend.core.tenant import current_structure_id
-from backend.helpchain_backend.src.models import (
+from ..models import (
     Request,
     Volunteer,
     VolunteerMatchFeedback,

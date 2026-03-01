@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from backend.helpchain_backend.src.models import db
+from ..models import db
 
 
 class VolunteerMatchFeedback(db.Model):

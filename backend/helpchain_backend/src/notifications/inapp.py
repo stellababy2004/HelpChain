@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from backend.core.tenant import current_structure_id
 from backend.extensions import db
-from backend.helpchain_backend.src.models import VolunteerRequestState
+from ..models import VolunteerRequestState
 from backend.models import Notification, RequestActivity
 from flask import url_for
 

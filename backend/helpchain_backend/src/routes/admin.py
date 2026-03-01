@@ -3830,6 +3830,16 @@ def admin_request_unlock(req_id: int):
             )
         )
         db.session.commit()
+        audit_admin_action(
+            action="request.unlock",
+            target_type="Request",
+            target_id=req.id,
+            payload={
+                "req_id": req.id,
+                "old": {"locked": True, "owner_id": old_owner},
+                "new": {"locked": False, "owner_id": None},
+            },
+        )
 
     flash("Unlocked.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
@@ -3899,6 +3909,18 @@ def admin_interest_approve(req_id: int, interest_id: int):
             "BEFORE commit: req.status=%s vi.status=%s", req.status, vi.status
         )
         db.session.commit()
+        if changed_vi:
+            audit_admin_action(
+                action="interest.approve",
+                target_type="Interest",
+                target_id=vi.id,
+                payload={
+                    "req_id": req.id,
+                    "interest_id": vi.id,
+                    "old": {"status": old_vi},
+                    "new": {"status": vi.status},
+                },
+            )
         current_app.logger.info(
             "AFTER commit: req.status=%s vi.status=%s", req.status, vi.status
         )
@@ -3950,6 +3972,12 @@ def admin_interest_reject(req_id: int, interest_id: int):
         "ADMIN_REJECT HIT req_id=%s interest_id=%s", req_id, interest_id
     )
 
+    reject_reason = (
+        request.form.get("reason")
+        or request.form.get("reject_reason")
+        or request.form.get("note")
+        or ""
+    ).strip()
     interest.status = "rejected"
     db.session.add(
         RequestActivity(
@@ -3962,6 +3990,20 @@ def admin_interest_reject(req_id: int, interest_id: int):
     )
 
     db.session.commit()
+    payload = {
+        "req_id": req.id,
+        "interest_id": interest.id,
+        "old": {"status": old_vi},
+        "new": {"status": interest.status},
+    }
+    if reject_reason:
+        payload["reason"] = reject_reason
+    audit_admin_action(
+        action="interest.reject",
+        target_type="Interest",
+        target_id=interest.id,
+        payload=payload,
+    )
     flash("Rejected.", "warning")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
