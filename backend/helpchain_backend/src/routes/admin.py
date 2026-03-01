@@ -4720,7 +4720,7 @@ def admin_security():
         .scalar()
         or 0
     )
-    denied_actions_24h = (
+    denied_24h = (
         db.session.query(func.count(AdminAuditEvent.id))
         .filter(
             AdminAuditEvent.created_at >= since_24h,
@@ -4728,6 +4728,45 @@ def admin_security():
         )
         .scalar()
         or 0
+    )
+    denied_1h = (
+        db.session.query(func.count(AdminAuditEvent.id))
+        .filter(
+            AdminAuditEvent.created_at >= since_1h,
+            AdminAuditEvent.action == "security.denied_action",
+        )
+        .scalar()
+        or 0
+    )
+    avg_denied_hourly = (float(denied_24h) / 24.0) if denied_24h else 0.0
+
+    top_denied_ips = (
+        db.session.query(AdminAuditEvent.ip, func.count(AdminAuditEvent.id).label("cnt"))
+        .filter(
+            AdminAuditEvent.created_at >= since_24h,
+            AdminAuditEvent.action == "security.denied_action",
+            AdminAuditEvent.ip.isnot(None),
+            AdminAuditEvent.ip != "",
+        )
+        .group_by(AdminAuditEvent.ip)
+        .order_by(func.count(AdminAuditEvent.id).desc())
+        .limit(10)
+        .all()
+    )
+    top_denied_usernames = (
+        db.session.query(
+            AdminAuditEvent.admin_username, func.count(AdminAuditEvent.id).label("cnt")
+        )
+        .filter(
+            AdminAuditEvent.created_at >= since_24h,
+            AdminAuditEvent.action == "security.denied_action",
+            AdminAuditEvent.admin_username.isnot(None),
+            AdminAuditEvent.admin_username != "",
+        )
+        .group_by(AdminAuditEvent.admin_username)
+        .order_by(func.count(AdminAuditEvent.id).desc())
+        .limit(10)
+        .all()
     )
 
     recent_logins = (
@@ -4776,6 +4815,14 @@ def admin_security():
     spike_threshold = max(10.0, 3.0 * avg_hourly)
     top_ip = top_ips[0] if top_ips else (None, 0)
     top_username = top_usernames[0] if top_usernames else (None, 0)
+    top_denied_ip = top_denied_ips[0] if top_denied_ips else (None, 0)
+    top_denied_username = top_denied_usernames[0] if top_denied_usernames else (None, 0)
+    top_denied_ip_count = int(top_denied_ip[1] or 0)
+    top_denied_username_count = int(top_denied_username[1] or 0)
+    denied_spike_on = int(denied_1h) >= max(5.0, 3.0 * avg_denied_hourly)
+    repeated_denied_on = (top_denied_ip_count >= 10) or (
+        top_denied_username_count >= 8
+    )
     anomalies = {
         "spike_failed_logins": float(failed_1h) > spike_threshold,
         "repeated_fails_by_ip": any(int(fails) >= 20 for _, fails in top_ips),
@@ -4789,6 +4836,14 @@ def admin_security():
         "top_ip_fails": int(top_ip[1] or 0),
         "top_username": top_username[0],
         "top_username_fails": int(top_username[1] or 0),
+        "denied_spike": bool(denied_spike_on),
+        "repeated_denied": bool(repeated_denied_on),
+        "denied_1h": int(denied_1h),
+        "avg_denied_hourly": round(avg_denied_hourly, 2),
+        "top_denied_ip": top_denied_ip[0],
+        "top_denied_ip_count": int(top_denied_ip_count),
+        "top_denied_username": top_denied_username[0],
+        "top_denied_username_count": int(top_denied_username_count),
     }
 
     return (
@@ -4799,12 +4854,14 @@ def admin_security():
                 "failed_24h": int(failed_24h),
                 "lockout_buckets_24h": int(lockout_buckets_24h),
                 "risky_actions_24h": int(risky_actions_24h),
-                "denied_actions_24h": int(denied_actions_24h),
+                "denied_24h": int(denied_24h),
             },
             recent_logins=recent_logins,
             recent_risky=recent_risky,
             top_ips=top_ips,
             top_usernames=top_usernames,
+            top_denied_ips=top_denied_ips,
+            top_denied_usernames=top_denied_usernames,
             anomalies=anomalies,
             risky_actions=RISKY_ACTIONS,
         ),
