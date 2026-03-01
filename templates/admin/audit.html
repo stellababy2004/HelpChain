@@ -69,7 +69,7 @@
             <td class="small">{{ e.admin_username or ("#" ~ e.admin_user_id) }}</td>
             <td class="small">
               {{ e.target_type }} #{{ e.target_id }}
-              {% if e.target_type == "Request" %}
+              {% if e.target_type == "Request" and e.action != "security.denied_action" %}
                 <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ _('view') }}</a>
               {% endif %}
             </td>
