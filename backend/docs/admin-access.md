@@ -33,3 +33,7 @@ $env:ADMIN_SEED_PASSWORD="(your-strong-password)"
 $env:ADMIN_SEED_FORCE_RESET="1"
 python backend\scripts\ensure_admin.py
 ```
+
+Audit trail note:
+- `/admin/audit` is admin-only and stores IP + user-agent for traceability.
+- Recommended retention window for audit events: 90 days.

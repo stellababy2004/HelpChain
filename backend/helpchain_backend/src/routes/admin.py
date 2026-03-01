@@ -4426,20 +4426,65 @@ def admin_pro_access_list():
 @login_required
 @admin_required
 def admin_audit():
-    entity = (request.args.get("entity") or "all").strip().lower()
-    action = (request.args.get("action") or "all").strip().lower()
-    q = (request.args.get("q") or "").strip()
+    action = (request.args.get("action") or "").strip()
+    admin_username = (request.args.get("admin") or "").strip()
+    target_id_raw = (request.args.get("target_id") or "").strip()
+    days_raw = (request.args.get("days") or "7").strip()
+    page_raw = (request.args.get("page") or "1").strip()
+
+    try:
+        days = max(1, min(int(days_raw), 365))
+    except Exception:
+        days = 7
+
+    try:
+        page = max(1, int(page_raw))
+    except Exception:
+        page = 1
+
+    target_id = None
+    if target_id_raw:
+        try:
+            target_id = int(target_id_raw)
+        except Exception:
+            target_id = None
+
+    now = datetime.now(timezone.utc)
+    since = now - timedelta(days=days)
+
+    query = AdminAuditEvent.query.filter(AdminAuditEvent.created_at >= since)
+    if action:
+        query = query.filter(AdminAuditEvent.action == action)
+    if admin_username:
+        query = query.filter(AdminAuditEvent.admin_username == admin_username)
+    if target_id is not None:
+        query = query.filter(
+            AdminAuditEvent.target_type == "Request",
+            AdminAuditEvent.target_id == target_id,
+        )
+
+    query = query.order_by(AdminAuditEvent.created_at.desc(), AdminAuditEvent.id.desc())
+    pagination = query.paginate(page=page, per_page=50, error_out=False)
+    actions = (
+        AdminAuditEvent.query.with_entities(AdminAuditEvent.action)
+        .distinct()
+        .order_by(AdminAuditEvent.action.asc())
+        .all()
+    )
+    actions = [row[0] for row in actions if row and row[0]]
+
     return (
         render_template(
             "admin/audit.html",
-            rows=[],
-            pagination=None,
-            entity=entity,
-            action=action,
-            q=q,
-            entities=[],
-            actions=[],
-            total=0,
+            events=pagination.items,
+            pagination=pagination,
+            filters={
+                "action": action,
+                "admin": admin_username,
+                "target_id": target_id_raw,
+                "days": str(days),
+            },
+            actions=actions,
         ),
         200,
     )

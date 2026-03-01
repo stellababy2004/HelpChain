@@ -1237,3 +1237,8 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
 .hc-mini-list__right {
   flex: 0 0 auto;
 }
+
+.audit-diff code {
+  white-space: normal;
+  word-break: break-word;
+}
