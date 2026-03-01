@@ -11,6 +11,7 @@ Usage (PowerShell):
 
 from __future__ import annotations
 
+import argparse
 import os
 import random
 from datetime import datetime, timedelta, timezone
@@ -74,8 +75,62 @@ def _assert_safe_sqlite_db(app) -> None:
         )
 
 
-def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
+def _demo_ua(tag: str) -> str:
+    return f"seed-security-demo/{tag}"
+
+
+def _reset_demo_rows(tag: str) -> dict[str, int]:
+    ua = _demo_ua(tag)
+    login_deleted = (
+        db.session.query(AdminLoginAttempt)
+        .filter(AdminLoginAttempt.user_agent == ua)
+        .delete(synchronize_session=False)
+    )
+    audit_deleted = (
+        db.session.query(AdminAuditEvent)
+        .filter(AdminAuditEvent.user_agent == ua)
+        .delete(synchronize_session=False)
+    )
+    # Backward-compatible cleanup for older seed versions.
+    legacy_login_deleted = (
+        db.session.query(AdminLoginAttempt)
+        .filter(AdminLoginAttempt.user_agent == "seed-security-demo/1.0")
+        .delete(synchronize_session=False)
+    )
+    legacy_audit_deleted = (
+        db.session.query(AdminAuditEvent)
+        .filter(AdminAuditEvent.user_agent == "seed-security-demo/1.0")
+        .delete(synchronize_session=False)
+    )
+    db.session.commit()
+    return {
+        "login_attempts_deleted": int((login_deleted or 0) + (legacy_login_deleted or 0)),
+        "audit_events_deleted": int((audit_deleted or 0) + (legacy_audit_deleted or 0)),
+    }
+
+
+def _has_demo_rows(tag: str) -> bool:
+    ua = _demo_ua(tag)
+    has_logins = (
+        db.session.query(AdminLoginAttempt.id)
+        .filter(AdminLoginAttempt.user_agent == ua)
+        .first()
+        is not None
+    )
+    if has_logins:
+        return True
+    has_audit = (
+        db.session.query(AdminAuditEvent.id)
+        .filter(AdminAuditEvent.user_agent == ua)
+        .first()
+        is not None
+    )
+    return has_audit
+
+
+def _insert_login_attempts(now: datetime, rng: random.Random, tag: str) -> dict[str, int]:
     events: list[AdminLoginAttempt] = []
+    ua = _demo_ua(tag)
 
     for _ in range(8):
         t = now - timedelta(hours=rng.randint(2, 23), minutes=rng.randint(0, 59))
@@ -85,7 +140,7 @@ def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
                 username="admin",
                 ip="127.0.0.1",
                 success=True,
-                user_agent="seed-security-demo/1.0",
+                user_agent=ua,
             )
         )
 
@@ -97,7 +152,7 @@ def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
                 username="admin",
                 ip="45.67.89.10",
                 success=False,
-                user_agent="seed-security-demo/1.0",
+                user_agent=ua,
             )
         )
 
@@ -109,7 +164,7 @@ def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
                 username="ops",
                 ip="45.67.89.10",
                 success=False,
-                user_agent="seed-security-demo/1.0",
+                user_agent=ua,
             )
         )
 
@@ -121,7 +176,7 @@ def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
                 username="admin",
                 ip="91.121.13.77",
                 success=False,
-                user_agent="seed-security-demo/1.0",
+                user_agent=ua,
             )
         )
 
@@ -141,7 +196,7 @@ def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
                     username=username,
                     ip=ip,
                     success=False,
-                    user_agent="seed-security-demo/1.0",
+                    user_agent=ua,
                 )
             )
 
@@ -155,7 +210,7 @@ def _insert_login_attempts(now: datetime, rng: random.Random) -> dict[str, int]:
     }
 
 
-def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
+def _insert_audit_events(now: datetime, rng: random.Random, tag: str) -> dict[str, int]:
     actions = [
         "request.archive",
         "request.assign_owner",
@@ -166,6 +221,7 @@ def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
     ]
     req_ids, interest_ids = _ensure_demo_targets(rng)
     ips = ["127.0.0.1", "45.67.89.10", "91.121.13.77"]
+    ua = _demo_ua(tag)
 
     events: list[AdminAuditEvent] = []
     for _ in range(12):
@@ -186,6 +242,7 @@ def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
                     "reason": rng.choice(
                         ["not eligible", "duplicate", "insufficient info"]
                     ),
+                    "demo_tag": tag,
                 }
             else:
                 payload = {
@@ -193,24 +250,38 @@ def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
                     "interest_id": target_id,
                     "old": {"status": "pending"},
                     "new": {"status": "approved"},
+                    "demo_tag": tag,
                 }
         else:
             target_type = "Request"
             target_id = rng.choice(req_ids)
             if action == "request.assign_owner":
-                payload = {"old": {"owner_id": None}, "new": {"owner_id": 42}}
+                payload = {
+                    "old": {"owner_id": None},
+                    "new": {"owner_id": 42},
+                    "demo_tag": tag,
+                }
             elif action == "request.unassign_owner":
-                payload = {"old": {"owner_id": 42}, "new": {"owner_id": None}}
+                payload = {
+                    "old": {"owner_id": 42},
+                    "new": {"owner_id": None},
+                    "demo_tag": tag,
+                }
             elif action == "request.unlock":
                 payload = {
                     "req_id": target_id,
                     "old": {"locked": True},
                     "new": {"locked": False},
+                    "demo_tag": tag,
                 }
             elif action == "request.archive":
-                payload = {"old": {"archived": False}, "new": {"archived": True}}
+                payload = {
+                    "old": {"archived": False},
+                    "new": {"archived": True},
+                    "demo_tag": tag,
+                }
             else:
-                payload = None
+                payload = {"demo_tag": tag}
 
         events.append(
             AdminAuditEvent(
@@ -221,7 +292,7 @@ def _insert_audit_events(now: datetime, rng: random.Random) -> dict[str, int]:
                 target_type=target_type,
                 target_id=int(target_id),
                 ip=ip,
-                user_agent="seed-security-demo/1.0",
+                user_agent=ua,
                 payload=payload,
             )
         )
@@ -299,19 +370,49 @@ def _ensure_demo_targets(rng: random.Random) -> tuple[list[int], list[int]]:
     return req_ids, interest_ids
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Seed demo data for /admin/security")
+    parser.add_argument("--tag", default="demo", help="Demo tag namespace (default: demo)")
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Delete only demo-tagged rows for this tag before insert",
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Exit without changes if rows for this tag already exist",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = _parse_args()
+    tag = (args.tag or "demo").strip().lower()
+    if not tag:
+        raise SystemExit("REFUSE: --tag cannot be empty")
+
     if _is_production_env():
         raise SystemExit("REFUSE: production-like environment detected.")
 
     app = create_app()
     with app.app_context():
         _assert_safe_sqlite_db(app)
+        if args.once and _has_demo_rows(tag):
+            print(f"SEED_SECURITY_DEMO: SKIP (--once and rows exist for tag={tag})")
+            return
+
+        if args.reset:
+            deleted = _reset_demo_rows(tag)
+            print(f"SEED_SECURITY_DEMO: RESET tag={tag} -> {deleted}")
+
         rng = random.Random(42)
         now = _utc_now()
-        stats_logins = _insert_login_attempts(now, rng)
-        stats_audit = _insert_audit_events(now, rng)
+        stats_logins = _insert_login_attempts(now, rng, tag)
+        stats_audit = _insert_audit_events(now, rng, tag)
 
         print("SEED_SECURITY_DEMO: OK")
+        print(f"- tag: {tag}")
         print(f"- DB: {app.config.get('SQLALCHEMY_DATABASE_URI')}")
         print(f"- {stats_logins}")
         print(f"- {stats_audit}")
