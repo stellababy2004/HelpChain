@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Roles') }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ _('Admin roles') }}</h1>
+        <div class="hc-muted">{{ _('Governance: superadmin / ops / readonly') }}</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">{{ _('Back to security') }}</a>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
+        <thead>
+          <tr>
+            <th>{{ _('Username') }}</th>
+            <th>{{ _('Email') }}</th>
+            <th>{{ _('Role') }}</th>
+            <th>{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in admins %}
+          <tr>
+            <td class="small">{{ u.username }}</td>
+            <td class="small">{{ u.email }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('admin.admin_roles_set_role', admin_id=u.id) }}" class="d-flex gap-2 align-items-center">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% set normalized = (u.role.value if u.role and u.role.value is defined else u.role)|string|lower %}
+                {% if normalized in ['admin', 'super_admin'] %}
+                  {% set normalized = 'superadmin' %}
+                {% endif %}
+                <select class="form-select form-select-sm" name="role" style="max-width: 180px;"
+                        {% if last_superadmin_id == u.id %}title="Last superadmin"{% endif %}>
+                  {% for val, label in role_options %}
+                    <option value="{{ val }}" {% if normalized == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">{{ _('Save') }}</button>
+              </form>
+            </td>
+            <td class="small text-muted">
+              {% if last_superadmin_id == u.id %}
+                {{ _('Last superadmin') }}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if admins|length == 0 %}
+          <tr><td colspan="4" class="text-center text-muted py-4">{{ _('No admin users found.') }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div class="p-3 small text-muted">
+      {{ _('Superadmin count') }}: {{ superadmin_count }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

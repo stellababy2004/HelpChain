@@ -761,6 +761,18 @@ def _admin_role_value() -> str | None:
     return None
 
 
+def _normalize_admin_role_value(raw_role) -> str | None:
+    role = getattr(raw_role, "value", raw_role)
+    role = (role or "").strip().lower()
+    if role in {"admin", "super_admin", "superadmin"}:
+        return "superadmin"
+    if role == "ops":
+        return "ops"
+    if role in {"readonly", "read-only"}:
+        return "readonly"
+    return None
+
+
 def admin_role_required(*allowed_roles: str):
     allowed = {r.strip().lower() for r in allowed_roles if r}
 
@@ -777,6 +789,10 @@ def admin_role_required(*allowed_roles: str):
         return wrapper
 
     return deco
+
+
+def _is_superadmin_role(role) -> bool:
+    return _normalize_admin_role_value(role) == "superadmin"
 
 
 def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=None):
@@ -4740,6 +4756,94 @@ def admin_security():
         ),
         200,
     )
+
+
+@admin_bp.get("/roles")
+@login_required
+@admin_required
+@admin_role_required("superadmin")
+def admin_roles():
+    admins = AdminUser.query.order_by(AdminUser.username.asc(), AdminUser.id.asc()).all()
+    superadmin_ids = [u.id for u in admins if _is_superadmin_role(getattr(u, "role", None))]
+    last_superadmin_id = superadmin_ids[0] if len(superadmin_ids) == 1 else None
+    role_options = [
+        ("readonly", "readonly"),
+        ("ops", "ops"),
+        ("superadmin", "superadmin"),
+    ]
+    return (
+        render_template(
+            "admin/roles.html",
+            admins=admins,
+            role_options=role_options,
+            last_superadmin_id=last_superadmin_id,
+            superadmin_count=len(superadmin_ids),
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/roles/<int:admin_id>/role")
+@login_required
+@admin_required
+@admin_role_required("superadmin")
+def admin_roles_set_role(admin_id: int):
+    target = db.session.get(AdminUser, admin_id)
+    if not target:
+        abort(404)
+
+    requested_role = (request.form.get("role") or "").strip().lower()
+    allowed_roles = {"readonly", "ops", "superadmin"}
+    if requested_role not in allowed_roles:
+        flash("Invalid role.", "danger")
+        return redirect(url_for("admin.admin_roles"), code=303)
+
+    old_role = _normalize_admin_role_value(getattr(target, "role", None))
+    if old_role is None:
+        old_role = "superadmin"
+
+    if old_role == requested_role:
+        flash("No changes.", "info")
+        return redirect(url_for("admin.admin_roles"), code=303)
+
+    superadmin_count = (
+        db.session.query(func.count(AdminUser.id))
+        .filter(
+            or_(
+                AdminUser.role == "superadmin",
+                AdminUser.role == "super_admin",
+                AdminUser.role == "admin",
+            )
+        )
+        .scalar()
+        or 0
+    )
+
+    # Prevent lockout by downgrading the last superadmin.
+    if old_role == "superadmin" and requested_role != "superadmin" and int(superadmin_count) <= 1:
+        flash("Cannot downgrade the last superadmin.", "danger")
+        return redirect(url_for("admin.admin_roles"), code=303)
+
+    target.role = requested_role
+    db.session.commit()
+
+    audit_admin_action(
+        action="admin.role_change",
+        target_type="AdminUser",
+        target_id=target.id,
+        payload={
+            "old": {"role": old_role},
+            "new": {"role": requested_role},
+            "actor": {
+                "admin_user_id": getattr(current_user, "id", None),
+                "username": getattr(current_user, "username", None),
+            },
+            "ip": _client_ip(),
+            "user_agent": request.headers.get("User-Agent"),
+        },
+    )
+    flash("Role updated.", "success")
+    return redirect(url_for("admin.admin_roles"), code=303)
 
 
 @admin_bp.get("/pro-access/<int:pro_id>")
