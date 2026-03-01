@@ -63,6 +63,15 @@
         {{ _('Repeated fails by username') }}: {{ 'ON' if anomalies.repeated_fails_by_username else 'OFF' }}
       </span>
     </div>
+    <div class="mt-2 small text-muted">
+      Spike: {{ anomalies.failed_1h }} in last 1h vs avg {{ anomalies.avg_hourly }}/h (threshold {{ anomalies.spike_threshold }})
+    </div>
+    <div class="small text-muted">
+      Repeated IP: {{ anomalies.top_ip or '—' }} {{ anomalies.top_ip_fails }} fails
+    </div>
+    <div class="small text-muted">
+      Repeated username: {{ anomalies.top_username or '—' }} {{ anomalies.top_username_fails }} fails
+    </div>
     <div class="mt-3 small text-muted">
       {{ _('Risky actions monitored:') }} {{ risky_actions|join(', ') }}
     </div>
@@ -184,4 +193,3 @@
   </div>
 </div>
 {% endblock %}
-

@@ -48,4 +48,6 @@ def test_admin_security_page_renders_with_data(authenticated_admin_client, sessi
     assert "Lockout buckets (24h)" in html
     assert "interest.reject" in html
     assert "10.0.0.2" in html
-
+    assert "Spike:" in html
+    assert "Repeated IP:" in html
+    assert "Repeated username:" in html

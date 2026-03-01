@@ -2803,7 +2803,7 @@ def admin_request_set_status(req_id: int):
 @login_required
 def admin_request_archive(req_id: int):
     """One-click archive/close action used by the details view button."""
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -3578,12 +3578,18 @@ def admin_request_details(req_id: int):
     admin_required_404()
     activities_supported = _table_has_column("request_activities", "volunteer_id")
     if activities_supported:
-        req = _scope_requests(Request.query).options(
-            joinedload(Request.logs), joinedload(Request.activities)
-        ).get_or_404(req_id)
+        req = (
+            _scope_requests(Request.query)
+            .options(joinedload(Request.logs), joinedload(Request.activities))
+            .filter(Request.id == req_id)
+            .first_or_404()
+        )
     else:
-        req = _scope_requests(Request.query).options(joinedload(Request.logs)).get_or_404(
-            req_id
+        req = (
+            _scope_requests(Request.query)
+            .options(joinedload(Request.logs))
+            .filter(Request.id == req_id)
+            .first_or_404()
         )
     admin_id = current_user.id
     now = _now_utc()
@@ -4143,7 +4149,7 @@ def admin_request_unassign(req_id: int):
 )
 @login_required
 def admin_assign_volunteer(req_id: int, volunteer_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
     if _is_request_locked(req):
@@ -4168,7 +4174,7 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
 )
 @login_required
 def admin_unassign_volunteer(req_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
     old_val = getattr(req, "assigned_volunteer_id", None)
@@ -4189,7 +4195,7 @@ def admin_unassign_volunteer(req_id: int):
 @login_required
 def admin_request_nudge(req_id: int):
     admin_required_404()
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -4213,7 +4219,7 @@ def admin_request_nudge(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
 @login_required
 def admin_request_delete(req_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -4247,7 +4253,7 @@ def admin_request_delete(req_id: int):
 )
 @login_required
 def admin_request_restore_deleted(req_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
 
@@ -4273,7 +4279,7 @@ def admin_request_restore_deleted(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/note")
 @login_required
 def admin_request_add_note(req_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     note = (request.form.get("note") or "").strip()
     if not note:
         flash("Note is empty.", "warning")
@@ -4650,14 +4656,22 @@ def admin_security():
     )
 
     avg_hourly = (float(failed_24h) / 24.0) if failed_24h else 0.0
+    spike_threshold = max(10.0, 3.0 * avg_hourly)
+    top_ip = top_ips[0] if top_ips else (None, 0)
+    top_username = top_usernames[0] if top_usernames else (None, 0)
     anomalies = {
-        "spike_failed_logins": float(failed_1h) > max(10.0, 3.0 * avg_hourly),
+        "spike_failed_logins": float(failed_1h) > spike_threshold,
         "repeated_fails_by_ip": any(int(fails) >= 20 for _, fails in top_ips),
         "repeated_fails_by_username": any(
             int(fails) >= 10 for _, fails in top_usernames
         ),
         "failed_1h": int(failed_1h),
         "avg_hourly": round(avg_hourly, 2),
+        "spike_threshold": round(spike_threshold, 2),
+        "top_ip": top_ip[0],
+        "top_ip_fails": int(top_ip[1] or 0),
+        "top_username": top_username[0],
+        "top_username_fails": int(top_username[1] or 0),
     }
 
     return (
