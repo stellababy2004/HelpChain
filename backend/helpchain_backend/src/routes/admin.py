@@ -230,6 +230,46 @@ def _lockout_response(retry_after_seconds: int, next_url: str = ""):
     return response
 
 
+def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
+    # Successful login path
+    session.clear()  # mitigate session fixation
+    login_user(user, remember=False)
+    session["admin_user_id"] = user.id
+    session["admin_logged_in"] = True
+    _touch_admin_last_seen(_utc_now())
+    log_activity(
+        entity_type="admin",
+        entity_id=user.id,
+        action="admin_login",
+        message="Admin login",
+        meta={"via": via},
+        persist=True,
+    )
+    log_security_event(
+        "auth_admin_login_success",
+        actor_type="admin",
+        actor_id=user.id,
+    )
+
+    # MFA flow
+    session.pop(Config.MFA_SESSION_KEY, None)
+    session.pop("mfa_required", None)
+    mfa_globally_enabled = bool(Config.MFA_ENABLED)
+    user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(
+        getattr(user, "totp_secret", None)
+    )
+    if mfa_globally_enabled and user_has_mfa:
+        session["mfa_required"] = True
+        return redirect(
+            url_for(
+                "admin.admin_mfa_verify",
+                next=next_url or url_for("admin.admin_requests"),
+            )
+        )
+    _mfa_ok_set()
+    return redirect(next_url or url_for("admin.admin_requests"), code=303)
+
+
 def _current_structure_id() -> int:
     return int(current_structure().id)
 
@@ -545,7 +585,7 @@ def require_admin_session():
         return None
 
     nxt = request.full_path if request.query_string else request.path
-    return redirect(url_for("admin.ops_login", next=nxt), code=303)
+    return redirect(url_for("admin.admin_login_legacy", next=nxt), code=303)
 
 
 @admin_bp.before_app_request
@@ -1147,41 +1187,7 @@ def admin_ops_login():
             return redirect(url_for("admin.ops_login", next=next_url))
         _log_admin_attempt(username=username_norm, ip=ip, success=True)
         # Successful login path
-        session.clear()  # mitigate session fixation
-        login_user(user, remember=False)
-        session["admin_user_id"] = user.id
-        session["admin_logged_in"] = True
-        _touch_admin_last_seen(_utc_now())
-        log_activity(
-            entity_type="admin",
-            entity_id=user.id,
-            action="admin_login",
-            message="Admin login",
-            meta={"via": "admin_ops_login"},
-            persist=True,
-        )
-        log_security_event(
-            "auth_admin_login_success",
-            actor_type="admin",
-            actor_id=user.id,
-        )
-        # MFA flow
-        session.pop(Config.MFA_SESSION_KEY, None)
-        session.pop("mfa_required", None)
-        mfa_globally_enabled = bool(Config.MFA_ENABLED)
-        user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(
-            getattr(user, "totp_secret", None)
-        )
-        if mfa_globally_enabled and user_has_mfa:
-            session["mfa_required"] = True
-            return redirect(
-                url_for(
-                    "admin.admin_mfa_verify",
-                    next=next_url or url_for("admin.admin_requests"),
-                )
-            )
-        _mfa_ok_set()
-        return redirect(next_url or url_for("admin.admin_requests"), code=303)
+        return _complete_admin_login(user, next_url, via="admin_ops_login")
     return render_template("admin/login.html", next=next_url)
 
 
@@ -1225,7 +1231,7 @@ def admin_login_legacy():
             session["email_2fa_expires"] = int(time.time()) + 600
             return redirect(url_for("admin.admin_2fa"))
 
-        return redirect(url_for("admin.ops_login", next=next_url))
+        return _complete_admin_login(user, next_url, via="admin_login_legacy")
 
     return render_template("admin/login.html", next=next_url)
 
@@ -1251,7 +1257,7 @@ def admin_logout():
     session.pop("admin_last_seen", None)
     logout_user()
     flash("Logged out.", "info")
-    return redirect(url_for("admin.ops_login"))
+    return redirect(url_for("admin.admin_login_legacy"))
 
 
 MFA_PENDING_SECRET_KEY = "mfa_pending_secret"
@@ -1441,11 +1447,11 @@ def admin_2fa():
     """2FA верификация за админ"""
     user_id = session.get("pending_admin_user_id")
     if not user_id:
-        return redirect(url_for("admin.ops_login"))
+        return redirect(url_for("admin.admin_login_legacy"))
 
     admin_user = db.session.get(AdminUser, user_id)
     if not admin_user:
-        return redirect(url_for("admin.ops_login"))
+        return redirect(url_for("admin.admin_login_legacy"))
 
     if request.method == "POST":
         token = request.form.get("token")

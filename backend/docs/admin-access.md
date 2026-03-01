@@ -2,8 +2,9 @@
 
 Admin login is DB-based (`AdminUser`), not an ENV runtime secret.
 
-Stable URL:
-- `/admin/login`
+Login URLs:
+- Primary: `/admin/login`
+- Secondary (ops-only): `/admin/ops/login`
 
 After DB restore/reset, if admin account is missing:
 
