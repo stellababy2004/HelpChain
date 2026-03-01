@@ -46,6 +46,7 @@ def test_admin_security_page_renders_with_data(authenticated_admin_client, sessi
     html = resp.get_data(as_text=True)
     assert "Security overview" in html
     assert "Lockout buckets (24h)" in html
+    assert "Denied actions (24h)" in html
     assert "interest.reject" in html
     assert "10.0.0.2" in html
     assert "Spike:" in html
