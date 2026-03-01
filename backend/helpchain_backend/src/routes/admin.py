@@ -83,6 +83,7 @@ RISKY_ACTIONS = (
     "interest.approve",
     "interest.reject",
 )
+STATE_CHANGING_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 ADMIN_LOGIN_RATE_WINDOW_MIN = 5
 ADMIN_LOGIN_MAX_FAILS = 5
 ADMIN_LOGIN_LOCKOUT_MIN = 15
@@ -781,8 +782,10 @@ def admin_role_required(*allowed_roles: str):
         def wrapper(*args, **kwargs):
             role = _admin_role_value()
             if role is None:
+                _audit_denied_action(required_roles=allowed, actor_role=str(role))
                 abort(403)
             if role not in allowed:
+                _audit_denied_action(required_roles=allowed, actor_role=role)
                 abort(403)
             return view_func(*args, **kwargs)
 
@@ -793,6 +796,47 @@ def admin_role_required(*allowed_roles: str):
 
 def _is_superadmin_role(role) -> bool:
     return _normalize_admin_role_value(role) == "superadmin"
+
+
+def _attempted_action_label() -> str:
+    if request.endpoint:
+        return request.endpoint
+    return f"{request.method} {request.path}"
+
+
+def _audit_denied_action(required_roles: set[str], actor_role: str | None) -> None:
+    if request.method not in STATE_CHANGING_METHODS:
+        return
+
+    target_type = "AdminRoute"
+    target_id = 0
+    try:
+        view_args = request.view_args or {}
+        if "req_id" in view_args and view_args.get("req_id") is not None:
+            target_type = "Request"
+            target_id = int(view_args["req_id"])
+        elif "interest_id" in view_args and view_args.get("interest_id") is not None:
+            target_type = "Interest"
+            target_id = int(view_args["interest_id"])
+        elif "admin_id" in view_args and view_args.get("admin_id") is not None:
+            target_type = "AdminUser"
+            target_id = int(view_args["admin_id"])
+    except Exception:
+        target_type = "AdminRoute"
+        target_id = 0
+
+    audit_admin_action(
+        action="security.denied_action",
+        target_type=target_type,
+        target_id=target_id,
+        payload={
+            "attempted_action": _attempted_action_label(),
+            "required_roles": sorted(list(required_roles)),
+            "actor_role": actor_role,
+            "method": request.method,
+            "path": request.path,
+        },
+    )
 
 
 def log_request_activity(req_obj, action, old=None, new=None, actor_admin_id=None):
@@ -4676,6 +4720,15 @@ def admin_security():
         .scalar()
         or 0
     )
+    denied_actions_24h = (
+        db.session.query(func.count(AdminAuditEvent.id))
+        .filter(
+            AdminAuditEvent.created_at >= since_24h,
+            AdminAuditEvent.action == "security.denied_action",
+        )
+        .scalar()
+        or 0
+    )
 
     recent_logins = (
         AdminLoginAttempt.query.order_by(AdminLoginAttempt.created_at.desc())
@@ -4746,6 +4799,7 @@ def admin_security():
                 "failed_24h": int(failed_24h),
                 "lockout_buckets_24h": int(lockout_buckets_24h),
                 "risky_actions_24h": int(risky_actions_24h),
+                "denied_actions_24h": int(denied_actions_24h),
             },
             recent_logins=recent_logins,
             recent_risky=recent_risky,
