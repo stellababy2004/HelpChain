@@ -18,6 +18,7 @@ from flask import (
     current_app,
     flash,
     jsonify,
+    make_response,
     redirect,
     render_template,
     request,
@@ -30,18 +31,19 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.audit import log_activity
 from backend.extensions import db, limiter
-from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
-from backend.helpchain_backend.src.observability import (
+from ..models.volunteer_interest import VolunteerInterest
+from ..observability import (
     tenant_leak_get,
     tenant_leak_inc,
 )
-from backend.helpchain_backend.src.statuses import (
+from ..statuses import (
     REQUEST_STATUS_ALLOWED,
     normalize_request_status,
 )
 
 from ..config import Config
 from ..models import (
+    AdminLoginAttempt,
     AdminUser,
     Notification,
     ProfessionalLead,
@@ -72,6 +74,9 @@ RESOLVE_SLA_DAYS = 7
 VOLUNTEER_ASSIGN_SLA_HOURS = 72
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
 PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
+ADMIN_LOGIN_RATE_WINDOW_MIN = 5
+ADMIN_LOGIN_MAX_FAILS = 5
+ADMIN_LOGIN_LOCKOUT_MIN = 15
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 
 
@@ -121,6 +126,80 @@ def _is_request_locked(req) -> bool:
 
 def _now_utc():
     return datetime.now(UTC)
+
+
+def _client_ip() -> str:
+    xff = (request.headers.get("X-Forwarded-For") or "").strip()
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.remote_addr or "0.0.0.0"
+
+
+def _norm_username(username: str | None) -> str | None:
+    if not username:
+        return None
+    value = username.strip().lower()
+    return value or None
+
+
+def _admin_login_is_locked(
+    ip: str, username: str | None, now: datetime
+) -> tuple[bool, int]:
+    window_start = now - timedelta(minutes=ADMIN_LOGIN_RATE_WINDOW_MIN)
+    query = AdminLoginAttempt.query.filter(
+        AdminLoginAttempt.created_at >= window_start,
+        AdminLoginAttempt.ip == ip,
+        AdminLoginAttempt.success.is_(False),
+    )
+    if username:
+        query = query.filter(AdminLoginAttempt.username == username)
+
+    fail_count = query.count()
+    if fail_count < ADMIN_LOGIN_MAX_FAILS:
+        return False, 0
+
+    last_fail = query.order_by(AdminLoginAttempt.created_at.desc()).first()
+    if not last_fail or not last_fail.created_at:
+        return False, 0
+
+    last_fail_at = last_fail.created_at
+    if getattr(last_fail_at, "tzinfo", None) is not None:
+        last_fail_at = last_fail_at.astimezone(UTC).replace(tzinfo=None)
+
+    unlock_at = last_fail_at + timedelta(minutes=ADMIN_LOGIN_LOCKOUT_MIN)
+    if now < unlock_at:
+        retry_after = int((unlock_at - now).total_seconds())
+        return True, max(retry_after, 1)
+
+    return False, 0
+
+
+def _log_admin_attempt(username: str | None, ip: str, success: bool) -> None:
+    ua = request.headers.get("User-Agent")
+    db.session.add(
+        AdminLoginAttempt(
+            username=username,
+            ip=ip,
+            success=bool(success),
+            user_agent=(ua[:256] if ua else None),
+        )
+    )
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+
+def _lockout_response(retry_after_seconds: int, next_url: str = ""):
+    retry_after_seconds = max(int(retry_after_seconds or 0), 1)
+    retry_after_minutes = max(math.ceil(retry_after_seconds / 60), 1)
+    flash(
+        f"Твърде много опити за вход. Опитайте отново след около {retry_after_minutes} мин.",
+        "warning",
+    )
+    response = make_response(render_template("admin/login.html", next=next_url), 429)
+    response.headers["Retry-After"] = str(retry_after_seconds)
+    return response
 
 
 def _current_structure_id() -> int:
@@ -400,7 +479,7 @@ from sqlalchemy import case, func, or_
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import joinedload
 
-from backend.helpchain_backend.src.utils.mfa import (
+from ..utils.mfa import (
     build_totp_uri,
     generate_totp_secret,
     qr_png_base64,
@@ -982,6 +1061,19 @@ def admin_ops_login():
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        username_norm = _norm_username(username)
+        ip = _client_ip()
+        now = datetime.now(UTC).replace(tzinfo=None)
+        locked, retry_after = _admin_login_is_locked(ip, username_norm, now)
+        if locked:
+            _log_admin_attempt(username=username_norm, ip=ip, success=False)
+            log_security_event(
+                "auth_admin_login_locked",
+                actor_type="anonymous",
+                meta={"username": username_norm, "ip": ip, "retry_after": retry_after},
+            )
+            return _lockout_response(retry_after, next_url=next_url)
+
         password = request.form.get("password", "")
         user = AdminUser.query.filter_by(username=username).first()
         if (
@@ -989,6 +1081,7 @@ def admin_ops_login():
             or not getattr(user, "password_hash", None)
             or not check_password_hash(user.password_hash, password)
         ):
+            _log_admin_attempt(username=username_norm, ip=ip, success=False)
             log_security_event(
                 "auth_admin_login_failed",
                 actor_type="anonymous",
@@ -996,6 +1089,7 @@ def admin_ops_login():
             )
             flash(INVALID_CREDENTIALS_MSG, "danger")
             return redirect(url_for("admin.ops_login", next=next_url))
+        _log_admin_attempt(username=username_norm, ip=ip, success=True)
         # Successful login path
         session.clear()  # mitigate session fixation
         login_user(user, remember=False)
@@ -1045,6 +1139,14 @@ def admin_login_legacy():
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
+        username_norm = _norm_username(username)
+        ip = _client_ip()
+        now = datetime.now(UTC).replace(tzinfo=None)
+        locked, retry_after = _admin_login_is_locked(ip, username_norm, now)
+        if locked:
+            _log_admin_attempt(username=username_norm, ip=ip, success=False)
+            return _lockout_response(retry_after, next_url=next_url)
+
         password = request.form.get("password", "")
         user = AdminUser.query.filter_by(username=username).first()
         if (
@@ -1052,8 +1154,10 @@ def admin_login_legacy():
             or not getattr(user, "password_hash", None)
             or not check_password_hash(user.password_hash, password)
         ):
+            _log_admin_attempt(username=username_norm, ip=ip, success=False)
             flash(INVALID_CREDENTIALS_MSG, "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
+        _log_admin_attempt(username=username_norm, ip=ip, success=True)
 
         # Legacy email 2FA compatibility flow expected by tests.
         if bool(current_app.config.get("EMAIL_2FA_ENABLED", False)):
@@ -2459,7 +2563,7 @@ def update_status(req_id):
             pass
 
     # --- Bulletproof policy sync: VolunteerInterest follows Request.status + owner_id ---
-    from backend.helpchain_backend.src.models.volunteer_interest import (
+    from ..models.volunteer_interest import (
         VolunteerInterest,
     )
 

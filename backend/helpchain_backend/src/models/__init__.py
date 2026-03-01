@@ -9,6 +9,7 @@ from backend.extensions import db
 
 # Other canonical/legacy names live in `backend.models`
 from backend.models import (  # noqa: F401
+    AdminLoginAttempt,
     NotificationSubscription,
     Request,
     RequestActivity,
@@ -47,6 +48,7 @@ __all__ = [
     "User",
     "Volunteer",
     "AdminUser",
+    "AdminLoginAttempt",
     "Request",
     "Structure",
     "RequestLog",

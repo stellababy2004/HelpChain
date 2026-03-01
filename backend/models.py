@@ -157,6 +157,19 @@ class AdminUser(db.Model, UserMixin):
             return f"otpauth://totp/HelpChain:{username}?secret={self.twofa_secret}&issuer=HelpChain"
 
 
+class AdminLoginAttempt(db.Model):
+    """Admin brute-force protection audit rows."""
+
+    __tablename__ = "admin_login_attempts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False, index=True)
+    username = db.Column(db.String(120), nullable=True, index=True)
+    ip = db.Column(db.String(64), nullable=False, index=True)
+    success = db.Column(db.Boolean, nullable=False, default=False)
+    user_agent = db.Column(db.String(256), nullable=True)
+
+
 import os
 import sys
 from datetime import datetime
