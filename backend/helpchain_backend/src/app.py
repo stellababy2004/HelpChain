@@ -354,6 +354,9 @@ def create_app(config_object=None) -> Flask:
     with app.app_context():
         # Single canonical model import (avoid multiple MetaData instances)
         from . import models  # noqa: F401
+        from .models.audit_guard import install_admin_audit_append_only_guard
+
+        install_admin_audit_append_only_guard()
 
     # CSRF helper for Jinja (if templates call {{ csrf_token() }})
     app.jinja_env.globals["csrf_token"] = generate_csrf
