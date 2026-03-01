@@ -77,6 +77,7 @@ PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
 ADMIN_LOGIN_RATE_WINDOW_MIN = 5
 ADMIN_LOGIN_MAX_FAILS = 5
 ADMIN_LOGIN_LOCKOUT_MIN = 15
+ADMIN_SESSION_IDLE_TIMEOUT_MIN = 20
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 
 
@@ -126,6 +127,33 @@ def _is_request_locked(req) -> bool:
 
 def _now_utc():
     return datetime.now(UTC)
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _get_admin_last_seen() -> datetime | None:
+    last_seen_ts = session.get("admin_last_seen")
+    if not last_seen_ts:
+        return None
+    try:
+        return datetime.fromisoformat(last_seen_ts)
+    except Exception:
+        return None
+
+
+def _admin_session_is_expired(now: datetime) -> bool:
+    last_seen = _get_admin_last_seen()
+    if not last_seen:
+        return False
+    if last_seen.tzinfo is None:
+        last_seen = last_seen.replace(tzinfo=timezone.utc)
+    return (now - last_seen) > timedelta(minutes=ADMIN_SESSION_IDLE_TIMEOUT_MIN)
+
+
+def _touch_admin_last_seen(now: datetime) -> None:
+    session["admin_last_seen"] = now.isoformat()
 
 
 def _client_ip() -> str:
@@ -518,6 +546,34 @@ def require_admin_session():
 
     nxt = request.full_path if request.query_string else request.path
     return redirect(url_for("admin.ops_login", next=nxt), code=303)
+
+
+@admin_bp.before_app_request
+def _admin_idle_timeout_guard():
+    if not request.path.startswith("/admin"):
+        return None
+    if not session.get("admin_logged_in"):
+        return None
+    if request.endpoint in {"admin.admin_login_legacy", "admin.ops_login", "admin.admin_ops_login"}:
+        return None
+
+    now = _utc_now()
+    if _admin_session_is_expired(now):
+        session.pop("admin_logged_in", None)
+        session.pop("admin_user_id", None)
+        session.pop("admin_last_seen", None)
+        try:
+            logout_user()
+        except Exception:
+            pass
+        flash(
+            "Session expirée après 20 minutes d’inactivité. Merci de vous reconnecter.",
+            "warning",
+        )
+        return redirect(url_for("admin.admin_login_legacy"), code=303)
+
+    _touch_admin_last_seen(now)
+    return None
 
 
 def _metrics_token_valid() -> bool:
@@ -1095,6 +1151,7 @@ def admin_ops_login():
         login_user(user, remember=False)
         session["admin_user_id"] = user.id
         session["admin_logged_in"] = True
+        _touch_admin_last_seen(_utc_now())
         log_activity(
             entity_type="admin",
             entity_id=user.id,
@@ -1191,6 +1248,7 @@ def admin_logout():
     session.pop("backup_codes_plain", None)
     session.pop("admin_user_id", None)
     session.pop("admin_logged_in", None)
+    session.pop("admin_last_seen", None)
     logout_user()
     flash("Logged out.", "info")
     return redirect(url_for("admin.ops_login"))
@@ -1272,6 +1330,7 @@ def admin_mfa_verify():
     ):
         _mfa_ok_set()
         session["admin_logged_in"] = True
+        _touch_admin_last_seen(_utc_now())
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
 
     locked, remaining = _mfa_lock_is_active()
@@ -1312,6 +1371,7 @@ def admin_mfa_verify():
         _mfa_attempt_reset()
         _mfa_ok_set()
         session["admin_logged_in"] = True
+        _touch_admin_last_seen(_utc_now())
         log_activity(
             entity_type="admin",
             entity_id=getattr(current_user, "id", 0) or 0,
