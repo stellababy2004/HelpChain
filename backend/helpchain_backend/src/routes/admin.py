@@ -43,6 +43,7 @@ from ..statuses import (
 
 from ..config import Config
 from ..models import (
+    AdminAuditEvent,
     AdminLoginAttempt,
     AdminUser,
     Notification,
@@ -268,6 +269,38 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
         )
     _mfa_ok_set()
     return redirect(next_url or url_for("admin.admin_requests"), code=303)
+
+
+def audit_admin_action(
+    action: str, target_type: str, target_id: int, payload: dict | None = None
+) -> None:
+    try:
+        ip = _client_ip()
+        ua = request.headers.get("User-Agent")
+        admin_user_id = session.get("admin_user_id")
+        admin_username = None
+        try:
+            if getattr(current_user, "is_authenticated", False):
+                admin_username = getattr(current_user, "username", None)
+        except Exception:
+            admin_username = None
+
+        db.session.add(
+            AdminAuditEvent(
+                admin_user_id=admin_user_id,
+                admin_username=admin_username,
+                action=action,
+                target_type=target_type,
+                target_id=int(target_id),
+                ip=ip,
+                user_agent=(ua[:256] if ua else None),
+                payload=payload,
+            )
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("ADMIN_AUDIT: failed to write audit event")
 
 
 def _current_structure_id() -> int:
@@ -2703,6 +2736,12 @@ def update_status(req_id):
             )
 
     db.session.commit()
+    audit_admin_action(
+        action="request.status_change",
+        target_type="Request",
+        target_id=req.id,
+        payload={"old": {"status": old_status}, "new": {"status": new_status}},
+    )
 
     # Изпращане на email при промяна на статус (graceful fallback)
     try:
@@ -2775,6 +2814,15 @@ def admin_request_archive(req_id: int):
         actor_admin_id=getattr(current_user, "id", None),
     )
     db.session.commit()
+    audit_admin_action(
+        action="request.archive",
+        target_type="Request",
+        target_id=req.id,
+        payload={
+            "old": {"status": old_status, "archived": False},
+            "new": {"status": "cancelled", "archived": True},
+        },
+    )
     flash("Request archived and closed.", "success")
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
@@ -3922,7 +3970,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
 @admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
 @login_required
 def admin_request_assign(req_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(
             "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
@@ -3974,6 +4022,15 @@ def admin_request_assign(req_id: int):
         new=str(current_user.id),
     )
     db.session.commit()
+    audit_admin_action(
+        action="request.assign_owner",
+        target_type="Request",
+        target_id=req.id,
+        payload={
+            "old": {"owner_id": old_owner},
+            "new": {"owner_id": current_user.id},
+        },
+    )
     flash("Заявката е assign-ната към теб.", "success")
     next_url = (request.form.get("next") or "").strip()
     if next_url and next_url.startswith("/"):
@@ -3984,7 +4041,7 @@ def admin_request_assign(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/unassign", endpoint="admin_request_unassign")
 @login_required
 def admin_request_unassign(req_id: int):
-    req = _scope_requests(Request.query).get_or_404(req_id)
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(
             "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
@@ -4017,6 +4074,15 @@ def admin_request_unassign(req_id: int):
         new=None,
     )
     db.session.commit()
+    audit_admin_action(
+        action="request.unassign_owner",
+        target_type="Request",
+        target_id=req.id,
+        payload={
+            "old": {"owner_id": old_owner},
+            "new": {"owner_id": None},
+        },
+    )
     flash("Owner е премахнат.", "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
