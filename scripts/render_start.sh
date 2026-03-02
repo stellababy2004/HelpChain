@@ -13,7 +13,7 @@ echo "[HC] render_start.sh running"
 
 # Best-effort table bootstrap for production DBs that historically drifted.
 echo "[HC] running schema bootstrap (create missing tables only)"
-"$PY" backend/scripts/bootstrap_schema.py || echo "[HC] schema bootstrap failed; continuing startup"
+"$PY" -m backend.scripts.bootstrap_schema || echo "[HC] schema bootstrap failed; continuing startup"
 
 # Optional recovery bootstrap for DB-backed admin auth.
 # Enabled only when seed env vars are explicitly provided.

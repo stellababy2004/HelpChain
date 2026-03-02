@@ -5,7 +5,15 @@ Creates missing tables from SQLAlchemy metadata. Does not alter existing tables.
 
 from __future__ import annotations
 
+import os
+import sys
+
 from sqlalchemy import inspect
+
+# Allow running as "python backend/scripts/bootstrap_schema.py" on Render.
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 from backend.appy import app
 from backend.extensions import db
