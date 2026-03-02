@@ -4464,6 +4464,25 @@ def admin_request_notes_post_alias(req_id: int):
 @login_required
 @admin_required
 def admin_professional_leads():
+    if not _table_exists("professional_leads"):
+        flash(
+            "Professional leads table is not available in this environment yet.",
+            "warning",
+        )
+        return (
+            render_template(
+                "admin/professional_leads.html",
+                leads=[],
+                q="",
+                profession="",
+                city="",
+                status="",
+                status_choices=["new", "contacted", "qualified", "rejected"],
+                professions=[],
+            ),
+            200,
+        )
+
     q = (request.args.get("q") or "").strip()
     profession = (request.args.get("profession") or "").strip()
     city = (request.args.get("city") or "").strip()
@@ -4518,6 +4537,10 @@ def admin_professional_leads():
 @login_required
 @admin_required
 def admin_professional_lead_mark_contacted(lead_id: int):
+    if not _table_exists("professional_leads"):
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_professional_leads"), code=303)
+
     lead = ProfessionalLead.query.get_or_404(lead_id)
     if (lead.status or "").lower() != "contacted":
         lead.status = "contacted"
@@ -4532,6 +4555,10 @@ def admin_professional_lead_mark_contacted(lead_id: int):
 @login_required
 @admin_required
 def admin_professional_lead_detail(lead_id: int):
+    if not _table_exists("professional_leads"):
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_professional_leads"), code=303)
+
     lead = ProfessionalLead.query.get_or_404(lead_id)
     status_choices = ["new", "contacted", "qualified", "rejected"]
 
@@ -4617,6 +4644,33 @@ def admin_pro_access_list():
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_audit():
+    if not _table_exists("admin_audit_events"):
+        return (
+            render_template(
+                "admin/audit.html",
+                events=[],
+                pagination=type(
+                    "_PaginationStub",
+                    (),
+                    {
+                        "page": 1,
+                        "pages": 1,
+                        "total": 0,
+                        "has_prev": False,
+                        "has_next": False,
+                    },
+                )(),
+                filters={
+                    "action": "",
+                    "admin": "",
+                    "target_id": "",
+                    "days": "7",
+                },
+                actions=[],
+            ),
+            200,
+        )
+
     action = (request.args.get("action") or "").strip()
     admin_username = (request.args.get("admin") or "").strip()
     target_id_raw = (request.args.get("target_id") or "").strip()
