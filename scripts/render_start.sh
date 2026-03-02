@@ -10,4 +10,12 @@ fi
 echo "=== RENDER START ==="
 echo "[HC] render_start.sh running"
 "$PY" -m flask --app run:app db upgrade --directory migrations
+
+# Optional recovery bootstrap for DB-backed admin auth.
+# Enabled only when seed env vars are explicitly provided.
+if [ -n "${ADMIN_SEED_USERNAME:-}" ] && [ -n "${ADMIN_SEED_PASSWORD:-}" ]; then
+  echo "[HC] running ensure_admin.py bootstrap"
+  "$PY" backend/scripts/ensure_admin.py || echo "[HC] ensure_admin.py failed; continuing startup"
+fi
+
 exec gunicorn run:app --bind 0.0.0.0:"$PORT" --workers 2
