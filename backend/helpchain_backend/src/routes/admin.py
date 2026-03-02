@@ -2799,6 +2799,16 @@ def update_status(req_id):
                 req.id,
             )
         else:
+            assigned_volunteer = db.session.get(Volunteer, int(assigned_volunteer_id))
+            if assigned_volunteer is None:
+                current_app.logger.warning(
+                    "Interest sync skipped: request_id=%s assigned_volunteer_id=%s not found in volunteers",
+                    req.id,
+                    assigned_volunteer_id,
+                )
+                assigned_volunteer_id = None
+
+        if assigned_volunteer_id:
             q = VolunteerInterest.query.filter_by(request_id=req.id)
 
             # Ensure assigned volunteer's latest interest exists and is approved
