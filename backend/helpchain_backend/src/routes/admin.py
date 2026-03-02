@@ -4,6 +4,7 @@ import csv
 import json
 import math
 import secrets
+import threading
 import time
 from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
@@ -119,6 +120,28 @@ def _table_exists(table_name: str) -> bool:
         exists = False
     _SCHEMA_TABLE_CACHE[table_name] = exists
     return exists
+
+
+def _send_status_email_async(recipient: str, subject: str, context: dict) -> None:
+    """Fire-and-forget status email to keep admin status updates responsive."""
+    if not recipient:
+        return
+    app = current_app._get_current_object()
+
+    def _worker() -> None:
+        try:
+            with app.app_context():
+                from backend.mail_service import send_notification_email
+
+                send_notification_email(
+                    recipient, subject, "email_template.html", context
+                )
+        except Exception as e:
+            app.logger.warning(
+                "[EMAIL] Async status email send failed (request-status): %s", e
+            )
+
+    threading.Thread(target=_worker, daemon=True).start()
 
 
 def _log_status_change_once(
@@ -2917,10 +2940,8 @@ def update_status(req_id):
         payload={"old": {"status": old_status}, "new": {"status": new_status}},
     )
 
-    # Изпращане на email при промяна на статус (graceful fallback)
+    # Изпращане на email при промяна на статус (async, non-blocking for admin UI)
     try:
-        from backend.mail_service import send_notification_email
-
         subject = f"Статусът на вашата заявка #{req.id} е променен на {new_status}"
         recipient = getattr(req, "email", None)
         recipient_name = getattr(req, "name", "Потребител")
@@ -2935,18 +2956,12 @@ def update_status(req_id):
             "updated_at": req.updated_at,
         }
         if recipient:
-            send_notification_email(recipient, subject, "email_template.html", context)
-    except ModuleNotFoundError:
-        import logging
-
-        logging.info(
-            "[EMAIL] mail_service not configured; email sending skipped (dev mode)"
-        )
+            _send_status_email_async(recipient, subject, context)
     except Exception as e:
         import logging
 
         logging.warning(
-            f"[EMAIL] Неуспешно изпращане на email при промяна на статус: {e}"
+            f"[EMAIL] Async status email scheduling failed: {e}"
         )
 
     # Ако е JSON/AJAX – връщаме JSON; иначе redirect за формата
