@@ -2786,51 +2786,52 @@ def update_status(req_id):
             except Exception:
                 pass
 
-    # --- Bulletproof policy sync: VolunteerInterest follows Request.status + owner_id ---
+    # --- Bulletproof policy sync: VolunteerInterest follows Request.status + assigned_volunteer_id ---
     from ..models.volunteer_interest import (
         VolunteerInterest,
     )
 
     if new_status == "in_progress":
-        if not getattr(req, "owner_id", None):
+        assigned_volunteer_id = getattr(req, "assigned_volunteer_id", None)
+        if not assigned_volunteer_id:
             current_app.logger.warning(
-                "Interest sync skipped: request_id=%s set to in_progress without owner_id",
+                "Interest sync skipped: request_id=%s set to in_progress without assigned_volunteer_id",
                 req.id,
             )
         else:
             q = VolunteerInterest.query.filter_by(request_id=req.id)
 
-            # Ensure owner's latest interest exists and is approved
+            # Ensure assigned volunteer's latest interest exists and is approved
             owner_latest = (
-                q.filter_by(volunteer_id=req.owner_id)
+                q.filter_by(volunteer_id=assigned_volunteer_id)
                 .order_by(VolunteerInterest.id.desc())
                 .first()
             )
             if owner_latest is None:
                 owner_latest = VolunteerInterest(
                     request_id=req.id,
-                    volunteer_id=req.owner_id,
+                    volunteer_id=assigned_volunteer_id,
                     status="approved",
                 )
                 db.session.add(owner_latest)
                 current_app.logger.info(
-                    "Interest sync: created approved owner interest (request_id=%s, volunteer_id=%s)",
+                    "Interest sync: created approved assigned-volunteer interest (request_id=%s, volunteer_id=%s)",
                     req.id,
-                    req.owner_id,
+                    assigned_volunteer_id,
                 )
             elif owner_latest.status != "approved":
                 owner_latest.status = "approved"
                 db.session.add(owner_latest)
                 current_app.logger.info(
-                    "Interest sync: set owner interest to approved (request_id=%s, volunteer_id=%s)",
+                    "Interest sync: set assigned-volunteer interest to approved (request_id=%s, volunteer_id=%s)",
                     req.id,
-                    req.owner_id,
+                    assigned_volunteer_id,
                 )
 
             # Reject other pending interests
             pending_others = (
                 q.filter(VolunteerInterest.status == "pending")
-                .filter(VolunteerInterest.volunteer_id != req.owner_id)
+                .filter(VolunteerInterest.volunteer_id != assigned_volunteer_id)
                 .all()
             )
             for vi_row in pending_others:
@@ -2839,10 +2840,10 @@ def update_status(req_id):
 
             if pending_others:
                 current_app.logger.info(
-                    "Interest sync: rejected %s pending interests (request_id=%s, owner_id=%s)",
+                    "Interest sync: rejected %s pending interests (request_id=%s, assigned_volunteer_id=%s)",
                     len(pending_others),
                     req.id,
-                    req.owner_id,
+                    assigned_volunteer_id,
                 )
 
     elif new_status in {"done", "cancelled"}:
