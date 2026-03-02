@@ -1826,6 +1826,44 @@ def _sla_kpis(
     if scope not in {"all_notified", "assigned_only"}:
         raise ValueError("scope must be 'all_notified' or 'assigned_only'")
 
+    # Backward compatibility for production environments with partial schema.
+    # Keep /admin/api/risk-kpis alive instead of failing with 500.
+    if not _table_exists("volunteer_request_states") or not _table_has_column(
+        "volunteer_request_states", "notified_at"
+    ):
+        return {
+            "avg_first_seen_seconds": None,
+            "avg_first_action_seconds": None,
+            "sla_under_12h_percent": 0.0,
+            "sla_hours": int(sla_hours),
+            "sla_samples": 0,
+            "sla_scope": scope,
+            "p90_first_seen_seconds_7d": None,
+            "p90_first_action_seconds_7d": None,
+            "p90_window_days": 7,
+            "sla_outliers_action_7d": [],
+            "sla_outliers_window_days": 7,
+            "sla_outliers_limit": 5,
+            "schema_warning": "volunteer_request_states.notified_at_missing",
+        }
+
+    if not _table_has_column("volunteer_request_states", "seen_at"):
+        return {
+            "avg_first_seen_seconds": None,
+            "avg_first_action_seconds": None,
+            "sla_under_12h_percent": 0.0,
+            "sla_hours": int(sla_hours),
+            "sla_samples": 0,
+            "sla_scope": scope,
+            "p90_first_seen_seconds_7d": None,
+            "p90_first_action_seconds_7d": None,
+            "p90_window_days": 7,
+            "sla_outliers_action_7d": [],
+            "sla_outliers_window_days": 7,
+            "sla_outliers_limit": 5,
+            "schema_warning": "volunteer_request_states.seen_at_missing",
+        }
+
     base_states_q = db.session.query(
         VolunteerRequestState.request_id.label("req_id"),
         VolunteerRequestState.volunteer_id.label("vol_id"),
