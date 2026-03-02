@@ -89,6 +89,7 @@ ADMIN_LOGIN_MAX_FAILS = 5
 ADMIN_LOGIN_LOCKOUT_MIN = 15
 ADMIN_SESSION_IDLE_TIMEOUT_MIN = 20
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
+_SCHEMA_TABLE_CACHE: dict[str, bool] = {}
 
 
 def _table_has_column(table_name: str, column_name: str) -> bool:
@@ -104,6 +105,19 @@ def _table_has_column(table_name: str, column_name: str) -> bool:
     except Exception:
         exists = False
     _SCHEMA_COLUMN_CACHE[key] = exists
+    return exists
+
+
+def _table_exists(table_name: str) -> bool:
+    cached = _SCHEMA_TABLE_CACHE.get(table_name)
+    if cached is not None:
+        return cached
+    try:
+        inspector = sa_inspect(db.session.get_bind())
+        exists = bool(inspector.has_table(table_name))
+    except Exception:
+        exists = False
+    _SCHEMA_TABLE_CACHE[table_name] = exists
     return exists
 
 
@@ -3120,7 +3134,8 @@ def admin_requests():
     last_signal_by_req = {}
     engagement_by_request = {}
     nudge_ui = {}
-    if requests:
+    volunteer_actions_supported = _table_exists("volunteer_actions")
+    if requests and volunteer_actions_supported:
         req_ids = [r.id for r in requests]
         rows = (
             db.session.query(
@@ -3151,6 +3166,7 @@ def admin_requests():
             if a.request_id not in last_signal_by_req:
                 last_signal_by_req[a.request_id] = a
 
+    if requests:
         assigned_volunteer_ids = sorted(
             {
                 int(r.assigned_volunteer_id)
@@ -3690,6 +3706,10 @@ def admin_request_details(req_id: int):
             .filter(Request.id == req_id)
             .first_or_404()
         )
+    volunteer_request_states_supported = _table_exists("volunteer_request_states")
+    volunteer_interests_supported = _table_exists("volunteer_interests")
+    volunteer_actions_supported = _table_exists("volunteer_actions")
+    notifications_supported = _table_exists("notifications")
     admin_id = current_user.id
     now = _now_utc()
     latest_actions = []
@@ -3706,14 +3726,16 @@ def admin_request_details(req_id: int):
             .limit(10)
             .all()
         )
-    linked_volunteer_ids = [
-        int(v_id)
-        for (v_id,) in db.session.query(VolunteerRequestState.volunteer_id)
-        .filter(VolunteerRequestState.request_id == req_id)
-        .distinct()
-        .all()
-        if v_id is not None
-    ]
+    linked_volunteer_ids = []
+    if volunteer_request_states_supported:
+        linked_volunteer_ids = [
+            int(v_id)
+            for (v_id,) in db.session.query(VolunteerRequestState.volunteer_id)
+            .filter(VolunteerRequestState.request_id == req_id)
+            .distinct()
+            .all()
+            if v_id is not None
+        ]
     volunteer_engagement = []
     if linked_volunteer_ids:
         linked_volunteers = {
@@ -3787,11 +3809,13 @@ def admin_request_details(req_id: int):
                     key=lambda a: a.created_at or datetime.min,
                     reverse=True,
                 )[:50]
-            interests = (
-                VolunteerInterest.query.filter_by(request_id=req_id)
-                .order_by(VolunteerInterest.created_at.desc())
-                .all()
-            )
+            interests = []
+            if volunteer_interests_supported:
+                interests = (
+                    VolunteerInterest.query.filter_by(request_id=req_id)
+                    .order_by(VolunteerInterest.created_at.desc())
+                    .all()
+                )
             return (
                 render_template(
                     "admin/request_details.html",
@@ -3818,11 +3842,13 @@ def admin_request_details(req_id: int):
             key=lambda a: a.created_at or datetime.min,
             reverse=True,
         )[:50]
-    interests = (
-        VolunteerInterest.query.filter_by(request_id=req_id)
-        .order_by(VolunteerInterest.created_at.desc())
-        .all()
-    )
+    interests = []
+    if volunteer_interests_supported:
+        interests = (
+            VolunteerInterest.query.filter_by(request_id=req_id)
+            .order_by(VolunteerInterest.created_at.desc())
+            .all()
+        )
 
     # --- V3: Match & engagement (city-based) ---
     req_city = (getattr(req, "city", "") or "").strip().lower()
@@ -3838,7 +3864,7 @@ def admin_request_details(req_id: int):
     matched_volunteer_ids = [v.id for v in matched_volunteers]
 
     notif_rows = []
-    if matched_volunteer_ids:
+    if matched_volunteer_ids and notifications_supported:
         notif_rows = Notification.query.filter(
             Notification.request_id == req.id,
             Notification.type == "new_match",
@@ -3866,11 +3892,13 @@ def admin_request_details(req_id: int):
         assigned_volunteer = db.session.get(Volunteer, req.assigned_volunteer_id)
 
     # Volunteer signals (can/can't help)
-    volunteer_signals = (
-        VolunteerAction.query.filter_by(request_id=req.id)
-        .order_by(VolunteerAction.updated_at.desc())
-        .all()
-    )
+    volunteer_signals = []
+    if volunteer_actions_supported:
+        volunteer_signals = (
+            VolunteerAction.query.filter_by(request_id=req.id)
+            .order_by(VolunteerAction.updated_at.desc())
+            .all()
+        )
     # Most recent signal for quick, high-visibility admin context.
     last_vol_signal = volunteer_signals[0] if volunteer_signals else None
     signal_vol_ids = [va.volunteer_id for va in volunteer_signals]
