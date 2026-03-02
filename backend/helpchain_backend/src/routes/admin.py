@@ -2766,15 +2766,16 @@ def update_status(req_id):
         new=new_status,
     )
     # metrics
-    metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
-    if metric is None:
-        metric = RequestMetric(request_id=req.id)
-        db.session.add(metric)
-    if new_status == "done" and metric.time_to_complete is None and req.created_at:
-        try:
-            metric.time_to_complete = int((utc_now() - req.created_at).total_seconds())
-        except Exception:
-            pass
+    if _table_exists("request_metrics"):
+        metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+        if metric is None:
+            metric = RequestMetric(request_id=req.id)
+            db.session.add(metric)
+        if new_status == "done" and metric.time_to_complete is None and req.created_at:
+            try:
+                metric.time_to_complete = int((utc_now() - req.created_at).total_seconds())
+            except Exception:
+                pass
 
     # --- Bulletproof policy sync: VolunteerInterest follows Request.status + owner_id ---
     from ..models.volunteer_interest import (
@@ -3692,17 +3693,31 @@ def admin_requests_export_xlsx_anonymized():
 def admin_request_details(req_id: int):
     admin_required_404()
     activities_supported = _table_has_column("request_activities", "volunteer_id")
-    if activities_supported:
+    request_logs_supported = _table_exists("request_logs")
+    if activities_supported and request_logs_supported:
         req = (
             _scope_requests(Request.query)
             .options(joinedload(Request.logs), joinedload(Request.activities))
             .filter(Request.id == req_id)
             .first_or_404()
         )
-    else:
+    elif activities_supported and not request_logs_supported:
+        req = (
+            _scope_requests(Request.query)
+            .options(joinedload(Request.activities))
+            .filter(Request.id == req_id)
+            .first_or_404()
+        )
+    elif (not activities_supported) and request_logs_supported:
         req = (
             _scope_requests(Request.query)
             .options(joinedload(Request.logs))
+            .filter(Request.id == req_id)
+            .first_or_404()
+        )
+    else:
+        req = (
+            _scope_requests(Request.query)
             .filter(Request.id == req_id)
             .first_or_404()
         )
@@ -3821,7 +3836,7 @@ def admin_request_details(req_id: int):
                     "admin/request_details.html",
                     req=req,
                     activities=activities,
-                    logs=req.logs,
+                    logs=(req.logs if request_logs_supported else []),
                     STATUS_LABELS_BG=STATUS_LABELS_BG,
                     is_stale=is_stale,
                     interests=interests,
@@ -3834,7 +3849,7 @@ def admin_request_details(req_id: int):
                 200,
             )
     is_locked = False
-    logs = req.logs  # already sorted by relationship order_by
+    logs = req.logs if request_logs_supported else []
     activities = []
     if activities_supported:
         activities = sorted(
@@ -4179,15 +4194,16 @@ def admin_request_assign(req_id: int):
     old_owner = req.owner_id
     req.owner_id = current_user.id
     req.owned_at = utc_now()
-    metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
-    if metric is None:
-        metric = RequestMetric(request_id=req.id)
-        db.session.add(metric)
-    if metric.time_to_assign is None and req.created_at:
-        try:
-            metric.time_to_assign = int((utc_now() - req.created_at).total_seconds())
-        except Exception:
-            pass
+    if _table_exists("request_metrics"):
+        metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
+        if metric is None:
+            metric = RequestMetric(request_id=req.id)
+            db.session.add(metric)
+        if metric.time_to_assign is None and req.created_at:
+            try:
+                metric.time_to_assign = int((utc_now() - req.created_at).total_seconds())
+            except Exception:
+                pass
     action_name = "takeover" if takeover else "assign"
     reason = None
     if takeover and req.owned_at:
