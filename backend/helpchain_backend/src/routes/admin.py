@@ -608,7 +608,7 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import case, func, or_
+from sqlalchemy import case, func, or_, select
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import joinedload
 
@@ -3421,7 +3421,9 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
         base_query = base_query.filter(open_filter)
     elif notseen_hours is not None:
         notseen_subq, _source = _build_notseen_subquery(now, hours=notseen_hours)
-        base_query = base_query.filter(Request.id.in_(notseen_subq))
+        base_query = base_query.filter(
+            Request.id.in_(select(notseen_subq.c.request_id))
+        )
         base_query = base_query.filter(open_filter)
     return base_query
 
