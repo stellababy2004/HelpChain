@@ -15,6 +15,7 @@ from email.utils import formatdate, make_msgid
 from flask import current_app, has_request_context, render_template, request
 from flask_mail import Message
 from sqlalchemy.exc import SQLAlchemyError
+import requests
 
 from backend.core.tenant import current_structure_id
 from backend.helpchain_backend.src.models import EmailSendEvent, db
@@ -84,29 +85,37 @@ def _log_email_event(
 
 def _recent_sent(email_h: str, purpose: str, minutes: int) -> bool:
     since = datetime.now(UTC) - timedelta(minutes=int(minutes))
-    row = (
-        EmailSendEvent.query.filter(
-            EmailSendEvent.email_hash == email_h,
-            EmailSendEvent.purpose == purpose,
-            EmailSendEvent.outcome == "sent",
-            EmailSendEvent.created_at >= since,
+    try:
+        row = (
+            EmailSendEvent.query.filter(
+                EmailSendEvent.email_hash == email_h,
+                EmailSendEvent.purpose == purpose,
+                EmailSendEvent.outcome == "sent",
+                EmailSendEvent.created_at >= since,
+            )
+            .order_by(EmailSendEvent.created_at.desc())
+            .first()
         )
-        .order_by(EmailSendEvent.created_at.desc())
-        .first()
-    )
-    return row is not None
+        return row is not None
+    except Exception as e:
+        logger.warning("Email dedupe check failed; continuing send path: %s", e)
+        return False
 
 
 def _count_sent(email_h: str, purpose: str, window_minutes: int) -> int:
     since = datetime.now(UTC) - timedelta(minutes=int(window_minutes))
-    return int(
-        EmailSendEvent.query.filter(
-            EmailSendEvent.email_hash == email_h,
-            EmailSendEvent.purpose == purpose,
-            EmailSendEvent.outcome == "sent",
-            EmailSendEvent.created_at >= since,
-        ).count()
-    )
+    try:
+        return int(
+            EmailSendEvent.query.filter(
+                EmailSendEvent.email_hash == email_h,
+                EmailSendEvent.purpose == purpose,
+                EmailSendEvent.outcome == "sent",
+                EmailSendEvent.created_at >= since,
+            ).count()
+        )
+    except Exception as e:
+        logger.warning("Email rate-limit check failed; continuing send path: %s", e)
+        return 0
 
 
 def _fallback_email_html(subject: str, context: dict) -> str:
@@ -135,6 +144,60 @@ def _fallback_email_html(subject: str, context: dict) -> str:
 def utc_now() -> datetime:
     """Return naive UTC timestamp without relying on datetime.utcnow."""
     return datetime.now(UTC).replace(tzinfo=None)
+
+
+def _send_via_resend(
+    *,
+    recipient: str,
+    subject: str,
+    html_content: str,
+    text_content: str | None,
+    from_name: str,
+    mail_sender: str,
+    reply_to: str | None,
+) -> bool:
+    api_key = os.getenv("RESEND_API_KEY", "").strip()
+    if not api_key:
+        return False
+    if not mail_sender:
+        logger.error("Resend send failed: MAIL_DEFAULT_SENDER is missing")
+        return False
+
+    api_base = (
+        os.getenv("RESEND_API_BASE_URL", "https://api.resend.com").rstrip("/")
+    )
+    endpoint = f"{api_base}/emails"
+    payload = {
+        "from": f"{from_name} <{mail_sender}>",
+        "to": [recipient],
+        "subject": subject,
+        "html": html_content,
+    }
+    if text_content:
+        payload["text"] = text_content
+    if reply_to:
+        payload["reply_to"] = reply_to
+
+    try:
+        resp = requests.post(
+            endpoint,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=15,
+        )
+        if resp.status_code in (200, 201, 202):
+            return True
+        logger.error(
+            "Resend send failed: status=%s body=%s",
+            resp.status_code,
+            (resp.text or "")[:300],
+        )
+    except Exception as e:
+        logger.error("Resend request failed: %s", e)
+    return False
 
 
 def send_notification_email(
@@ -329,8 +392,11 @@ def send_notification_email(
         reply_to = cfg.get("MAIL_REPLY_TO") or mail_sender
         use_tls = bool(cfg.get("MAIL_USE_TLS"))
         use_ssl = bool(cfg.get("MAIL_USE_SSL"))
+        resend_enabled = bool(os.getenv("RESEND_API_KEY", "").strip())
 
-        if not (mail_server and mail_port and mail_user and mail_pass and mail_sender):
+        if not (
+            mail_server and mail_port and mail_user and mail_pass and mail_sender
+        ) and not resend_enabled:
             logger.error("SMTP not configured (missing MAIL_* settings).")
             _log_email_event(
                 email_h=email_h,
@@ -359,6 +425,26 @@ def send_notification_email(
         )
         msg.set_content(text_content or text_fallback)
         msg.add_alternative(html_content, subtype="html")
+
+        # HTTP transport for providers like Resend (works on Render free egress rules).
+        if _send_via_resend(
+            recipient=recipient,
+            subject=subject,
+            html_content=html_content,
+            text_content=(text_content or text_fallback),
+            from_name=from_name,
+            mail_sender=mail_sender,
+            reply_to=(reply_to or mail_user),
+        ):
+            logger.info("Email sent via Resend | to=%s | subject=%s", recipient, subject)
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="sent",
+                reason="resend_http",
+                structure_id=sid,
+            )
+            return True
 
         try:
             if use_ssl:

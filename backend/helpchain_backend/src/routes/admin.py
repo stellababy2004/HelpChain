@@ -133,9 +133,19 @@ def _send_status_email_async(recipient: str, subject: str, context: dict) -> Non
             with app.app_context():
                 from backend.mail_service import send_notification_email
 
-                send_notification_email(
-                    recipient, subject, "email_template.html", context
+                ok = send_notification_email(
+                    recipient,
+                    subject,
+                    "email_template.html",
+                    context,
+                    purpose="admin_status_update",
                 )
+                if not ok:
+                    app.logger.warning(
+                        "[EMAIL] Async status email not sent (recipient=%s, subject=%s)",
+                        recipient,
+                        subject,
+                    )
         except Exception as e:
             app.logger.warning(
                 "[EMAIL] Async status email send failed (request-status): %s", e
