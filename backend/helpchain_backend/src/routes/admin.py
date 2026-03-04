@@ -230,6 +230,12 @@ def _norm_username(username: str | None) -> str | None:
 def _admin_login_is_locked(
     ip: str, username: str | None, now: datetime
 ) -> tuple[bool, int]:
+    # Fresh/dev databases may miss this table before migrations/bootstrap.
+    # Failing open here avoids a hard 500 on login; audit lockout telemetry
+    # resumes automatically once schema is present.
+    if not _table_exists("admin_login_attempts"):
+        return False, 0
+
     window_start = now - timedelta(minutes=ADMIN_LOGIN_RATE_WINDOW_MIN)
     query = AdminLoginAttempt.query.filter(
         AdminLoginAttempt.created_at >= window_start,
@@ -260,6 +266,9 @@ def _admin_login_is_locked(
 
 
 def _log_admin_attempt(username: str | None, ip: str, success: bool) -> None:
+    if not _table_exists("admin_login_attempts"):
+        return
+
     ua = request.headers.get("User-Agent")
     db.session.add(
         AdminLoginAttempt(
@@ -2989,6 +2998,106 @@ def update_status(req_id):
 def admin_request_set_status(req_id: int):
     # Alias: keep old canonical handler, just expose the “resource” URL too.
     return update_status(req_id)
+
+
+@admin_bp.post("/requests/bulk")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_requests_bulk():
+    admin_required_404()
+
+    action = (request.form.get("bulk_action") or "").strip()
+    selected_ids_raw = request.form.getlist("selected_ids")
+    selected_ids: list[int] = []
+    for raw in selected_ids_raw:
+        try:
+            rid = int(raw)
+        except Exception:
+            continue
+        if rid > 0:
+            selected_ids.append(rid)
+    selected_ids = sorted(set(selected_ids))
+
+    if not action or not selected_ids:
+        flash("No bulk action applied (missing action or selection).", "warning")
+        return redirect(url_for("admin.admin_requests"))
+
+    requests = _scope_requests(Request.query).filter(Request.id.in_(selected_ids)).all()
+    requests_by_id = {r.id: r for r in requests}
+    ordered_reqs = [requests_by_id[rid] for rid in selected_ids if rid in requests_by_id]
+
+    status_map = {
+        "set_status_pending": "pending",
+        "set_status_in_progress": "in_progress",
+        "set_status_done": "done",
+        "set_status_rejected": "rejected",
+        # Current UI values in template/admin-requests.js
+        "status:pending": "pending",
+        "status:in_progress": "in_progress",
+        "status:done": "done",
+        "status:rejected": "rejected",
+    }
+
+    changed = 0
+    nudged = 0
+    skipped = 0
+    actor_admin_id = getattr(current_user, "id", None)
+
+    if action in status_map:
+        target_status = normalize_request_status(status_map[action])
+        for req in ordered_reqs:
+            if not can_edit_request(req, current_user):
+                skipped += 1
+                continue
+            old_status = normalize_request_status(getattr(req, "status", None))
+            if old_status == target_status:
+                continue
+            req.status = target_status
+            if target_status in {"done", "cancelled"}:
+                req.completed_at = utc_now()
+            else:
+                req.completed_at = None
+            try:
+                log_request_activity(
+                    req,
+                    "status_change",
+                    old=old_status,
+                    new=target_status,
+                    actor_admin_id=actor_admin_id,
+                )
+            except Exception:
+                pass
+            changed += 1
+        db.session.commit()
+        flash(f"Bulk status updated: {changed} changed, {skipped} skipped.", "success")
+        return redirect(url_for("admin.admin_requests"))
+
+    if action in {"nudge_selected_volunteers", "nudge"}:
+        for req in ordered_reqs:
+            if not can_edit_request(req, current_user):
+                skipped += 1
+                continue
+            volunteer_id = getattr(req, "assigned_volunteer_id", None)
+            if not volunteer_id:
+                skipped += 1
+                continue
+            created = send_nudge_notification(
+                request_id=req.id,
+                volunteer_id=int(volunteer_id),
+                actor_admin_id=actor_admin_id,
+            )
+            if created:
+                nudged += 1
+        flash(f"Bulk nudge sent: {nudged} sent, {skipped} skipped.", "success")
+        return redirect(url_for("admin.admin_requests"))
+
+    # Front-end-only actions are valid but have no server-side effect.
+    if action in {"open_selected", "open", "copy_ids", "copy_links"}:
+        flash("Bulk action is UI-only and has no server-side effect.", "info")
+        return redirect(url_for("admin.admin_requests"))
+
+    flash("Unknown bulk action.", "warning")
+    return redirect(url_for("admin.admin_requests"))
 
 
 @admin_bp.post("/requests/<int:req_id>/archive", endpoint="admin_request_archive")
