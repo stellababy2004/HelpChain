@@ -6,6 +6,7 @@
 {% block body_class %}hc-page-structures{% endblock %}
 
 {% block content %}
+<!-- HC_STRUCTURES_TEMPLATE_MARKER_V2 -->
 <main class="hc-institutional">
   <section class="hc-hero">
     <div class="hc-container">
@@ -15,9 +16,15 @@
         {{ _('Déploiement progressif en phase pilote, avec indicateurs de suivi et cadre de responsabilité.') }}
       </p>
 
+      <div class="hc-dossier-note">
+        <div class="hc-dossier-note__title">{{ _('Dossier institutionnel') }}</div>
+        <p class="hc-dossier-note__text">
+          {{ _('Ce document présente l’infrastructure HelpChain, son cadre de gouvernance et les conditions d’un pilote territorial.') }}
+        </p>
+      </div>
       <div class="hc-cta-row">
         <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--primary">{{ _('Demander un échange') }}</a>
-        <a href="{{ url_for('static', filename='docs/HelpChain_Dossier_Institutionnel.pdf') }}" class="hc-btn hc-btn--ghost" target="_blank" rel="noopener">{{ _('Télécharger le dossier (PDF)') }}</a>
+        <a href="{{ url_for('static', filename='docs/HelpChain_Dossier_Institutionnel.pdf') }}" class="hc-btn hc-btn--ghost" target="_blank" rel="noopener">{{ _('Télécharger le dossier institutionnel') }}</a>
       </div>
     </div>
   </section>
@@ -57,16 +64,50 @@
     </div>
   </section>
 
-  <section class="hc-section">
+  <section class="hc-trust">
     <div class="hc-container">
-      <h2>{{ _('Cadre de confiance') }}</h2>
-      <div class="hc-trust-wrap">
-        <div class="hc-trust">
-          <div class="hc-pill">{{ _('Hébergement UE') }}</div>
-          <div class="hc-pill">{{ _('Conforme RGPD') }}</div>
-          <div class="hc-pill">{{ _('Sauvegardes chiffrées') }}</div>
-          <div class="hc-pill">{{ _('Isolation multi-structure') }}</div>
-          <div class="hc-pill">{{ _('Journal d’audit') }}</div>
+      <div class="hc-trust-header">
+        <h2>Cadre de confiance</h2>
+        <p class="hc-trust-sub">
+          Sécurité, conformité et traçabilité pour des situations sensibles.
+        </p>
+      </div>
+
+      <div class="hc-trust-grid">
+        <div class="hc-trust-card">
+          <h3>Hébergement UE</h3>
+          <ul>
+            <li>Données hébergées en Union Européenne</li>
+            <li>Exploitation France (CET)</li>
+            <li>Accès restreint par structure</li>
+          </ul>
+        </div>
+
+        <div class="hc-trust-card">
+          <h3>RGPD &amp; Confidentialité</h3>
+          <ul>
+            <li>Minimisation des données</li>
+            <li>Finalité : coordination uniquement</li>
+            <li>Traçabilité des accès</li>
+          </ul>
+        </div>
+
+        <div class="hc-trust-card">
+          <h3>Sécurité</h3>
+          <ul>
+            <li>Chiffrement en transit (TLS)</li>
+            <li>Sauvegardes chiffrées (UE)</li>
+            <li>Isolation multi-structure</li>
+          </ul>
+        </div>
+
+        <div class="hc-trust-card">
+          <h3>Audit &amp; Pilotage</h3>
+          <ul>
+            <li>Journal d’audit horodaté</li>
+            <li>Historique des actions</li>
+            <li>Indicateurs SLA &amp; délais</li>
+          </ul>
         </div>
       </div>
     </div>

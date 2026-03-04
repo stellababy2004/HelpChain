@@ -37,7 +37,7 @@
           </div>
 
           <p class="hc-about__trustline">
-            {{ _('Conformité RGPD') }} • {{ _('Hébergement européen') }} • {{ _('Traçabilité opérationnelle') }}
+            {{ _('Cadre RGPD') }} • {{ _('Sécurité opérationnelle') }} • {{ _('Hébergement & souveraineté') }}
           </p>
 
           <div class="hc-about__institutional">
@@ -105,18 +105,18 @@
 
       <section class="hc-about__section" aria-labelledby="about-positionnement">
         <header class="hc-about__section-head">
-          <h2 id="about-positionnement" class="hc-about__h2">{{ _('Pour qui') }}</h2>
+          <h2 id="about-positionnement" class="hc-about__h2">{{ _('Cas d’usage — pour qui ?') }}</h2>
           <p class="hc-about__lead">
-            {{ _('HelpChain est pensé pour les organisations et acteurs territoriaux qui ont besoin d’un dispositif fiable de coordination.') }}
+            {{ _('Un cadre commun pour traiter, attribuer et suivre les demandes sociales, avec traçabilité et pilotage.') }}
           </p>
         </header>
 
         <div class="hc-about__split">
           <div class="hc-about__split-col">
             <ul class="hc-about__list">
-              <li><strong>{{ _('Associations') }}</strong> : {{ _('structuration des parcours, suivi et coordination multi-intervenants.') }}</li>
-              <li><strong>{{ _('Services publics') }}</strong> : {{ _('orientation, traçabilité et pilotage des prises en charge.') }}</li>
-              <li><strong>{{ _('Réseaux professionnels') }}</strong> : {{ _('coordination de l’intervention et continuité opérationnelle.') }}</li>
+              <li><strong>{{ _('Associations et structures sociales') }}</strong> : {{ _('structuration des parcours, suivi et coordination multi-intervenants.') }}</li>
+              <li><strong>{{ _('Services publics locaux (CCAS, collectivités)') }}</strong> : {{ _('orientation, traçabilité et pilotage des prises en charge.') }}</li>
+              <li><strong>{{ _('Réseaux professionnels d’accompagnement') }}</strong> : {{ _('coordination de l’intervention et continuité opérationnelle.') }}</li>
             </ul>
           </div>
 
@@ -129,37 +129,98 @@
             </div>
           </div>
         </div>
+
+        <div class="hc-about__approche">
+          <h3 class="hc-about__h3">{{ _('Approche territoriale') }}</h3>
+          <p class="hc-about__text">
+            {{ _('HelpChain peut être déployé à l’échelle d’une structure, d’un réseau associatif ou d’un territoire local (ville ou intercommunalité).') }}
+          </p>
+        </div>
       </section>
 
       <section class="hc-about__section" aria-labelledby="about-securite">
         <header class="hc-about__section-head">
-          <h2 id="about-securite" class="hc-about__h2">{{ _('Sécurité & conformité') }}</h2>
+          <h2 id="about-securite" class="hc-about__h2">{{ _('Gouvernance & conformité (RGPD)') }}</h2>
           <p class="hc-about__lead">
-            {{ _('Une base institutionnelle : conformité, contrôle et responsabilité.') }}
+            {{ _('Une infrastructure conçue pour la traçabilité, la sécurité et le pilotage institutionnel.') }}
           </p>
         </header>
 
         <div class="hc-about__grid">
           <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Conformité RGPD') }}</h3>
+            <h3 class="hc-about__h3">{{ _('Cadre RGPD') }}</h3>
             <p class="hc-about__text">
-              {{ _('Minimisation des données, finalités explicites et gestion des accès.') }}
+              {{ _('Finalités explicites, minimisation des données et droits des personnes encadrés.') }}
             </p>
           </div>
 
           <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Hébergement européen') }}</h3>
+            <h3 class="hc-about__h3">{{ _('Sécurité opérationnelle') }}</h3>
             <p class="hc-about__text">
-              {{ _('Données hébergées en Europe, avec une approche orientée sécurité.') }}
+              {{ _('Contrôles d’accès par rôles, journalisation des actions et protection anti-abus.') }}
             </p>
           </div>
 
           <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Traçabilité') }}</h3>
+            <h3 class="hc-about__h3">{{ _('Hébergement & souveraineté') }}</h3>
             <p class="hc-about__text">
-              {{ _('Journalisation des actions clés, visibilité sur les délais et la prise en charge.') }}
+              {{ _('Données hébergées en Europe, pilotage par structure, conçu et opéré depuis la France.') }}
             </p>
           </div>
+        </div>
+      </section>
+
+      <section class="hc-about__section hc-about__section--pilot" aria-labelledby="about-pilot">
+        <div class="hc-about__pilot">
+          <h2 id="about-pilot" class="hc-about__h2">{{ _('Phase pilote — cadre simple') }}</h2>
+          <p class="hc-about__text">
+            {{ _('HelpChain est actuellement déployé en phase pilote avec un nombre limité de structures.') }}
+          </p>
+          <p class="hc-about__text"><strong>{{ _('Objectif du pilote :') }}</strong></p>
+          <ul class="hc-about__list">
+            <li>{{ _('tester la coordination sur des cas réels') }}</li>
+            <li>{{ _('observer les gains de visibilité et de suivi') }}</li>
+            <li>{{ _('adapter l’outil aux réalités du terrain') }}</li>
+          </ul>
+          <p class="hc-about__text">
+            <strong>{{ _('Durée du pilote : 30 à 60 jours') }}</strong><br>
+            {{ _('Accès validé manuellement pour garantir un réseau structuré.') }}
+          </p>
+        </div>
+      </section>
+
+      <section class="hc-about__section hc-about__section--pilot" aria-labelledby="about-perimetre">
+        <div class="hc-about__pilot">
+          <h2 id="about-perimetre" class="hc-about__h2">{{ _('Périmètre possible d’un pilote') }}</h2>
+          <p class="hc-about__text">
+            {{ _('Un pilote HelpChain peut être déployé avec une structure locale (CCAS, association ou réseau professionnel) afin de tester la coordination sur un nombre limité de situations.') }}
+          </p>
+          <p class="hc-about__text"><strong>{{ _('Exemple de cadre pilote :') }}</strong></p>
+          <ul class="hc-about__list">
+            <li>{{ _('1 structure référente') }}</li>
+            <li>{{ _('3 à 10 intervenants impliqués') }}</li>
+            <li>{{ _('10 à 30 demandes suivies dans l’outil') }}</li>
+            <li>{{ _('durée : 30 à 60 jours') }}</li>
+          </ul>
+          <p class="hc-about__text">
+            {{ _('L’objectif est d’observer les gains de visibilité, de coordination et de traçabilité des actions.') }}
+          </p>
+        </div>
+      </section>
+
+      <section class="hc-about__section hc-about__section--pilot" aria-labelledby="about-experimentation">
+        <div class="hc-about__pilot">
+          <p class="hc-pilot-note">{{ _('Expérimentation territoriale') }}</p>
+          <h2 id="about-experimentation" class="hc-about__h2">{{ _('Expérimentation territoriale') }}</h2>
+          <p class="hc-about__text">
+            {{ _('HelpChain est actuellement en phase de mise en place de premiers pilotes locaux avec des structures associatives et des acteurs de l’accompagnement social.') }}
+          </p>
+          <p class="hc-about__text">
+            {{ _('L’objectif est d’expérimenter un cadre simple de coordination et d’observer les gains de visibilité et de suivi des situations.') }}
+          </p>
+          <p class="hc-about__text">
+            {{ _('Les structures intéressées peuvent rejoindre cette phase pilote.') }}
+          </p>
         </div>
       </section>
 
@@ -176,7 +237,7 @@
               href="{{ url_for('main.orienter') }}"
               data-hc-event="about_closing_cta"
             >
-              {{ _('Commencer') }}
+              {{ _('Demander un échange') }}
             </a>
             <a
               class="hc-btn hc-btn--ghost"
@@ -185,6 +246,21 @@
             >
               {{ _('Espace professionnel') }}
             </a>
+          </div>
+
+          <p class="hc-about__contact-note">
+            {{ _('Pour les structures intéressées par un pilote local, un échange direct peut être organisé.') }}<br>
+            {{ _('Contact :') }} <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+          </p>
+
+          <div class="hc-institutional-note">
+            <p><strong>{{ _('Cadre institutionnel') }}</strong></p>
+            <p>
+              {{ _('HelpChain est une infrastructure numérique conçue et opérée depuis la France, destinée à soutenir la coordination des demandes sociales entre structures locales, associations et professionnels.') }}
+            </p>
+            <p>
+              {{ _('Le projet est développé avec une approche centrée sur la traçabilité des actions, la responsabilité des acteurs et le respect du cadre RGPD.') }}
+            </p>
           </div>
         </div>
       </section>

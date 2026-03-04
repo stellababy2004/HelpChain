@@ -24,7 +24,7 @@
         </a>
       </div>
 
-      {# Flash messages (в твоя код: flash + redirect) #}
+      {# Flash messages #}
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, msg in messages %}
@@ -39,11 +39,11 @@
         <div class="card-body p-3 p-md-4">
 
       <div class="mb-3">
-        <div class="small text-muted">{{ _("Примери:") }}</div>
+        <div class="small text-muted">{{ _("Exemples :") }}</div>
         <div class="d-flex flex-wrap gap-2 mt-2">
-          <span class="badge text-bg-light border">{{ _("Медицинска помощ") }}</span>
-          <span class="badge text-bg-light border">{{ _("Социална подкрепа") }}</span>
-          <span class="badge text-bg-light border">{{ _("Технически проблем") }}</span>
+          <span class="badge text-bg-light border">{{ _("Aide médicale") }}</span>
+          <span class="badge text-bg-light border">{{ _("Soutien social") }}</span>
+          <span class="badge text-bg-light border">{{ _("Problème technique") }}</span>
         </div>
       </div>
 
@@ -70,13 +70,13 @@
             <li>{{ _("En cas d’urgence, votre demande est priorisée") }}</li>
           </ul>
         </div>
-        {# Honeypot (backend очаква "website") #}
+        {# Honeypot #}
         <div class="hc-sr__honeypot">
           <label>Website</label>
           <input type="text" name="website" tabindex="-1" autocomplete="off">
         </div>
 
-        {# Ако имаш CSRF (Flask-WTF), остави това. Ако не — махни го спокойно. #}
+        {# CSRF token when available #}
         {% if csrf_token is defined %}
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% endif %}
@@ -85,7 +85,7 @@
         <div class="row g-3">
 
           <div class="col-12">
-            <label class="form-label">{{ _("Вашето име") }} <span class="text-danger">*</span></label>
+            <label class="form-label">{{ _("Votre nom") }} <span class="text-danger">*</span></label>
             <input
               type="text"
               name="name"
@@ -93,14 +93,14 @@
               data-hc-event="sr_field_click"
               data-hc-field="name"
               value="{{ request.form.get('name','') }}"
-              placeholder="{{ _('Напр. Мария Иванова') }}"
+              placeholder="{{ _('Ex. Maria Ivanova') }}"
               required minlength="2"
             >
-            <div class="form-text">{{ _("Поне 2 символа.") }}</div>
+            <div class="form-text">{{ _("Au moins 2 caractères.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Телефон") }}</label>
+            <label class="form-label">{{ _("Téléphone") }}</label>
             <input
               id="srPhone"
               type="tel"
@@ -114,7 +114,7 @@
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Имейл") }}</label>
+            <label class="form-label">{{ _("Email") }}</label>
             <input
               id="srEmail"
               type="email"
@@ -134,31 +134,31 @@
           </div>
 
           <div class="col-12">
-            <label class="form-label">{{ _("Категория") }}</label>
+            <label class="form-label">{{ _("Catégorie") }}</label>
             <select id="srCategory" name="category" class="form-select" data-hc-event="sr_field_click" data-hc-field="category">
-              <option value="">{{ _("Избери…") }}</option>
-              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>{{ _("Медицинска помощ") }}</option>
-              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>{{ _("Социална подкрепа") }}</option>
-              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>{{ _("Технически проблем") }}</option>
-              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Административна помощ") }}</option>
-              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Друго") }}</option>
+              <option value="">{{ _("Choisir…") }}</option>
+              <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>{{ _("Aide médicale") }}</option>
+              <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>{{ _("Soutien social") }}</option>
+              <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>{{ _("Problème technique") }}</option>
+              <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Aide administrative") }}</option>
+              <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Autre") }}</option>
             </select>
-            <div class="form-text">{{ _('Ако не избереш, системата ще запише “general”.') }}</div>
+            <div class="form-text">{{ _('Si vous ne choisissez pas, la catégorie “general” sera utilisée.') }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Спешност") }}</label>
+            <label class="form-label">{{ _("Urgence") }}</label>
             <select name="urgency" class="form-select" data-hc-event="sr_field_click" data-hc-field="urgency">
-              <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>{{ _("Ниска") }}</option>
-              <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>{{ _("Нормална") }}</option>
-              <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>{{ _("Спешна") }}</option>
-              <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>{{ _("Критична") }}</option>
+              <option value="low" {% if request.form.get('urgency')=='low' %}selected{% endif %}>{{ _("Faible") }}</option>
+              <option value="normal" {% if request.form.get('urgency','normal') in ['normal','medium'] %}selected{% endif %}>{{ _("Normale") }}</option>
+              <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>{{ _("Urgente") }}</option>
+              <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>{{ _("Critique") }}</option>
             </select>
-            <div class="form-text">{{ _("Това влияе на приоритета (low/medium/high).") }}</div>
+            <div class="form-text">{{ _("Ce choix influence la priorité (low/medium/high).") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
-            <label class="form-label">{{ _("Кратко заглавие (по избор)") }}</label>
+            <label class="form-label">{{ _("Titre court (optionnel)") }}</label>
             <input
               id="srTitle"
               type="text"
@@ -167,14 +167,14 @@
               data-hc-event="sr_field_click"
               data-hc-field="title"
               value="{{ request.form.get('title','') }}"
-              placeholder="{{ _('Напр. Нужен придружител до лекар') }}"
+              placeholder="{{ _('Ex. Accompagnement chez le médecin') }}"
             >
-            <div class="form-text">{{ _("Ако оставиш празно, системата ще го попълни автоматично.") }}</div>
+            <div class="form-text">{{ _("Si vide, le système le complétera automatiquement.") }}</div>
             <div id="srTitleHint" class="hc-sr-hint" aria-live="polite"></div>
           </div>
 
           <div class="col-12">
-            <label class="form-label">{{ _("Локация / адрес") }}</label>
+            <label class="form-label">{{ _("Localisation / adresse") }}</label>
             <input
               type="text"
               name="location_text"
@@ -182,12 +182,12 @@
               data-hc-event="sr_field_click"
               data-hc-field="location_text"
               value="{{ request.form.get('location_text','') }}"
-              placeholder="{{ _('Град, квартал (без точен адрес, ако не е нужно)') }}"
+              placeholder="{{ _('Ville, quartier (sans adresse exacte si inutile)') }}"
             >
           </div>
 
           <div class="col-12">
-            <label class="form-label">{{ _("Описание") }} <span class="text-danger">*</span></label>
+            <label class="form-label">{{ _("Description") }} <span class="text-danger">*</span></label>
             <textarea
               id="srDesc"
               name="description"
@@ -196,9 +196,9 @@
               data-hc-field="description"
               rows="5"
               required minlength="10"
-              placeholder="{{ _('Напиши с 2–3 изречения какво се случва и каква помощ търсиш.') }}"
+              placeholder="{{ _('Décrivez en 2–3 phrases la situation et l’aide recherchée.') }}"
             >{{ request.form.get('description','') }}</textarea>
-            <div class="form-text">{{ _("Минимум 10 символа.") }}</div>
+            <div class="form-text">{{ _("Minimum 10 caractères.") }}</div>
             <div id="sr-desc-status" class="hc-sr__status hc-sr__status--hidden" aria-live="polite"></div>
           </div>
 
@@ -214,14 +214,14 @@
                 required
               >
               <label class="form-check-label" for="privacyConsent">
-                {{ _("I agree to the Privacy Policy (GDPR).") }}
+                {{ _("J’accepte la Politique de confidentialité (RGPD).") }}
               </label>
             </div>
           </div>
 
           <div class="col-12 hc-sr__actions d-flex gap-2 justify-content-end pt-2">
-            <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">{{ _("Отказ") }}</a>
-            <button type="submit" class="btn btn-primary" data-hc-event="sr_submit_click" data-hc-cta="submit_request">{{ _("Изпрати заявка") }}</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">{{ _("Annuler") }}</a>
+            <button type="submit" class="btn btn-primary" data-hc-event="sr_submit_click" data-hc-cta="submit_request">{{ _("Envoyer la demande") }}</button>
           </div>
 
         </div>

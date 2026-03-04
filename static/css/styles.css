@@ -5177,3 +5177,181 @@ body.hc-page-home .hc-home__positioning-inner {
   background: #fff !important;
 }
 
+.hc-page{padding:26px 16px}
+.hc-section{padding:18px 0}
+.hc-container{max-width:1120px;margin:0 auto}
+
+/* =========================
+   HC THEME (Public) — MOYEN
+   Control + Calm
+   ========================= */
+:root{
+  --hc-bg-top:#eaf0f6;
+  --hc-bg-mid:#dbe5f1;
+  --hc-bg-bot:#cfdbea;
+
+  --hc-text:#0f172a;
+  --hc-muted:#475569;
+
+  --hc-card:rgba(255,255,255,.92);
+  --hc-card-2:rgba(255,255,255,.78);
+
+  --hc-border:rgba(15,23,42,.08);
+  --hc-border-strong:rgba(15,23,42,.12);
+
+  --hc-shadow:0 15px 40px rgba(15,23,42,.07);
+  --hc-shadow-soft:0 10px 30px rgba(15,23,42,.06);
+
+  --hc-accent:#2563eb;
+  --hc-accent-2:#3b82f6;
+  --hc-accent-ring:rgba(37,99,235,.18);
+
+  --hc-radius:18px;
+
+  /* Keep legacy aliases in sync */
+  --hc-text-main:var(--hc-text);
+  --hc-text-muted:var(--hc-muted);
+  --hc-surface:var(--hc-card);
+}
+
+html, body { height: 100%; }
+
+body{
+  color: var(--hc-text);
+  background:
+    radial-gradient(900px 520px at 15% 0%, rgba(59,130,246,.14), transparent 60%),
+    radial-gradient(800px 480px at 90% 10%, rgba(96,165,250,.10), transparent 55%),
+    linear-gradient(180deg, var(--hc-bg-top) 0%, var(--hc-bg-mid) 60%, var(--hc-bg-bot) 100%);
+}
+
+p, .text-muted, .form-text{
+  color: var(--hc-muted) !important;
+}
+
+.navbar, .hc-navbar{
+  background: rgba(255,255,255,.78) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(15,23,42,.06);
+}
+
+.navbar a, .hc-navbar a{
+  color: rgba(15,23,42,.82) !important;
+}
+
+.navbar a.active, .hc-navbar a.active{
+  color: rgba(15,23,42,.95) !important;
+  font-weight: 600;
+}
+
+.card, .hc-card, .hc-panel, .hc-surface{
+  background: var(--hc-card);
+  border: 1px solid var(--hc-border);
+  border-radius: var(--hc-radius);
+  box-shadow: var(--hc-shadow);
+}
+
+.form-control, textarea, select{
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: 14px;
+}
+
+.form-control:focus, textarea:focus, select:focus{
+  border-color: rgba(37,99,235,.35);
+  box-shadow: 0 0 0 4px var(--hc-accent-ring);
+}
+
+.btn-primary{
+  background: linear-gradient(180deg, var(--hc-accent-2), var(--hc-accent)) !important;
+  border: 1px solid rgba(37,99,235,.28) !important;
+  box-shadow: 0 10px 25px rgba(37,99,235,.18);
+}
+
+.btn-outline-secondary, .btn-secondary{
+  background: rgba(255,255,255,.65) !important;
+  border: 1px solid var(--hc-border) !important;
+  color: var(--hc-text) !important;
+}
+
+/* Public hero sections must stay light */
+.hc-hero, .hero, .page-hero, .hc-hero-wrap{
+  background: transparent !important;
+}
+
+.hc-hero::before, .hero::before, .page-hero::before, .hc-hero-wrap::before{
+  content: none !important;
+}
+
+.hc-hero-overlay{
+  display: none !important;
+}
+
+/* Hard override for /pour-les-structures light institutional theme */
+body.hc-page-structures .hc-institutional{
+  background:
+    radial-gradient(900px 520px at 15% 0%, rgba(59,130,246,.14), transparent 60%),
+    radial-gradient(800px 480px at 90% 10%, rgba(96,165,250,.10), transparent 55%),
+    linear-gradient(180deg, #eaf0f6 0%, #dbe5f1 60%, #cfdbea 100%) !important;
+  color:#0f172a !important;
+}
+
+body.hc-page-structures .hc-institutional .hc-card{
+  background: rgba(255,255,255,.92) !important;
+  border:1px solid rgba(15,23,42,.08) !important;
+  box-shadow:0 15px 40px rgba(15,23,42,.07) !important;
+}
+
+body.hc-page-structures .hc-institutional .hc-lead,
+body.hc-page-structures .hc-institutional .hc-list,
+body.hc-page-structures .hc-institutional p{
+  color:#475569 !important;
+}
+
+body.hc-page-structures .hc-institutional .hc-btn--ghost{
+  background: rgba(255,255,255,.65) !important;
+  border-color: rgba(15,23,42,.08) !important;
+  color:#0f172a !important;
+}
+
+/* Admin/Public topbar overflow guard */
+.hc-navbar .navbar-collapse{
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.hc-navbar .navbar-nav{
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.hc-navbar .nav-link{
+  padding: 8px 10px;
+  white-space: nowrap;
+  line-height: 1.15;
+}
+
+.hc-navbar .hc-topbar-search{
+  flex: 1 1 320px;
+  min-width: 260px;
+  max-width: 520px;
+}
+
+.hc-navbar .hc-topbar-actions{
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1100px){
+  .hc-navbar .nav-link{
+    padding: 7px 8px;
+    font-size: .95rem;
+  }
+}
+
+@media (max-width: 900px){
+  .hc-navbar .nav-link--secondary{
+    display: none;
+  }
+}

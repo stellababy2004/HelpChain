@@ -19,12 +19,11 @@
       </p>
 
       <h1 class="hc-hero__title hc-h1-institutional">
-        {{ _('Infrastructure numerique de coordination - pour associations et professionnels') }}
+        {{ _('Infrastructure numérique pour la coordination des demandes sociales') }}
       </h1>
 
       <p class="hc-hero__subtitle hc-subtext-institutional">
-        {{ _('Centralisez les demandes, attribuez les dossiers et pilotez chaque action') }}
-        {{ _('dans un cadre structuré, sécurisé et traçable.') }}
+        {{ _('Centralisez les demandes, attribuez les dossiers et pilotez chaque action dans un cadre structuré, sécurisé et traçable.') }}
       </p>
 
       <div class="hc-hero__actions">
@@ -32,7 +31,7 @@
           {{ _('Demander un accès professionnel — phase pilote') }}
         </a>
         <a href="#how-it-works" class="btn btn-outline-secondary">
-          {{ _('Voir comment ca marche') }}
+          {{ _('Voir comment ça marche') }}
         </a>
       </div>
 
@@ -48,166 +47,394 @@
 </section>
 
 
-<!-- POUR QUI -->
-<section class="hc-section">
+<section class="hc-section hc-usecases" id="usecases" aria-labelledby="hcUsecasesTitle">
   <div class="container">
-
-    <h2 class="hc-section__title text-center">
-      {{ _('Pour qui ?') }}
-    </h2>
-    <p class="hc-hero__subtitle text-center">
-      {{ _('Une infrastructure conçue pour structurer la coordination entre acteurs locaux et professionnels qualifiés.') }}
-    </p>
-
-    <div class="row mt-4">
-
-      <div class="col-md-6">
-        <div class="hc-card card-institutional hc-card-institutional">
-          <h3>{{ _('Associations & structures locales') }}</h3>
-          <ul>
-            <li>{{ _('Centralisation structurée des demandes') }}</li>
-            <li>{{ _('Attribution claire des responsables') }}</li>
-            <li>{{ _('Suivi par statut avec historique complet') }}</li>
-            <li>{{ _('Réduction des canaux informels') }}</li>
-            <li>{{ _('Visibilité opérationnelle sur l’activité et les délais') }}</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="hc-card card-institutional hc-card-institutional">
-          <h3>{{ _('Professionnels partenaires') }}</h3>
-          <ul>
-            <li>{{ _('Dossiers structurés et contextualisés') }}</li>
-            <li>{{ _('Qualification préalable des demandes') }}</li>
-            <li>{{ _('Cadre opérationnel clair (nouvelle -> en cours -> résolue)') }}</li>
-            <li>{{ _('Traçabilité complète des actions') }}</li>
-            <li>{{ _('Respect du temps et des priorités professionnelles') }}</li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="hc-anchor text-center">
-      <p class="text-muted mb-1">
-        {{ _('HelpChain n’est pas une plateforme d’annonces.') }}
-      </p>
-      <p class="fw-semibold">
-        {{ _('C’est une infrastructure de coordination structurée.') }}
+    <div class="hc-section-head">
+      <h2 class="hc-section-title" id="hcUsecasesTitle">Cas d’usage — pour qui ?</h2>
+      <p class="hc-section-subtitle">
+        Un cadre commun pour traiter, attribuer et suivre les demandes sociales, avec traçabilité et pilotage.
       </p>
     </div>
+
+    <div class="hc-grid-3">
+      <article class="hc-card hc-card--usecase">
+        <div class="hc-card__badge">Collectivités</div>
+        <h3 class="hc-card__title">CCAS / services municipaux</h3>
+        <p class="hc-card__text">
+          Centralisez les signalements, attribuez un responsable de dossier et suivez chaque action avec horodatage.
+        </p>
+        <ul class="hc-list">
+          <li>Attribution claire + continuité de prise en charge</li>
+          <li>Suivi SLA et situations prioritaires</li>
+          <li>Tableau de pilotage direction</li>
+        </ul>
+      </article>
+
+      <article class="hc-card hc-card--usecase">
+        <div class="hc-card__badge">Associations</div>
+        <h3 class="hc-card__title">Réseaux associatifs & coordination</h3>
+        <p class="hc-card__text">
+          Structurez les demandes multi-intervenants, évitez les pertes d’information et sécurisez la collaboration.
+        </p>
+        <ul class="hc-list">
+          <li>Historique unique par dossier</li>
+          <li>Partage contrôlé (accès par rôle)</li>
+          <li>Passage de relais sans rupture</li>
+        </ul>
+      </article>
+
+      <article class="hc-card hc-card--usecase">
+        <div class="hc-card__badge">Professionnels</div>
+        <h3 class="hc-card__title">Santé / juridique / social</h3>
+        <p class="hc-card__text">
+          Recevez des dossiers qualifiés, intervenez dans un cadre conforme et documentez les actions sans friction.
+        </p>
+        <ul class="hc-list">
+          <li>Accès intervenant validé (phase pilote)</li>
+          <li>Traçabilité des actions et décisions</li>
+          <li>Conformité et périmètre maîtrisé</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="hc-usecases-cta">
+      <div class="hc-usecases-cta__text">
+        <strong>Objectif :</strong> réduire les délais, améliorer la coordination et sécuriser la responsabilité.
+      </div>
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.professionnels_pilote') }}">
+        Demander un accès professionnel
+      </a>
+    </div>
   </div>
 </section>
 
-
-<!-- COMMENT CA MARCHE -->
-<section id="how-it-works" class="hc-section hc-section-alt">
+<section class="hc-section hc-pilot-results" id="pilot-results" aria-labelledby="hcPilotTitle">
   <div class="container">
 
-    <h2 class="hc-section__title text-center">
-      {{ _('Comment fonctionne HelpChain') }}
-    </h2>
+    <div class="hc-section-head">
+      <h2 class="hc-section-title" id="hcPilotTitle">
+        Ce que vous gagnez en 30 jours (pilote)
+      </h2>
+      <p class="hc-section-subtitle">
+        Un pilote court pour structurer la coordination des demandes et mesurer l’impact opérationnel.
+      </p>
+    </div>
 
-    <div class="row mt-5">
+    <div class="hc-grid-3">
 
-      <div class="col-md-3">
-        <div class="hc-pro-step hc-card-institutional">
-          <div class="hc-pro-step__number">1</div>
-          <h4>{{ _('Entree structuree') }}</h4>
-          <p>
-            {{ _('Une situation humaine devient un dossier exploitable :') }}
-            {{ _('categorie, localisation, contexte.') }}
-          </p>
-        </div>
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-value">-30%</div>
+        <div class="hc-kpi-title">délais de traitement</div>
+        <p class="hc-kpi-desc">
+          Les demandes sont centralisées et attribuées immédiatement à un responsable.
+        </p>
       </div>
 
-      <div class="col-md-3">
-        <div class="hc-pro-step hc-card-institutional">
-          <div class="hc-pro-step__number">2</div>
-          <h4>{{ _('Qualification & tri') }}</h4>
-          <p>
-            {{ _('Infos cles verifiees. Reduction du bruit.') }}
-            {{ _('Protection du temps des equipes.') }}
-          </p>
-        </div>
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-value">100%</div>
+        <div class="hc-kpi-title">traçabilité des actions</div>
+        <p class="hc-kpi-desc">
+          Chaque action est horodatée et rattachée à un dossier unique.
+        </p>
       </div>
 
-      <div class="col-md-3">
-        <div class="hc-pro-step hc-card-institutional">
-          <div class="hc-pro-step__number">3</div>
-          <h4>{{ _('Matching cible') }}</h4>
-          <p>
-            {{ _('La bonne demande au bon moment :') }}
-            {{ _('pertinence, localisation, tracabilite.') }}
-          </p>
-        </div>
+      <div class="hc-kpi-card">
+        <div class="hc-kpi-value">+ visibilité</div>
+        <div class="hc-kpi-title">pilotage direction</div>
+        <p class="hc-kpi-desc">
+          Tableau de bord simple pour suivre priorités, délais et situations critiques.
+        </p>
       </div>
 
-      <div class="col-md-3">
-        <div class="hc-pro-step hc-card-institutional">
-          <div class="hc-pro-step__number">4</div>
-          <h4>{{ _('Suivi & cloture') }}</h4>
-          <p>
-            {{ _('Historique complet, statut clair,') }}
-            {{ _('coordination mesurable.') }}
-          </p>
-        </div>
+    </div>
+
+    <div class="hc-pilot-frame">
+
+      <h3>Cadre du pilote</h3>
+
+      <ul>
+        <li>Durée : 30 jours</li>
+        <li>1 structure pilote (association ou service social)</li>
+        <li>5–10 intervenants maximum</li>
+        <li>Support et configuration inclus</li>
+      </ul>
+
+      <a class="btn btn-primary btn-lg" href="{{ url_for('main.professionnels_pilote') }}">
+        Lancer un pilote
+      </a>
+
+    </div>
+
+  </div>
+</section>
+
+<section class="hc-section hc-trust" id="gouvernance" aria-labelledby="hcGovTitle">
+  <div class="container">
+
+    <div class="hc-section-head">
+      <h2 class="hc-section-title" id="hcGovTitle">Gouvernance & conformité (RGPD)</h2>
+      <p class="hc-section-subtitle">
+        Une infrastructure conçue pour la traçabilité, la sécurité et le pilotage institutionnel.
+      </p>
+    </div>
+
+    <div class="hc-grid-2">
+      <article class="hc-trust-card">
+        <h3 class="hc-trust-title">Cadre RGPD</h3>
+        <ul class="hc-trust-list">
+          <li>Finalités et bases légales explicites (gestion des demandes, coordination, suivi).</li>
+          <li>Minimisation : collecte strictement nécessaire, champs structurés.</li>
+          <li>Droits des personnes : accès, rectification, suppression, export.</li>
+          <li>Durées de conservation configurables par structure.</li>
+        </ul>
+      </article>
+
+      <article class="hc-trust-card">
+        <h3 class="hc-trust-title">Sécurité opérationnelle</h3>
+        <ul class="hc-trust-list">
+          <li>Contrôles d’accès par rôles et par structure (multi-tenant).</li>
+          <li>Journalisation des actions (audit) et traçabilité dossier.</li>
+          <li>Protection anti-abus : rate-limit, verrouillage, chemins non exposés.</li>
+          <li>Sauvegardes et supervision : monitoring + backups automatisés.</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="hc-trust-callout">
+      <div class="hc-trust-callout__content">
+        <div class="hc-trust-callout__title">Hébergement & souveraineté</div>
+        <p class="hc-trust-callout__text">
+          Données hébergées en Europe. Pilotage par structure. Conçu et opéré depuis la France.
+        </p>
       </div>
 
+      <div class="hc-trust-callout__actions">
+        <a class="btn btn-outline-secondary" href="/gouvernance">Voir la gouvernance</a>
+        <a class="btn btn-primary" href="/contact">Demander un échange</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="hc-section hc-ops-trust" id="ops-trust" aria-labelledby="hcOpsTrustTitle">
+  <div class="container">
+    <div class="hc-section-head">
+      <h2 class="hc-section-title" id="hcOpsTrustTitle">
+        Contrôle opérationnel & gouvernance
+      </h2>
+      <p class="hc-section-subtitle">
+        Un pilotage clair des demandes sociales : responsabilité, délais et traçabilité.
+      </p>
+    </div>
+
+    <div class="hc-grid-3">
+      <div class="hc-ops-card">
+        <div class="hc-ops-icon">KPI</div>
+        <h3>Pilotage direction</h3>
+        <p>
+          Tableau de bord permettant de suivre volumes, délais et situations prioritaires.
+        </p>
+      </div>
+
+      <div class="hc-ops-card">
+        <div class="hc-ops-icon">LOG</div>
+        <h3>Traçabilité complète</h3>
+        <p>
+          Chaque action sur un dossier est enregistrée avec horodatage et responsable.
+        </p>
+      </div>
+
+      <div class="hc-ops-card">
+        <div class="hc-ops-icon">ACL</div>
+        <h3>Contrôle des accès</h3>
+        <p>
+          Accès par rôles et par structure pour garantir la confidentialité et la responsabilité.
+        </p>
+      </div>
+    </div>
+
+    <div class="hc-ops-note">
+      <strong>Objectif :</strong> permettre aux structures sociales de coordonner les interventions
+      sans perte d'information et avec une responsabilité claire.
+    </div>
+  </div>
+</section>
+
+<section class="hc-section hc-territorial" id="territorial" aria-labelledby="hcTerritorialTitle">
+  <div class="container">
+    <div class="hc-section-head">
+      <h2 class="hc-section-title" id="hcTerritorialTitle">
+        Infrastructure territoriale de coordination
+      </h2>
+      <p class="hc-section-subtitle">
+        Une infrastructure numérique permettant aux structures d’un territoire
+        de coordonner les demandes sociales dans un cadre commun.
+      </p>
+    </div>
+
+    <div class="hc-grid-3">
+      <div class="hc-territorial-card">
+        <h3>Structures locales</h3>
+        <p>
+          Les associations et services sociaux peuvent gérer leurs demandes
+          dans un environnement structuré.
+        </p>
+      </div>
+
+      <div class="hc-territorial-card">
+        <h3>Coordination inter-structures</h3>
+        <p>
+          Les dossiers peuvent être orientés vers la structure la plus
+          adaptée sans perte d’information.
+        </p>
+      </div>
+
+      <div class="hc-territorial-card">
+        <h3>Vision territoriale</h3>
+        <p>
+          Les responsables peuvent visualiser les dynamiques locales
+          et améliorer la coordination des actions sociales.
+        </p>
+      </div>
+    </div>
+
+    <div class="hc-territorial-note">
+      Une approche conçue pour les collectivités, les réseaux associatifs
+      et les structures sociales souhaitant améliorer la coordination
+      à l’échelle d’un territoire.
     </div>
   </div>
 </section>
 
 
-<!-- SECURITE -->
-<section class="hc-section hc-section-institutional hc-compliance">
+<!-- PROCESS DIAGRAM -->
+<section class="hc-section hc-process">
   <div class="container">
-
-    <h2 class="hc-section__title">
-      <i class="fas fa-shield-alt me-2" aria-hidden="true"></i>
-      {{ _('Sécurité & conformité (RGPD)') }}
-    </h2>
-    <p class="hc-security-intro hc-compliance__intro">
-      {{ _('La protection des données, la gouvernance des accès et la traçabilité des actions constituent le socle de l’infrastructure.') }}
-    </p>
-
-    <div class="row mt-4">
-      <div class="col-md-6">
-        <ul class="hc-security-list">
-          <li>{{ _('Accès sécurisé et contrôle des rôles') }}</li>
-          <li>{{ _('Journalisation complète des actions') }}</li>
-        </ul>
-      </div>
-
-      <div class="col-md-6">
-        <ul class="hc-security-list">
-          <li>{{ _('Données minimisées et usage encadré (RGPD)') }}</li>
-          <li>{{ _('Hébergement conforme aux standards européens') }}</li>
-        </ul>
-      </div>
+    <div class="hc-section-head">
+      <h2>Fonctionnement simplifié</h2>
+      <p class="hc-section-sub">
+        Lecture direction — coordination territoriale (CCAS)
+      </p>
     </div>
 
+    <div class="hc-process-diagram" role="img" aria-label="Schema: Demande sociale -> Orientation -> Attribution responsable -> Suivi des actions -> Pilotage territorial">
+      <svg viewBox="0 0 920 700" class="hc-svg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="hcShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.08"/>
+          </filter>
+        </defs>
+
+        <rect x="0" y="0" width="920" height="700" rx="22" fill="var(--hc-card-bg)"/>
+
+        <rect x="40" y="40" width="840" height="78" rx="16" fill="#FFFFFF" filter="url(#hcShadow)"/>
+        <rect x="40" y="40" width="10" height="78" rx="5" fill="var(--hc-accent)"/>
+        <text x="70" y="78" font-size="20" font-weight="700" fill="var(--hc-text)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Fonctionnement simplifié
+        </text>
+        <text x="70" y="104" font-size="12.5" fill="var(--hc-muted)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Cycle opérationnel — coordination territoriale
+        </text>
+
+        <rect x="80" y="150" width="760" height="86" rx="16" fill="#FFFFFF" stroke="var(--hc-border)" filter="url(#hcShadow)"/>
+        <circle cx="116" cy="193" r="16" fill="var(--hc-accent)"/>
+        <text x="111" y="198" font-size="12" font-weight="700" fill="#FFFFFF"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">1</text>
+        <text x="150" y="184" font-size="15" font-weight="700" fill="var(--hc-text)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Demande sociale
+        </text>
+        <text x="150" y="206" font-size="12.5" fill="var(--hc-muted)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Signalement par un service municipal, une association ou un partenaire territorial.
+        </text>
+
+        <path d="M460 244 L460 280" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M452 272 L460 282 L468 272" fill="none" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+
+        <rect x="80" y="292" width="760" height="86" rx="16" fill="#FFFFFF" stroke="var(--hc-border)" filter="url(#hcShadow)"/>
+        <circle cx="116" cy="335" r="16" fill="var(--hc-accent)"/>
+        <text x="111" y="340" font-size="12" font-weight="700" fill="#FFFFFF"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">2</text>
+        <text x="150" y="326" font-size="15" font-weight="700" fill="var(--hc-text)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Orientation
+        </text>
+        <text x="150" y="348" font-size="12.5" fill="var(--hc-muted)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          La demande est structurée et orientée vers le service ou l’intervenant responsable.
+        </text>
+
+        <path d="M460 386 L460 422" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M452 414 L460 424 L468 414" fill="none" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+
+        <rect x="80" y="434" width="760" height="86" rx="16" fill="#FFFFFF" stroke="var(--hc-border)" filter="url(#hcShadow)"/>
+        <circle cx="116" cy="477" r="16" fill="var(--hc-accent)"/>
+        <text x="111" y="482" font-size="12" font-weight="700" fill="#FFFFFF"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">3</text>
+        <text x="150" y="468" font-size="15" font-weight="700" fill="var(--hc-text)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Attribution responsable
+        </text>
+        <text x="150" y="490" font-size="12.5" fill="var(--hc-muted)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Un responsable de dossier est identifié afin de garantir la prise en charge de la situation.
+        </text>
+
+        <path d="M460 528 L460 564" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M452 556 L460 566 L468 556" fill="none" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+
+        <rect x="80" y="576" width="365" height="86" rx="16" fill="#FFFFFF" stroke="var(--hc-border)" filter="url(#hcShadow)"/>
+        <circle cx="116" cy="619" r="16" fill="var(--hc-accent)"/>
+        <text x="111" y="624" font-size="12" font-weight="700" fill="#FFFFFF"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">4</text>
+        <text x="150" y="610" font-size="15" font-weight="700" fill="var(--hc-text)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Suivi des actions
+        </text>
+        <text x="150" y="632" font-size="12.5" fill="var(--hc-muted)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Actions enregistrées et horodatées pour la
+          <tspan x="150" dy="16">traçabilité.</tspan>
+        </text>
+
+        <rect x="475" y="576" width="365" height="86" rx="16" fill="#FFFFFF" stroke="var(--hc-border)" filter="url(#hcShadow)"/>
+        <circle cx="511" cy="619" r="16" fill="var(--hc-accent)"/>
+        <text x="506" y="624" font-size="12" font-weight="700" fill="#FFFFFF"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">5</text>
+        <text x="545" y="610" font-size="15" font-weight="700" fill="var(--hc-text)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Pilotage territorial
+        </text>
+        <text x="545" y="632" font-size="12.5" fill="var(--hc-muted)"
+              font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial">
+          Délais + situations prioritaires visualisées
+          <tspan x="545" dy="16">par la direction.</tspan>
+        </text>
+
+        <path d="M445 619 L475 619" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M463 611 L475 619 L463 627" fill="none" stroke="var(--hc-accent)" stroke-width="3.2" stroke-linecap="round"/>
+      </svg>
+    </div>
   </div>
 </section>
 
-
-<!-- FINAL CTA -->
-<section class="hc-section hc-cta-section text-center">
-  <div class="container">
-
-    <h2>{{ _('Rejoindre la phase pilote') }}</h2>
+<section class="hc-dossier">
+  <div class="container hc-dossier__inner">
+    <h2>Dossier institutionnel</h2>
     <p>
-      {{ _("L'acces est valide manuellement afin de garantir un environnement structure,") }}
-      {{ _('securise et utile.') }}
+      Ce document présente l’infrastructure HelpChain, son cadre de gouvernance
+      et les conditions d’un pilote territorial.
     </p>
-
-    <a href="{{ url_for('main.professionnels_pilote') }}" class="btn btn-primary btn-lg mt-3">
-      {{ _('Demander un acces professionnel') }}
+    <a class="hc-btn hc-btn-primary" href="{{ url_for('static', filename='docs/HelpChain_Dossier_Institutionnel.pdf') }}" target="_blank" rel="noopener">
+      Télécharger le dossier institutionnel
     </a>
-
   </div>
 </section>
+
 
 </div>
 {% endblock %}

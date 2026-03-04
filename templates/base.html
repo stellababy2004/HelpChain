@@ -223,26 +223,26 @@
             {% if current_user.is_authenticated %}
               {% if admin_logged_in %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('admin.admin_requests') }}">
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_requests') }}">
                     <i class="fas fa-cog me-1" aria-hidden="true"></i>{{ _('Admin') }}
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('admin.admin_risk_panel') }}">Risk</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_risk_panel') }}">Risk</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('admin.admin_professional_leads') }}">Pros Leads</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_professional_leads') }}">Pros Leads</a>
                 </li>
                 {% if HC_PRO_ACCESS_AVAILABLE %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('admin.admin_pro_access_list') }}">Pro Access</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_pro_access_list') }}">Pro Access</a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('admin.admin_sla_breakdown') }}">SLA</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_sla_breakdown') }}">SLA</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('admin.admin_audit') }}">Audit</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_audit') }}">Audit</a>
                 </li>
               {% endif %}
               <li class="nav-item">
@@ -332,7 +332,7 @@
             {% endif %}
           </ul>
           <!-- Search + actions -->
-          <form class="hc-nav-search ms-2" action="{{ url_for('main.search') }}" method="get" role="search">
+          <form class="hc-nav-search ms-2 hc-topbar-search" action="{{ url_for('main.search') }}" method="get" role="search">
             <div class="hc-nav-search__box">
               <input
                 class="hc-nav-search__input"
@@ -349,7 +349,7 @@
             </div>
           </form>
           {% if not is_any_logged_in %}
-          <div class="hc-nav-intervenant-links d-none d-lg-flex ms-2" aria-label="{{ _('Accès intervenants') }}">
+          <div class="hc-nav-intervenant-links d-none d-lg-flex ms-2 hc-topbar-actions" aria-label="{{ _('Accès intervenants') }}">
             <a class="hc-nav-intervenant-links__item" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}" aria-label="{{ _('Connexion intervenant') }}">
               <span class="hc-labelswap">
                 <span class="hc-labelswap__long">{{ _('Connexion intervenant') }}</span>
@@ -377,7 +377,7 @@
           ] %}
           {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}
           {% if show_nav_chrome %}
-          <div class="d-flex align-items-center ms-2">
+          <div class="d-flex align-items-center ms-2 hc-topbar-actions">
             <button class="btn btn-link text-secondary nav-utility hc-iconbtn" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
               <i class="fas fa-moon" aria-hidden="true"></i>
@@ -973,7 +973,7 @@
           <div class="hc-footer__copyright">&copy; {{ current_year|default(2026) }} HelpChain</div>
 
           <div class="hc-footer__trust">
-            {{ _('Données hébergées en Europe') }} · {{ _('Conforme RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Développé et opéré en France') }}
+            {{ _('Données hébergées en Europe') }} · {{ _('Conforme RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Conçu et opéré depuis la France') }}
           </div>
 
           <nav class="hc-footer__nav" aria-label="{{ _('Footer') }}">

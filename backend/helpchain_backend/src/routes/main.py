@@ -2987,7 +2987,9 @@ def volunteer_dashboard_legacy():
 
 @main_bp.get("/pour-les-structures")
 def pour_les_structures():
-    return render_template("public/pour_les_structures.html"), 200
+    resp = make_response(render_template("public/pour_les_structures.html"), 200)
+    resp.headers["X-HC-Structures-Template"] = "v3"
+    return resp
 
 
 @main_bp.get("/professionnels")

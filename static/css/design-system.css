@@ -6736,6 +6736,288 @@ body[data-hc-page="/professionnels"] .hc-memo__p{
   max-width: 78ch;
 }
 
+/* Process diagram (Professionnels) */
+.hc-page-pro{
+  --hc-accent: #1E40AF;
+  --hc-text: #0F172A;
+  --hc-muted: #475569;
+  --hc-border: #E5E7EB;
+  --hc-card-bg: #F6F8FB;
+}
+
+.hc-page-pro .hc-process{
+  padding: 72px 0;
+  text-align: center;
+}
+
+.hc-page-pro .hc-section-head{
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.hc-page-pro .hc-section-head h2{
+  font-size: 32px;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  color: var(--hc-text);
+}
+
+.hc-page-pro .hc-section-sub{
+  margin: 0;
+  color: var(--hc-muted);
+  font-size: 16px;
+}
+
+.hc-page-pro .hc-process-diagram{
+  max-width: 980px;
+  margin: 24px auto 8px;
+  padding: 18px 18px 8px;
+  border-radius: 16px;
+}
+
+.hc-page-pro .hc-svg{
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.hc-page-pro .hc-dossier{
+  padding: 56px 0;
+}
+
+.hc-page-pro .hc-dossier__inner{
+  text-align: center;
+}
+
+.hc-page-pro .hc-dossier h2{
+  margin-bottom: 10px;
+}
+
+.hc-page-pro .hc-dossier p{
+  max-width: 680px;
+  margin: 0 auto 18px;
+  color: var(--hc-muted);
+}
+
+.hc-usecases .hc-section-head { margin-bottom: 18px; }
+
+.hc-grid-3{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.hc-card--usecase{
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  background: rgba(255,255,255,.72);
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 10px 30px rgba(15,23,42,.08);
+}
+
+.hc-card__badge{
+  display:inline-flex;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(37,99,235,.10);
+  border: 1px solid rgba(37,99,235,.18);
+  margin-bottom: 10px;
+}
+
+.hc-card__title{ margin: 0 0 8px; }
+.hc-card__text{ margin: 0 0 10px; opacity: .9; }
+
+.hc-list{
+  margin: 0;
+  padding-left: 18px;
+  opacity: .92;
+}
+
+.hc-usecases-cta{
+  margin-top: 16px;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+.hc-kpi-card{
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 10px 30px rgba(15,23,42,.06);
+}
+
+.hc-kpi-value{
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #2563eb;
+}
+
+.hc-kpi-title{
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.hc-kpi-desc{
+  opacity: .85;
+  font-size: 14px;
+}
+
+.hc-pilot-frame{
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: 16px;
+  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+.hc-pilot-results .hc-section-head{
+  margin-bottom: 18px;
+}
+
+.hc-ops-card{
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 10px 30px rgba(15,23,42,.05);
+}
+
+.hc-ops-card h3{
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.hc-ops-icon{
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: #1e40af;
+}
+
+.hc-ops-card p{
+  font-size: 14px;
+  opacity: .9;
+}
+
+.hc-ops-note{
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(15,23,42,.04);
+  border: 1px solid rgba(15,23,42,.08);
+}
+
+.hc-territorial-card{
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(15,23,42,.08);
+  box-shadow: 0 10px 30px rgba(15,23,42,.05);
+}
+
+.hc-territorial-card h3{
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.hc-territorial-card p{
+  font-size: 14px;
+  opacity: .9;
+}
+
+.hc-territorial-note{
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(37,99,235,.08);
+  border: 1px solid rgba(37,99,235,.18);
+}
+
+.hc-page-pro .hc-trust-title{
+  font-size: 16px;
+  font-weight: 650;
+  margin-bottom: 10px;
+}
+
+.hc-page-pro .hc-trust-list{
+  margin: 0;
+  padding-left: 18px;
+  opacity: .9;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.hc-page-pro .hc-trust-list li{
+  margin: 6px 0;
+}
+
+.hc-page-pro .hc-trust-callout{
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(37,99,235,.10), rgba(15,23,42,.03));
+  border: 1px solid rgba(37,99,235,.18);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hc-page-pro .hc-trust-callout__title{
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.hc-page-pro .hc-trust-callout__text{
+  margin: 0;
+  opacity: .9;
+  font-size: 14px;
+}
+
+/* Hero readability + CTA polish (Professionnels) */
+.hc-page-pro .hero-content,
+.hc-page-pro .hc-hero__content{
+  max-width: 720px;
+}
+
+.hc-page-pro .hc-btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.15);
+}
+
+@media (max-width: 520px){
+  .hc-page-pro .hc-section-head h2{ font-size: 26px; }
+  .hc-page-pro .hc-section-sub{ font-size: 14px; }
+  .hc-page-pro .hc-process{ padding: 56px 0; }
+  .hc-page-pro .hc-process-diagram{
+    padding: 14px 12px 6px;
+    border-radius: 14px;
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 991.98px){
+  .hc-grid-3{ grid-template-columns: 1fr; }
+  .hc-usecases-cta{ flex-direction: column; align-items: stretch; }
+}
+
+@media (max-width: 768px){
+  .hc-page-pro .hc-trust-callout{ flex-direction: column; align-items: flex-start; }
+  .hc-page-pro .hc-trust-callout__actions{ width: 100%; display: flex; gap: 10px; flex-wrap: wrap; }
+}
+
 /* Institutional CTA tone */
 body[data-hc-page="/gouvernance"] .btn-primary{
   background: #0f172a;
@@ -6795,6 +7077,12 @@ body[data-hc-page="/gouvernance"] .btn-primary:hover{
 }
 
 /* Optional but recommended: calmer glass navbar */
+.navbar{
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 body.hc-page-home .navbar{
   background: rgba(255,255,255,.82) !important;
   backdrop-filter: blur(10px);
@@ -7167,6 +7455,64 @@ body.hc-page-home .navbar{
   margin: 0 auto;
 }
 
+.hc-about__approche {
+  margin-top: 22px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.hc-about__section--pilot {
+  padding-top: 0;
+}
+
+.hc-about__pilot {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.hc-about__contact-note {
+  margin: 16px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.hc-about__contact-note a {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.hc-about__contact-note a:hover {
+  text-decoration: underline;
+}
+
+.hc-institutional-note{
+  font-size: 14px;
+  color: #5f6b7a;
+  max-width: 720px;
+  margin: 14px auto 0;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.hc-institutional-note p{
+  margin: 0 0 8px;
+}
+
+.hc-pilot-note{
+  font-size: 14px;
+  color: #5f6b7a;
+  max-width: 720px;
+  margin: 0 auto 8px;
+  line-height: 1.6;
+  text-align: center;
+}
+
 .hc-about__closing-actions {
   margin-top: 24px;
   display: flex;
@@ -7438,19 +7784,21 @@ body.hc-page-home .navbar{
 /* Institutional Page (Enterprise SaaS) */
 /* =============== */
 .hc-institutional {
-  --hc-i-bg: #0b1220;
-  --hc-i-surface: rgba(255, 255, 255, 0.06);
-  --hc-i-surface-2: rgba(255, 255, 255, 0.09);
-  --hc-i-border: rgba(255, 255, 255, 0.12);
-  --hc-i-text: rgba(255, 255, 255, 0.92);
-  --hc-i-muted: rgba(255, 255, 255, 0.7);
-  --hc-i-faint: rgba(255, 255, 255, 0.55);
-  --hc-i-accent: #2c7ad2;
-  --hc-i-accent-2: #225c9e;
+  --hc-i-bg: #eaf0f6;
+  --hc-i-surface: rgba(255, 255, 255, 0.92);
+  --hc-i-surface-2: rgba(255, 255, 255, 0.78);
+  --hc-i-border: rgba(15, 23, 42, 0.08);
+  --hc-i-text: #0f172a;
+  --hc-i-muted: #475569;
+  --hc-i-faint: #64748b;
+  --hc-i-accent: #2563eb;
+  --hc-i-accent-2: #3b82f6;
   --hc-i-radius: 18px;
-  --hc-i-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
-  background: radial-gradient(1200px 700px at 20% -10%, rgba(44, 122, 210, 0.2), transparent 60%),
-    radial-gradient(900px 600px at 90% 0%, rgba(34, 92, 158, 0.18), transparent 55%), var(--hc-i-bg);
+  --hc-i-shadow: 0 15px 40px rgba(15, 23, 42, 0.07);
+  background:
+    radial-gradient(900px 520px at 15% 0%, rgba(59, 130, 246, 0.14), transparent 60%),
+    radial-gradient(800px 480px at 90% 10%, rgba(96, 165, 250, 0.10), transparent 55%),
+    linear-gradient(180deg, #eaf0f6 0%, #dbe5f1 60%, #cfdbea 100%);
   color: var(--hc-i-text);
 }
 
@@ -7482,9 +7830,11 @@ body.hc-page-home .navbar{
 
 .hc-institutional .hc-cta-row {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
+  margin-top: 10px;
 }
 
 .hc-institutional .hc-btn {
@@ -7492,12 +7842,16 @@ body.hc-page-home .navbar{
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: 14px;
+  min-height: 48px;
+  min-width: 220px;
+  padding: 12px 22px;
+  border-radius: 999px;
   border: 1px solid transparent;
   text-decoration: none;
+  font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  white-space: nowrap;
   transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
@@ -7506,24 +7860,47 @@ body.hc-page-home .navbar{
 }
 
 .hc-institutional .hc-btn--primary {
-  background: linear-gradient(180deg, var(--hc-i-accent), var(--hc-i-accent-2));
+  background: linear-gradient(180deg, var(--hc-i-accent-2), var(--hc-i-accent));
   color: #fff;
-  box-shadow: 0 10px 30px rgba(44, 122, 210, 0.25);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.18);
 }
 
 .hc-institutional .hc-btn--primary:hover {
-  box-shadow: 0 14px 44px rgba(44, 122, 210, 0.3);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.22);
 }
 
 .hc-institutional .hc-btn--ghost {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.65);
   border-color: var(--hc-i-border);
   color: var(--hc-i-text);
 }
 
 .hc-institutional .hc-btn--ghost:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.hc-institutional .hc-dossier-note{
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+.hc-institutional .hc-dossier-note__title{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--hc-i-faint);
+}
+
+.hc-institutional .hc-dossier-note__text{
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--hc-i-muted);
+  max-width: 74ch;
 }
 
 .hc-institutional .hc-section {
@@ -7555,7 +7932,7 @@ body.hc-page-home .navbar{
 }
 
 .hc-institutional .hc-card--soft {
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(255, 255, 255, 0.78);
   box-shadow: none;
 }
 
@@ -7583,19 +7960,19 @@ body.hc-page-home .navbar{
 }
 
 .hc-institutional .hc-trust-wrap {
-  background: rgba(255, 255, 255, 0.045);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 18px;
   padding: 16px;
 }
 
 .hc-institutional .hc-pill {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.65);
   border-radius: 999px;
   padding: 10px 12px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--hc-i-muted);
   font-size: 13px;
   font-weight: 600;
 }
@@ -7611,6 +7988,123 @@ body.hc-page-home .navbar{
   padding-left: 18px;
   color: var(--hc-i-muted);
   line-height: 1.75;
+}
+
+/* =========================
+   Cadre de confiance (Public)
+   ========================= */
+.hc-institutional .hc-trust__head{
+  margin-bottom: 16px;
+}
+
+.hc-institutional .hc-trust__subtitle{
+  margin: 8px 0 0;
+  color: var(--hc-i-muted);
+  max-width: 72ch;
+}
+
+.hc-institutional .hc-trust__grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+@media (max-width: 1100px){
+  .hc-institutional .hc-trust__grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px){
+  .hc-institutional .hc-trust__grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.hc-institutional .hc-trustcard{
+  background: var(--hc-i-surface);
+  border: 1px solid var(--hc-i-border);
+  border-radius: var(--hc-i-radius);
+  box-shadow: var(--hc-i-shadow);
+  padding: 16px 16px 14px;
+}
+
+.hc-institutional .hc-trustcard__title{
+  margin: 0 0 10px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.hc-institutional .hc-trustcard__list{
+  margin: 0;
+  padding-left: 18px;
+  color: var(--hc-i-muted);
+}
+
+.hc-institutional .hc-trustcard__list li{
+  margin: 6px 0;
+}
+
+.hc-institutional .hc-trust__note{
+  margin-top: 14px;
+}
+
+/* Cadre de confiance (institutional cards) */
+.hc-trust {
+  padding: 60px 0;
+}
+
+.hc-trust-header h2 {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.hc-trust-sub {
+  color: #475569;
+  max-width: 720px;
+  margin-bottom: 32px;
+}
+
+.hc-trust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .hc-trust-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .hc-trust-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hc-trust-card {
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(15,23,42,0.08);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 12px 28px rgba(15,23,42,0.06);
+}
+
+.hc-trust-card h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.hc-trust-card ul {
+  padding-left: 18px;
+  margin: 0;
+  color: #475569;
+}
+
+.hc-trust-card li {
+  margin-bottom: 6px;
 }
 
 .hc-nav a.nav-link--secondary {
@@ -7635,4 +8129,13 @@ body.hc-page-home .navbar{
   height: 2px;
   border-radius: 99px;
   background: rgba(44, 122, 210, 0.85);
+}
+
+/* Institutional readability polish */
+.hc-section-title {
+  letter-spacing: -0.02em;
+}
+
+.hc-card p {
+  line-height: 1.6;
 }
