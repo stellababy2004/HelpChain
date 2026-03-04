@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
@@ -2322,6 +2321,18 @@ msgstr "Организации и местни структури"
 #: templates/professionnels.html:66
 msgid "Centralisation structurée des demandes"
 msgstr "Структурирана централизация на заявките"
+
+#: templates/public/pour_les_structures.html:34
+msgid "Centralisation"
+msgstr "Централизация"
+
+#: templates/public/pour_les_structures.html:35
+msgid "Entrée structurée des demandes"
+msgstr "Структуриран вход на заявките"
+
+#: templates/public/pour_les_structures.html:36
+msgid "Périmètre partagé entre équipes"
+msgstr "Споделен обхват между екипите"
 
 #: templates/professionnels.html:67
 msgid "Attribution claire des responsables"
