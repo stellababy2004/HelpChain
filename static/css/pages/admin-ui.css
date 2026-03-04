@@ -214,6 +214,9 @@
   padding-top: 12px;
   margin-top: 12px;
 }
+.hc-fold{
+  margin-bottom: 16px;
+}
 .hc-insights{
   padding: 12px 14px;
 }
@@ -245,6 +248,10 @@
   font-weight: 700;
   cursor: pointer;
 }
+.hc-fold__head{
+  position: relative;
+  z-index: 1;
+}
 .hc-live-header__copy{
   display: inline-flex;
   flex-direction: column;
@@ -261,13 +268,29 @@
 .hc-live-chevron{
   transition: transform .16s ease;
 }
+.hc-fold__chev{
+  font-size: 22px;
+  opacity: .7;
+}
 
 .hc-live-header[aria-expanded="false"] .hc-live-chevron{
   transform: rotate(-90deg);
 }
+.hc-fold__head[aria-expanded="false"] .hc-fold__chev{
+  transform: rotate(-90deg);
+}
+
+.hc-fold__subtitle{
+  margin-top: 2px;
+  opacity: .65;
+  font-weight: 600;
+}
 
 .hc-live-body{
   margin-top: 8px;
+}
+.hc-fold__body{
+  margin-top: 10px;
 }
 
 .hc-live-body.hc-live-hidden{
