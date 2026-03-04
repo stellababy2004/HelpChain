@@ -30,7 +30,12 @@ def send_email_2fa_code(code, ip_address=None, user_agent=None):
 # За Render health: ако искаш бърз sanity
 @app.get("/health")
 def health():
-    return {"ok": True, "git": os.getenv("GIT_SHA", "unknown")}, 200
+    return {
+        "ok": True,
+        "git": os.getenv("GIT_SHA", "unknown"),
+        "hc_code_marker": "workspace_v3",
+        "template_folder": app.template_folder,
+    }, 200
 
 
 __all__ = ["app", "db", "mail", "send_email_2fa_code"]
