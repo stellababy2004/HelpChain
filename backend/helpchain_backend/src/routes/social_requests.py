@@ -90,8 +90,15 @@ def create_request():
 def details(req_id: int):
     sr = SocialRequest.query.get_or_404(req_id)
     structure = Structure.query.get(sr.structure_id)
-    users = User.query.order_by(User.id.asc()).limit(200).all()
-    return render_template("requests/details.html", sr=sr, structure=structure, users=users)
+    users = User.query.order_by(User.email.asc()).limit(300).all()
+    assignee = User.query.get(sr.assigned_to_user_id) if sr.assigned_to_user_id else None
+    return render_template(
+        "requests/details.html",
+        sr=sr,
+        structure=structure,
+        users=users,
+        assignee=assignee,
+    )
 
 
 @bp.post("/<int:req_id>/assign")

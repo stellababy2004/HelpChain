@@ -62,18 +62,11 @@
     <div class="card-body">
       <h2 class="h5 mb-3">Assignation</h2>
 
-      {% if sr.assigned_to_user_id %}
+      {% if assignee %}
       <div class="mb-2">
         <span class="text-muted">Assigne a:</span>
-        <strong>
-          {% if sr.assigned_to_user and sr.assigned_to_user.email %}
-            {{ sr.assigned_to_user.email }}
-          {% elif sr.assigned_to_user and sr.assigned_to_user.username %}
-            {{ sr.assigned_to_user.username }}
-          {% else %}
-            #{{ sr.assigned_to_user_id }}
-          {% endif %}
-        </strong>
+        <strong>{{ assignee.email }}</strong>
+        <span class="text-muted">({{ assignee.username }})</span>
         {% if sr.assigned_at %}<span class="text-muted">- {{ sr.assigned_at }}</span>{% endif %}
       </div>
 
