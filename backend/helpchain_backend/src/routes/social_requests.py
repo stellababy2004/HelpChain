@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from backend.models import SocialRequest, Structure, db
+from backend.models import SocialRequest, Structure, User, db
 
 bp = Blueprint("social_requests", __name__, url_prefix="/requests")
 
@@ -27,6 +29,10 @@ def _safe_int(v: str | None) -> int | None:
         return int(v)
     except ValueError:
         return None
+
+
+def _utcnow():
+    return datetime.utcnow()
 
 
 @bp.get("")
@@ -84,4 +90,38 @@ def create_request():
 def details(req_id: int):
     sr = SocialRequest.query.get_or_404(req_id)
     structure = Structure.query.get(sr.structure_id)
-    return render_template("requests/details.html", sr=sr, structure=structure)
+    users = User.query.order_by(User.id.asc()).limit(200).all()
+    return render_template("requests/details.html", sr=sr, structure=structure, users=users)
+
+
+@bp.post("/<int:req_id>/assign")
+def assign(req_id: int):
+    sr = SocialRequest.query.get_or_404(req_id)
+    user_id = _safe_int(request.form.get("assigned_to_user_id"))
+    if not user_id:
+        flash("Utilisateur requis.", "danger")
+        return redirect(url_for("social_requests.details", req_id=req_id))
+
+    u = User.query.get(user_id)
+    if not u:
+        flash("Utilisateur invalide.", "danger")
+        return redirect(url_for("social_requests.details", req_id=req_id))
+
+    sr.assigned_to_user_id = u.id
+    sr.assigned_at = _utcnow()
+    if sr.status == "new":
+        sr.status = "in_progress"
+
+    db.session.commit()
+    flash("Assignation effectuee.", "success")
+    return redirect(url_for("social_requests.details", req_id=req_id))
+
+
+@bp.post("/<int:req_id>/unassign")
+def unassign(req_id: int):
+    sr = SocialRequest.query.get_or_404(req_id)
+    sr.assigned_to_user_id = None
+    sr.assigned_at = None
+    db.session.commit()
+    flash("Assignation supprimee.", "success")
+    return redirect(url_for("social_requests.details", req_id=req_id))

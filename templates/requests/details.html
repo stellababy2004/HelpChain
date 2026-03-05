@@ -58,6 +58,47 @@
     </div>
   </div>
 
+  <div class="card mt-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Assignation</h2>
+
+      {% if sr.assigned_to_user_id %}
+      <div class="mb-2">
+        <span class="text-muted">Assigne a:</span>
+        <strong>
+          {% if sr.assigned_to_user and sr.assigned_to_user.email %}
+            {{ sr.assigned_to_user.email }}
+          {% elif sr.assigned_to_user and sr.assigned_to_user.username %}
+            {{ sr.assigned_to_user.username }}
+          {% else %}
+            #{{ sr.assigned_to_user_id }}
+          {% endif %}
+        </strong>
+        {% if sr.assigned_at %}<span class="text-muted">- {{ sr.assigned_at }}</span>{% endif %}
+      </div>
+
+      <form method="post" action="{{ url_for('social_requests.unassign', req_id=sr.id) }}">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Unassign</button>
+      </form>
+      {% else %}
+      <form method="post" action="{{ url_for('social_requests.assign', req_id=sr.id) }}" class="row g-2 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label">Assigner a</label>
+          <select class="form-select" name="assigned_to_user_id" required>
+            <option value="" selected disabled>Choisir un utilisateur...</option>
+            {% for u in users %}
+            <option value="{{ u.id }}">{{ u.email or u.username or u.id }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" type="submit">Assigner</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
   <div class="alert alert-info mt-3 mb-0">
     <strong>Prochaine etape:</strong> Assignation + suivi (statuts) via actions ici.
   </div>
