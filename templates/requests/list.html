@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h1 class="mb-0">Demandes</h1>
+      <div class="text-muted">Dernieres 200 demandes.</div>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle demande</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Urgence</th>
+          <th>Statut</th>
+          <th>Creee</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in items %}
+        <tr>
+          <td>#{{ r.id }}</td>
+          <td><code>{{ r.need_type }}</code></td>
+          <td>{{ r.urgency }}</td>
+          <td><span class="badge text-bg-secondary">{{ r.status }}</span></td>
+          <td>{{ r.created_at }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('social_requests.details', req_id=r.id) }}">Ouvrir</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-muted">Aucune demande.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

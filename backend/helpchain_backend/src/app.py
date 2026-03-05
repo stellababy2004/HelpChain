@@ -409,6 +409,13 @@ def create_app(config_object=None) -> Flask:
         app.logger.info("main blueprint not loaded: %s", e)
 
     try:
+        from .routes.social_requests import bp as social_requests_bp
+
+        app.register_blueprint(social_requests_bp)
+    except Exception as e:
+        app.logger.info("social_requests blueprint not loaded: %s", e)
+
+    try:
         from .routes.admin import admin_bp
 
         app.register_blueprint(admin_bp)

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4" style="max-width: 980px;">
+  <div class="d-flex align-items-start justify-content-between gap-3">
+    <div>
+      <h1 class="mb-1">Demande #{{ sr.id }}</h1>
+      <div class="text-muted">
+        Structure: <strong>{{ structure.name if structure else sr.structure_id }}</strong>
+        - Creee: {{ sr.created_at }}
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests') }}">Retour</a>
+      <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle</a>
+    </div>
+  </div>
+
+  <hr class="my-4">
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Type</div>
+          <div class="fs-5"><code>{{ sr.need_type }}</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Urgence</div>
+          <div class="fs-5">{{ sr.urgency }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted small">Statut</div>
+          <div class="fs-5"><span class="badge text-bg-secondary">{{ sr.status }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <div class="text-muted small mb-1">Reference personne (optionnel)</div>
+      <div>{{ sr.person_ref or "-" }}</div>
+
+      <hr>
+
+      <div class="text-muted small mb-1">Description</div>
+      <div style="white-space: pre-wrap;">{{ sr.description }}</div>
+    </div>
+  </div>
+
+  <div class="alert alert-info mt-3 mb-0">
+    <strong>Prochaine etape:</strong> Assignation + suivi (statuts) via actions ici.
+  </div>
+</div>
+{% endblock %}
