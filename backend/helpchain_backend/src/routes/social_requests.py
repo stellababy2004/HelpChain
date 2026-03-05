@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import func
 
-from backend.models import SocialRequest, Structure, User, db
+from backend.models import SocialRequest, SocialRequestEvent, Structure, User, db
 
 bp = Blueprint("social_requests", __name__, url_prefix="/requests")
 
@@ -138,6 +138,16 @@ def create_request():
         status="new",
     )
     db.session.add(sr)
+    db.session.flush()
+    db.session.add(
+        SocialRequestEvent(
+            request_id=sr.id,
+            event_type="created",
+            actor_user_id=None,
+            old_value=None,
+            new_value=f"{sr.need_type}|{sr.urgency}",
+        )
+    )
     db.session.commit()
 
     flash("Demande créée.", "success")
@@ -150,12 +160,19 @@ def details(req_id: int):
     structure = Structure.query.get(sr.structure_id)
     users = User.query.order_by(User.email.asc()).limit(300).all()
     assignee = User.query.get(sr.assigned_to_user_id) if sr.assigned_to_user_id else None
+    events = (
+        SocialRequestEvent.query.filter(SocialRequestEvent.request_id == sr.id)
+        .order_by(SocialRequestEvent.created_at.desc())
+        .limit(50)
+        .all()
+    )
     return render_template(
         "requests/details.html",
         sr=sr,
         structure=structure,
         users=users,
         assignee=assignee,
+        events=events,
     )
 
 
@@ -176,6 +193,15 @@ def assign(req_id: int):
     sr.assigned_at = _utcnow()
     if sr.status == "new":
         sr.status = "in_progress"
+    db.session.add(
+        SocialRequestEvent(
+            request_id=sr.id,
+            event_type="assigned",
+            actor_user_id=None,
+            old_value=None,
+            new_value=str(u.id),
+        )
+    )
 
     db.session.commit()
     flash("Assignation effectuee.", "success")
@@ -185,8 +211,18 @@ def assign(req_id: int):
 @bp.post("/<int:req_id>/unassign")
 def unassign(req_id: int):
     sr = SocialRequest.query.get_or_404(req_id)
+    old_assignee = str(sr.assigned_to_user_id) if sr.assigned_to_user_id else None
     sr.assigned_to_user_id = None
     sr.assigned_at = None
+    db.session.add(
+        SocialRequestEvent(
+            request_id=sr.id,
+            event_type="unassigned",
+            actor_user_id=None,
+            old_value=old_assignee,
+            new_value=None,
+        )
+    )
     db.session.commit()
     flash("Assignation supprimee.", "success")
     return redirect(url_for("social_requests.details", req_id=req_id))
@@ -201,7 +237,17 @@ def set_status(req_id: int):
         flash("Statut invalide.", "danger")
         return redirect(url_for("social_requests.details", req_id=req_id))
 
+    old_status = sr.status
     sr.status = new_status
+    db.session.add(
+        SocialRequestEvent(
+            request_id=sr.id,
+            event_type="status_changed",
+            actor_user_id=None,
+            old_value=old_status,
+            new_value=new_status,
+        )
+    )
     db.session.commit()
     flash("Statut mis a jour.", "success")
     return redirect(url_for("social_requests.details", req_id=req_id))

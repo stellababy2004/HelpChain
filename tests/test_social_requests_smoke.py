@@ -1,5 +1,5 @@
 def test_social_requests_pages(client, init_test_data, db_session):
-    from backend.models import SocialRequest, User
+    from backend.models import SocialRequest, SocialRequestEvent, User
 
     structure = init_test_data["structure"]
 
@@ -31,6 +31,11 @@ def test_social_requests_pages(client, init_test_data, db_session):
     assert r3.status_code == 200
 
     req_id = int(detail_path.rstrip("/").split("/")[-1])
+    created_events = (
+        SocialRequestEvent.query.filter_by(request_id=req_id, event_type="created").all()
+    )
+    assert len(created_events) == 1
+
     user = User.query.filter_by(email="social.assign@test.local").first()
     if not user:
         user = User(
@@ -55,6 +60,10 @@ def test_social_requests_pages(client, init_test_data, db_session):
     assert sr.assigned_to_user_id == user.id
     assert sr.assigned_at is not None
     assert sr.status == "in_progress"
+    assigned_events = (
+        SocialRequestEvent.query.filter_by(request_id=req_id, event_type="assigned").all()
+    )
+    assert len(assigned_events) == 1
 
     unassign_resp = client.post(
         f"/requests/{req_id}/unassign",
@@ -66,6 +75,10 @@ def test_social_requests_pages(client, init_test_data, db_session):
     assert sr2 is not None
     assert sr2.assigned_to_user_id is None
     assert sr2.assigned_at is None
+    unassigned_events = (
+        SocialRequestEvent.query.filter_by(request_id=req_id, event_type="unassigned").all()
+    )
+    assert len(unassigned_events) == 1
 
     status_resp = client.post(
         f"/requests/{req_id}/status",
@@ -77,6 +90,12 @@ def test_social_requests_pages(client, init_test_data, db_session):
     sr3 = SocialRequest.query.get(req_id)
     assert sr3 is not None
     assert sr3.status == "in_progress"
+    status_events = (
+        SocialRequestEvent.query.filter_by(
+            request_id=req_id, event_type="status_changed"
+        ).all()
+    )
+    assert len(status_events) >= 1
 
 
 def test_dashboard(client):

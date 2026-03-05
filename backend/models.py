@@ -874,6 +874,20 @@ class SocialRequest(db.Model):
         )
 
 
+class SocialRequestEvent(db.Model):
+    __tablename__ = "social_request_events"
+
+    id = Column(Integer, primary_key=True)
+    request_id = Column(
+        Integer, ForeignKey("social_requests.id"), nullable=False, index=True
+    )
+    event_type = Column(String(32), nullable=False)
+    actor_user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    old_value = Column(String(255), nullable=True)
+    new_value = Column(String(255), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+
+
 # Backward-compat alias (legacy code expects HelpRequest)
 HelpRequest = Request
 
