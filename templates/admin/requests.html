@@ -139,48 +139,115 @@
   </section>
 
   <div class="hc-admin-stickybar mb-3">
-  <form class="row g-2 align-items-end" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminFilterForm">
-    <div class="col-xl-3 col-lg-4">
-      <select class="form-select" name="status" id="hcAdminFilterStatus" aria-label="{{ _('Status') }}">
-        <option value="">{{ _('All statuses') }}</option>
-        {% for key, msgid in STATUS_LABELS.items() %}
-          <option value="{{ key }}" {% if status == key %}selected{% endif %}>
-            {{ _(msgid) }}
-          </option>
-        {% endfor %}
-      </select>
+  <form class="row g-2 align-items-end mb-2" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
+    <div class="col-xl-10 col-lg-9">
+      <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
+        autofocus
+        placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
+      {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+      {% if show_deleted %}<input type="hidden" name="deleted" value="1">{% endif %}
+      {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
+      {% if request.args.get('category') %}<input type="hidden" name="category" value="{{ request.args.get('category') }}">{% endif %}
     </div>
-
-    <div class="col-xl-5 col-lg-4">
-            <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
-              autofocus
-              placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
-    </div>
-    {% if request.args.get('category') %}
-    <input type="hidden" name="category" value="{{ request.args.get('category') }}">
-    {% endif %}
-
-    <div class="col-xl-2 col-lg-2 d-grid">
-      <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
-    </div>
-    <div class="col-xl-2 col-lg-2 d-grid">
-      <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_requests') }}">{{ _('Reset') }}</a>
-    </div>
-
-    <div class="col-12">
-      <div class="form-check form-switch">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="filterDeleted"
-          name="deleted"
-          value="1"
-          {% if show_deleted %}checked{% endif %}
-        />
-        <label class="form-check-label" for="filterDeleted">{{ _('Show deleted') }}</label>
-      </div>
+    <div class="col-xl-2 col-lg-3 d-grid">
+      <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
     </div>
   </form>
+
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#hcFiltersPanel" aria-expanded="false" aria-controls="hcFiltersPanel">
+      {{ _('Filters') }}
+    </button>
+
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        {{ _('Export') }}
+      </button>
+      <ul class="dropdown-menu">
+        <li>
+          <a class="dropdown-item"
+             href="{{ url_for('admin.admin_requests_export_csv') }}"
+             data-action="confirmSubmit"
+             data-confirm="{{ export_confirm|e }}">
+            {{ _('Export CSV') }}
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item"
+             href="{{ url_for('admin.admin_requests_export_xlsx') }}"
+             data-action="confirmSubmit"
+             data-confirm="{{ export_confirm|e }}">
+            {{ _('Export XLSX') }}
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item"
+             href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
+             data-action="confirmSubmit"
+             data-confirm="{{ export_confirm|e }}">
+            {{ _('Export CSV (anonymized)') }}
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item"
+             href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
+             data-action="confirmSubmit"
+             data-confirm="{{ export_confirm|e }}">
+            {{ _('Export XLSX (anonymized)') }}
+          </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item" href="{{ url_for('admin.admin_audit', entity='export') }}">
+            {{ _('View export logs') }}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">{{ _('Reset') }}</a>
+  </div>
+
+  <div class="collapse {% if status or show_deleted or risk or request.args.get('category') %}show {% endif %}mb-2" id="hcFiltersPanel">
+    <form class="row g-2 align-items-end" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminFilterForm">
+      <div class="col-xl-4 col-lg-5">
+        <select class="form-select" name="status" id="hcAdminFilterStatus" aria-label="{{ _('Status') }}">
+          <option value="">{{ _('All statuses') }}</option>
+          {% for key, msgid in STATUS_LABELS.items() %}
+            <option value="{{ key }}" {% if status == key %}selected{% endif %}>
+              {{ _(msgid) }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-xl-4 col-lg-4">
+        <div class="form-check form-switch pt-2">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="filterDeleted"
+            name="deleted"
+            value="1"
+            {% if show_deleted %}checked{% endif %}
+          />
+          <label class="form-check-label" for="filterDeleted">{{ _('Show deleted') }}</label>
+        </div>
+      </div>
+
+      <div class="col-xl-4 col-lg-3 d-grid">
+        <button class="btn btn-primary" type="submit">{{ _('Apply filters') }}</button>
+      </div>
+
+      {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+      {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
+      {% if request.args.get('category') %}
+      <input type="hidden" name="category" value="{{ request.args.get('category') }}">
+      {% endif %}
+    </form>
+  </div>
+
   {% if request.args.get('category') %}
   <div class="mt-2">
     <span class="badge text-bg-primary">
@@ -190,35 +257,6 @@
   </div>
   {% endif %}
 
-  <div class="d-flex flex-wrap gap-2 mt-2">
-    <a class="btn btn-outline-secondary btn-sm"
-       href="{{ url_for('admin.admin_requests_export_csv') }}"
-       data-action="confirmSubmit"
-       data-confirm="{{ export_confirm|e }}">
-      {{ _('Export CSV') }}
-    </a>
-    <a class="btn btn-outline-secondary btn-sm"
-       href="{{ url_for('admin.admin_requests_export_xlsx') }}"
-       data-action="confirmSubmit"
-       data-confirm="{{ export_confirm|e }}">
-      {{ _('Export XLSX') }}
-    </a>
-    <a class="btn btn-outline-secondary btn-sm"
-       href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
-       data-action="confirmSubmit"
-       data-confirm="{{ export_confirm|e }}">
-      {{ _('Export CSV (anonymized)') }}
-    </a>
-    <a class="btn btn-outline-secondary btn-sm"
-       href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
-       data-action="confirmSubmit"
-       data-confirm="{{ export_confirm|e }}">
-      {{ _('Export XLSX (anonymized)') }}
-    </a>
-    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_audit', entity='export') }}">
-      {{ _('View export logs') }}
-    </a>
-  </div>
   <div class="hc-bulkbar mt-2" id="hcBulkBar" data-csrf="{{ csrf_token() }}">
     <label class="form-check m-0">
       <input class="form-check-input" type="checkbox" id="hcSelectAllVisible">
@@ -315,13 +353,19 @@
           <td class="hc-col-title">{{ r.title }}</td>
           <td>{{ r.name or r.requester_name }}</td>
           <td>
-            {% set status_class = {
+          {% set status_key = (r.status or '')|lower %}
+          {% set status_class = {
+              'new':'bg-primary',
               'pending':'bg-primary',
-              'approved':'bg-info text-dark',
+              'open':'bg-primary',
               'in_progress':'bg-warning text-dark',
+              'approved':'bg-warning text-dark',
               'done':'bg-success',
-              'rejected':'bg-danger'
-            }.get(r.status, 'bg-secondary') %}
+              'completed':'bg-success',
+              'rejected':'bg-secondary',
+              'cancelled':'bg-secondary',
+              'closed':'bg-secondary'
+            }.get(status_key, 'bg-secondary') %}
             <span class="badge {{ status_class }}">{{ _(STATUS_LABELS.get(r.status, r.status)) }}</span>
           </td>
           <td>{{ _(r.priority) if r.priority else '' }}</td>

@@ -472,7 +472,7 @@ tr.hc-row-hot{ outline: 2px solid rgba(16,185,129,.18); outline-offset: -2px; bo
 }
 
 tr[data-href]:hover td{
-  background: rgba(245,248,255,.85);
+  background: #f5f8ff;
 }
 
 tr[style*="display: none"] td { background: transparent !important; }
