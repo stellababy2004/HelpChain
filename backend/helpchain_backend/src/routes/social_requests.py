@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
+from sqlalchemy import func
 
 from backend.models import SocialRequest, Structure, User, db
 
@@ -40,6 +41,36 @@ def _utcnow():
 def list_requests():
     items = SocialRequest.query.order_by(SocialRequest.created_at.desc()).limit(200).all()
     return render_template("requests/list.html", items=items)
+
+
+@bp.get("/dashboard")
+def dashboard():
+    total = db.session.query(func.count(SocialRequest.id)).scalar()
+
+    active = db.session.query(func.count(SocialRequest.id)).filter(
+        SocialRequest.status.in_(["new", "in_progress"])
+    ).scalar()
+
+    resolved = db.session.query(func.count(SocialRequest.id)).filter(
+        SocialRequest.status == "resolved"
+    ).scalar()
+
+    closed = db.session.query(func.count(SocialRequest.id)).filter(
+        SocialRequest.status == "closed"
+    ).scalar()
+
+    urgent = db.session.query(func.count(SocialRequest.id)).filter(
+        SocialRequest.urgency == "high"
+    ).scalar()
+
+    return render_template(
+        "requests/dashboard.html",
+        total=total,
+        active=active,
+        resolved=resolved,
+        closed=closed,
+        urgent=urgent,
+    )
 
 
 @bp.get("/new")

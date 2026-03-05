@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+
+<h1 class="mb-4">Pilotage</h1>
+
+<div class="row g-3">
+
+<div class="col-md-3">
+<div class="card text-center">
+<div class="card-body">
+<h2>{{ total }}</h2>
+<div class="text-muted">Demandes totales</div>
+</div>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center">
+<div class="card-body">
+<h2>{{ active }}</h2>
+<div class="text-muted">Actives</div>
+</div>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center">
+<div class="card-body">
+<h2>{{ resolved }}</h2>
+<div class="text-muted">Resolues</div>
+</div>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center">
+<div class="card-body">
+<h2>{{ closed }}</h2>
+<div class="text-muted">Fermees</div>
+</div>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="card text-center border-danger">
+<div class="card-body">
+<h2 class="text-danger">{{ urgent }}</h2>
+<div class="text-muted">Urgentes</div>
+</div>
+</div>
+</div>
+
+</div>
+
+</div>
+{% endblock %}

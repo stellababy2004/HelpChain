@@ -77,3 +77,8 @@ def test_social_requests_pages(client, init_test_data, db_session):
     sr3 = SocialRequest.query.get(req_id)
     assert sr3 is not None
     assert sr3.status == "in_progress"
+
+
+def test_dashboard(client):
+    r = client.get("/requests/dashboard")
+    assert r.status_code == 200

@@ -6,7 +6,10 @@
       <h1 class="mb-0">Demandes</h1>
       <div class="text-muted">Dernieres 200 demandes.</div>
     </div>
-    <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle demande</a>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.dashboard') }}">Pilotage</a>
+      <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle demande</a>
+    </div>
   </div>
 
   <div class="table-responsive">
