@@ -1,0 +1,54 @@
+name: i18n Auto Translate (EU24)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "translations/fr/**"
+      - "translations/messages.pot"
+      - "translate_all.py"
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    if: ${{ secrets.DEEPL_API_KEY != '' }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install polib requests
+
+      - name: Translate missing strings from FR to EU24
+        env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: |
+          python translate_all.py \
+            --provider deepl \
+            --api-key "$DEEPL_API_KEY" \
+            --source-lang fr \
+            --target-langs bg,hr,cs,da,nl,en,et,fi,de,el,hu,ga,it,lv,lt,mt,pl,pt,ro,sk,sl,es,sv \
+            --root translations \
+            --compile
+
+      - name: Commit translation updates
+        run: |
+          if git diff --quiet; then
+            echo "No translation changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add translations
+          git commit -m "chore(i18n): auto-update EU24 translations from FR"
+          git push
