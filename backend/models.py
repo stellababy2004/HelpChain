@@ -837,6 +837,43 @@ class Request(db.Model):
     )
 
 
+class SocialRequest(db.Model):
+    __tablename__ = "social_requests"
+
+    id = Column(Integer, primary_key=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    need_type = Column(String(64), nullable=False)
+    urgency = Column(String(16), nullable=False, default="medium")
+    person_ref = Column(String(128), nullable=True)
+    description = Column(Text, nullable=False)
+    status = Column(String(16), nullable=False, default="new")
+    assigned_to_user_id = Column(
+        Integer, ForeignKey("users.id"), nullable=True, index=True
+    )
+    assigned_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+
+    structure = relationship("Structure", lazy="joined")
+    assigned_to_user = relationship("User", foreign_keys=[assigned_to_user_id], lazy="joined")
+
+    __table_args__ = (
+        Index(
+            "ix_social_requests_struct_status_created",
+            "structure_id",
+            "status",
+            "created_at",
+        ),
+        Index("ix_social_requests_status_urgency", "status", "urgency"),
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"<SocialRequest id={self.id} structure_id={self.structure_id} "
+            f"status={self.status}>"
+        )
+
+
 # Backward-compat alias (legacy code expects HelpRequest)
 HelpRequest = Request
 
