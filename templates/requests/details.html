@@ -92,6 +92,38 @@
     </div>
   </div>
 
+  <div class="card mt-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Suivi</h2>
+
+      <div class="d-flex flex-wrap gap-2">
+        <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="status" value="new">
+          <button class="btn btn-outline-secondary btn-sm" type="submit" {% if sr.status == "new" %}disabled{% endif %}>Nouvelle</button>
+        </form>
+
+        <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="status" value="in_progress">
+          <button class="btn btn-outline-primary btn-sm" type="submit" {% if sr.status == "in_progress" %}disabled{% endif %}>En cours</button>
+        </form>
+
+        <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="status" value="resolved">
+          <button class="btn btn-outline-success btn-sm" type="submit" {% if sr.status == "resolved" %}disabled{% endif %}>Traitee</button>
+        </form>
+
+        <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="status" value="closed">
+          <button class="btn btn-outline-dark btn-sm" type="submit" {% if sr.status == "closed" %}disabled{% endif %}>Fermee</button>
+        </form>
+      </div>
+
+      <div class="text-muted small mt-2">
+        Workflow MVP. Historique d'actions: prochaine iteration.
+      </div>
+    </div>
+  </div>
+
   <div class="alert alert-info mt-3 mb-0">
     <strong>Prochaine etape:</strong> Assignation + suivi (statuts) via actions ici.
   </div>

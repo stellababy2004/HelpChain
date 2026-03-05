@@ -20,6 +20,7 @@ URGENCIES = [
     ("medium", "Moyenne"),
     ("high", "Élevée"),
 ]
+ALLOWED_STATUSES = {"new", "in_progress", "resolved", "closed"}
 
 
 def _safe_int(v: str | None) -> int | None:
@@ -131,4 +132,19 @@ def unassign(req_id: int):
     sr.assigned_at = None
     db.session.commit()
     flash("Assignation supprimee.", "success")
+    return redirect(url_for("social_requests.details", req_id=req_id))
+
+
+@bp.post("/<int:req_id>/status")
+def set_status(req_id: int):
+    sr = SocialRequest.query.get_or_404(req_id)
+    new_status = (request.form.get("status") or "").strip()
+
+    if new_status not in ALLOWED_STATUSES:
+        flash("Statut invalide.", "danger")
+        return redirect(url_for("social_requests.details", req_id=req_id))
+
+    sr.status = new_status
+    db.session.commit()
+    flash("Statut mis a jour.", "success")
     return redirect(url_for("social_requests.details", req_id=req_id))

@@ -66,3 +66,14 @@ def test_social_requests_pages(client, init_test_data, db_session):
     assert sr2 is not None
     assert sr2.assigned_to_user_id is None
     assert sr2.assigned_at is None
+
+    status_resp = client.post(
+        f"/requests/{req_id}/status",
+        data={"status": "in_progress"},
+        follow_redirects=False,
+    )
+    assert status_resp.status_code in (302, 303)
+
+    sr3 = SocialRequest.query.get(req_id)
+    assert sr3 is not None
+    assert sr3.status == "in_progress"
