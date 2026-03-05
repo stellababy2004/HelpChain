@@ -12,6 +12,7 @@
     {% endfor %}
   </select>
   <button class="btn btn-outline-secondary" type="submit">Appliquer</button>
+  <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">Operations</a>
   <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">Retour liste</a>
 </form>
 

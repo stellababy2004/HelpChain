@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from sqlalchemy import func
@@ -94,6 +94,71 @@ def dashboard():
         resolved=resolved,
         closed=closed,
         urgent=urgent,
+        structures=structures,
+        selected_structure_id=sid,
+    )
+
+
+@bp.get("/operations")
+def operations():
+    sid = _structure_scope()
+    structures = Structure.query.order_by(Structure.name.asc()).all()
+
+    active_q = SocialRequest.query.filter(
+        SocialRequest.status.in_(["new", "in_progress"])
+    )
+    if sid:
+        active_q = active_q.filter(SocialRequest.structure_id == sid)
+    total_active = active_q.count()
+
+    urgent_q = SocialRequest.query.filter(
+        SocialRequest.urgency == "high",
+        SocialRequest.status.in_(["new", "in_progress"]),
+    )
+    if sid:
+        urgent_q = urgent_q.filter(SocialRequest.structure_id == sid)
+    urgent = urgent_q.count()
+
+    unassigned_q = SocialRequest.query.filter(
+        SocialRequest.assigned_to_user_id.is_(None),
+        SocialRequest.status.in_(["new", "in_progress"]),
+    )
+    if sid:
+        unassigned_q = unassigned_q.filter(SocialRequest.structure_id == sid)
+    unassigned = unassigned_q.count()
+
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow_start = today_start + timedelta(days=1)
+
+    resolved_today_q = db.session.query(func.count(SocialRequestEvent.id)).join(
+        SocialRequest, SocialRequest.id == SocialRequestEvent.request_id
+    ).filter(
+        SocialRequestEvent.event_type == "status_changed",
+        SocialRequestEvent.new_value == "resolved",
+        SocialRequestEvent.created_at >= today_start,
+        SocialRequestEvent.created_at < tomorrow_start,
+    )
+    if sid:
+        resolved_today_q = resolved_today_q.filter(SocialRequest.structure_id == sid)
+    resolved_today = resolved_today_q.scalar() or 0
+
+    recent_events_q = SocialRequestEvent.query.order_by(
+        SocialRequestEvent.created_at.desc()
+    )
+    if sid:
+        recent_events_q = recent_events_q.join(
+            SocialRequest, SocialRequest.id == SocialRequestEvent.request_id
+        ).filter(SocialRequest.structure_id == sid)
+    recent_events = recent_events_q.limit(30).all()
+
+    return render_template(
+        "requests/operations.html",
+        total_active=total_active,
+        urgent=urgent,
+        unassigned=unassigned,
+        resolved_today=resolved_today,
+        recent_events=recent_events,
         structures=structures,
         selected_structure_id=sid,
     )

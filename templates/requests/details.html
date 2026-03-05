@@ -71,10 +71,12 @@
       </div>
 
       <form method="post" action="{{ url_for('social_requests.unassign', req_id=sr.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="btn btn-outline-danger btn-sm" type="submit">Unassign</button>
       </form>
       {% else %}
       <form method="post" action="{{ url_for('social_requests.assign', req_id=sr.id) }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-md-8">
           <label class="form-label">Assigner a</label>
           <select class="form-select" name="assigned_to_user_id" required>
@@ -98,21 +100,25 @@
 
       <div class="d-flex flex-wrap gap-2">
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="new">
           <button class="btn btn-outline-secondary btn-sm" type="submit" {% if sr.status == "new" %}disabled{% endif %}>Nouvelle</button>
         </form>
 
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="in_progress">
           <button class="btn btn-outline-primary btn-sm" type="submit" {% if sr.status == "in_progress" %}disabled{% endif %}>En cours</button>
         </form>
 
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="resolved">
           <button class="btn btn-outline-success btn-sm" type="submit" {% if sr.status == "resolved" %}disabled{% endif %}>Traitee</button>
         </form>
 
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="closed">
           <button class="btn btn-outline-dark btn-sm" type="submit" {% if sr.status == "closed" %}disabled{% endif %}>Fermee</button>
         </form>

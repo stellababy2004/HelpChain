@@ -103,6 +103,11 @@ def test_dashboard(client):
     assert r.status_code == 200
 
 
+def test_operations(client):
+    r = client.get("/requests/operations")
+    assert r.status_code == 200
+
+
 def test_multi_structure_filtering(client, db_session, init_test_data):
     from backend.models import SocialRequest, Structure
 
@@ -147,3 +152,6 @@ def test_multi_structure_filtering(client, db_session, init_test_data):
 
     r_dash_scoped = client.get(f"/requests/dashboard?structure_id={structure_b.id}")
     assert r_dash_scoped.status_code == 200
+
+    r_ops_scoped = client.get(f"/requests/operations?structure_id={structure_b.id}")
+    assert r_ops_scoped.status_code == 200

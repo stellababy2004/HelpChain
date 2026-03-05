@@ -18,6 +18,9 @@
         <a class="btn btn-outline-primary" href="{{ url_for('social_requests.dashboard', structure_id=selected_structure_id) }}">
           Pilotage
         </a>
+        <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">
+          Operations
+        </a>
       </form>
       <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle demande</a>
     </div>

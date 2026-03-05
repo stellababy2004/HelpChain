@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h1 class="mb-0">HelpChain Operations</h1>
+      <div class="text-muted">Centre operationnel en temps reel.</div>
+    </div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">Retour demandes</a>
+  </div>
+
+  <form method="get" class="d-flex gap-2 align-items-center mb-4">
+    <select class="form-select" name="structure_id" style="max-width: 420px;">
+      <option value="" {% if not selected_structure_id %}selected{% endif %}>Toutes les structures</option>
+      {% for s in structures %}
+      <option value="{{ s.id }}" {% if selected_structure_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-outline-secondary" type="submit">Appliquer</button>
+  </form>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2>{{ total_active }}</h2>
+          <div class="text-muted">Demandes actives</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center border-danger">
+        <div class="card-body">
+          <h2 class="text-danger">{{ urgent }}</h2>
+          <div class="text-muted">Urgences</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2>{{ unassigned }}</h2>
+          <div class="text-muted">Non assignees</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2>{{ resolved_today }}</h2>
+          <div class="text-muted">Resolues aujourd'hui</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Activite en temps reel</h2>
+      <ul class="list-group">
+        {% for e in recent_events %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-semibold">{{ e.event_type }}</div>
+            <div class="text-muted small">
+              Demande #{{ e.request_id }}
+              {% if e.old_value or e.new_value %}
+                - {% if e.old_value %}{{ e.old_value }}{% endif %}{% if e.old_value and e.new_value %} -> {% endif %}{% if e.new_value %}{{ e.new_value }}{% endif %}
+              {% endif %}
+            </div>
+          </div>
+          <div class="text-muted small">{{ e.created_at }}</div>
+        </li>
+        {% else %}
+        <li class="list-group-item text-muted">Aucune activite recente.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  setInterval(function () {
+    window.location.reload();
+  }, 10000);
+</script>
+{% endblock %}
