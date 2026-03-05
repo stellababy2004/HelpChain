@@ -37,29 +37,53 @@ def _utcnow():
     return datetime.utcnow()
 
 
+def _structure_scope():
+    return _safe_int(request.args.get("structure_id"))
+
+
 @bp.get("")
 def list_requests():
-    items = SocialRequest.query.order_by(SocialRequest.created_at.desc()).limit(200).all()
-    return render_template("requests/list.html", items=items)
+    sid = _structure_scope()
+    q = SocialRequest.query
+
+    if sid:
+        q = q.filter(SocialRequest.structure_id == sid)
+
+    items = q.order_by(SocialRequest.created_at.desc()).limit(200).all()
+    structures = Structure.query.order_by(Structure.name.asc()).all()
+
+    return render_template(
+        "requests/list.html",
+        items=items,
+        structures=structures,
+        selected_structure_id=sid,
+    )
 
 
 @bp.get("/dashboard")
 def dashboard():
-    total = db.session.query(func.count(SocialRequest.id)).scalar()
+    sid = _structure_scope()
+    structures = Structure.query.order_by(Structure.name.asc()).all()
 
-    active = db.session.query(func.count(SocialRequest.id)).filter(
+    base = db.session.query(SocialRequest)
+    if sid:
+        base = base.filter(SocialRequest.structure_id == sid)
+
+    total = base.with_entities(func.count(SocialRequest.id)).scalar()
+
+    active = base.with_entities(func.count(SocialRequest.id)).filter(
         SocialRequest.status.in_(["new", "in_progress"])
     ).scalar()
 
-    resolved = db.session.query(func.count(SocialRequest.id)).filter(
+    resolved = base.with_entities(func.count(SocialRequest.id)).filter(
         SocialRequest.status == "resolved"
     ).scalar()
 
-    closed = db.session.query(func.count(SocialRequest.id)).filter(
+    closed = base.with_entities(func.count(SocialRequest.id)).filter(
         SocialRequest.status == "closed"
     ).scalar()
 
-    urgent = db.session.query(func.count(SocialRequest.id)).filter(
+    urgent = base.with_entities(func.count(SocialRequest.id)).filter(
         SocialRequest.urgency == "high"
     ).scalar()
 
@@ -70,6 +94,8 @@ def dashboard():
         resolved=resolved,
         closed=closed,
         urgent=urgent,
+        structures=structures,
+        selected_structure_id=sid,
     )
 
 

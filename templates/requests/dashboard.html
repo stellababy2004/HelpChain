@@ -4,6 +4,17 @@
 
 <h1 class="mb-4">Pilotage</h1>
 
+<form method="get" class="d-flex gap-2 align-items-center mb-3">
+  <select class="form-select" name="structure_id" style="max-width: 420px;">
+    <option value="" {% if not selected_structure_id %}selected{% endif %}>Toutes les structures</option>
+    {% for s in structures %}
+    <option value="{{ s.id }}" {% if selected_structure_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn btn-outline-secondary" type="submit">Appliquer</button>
+  <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">Retour liste</a>
+</form>
+
 <div class="row g-3">
 
 <div class="col-md-3">

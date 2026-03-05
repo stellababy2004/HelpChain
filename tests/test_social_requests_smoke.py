@@ -82,3 +82,49 @@ def test_social_requests_pages(client, init_test_data, db_session):
 def test_dashboard(client):
     r = client.get("/requests/dashboard")
     assert r.status_code == 200
+
+
+def test_multi_structure_filtering(client, db_session, init_test_data):
+    from backend.models import SocialRequest, Structure
+
+    structure_a = init_test_data["structure"]
+    structure_b = Structure.query.filter_by(slug="second").first()
+    if not structure_b:
+        structure_b = Structure(name="Second", slug="second")
+        db_session.add(structure_b)
+        db_session.commit()
+
+    req_a = SocialRequest(
+        structure_id=structure_a.id,
+        need_type="aide_alimentaire",
+        urgency="medium",
+        person_ref=None,
+        description="Request A",
+        status="new",
+    )
+    req_b = SocialRequest(
+        structure_id=structure_b.id,
+        need_type="urgence_sociale",
+        urgency="high",
+        person_ref=None,
+        description="Request B",
+        status="new",
+    )
+    db_session.add(req_a)
+    db_session.add(req_b)
+    db_session.commit()
+
+    r_all = client.get("/requests")
+    assert r_all.status_code == 200
+    body_all = r_all.get_data(as_text=True)
+    assert "aide_alimentaire" in body_all
+    assert "urgence_sociale" in body_all
+
+    r_scoped = client.get(f"/requests?structure_id={structure_a.id}")
+    assert r_scoped.status_code == 200
+    body_scoped = r_scoped.get_data(as_text=True)
+    assert "aide_alimentaire" in body_scoped
+    assert "urgence_sociale" not in body_scoped
+
+    r_dash_scoped = client.get(f"/requests/dashboard?structure_id={structure_b.id}")
+    assert r_dash_scoped.status_code == 200

@@ -7,7 +7,18 @@
       <div class="text-muted">Dernieres 200 demandes.</div>
     </div>
     <div class="d-flex gap-2">
-      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.dashboard') }}">Pilotage</a>
+      <form method="get" class="d-flex gap-2 align-items-center">
+        <select class="form-select" name="structure_id" style="max-width: 360px;">
+          <option value="" {% if not selected_structure_id %}selected{% endif %}>Toutes les structures</option>
+          {% for s in structures %}
+          <option value="{{ s.id }}" {% if selected_structure_id == s.id %}selected{% endif %}>{{ s.name }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-outline-secondary" type="submit">Filtrer</button>
+        <a class="btn btn-outline-primary" href="{{ url_for('social_requests.dashboard', structure_id=selected_structure_id) }}">
+          Pilotage
+        </a>
+      </form>
       <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle demande</a>
     </div>
   </div>
