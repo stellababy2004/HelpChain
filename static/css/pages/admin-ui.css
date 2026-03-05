@@ -25,6 +25,12 @@
 .hc-admin-headerCard{
   padding: 14px 16px;
 }
+.hc-case-header .badge{
+  font-weight: 600;
+}
+.hc-case-header .btn{
+  white-space: nowrap;
+}
 .hc-admin-headerTop{
   margin-bottom: 8px;
 }

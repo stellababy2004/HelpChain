@@ -6,72 +6,122 @@
 
 {% block content %}
 {% set is_locked = is_locked|default(false) %}
+{% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
 <div class="hc-admin-wrap">
 
-  <!-- Top bar -->
-  <div class="d-flex align-items-start align-items-md-center justify-content-between gap-3 mb-3">
-    <div>
-      <div class="text-muted small">Admin</div>
-      <h2 class="mb-1 fw-bold">Request #{{ req.id }}</h2>
-      <div class="text-muted small">
-        <span class="me-2">Status:</span>
-        {% set sm = status_meta(req.status) %}
-        <span class="{{ sm.badge_class }}">
-          <i class="bi {{ sm.icon }} me-1"></i>{{ sm.label }}
-        </span>
-        <span class="mx-2">|</span>
-        <span class="me-2">Priority:</span>
-        {% set _prio = (req.priority or 'medium')|lower %}
-        {% if _prio == 'urgent' %}
-          <span class="badge text-bg-danger">{{ _prio }}</span>
-        {% elif _prio == 'low' %}
-          <span class="badge text-bg-secondary">{{ _prio }}</span>
-        {% else %}
-          <span class="badge text-bg-warning text-dark">{{ _prio }}</span>
-        {% endif %}
-        <span class="mx-2">|</span>
-        <span class="me-2">Category:</span>
-        <span class="badge text-bg-light border">{{ req.category }}</span>
-        <div class="mt-2">
-          <span class="me-2">Created:</span>
-          <strong>{{ req.created_at.strftime("%d %b %Y, %H:%M") if req.created_at else "-" }}</strong>
-          {% if req.completed_at %}
-            <span class="mx-2">|</span>
-            <span class="me-2">Closed:</span>
-            <strong>{{ req.completed_at.strftime("%d %b %Y, %H:%M") }}</strong>
+  {% set sm = status_meta(req.status) %}
+  {% set _prio = (req.priority or 'medium')|lower %}
+  {% set is_closed_status = ((req.status or '')|upper == 'CLOSED') %}
+
+  <div class="card border-0 shadow-sm mb-3 hc-case-header">
+    <div class="card-body">
+      <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+        <div>
+          <div class="text-muted small">Dossier #{{ req.id }}</div>
+          <h2 class="mb-1 fw-bold">{{ req.title or ("Demande #" ~ req.id) }}</h2>
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="{{ sm.badge_class }}">
+              <i class="bi {{ sm.icon }} me-1"></i>{{ sm.label }}
+            </span>
+            {% if _prio == 'urgent' %}
+              <span class="badge text-bg-danger">Urgence: {{ _prio }}</span>
+            {% elif _prio == 'low' %}
+              <span class="badge text-bg-secondary">Urgence: {{ _prio }}</span>
+            {% else %}
+              <span class="badge text-bg-warning text-dark">Urgence: {{ _prio }}</span>
+            {% endif %}
+            <span class="badge text-bg-light border">{{ req.category }}</span>
+          </div>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Back to requests</a>
+      </div>
+
+      <div class="row g-2 mt-2 small text-muted">
+        <div class="col-md-3"><strong>Ville:</strong> {{ req.city or "—" }}</div>
+        <div class="col-md-3"><strong>Structure:</strong> {{ req.structure_id or "—" }}</div>
+        <div class="col-md-3">
+          <strong>Responsable:</strong>
+          {% if req.owner %}
+            {{ req.owner.username }}
+          {% elif req.owner_id %}
+            #{{ req.owner_id }}
+          {% else %}
+            —
           {% endif %}
         </div>
-      </div>
-    </div>
-
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">
-      <- Back
-    </a>
-  </div>
-
-  <!-- Contact quick actions -->
-  <div class="card border-0 shadow-sm mb-3">
-    <div class="card-body">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <div class="fw-semibold">Quick actions</div>
-        <div class="text-muted small">One-click contact + copy</div>
+        <div class="col-md-3"><strong>Derniere activite:</strong> {{ req.updated_at or req.created_at or "-" }}</div>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap mt-3">
+      <div class="d-flex flex-wrap align-items-end gap-2 mt-3">
+        {% if not req.owner_id %}
+          <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled{% endif %}>Assign</button>
+          </form>
+        {% elif can_edit %}
+          <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled{% endif %}>Unassign</button>
+          </form>
+        {% endif %}
+
+        {% if can_edit %}
+          <form method="post" action="{{ url_for('admin.update_status', req_id=req.id) }}" class="d-flex align-items-center gap-2" id="headerStatusForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <select name="status" class="form-select form-select-sm" style="max-width: 180px;" id="headerStatusSelect">
+              {% for s in REQUEST_STATUS_ORDER %}
+                <option value="{{ s }}" {% if (req.status == s) or ((req.status or '')|upper == s) %}selected{% endif %}>{{ status_meta(s).label }}</option>
+              {% endfor %}
+            </select>
+            <div id="headerResolutionWrap" style="display:none; min-width: 260px;">
+              <input
+                id="headerResolutionNote"
+                name="resolution_note"
+                class="form-control form-control-sm"
+                minlength="5"
+                placeholder="Outcome / Resolution"
+              >
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Save status</button>
+          </form>
+
+          <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm" {% if is_closed_status %}disabled{% endif %}>Close / Archive</button>
+          </form>
+        {% endif %}
+
         {% if req.phone %}
           <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">Call</a>
           <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.phone }}">Copy phone</button>
         {% endif %}
-
         {% if req.email %}
           <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">Email</a>
           <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.email }}">Copy email</button>
         {% endif %}
-
-        {% if not req.phone and not req.email %}
-          <div class="text-muted small">No contact details provided.</div>
-        {% endif %}
       </div>
+      <script>
+        (function () {
+          const form = document.getElementById("headerStatusForm");
+          const status = document.getElementById("headerStatusSelect");
+          const wrap = document.getElementById("headerResolutionWrap");
+          const note = document.getElementById("headerResolutionNote");
+          if (!form || !status || !wrap || !note) return;
+          const toggle = () => {
+            const need = (status.value || "").toUpperCase() === "COMPLETED";
+            wrap.style.display = need ? "block" : "none";
+            note.required = need;
+          };
+          status.addEventListener("change", toggle);
+          form.addEventListener("submit", function (e) {
+            if ((status.value || "").toUpperCase() === "COMPLETED" && !note.value.trim()) {
+              e.preventDefault();
+              note.focus();
+            }
+          });
+          toggle();
+        })();
+      </script>
     </div>
   </div>
 
@@ -316,8 +366,6 @@
       {% endif %}
     </div>
   </div>
-
-  {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
 
   <!-- Main grid -->
   <div class="hc-admin-grid">
@@ -811,5 +859,4 @@
   {{ super() }}
   <script src="{{ url_for('static', filename='js/admin-volunteer-drawer.js') }}"></script>
 {% endblock %}
-
 
