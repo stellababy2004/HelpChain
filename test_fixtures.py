@@ -29,6 +29,9 @@ def db_schema(app):
         import backend.models  # noqa: F401
         import backend.models_with_analytics  # noqa: F401
 
+        # Force clean schema each test run; create_all() does not add missing
+        # columns on existing tables (e.g. newly added Request risk fields).
+        db.drop_all()
         db.create_all()
 
         from backend.models import Structure
