@@ -1,4 +1,0 @@
-Health check
-HelpChain.live
-Run health check
-Server status: checking

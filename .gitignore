@@ -203,3 +203,16 @@ top_bad_endpoints.py
 .dev/
 *_write_test*
 *.db-journal
+
+# AI cache
+.hf_cache/
+.hf_cache_test/
+
+# reports
+reports/
+
+# translation backups
+*.po.bak*
+
+# temp
+tmp/
