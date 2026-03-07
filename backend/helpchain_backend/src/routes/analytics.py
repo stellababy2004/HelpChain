@@ -12,6 +12,7 @@ from flask import (
     session,
     url_for,
 )
+from flask_babel import gettext as _
 
 from ..extensions import csrf
 
@@ -29,7 +30,7 @@ def analytics_page():
     if session.get("admin_logged_in"):
         return redirect(url_for("admin_analytics"))
     else:
-        flash("Аналитиката е достъпна само за администратори.", "info")
+        flash(_("Analytics is available only to administrators."), "info")
         return redirect(url_for("admin_login"))
 
 

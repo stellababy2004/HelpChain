@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • Translations | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap hc-density-compact">
+  <div class="hc-card mb-3 hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Translations</h1>
+        <div class="hc-muted">DB overrides (fallback: gettext/default)</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Back to requests</a>
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_translations_coverage') }}">Coverage</a>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <span class="badge text-bg-light border">{{ locale|upper }} localization</span>
+      {% if is_translation_frozen %}
+        <span class="badge text-bg-dark">FREEZE</span>
+      {% endif %}
+      {% if is_locale_locked %}
+        <span class="badge text-bg-danger">LOCKED</span>
+      {% endif %}
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">Registry keys</div>
+        <div class="hc-kpi__value">{{ kpi.total }}</div>
+      </div>
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">DB overrides</div>
+        <div class="hc-kpi__value">{{ kpi.overrides }}</div>
+      </div>
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">Missing</div>
+        <div class="hc-kpi__value">{{ kpi.missing }}</div>
+      </div>
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">Coverage</div>
+        <div class="hc-kpi__value">{{ kpi.coverage }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3">
+    {% if is_translation_frozen %}
+      <div class="alert alert-warning py-2 mb-3">
+        <strong>Translation freeze active for release.</strong>
+        New keys, bulk apply, bootstrap and delete are blocked.
+        {% if translation_freeze and translation_freeze.release_tag %}
+          <span class="ms-1">Release: {{ translation_freeze.release_tag }}.</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if can_l10n_delete %}
+      <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <form method="post" action="{{ url_for('admin.admin_translations_locale_lock') }}" class="d-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="locale" value="{{ locale }}">
+          <input type="hidden" name="view" value="{{ view }}">
+          <input type="hidden" name="action" value="{% if is_locale_locked %}unlock{% else %}lock{% endif %}">
+          <input type="hidden" name="next" value="{{ url_for('admin.admin_translations_list', locale=locale, view=view, only_missing='1' if only_missing else None, q=q or None) }}">
+          <button class="btn btn-sm {% if is_locale_locked %}btn-outline-danger{% else %}btn-outline-warning{% endif %}" type="submit">
+            {% if is_locale_locked %}Unlock locale{% else %}Lock locale{% endif %}
+          </button>
+        </form>
+        {% if locale_lock and locale_lock.note %}
+          <span class="small text-muted">Note: {{ locale_lock.note }}</span>
+        {% endif %}
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+        <form method="post" action="{{ url_for('admin.admin_translations_freeze_toggle') }}" class="d-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="{% if is_translation_frozen %}deactivate{% else %}activate{% endif %}">
+          <input type="hidden" name="next" value="{{ url_for('admin.admin_translations_list', locale=locale, view=view, only_missing='1' if only_missing else None, q=q or None) }}">
+          <input type="text" name="release_tag" class="form-control form-control-sm d-inline-block" style="width: 140px;" placeholder="Release tag" value="{{ translation_freeze.release_tag if translation_freeze else '' }}">
+          <input type="text" name="note" class="form-control form-control-sm d-inline-block" style="width: 220px;" placeholder="Freeze note (optional)" value="{{ translation_freeze.note if translation_freeze else '' }}">
+          <button class="btn btn-sm {% if is_translation_frozen %}btn-outline-dark{% else %}btn-dark{% endif %}" type="submit">
+            {% if is_translation_frozen %}Deactivate freeze{% else %}Activate freeze{% endif %}
+          </button>
+        </form>
+      </div>
+    {% endif %}
+
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+      <input class="form-control" name="q" placeholder="Search key..." value="{{ q }}" style="max-width: 420px;">
+
+      <select class="form-select" name="locale" style="max-width: 180px;">
+        {% for lc in supported_locales %}
+          <option value="{{ lc }}" {% if lc == locale %}selected{% endif %}>{{ lc }}</option>
+        {% endfor %}
+      </select>
+
+      <select class="form-select" name="view" style="max-width: 220px;">
+        <option value="ops" {% if view == 'ops' %}selected{% endif %}>Ops (core)</option>
+        <option value="core" {% if view == 'core' %}selected{% endif %}>Core (all)</option>
+        <option value="inventory" {% if view == 'inventory' %}selected{% endif %}>Inventory (QA)</option>
+        <option value="all" {% if view == 'all' %}selected{% endif %}>All</option>
+      </select>
+
+      <label class="form-check mb-0">
+        <input class="form-check-input" type="checkbox" name="only_missing" value="1" {% if only_missing %}checked{% endif %}>
+        <span class="form-check-label">Only missing</span>
+      </label>
+
+      <button class="btn btn-primary" type="submit">Filter</button>
+    </form>
+
+    {% if view in ['ops', 'core'] %}
+      <div class="mt-3">
+        <div id="hc-i18n-preview" class="alert alert-info py-2 d-none mb-2" role="alert">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div>
+              <div id="hc-i18n-preview-title" class="fw-semibold d-flex align-items-center gap-2">
+                <span id="hc-i18n-preview-mode-badge" class="badge text-bg-secondary d-none">MODE</span>
+                <span id="hc-i18n-preview-title-text"></span>
+              </div>
+              <div id="hc-i18n-preview-body" class="small mt-1"></div>
+            </div>
+            <div class="d-flex flex-column gap-1">
+              {% if can_l10n_write and not is_translation_frozen %}
+                <button id="hc-i18n-run-now" type="button" class="btn btn-sm btn-success d-none">Run now</button>
+              {% else %}
+                <span class="badge text-bg-light border">{% if is_translation_frozen %}Freeze{% elif is_locale_locked %}Locked{% else %}Read-only{% endif %}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            data-hc-i18n-preview="rules"
+            data-locale="{{ locale }}"
+            data-view="{{ view }}"
+            data-limit="200"
+          >
+            Preview auto-fill (rules)
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            data-hc-i18n-preview="po"
+            data-locale="{{ locale }}"
+            data-view="{{ view }}"
+            data-limit="300"
+          >
+            Preview bootstrap (PO)
+          </button>
+        </div>
+        {% if can_l10n_write and not is_translation_frozen %}
+          <form method="post" action="{{ url_for('admin.admin_translations_bulk_suggest_apply') }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="locale" value="{{ locale }}">
+            <input type="hidden" name="view" value="{{ view }}">
+            <input type="hidden" name="limit" value="200">
+            <input type="hidden" name="next" value="{{ url_for('admin.admin_translations_list', locale=locale, view=view, only_missing='1' if only_missing else None, q=q or None) }}">
+            <button
+              class="btn btn-sm btn-primary"
+              type="submit"
+              onclick="return confirm('Auto-fill missing translations with rules? (locale={{ locale }}, view={{ view }})');"
+            >
+              Auto-fill missing (rules)
+            </button>
+          </form>
+          <form method="post" action="{{ url_for('admin.admin_translations_bootstrap_from_po') }}" class="d-inline ms-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="locale" value="{{ locale }}">
+            <input type="hidden" name="view" value="{{ view }}">
+            <input type="hidden" name="limit" value="300">
+            <input type="hidden" name="next" value="{{ url_for('admin.admin_translations_list', locale=locale, view=view, only_missing='1' if only_missing else None, q=q or None) }}">
+            <button
+              class="btn btn-sm btn-outline-primary"
+              type="submit"
+              onclick="return confirm('Bootstrap missing msgid:* keys from gettext (.po/.mo) without overwrite? (locale={{ locale }}, view={{ view }})');"
+            >
+              Bootstrap from PO (no overwrite)
+            </button>
+          </form>
+        {% else %}
+          <span class="badge text-bg-light border">
+            {% if is_translation_frozen %}Freeze active: preview only{% elif is_locale_locked %}Locale locked: preview only{% else %}Read-only access: preview only{% endif %}
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="hc-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 45%;">Key</th>
+            <th style="width: 10%;">Locale</th>
+            <th>{% if only_missing %}Default{% else %}DB text{% endif %}</th>
+            <th style="width: 10%;">Status</th>
+            <th style="width: 10%;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if only_missing %}
+            {% for row in missing_registry %}
+              <tr>
+                <td>
+                  <code>{{ row.key }}</code>
+                  {% if row.domain %}
+                    <div class="small text-muted">{{ row.domain }}</div>
+                  {% endif %}
+                  {% if row.tier %}
+                    <div class="small text-muted">tier: {{ row.tier }}</div>
+                  {% endif %}
+                </td>
+                <td><span class="badge text-bg-secondary">{{ locale }}</span></td>
+                <td class="text-truncate" style="max-width: 520px;">{{ row.default or "—" }}</td>
+                <td><span class="badge text-bg-warning text-dark">Missing (DB)</span></td>
+                <td>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_translations_key', key=row.key, locale=locale) }}">Add</a>
+                </td>
+              </tr>
+            {% endfor %}
+            {% if not missing_registry %}
+              <tr>
+                <td colspan="5" class="text-muted">No missing keys for this locale.</td>
+              </tr>
+            {% endif %}
+          {% else %}
+            {% for row in items %}
+              <tr>
+                <td><code>{{ row.key }}</code></td>
+                <td><span class="badge text-bg-secondary">{{ row.locale }}</span></td>
+                <td class="text-truncate" style="max-width: 520px;">{{ row.text }}</td>
+                <td><span class="badge text-bg-success">DB override</span></td>
+                <td>
+                  <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_translations_key', key=row.key, locale=locale) }}">Edit</a>
+                </td>
+              </tr>
+            {% endfor %}
+            {% if not items %}
+              <tr>
+                <td colspan="5" class="text-muted">No DB overrides for this locale.</td>
+              </tr>
+            {% endif %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if pagination and pagination.pages > 1 %}
+    <nav class="mt-3">
+      <ul class="pagination">
+        {% if pagination.has_prev %}
+          <li class="page-item"><a class="page-link" href="{{ url_for('admin.admin_translations_list', q=q, locale=locale, view=view, page=pagination.prev_num, only_missing='1' if only_missing else None) }}">Prev</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Prev</span></li>
+        {% endif %}
+
+        <li class="page-item disabled"><span class="page-link">Page {{ pagination.page }} / {{ pagination.pages }}</span></li>
+
+        {% if pagination.has_next %}
+          <li class="page-item"><a class="page-link" href="{{ url_for('admin.admin_translations_list', q=q, locale=locale, view=view, page=pagination.next_num, only_missing='1' if only_missing else None) }}">Next</a></li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-translations-preview.js') }}"></script>
+{% endblock %}

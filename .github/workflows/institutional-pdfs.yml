@@ -1,0 +1,53 @@
+name: Build Institutional PDFs (EU)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "docs/institutions/source/**"
+      - "scripts/translate_docs.py"
+      - "scripts/build_pdfs.py"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+          sudo apt-get update
+          sudo apt-get install -y pandoc wkhtmltopdf
+
+      - name: Translate source markdown to EU languages
+        env:
+          TRANSLATION_PROVIDER: deepl
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
+        run: |
+          if [ -z "$DEEPL_API_KEY" ]; then
+            echo "Missing DEEPL_API_KEY secret."
+            exit 1
+          fi
+          python scripts/translate_docs.py
+
+      - name: Build PDFs
+        run: |
+          python scripts/build_pdfs.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: institutional-pdfs-eu
+          path: docs/institutions/pdfs
+

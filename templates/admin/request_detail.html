@@ -1,27 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Request #{{ req.id }}{% endblock %}
+{% block title %}{{ _('Request') }} #{{ req.id }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-  <a href="{{ url_for('admin.admin_requests') }}">&larr; Back</a>
+  <a href="{{ url_for('admin.admin_requests') }}">&larr; {{ _('Back') }}</a>
 
-  <h2 class="mt-3">Request #{{ req.id }} - {{ req.title }}</h2>
-  <p><b>Status:</b> {{ req.status }} | <b>Priority:</b> {{ req.priority }} | <b>Category:</b> {{ req.category }}</p>
+  <h2 class="mt-3">{{ _('Request') }} #{{ req.id }} - {{ req.title }}</h2>
+  <p><b>{{ _('Status:') }}</b> {{ req.status }} | <b>{{ _('Priority:') }}</b> {{ req.priority }} | <b>{{ _('Category:') }}</b> {{ req.category }}</p>
 
   <div class="card p-3 mb-3">
-    <p><b>Name:</b> {{ req.name }}</p>
-    <p><b>Phone:</b> {{ req.phone or '-' }}</p>
-    <p><b>Email:</b> {{ req.email or '-' }}</p>
-    <p><b>Location:</b> {{ req.location_text or '-' }}</p>
-    <p class="mb-0"><b>Description:</b><br>{{ req.description }}</p>
+    <p><b>{{ _('Name:') }}</b> {{ req.name }}</p>
+    <p><b>{{ _('Phone:') }}</b> {{ req.phone or '-' }}</p>
+    <p><b>{{ _('Email:') }}</b> {{ req.email or '-' }}</p>
+    <p><b>{{ _('Location:') }}</b> {{ req.location_text or '-' }}</p>
+    <p class="mb-0"><b>{{ _('Description:') }}</b><br>{{ req.description }}</p>
   </div>
 
   <form method="POST" action="{{ url_for('admin.admin_request_set_status', req_id=req.id) }}" class="d-flex gap-2 flex-wrap">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button class="btn btn-success" name="status" value="approved">Approve</button>
-    <button class="btn btn-primary" name="status" value="in_progress">In Progress</button>
-    <button class="btn btn-secondary" name="status" value="done">Done</button>
-    <button class="btn btn-danger" name="status" value="rejected">Reject</button>
+    <button class="btn btn-success" name="status" value="approved">{{ _('Approve') }}</button>
+    <button class="btn btn-primary" name="status" value="in_progress">{{ _('In Progress') }}</button>
+    <button class="btn btn-secondary" name="status" value="done">{{ _('Done') }}</button>
+    <button class="btn btn-danger" name="status" value="rejected">{{ _('Reject') }}</button>
   </form>
 </div>
 {% endblock %}

@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • Translation {{ key }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap hc-density-compact">
+  <div class="hc-card mb-3 hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ _('Edit translation') }}</h1>
+        <div class="hc-muted"><code>{{ key }}</code></div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_translations_list', locale=locale) }}">{{ _('Back') }}</a>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3">
+    <form method="get" class="d-flex gap-2 align-items-center">
+      <input type="hidden" name="key" value="{{ key }}">
+      <select class="form-select" name="locale" style="max-width: 180px;" onchange="this.form.submit()" data-hc-locale>
+        {% for lc in supported_locales %}
+          <option value="{{ lc }}" {% if lc == locale %}selected{% endif %}>{{ lc }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  <div class="hc-card">
+    {% if registry_domain or registry_default %}
+      <div class="mb-3">
+        {% if registry_domain %}
+          <span class="badge text-bg-light border">{{ registry_domain }}</span>
+        {% endif %}
+        {% if registry_default %}
+          <div class="small text-muted mt-2">{{ _('Default:') }} {{ registry_default }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="mb-3">
+      {% if status == "db_override" %}
+        <span class="badge text-bg-success">{{ _('DB override') }}</span>
+      {% elif status == "fallback" %}
+        <span class="badge text-bg-secondary">{{ _('Fallback') }}</span>
+      {% else %}
+        <span class="badge text-bg-warning text-dark">{{ _('Missing') }}</span>
+      {% endif %}
+      {% if is_translation_frozen %}
+        <span class="badge text-bg-dark ms-1">{{ _('FREEZE') }}</span>
+      {% endif %}
+      {% if is_locale_locked %}
+        <span class="badge text-bg-danger ms-1">{{ _('LOCKED') }}</span>
+      {% endif %}
+      {% if not can_l10n_write %}
+        <span class="badge text-bg-light border ms-1">{% if is_locale_locked %}{{ _('Locked') }}{% else %}{{ _('Read-only') }}{% endif %}</span>
+      {% endif %}
+      {% if locale_lock and locale_lock.note %}
+        <div class="small text-muted mt-2">{{ _('Lock note:') }} {{ locale_lock.note }}</div>
+      {% endif %}
+      {% if last_event %}
+        <div class="small text-muted mt-2">
+          {{ _('Last modified:') }} {{ last_event.created_at }}{% if last_event.actor_email %} {{ _('by') }} {{ last_event.actor_email }}{% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">{{ _('Fallback preview') }} ({{ locale }})</label>
+      <div class="form-control" style="min-height: 42px;">{{ fallback_text }}</div>
+    </div>
+
+    {% if can_l10n_write %}
+      {% if is_translation_frozen and not row %}
+        <div class="alert alert-warning py-2">
+          {{ _('Translation freeze is active. Creating new override keys is blocked for this release.') }}
+        </div>
+      {% endif %}
+      <form method="post" action="{{ url_for('admin.admin_translations_upsert') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="key" value="{{ key }}">
+        <input type="hidden" name="locale" value="{{ locale }}">
+
+        <div class="mb-3">
+          <label class="form-label">{{ _('DB override') }} ({{ locale }})</label>
+          <textarea class="form-control" name="text" rows="4" placeholder="{{ _('Enter translation...') }}" data-hc-translation-text>{{ row.text if row else "" }}</textarea>
+          <div class="form-text">{{ _('Saved in DB. If deleted, fallback will be used.') }}</div>
+        </div>
+
+        <button class="btn btn-primary" type="submit" {% if is_translation_frozen and not row %}disabled{% endif %}>{{ _('Save') }}</button>
+      </form>
+    {% else %}
+      <div class="mb-3">
+        <label class="form-label">{{ _('DB override') }} ({{ locale }})</label>
+        <textarea class="form-control" rows="4" readonly data-hc-translation-text>{{ row.text if row else "" }}</textarea>
+        <div class="form-text">{{ _('Read-only mode.') }}</div>
+      </div>
+    {% endif %}
+
+    <div class="hc-card mt-3 p-3">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <div class="fw-semibold">{{ _('Suggestions (Rules-based)') }}</div>
+          <div class="text-muted small">{{ _('Rules + free AI (hf_local, fallback-safe).') }}</div>
+        </div>
+        <div class="d-flex gap-2">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            data-hc-suggest-btn
+            data-key="{{ key }}"
+            data-locale="{{ locale }}"
+            data-csrf="{{ csrf_token() }}"
+            data-endpoint="/admin/translations/suggest"
+            data-provider="rules"
+          >
+            {{ _('Suggestions (rules)') }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            data-hc-suggest-btn
+            data-key="{{ key }}"
+            data-locale="{{ locale }}"
+            data-csrf="{{ csrf_token() }}"
+            data-endpoint="/admin/translations/ai-suggest"
+            data-provider="hf_local"
+          >
+            {{ _('AI Suggest (free)') }}
+          </button>
+        </div>
+      </div>
+      <div class="mt-2 text-muted small" data-hc-suggest-status></div>
+      <div class="mt-2" data-hc-suggest-list></div>
+    </div>
+
+    <hr>
+
+    {% if can_l10n_delete and not is_translation_frozen %}
+      <form method="post" action="{{ url_for('admin.admin_translations_delete') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="key" value="{{ key }}">
+        <input type="hidden" name="locale" value="{{ locale }}">
+        <button class="btn btn-outline-danger" type="submit">{{ _('Delete DB override') }}</button>
+      </form>
+    {% elif can_l10n_delete and is_translation_frozen %}
+      <span class="badge text-bg-light border">{{ _('Freeze active: delete blocked') }}</span>
+    {% endif %}
+
+    <hr>
+
+    <div>
+      <h2 class="h6 mb-2">{{ _('Translation History') }}</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 20%">{{ _('Time') }}</th>
+              <th style="width: 12%">{{ _('Action') }}</th>
+              <th style="width: 12%">{{ _('Source') }}</th>
+              <th style="width: 16%">{{ _('Admin') }}</th>
+              <th>{{ _('Change') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ev in history_events %}
+              <tr>
+                <td class="small text-muted">{{ ev.created_at }}</td>
+                <td><span class="badge text-bg-light border">{{ ev.action }}</span></td>
+                <td><span class="badge text-bg-light border">{{ ev.source }}</span></td>
+                <td class="small">{{ ev.actor_email or "—" }}</td>
+                <td class="small">
+                  {% if ev.old_text or ev.new_text %}
+                    <span class="text-muted">{{ ev.old_text or "∅" }}</span>
+                    <span class="mx-1">→</span>
+                    <span>{{ ev.new_text or "∅" }}</span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            {% if not history_events %}
+              <tr>
+                <td colspan="5" class="text-muted">{{ _('No history events yet.') }}</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/admin-translations-suggest.js') }}"></script>
+{% endblock %}

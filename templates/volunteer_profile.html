@@ -10,33 +10,31 @@
       <div class="hc-prof__headLeft">
         <h1 class="hc-prof__title">{{ _('Профил на доброволец') }}</h1>
         <p class="hc-prof__subtitle">
-          Направи профила си ясен за хората, които имат нужда от теб.
-          Колкото по-точно опишеш <strong>къде</strong>, <strong>кога</strong> и <strong>как</strong> можеш да помогнеш,
-          толкова по-подходящи заявки ще виждаш.
+          {{ _('Make your profile clear for people who need your help. The more clearly you describe <strong>where</strong>, <strong>when</strong> and <strong>how</strong> you can help, the more relevant requests you will see.')|safe }}
         </p>
         <p class="hc-muted" style="margin:6px 0 0;">
-          Нищо не се поема автоматично - ти решаваш дали и кога да се включиш.
+          {{ _('Nothing is accepted automatically - you decide if and when to participate.') }}
         </p>
         {% set flashes = get_flashed_messages(with_categories=true) if get_flashed_messages is defined else [] %}
         {% if flashes %}
           {% for cat, msg in flashes %}
             {% if cat == 'success' %}
               <div class="hc-alert hc-alert--ok" role="status" aria-live="polite">
-                <strong> Промените са запазени</strong><br>
+                <strong>{{ _('Changes saved') }}</strong><br>
                 Профилът ти е обновен успешно. Ще използваме тази информация, за да ти показваме по-подходящи заявки, когато се появят.<br>
-                <span class="hc-muted">Можеш да редактираш профила си по всяко време.</span>
+                <span class="hc-muted">{{ _('You can edit your profile at any time.') }}</span>
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
             {% elif cat == 'error' %}
               <div class="hc-alert hc-alert--err" role="status" aria-live="polite">
-                <strong> Не успяхме да запазим промените.</strong><br>
+                <strong>{{ _('We could not save your changes.') }}</strong><br>
                 Провери полетата и опитай отново.<br>
-                <span class="hc-muted">Ако проблемът остане - презареди страницата.</span>
+                <span class="hc-muted">{{ _('If the problem persists, reload the page.') }}</span>
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
             {% elif cat == 'info' %}
               <div class="hc-alert hc-alert--info" role="status" aria-live="polite">
-                <strong> Няма промени за запазване.</strong><br>
+                <strong>{{ _('No changes to save.') }}</strong><br>
                 Профилът ти вече е актуален.
                 <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
               </div>
@@ -44,16 +42,16 @@
           {% endfor %}
         {% elif request and request.method == 'POST' %}
           <div class="hc-alert hc-alert--ok" role="status" aria-live="polite">
-            <strong> Промените са запазени</strong><br>
+            <strong>{{ _('Changes saved') }}</strong><br>
             Профилът ти е обновен успешно. Ще използваме тази информация, за да ти показваме по-подходящи заявки, когато се появят.<br>
-            <span class="hc-muted">Можеш да редактираш профила си по всяко време.</span>
+            <span class="hc-muted">{{ _('You can edit your profile at any time.') }}</span>
             <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
           </div>
         {% else %}
           <div class="hc-alert hc-alert--ok" id="hc-profile-success-js" role="status" aria-live="polite" style="display:none;">
-            <strong> Промените са запазени</strong><br>
+            <strong>{{ _('Changes saved') }}</strong><br>
             Профилът ти е обновен успешно. Ще използваме тази информация, за да ти показваме по-подходящи заявки, когато се появят.<br>
-            <span class="hc-muted">Можеш да редактираш профила си по всяко време.</span>
+            <span class="hc-muted">{{ _('You can edit your profile at any time.') }}</span>
             <button type="button" class="hc-alert__close" aria-label="{{ _('Затвори') }}">×</button>
           </div>
         {% endif %}
@@ -116,14 +114,14 @@
 
         <div class="hc-prof__progressTop">
           {% if ready == 3 %}
-            <span class="hc-pill hc-pill--ok">Профилът ти е напълно готов за свързване </span>
-            <span class="hc-muted">Ще виждаш подходящите заявки веднага щом се появят.</span>
+            <span class="hc-pill hc-pill--ok">{{ _('Your profile is fully ready for matching') }}</span>
+            <span class="hc-muted">{{ _('You will see relevant requests as soon as they appear.') }}</span>
           {% elif ready == 2 %}
-            <span class="hc-pill hc-pill--ok">Профилът ти вече “работи” </span>
-            <span class="hc-muted">Остава още 1 дребно нещо и става още по-точно.</span>
+            <span class="hc-pill hc-pill--ok">{{ _('Your profile is already working') }}</span>
+            <span class="hc-muted">{{ _('One small step remains to make matching even more accurate.') }}</span>
           {% else %}
-            <span class="hc-pill hc-pill--warn">Още малко и си готов/а</span>
-            <span class="hc-muted">Попълни липсващите полета по-долу - отнема 1-2 минути.</span>
+            <span class="hc-pill hc-pill--warn">{{ _('Almost ready') }}</span>
+            <span class="hc-muted">{{ _('Fill the missing fields below - it takes 1-2 minutes.') }}</span>
           {% endif %}
         </div>
       </div><!-- /.hc-prof__progressTop -->
@@ -162,15 +160,15 @@
             <!-- A) Къде -->
             <section class="hc-card">
               <div class="hc-card__head">
-                <h2 class="hc-card__title">1) Къде си</h2>
-                <p class="hc-card__hint">Това помага да виждаш заявки близо до теб или онлайн.</p>
+                <h2 class="hc-card__title">{{ _('1) Where you are') }}</h2>
+                <p class="hc-card__hint">{{ _('This helps you see requests near you or online.') }}</p>
               </div>
 
               <label class="hc-field">
-                <span class="hc-label">Локация</span>
+                <span class="hc-label">{{ _('Location') }}</span>
                 <input class="hc-input" type="text" name="location"
                        value="{{ volunteer.location or '' }}"
-                       placeholder="Пример: Paris / Online / Boulogne-Billancourt">
+                       placeholder="{{ _('Example: Paris / Online / Boulogne-Billancourt') }}">
               </label>
 
               <p class="hc-muted" style="margin:10px 0 0;">
@@ -181,20 +179,20 @@
             <!-- B) Кога -->
             <section class="hc-card">
               <div class="hc-card__head">
-                <h2 class="hc-card__title">2) Кога си свободен/на</h2>
-                <p class="hc-card__hint">Не е договор. Просто ориентир за matching.</p>
+                <h2 class="hc-card__title">{{ _('2) When you are available') }}</h2>
+                <p class="hc-card__hint">{{ _('This is not a commitment. It is just a matching signal.') }}</p>
               </div>
 
               <label class="hc-field">
-                <span class="hc-label">Наличност</span>
+                <span class="hc-label">{{ _('Availability') }}</span>
                 <select class="hc-input" name="availability">
                   {% set a = (volunteer.availability or '') %}
-                  <option value="" {{ 'selected' if not a else '' }}>Избери…</option>
-                  <option value="morning" {{ 'selected' if a=='morning' else '' }}>Сутрин</option>
-                  <option value="afternoon" {{ 'selected' if a=='afternoon' else '' }}>Следобед</option>
-                  <option value="evening" {{ 'selected' if a=='evening' else '' }}>Вечер</option>
-                  <option value="weekend" {{ 'selected' if a=='weekend' else '' }}>Уикенд</option>
-                  <option value="flexible" {{ 'selected' if a=='flexible' else '' }}>Гъвкаво</option>
+                  <option value="" {{ 'selected' if not a else '' }}>{{ _('Select...') }}</option>
+                  <option value="morning" {{ 'selected' if a=='morning' else '' }}>{{ _('Morning') }}</option>
+                  <option value="afternoon" {{ 'selected' if a=='afternoon' else '' }}>{{ _('Afternoon') }}</option>
+                  <option value="evening" {{ 'selected' if a=='evening' else '' }}>{{ _('Evening') }}</option>
+                  <option value="weekend" {{ 'selected' if a=='weekend' else '' }}>{{ _('Weekend') }}</option>
+                  <option value="flexible" {{ 'selected' if a=='flexible' else '' }}>{{ _('Flexible') }}</option>
                 </select>
               </label>
 
@@ -206,21 +204,21 @@
             <!-- C) Как -->
             <section class="hc-card" style="grid-column: 1 / -1;">
               <div class="hc-card__head">
-                <h2 class="hc-card__title">3) Как можеш да помогнеш</h2>
-                <p class="hc-card__hint">Напиши с няколко думи - това е най-силният сигнал за matching.</p>
+                <h2 class="hc-card__title">{{ _('3) How you can help') }}</h2>
+                <p class="hc-card__hint">{{ _('Describe this in a few words - this is the strongest matching signal.') }}</p>
               </div>
 
               <label class="hc-field">
-                <span class="hc-label">Умения</span>
+                <span class="hc-label">{{ _('Skills') }}</span>
                 <textarea class="hc-input" name="skills" rows="3"
-                          placeholder="Пример: документи, ориентация, административни услуги, здравни въпроси…">{{ volunteer.skills or '' }}</textarea>
+                          placeholder="{{ _('Example: documents, orientation, administrative support, health questions...') }}">{{ volunteer.skills or '' }}</textarea>
               </label>
 
               <div class="hc-row" style="display:flex; gap:10px; align-items:center; margin-top:12px;">
                 <button class="hc-btn hc-btn--primary" type="submit">
                   Запази промените
                 </button>
-                <span class="hc-muted">Отнема 5 секунди. Няма наказания. </span>
+                <span class="hc-muted">{{ _('It takes 5 seconds. No penalties.') }}</span>
               </div>
             </section>
           </div>
@@ -228,7 +226,7 @@
           <!-- Micro reassurance -->
           <div class="hc-card hc-card--soft" style="margin-top:14px;">
             <p style="margin:0;">
-              <strong>Ти решаваш</strong> кога и как да помогнеш. <strong>Няма автоматични ангажименти.</strong>
+              {{ _('<strong>You decide</strong> when and how to help. <strong>There are no automatic commitments.</strong>')|safe }}
             </p>
             <p class="hc-muted" style="margin:6px 0 0;">
               Ще използваме това само за matching. Нищо не се публикува публично.
@@ -328,4 +326,3 @@
   </div>
 </section>
 {% endblock %}
-

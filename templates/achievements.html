@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Постижения - HelpChain</title>
+    <title>{{ _('Achievements') }} - HelpChain</title>
     <link
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
@@ -32,7 +32,7 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
-          title="Отвори меню"
+          title="{{ _('Open menu') }}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -107,7 +107,7 @@
               <button
                 class="theme-toggle"
                 id="themeToggle"
-                title="Превключи тема"
+                title="{{ _('Toggle theme') }}"
               >
                 <i class="fas fa-moon"></i>
               </button>
@@ -126,11 +126,11 @@
         <div class="col-12">
           <div class="text-center">
             <h1 class="h2 mb-1">
-              <i class="fas fa-trophy text-warning me-2"></i>Постижения и
-              награди
+              <i class="fas fa-trophy text-warning me-2"></i>{{ _('Achievements and') }}
+              {{ _('rewards') }}
             </h1>
             <p class="text-muted mb-0">
-              Проследявай своя прогрес и отключвай нови постижения!
+              {{ _('Track your progress and unlock new achievements!') }}
             </p>
           </div>
         </div>
@@ -146,7 +146,7 @@
             <div class="stats-value" id="points">
               {{ gamification.points|default(0) }}
             </div>
-            <p class="stats-label">Общо точки</p>
+            <p class="stats-label">{{ _('Total points') }}</p>
             <small class="text-success">
               <i class="fas fa-arrow-up me-1"></i>Продължавай да помагаш!
             </small>
@@ -161,7 +161,7 @@
             <div class="stats-value" id="level">
               {{ gamification.level|default(1) }}
             </div>
-            <p class="stats-label">Ниво</p>
+            <p class="stats-label">{{ _('Level') }}</p>
             <small class="text-warning">
               <i class="fas fa-target me-1"></i>{{
               gamification.experience|default(0) }}/{{
@@ -178,7 +178,7 @@
             <div class="stats-value" id="achievements">
               {{ unlocked_count|default(0) }}
             </div>
-            <p class="stats-label">Отключени постижения</p>
+            <p class="stats-label">{{ _('Unlocked achievements') }}</p>
             <small class="text-info">
               <i class="fas fa-lock me-1"></i>{{ total_achievements|default(0) -
               unlocked_count|default(0) }} остават
@@ -194,7 +194,7 @@
             <div class="stats-value" id="streak">
               {{ gamification.streak_days|default(0) }}
             </div>
-            <p class="stats-label">Поредни дни</p>
+            <p class="stats-label">{{ _('Consecutive days') }}</p>
             <small class="text-primary">
               <i class="fas fa-calendar-check me-1"></i>Поддържай серията!
             </small>
@@ -206,7 +206,7 @@
       <div class="level-progress">
         <div class="level-display">
           <div class="level-number">{{ gamification.level|default(1) }}</div>
-          <div class="level-label">Ниво</div>
+          <div class="level-label">{{ _('Level') }}</div>
         </div>
         <div class="progress-modern">
           <div
@@ -299,7 +299,7 @@
             {% endfor %} {% else %}
             <div class="text-center py-5">
               <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
-              <h5 class="text-muted">Няма налични постижения</h5>
+              <h5 class="text-muted">{{ _('No achievements available') }}</h5>
               <p class="text-muted">
                 Скоро ще бъдат добавени нови предизвикателства!
               </p>
@@ -327,11 +327,11 @@
             <div class="leaderboard-info">
               <div class="leaderboard-name">
                 {{ volunteer.name }} {% if volunteer.is_current_user %}
-                <small class="text-warning">(Ти)</small>
+                <small class="text-warning">({{ _('You') }})</small>
                 {% endif %}
               </div>
               <div class="leaderboard-stats">
-                {{ volunteer.points }} точки • Ниво {{ volunteer.level }}
+                {{ volunteer.points }} точки • {{ _('Level') }} {{ volunteer.level }}
               </div>
             </div>
             {% if volunteer.rank <= 3 %}
@@ -342,7 +342,7 @@
           </div>
           {% endfor %} {% else %}
           <div class="text-center py-3">
-            <p class="text-muted">Няма достатъчно данни за класация</p>
+            <p class="text-muted">{{ _('Not enough data for ranking') }}</p>
           </div>
           {% endif %}
         </div>
@@ -376,10 +376,10 @@
         const icon = themeToggle.querySelector("i");
         if (theme === "dark") {
           icon.className = "fas fa-sun";
-          themeToggle.title = "Превключи на светла тема";
+          themeToggle.title = "{{ _('Switch to light theme') }}";
         } else {
           icon.className = "fas fa-moon";
-          themeToggle.title = "Превключи на тъмна тема";
+          themeToggle.title = "{{ _('Switch to dark theme') }}";
         }
       }
 

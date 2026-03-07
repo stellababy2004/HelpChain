@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 
-from flask import g, has_app_context
+from flask import current_app, g, has_app_context
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from backend.extensions import db
@@ -23,6 +24,13 @@ def _is_test_env() -> bool:
 def _load_default_structure_id() -> int:
     global _DEFAULT_STRUCTURE_ID
     if _DEFAULT_STRUCTURE_ID is None:
+        allow_bootstrap = False
+        if _is_test_env():
+            allow_bootstrap = True
+        elif has_app_context():
+            allow_bootstrap = bool(
+                current_app.config.get("ALLOW_DEFAULT_TENANT_FALLBACK", False)
+            )
         try:
             default = (
                 db.session.query(Structure)
@@ -30,12 +38,46 @@ def _load_default_structure_id() -> int:
                 .first()
             )
         except (OperationalError, ProgrammingError):
-            if _is_test_env():
-                # Legacy tests may call app.test_client() before DB bootstrap.
-                _DEFAULT_STRUCTURE_ID = 1
-                return _DEFAULT_STRUCTURE_ID
+            if allow_bootstrap:
+                try:
+                    # Best-effort: create missing tables, then ensure default tenant row exists.
+                    db.create_all()
+                    default = (
+                        db.session.query(Structure)
+                        .filter(Structure.slug == TENANT_DEFAULT_SLUG)
+                        .first()
+                    )
+                    if not default:
+                        default = Structure(
+                            name="Default",
+                            slug=TENANT_DEFAULT_SLUG,
+                            created_at=datetime.utcnow(),
+                        )
+                        db.session.add(default)
+                        db.session.commit()
+                    _DEFAULT_STRUCTURE_ID = int(default.id)
+                    return _DEFAULT_STRUCTURE_ID
+                except Exception:
+                    db.session.rollback()
+                    if _is_test_env():
+                        # Legacy tests may call app.test_client() before DB bootstrap.
+                        _DEFAULT_STRUCTURE_ID = 1
+                        return _DEFAULT_STRUCTURE_ID
             raise
         if not default:
+            if allow_bootstrap:
+                try:
+                    default = Structure(
+                        name="Default",
+                        slug=TENANT_DEFAULT_SLUG,
+                        created_at=datetime.utcnow(),
+                    )
+                    db.session.add(default)
+                    db.session.commit()
+                    _DEFAULT_STRUCTURE_ID = int(default.id)
+                    return _DEFAULT_STRUCTURE_ID
+                except Exception:
+                    db.session.rollback()
             raise RuntimeError("Default structure not found in DB.")
         _DEFAULT_STRUCTURE_ID = int(default.id)
     return _DEFAULT_STRUCTURE_ID

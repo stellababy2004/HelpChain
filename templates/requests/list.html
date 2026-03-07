@@ -3,26 +3,26 @@
 <div class="container py-4">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-      <h1 class="mb-0">Demandes</h1>
-      <div class="text-muted">Dernieres 200 demandes.</div>
+      <h1 class="mb-0">{{ _("Requests") }}</h1>
+      <div class="text-muted">{{ _("Latest 200 requests.") }}</div>
     </div>
     <div class="d-flex gap-2">
       <form method="get" class="d-flex gap-2 align-items-center">
         <select class="form-select" name="structure_id" style="max-width: 360px;">
-          <option value="" {% if not selected_structure_id %}selected{% endif %}>Toutes les structures</option>
+          <option value="" {% if not selected_structure_id %}selected{% endif %}>{{ _("All structures") }}</option>
           {% for s in structures %}
           <option value="{{ s.id }}" {% if selected_structure_id == s.id %}selected{% endif %}>{{ s.name }}</option>
           {% endfor %}
         </select>
-        <button class="btn btn-outline-secondary" type="submit">Filtrer</button>
+        <button class="btn btn-outline-secondary" type="submit">{{ _("Filter") }}</button>
         <a class="btn btn-outline-primary" href="{{ url_for('social_requests.dashboard', structure_id=selected_structure_id) }}">
-          Pilotage
+          {{ _("Dashboard") }}
         </a>
         <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">
-          Operations
+          {{ _("Operations") }}
         </a>
       </form>
-      <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle demande</a>
+      <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">{{ _("New request") }}</a>
     </div>
   </div>
 
@@ -31,10 +31,10 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Type</th>
-          <th>Urgence</th>
-          <th>Statut</th>
-          <th>Creee</th>
+          <th>{{ _("Type") }}</th>
+          <th>{{ _("Urgency") }}</th>
+          <th>{{ _("Status") }}</th>
+          <th>{{ _("Created") }}</th>
           <th></th>
         </tr>
       </thead>
@@ -47,11 +47,11 @@
           <td><span class="badge text-bg-secondary">{{ r.status }}</span></td>
           <td>{{ r.created_at }}</td>
           <td class="text-end">
-            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('social_requests.details', req_id=r.id) }}">Ouvrir</a>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('social_requests.details', req_id=r.id) }}">{{ _("Open") }}</a>
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="6" class="text-muted">Aucune demande.</td></tr>
+        <tr><td colspan="6" class="text-muted">{{ _("No requests.") }}</td></tr>
         {% endfor %}
       </tbody>
     </table>

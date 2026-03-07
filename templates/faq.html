@@ -1,17 +1,100 @@
 {% extends "base.html" %}
+{% block title %}{{ _("Questions fréquentes") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Questions fréquentes sur le fonctionnement de la plateforme HelpChain pour citoyens, bénévoles, associations et collectivités.") }}{% endblock %}
+{% block og_title %}{{ _("Questions fréquentes") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Questions fréquentes") }}{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-  <h1>Често задавани въпроси</h1>
-  <p class="text-muted">Ако имаш други въпроси, пиши ни на contact@helpchain.live.</p>
+<div class="container py-4" style="max-width: 920px;">
+  <header class="mb-4">
+    <h1 class="h3 mb-2">{{ _("Questions fréquentes") }}</h1>
+    <p class="text-muted mb-0">
+      {{ _("Cette page répond aux principales questions concernant le fonctionnement de la plateforme HelpChain.") }}
+    </p>
+  </header>
 
-  <h5 class="mt-4">Как работи HelpChain?</h5>
-  <p>Подаваш заявка за помощ или се регистрираш като доброволец. Нашият екип свързва нуждаещите се с подходящи доброволци.</p>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Qu’est-ce que HelpChain ?") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain est une plateforme numérique destinée à faciliter la coordination entre personnes en situation de besoin, bénévoles et acteurs associatifs.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Elle permet d’organiser plus facilement certaines demandes d’aide et de faciliter la mise en relation entre les personnes concernées.") }}
+      </p>
+    </div>
+  </section>
 
-  <h5 class="mt-3">Безопасно ли е?</h5>
-  <p>Всички заявки и доброволци минават през проверка. Данните се обработват съгласно политиката ни за поверителност.</p>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Qui peut utiliser la plateforme ?") }}</h2>
+      <p class="mb-2">{{ _("La plateforme peut être utilisée par :") }}</p>
+      <ul class="mb-2">
+        <li>{{ _("des citoyens") }}</li>
+        <li>{{ _("des bénévoles") }}</li>
+        <li>{{ _("des associations") }}</li>
+        <li>{{ _("des structures locales") }}</li>
+      </ul>
+      <p class="mb-0">
+        {{ _("L’objectif est de faciliter la coopération entre différents acteurs impliqués dans des actions de solidarité.") }}
+      </p>
+    </div>
+  </section>
 
-  <h5 class="mt-3">Как да се включа като доброволец?</h5>
-  <p>Натисни „Стани доброволец“ в началната страница и попълни формата. Ще се свържем с теб за потвърждение.</p>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("La plateforme remplace-t-elle les structures existantes ?") }}</h2>
+      <p class="mb-2"><strong>{{ _("Non.") }}</strong></p>
+      <p class="mb-0">
+        {{ _("HelpChain ne remplace pas les structures existantes. La plateforme agit comme un outil complémentaire permettant de faciliter la coordination entre différents acteurs.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Les données personnelles sont-elles protégées ?") }}</h2>
+      <p class="mb-2"><strong>{{ _("Oui.") }}</strong></p>
+      <p class="mb-2">
+        {{ _("HelpChain est conçu dans le respect des principes du Règlement Général sur la Protection des Données (RGPD).") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Les données collectées sont limitées aux informations nécessaires au fonctionnement du service.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Faut-il installer un logiciel ?") }}</h2>
+      <p class="mb-2"><strong>{{ _("Non.") }}</strong></p>
+      <p class="mb-0">
+        {{ _("HelpChain est accessible directement via un navigateur internet et ne nécessite aucune installation spécifique.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Qui gère la plateforme ?") }}</h2>
+      <p class="mb-0">
+        {{ _("La plateforme est développée et maintenue dans le cadre du projet HelpChain, avec pour objectif de soutenir les initiatives de solidarité et la coordination entre acteurs locaux.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
+      <p class="mb-2">
+        {{ _("Pour toute question complémentaire, vous pouvez contacter l’équipe HelpChain à l’adresse suivante :") }}
+      </p>
+      <p class="mb-0">
+        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+      </p>
+    </div>
+  </section>
 </div>
 {% endblock %}
 

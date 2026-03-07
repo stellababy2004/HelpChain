@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Translation Coverage') }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap hc-density-compact">
+  <div class="hc-card mb-3 hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ _('Translation Coverage') }}</h1>
+        <div class="hc-muted">{{ _('Heatmap by locale and domain') }}</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_translations_list') }}">{{ _('Back to translations') }}</a>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">{{ _('Locales') }}</div>
+        <div class="hc-kpi__value">{{ kpi.locales }}</div>
+      </div>
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">{{ _('Registry keys') }}</div>
+        <div class="hc-kpi__value">{{ kpi.registry_keys }}</div>
+      </div>
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">{{ _('Translations') }}</div>
+        <div class="hc-kpi__value">{{ kpi.translations }}</div>
+      </div>
+      <div class="hc-kpi">
+        <div class="hc-kpi__label">{{ _('Average coverage') }}</div>
+        <div class="hc-kpi__value">{{ kpi.average_coverage_percent }}%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>{{ _('Locale') }}</th>
+            {% for bucket in buckets %}
+              <th class="text-capitalize">{{ bucket }}</th>
+            {% endfor %}
+            <th>{{ _('Total') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for locale in locales %}
+            {% set row = coverage[locale] %}
+            <tr>
+              <td><span class="badge text-bg-secondary">{{ locale|upper }}</span></td>
+              {% for bucket in buckets %}
+                {% set c = row[bucket] %}
+                <td>
+                  <span class="badge text-bg-{{ c.class }}" title="{{ c.percent }}% ({{ c.translated }} / {{ c.total }})">
+                    {{ c.percent }}%
+                  </span>
+                </td>
+              {% endfor %}
+              {% set t = row.total %}
+              <td>
+                <span class="badge text-bg-{{ t.class }}" title="{{ t.percent }}% ({{ t.translated }} / {{ t.total }})">
+                  {{ t.percent }}%
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

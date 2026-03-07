@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Няма достъп | HelpChain{% endblock %}
+{% block title %}{{ _("No access") }} | HelpChain{% endblock %}
 
 {% block content %}
 <section class="hc-empty">
-  <h1 class="hc-empty__title">Тази страница не е достъпна</h1>
+  <h1 class="hc-empty__title">{{ _("This page is not accessible") }}</h1>
   <p class="hc-empty__text">
-    Или линкът е грешен, или още нямаш достъп до тази заявка.
+    {{ _("Either the link is invalid, or you do not have access to this request yet.") }}
   </p>
   <p class="hc-empty__text">
-    Върни се към списъка със заявки и натисни <strong>„Искам да помогна“</strong>, за да получиш достъп.
+    {{ _("Return to the request list and click") }} <strong>{{ _("I want to help") }}</strong>{{ _(", to get access.") }}
   </p>
   <div class="hc-empty__actions">
-    <a class="hc-btn hc-btn--primary" href="/volunteer/dashboard">Виж заявки</a>
-    <a class="hc-btn hc-btn--ghost" href="/">Начало</a>
+    <a class="hc-btn hc-btn--primary" href="/volunteer/dashboard">{{ _("View requests") }}</a>
+    <a class="hc-btn hc-btn--ghost" href="/">{{ _("Home") }}</a>
   </div>
 </section>
 {% endblock %}

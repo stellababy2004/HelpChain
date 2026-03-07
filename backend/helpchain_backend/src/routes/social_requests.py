@@ -2,24 +2,33 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask_babel import gettext as _
 from sqlalchemy import func
 
-from backend.models import SocialRequest, SocialRequestEvent, Structure, User, db
+from backend.models import (
+    AdminAuditEvent,
+    AdminUser,
+    SocialRequest,
+    SocialRequestEvent,
+    Structure,
+    User,
+    db,
+)
 
 bp = Blueprint("social_requests", __name__, url_prefix="/requests")
 
 NEED_TYPES = [
-    ("aide_alimentaire", "Aide alimentaire"),
-    ("aide_administrative", "Aide administrative"),
-    ("visite_senior", "Visite senior"),
-    ("urgence_sociale", "Urgence sociale"),
-    ("autre", "Autre"),
+    ("aide_alimentaire", "Food support"),
+    ("aide_administrative", "Administrative support"),
+    ("visite_senior", "Senior visit"),
+    ("urgence_sociale", "Social emergency"),
+    ("autre", "Other"),
 ]
 URGENCIES = [
-    ("low", "Faible"),
-    ("medium", "Moyenne"),
-    ("high", "Élevée"),
+    ("low", "Low"),
+    ("medium", "Medium"),
+    ("high", "High"),
 ]
 ALLOWED_STATUSES = {"new", "in_progress", "resolved", "closed"}
 
@@ -39,6 +48,53 @@ def _utcnow():
 
 def _structure_scope():
     return _safe_int(request.args.get("structure_id"))
+
+
+def _current_actor_user_id() -> int | None:
+    for key in ("user_id", "volunteer_user_id"):
+        candidate = _safe_int(session.get(key))
+        if candidate and db.session.get(User, candidate):
+            return candidate
+    return None
+
+
+def _current_actor_label() -> str:
+    admin_user_id = _safe_int(session.get("admin_user_id"))
+    if admin_user_id:
+        admin = db.session.get(AdminUser, admin_user_id)
+        if admin and getattr(admin, "username", None):
+            return f"admin:{admin.username}"
+    actor_user_id = _current_actor_user_id()
+    if actor_user_id:
+        u = db.session.get(User, actor_user_id)
+        if u:
+            return f"user:{u.email or u.username or u.id}"
+    return "system"
+
+
+def _audit_admin_event(action: str, request_id: int, payload: dict | None = None) -> None:
+    try:
+        admin_user_id = session.get("admin_user_id")
+        admin_username = None
+        if admin_user_id:
+            admin = db.session.get(AdminUser, int(admin_user_id))
+            admin_username = getattr(admin, "username", None) if admin else None
+        ua = request.headers.get("User-Agent")
+        db.session.add(
+            AdminAuditEvent(
+                admin_user_id=admin_user_id,
+                admin_username=admin_username,
+                action=action,
+                target_type="Request",
+                target_id=int(request_id),
+                ip=request.remote_addr,
+                user_agent=(ua[:256] if ua else None),
+                payload=payload,
+            )
+        )
+    except Exception:
+        # Never block business flow on audit write preparation errors.
+        pass
 
 
 @bp.get("")
@@ -179,7 +235,7 @@ def new_request():
 def create_request():
     structure_id = _safe_int(request.form.get("structure_id"))
     if not structure_id:
-        flash("Structure requise.", "danger")
+        flash(_("Structure is required."), "danger")
         return redirect(url_for("social_requests.new_request"))
 
     need_type = (request.form.get("need_type") or "").strip()
@@ -188,10 +244,10 @@ def create_request():
     person_ref = (request.form.get("person_ref") or "").strip() or None
 
     if not need_type:
-        flash("Type de besoin requis.", "danger")
+        flash(_("Need type is required."), "danger")
         return redirect(url_for("social_requests.new_request"))
     if not description:
-        flash("Description requise.", "danger")
+        flash(_("Description is required."), "danger")
         return redirect(url_for("social_requests.new_request"))
 
     sr = SocialRequest(
@@ -213,9 +269,19 @@ def create_request():
             new_value=f"{sr.need_type}|{sr.urgency}",
         )
     )
+    _audit_admin_event(
+        "social_request.created",
+        sr.id,
+        {
+            "need_type": sr.need_type,
+            "urgency": sr.urgency,
+            "status": sr.status,
+            "structure_id": sr.structure_id,
+        },
+    )
     db.session.commit()
 
-    flash("Demande créée.", "success")
+    flash(_("Request created."), "success")
     return redirect(url_for("social_requests.details", req_id=sr.id))
 
 
@@ -231,6 +297,15 @@ def details(req_id: int):
         .limit(50)
         .all()
     )
+    note_events = (
+        SocialRequestEvent.query.filter(
+            SocialRequestEvent.request_id == sr.id,
+            SocialRequestEvent.event_type == "internal_note",
+        )
+        .order_by(SocialRequestEvent.created_at.desc())
+        .limit(20)
+        .all()
+    )
     return render_template(
         "requests/details.html",
         sr=sr,
@@ -238,6 +313,7 @@ def details(req_id: int):
         users=users,
         assignee=assignee,
         events=events,
+        note_events=note_events,
     )
 
 
@@ -246,12 +322,12 @@ def assign(req_id: int):
     sr = SocialRequest.query.get_or_404(req_id)
     user_id = _safe_int(request.form.get("assigned_to_user_id"))
     if not user_id:
-        flash("Utilisateur requis.", "danger")
+        flash(_("User is required."), "danger")
         return redirect(url_for("social_requests.details", req_id=req_id))
 
     u = User.query.get(user_id)
     if not u:
-        flash("Utilisateur invalide.", "danger")
+        flash(_("Invalid user."), "danger")
         return redirect(url_for("social_requests.details", req_id=req_id))
 
     sr.assigned_to_user_id = u.id
@@ -267,9 +343,14 @@ def assign(req_id: int):
             new_value=str(u.id),
         )
     )
+    _audit_admin_event(
+        "social_request.assigned",
+        sr.id,
+        {"assigned_to_user_id": u.id, "status": sr.status},
+    )
 
     db.session.commit()
-    flash("Assignation effectuee.", "success")
+    flash(_("Assignment completed."), "success")
     return redirect(url_for("social_requests.details", req_id=req_id))
 
 
@@ -288,8 +369,13 @@ def unassign(req_id: int):
             new_value=None,
         )
     )
+    _audit_admin_event(
+        "social_request.unassigned",
+        sr.id,
+        {"old_assigned_to_user_id": old_assignee},
+    )
     db.session.commit()
-    flash("Assignation supprimee.", "success")
+    flash(_("Assignment removed."), "success")
     return redirect(url_for("social_requests.details", req_id=req_id))
 
 
@@ -299,7 +385,7 @@ def set_status(req_id: int):
     new_status = (request.form.get("status") or "").strip()
 
     if new_status not in ALLOWED_STATUSES:
-        flash("Statut invalide.", "danger")
+        flash(_("Invalid status."), "danger")
         return redirect(url_for("social_requests.details", req_id=req_id))
 
     old_status = sr.status
@@ -313,6 +399,43 @@ def set_status(req_id: int):
             new_value=new_status,
         )
     )
+    _audit_admin_event(
+        "social_request.status_changed",
+        sr.id,
+        {"old_status": old_status, "new_status": new_status},
+    )
     db.session.commit()
-    flash("Statut mis a jour.", "success")
+    flash(_("Status updated."), "success")
+    return redirect(url_for("social_requests.details", req_id=req_id))
+
+
+@bp.post("/<int:req_id>/note")
+def add_note(req_id: int):
+    sr = SocialRequest.query.get_or_404(req_id)
+    note = (request.form.get("note") or "").strip()
+    if len(note) < 3:
+        flash(_("Note is too short."), "danger")
+        return redirect(url_for("social_requests.details", req_id=req_id))
+    if len(note) > 2000:
+        flash(_("Note is too long (max 2000)."), "danger")
+        return redirect(url_for("social_requests.details", req_id=req_id))
+
+    actor_user_id = _current_actor_user_id()
+    actor_label = _current_actor_label()
+    db.session.add(
+        SocialRequestEvent(
+            request_id=sr.id,
+            event_type="internal_note",
+            actor_user_id=actor_user_id,
+            old_value=actor_label,
+            new_value=note,
+        )
+    )
+    _audit_admin_event(
+        "social_request.note_added",
+        sr.id,
+        {"actor": actor_label, "note_len": len(note)},
+    )
+    db.session.commit()
+    flash(_("Internal note added."), "success")
     return redirect(url_for("social_requests.details", req_id=req_id))

@@ -4,6 +4,217 @@
 {% block meta_description %}{{ _('Infrastructure numérique de coordination des situations sociales. Orientation structurée, coordination traçable et pilotage responsable pour associations et réseaux professionnels.') }}{% endblock %}
 {% block og_title %}{{ _('HelpChain | Infrastructure numérique de coordination des situations sociales') }}{% endblock %}
 {% block body_class %}hc-page-home{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style>
+    .hc-home__how {
+      padding: 40px 0 56px;
+    }
+
+    .hc-home__section-head {
+      margin-bottom: 2px;
+    }
+
+    .hc-home__section-head p {
+      line-height: 1.62;
+      max-width: 76ch;
+    }
+
+    .hc-home__card {
+      border: 1px solid var(--hc-border);
+      border-radius: 14px;
+      background: var(--hc-surface);
+      padding: 20px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .hc-home__card h3 {
+      margin: 0 0 10px;
+      font-size: 1.12rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--hc-text-main);
+    }
+
+    .hc-home__card h3 i:first-child {
+      flex: 0 0 auto;
+    }
+
+    .hc-home__card p {
+      margin: 0 0 14px;
+      color: var(--hc-text-muted);
+      line-height: 1.62;
+      max-width: 62ch;
+    }
+
+    .hc-home__card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: auto;
+      color: var(--hc-primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .hc-home__quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .hc-home__quick-card {
+      border: 1px solid var(--hc-border);
+      border-radius: 14px;
+      background: var(--hc-surface);
+      box-shadow: none;
+      padding: 20px;
+      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .hc-home__quick-card:hover,
+    .hc-home__quick-card:focus-within {
+      transform: translateY(-2px);
+      background: var(--hc-primary-soft);
+      border-color: var(--hc-border);
+    }
+
+    .hc-home__quick-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      min-height: 44px;
+    }
+
+    .hc-home__quick-card h3 {
+      margin: 0;
+      font-size: 1.16rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .hc-home__card--link {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .hc-home__card--link:hover,
+    .hc-home__card--link:focus-visible {
+      transform: translateY(-2px);
+      border-color: var(--hc-border-strong, var(--hc-border));
+      background: var(--hc-surface);
+      text-decoration: none;
+      color: inherit;
+      outline: none;
+    }
+
+    .hc-home__card:not(.hc-home__card--link):hover {
+      transform: none;
+      border-color: var(--hc-border);
+      box-shadow: none;
+      background: var(--hc-surface);
+    }
+
+    .hc-home__card--link h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+      margin-bottom: 12px;
+    }
+
+    .hc-home__card--link h3 > span:last-child {
+      line-height: 1.3;
+    }
+
+    .hc-home__card:not(.hc-home__card--link) h3 i:first-child {
+      font-size: var(--hc-icon-inline-size);
+      width: 1.2rem;
+      text-align: center;
+      margin-right: 0.4rem;
+    }
+
+    .hc-home__positioning-copy ul,
+    .hc-home__card ul {
+      margin: 0;
+      padding-left: 1.15rem;
+      list-style-position: outside;
+    }
+
+    .hc-home__positioning-copy li,
+    .hc-home__card li {
+      margin-bottom: 0.45rem;
+      line-height: 1.55;
+    }
+
+    .hc-home__positioning-copy li:last-child,
+    .hc-home__card li:last-child {
+      margin-bottom: 0;
+    }
+
+    .hc-home__positioning-copy li::marker,
+    .hc-home__card li::marker {
+      color: var(--hc-text-muted);
+    }
+
+    .hc-home__actions .hc-btn {
+      min-height: 42px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+    }
+
+    .hc-home__actions .hc-btn:hover,
+    .hc-home__actions .hc-btn:focus-visible {
+      transform: translateY(-1px);
+    }
+
+    .hc-home__actions .hc-btn:focus-visible,
+    .hc-home__card--link:focus-visible {
+      box-shadow: 0 0 0 3px var(--hc-accent-ring);
+    }
+
+    .hc-home__how:last-of-type {
+      padding-bottom: 72px;
+    }
+
+    /* En savoir plus: align title zones for multi-line headings (desktop-first, responsive-safe) */
+    .hc-home__resources-grid .hc-home__card--link h3 {
+      align-items: flex-start;
+      min-height: 78px;
+      margin-bottom: 12px;
+    }
+
+    .hc-home__resources-grid .hc-home__card--link h3 > span:last-child {
+      display: block;
+    }
+
+    @media (max-width: 991.98px) {
+      .hc-home__resources-grid .hc-home__card--link h3 {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 991.98px) {
+      .hc-home__quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .hc-home__quick-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
 <main class="hc-home">
@@ -12,55 +223,46 @@
       <div class="hc-home__hero-inner">
         <div class="hc-home__hero-copy">
           <h1 class="hc-home__title">
-            {{ _('Infrastructure numérique de coordination des situations sociales.') }}
+            {{ _("Infrastructure numérique de coordination pour les initiatives de solidarité locales") }}
           </h1>
 
           <p class="hc-home__subtitle">
-            {{ _('Orientation structurée. Coordination traçable. Pilotage responsable.') }}
+            {{ _("HelpChain facilite l’organisation, le suivi et la coordination des demandes d’aide entre citoyens, bénévoles, associations et structures publiques au sein d’un espace numérique partagé.") }}
+          </p>
+
+          <p class="hc-home__trust">
+            {{ _("Conçu pour soutenir la coordination locale, le suivi des situations et la coopération entre acteurs de terrain.") }}
           </p>
 
           <div class="hc-home__actions">
             <a class="hc-btn hc-btn--primary"
                href="{{ url_for('main.orienter') }}"
                data-hc-event="home_primary_cta">
-              {{ _('Orienter une demande') }}
+              {{ _('Organiser une demande') }}
             </a>
 
             <a class="hc-btn hc-btn-outline"
                href="{{ url_for('main.professionnels') }}"
                data-hc-event="home_pro_cta">
-              {{ _('Espace professionnel') }}
+              {{ _('Espace collectivités & associations') }}
             </a>
           </div>
 
           <p class="hc-home__trust">
-            {{ _('Conçu et opéré depuis la France') }} <span aria-hidden="true">•</span> {{ _('Infrastructure à vocation européenne') }}
+            {{ _("Hébergement européen") }} <span aria-hidden="true">•</span> {{ _("Conformité RGPD") }} <span aria-hidden="true">•</span> {{ _("Sécurité des données") }} <span aria-hidden="true">•</span> {{ _("Coordination locale") }}
           </p>
         </div>
 
         <div class="hc-home__snapshot">
           <div class="hc-home__snapshot-card">
-            <h2 class="hc-home__snapshot-title">{{ _('Vue opérationnelle') }}</h2>
-
-            <div class="hc-home__snapshot-grid">
-              <div class="hc-home__metric">
-                <span class="hc-home__metric-value" data-hc-kpi="helped">{{ helped|default(0, true) }}</span>
-                <span class="hc-home__metric-label">{{ _('Situations traitées') }}</span>
-              </div>
-
-              <div class="hc-home__metric">
-                <span class="hc-home__metric-value" data-hc-kpi="volunteers">{{ active_volunteers|default(0, true) }}</span>
-                <span class="hc-home__metric-label">{{ _('Intervenants actifs') }}</span>
-              </div>
-
-              <div class="hc-home__metric">
-                <span class="hc-home__metric-value" data-hc-kpi="countries">{{ countries|default(0, true) }}</span>
-                <span class="hc-home__metric-label">{{ _('Territoires') }}</span>
-              </div>
-            </div>
-
+            <h2 class="hc-home__snapshot-title">{{ _("Phase pilote") }}</h2>
+            <ul class="mb-0" style="padding-left: 1rem;">
+              <li>{{ _("Coordination locale en cours") }}</li>
+              <li>{{ _("Premières situations suivies") }}</li>
+              <li>{{ _("Déploiement progressif sur le terrain") }}</li>
+            </ul>
             <p class="hc-home__snapshot-sub">
-              {{ _('Processus structuré') }} • {{ _('Suivi traçable') }} • {{ _('Coordination continue') }}
+              {{ _("Approche progressive") }} • {{ _("Suivi structuré") }} • {{ _("Amélioration continue") }}
             </p>
           </div>
         </div>
@@ -71,33 +273,229 @@
   <section class="hc-home__how">
     <div class="hc-container">
       <header class="hc-home__section-head">
-        <h2>{{ _('Fonctionnement structuré') }}</h2>
+        <h2>{{ _("Accès rapides") }}</h2>
+        <p>{{ _("Accéder rapidement aux principales fonctionnalités de la plateforme.") }}</p>
+      </header>
+
+      <div class="hc-home__quick-grid">
+        <a class="hc-home__card hc-home__quick-card hc-home__card--link" href="{{ url_for('main.orienter') }}">
+          <div class="hc-home__quick-head">
+            <span class="hc-icon-box hc-home__quick-icon" aria-hidden="true"><i class="fas fa-folder-open"></i></span>
+            <h3>{{ _("Organiser une demande") }}</h3>
+          </div>
+          <p>{{ _("Créer et suivre une demande d’aide au sein de la plateforme.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Accéder") }} <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="hc-home__card hc-home__quick-card hc-home__card--link" href="{{ url_for('main.submit_request') }}">
+          <div class="hc-home__quick-head">
+            <span class="hc-icon-box hc-home__quick-icon" aria-hidden="true"><i class="fas fa-exclamation-circle"></i></span>
+            <h3>{{ _("Signaler une situation") }}</h3>
+          </div>
+          <p>{{ _("Signaler une situation nécessitant une coordination locale.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Accéder") }} <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="hc-home__card hc-home__quick-card hc-home__card--link" href="{{ url_for('main.pour_les_structures') }}">
+          <div class="hc-home__quick-head">
+            <span class="hc-icon-box hc-home__quick-icon" aria-hidden="true"><i class="fas fa-building"></i></span>
+            <h3>{{ _("Espace collectivités") }}</h3>
+          </div>
+          <p>{{ _("Accès aux informations et outils pour les collectivités locales.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Accéder") }} <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="hc-home__card hc-home__quick-card hc-home__card--link" href="{{ url_for('main.collectivites_associations') }}">
+          <div class="hc-home__quick-head">
+            <span class="hc-icon-box hc-home__quick-icon" aria-hidden="true"><i class="fas fa-hands-helping"></i></span>
+            <h3>{{ _("Associations et acteurs locaux") }}</h3>
+          </div>
+          <p>{{ _("Découvrir comment les associations peuvent utiliser la plateforme.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Accéder") }} <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="hc-home__card hc-home__quick-card hc-home__card--link" href="{{ url_for('main.comment_ca_marche') }}">
+          <div class="hc-home__quick-head">
+            <span class="hc-icon-box hc-home__quick-icon" aria-hidden="true"><i class="fas fa-info-circle"></i></span>
+            <h3>{{ _("Comment fonctionne HelpChain") }}</h3>
+          </div>
+          <p>{{ _("Comprendre le fonctionnement de la plateforme et son organisation.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Accéder") }} <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>{{ _("Principes de confiance") }}</h2>
+        <p>{{ _("Des principes opérationnels clairs pour un usage institutionnel et local.") }}</p>
+      </header>
+
+      <div class="hc-home__how-grid">
+        <div class="hc-home__card">
+          <h3><i class="fas fa-balance-scale me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Conformité RGPD") }}</h3>
+          <p>{{ _("La gestion des données s’appuie sur les principes du RGPD et sur une collecte strictement nécessaire au service.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3><i class="fas fa-server me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Hébergement européen") }}</h3>
+          <p>{{ _("Les données sont hébergées sur une infrastructure située en Europe afin de renforcer la conformité et la maîtrise opérationnelle.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3><i class="fas fa-shield-alt me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Sécurité des données") }}</h3>
+          <p>{{ _("Des mesures techniques et organisationnelles sont mises en œuvre pour protéger la confidentialité et l’intégrité des informations.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3><i class="fas fa-people-arrows me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Coordination des acteurs") }}</h3>
+          <p>{{ _("La plateforme facilite l’organisation entre citoyens, bénévoles, associations et structures publiques autour d’un suivi partagé.") }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>{{ _("Publics concernés") }}</h2>
         <p>
-          {{ _("Un cadre clair pour organiser l'orientation et la coordination des situations.") }}
+          {{ _("La plateforme s’adresse à différents publics impliqués dans des initiatives de solidarité locales.") }}
         </p>
       </header>
 
       <div class="hc-home__how-grid">
         <div class="hc-home__card">
-          <h3>{{ _('1. Orientation') }}</h3>
+          <h3><i class="fas fa-user me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Citoyens") }}</h3>
+          <p>{{ _("Signaler une situation ou formuler une demande nécessitant un soutien ou une coordination.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3><i class="fas fa-hands-helping me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Bénévoles") }}</h3>
+          <p>{{ _("Proposer une aide ponctuelle ou contribuer à des actions de solidarité locales.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3><i class="fas fa-people-group me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Associations") }}</h3>
+          <p>{{ _("Mieux organiser certaines demandes et faciliter la coordination entre acteurs de terrain.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <h3><i class="fas fa-landmark me-2 hc-icon-inline" aria-hidden="true"></i>{{ _("Collectivités et structures sociales") }}</h3>
+          <p>{{ _("Disposer d’un outil numérique de suivi, d’organisation et de coordination locale.") }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>{{ _("Comment fonctionne HelpChain") }}</h2>
+      </header>
+
+      <div class="hc-home__how-grid">
+        <div class="hc-home__card">
+          <span class="badge rounded-pill text-bg-light border mb-2">1</span>
+          <h3>{{ _("Une demande est signalée") }}</h3>
+          <p>{{ _("Une situation nécessitant un soutien ou une coordination peut être signalée sur la plateforme.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <span class="badge rounded-pill text-bg-light border mb-2">2</span>
+          <h3>{{ _("La situation est organisée et suivie") }}</h3>
+          <p>{{ _("Les acteurs concernés peuvent organiser l’action, suivre l’évolution et coordonner les interventions.") }}</p>
+        </div>
+
+        <div class="hc-home__card">
+          <span class="badge rounded-pill text-bg-light border mb-2">3</span>
+          <h3>{{ _("La coordination locale s’améliore") }}</h3>
+          <p>{{ _("La plateforme contribue à structurer certaines initiatives et à faciliter la coopération entre acteurs locaux.") }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>{{ _("Ce que permet la plateforme") }}</h2>
+      </header>
+
+      <div class="hc-home__how-grid hc-home__resources-grid">
+        <div class="hc-home__card">
+          <h3>{{ _("Centraliser les demandes") }}</h3>
+          <p>{{ _("Rassembler certaines demandes d’aide dans un espace structuré.") }}</p>
+        </div>
+        <div class="hc-home__card">
+          <h3>{{ _("Suivre les situations") }}</h3>
+          <p>{{ _("Visualiser l’évolution des situations et des actions engagées.") }}</p>
+        </div>
+        <div class="hc-home__card">
+          <h3>{{ _("Coordonner les acteurs") }}</h3>
+          <p>{{ _("Faciliter l’organisation entre citoyens, bénévoles, associations et structures.") }}</p>
+        </div>
+        <div class="hc-home__card">
+          <h3>{{ _("Améliorer la visibilité locale") }}</h3>
+          <p>{{ _("Donner une lecture plus claire des besoins et des actions en cours.") }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>{{ _("Cas d’usage") }}</h2>
+        <p>
+          {{ _("Exemples d’utilisation de la plateforme dans des situations nécessitant organisation, suivi et coordination locale.") }}
+        </p>
+        <p>
+          {{ _("Ces scénarios illustrent une coordination progressive entre citoyens, bénévoles, associations et structures publiques.") }}
+        </p>
+      </header>
+
+      <div class="hc-home__how-grid">
+        <div class="hc-home__card">
+          <h3>{{ _("Étape 1 — Identifier une situation") }}</h3>
           <p>
-            {{ _('Classification structurée des situations et qualification initiale.') }}
+            {{ _("Une demande peut être signalée par un citoyen, un bénévole ou une structure locale.") }}
+          </p>
+          <p class="mb-0">
+            {{ _("La plateforme permet de centraliser cette information et de rendre la situation visible pour les acteurs concernés.") }}
           </p>
         </div>
 
         <div class="hc-home__card">
-          <h3>{{ _('2. Coordination') }}</h3>
+          <h3>{{ _("Étape 2 — Mobiliser les acteurs") }}</h3>
           <p>
-            {{ _('Attribution responsable et suivi continu des interventions.') }}
+            {{ _("Les bénévoles, associations ou structures partenaires peuvent être mobilisés afin d’apporter une réponse adaptée.") }}
+          </p>
+          <p class="mb-0">
+            {{ _("HelpChain facilite la mise en relation entre les différents intervenants.") }}
           </p>
         </div>
 
         <div class="hc-home__card">
-          <h3>{{ _('3. Pilotage') }}</h3>
+          <h3>{{ _("Étape 3 — Suivre l’évolution") }}</h3>
           <p>
-            {{ _('Indicateurs opérationnels, visibilité et traçabilité des actions.') }}
+            {{ _("La plateforme permet de suivre l’évolution des situations et de coordonner les actions réalisées.") }}
+          </p>
+          <p class="mb-0">
+            {{ _("Les structures peuvent ainsi disposer d’une vision plus claire des demandes et des actions en cours.") }}
           </p>
         </div>
+      </div>
+
+      <div class="hc-home__positioning-copy mt-3">
+        <p class="mb-0">
+          {{ _("HelpChain vise à soutenir les initiatives locales en facilitant la coopération entre citoyens, bénévoles, associations et structures publiques.") }}
+        </p>
+        <p class="mb-0">
+          {{ _("La plateforme constitue un outil numérique permettant d’améliorer la coordination et l’organisation des actions de solidarité.") }}
+        </p>
       </div>
     </div>
   </section>
@@ -106,18 +504,144 @@
     <div class="hc-container">
       <div class="hc-home__positioning-inner">
         <div class="hc-home__positioning-copy">
-          <h2>{{ _('Une infrastructure, pas un annuaire.') }}</h2>
+          <h2>{{ _("Une infrastructure de coordination, pas un annuaire") }}</h2>
           <p>
-            {{ _('HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, avec un cadre structuré et sécurisé.') }}
+            {{ _("HelpChain propose un cadre de coordination destiné aux associations, services publics et réseaux professionnels, avec une organisation structurée et sécurisée.") }}
           </p>
         </div>
 
         <div class="hc-home__positioning-cta">
           <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.professionnels') }}">
-            {{ _("Découvrir l'espace professionnel") }}
+            {{ _("Découvrir l’espace professionnel") }}
           </a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head text-center">
+        <h2>{{ _("Phase pilote territoriale") }}</h2>
+        <p class="mx-auto">
+          {{ _("HelpChain peut être expérimenté dans le cadre de phases pilotes locales, en collaboration avec des collectivités, associations ou structures sociales.") }}
+        </p>
+      </header>
+
+      <div class="hc-home__positioning-inner">
+        <div class="hc-home__positioning-copy">
+          <p>{{ _("Ces phases pilotes permettent :") }}</p>
+          <ul>
+            <li>{{ _("d’expérimenter la plateforme dans un contexte réel") }}</li>
+            <li>{{ _("d’adapter les usages aux besoins du territoire") }}</li>
+            <li>{{ _("d’améliorer progressivement l’outil avec les acteurs locaux.") }}</li>
+          </ul>
+          <p class="mb-0">
+            {{ _("Les structures intéressées peuvent contacter l’équipe HelpChain afin d’étudier la mise en place d’une expérimentation.") }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head text-center">
+        <h2>{{ _("Transparence & Gouvernance") }}</h2>
+        <p class="mx-auto">
+          {{ _("HelpChain est conçu comme une infrastructure numérique de coordination au service des initiatives de solidarité locales.") }}
+        </p>
+      </header>
+
+      <div class="hc-home__positioning-inner">
+        <div class="hc-home__positioning-copy">
+          <p>{{ _("Le projet vise à :") }}</p>
+          <ul>
+            <li>{{ _("faciliter la coopération entre citoyens, bénévoles, associations et structures publiques") }}</li>
+            <li>{{ _("améliorer l’organisation et le suivi de certaines situations locales") }}</li>
+            <li>{{ _("proposer un outil numérique simple, sécurisé et conforme aux exigences européennes.") }}</li>
+          </ul>
+          <p class="mb-0">
+            {{ _("Le développement de la plateforme repose sur une approche progressive, avec des phases pilotes et une amélioration continue.") }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>{{ _("En savoir plus") }}</h2>
+        <p>{{ _("Ressources institutionnelles pour comprendre le fonctionnement et les usages de la plateforme.") }}</p>
+      </header>
+
+      <div class="hc-home__how-grid">
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.comment_ca_marche') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-route"></i></span><span>{{ _("Comment fonctionne HelpChain") }}</span></h3>
+          <p>{{ _("Vue d’ensemble du fonctionnement opérationnel pour les citoyens, bénévoles et structures.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.cas_usage') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-tasks"></i></span><span>{{ _("Cas d’usage") }}</span></h3>
+          <p>{{ _("Exemples concrets d’utilisation dans des situations locales de coordination solidaire.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.collectivites_associations') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-landmark"></i></span><span>{{ _("Pour les collectivités et associations") }}</span></h3>
+          <p>{{ _("Cadre d’usage pour les collectivités, CCAS et associations engagées sur le terrain.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.partenariats') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-handshake"></i></span><span>{{ _("Partenariats & déploiement territorial") }}</span></h3>
+          <p>{{ _("Approche de déploiement progressif et de coopération avec les acteurs locaux.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.legal') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></span><span>{{ _("Sécurité & conformité") }}</span></h3>
+          <p>{{ _("Références juridiques, protection des données et principes de conformité applicables.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.contact') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-envelope"></i></span><span>{{ _("Contact & coopération") }}</span></h3>
+          <p>{{ _("Canal de contact pour les collectivités, associations et partenaires institutionnels.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.faq') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-question-circle"></i></span><span>{{ _("FAQ") }}</span></h3>
+          <p>{{ _("Réponses claires aux questions fréquentes sur l’usage de la plateforme.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.pourquoi_helpchain') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-compass"></i></span><span>{{ _("Pourquoi HelpChain") }}</span></h3>
+          <p>{{ _("Vision, raison d’être du projet et besoin de coordination territoriale.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.vision_europeenne') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-globe-europe"></i></span><span>{{ _("Projet & Vision européenne") }}</span></h3>
+          <p>{{ _("Perspective de coopération progressive entre initiatives locales et européennes.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+        <a class="hc-home__card hc-home__card--link" href="{{ url_for('main.pilotage_indicateurs') }}">
+          <h3><span class="hc-icon-box hc-home__link-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></span><span>{{ _("Pilotage & indicateurs") }}</span></h3>
+          <p>{{ _("Repères opérationnels pour suivre les demandes et coordonner les actions.") }}</p>
+          <span class="hc-home__card-cta">{{ _("Consulter") }} <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__how">
+    <div class="hc-container">
+      <header class="hc-home__section-head text-center">
+        <h2>{{ _("Contact institutionnel") }}</h2>
+        <p class="mx-auto">
+          {{ _("Les collectivités, associations ou structures intéressées par une phase pilote ou une coopération peuvent contacter l’équipe HelpChain.") }}
+        </p>
+        <p class="mx-auto mb-0">
+          <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+        </p>
+      </header>
     </div>
   </section>
 </main>

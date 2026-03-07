@@ -28,11 +28,11 @@
       </div>
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">{{ _('Admin') }}</label>
-        <input class="form-control" name="admin" value="{{ filters.admin }}" placeholder="username">
+        <input class="form-control" name="admin" value="{{ filters.admin }}" placeholder="{{ _('Username') }}">
       </div>
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">{{ _('Request ID') }}</label>
-        <input class="form-control" name="target_id" value="{{ filters.target_id }}" placeholder="e.g. 123">
+        <input class="form-control" name="target_id" value="{{ filters.target_id }}" placeholder="{{ _('e.g. 123') }}">
       </div>
       <div class="col-8 col-md-2">
         <label class="form-label mb-1">{{ _('Days') }}</label>
@@ -58,7 +58,7 @@
             <th style="width: 140px;">{{ _('Admin') }}</th>
             <th style="width: 140px;">{{ _('Target') }}</th>
             <th>{{ _('Change') }}</th>
-            <th style="width: 130px;">IP</th>
+            <th style="width: 130px;">{{ _('IP') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -76,8 +76,8 @@
             <td class="small">
               {% if e.payload and e.payload.old and e.payload.new %}
                 <div class="audit-diff">
-                  <div><span class="text-muted">old:</span> <code>{{ e.payload.old }}</code></div>
-                  <div><span class="text-muted">new:</span> <code>{{ e.payload.new }}</code></div>
+                  <div><span class="text-muted">{{ _('old:') }}</span> <code>{{ e.payload.old }}</code></div>
+                  <div><span class="text-muted">{{ _('new:') }}</span> <code>{{ e.payload.new }}</code></div>
                 </div>
               {% elif e.payload %}
                 <code>{{ e.payload }}</code>

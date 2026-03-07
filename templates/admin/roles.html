@@ -41,7 +41,7 @@
                   {% set normalized = 'superadmin' %}
                 {% endif %}
                 <select class="form-select form-select-sm" name="role" style="max-width: 180px;"
-                        {% if last_superadmin_id == u.id %}title="Last superadmin"{% endif %}>
+                        {% if last_superadmin_id == u.id %}title="{{ _('Last superadmin') }}"{% endif %}>
                   {% for val, label in role_options %}
                     <option value="{{ val }}" {% if normalized == val %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
@@ -68,4 +68,3 @@
   </div>
 </div>
 {% endblock %}
-

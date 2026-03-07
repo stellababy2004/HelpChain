@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Видео чат · HelpChain{% endblock %}
+{% block title %}{{ _("Video chat") }} · HelpChain{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -8,12 +8,12 @@
     <div class="col-lg-8">
       <div class="card shadow-sm">
         <div class="card-body p-4">
-          <h1 class="h3 mb-3">Видео чат</h1>
+          <h1 class="h3 mb-3">{{ _("Video chat") }}</h1>
           <p class="text-muted mb-4">
-            Този модул е в разработка. Скоро ще можеш да стартираш сигурни видео сесии директно от платформата.
+            {{ _("This module is under development. Soon you will be able to start secure video sessions directly from the platform.") }}
           </p>
           <a class="btn btn-primary" href="{{ url_for('main.index') }}">
-            <i class="fas fa-arrow-left me-2"></i>Назад към начало
+            <i class="fas fa-arrow-left me-2"></i>{{ _("Back to home") }}
           </a>
         </div>
       </div>

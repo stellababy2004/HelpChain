@@ -16,7 +16,7 @@
       <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
           <h1 class="h3 mb-1 page-title">{{ _("Déposer une demande d’aide") }}</h1>
-          <p class="text-muted mb-0 page-subtitle">{{ _("Décrivez votre situation — on s’occupe du reste.") }}</p>
+          <p class="text-muted mb-0 page-subtitle">{{ _("Renseignez les informations essentielles pour faciliter le traitement de votre demande.") }}</p>
         </div>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}"
            data-hc-event="sr_nav_click" data-hc-cta="back_home">
@@ -38,13 +38,8 @@
       <div class="card shadow-sm">
         <div class="card-body p-3 p-md-4">
 
-      <div class="mb-3">
-        <div class="small text-muted">{{ _("Exemples :") }}</div>
-        <div class="d-flex flex-wrap gap-2 mt-2">
-          <span class="badge text-bg-light border">{{ _("Aide médicale") }}</span>
-          <span class="badge text-bg-light border">{{ _("Soutien social") }}</span>
-          <span class="badge text-bg-light border">{{ _("Problème technique") }}</span>
-        </div>
+      <div class="mb-3 hc-sr-context">
+        <div class="small text-muted">{{ _("Formulaire public de coordination — durée estimée : 2 minutes.") }}</div>
       </div>
 
       <form
@@ -65,14 +60,14 @@
           </div>
 
           <ul class="hc-form-trust" aria-label="{{ _('What happens next') }}">
-            <li>{{ _("Une personne de confiance vous contacte") }}</li>
-            <li>{{ _("Vos données servent uniquement à la coordination") }}</li>
-            <li>{{ _("En cas d’urgence, votre demande est priorisée") }}</li>
+            <li>{{ _("Votre demande est transmise à l’équipe de coordination.") }}</li>
+            <li>{{ _("Les informations collectées sont utilisées uniquement pour le suivi de la situation.") }}</li>
+            <li>{{ _("En cas d’urgence, la demande est traitée en priorité.") }}</li>
           </ul>
         </div>
         {# Honeypot #}
         <div class="hc-sr__honeypot">
-          <label>Website</label>
+          <label>{{ _('Website') }}</label>
           <input type="text" name="website" tabindex="-1" autocomplete="off">
         </div>
 
@@ -93,7 +88,7 @@
               data-hc-event="sr_field_click"
               data-hc-field="name"
               value="{{ request.form.get('name','') }}"
-              placeholder="{{ _('Ex. Maria Ivanova') }}"
+              placeholder="{{ _('Votre nom') }}"
               required minlength="2"
             >
             <div class="form-text">{{ _("Au moins 2 caractères.") }}</div>
@@ -109,7 +104,7 @@
               data-hc-event="sr_field_click"
               data-hc-field="phone"
               value="{{ request.form.get('phone','') }}"
-              placeholder="{{ _('+359… / +33…') }}"
+              placeholder="{{ _('06 00 00 00 00') }}"
             >
           </div>
 
@@ -123,13 +118,13 @@
               data-hc-event="sr_field_click"
               data-hc-field="email"
               value="{{ request.form.get('email','') }}"
-              placeholder="name@example.com"
+              placeholder="{{ _('nom@exemple.fr') }}"
             >
           </div>
 
           <div class="col-12">
             <div id="srContactWarn" class="alert alert-info py-2 mb-0">
-              <span class="small">{{ _("Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter.") }}</span>
+              <span class="small">{{ _("Ajoutez un téléphone ou un email afin de permettre un recontact rapide.") }}</span>
             </div>
           </div>
 
@@ -143,7 +138,7 @@
               <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Aide administrative") }}</option>
               <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Autre") }}</option>
             </select>
-            <div class="form-text">{{ _('Si vous ne choisissez pas, la catégorie “general” sera utilisée.') }}</div>
+            <div class="form-text">{{ _('Si vous ne choisissez pas de catégorie, une catégorie générale sera appliquée.') }}</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -154,7 +149,7 @@
               <option value="urgent" {% if request.form.get('urgency')=='urgent' %}selected{% endif %}>{{ _("Urgente") }}</option>
               <option value="critical" {% if request.form.get('urgency') in ['critical','emergency'] %}selected{% endif %}>{{ _("Critique") }}</option>
             </select>
-            <div class="form-text">{{ _("Ce choix influence la priorité (low/medium/high).") }}</div>
+            <div class="form-text">{{ _("Ce choix influence la priorité de traitement.") }}</div>
           </div>
 
           <div class="col-12 col-md-6">
@@ -167,7 +162,7 @@
               data-hc-event="sr_field_click"
               data-hc-field="title"
               value="{{ request.form.get('title','') }}"
-              placeholder="{{ _('Ex. Accompagnement chez le médecin') }}"
+              placeholder="{{ _('Titre de la demande') }}"
             >
             <div class="form-text">{{ _("Si vide, le système le complétera automatiquement.") }}</div>
             <div id="srTitleHint" class="hc-sr-hint" aria-live="polite"></div>
@@ -182,7 +177,7 @@
               data-hc-event="sr_field_click"
               data-hc-field="location_text"
               value="{{ request.form.get('location_text','') }}"
-              placeholder="{{ _('Ville, quartier (sans adresse exacte si inutile)') }}"
+              placeholder="{{ _('Ville ou commune') }}"
             >
           </div>
 
@@ -196,7 +191,7 @@
               data-hc-field="description"
               rows="5"
               required minlength="10"
-              placeholder="{{ _('Décrivez en 2–3 phrases la situation et l’aide recherchée.') }}"
+              placeholder="{{ _('Décrivez la situation et l’aide recherchée en quelques phrases.') }}"
             >{{ request.form.get('description','') }}</textarea>
             <div class="form-text">{{ _("Minimum 10 caractères.") }}</div>
             <div id="sr-desc-status" class="hc-sr__status hc-sr__status--hidden" aria-live="polite"></div>

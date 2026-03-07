@@ -1,0 +1,128 @@
+{
+  "templates_dir": "templates",
+  "registry": "i18n\\ui_keys.json",
+  "found_total_unique": 944,
+  "found_total_occurrences": 1216,
+  "new_keys": [],
+  "updated_existing": 944,
+  "unused_registry_keys": [
+    "submit_request",
+    "request_created_success",
+    "contact_us",
+    "ask_for_exchange",
+    "about_helpchain",
+    "structures",
+    "requests_menu",
+    "volunteer_dashboard",
+    "volunteer_can_help",
+    "volunteer_cant_help",
+    "volunteer_notifications",
+    "volunteer_matches",
+    "admin_requests",
+    "admin_insights",
+    "admin_filter",
+    "admin_reset",
+    "admin_export",
+    "admin_bulk_apply",
+    "admin_no_owner",
+    "admin_urgent",
+    "admin_stale",
+    "admin_action_only",
+    "admin_back_to_requests",
+    "admin_assign_to_me",
+    "admin_unassign",
+    "admin_save_status",
+    "admin_close_case",
+    "admin_internal_note",
+    "admin_activity",
+    "admin_audit",
+    "admin_risk",
+    "admin_sla",
+    "translations",
+    "translations_missing_db",
+    "translations_db_override",
+    "case_intelligence_next_action"
+  ],
+  "top_occurrences": [
+    {
+      "key": "msgid:Admin",
+      "count": 12
+    },
+    {
+      "key": "msgid:Search",
+      "count": 9
+    },
+    {
+      "key": "msgid:Actions",
+      "count": 8
+    },
+    {
+      "key": "msgid:Contact",
+      "count": 7
+    },
+    {
+      "key": "msgid:Notifications",
+      "count": 7
+    },
+    {
+      "key": "msgid:Username",
+      "count": 6
+    },
+    {
+      "key": "msgid:No data",
+      "count": 6
+    },
+    {
+      "key": "msgid:Open",
+      "count": 5
+    },
+    {
+      "key": "msgid:Closed",
+      "count": 5
+    },
+    {
+      "key": "msgid:В изчакване",
+      "count": 5
+    },
+    {
+      "key": "msgid:Затвори",
+      "count": 5
+    },
+    {
+      "key": "msgid:À propos",
+      "count": 4
+    },
+    {
+      "key": "msgid:Déposer une demande",
+      "count": 4
+    },
+    {
+      "key": "msgid:Orienter une demande",
+      "count": 4
+    },
+    {
+      "key": "msgid:Demander un échange",
+      "count": 4
+    },
+    {
+      "key": "msgid:Accueil",
+      "count": 4
+    },
+    {
+      "key": "msgid:New",
+      "count": 4
+    },
+    {
+      "key": "msgid:Close",
+      "count": 4
+    },
+    {
+      "key": "msgid:Translations",
+      "count": 4
+    },
+    {
+      "key": "msgid:Aide médicale",
+      "count": 4
+    }
+  ]
+}

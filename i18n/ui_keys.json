@@ -1,0 +1,6790 @@
+[
+  {
+    "key": "submit_request",
+    "default": "Soumettre",
+    "domain": "public"
+  },
+  {
+    "key": "request_created_success",
+    "default": "Demande créée.",
+    "domain": "public"
+  },
+  {
+    "key": "contact_us",
+    "default": "Contact",
+    "domain": "public"
+  },
+  {
+    "key": "ask_for_exchange",
+    "default": "Demander un échange",
+    "domain": "public"
+  },
+  {
+    "key": "about_helpchain",
+    "default": "À propos",
+    "domain": "public"
+  },
+  {
+    "key": "structures",
+    "default": "Structures",
+    "domain": "public"
+  },
+  {
+    "key": "requests_menu",
+    "default": "Demandes",
+    "domain": "public"
+  },
+  {
+    "key": "volunteer_dashboard",
+    "default": "Volunteer dashboard",
+    "domain": "volunteer"
+  },
+  {
+    "key": "volunteer_can_help",
+    "default": "Je peux aider",
+    "domain": "volunteer"
+  },
+  {
+    "key": "volunteer_cant_help",
+    "default": "Je ne peux pas aider",
+    "domain": "volunteer"
+  },
+  {
+    "key": "volunteer_notifications",
+    "default": "Notifications",
+    "domain": "volunteer"
+  },
+  {
+    "key": "volunteer_matches",
+    "default": "Correspondances",
+    "domain": "volunteer"
+  },
+  {
+    "key": "admin_requests",
+    "default": "Demandes",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_insights",
+    "default": "Insights",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_filter",
+    "default": "Filtrer",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_reset",
+    "default": "Réinitialiser",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_export",
+    "default": "Exporter",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_bulk_apply",
+    "default": "Appliquer",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_no_owner",
+    "default": "Sans responsable",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_urgent",
+    "default": "Urgent",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_stale",
+    "default": "En attente",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_action_only",
+    "default": "Action uniquement",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_back_to_requests",
+    "default": "Retour aux demandes",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_assign_to_me",
+    "default": "Prendre en charge",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_unassign",
+    "default": "Se retirer",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_save_status",
+    "default": "Enregistrer le statut",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_close_case",
+    "default": "Clore le dossier",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_internal_note",
+    "default": "Note interne",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_activity",
+    "default": "Activité",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_audit",
+    "default": "Audit",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_risk",
+    "default": "Risque",
+    "domain": "admin"
+  },
+  {
+    "key": "admin_sla",
+    "default": "SLA",
+    "domain": "admin"
+  },
+  {
+    "key": "translations",
+    "default": "Translations",
+    "domain": "admin"
+  },
+  {
+    "key": "translations_missing_db",
+    "default": "Missing (DB)",
+    "domain": "admin"
+  },
+  {
+    "key": "translations_db_override",
+    "default": "DB override",
+    "domain": "admin"
+  },
+  {
+    "key": "case_intelligence_next_action",
+    "default": "Prochaine action",
+    "domain": "admin"
+  },
+  {
+    "key": "msgid:(à compléter)",
+    "domain": "public",
+    "default": "(à compléter)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:+33...",
+    "domain": "public",
+    "default": "+33...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:+359… / +33…",
+    "domain": "public",
+    "default": "+359… / +33…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:/ search · j/k move · Enter open",
+    "domain": "admin_requests",
+    "default": "/ search · j/k move · Enter open",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:0 selected",
+    "domain": "admin_requests",
+    "default": "0 selected",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:1 minute pour commencer",
+    "domain": "volunteer_nav",
+    "default": "1 minute pour commencer",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:1 option enabled",
+    "domain": "public_nav",
+    "default": "1 option enabled",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:1 structure référente",
+    "domain": "public",
+    "default": "1 structure référente",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:1. Mentions légales",
+    "domain": "public",
+    "default": "1. Mentions légales",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:1. Orientation",
+    "domain": "public",
+    "default": "1. Orientation",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:10 à 30 demandes suivies dans l’outil",
+    "domain": "public",
+    "default": "10 à 30 demandes suivies dans l’outil",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:2. Coordination",
+    "domain": "public",
+    "default": "2. Coordination",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:2. Protection des données personnelles (RGPD)",
+    "domain": "public",
+    "default": "2. Protection des données personnelles (RGPD)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:3 à 10 intervenants impliqués",
+    "domain": "public",
+    "default": "3 à 10 intervenants impliqués",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:3. Cookies",
+    "domain": "public",
+    "default": "3. Cookies",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:3. Pilotage",
+    "domain": "public",
+    "default": "3. Pilotage",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:30 days",
+    "domain": "admin_requests",
+    "default": "30 days",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:4. Évolution",
+    "domain": "public",
+    "default": "4. Évolution",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:7 days",
+    "domain": "admin_requests",
+    "default": "7 days",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:90 days",
+    "domain": "admin_requests",
+    "default": "90 days",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:A question, a suggestion, or a concern? Write to us — a real human will read your message.",
+    "domain": "public",
+    "default": "A question, a suggestion, or a concern? Write to us — a real human will read your message.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Accessibility",
+    "domain": "public_nav",
+    "default": "Accessibility",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accessibility menu",
+    "domain": "public_nav",
+    "default": "Accessibility menu",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accessibility paused",
+    "domain": "public_nav",
+    "default": "Accessibility paused",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accessibility sections",
+    "domain": "public_nav",
+    "default": "Accessibility sections",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accessibility settings",
+    "domain": "public_nav",
+    "default": "Accessibility settings",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accessibility voice test. This is a preview of your audio settings.",
+    "domain": "public_nav",
+    "default": "Accessibility voice test. This is a preview of your audio settings.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Accompagnement administratif",
+    "domain": "public",
+    "default": "Accompagnement administratif",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accompagnement vers l’accès aux outils et services numériques.",
+    "domain": "public",
+    "default": "Accompagnement vers l’accès aux outils et services numériques.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Account",
+    "domain": "public",
+    "default": "Account",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Account and contact details you provide (name, email, phone - if you choose).",
+    "domain": "public",
+    "default": "Account and contact details you provide (name, email, phone - if you choose).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Accueil",
+    "domain": "public_nav",
+    "default": "Accueil",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accès alimentaire",
+    "domain": "public",
+    "default": "Accès alimentaire",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accès aux soins",
+    "domain": "public",
+    "default": "Accès aux soins",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accès intervenant",
+    "domain": "volunteer_nav",
+    "default": "Accès intervenant",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accès intervenants",
+    "domain": "public_nav",
+    "default": "Accès intervenants",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accès réservé aux intervenants autorisés",
+    "domain": "volunteer_nav",
+    "default": "Accès réservé aux intervenants autorisés",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accès validé manuellement pour garantir un réseau structuré.",
+    "domain": "public",
+    "default": "Accès validé manuellement pour garantir un réseau structuré.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Accéder à l’espace professionnel",
+    "domain": "public",
+    "default": "Accéder à l’espace professionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Accéder à mon espace intervenant",
+    "domain": "volunteer_nav",
+    "default": "Accéder à mon espace intervenant",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Action",
+    "domain": "admin_nav",
+    "default": "Action",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Action only",
+    "domain": "admin_requests",
+    "default": "Action only",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Actions",
+    "domain": "public",
+    "default": "Actions",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Activate MFA",
+    "domain": "admin_nav",
+    "default": "Activate MFA",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Add a bit more detail (20+ chars)",
+    "domain": "public",
+    "default": "Add a bit more detail (20+ chars)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Add more specific skills or enable location to improve matching.",
+    "domain": "volunteer_nav",
+    "default": "Add more specific skills or enable location to improve matching.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Add your location and a few skills. Then you will start seeing high-confidence matches.",
+    "domain": "volunteer_nav",
+    "default": "Add your location and a few skills. Then you will start seeing high-confidence matches.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Adjust readability and motion. Settings are saved on this device.",
+    "domain": "public_nav",
+    "default": "Adjust readability and motion. Settings are saved on this device.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Adjust speech playback volume",
+    "domain": "public_nav",
+    "default": "Adjust speech playback volume",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Admin",
+    "domain": "public_nav",
+    "default": "Admin",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Admin dashboard",
+    "domain": "public",
+    "default": "Admin dashboard",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Admin login",
+    "domain": "admin_nav",
+    "default": "Admin login",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Admin panel",
+    "domain": "public",
+    "default": "Admin panel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Admin roles",
+    "domain": "admin_nav",
+    "default": "Admin roles",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Adresse e-mail",
+    "domain": "volunteer_nav",
+    "default": "Adresse e-mail",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Aide administrative",
+    "domain": "public",
+    "default": "Aide administrative",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Aide médicale",
+    "domain": "volunteer_nav",
+    "default": "Aide médicale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ajouter ville et compétences (optionnel)",
+    "domain": "volunteer_nav",
+    "default": "Ajouter ville et compétences (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter.",
+    "domain": "public",
+    "default": "Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:All",
+    "domain": "volunteer_nav",
+    "default": "All",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:All active requests",
+    "domain": "volunteer_nav",
+    "default": "All active requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:All statuses",
+    "domain": "admin_requests",
+    "default": "All statuses",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Allow short spoken confirmations for key actions (future)",
+    "domain": "public_nav",
+    "default": "Allow short spoken confirmations for key actions (future)",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Also check your spam folder",
+    "domain": "volunteer_nav",
+    "default": "Also check your spam folder",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Annuler",
+    "domain": "public",
+    "default": "Annuler",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Anomaly indicators",
+    "domain": "admin_nav",
+    "default": "Anomaly indicators",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Apply",
+    "domain": "admin_requests",
+    "default": "Apply",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Apply filters",
+    "domain": "volunteer_nav",
+    "default": "Apply filters",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Apply profile",
+    "domain": "public_nav",
+    "default": "Apply profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Approche",
+    "domain": "public",
+    "default": "Approche",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Approche territoriale",
+    "domain": "public",
+    "default": "Approche territoriale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Appui dans les démarches administratives, accès aux droits et médiation institutionnelle.",
+    "domain": "public",
+    "default": "Appui dans les démarches administratives, accès aux droits et médiation institutionnelle.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Are you sure you want to continue?",
+    "domain": "public",
+    "default": "Are you sure you want to continue?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Assign volunteer",
+    "domain": "admin_requests",
+    "default": "Assign volunteer",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Assigned",
+    "domain": "public",
+    "default": "Assigned",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Assigned to you",
+    "domain": "volunteer_nav",
+    "default": "Assigned to you",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Assigned to you. Next action: click “View details”.",
+    "domain": "volunteer_nav",
+    "default": "Assigned to you. Next action: click “View details”.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Assigned to you. Next action: open details.",
+    "domain": "volunteer_nav",
+    "default": "Assigned to you. Next action: open details.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Associations et structures sociales",
+    "domain": "public",
+    "default": "Associations et structures sociales",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions.",
+    "domain": "public",
+    "default": "Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Attribution",
+    "domain": "public",
+    "default": "Attribution",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Attribution responsable et suivi continu des interventions.",
+    "domain": "public",
+    "default": "Attribution responsable et suivi continu des interventions.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Au moins 2 caractères.",
+    "domain": "public",
+    "default": "Au moins 2 caractères.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Aucun mot de passe.",
+    "domain": "volunteer_nav",
+    "default": "Aucun mot de passe.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes).",
+    "domain": "volunteer_nav",
+    "default": "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Audio",
+    "domain": "public_nav",
+    "default": "Audio",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Audio support",
+    "domain": "public_nav",
+    "default": "Audio support",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Audit trail",
+    "domain": "admin_nav",
+    "default": "Audit trail",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Auto-read on page load",
+    "domain": "public_nav",
+    "default": "Auto-read on page load",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Autre",
+    "domain": "volunteer_nav",
+    "default": "Autre",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Avg resolution",
+    "domain": "public",
+    "default": "Avg resolution",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Back",
+    "domain": "public_nav",
+    "default": "Back",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Back to home",
+    "domain": "public",
+    "default": "Back to home",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Back to home page",
+    "domain": "volunteer_nav",
+    "default": "Back to home page",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Back to requests",
+    "domain": "admin_nav",
+    "default": "Back to requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Back to security",
+    "domain": "admin_nav",
+    "default": "Back to security",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Balanced",
+    "domain": "public_nav",
+    "default": "Balanced",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Basic technical data for security (e.g., IP address, logs) to prevent abuse.",
+    "domain": "public",
+    "default": "Basic technical data for security (e.g., IP address, logs) to prevent abuse.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Besoin d’aide ?",
+    "domain": "public",
+    "default": "Besoin d’aide ?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Bulk action",
+    "domain": "admin_requests",
+    "default": "Bulk action",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:CSV",
+    "domain": "public",
+    "default": "CSV",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Cabinet, association, structure...",
+    "domain": "public",
+    "default": "Cabinet, association, structure...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Cadre RGPD",
+    "domain": "public",
+    "default": "Cadre RGPD",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Cadre institutionnel",
+    "domain": "public",
+    "default": "Cadre institutionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Cadre opérationnel",
+    "domain": "public",
+    "default": "Cadre opérationnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Call requester",
+    "domain": "public",
+    "default": "Call requester",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Can help",
+    "domain": "volunteer_nav",
+    "default": "Can help",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Cancelled",
+    "domain": "public",
+    "default": "Cancelled",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Cas d’usage — pour qui ?",
+    "domain": "public",
+    "default": "Cas d’usage — pour qui ?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Categories",
+    "domain": "public",
+    "default": "Categories",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Category",
+    "domain": "admin_requests",
+    "default": "Category",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Catégorie",
+    "domain": "public",
+    "default": "Catégorie",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Catégorie introuvable",
+    "domain": "public",
+    "default": "Catégorie introuvable",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ce choix influence la priorité (low/medium/high).",
+    "domain": "public",
+    "default": "Ce choix influence la priorité (low/medium/high).",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ce document présente l’infrastructure HelpChain, son cadre de gouvernance et les conditions d’un pilote territorial.",
+    "domain": "public",
+    "default": "Ce document présente l’infrastructure HelpChain, son cadre de gouvernance et les conditions d’un pilote territorial.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ce lien n’est plus valable. Veuillez demander un nouveau lien.",
+    "domain": "public",
+    "default": "Ce lien n’est plus valable. Veuillez demander un nouveau lien.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des processus et de la gouvernance.",
+    "domain": "public",
+    "default": "Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des processus et de la gouvernance.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ce que HelpChain n’est pas",
+    "domain": "public",
+    "default": "Ce que HelpChain n’est pas",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Centralisation",
+    "domain": "public",
+    "default": "Centralisation",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Centralisez les demandes, attribuez les dossiers et pilotez chaque action dans un cadre structuré, sécurisé et traçable.",
+    "domain": "public",
+    "default": "Centralisez les demandes, attribuez les dossiers et pilotez chaque action dans un cadre structuré, sécurisé et traçable.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Cette page pourra être mise à jour afin de refléter les évolutions du projet, de la structure juridique ou des obligations réglementaires.",
+    "domain": "public",
+    "default": "Cette page pourra être mise à jour afin de refléter les évolutions du projet, de la structure juridique ou des obligations réglementaires.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Change",
+    "domain": "admin_nav",
+    "default": "Change",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Check your email",
+    "domain": "volunteer_nav",
+    "default": "Check your email",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Choisir…",
+    "domain": "public",
+    "default": "Choisir…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Choose a browser voice when available",
+    "domain": "public_nav",
+    "default": "Choose a browser voice when available",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Choose a comfortable reading size",
+    "domain": "public_nav",
+    "default": "Choose a comfortable reading size",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Choose a comfortable reading speed",
+    "domain": "public_nav",
+    "default": "Choose a comfortable reading speed",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Choose format",
+    "domain": "public",
+    "default": "Choose format",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Choose the interface language",
+    "domain": "public_nav",
+    "default": "Choose the interface language",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Classification structurée des situations et qualification initiale.",
+    "domain": "public",
+    "default": "Classification structurée des situations et qualification initiale.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Clear",
+    "domain": "admin_requests",
+    "default": "Clear",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Clear quick filters",
+    "domain": "admin_requests",
+    "default": "Clear quick filters",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Clear selection",
+    "domain": "admin_requests",
+    "default": "Clear selection",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Close",
+    "domain": "public_nav",
+    "default": "Close",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Closed",
+    "domain": "public",
+    "default": "Closed",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Closed (last 7 days)",
+    "domain": "public",
+    "default": "Closed (last 7 days)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers.",
+    "domain": "public_nav",
+    "default": "Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Comma separated",
+    "domain": "public",
+    "default": "Comma separated",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Comment ça marche ?",
+    "domain": "volunteer_nav",
+    "default": "Comment ça marche ?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Completed",
+    "domain": "public",
+    "default": "Completed",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Compétences (max 5)",
+    "domain": "volunteer_nav",
+    "default": "Compétences (max 5)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Confiance et confidentialité",
+    "domain": "volunteer_nav",
+    "default": "Confiance et confidentialité",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Conforme RGPD",
+    "domain": "public_nav",
+    "default": "Conforme RGPD",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Conformité",
+    "domain": "public",
+    "default": "Conformité",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Conformité RGPD",
+    "domain": "public",
+    "default": "Conformité RGPD",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :",
+    "domain": "public",
+    "default": "Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Connexion intervenant",
+    "domain": "public_nav",
+    "default": "Connexion intervenant",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe.",
+    "domain": "volunteer_nav",
+    "default": "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Connexion sécurisée — aucun mot de passe",
+    "domain": "volunteer_nav",
+    "default": "Connexion sécurisée — aucun mot de passe",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Contact",
+    "domain": "public_nav",
+    "default": "Contact",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Contact :",
+    "domain": "public",
+    "default": "Contact :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Contact appears once the request is assigned, in progress, and the requester shared details.",
+    "domain": "public",
+    "default": "Contact appears once the request is assigned, in progress, and the requester shared details.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Contrôles d’accès par rôles, journalisation des actions et protection anti-abus.",
+    "domain": "public",
+    "default": "Contrôles d’accès par rôles, journalisation des actions et protection anti-abus.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Conçu et opéré depuis la France",
+    "domain": "public_nav",
+    "default": "Conçu et opéré depuis la France",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Conçu et opéré depuis la France.",
+    "domain": "public",
+    "default": "Conçu et opéré depuis la France.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Conçu pour les associations et réseaux professionnels opérant en France.",
+    "domain": "public",
+    "default": "Conçu pour les associations et réseaux professionnels opérant en France.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Coordination continue",
+    "domain": "public",
+    "default": "Coordination continue",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Coordination prioritaire des situations nécessitant une prise en charge rapide.",
+    "domain": "public",
+    "default": "Coordination prioritaire des situations nécessitant une prise en charge rapide.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Coordination structurée",
+    "domain": "public",
+    "default": "Coordination structurée",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Coordination traçable",
+    "domain": "public",
+    "default": "Coordination traçable",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Copy IDs",
+    "domain": "admin_requests",
+    "default": "Copy IDs",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Copy link",
+    "domain": "admin_requests",
+    "default": "Copy link",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Copy links",
+    "domain": "admin_requests",
+    "default": "Copy links",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Courses",
+    "domain": "volunteer_nav",
+    "default": "Courses",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Created",
+    "domain": "admin_requests",
+    "default": "Created",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Critique",
+    "domain": "public",
+    "default": "Critique",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Dashboard",
+    "domain": "public",
+    "default": "Dashboard",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Dashboard access",
+    "domain": "public",
+    "default": "Dashboard access",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Data retention",
+    "domain": "public",
+    "default": "Data retention",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Days",
+    "domain": "admin_nav",
+    "default": "Days",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Default voice",
+    "domain": "public_nav",
+    "default": "Default voice",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Demander de l’aide",
+    "domain": "public",
+    "default": "Demander de l’aide",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Demander un accès intervenant",
+    "domain": "volunteer_nav",
+    "default": "Demander un accès intervenant",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Demander un accès professionnel — phase pilote",
+    "domain": "public",
+    "default": "Demander un accès professionnel — phase pilote",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Demander un échange",
+    "domain": "public",
+    "default": "Demander un échange",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Demandes",
+    "domain": "public_nav",
+    "default": "Demandes",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Demandez un accès intervenant. Nous vous enverrons un lien sécurisé par e-mail.",
+    "domain": "volunteer_nav",
+    "default": "Demandez un accès intervenant. Nous vous enverrons un lien sécurisé par e-mail.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Denied actions (24h)",
+    "domain": "admin_nav",
+    "default": "Denied actions (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Dernière mise à jour : 2025",
+    "domain": "public",
+    "default": "Dernière mise à jour : 2025",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Description",
+    "domain": "public",
+    "default": "Description",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Detected role:",
+    "domain": "public",
+    "default": "Detected role:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Devenir bénévole",
+    "domain": "public",
+    "default": "Devenir bénévole",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Direct contact",
+    "domain": "public",
+    "default": "Direct contact",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Dismiss this request for 48 hours",
+    "domain": "public",
+    "default": "Dismiss this request for 48 hours",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Display",
+    "domain": "public_nav",
+    "default": "Display",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Display & reading",
+    "domain": "public_nav",
+    "default": "Display & reading",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Disponibilité (optionnel)",
+    "domain": "public",
+    "default": "Disponibilité (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Do not impersonate others or misrepresent your identity.",
+    "domain": "public",
+    "default": "Do not impersonate others or misrepresent your identity.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Do not post illegal, harmful, or abusive content.",
+    "domain": "public",
+    "default": "Do not post illegal, harmful, or abusive content.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Done",
+    "domain": "public_nav",
+    "default": "Done",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Données collectées",
+    "domain": "public",
+    "default": "Données collectées",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Données hébergées en Europe",
+    "domain": "public_nav",
+    "default": "Données hébergées en Europe",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Données hébergées en Europe, pilotage par structure, conçu et opéré depuis la France.",
+    "domain": "public",
+    "default": "Données hébergées en Europe, pilotage par structure, conçu et opéré depuis la France.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Données minimales",
+    "domain": "public",
+    "default": "Données minimales",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Données minimales, respect RGPD",
+    "domain": "volunteer_nav",
+    "default": "Données minimales, respect RGPD",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Dossier institutionnel",
+    "domain": "public",
+    "default": "Dossier institutionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Download data from the system in various formats",
+    "domain": "public",
+    "default": "Download data from the system in various formats",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Droit de rectification",
+    "domain": "public",
+    "default": "Droit de rectification",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Droit d’accès",
+    "domain": "public",
+    "default": "Droit d’accès",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Droit à la limitation du traitement",
+    "domain": "public",
+    "default": "Droit à la limitation du traitement",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Droit à l’effacement",
+    "domain": "public",
+    "default": "Droit à l’effacement",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Droits des utilisateurs",
+    "domain": "public",
+    "default": "Droits des utilisateurs",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Durée de conservation",
+    "domain": "public",
+    "default": "Durée de conservation",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Durée du pilote : 30 à 60 jours",
+    "domain": "public",
+    "default": "Durée du pilote : 30 à 60 jours",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Dyslexia-friendly font",
+    "domain": "public_nav",
+    "default": "Dyslexia-friendly font",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Déconnexion demandeur",
+    "domain": "public",
+    "default": "Déconnexion demandeur",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Découvrez HelpChain : une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.",
+    "domain": "public",
+    "default": "Découvrez HelpChain : une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Décrivez en 2–3 phrases la situation et l’aide recherchée.",
+    "domain": "public",
+    "default": "Décrivez en 2–3 phrases la situation et l’aide recherchée.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Décrivez votre situation — on s’occupe du reste.",
+    "domain": "public",
+    "default": "Décrivez votre situation — on s’occupe du reste.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Déploiement progressif en phase pilote, avec indicateurs de suivi et cadre de responsabilité.",
+    "domain": "public",
+    "default": "Déploiement progressif en phase pilote, avec indicateurs de suivi et cadre de responsabilité.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Déposer une demande",
+    "domain": "public",
+    "default": "Déposer une demande",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Déposer une demande d’aide",
+    "domain": "public",
+    "default": "Déposer une demande d’aide",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Déposez une demande — nous trouverons une personne pour vous répondre.",
+    "domain": "public",
+    "default": "Déposez une demande — nous trouverons une personne pour vous répondre.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:E-mail",
+    "domain": "public",
+    "default": "E-mail",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Eco",
+    "domain": "public_nav",
+    "default": "Eco",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Eco display",
+    "domain": "public_nav",
+    "default": "Eco display",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Eco mode",
+    "domain": "public_nav",
+    "default": "Eco mode",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Email",
+    "domain": "public",
+    "default": "Email",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Email address",
+    "domain": "volunteer_nav",
+    "default": "Email address",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Email requester",
+    "domain": "public",
+    "default": "Email requester",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:En cas d’urgence, votre demande est priorisée",
+    "domain": "public",
+    "default": "En cas d’urgence, votre demande est priorisée",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Enable location in profile",
+    "domain": "volunteer_nav",
+    "default": "Enable location in profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Enable location in profile to use Near me.",
+    "domain": "volunteer_nav",
+    "default": "Enable location in profile to use Near me.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Enable speech playback for reading content",
+    "domain": "public_nav",
+    "default": "Enable speech playback for reading content",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Entrée structurée des demandes",
+    "domain": "public",
+    "default": "Entrée structurée des demandes",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Envoyer la demande",
+    "domain": "public",
+    "default": "Envoyer la demande",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Espace professionnel",
+    "domain": "public",
+    "default": "Espace professionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Espace professionnel HelpChain : infrastructure de coordination pour associations, structures locales et professionnels avec suivi structuré, traçabilité et pilotage opérationnel.",
+    "domain": "public",
+    "default": "Espace professionnel HelpChain : infrastructure de coordination pour associations, structures locales et professionnels avec suivi structuré, traçabilité et pilotage opérationnel.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Europe",
+    "domain": "public",
+    "default": "Europe",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ex. Accompagnement chez le médecin",
+    "domain": "public",
+    "default": "Ex. Accompagnement chez le médecin",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ex. Maria Ivanova",
+    "domain": "public",
+    "default": "Ex. Maria Ivanova",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ex: 2h/semaine, soirs, urgences...",
+    "domain": "public",
+    "default": "Ex: 2h/semaine, soirs, urgences...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Excel",
+    "domain": "public",
+    "default": "Excel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Exemple de cadre pilote :",
+    "domain": "public",
+    "default": "Exemple de cadre pilote :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Exemples :",
+    "domain": "public",
+    "default": "Exemples :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Exercice des droits",
+    "domain": "public",
+    "default": "Exercice des droits",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export",
+    "domain": "public",
+    "default": "Export",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export CSV",
+    "domain": "public",
+    "default": "Export CSV",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export CSV (anonymized)",
+    "domain": "admin_requests",
+    "default": "Export CSV (anonymized)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export JSON",
+    "domain": "public",
+    "default": "Export JSON",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export XLSX",
+    "domain": "admin_requests",
+    "default": "Export XLSX",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export XLSX (anonymized)",
+    "domain": "admin_requests",
+    "default": "Export XLSX (anonymized)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Export data",
+    "domain": "public",
+    "default": "Export data",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Expérimentation territoriale",
+    "domain": "public",
+    "default": "Expérimentation territoriale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Extra large",
+    "domain": "public_nav",
+    "default": "Extra large",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Extra-large text and simplified visuals for easier reading",
+    "domain": "public_nav",
+    "default": "Extra-large text and simplified visuals for easier reading",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Faible",
+    "domain": "public",
+    "default": "Faible",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Failed logins (24h)",
+    "domain": "admin_nav",
+    "default": "Failed logins (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Failed-login spike",
+    "domain": "admin_nav",
+    "default": "Failed-login spike",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Fails",
+    "domain": "admin_nav",
+    "default": "Fails",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Fast",
+    "domain": "public_nav",
+    "default": "Fast",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Filter",
+    "domain": "admin_nav",
+    "default": "Filter",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Filters",
+    "domain": "admin_requests",
+    "default": "Filters",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Finalité du traitement",
+    "domain": "public",
+    "default": "Finalité du traitement",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Finalités explicites, minimisation des données et droits des personnes encadrés.",
+    "domain": "public",
+    "default": "Finalités explicites, minimisation des données et droits des personnes encadrés.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Focus mode",
+    "domain": "public_nav",
+    "default": "Focus mode",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Following system",
+    "domain": "public_nav",
+    "default": "Following system",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Fonctionnement",
+    "domain": "public_nav",
+    "default": "Fonctionnement",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Fonctionnement structuré",
+    "domain": "public",
+    "default": "Fonctionnement structuré",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Footer",
+    "domain": "public_nav",
+    "default": "Footer",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Formatted document",
+    "domain": "public",
+    "default": "Formatted document",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Formulaire guidé – moins de 3 minutes.",
+    "domain": "public",
+    "default": "Formulaire guidé – moins de 3 minutes.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable.",
+    "domain": "public",
+    "default": "Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:France",
+    "domain": "public",
+    "default": "France",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Generated:",
+    "domain": "public",
+    "default": "Generated:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Go to contact",
+    "domain": "volunteer_nav",
+    "default": "Go to contact",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Gouvernance & conformité (RGPD)",
+    "domain": "public",
+    "default": "Gouvernance & conformité (RGPD)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Gouvernance orientée résultat",
+    "domain": "public",
+    "default": "Gouvernance orientée résultat",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Governance: superadmin / ops / readonly",
+    "domain": "admin_nav",
+    "default": "Governance: superadmin / ops / readonly",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Has CAN_HELP",
+    "domain": "admin_requests",
+    "default": "Has CAN_HELP",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Help categories - HelpChain",
+    "domain": "public",
+    "default": "Help categories - HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Help us match you better",
+    "domain": "volunteer_nav",
+    "default": "Help us match you better",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:HelpChain (projet en cours de structuration)",
+    "domain": "public",
+    "default": "HelpChain (projet en cours de structuration)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:HelpChain collecte uniquement les données strictement nécessaires au fonctionnement de la plateforme, notamment :",
+    "domain": "public",
+    "default": "HelpChain collecte uniquement les données strictement nécessaires au fonctionnement de la plateforme, notamment :",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain est actuellement déployé en phase pilote avec un nombre limité de structures.",
+    "domain": "public",
+    "default": "HelpChain est actuellement déployé en phase pilote avec un nombre limité de structures.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain est actuellement en phase de mise en place de premiers pilotes locaux avec des structures associatives et des acteurs de l’accompagnement social.",
+    "domain": "public",
+    "default": "HelpChain est actuellement en phase de mise en place de premiers pilotes locaux avec des structures associatives et des acteurs de l’accompagnement social.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain est une infrastructure numérique conçue et opérée depuis la France, destinée à soutenir la coordination des demandes sociales entre structures locales, associations et professionnels.",
+    "domain": "public",
+    "default": "HelpChain est une infrastructure numérique conçue et opérée depuis la France, destinée à soutenir la coordination des demandes sociales entre structures locales, associations et professionnels.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.",
+    "domain": "public",
+    "default": "HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain fournit un périmètre clair de coordination pour les structures locales.",
+    "domain": "public",
+    "default": "HelpChain fournit un périmètre clair de coordination pour les structures locales.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, avec un cadre structuré et sécurisé.",
+    "domain": "public",
+    "default": "HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, avec un cadre structuré et sécurisé.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic rules to keep everyone safe.",
+    "domain": "public",
+    "default": "HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic rules to keep everyone safe.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency services.",
+    "domain": "public",
+    "default": "HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency services.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with volunteers. We do not sell your data.",
+    "domain": "public",
+    "default": "HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with volunteers. We do not sell your data.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir la sécurité et la confidentialité des données.",
+    "domain": "public",
+    "default": "HelpChain met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir la sécurité et la confidentialité des données.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain peut être déployé à l’échelle d’une structure, d’un réseau associatif ou d’un territoire local (ville ou intercommunalité).",
+    "domain": "public",
+    "default": "HelpChain peut être déployé à l’échelle d’une structure, d’un réseau associatif ou d’un territoire local (ville ou intercommunalité).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux professionnels.",
+    "domain": "public",
+    "default": "HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux professionnels.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain utilise uniquement des cookies strictement nécessaires au bon fonctionnement du site. Aucun cookie publicitaire ou de traçage commercial n’est utilisé.",
+    "domain": "public",
+    "default": "HelpChain utilise uniquement des cookies strictement nécessaires au bon fonctionnement du site. Aucun cookie publicitaire ou de traçage commercial n’est utilisé.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain | Infrastructure numérique de coordination des situations sociales",
+    "domain": "public",
+    "default": "HelpChain | Infrastructure numérique de coordination des situations sociales",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain не е платформа за спешни случаи и не замества институции.",
+    "domain": "volunteer_nav",
+    "default": "HelpChain не е платформа за спешни случаи и не замества институции.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш.",
+    "domain": "volunteer_nav",
+    "default": "HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Hide decorative elements and reduce visual noise",
+    "domain": "public_nav",
+    "default": "Hide decorative elements and reduce visual noise",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:High contrast",
+    "domain": "public_nav",
+    "default": "High contrast",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:High contrast + bigger text",
+    "domain": "public_nav",
+    "default": "High contrast + bigger text",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:High contrast and larger text for central vision comfort",
+    "domain": "public_nav",
+    "default": "High contrast and larger text for central vision comfort",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:High priority",
+    "domain": "public",
+    "default": "High priority",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:High priority open",
+    "domain": "public",
+    "default": "High priority open",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:High visibility",
+    "domain": "public_nav",
+    "default": "High visibility",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:High+",
+    "domain": "volunteer_nav",
+    "default": "High+",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Highlight the current paragraph or block during page reading",
+    "domain": "public_nav",
+    "default": "Highlight the current paragraph or block during page reading",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Highlight while reading",
+    "domain": "public_nav",
+    "default": "Highlight while reading",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Home",
+    "domain": "admin_requests",
+    "default": "Home",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:How we use it",
+    "domain": "public",
+    "default": "How we use it",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Hébergement",
+    "domain": "public",
+    "default": "Hébergement",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Hébergement & souveraineté",
+    "domain": "public",
+    "default": "Hébergement & souveraineté",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Hébergeur :",
+    "domain": "public",
+    "default": "Hébergeur :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:ID",
+    "domain": "admin_requests",
+    "default": "ID",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:If this email exists, a secure link has just been sent.",
+    "domain": "volunteer_nav",
+    "default": "If this email exists, a secure link has just been sent.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:If you do not see it within 1 minute, check Spam/Junk.",
+    "domain": "volunteer_nav",
+    "default": "If you do not see it within 1 minute, check Spam/Junk.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Impact",
+    "domain": "public",
+    "default": "Impact",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Improve my profile",
+    "domain": "volunteer_nav",
+    "default": "Improve my profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Improve readability and visual comfort",
+    "domain": "public_nav",
+    "default": "Improve readability and visual comfort",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Improve your profile to unlock stronger matches.",
+    "domain": "volunteer_nav",
+    "default": "Improve your profile to unlock stronger matches.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:In progress",
+    "domain": "public",
+    "default": "In progress",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Inclusion numérique",
+    "domain": "public",
+    "default": "Inclusion numérique",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Increase visual contrast across the interface",
+    "domain": "public_nav",
+    "default": "Increase visual contrast across the interface",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Indicateurs de délai et de charge",
+    "domain": "public",
+    "default": "Indicateurs de délai et de charge",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Indicateurs opérationnels, visibilité et traçabilité des actions.",
+    "domain": "public",
+    "default": "Indicateurs opérationnels, visibilité et traçabilité des actions.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Informations fournies volontairement dans le cadre d’une demande d’aide ou de volontariat",
+    "domain": "public",
+    "default": "Informations fournies volontairement dans le cadre d’une demande d’aide ou de volontariat",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Infrastructure numérique de coordination",
+    "domain": "public",
+    "default": "Infrastructure numérique de coordination",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Infrastructure numérique de coordination des situations sociales.",
+    "domain": "public",
+    "default": "Infrastructure numérique de coordination des situations sociales.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Infrastructure numérique de coordination des situations sociales. Orientation structurée, coordination traçable et pilotage responsable pour associations et réseaux professionnels.",
+    "domain": "public",
+    "default": "Infrastructure numérique de coordination des situations sociales. Orientation structurée, coordination traçable et pilotage responsable pour associations et réseaux professionnels.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Infrastructure numérique pour la coordination des demandes sociales",
+    "domain": "public",
+    "default": "Infrastructure numérique pour la coordination des demandes sociales",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Infrastructure sociale",
+    "domain": "public",
+    "default": "Infrastructure sociale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Infrastructure à vocation européenne",
+    "domain": "public",
+    "default": "Infrastructure à vocation européenne",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Infrastructure à vocation européenne.",
+    "domain": "public",
+    "default": "Infrastructure à vocation européenne.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.",
+    "domain": "public",
+    "default": "Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Inscription intervenant",
+    "domain": "public_nav",
+    "default": "Inscription intervenant",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Insights",
+    "domain": "admin_requests",
+    "default": "Insights",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Instant operational status",
+    "domain": "admin_requests",
+    "default": "Instant operational status",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Internal use only.",
+    "domain": "public",
+    "default": "Internal use only.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Intervenant access - HelpChain",
+    "domain": "volunteer_nav",
+    "default": "Intervenant access - HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Intervenants actifs",
+    "domain": "public",
+    "default": "Intervenants actifs",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:JSON",
+    "domain": "public",
+    "default": "JSON",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Je veux aider",
+    "domain": "public",
+    "default": "Je veux aider",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:J’accepte la Politique de confidentialité (RGPD).",
+    "domain": "public",
+    "default": "J’accepte la Politique de confidentialité (RGPD).",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:J’accepte les",
+    "domain": "volunteer_nav",
+    "default": "J’accepte les",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:J’ai besoin d’aide",
+    "domain": "public",
+    "default": "J’ai besoin d’aide",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Keep a clean look without changing text size",
+    "domain": "public_nav",
+    "default": "Keep a clean look without changing text size",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:La gestion des demandes et du suivi des actions",
+    "domain": "public",
+    "default": "La gestion des demandes et du suivi des actions",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:La mise en relation entre personnes en demande d’aide et bénévoles",
+    "domain": "public",
+    "default": "La mise en relation entre personnes en demande d’aide et bénévoles",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Language",
+    "domain": "public_nav",
+    "default": "Language",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Large",
+    "domain": "public_nav",
+    "default": "Large",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Larger text with cleaner reading spacing",
+    "domain": "public_nav",
+    "default": "Larger text with cleaner reading spacing",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Last signal",
+    "domain": "volunteer_nav",
+    "default": "Last signal",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Last superadmin",
+    "domain": "admin_nav",
+    "default": "Last superadmin",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Last updated:",
+    "domain": "public",
+    "default": "Last updated:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Latest requests",
+    "domain": "public",
+    "default": "Latest requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Le projet est développé avec une approche centrée sur la traçabilité des actions, la responsabilité des acteurs et le respect du cadre RGPD.",
+    "domain": "public",
+    "default": "Le projet est développé avec une approche centrée sur la traçabilité des actions, la responsabilité des acteurs et le respect du cadre RGPD.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Les données sont conservées uniquement pendant la durée nécessaire au traitement des demandes, puis archivées ou supprimées conformément aux obligations légales.",
+    "domain": "public",
+    "default": "Les données sont conservées uniquement pendant la durée nécessaire au traitement des demandes, puis archivées ou supprimées conformément aux obligations légales.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Les données sont utilisées exclusivement pour :",
+    "domain": "public",
+    "default": "Les données sont utilisées exclusivement pour :",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Les structures intéressées peuvent rejoindre cette phase pilote.",
+    "domain": "public",
+    "default": "Les structures intéressées peuvent rejoindre cette phase pilote.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Liability",
+    "domain": "public",
+    "default": "Liability",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Lien invalide",
+    "domain": "public",
+    "default": "Lien invalide",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Lien invalide ou expiré",
+    "domain": "public",
+    "default": "Lien invalide ou expiré",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Lien valable",
+    "domain": "volunteer_nav",
+    "default": "Lien valable",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Lighter pages for faster display and lower data/energy use",
+    "domain": "public_nav",
+    "default": "Lighter pages for faster display and lower data/energy use",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Lighter pages with reduced visual effects to improve speed and lower data/energy use",
+    "domain": "public_nav",
+    "default": "Lighter pages with reduced visual effects to improve speed and lower data/energy use",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Limit animations and transitions",
+    "domain": "public_nav",
+    "default": "Limit animations and transitions",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Link sent again (if the address is valid).",
+    "domain": "volunteer_nav",
+    "default": "Link sent again (if the address is valid).",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Link valid for",
+    "domain": "volunteer_nav",
+    "default": "Link valid for",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Live",
+    "domain": "admin_requests",
+    "default": "Live",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Loading profile…",
+    "domain": "public_nav",
+    "default": "Loading profile…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Localisation / adresse",
+    "domain": "public",
+    "default": "Localisation / adresse",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Localisation des serveurs :",
+    "domain": "public",
+    "default": "Localisation des serveurs :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Location",
+    "domain": "public",
+    "default": "Location",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Location match",
+    "domain": "public",
+    "default": "Location match",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Lockout buckets (24h)",
+    "domain": "admin_nav",
+    "default": "Lockout buckets (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Login as a requester",
+    "domain": "volunteer_nav",
+    "default": "Login as a requester",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Logout",
+    "domain": "public_nav",
+    "default": "Logout",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:L’amélioration du service",
+    "domain": "public",
+    "default": "L’amélioration du service",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:L’objectif est d’expérimenter un cadre simple de coordination et d’observer les gains de visibilité et de suivi des situations.",
+    "domain": "public",
+    "default": "L’objectif est d’expérimenter un cadre simple de coordination et d’observer les gains de visibilité et de suivi des situations.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:L’objectif est d’observer les gains de visibilité, de coordination et de traçabilité des actions.",
+    "domain": "public",
+    "default": "L’objectif est d’observer les gains de visibilité, de coordination et de traçabilité des actions.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:L’équipe HelpChain",
+    "domain": "public",
+    "default": "L’équipe HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Manual key (if QR does not work):",
+    "domain": "admin_nav",
+    "default": "Manual key (if QR does not work):",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Mark as seen & open",
+    "domain": "public_nav",
+    "default": "Mark as seen & open",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Match score + urgency + freshness.",
+    "domain": "volunteer_nav",
+    "default": "Match score + urgency + freshness.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Maximum 5 compétences.",
+    "domain": "volunteer_nav",
+    "default": "Maximum 5 compétences.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Mentions légales",
+    "domain": "public_nav",
+    "default": "Mentions légales",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Mentions légales & Protection des données",
+    "domain": "public",
+    "default": "Mentions légales & Protection des données",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Mentions légales & Protection des données | HelpChain",
+    "domain": "public",
+    "default": "Mentions légales & Protection des données | HelpChain",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Mentions légales et protection des données HelpChain : informations de publication, hébergement, cadre RGPD et droits des utilisateurs.",
+    "domain": "public",
+    "default": "Mentions légales et protection des données HelpChain : informations de publication, hébergement, cadre RGPD et droits des utilisateurs.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Message",
+    "domain": "public",
+    "default": "Message",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Message (optionnel)",
+    "domain": "public",
+    "default": "Message (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Min match",
+    "domain": "volunteer_nav",
+    "default": "Min match",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Minimum 10 caractères.",
+    "domain": "public",
+    "default": "Minimum 10 caractères.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Mise en relation et suivi pour les situations liées à l’accès aux services de santé.",
+    "domain": "public",
+    "default": "Mise en relation et suivi pour les situations liées à l’accès aux services de santé.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:More",
+    "domain": "public_nav",
+    "default": "More",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:More options",
+    "domain": "public_nav",
+    "default": "More options",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Motor",
+    "domain": "public_nav",
+    "default": "Motor",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Motor assistance",
+    "domain": "public_nav",
+    "default": "Motor assistance",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:My assignments",
+    "domain": "public",
+    "default": "My assignments",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:My dashboard",
+    "domain": "public_nav",
+    "default": "My dashboard",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:My profile",
+    "domain": "public",
+    "default": "My profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:My requests",
+    "domain": "public",
+    "default": "My requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Name",
+    "domain": "admin_requests",
+    "default": "Name",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Navigation",
+    "domain": "public_nav",
+    "default": "Navigation",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Navigation comfort",
+    "domain": "public_nav",
+    "default": "Navigation comfort",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Navigation principale",
+    "domain": "public_nav",
+    "default": "Navigation principale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Navigation profiles",
+    "domain": "public_nav",
+    "default": "Navigation profiles",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Near",
+    "domain": "volunteer_nav",
+    "default": "Near",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Near me",
+    "domain": "volunteer_nav",
+    "default": "Near me",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:New",
+    "domain": "public_nav",
+    "default": "New",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:New requests",
+    "domain": "public",
+    "default": "New requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Next",
+    "domain": "admin_nav",
+    "default": "Next",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No admin users found.",
+    "domain": "admin_nav",
+    "default": "No admin users found.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No audit events for selected filters.",
+    "domain": "admin_nav",
+    "default": "No audit events for selected filters.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No automated marketing emails.",
+    "domain": "public",
+    "default": "No automated marketing emails.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No data",
+    "domain": "admin_nav",
+    "default": "No data",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No history",
+    "domain": "public",
+    "default": "No history",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No notifications",
+    "domain": "public_nav",
+    "default": "No notifications",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No notifications yet",
+    "domain": "volunteer_nav",
+    "default": "No notifications yet",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No options enabled",
+    "domain": "public_nav",
+    "default": "No options enabled",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No owner",
+    "domain": "admin_requests",
+    "default": "No owner",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No owner assigned",
+    "domain": "admin_requests",
+    "default": "No owner assigned",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No password.",
+    "domain": "volunteer_nav",
+    "default": "No password.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No results found.",
+    "domain": "public",
+    "default": "No results found.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No results.",
+    "domain": "admin_requests",
+    "default": "No results.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:No strong matches yet",
+    "domain": "volunteer_nav",
+    "default": "No strong matches yet",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Nom (optionnel)",
+    "domain": "public",
+    "default": "Nom (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Nom Prénom",
+    "domain": "public",
+    "default": "Nom Prénom",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Nom du site :",
+    "domain": "public",
+    "default": "Nom du site :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Nom ou pseudonyme",
+    "domain": "public",
+    "default": "Nom ou pseudonyme",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Non assigné",
+    "domain": "admin_requests",
+    "default": "Non assigné",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Normal",
+    "domain": "public_nav",
+    "default": "Normal",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Normale",
+    "domain": "public",
+    "default": "Normale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Not assigned yet. A volunteer/pro will take it as soon as possible.",
+    "domain": "public",
+    "default": "Not assigned yet. A volunteer/pro will take it as soon as possible.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Not assigned yet. Someone will take it soon.",
+    "domain": "public",
+    "default": "Not assigned yet. Someone will take it soon.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Not done / not rejected",
+    "domain": "public",
+    "default": "Not done / not rejected",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Not for me (48h)",
+    "domain": "public",
+    "default": "Not for me (48h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Notification",
+    "domain": "public_nav",
+    "default": "Notification",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Notifications",
+    "domain": "public_nav",
+    "default": "Notifications",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Notre mission",
+    "domain": "public",
+    "default": "Notre mission",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Notre vision",
+    "domain": "public",
+    "default": "Notre vision",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Nous collectons uniquement les informations nécessaires pour vous mettre en relation. Vous gardez le contrôle.",
+    "domain": "volunteer_nav",
+    "default": "Nous collectons uniquement les informations nécessaires pour vous mettre en relation. Vous gardez le contrôle.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Nous ne partageons jamais votre e-mail. Vous pourrez supprimer votre compte à tout moment.",
+    "domain": "volunteer_nav",
+    "default": "Nous ne partageons jamais votre e-mail. Vous pourrez supprimer votre compte à tout moment.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Nous vous envoyons un lien de connexion. Aucun mot de passe.",
+    "domain": "volunteer_nav",
+    "default": "Nous vous envoyons un lien de connexion. Aucun mot de passe.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Nudge selected volunteers",
+    "domain": "admin_requests",
+    "default": "Nudge selected volunteers",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Nudge volunteer",
+    "domain": "admin_requests",
+    "default": "Nudge volunteer",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Objectif du pilote :",
+    "domain": "public",
+    "default": "Objectif du pilote :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement.",
+    "domain": "public",
+    "default": "Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Open",
+    "domain": "public_nav",
+    "default": "Open",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Open audit trail",
+    "domain": "admin_nav",
+    "default": "Open audit trail",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Open details",
+    "domain": "admin_requests",
+    "default": "Open details",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Open request",
+    "domain": "volunteer_nav",
+    "default": "Open request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Open requests ordered by freshness.",
+    "domain": "volunteer_nav",
+    "default": "Open requests ordered by freshness.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Open selected",
+    "domain": "admin_requests",
+    "default": "Open selected",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Open without owner",
+    "domain": "public",
+    "default": "Open without owner",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Operational dashboard",
+    "domain": "admin_requests",
+    "default": "Operational dashboard",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Operational signal for admin authentication and risky actions (last 24h).",
+    "domain": "admin_nav",
+    "default": "Operational signal for admin authentication and risky actions (last 24h).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Operational status",
+    "domain": "admin_requests",
+    "default": "Operational status",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Operational status, KPIs and live queue snapshot",
+    "domain": "admin_requests",
+    "default": "Operational status, KPIs and live queue snapshot",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Opérationnel",
+    "domain": "public",
+    "default": "Opérationnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Organisation (optionnel)",
+    "domain": "public",
+    "default": "Organisation (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Orientation claire",
+    "domain": "public",
+    "default": "Orientation claire",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Orientation des demandes",
+    "domain": "public",
+    "default": "Orientation des demandes",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Orientation et coordination pour les situations nécessitant un accompagnement individuel.",
+    "domain": "public",
+    "default": "Orientation et coordination pour les situations nécessitant un accompagnement individuel.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.",
+    "domain": "public_nav",
+    "default": "Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Orientation structurée. Coordination traçable. Pilotage responsable.",
+    "domain": "public",
+    "default": "Orientation structurée. Coordination traçable. Pilotage responsable.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Orienter une demande",
+    "domain": "public",
+    "default": "Orienter une demande",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Orienter une demande | HelpChain",
+    "domain": "public",
+    "default": "Orienter une demande | HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ouvrir",
+    "domain": "admin_requests",
+    "default": "Ouvrir",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:PDF",
+    "domain": "public",
+    "default": "PDF",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Page",
+    "domain": "admin_nav",
+    "default": "Page",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Paris, Boulogne-Billancourt...",
+    "domain": "public",
+    "default": "Paris, Boulogne-Billancourt...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Paris, Boulogne-Billancourt…",
+    "domain": "volunteer_nav",
+    "default": "Paris, Boulogne-Billancourt…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pas de spam.",
+    "domain": "public",
+    "default": "Pas de spam.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Password",
+    "domain": "admin_nav",
+    "default": "Password",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pending",
+    "domain": "public",
+    "default": "Pending",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pending requests",
+    "domain": "public",
+    "default": "Pending requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable.",
+    "domain": "public",
+    "default": "Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Phase pilote contrôlée",
+    "domain": "public",
+    "default": "Phase pilote contrôlée",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Phase pilote | Professionnels — HelpChain",
+    "domain": "public",
+    "default": "Phase pilote | Professionnels — HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Phase pilote — Professionnels",
+    "domain": "public",
+    "default": "Phase pilote — Professionnels",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Phase pilote — cadre simple",
+    "domain": "public",
+    "default": "Phase pilote — cadre simple",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pilot Dashboard",
+    "domain": "public",
+    "default": "Pilot Dashboard",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pilotage",
+    "domain": "public",
+    "default": "Pilotage",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pilotage opérationnel",
+    "domain": "public",
+    "default": "Pilotage opérationnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pilotage, traçabilité et gouvernance pour les structures qui coordonnent des demandes sociales à l’échelle locale.",
+    "domain": "public",
+    "default": "Pilotage, traçabilité et gouvernance pour les structures qui coordonnent des demandes sociales à l’échelle locale.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Placeholder (backend à venir)",
+    "domain": "volunteer_nav",
+    "default": "Placeholder (backend à venir)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Placeholder section for click targets, dwell, and keyboard assistance",
+    "domain": "public_nav",
+    "default": "Placeholder section for click targets, dwell, and keyboard assistance",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Play",
+    "domain": "public_nav",
+    "default": "Play",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Please start again from the form.",
+    "domain": "volunteer_nav",
+    "default": "Please start again from the form.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Pour les structures intéressées par un pilote local, un échange direct peut être organisé.",
+    "domain": "public",
+    "default": "Pour les structures intéressées par un pilote local, un échange direct peut être organisé.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Pour les structures | HelpChain",
+    "domain": "public",
+    "default": "Pour les structures | HelpChain",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Pour toute demande relative à vos données personnelles, vous pouvez nous contacter à l’adresse suivante :",
+    "domain": "public",
+    "default": "Pour toute demande relative à vos données personnelles, vous pouvez nous contacter à l’adresse suivante :",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Power off",
+    "domain": "public_nav",
+    "default": "Power off",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Prendre en charge",
+    "domain": "admin_requests",
+    "default": "Prendre en charge",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Prendre en charge (moi)",
+    "domain": "admin_requests",
+    "default": "Prendre en charge (moi)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Preset description",
+    "domain": "public_nav",
+    "default": "Preset description",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Prev",
+    "domain": "admin_nav",
+    "default": "Prev",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Preview",
+    "domain": "public",
+    "default": "Preview",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Preview image for the About HelpChain page",
+    "domain": "public",
+    "default": "Preview image for the About HelpChain page",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Preview image for the HelpChain legal and data protection page",
+    "domain": "public",
+    "default": "Preview image for the HelpChain legal and data protection page",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Preview image for the HelpChain pilot dashboard page",
+    "domain": "public",
+    "default": "Preview image for the HelpChain pilot dashboard page",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Preview image for the HelpChain privacy policy page",
+    "domain": "public",
+    "default": "Preview image for the HelpChain privacy policy page",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Preview image for the HelpChain professionals page",
+    "domain": "public",
+    "default": "Preview image for the HelpChain professionals page",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Preview image for the HelpChain terms of service page",
+    "domain": "public",
+    "default": "Preview image for the HelpChain terms of service page",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Priority",
+    "domain": "volunteer_nav",
+    "default": "Priority",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Priority boost",
+    "domain": "public",
+    "default": "Priority boost",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Pris",
+    "domain": "admin_requests",
+    "default": "Pris",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Privacy policy",
+    "domain": "public",
+    "default": "Privacy policy",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Privacy policy for HelpChain: what data we collect, how we use it, retention, your rights, and how to contact us.",
+    "domain": "public",
+    "default": "Privacy policy for HelpChain: what data we collect, how we use it, retention, your rights, and how to contact us.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Privacy policy | HelpChain",
+    "domain": "public",
+    "default": "Privacy policy | HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Problème technique",
+    "domain": "public",
+    "default": "Problème technique",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Processus simple, traçable et responsable",
+    "domain": "volunteer_nav",
+    "default": "Processus simple, traçable et responsable",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Processus structuré",
+    "domain": "public",
+    "default": "Processus structuré",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Professionals",
+    "domain": "public",
+    "default": "Professionals",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Professionnels",
+    "domain": "public",
+    "default": "Professionnels",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Professionnels | HelpChain",
+    "domain": "public",
+    "default": "Professionnels | HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Profile",
+    "domain": "public_nav",
+    "default": "Profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Profile completeness",
+    "domain": "volunteer_nav",
+    "default": "Profile completeness",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Profile details",
+    "domain": "public_nav",
+    "default": "Profile details",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Provide accurate information and use respectful language.",
+    "domain": "public",
+    "default": "Provide accurate information and use respectful language.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Psychologue, avocat, médecin, assistant social...",
+    "domain": "public",
+    "default": "Psychologue, avocat, médecin, assistant social...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Périmètre partagé entre équipes",
+    "domain": "public",
+    "default": "Périmètre partagé entre équipes",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Périmètre possible d’un pilote",
+    "domain": "public",
+    "default": "Périmètre possible d’un pilote",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Questions about privacy? Contact us at",
+    "domain": "public",
+    "default": "Questions about privacy? Contact us at",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Questions about these terms? Contact us at",
+    "domain": "public",
+    "default": "Questions about these terms? Contact us at",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:RGPD",
+    "domain": "public",
+    "default": "RGPD",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Read aloud",
+    "domain": "public_nav",
+    "default": "Read aloud",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Read content aloud and tune voice feedback for better accessibility",
+    "domain": "public_nav",
+    "default": "Read content aloud and tune voice feedback for better accessibility",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Read-only KPI overview (no personal data).",
+    "domain": "public",
+    "default": "Read-only KPI overview (no personal data).",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Reading comfort",
+    "domain": "public_nav",
+    "default": "Reading comfort",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Recent login attempts",
+    "domain": "admin_nav",
+    "default": "Recent login attempts",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Recent risky actions",
+    "domain": "admin_nav",
+    "default": "Recent risky actions",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Recevoir mon lien de connexion",
+    "domain": "volunteer_nav",
+    "default": "Recevoir mon lien de connexion",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Recommended for you",
+    "domain": "volunteer_nav",
+    "default": "Recommended for you",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Reduce distraction and simplify movement across pages",
+    "domain": "public_nav",
+    "default": "Reduce distraction and simplify movement across pages",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Reduce motion",
+    "domain": "public_nav",
+    "default": "Reduce motion",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Reduce motion and visual noise",
+    "domain": "public_nav",
+    "default": "Reduce motion and visual noise",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Reference:",
+    "domain": "public",
+    "default": "Reference:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Regardez aussi vos spams",
+    "domain": "volunteer_nav",
+    "default": "Regardez aussi vos spams",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Register",
+    "domain": "public",
+    "default": "Register",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Rejoignez notre communauté de bénévoles.",
+    "domain": "public",
+    "default": "Rejoignez notre communauté de bénévoles.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Rejoindre le pilote",
+    "domain": "public",
+    "default": "Rejoindre le pilote",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Renvoyer le lien",
+    "domain": "volunteer_nav",
+    "default": "Renvoyer le lien",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Repeated fails by IP",
+    "domain": "admin_nav",
+    "default": "Repeated fails by IP",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Repeated fails by username",
+    "domain": "admin_nav",
+    "default": "Repeated fails by username",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Repères",
+    "domain": "public",
+    "default": "Repères",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Request",
+    "domain": "public",
+    "default": "Request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Request ID",
+    "domain": "admin_nav",
+    "default": "Request ID",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Request information you submit (category, description, location - if needed for the service).",
+    "domain": "public",
+    "default": "Request information you submit (category, description, location - if needed for the service).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Requester",
+    "domain": "public",
+    "default": "Requester",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Requests",
+    "domain": "public",
+    "default": "Requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Requests by category",
+    "domain": "public",
+    "default": "Requests by category",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Requests by city (Top 10)",
+    "domain": "public",
+    "default": "Requests by city (Top 10)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Requests by status",
+    "domain": "public",
+    "default": "Requests by status",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Requests trend (last 30 days)",
+    "domain": "public",
+    "default": "Requests trend (last 30 days)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Resend link",
+    "domain": "volunteer_nav",
+    "default": "Resend link",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Reset",
+    "domain": "public_nav",
+    "default": "Reset",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Reset only this section",
+    "domain": "public_nav",
+    "default": "Reset only this section",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Responsabilité claire par dossier",
+    "domain": "public",
+    "default": "Responsabilité claire par dossier",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Responsable :",
+    "domain": "public",
+    "default": "Responsable :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Responsable de la publication",
+    "domain": "public",
+    "default": "Responsable de la publication",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Response time",
+    "domain": "public",
+    "default": "Response time",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Restore system defaults",
+    "domain": "public_nav",
+    "default": "Restore system defaults",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Result",
+    "domain": "admin_nav",
+    "default": "Result",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Results for",
+    "domain": "public",
+    "default": "Results for",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Retour",
+    "domain": "public",
+    "default": "Retour",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Retour à l’accueil",
+    "domain": "public",
+    "default": "Retour à l’accueil",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Risky actions (24h)",
+    "domain": "admin_nav",
+    "default": "Risky actions (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Risky actions monitored:",
+    "domain": "admin_nav",
+    "default": "Risky actions monitored:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Role",
+    "domain": "public",
+    "default": "Role",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Roles",
+    "domain": "admin_nav",
+    "default": "Roles",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Règles d’affectation explicites",
+    "domain": "public",
+    "default": "Règles d’affectation explicites",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Réduction des canaux informels",
+    "domain": "public",
+    "default": "Réduction des canaux informels",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Réseaux professionnels d’accompagnement",
+    "domain": "public",
+    "default": "Réseaux professionnels d’accompagnement",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:SLA",
+    "domain": "admin_requests",
+    "default": "SLA",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Safety",
+    "domain": "public",
+    "default": "Safety",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Save",
+    "domain": "admin_nav",
+    "default": "Save",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Save as my profile",
+    "domain": "public_nav",
+    "default": "Save as my profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code.",
+    "domain": "admin_nav",
+    "default": "Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Search",
+    "domain": "public_nav",
+    "default": "Search",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Search by name, title, description...",
+    "domain": "admin_requests",
+    "default": "Search by name, title, description...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Search…",
+    "domain": "public_nav",
+    "default": "Search…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Security & privacy",
+    "domain": "public",
+    "default": "Security & privacy",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Security issues can be reported at",
+    "domain": "public",
+    "default": "Security issues can be reported at",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Security overview",
+    "domain": "admin_nav",
+    "default": "Security overview",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Select",
+    "domain": "admin_requests",
+    "default": "Select",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Select language",
+    "domain": "public_nav",
+    "default": "Select language",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Select request",
+    "domain": "admin_requests",
+    "default": "Select request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Select visible",
+    "domain": "admin_requests",
+    "default": "Select visible",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Selected text audio controls",
+    "domain": "public_nav",
+    "default": "Selected text audio controls",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Send message",
+    "domain": "public",
+    "default": "Send message",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sending...",
+    "domain": "volunteer_nav",
+    "default": "Sending...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Sending…",
+    "domain": "volunteer_nav",
+    "default": "Sending…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Services publics locaux (CCAS, collectivités)",
+    "domain": "public",
+    "default": "Services publics locaux (CCAS, collectivités)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Session for",
+    "domain": "public",
+    "default": "Session for",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Set status: Done",
+    "domain": "admin_requests",
+    "default": "Set status: Done",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Set status: In progress",
+    "domain": "admin_requests",
+    "default": "Set status: In progress",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Set status: Pending",
+    "domain": "admin_requests",
+    "default": "Set status: Pending",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Set status: Rejected",
+    "domain": "admin_requests",
+    "default": "Set status: Rejected",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Set up MFA",
+    "domain": "admin_nav",
+    "default": "Set up MFA",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Shortcut: Alt + A",
+    "domain": "public_nav",
+    "default": "Shortcut: Alt + A",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Show deleted",
+    "domain": "admin_requests",
+    "default": "Show deleted",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Si cet e-mail existe, nous venons d’envoyer un lien sécurisé.",
+    "domain": "volunteer_nav",
+    "default": "Si cet e-mail existe, nous venons d’envoyer un lien sécurisé.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Si vide, le système le complétera automatiquement.",
+    "domain": "public",
+    "default": "Si vide, le système le complétera automatiquement.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Si vous ne choisissez pas, la catégorie “general” sera utilisée.",
+    "domain": "public",
+    "default": "Si vous ne choisissez pas, la catégorie “general” sera utilisée.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Sign in as admin",
+    "domain": "admin_nav",
+    "default": "Sign in as admin",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Signals",
+    "domain": "admin_requests",
+    "default": "Signals",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Simplified mode",
+    "domain": "public_nav",
+    "default": "Simplified mode",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Situations traitées",
+    "domain": "public",
+    "default": "Situations traitées",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Skills",
+    "domain": "public",
+    "default": "Skills",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Skills match",
+    "domain": "public",
+    "default": "Skills match",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Skip to main content",
+    "domain": "public_nav",
+    "default": "Skip to main content",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Slow",
+    "domain": "public_nav",
+    "default": "Slow",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sorted by match score & urgency",
+    "domain": "volunteer_nav",
+    "default": "Sorted by match score & urgency",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles.",
+    "domain": "public",
+    "default": "Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Soutien psychosocial",
+    "domain": "public",
+    "default": "Soutien psychosocial",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Soutien social",
+    "domain": "public",
+    "default": "Soutien social",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Soutien émotionnel",
+    "domain": "volunteer_nav",
+    "default": "Soutien émotionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Speech playback is not available in this browser.",
+    "domain": "public_nav",
+    "default": "Speech playback is not available in this browser.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Speech rate",
+    "domain": "public_nav",
+    "default": "Speech rate",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Speech volume",
+    "domain": "public_nav",
+    "default": "Speech volume",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Spreadsheet",
+    "domain": "public",
+    "default": "Spreadsheet",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Stale",
+    "domain": "admin_requests",
+    "default": "Stale",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Stale > 7 days",
+    "domain": "public",
+    "default": "Stale > 7 days",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Stale request",
+    "domain": "admin_requests",
+    "default": "Stale request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Start reading automatically when supported (future)",
+    "domain": "public_nav",
+    "default": "Start reading automatically when supported (future)",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Status",
+    "domain": "admin_requests",
+    "default": "Status",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Stop",
+    "domain": "public_nav",
+    "default": "Stop",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Structured data",
+    "domain": "public",
+    "default": "Structured data",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Structured view by status",
+    "domain": "admin_requests",
+    "default": "Structured view by status",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé.",
+    "domain": "public",
+    "default": "Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Structures",
+    "domain": "public_nav",
+    "default": "Structures",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Structurée",
+    "domain": "public",
+    "default": "Structurée",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Subject",
+    "domain": "public",
+    "default": "Subject",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Submit a new request",
+    "domain": "public",
+    "default": "Submit a new request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Submit a request",
+    "domain": "public",
+    "default": "Submit a request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Submit your first request",
+    "domain": "public",
+    "default": "Submit your first request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Successful logins (24h)",
+    "domain": "admin_nav",
+    "default": "Successful logins (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sufficient info",
+    "domain": "public",
+    "default": "Sufficient info",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Suivi traçable",
+    "domain": "public",
+    "default": "Suivi traçable",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Superadmin count",
+    "domain": "admin_nav",
+    "default": "Superadmin count",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sécurité",
+    "domain": "public",
+    "default": "Sécurité",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sécurité opérationnelle",
+    "domain": "public",
+    "default": "Sécurité opérationnelle",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sécurité renforcée",
+    "domain": "public_nav",
+    "default": "Sécurité renforcée",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée.",
+    "domain": "public",
+    "default": "Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Sélectionnez le domaine principal pour orienter une demande et structurer la prise en charge avec une coordination adaptée.",
+    "domain": "public",
+    "default": "Sélectionnez le domaine principal pour orienter une demande et structurer la prise en charge avec une coordination adaptée.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Target",
+    "domain": "admin_nav",
+    "default": "Target",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Terms of service",
+    "domain": "public",
+    "default": "Terms of service",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Terms of service for HelpChain: platform usage rules, safety principles, liability information, and contact details.",
+    "domain": "public",
+    "default": "Terms of service for HelpChain: platform usage rules, safety principles, liability information, and contact details.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Terms of service | HelpChain",
+    "domain": "public",
+    "default": "Terms of service | HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Territoires",
+    "domain": "public",
+    "default": "Territoires",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Test voice",
+    "domain": "public_nav",
+    "default": "Test voice",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Text size",
+    "domain": "public_nav",
+    "default": "Text size",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Thank you",
+    "domain": "public",
+    "default": "Thank you",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Thank you — Pilot phase",
+    "domain": "public",
+    "default": "Thank you — Pilot phase",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:This export contains personal data.",
+    "domain": "public",
+    "default": "This export contains personal data.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:This form is informational for now. Please use email below.",
+    "domain": "public",
+    "default": "This form is informational for now. Please use email below.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:This is where you track your requests and their progress.",
+    "domain": "public",
+    "default": "This is where you track your requests and their progress.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:This list is not personalized. Use the section above for intelligent matching.",
+    "domain": "volunteer_nav",
+    "default": "This list is not personalized. Use the section above for intelligent matching.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:This page contains only aggregated metrics and excludes personal data (GDPR-safe).",
+    "domain": "public",
+    "default": "This page contains only aggregated metrics and excludes personal data (GDPR-safe).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:This profile applies",
+    "domain": "public_nav",
+    "default": "This profile applies",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:This section is ready for future accessibility modules",
+    "domain": "public_nav",
+    "default": "This section is ready for future accessibility modules",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Time",
+    "domain": "admin_nav",
+    "default": "Time",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Title",
+    "domain": "admin_requests",
+    "default": "Title",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Titre court (optionnel)",
+    "domain": "public",
+    "default": "Titre court (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:To communicate about your request (updates, messages, notifications).",
+    "domain": "public",
+    "default": "To communicate about your request (updates, messages, notifications).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:To keep the platform safe (fraud prevention, security monitoring).",
+    "domain": "public",
+    "default": "To keep the platform safe (fraud prevention, security monitoring).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:To operate the service and match requests with volunteers.",
+    "domain": "public",
+    "default": "To operate the service and match requests with volunteers.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Toggle accessibility settings",
+    "domain": "public_nav",
+    "default": "Toggle accessibility settings",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Toggle navigation",
+    "domain": "public_nav",
+    "default": "Toggle navigation",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Toggle theme",
+    "domain": "public_nav",
+    "default": "Toggle theme",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Top failed-login IPs (24h)",
+    "domain": "admin_nav",
+    "default": "Top failed-login IPs (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Top failed-login usernames (24h)",
+    "domain": "admin_nav",
+    "default": "Top failed-login usernames (24h)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Top risks",
+    "domain": "public",
+    "default": "Top risks",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Total requests",
+    "domain": "public",
+    "default": "Total requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Total volunteers",
+    "domain": "public",
+    "default": "Total volunteers",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Translations",
+    "domain": "public_nav",
+    "default": "Translations",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Transport",
+    "domain": "volunteer_nav",
+    "default": "Transport",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Traçabilité des actions",
+    "domain": "public",
+    "default": "Traçabilité des actions",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Try 50%%",
+    "domain": "volunteer_nav",
+    "default": "Try 50%%",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Try the selected voice and settings before saving",
+    "domain": "public_nav",
+    "default": "Try the selected voice and settings before saving",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Turn on Read aloud, close the menu, and select text on the page. Play / Stop will appear.",
+    "domain": "public_nav",
+    "default": "Turn on Read aloud, close the menu, and select text on the page. Play / Stop will appear.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Type a keyword to search across requests, categories and professionals.",
+    "domain": "public",
+    "default": "Type a keyword to search across requests, categories and professionals.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Type de demandes, conditions, périmètre...",
+    "domain": "public",
+    "default": "Type de demandes, conditions, périmètre...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Télécharger le dossier institutionnel",
+    "domain": "public",
+    "default": "Télécharger le dossier institutionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Téléphone",
+    "domain": "public",
+    "default": "Téléphone",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Téléphone (optionnel)",
+    "domain": "public",
+    "default": "Téléphone (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Un cadre commun pour traiter, attribuer et suivre les demandes sociales, avec traçabilité et pilotage.",
+    "domain": "public",
+    "default": "Un cadre commun pour traiter, attribuer et suivre les demandes sociales, avec traçabilité et pilotage.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Un pilote HelpChain peut être déployé avec une structure locale (CCAS, association ou réseau professionnel) afin de tester la coordination sur un nombre limité de situations.",
+    "domain": "public",
+    "default": "Un pilote HelpChain peut être déployé avec une structure locale (CCAS, association ou réseau professionnel) afin de tester la coordination sur un nombre limité de situations.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Unable to resend right now. Please try again shortly.",
+    "domain": "volunteer_nav",
+    "default": "Unable to resend right now. Please try again shortly.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Unassigned > 48h",
+    "domain": "public",
+    "default": "Unassigned > 48h",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Une approche orientée pilotage: chaque demande suit un cycle maîtrisé, avec attribution explicite, statut lisible et traçabilité de bout en bout.",
+    "domain": "public",
+    "default": "Une approche orientée pilotage: chaque demande suit un cycle maîtrisé, avec attribution explicite, statut lisible et traçabilité de bout en bout.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation.",
+    "domain": "public",
+    "default": "Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Une infrastructure conçue pour la traçabilité, la sécurité et le pilotage institutionnel.",
+    "domain": "public",
+    "default": "Une infrastructure conçue pour la traçabilité, la sécurité et le pilotage institutionnel.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Une infrastructure de pilotage pour centraliser, attribuer et suivre les demandes avec traçabilité opérationnelle, gouvernance mesurable et continuité.",
+    "domain": "public",
+    "default": "Une infrastructure de pilotage pour centraliser, attribuer et suivre les demandes avec traçabilité opérationnelle, gouvernance mesurable et continuité.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Une infrastructure, pas un annuaire.",
+    "domain": "public",
+    "default": "Une infrastructure, pas un annuaire.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Une personne de confiance vous contacte",
+    "domain": "public",
+    "default": "Une personne de confiance vous contacte",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Une zone approximative suffit.",
+    "domain": "volunteer_nav",
+    "default": "Une zone approximative suffit.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Unknown",
+    "domain": "public",
+    "default": "Unknown",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Unread",
+    "domain": "volunteer_nav",
+    "default": "Unread",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Untitled request",
+    "domain": "public",
+    "default": "Untitled request",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Update my profile",
+    "domain": "volunteer_nav",
+    "default": "Update my profile",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Urgence",
+    "domain": "public",
+    "default": "Urgence",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Urgences & situations critiques",
+    "domain": "public",
+    "default": "Urgences & situations critiques",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Urgent",
+    "domain": "admin_requests",
+    "default": "Urgent",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Urgent only",
+    "domain": "volunteer_nav",
+    "default": "Urgent only",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Urgente",
+    "domain": "public",
+    "default": "Urgente",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Use a clearer fallback font stack with increased spacing",
+    "domain": "public_nav",
+    "default": "Use a clearer fallback font stack with increased spacing",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Use of the platform",
+    "domain": "public",
+    "default": "Use of the platform",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Use only this contact for this request. Stay respectful and keep it focused on solving the issue.",
+    "domain": "public",
+    "default": "Use only this contact for this request. Stay respectful and keep it focused on solving the issue.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Username",
+    "domain": "admin_nav",
+    "default": "Username",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Uses your browser or device voice. Availability depends on browser support.",
+    "domain": "public_nav",
+    "default": "Uses your browser or device voice. Availability depends on browser support.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Verification code (6 digits)",
+    "domain": "admin_nav",
+    "default": "Verification code (6 digits)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:View",
+    "domain": "public",
+    "default": "View",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:View all",
+    "domain": "public_nav",
+    "default": "View all",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:View details",
+    "domain": "public",
+    "default": "View details",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:View export logs",
+    "domain": "admin_requests",
+    "default": "View export logs",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:View requests",
+    "domain": "volunteer_nav",
+    "default": "View requests",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ville / Localité",
+    "domain": "volunteer_nav",
+    "default": "Ville / Localité",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ville / localisation approximative",
+    "domain": "public",
+    "default": "Ville / localisation approximative",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ville / zone (optionnel)",
+    "domain": "public",
+    "default": "Ville / zone (optionnel)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ville, quartier (sans adresse exacte si inutile)",
+    "domain": "public",
+    "default": "Ville, quartier (sans adresse exacte si inutile)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Visual presets",
+    "domain": "public_nav",
+    "default": "Visual presets",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Voice",
+    "domain": "public_nav",
+    "default": "Voice",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Voice guidance",
+    "domain": "public_nav",
+    "default": "Voice guidance",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Voice test",
+    "domain": "public_nav",
+    "default": "Voice test",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Voir comment ça marche",
+    "domain": "public",
+    "default": "Voir comment ça marche",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Volume",
+    "domain": "public_nav",
+    "default": "Volume",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Volunteer signal",
+    "domain": "admin_requests",
+    "default": "Volunteer signal",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions taken by users. We encourage safe, transparent communication and caution when sharing personal details.",
+    "domain": "public",
+    "default": "Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions taken by users. We encourage safe, transparent communication and caution when sharing personal details.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Vos données",
+    "domain": "volunteer_nav",
+    "default": "Vos données",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vos données servent uniquement à la coordination",
+    "domain": "public",
+    "default": "Vos données servent uniquement à la coordination",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Votre métier",
+    "domain": "public",
+    "default": "Votre métier",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Votre nom",
+    "domain": "public",
+    "default": "Votre nom",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vous choisissez les demandes qui vous conviennent.",
+    "domain": "volunteer_nav",
+    "default": "Vous choisissez les demandes qui vous conviennent.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vous gardez le contrôle. Vous pourrez arrêter à tout moment.",
+    "domain": "volunteer_nav",
+    "default": "Vous gardez le contrôle. Vous pourrez arrêter à tout moment.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Vous pourrez ajuster plus tard.",
+    "domain": "volunteer_nav",
+    "default": "Vous pourrez ajuster plus tard.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Vous pouvez arrêter à tout moment, sans justification.",
+    "domain": "volunteer_nav",
+    "default": "Vous pouvez arrêter à tout moment, sans justification.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Vous recevez un lien sécurisé par e-mail.",
+    "domain": "volunteer_nav",
+    "default": "Vous recevez un lien sécurisé par e-mail.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vous représentez une structure ?",
+    "domain": "public",
+    "default": "Vous représentez une structure ?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vous voulez aider ?",
+    "domain": "public",
+    "default": "Vous voulez aider ?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vue opérationnelle",
+    "domain": "public",
+    "default": "Vue opérationnelle",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Vérifiez votre e-mail",
+    "domain": "volunteer_nav",
+    "default": "Vérifiez votre e-mail",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:We do not run advertising profiling.",
+    "domain": "public",
+    "default": "We do not run advertising profiling.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:We do not sell personal data.",
+    "domain": "public",
+    "default": "We do not sell personal data.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:We keep data only as long as needed for the service and legal obligations. You can request deletion of your account data.",
+    "domain": "public",
+    "default": "We keep data only as long as needed for the service and legal obligations. You can request deletion of your account data.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:We may limit or suspend accounts to prevent abuse or protect the community.",
+    "domain": "public",
+    "default": "We may limit or suspend accounts to prevent abuse or protect the community.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:We never sell or share contact data.",
+    "domain": "public",
+    "default": "We never sell or share contact data.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:We usually reply within 24–48 hours on business days.",
+    "domain": "public",
+    "default": "We usually reply within 24–48 hours on business days.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:We will notify you when contact is available.",
+    "domain": "public",
+    "default": "We will notify you when contact is available.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:What data we collect",
+    "domain": "public",
+    "default": "What data we collect",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:What happens next",
+    "domain": "public",
+    "default": "What happens next",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:What is this about?",
+    "domain": "public",
+    "default": "What is this about?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:What we do not do",
+    "domain": "public",
+    "default": "What we do not do",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Who changed what and when",
+    "domain": "admin_nav",
+    "default": "Who changed what and when",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Window: 30 days",
+    "domain": "admin_requests",
+    "default": "Window: 30 days",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Write your message here…",
+    "domain": "public",
+    "default": "Write your message here…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.).",
+    "domain": "public_nav",
+    "default": "You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:You can request access, correction, or deletion of your personal data. You can also object to certain processing where applicable.",
+    "domain": "public",
+    "default": "You can request access, correction, or deletion of your personal data. You can also object to certain processing where applicable.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:You marked that you can help.",
+    "domain": "volunteer_nav",
+    "default": "You marked that you can help.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:You stay in control. You can stop at any time.",
+    "domain": "volunteer_nav",
+    "default": "You stay in control. You can stop at any time.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Your email",
+    "domain": "public",
+    "default": "Your email",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Your request has been registered successfully. We will contact you shortly.",
+    "domain": "public",
+    "default": "Your request has been registered successfully. We will contact you shortly.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Your rights",
+    "domain": "public",
+    "default": "Your rights",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:adapter l’outil aux réalités du terrain",
+    "domain": "public",
+    "default": "adapter l’outil aux réalités du terrain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:avg_hourly",
+    "domain": "admin_nav",
+    "default": "avg_hourly",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:conditions d’utilisation",
+    "domain": "volunteer_nav",
+    "default": "conditions d’utilisation",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:coordination de l’intervention et continuité opérationnelle.",
+    "domain": "public",
+    "default": "coordination de l’intervention et continuité opérationnelle.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:durée : 30 à 60 jours",
+    "domain": "public",
+    "default": "durée : 30 à 60 jours",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:et la",
+    "domain": "volunteer_nav",
+    "default": "et la",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:events",
+    "domain": "admin_nav",
+    "default": "events",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:failed",
+    "domain": "admin_nav",
+    "default": "failed",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:failed_1h",
+    "domain": "admin_nav",
+    "default": "failed_1h",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:matches",
+    "domain": "volunteer_nav",
+    "default": "matches",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:minutes",
+    "domain": "volunteer_nav",
+    "default": "minutes",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:observer les gains de visibilité et de suivi",
+    "domain": "public",
+    "default": "observer les gains de visibilité et de suivi",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:optionnel",
+    "domain": "volunteer_nav",
+    "default": "optionnel",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:orientation, traçabilité et pilotage des prises en charge.",
+    "domain": "public",
+    "default": "orientation, traçabilité et pilotage des prises en charge.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:politique de confidentialité",
+    "domain": "volunteer_nav",
+    "default": "politique de confidentialité",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:structuration des parcours, suivi et coordination multi-intervenants.",
+    "domain": "public",
+    "default": "structuration des parcours, suivi et coordination multi-intervenants.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:success",
+    "domain": "admin_nav",
+    "default": "success",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:tester la coordination sur des cas réels",
+    "domain": "public",
+    "default": "tester la coordination sur des cas réels",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:unread notifications",
+    "domain": "public_nav",
+    "default": "unread notifications",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:view",
+    "domain": "admin_nav",
+    "default": "view",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:vous@email.com",
+    "domain": "volunteer_nav",
+    "default": "vous@email.com",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:your@email.com",
+    "domain": "volunteer_nav",
+    "default": "your@email.com",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:{count} options enabled",
+    "domain": "public_nav",
+    "default": "{count} options enabled",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:~2 min.",
+    "domain": "volunteer_nav",
+    "default": "~2 min.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:À moi",
+    "domain": "admin_requests",
+    "default": "À moi",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:À propos",
+    "domain": "public",
+    "default": "À propos",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:À propos de HelpChain",
+    "domain": "public",
+    "default": "À propos de HelpChain",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ça prend ~2 minutes",
+    "domain": "public",
+    "default": "Ça prend ~2 minutes",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Éditeur :",
+    "domain": "public",
+    "default": "Éditeur :",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Éditeur du site",
+    "domain": "public",
+    "default": "Éditeur du site",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Административна помощ",
+    "domain": "volunteer_nav",
+    "default": "Административна помощ",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Администратор преглежда интереса ти. Ще получиш известие.",
+    "domain": "volunteer_nav",
+    "default": "Администратор преглежда интереса ти. Ще получиш известие.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ако адресът е валиден, ще изпратим нов линк.",
+    "domain": "public",
+    "default": "Ако адресът е валиден, ще изпратим нов линк.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо.",
+    "domain": "volunteer_nav",
+    "default": "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ако искаш, можеш да обновиш наличност или умения по-късно.",
+    "domain": "volunteer_nav",
+    "default": "Ако искаш, можеш да обновиш наличност или умения по-късно.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем.",
+    "domain": "volunteer_nav",
+    "default": "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина.",
+    "domain": "volunteer_nav",
+    "default": "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ако решиш - ще се свържеш директно с човека в нужда.",
+    "domain": "volunteer_nav",
+    "default": "Ако решиш - ще се свържеш директно с човека в нужда.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Без име",
+    "domain": "public",
+    "default": "Без име",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Без описание",
+    "domain": "public",
+    "default": "Без описание",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Благодарим ти",
+    "domain": "volunteer_nav",
+    "default": "Благодарим ти",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Благодарим! Заявката е маркирана като приключена.",
+    "domain": "volunteer_nav",
+    "default": "Благодарим! Заявката е маркирана като приключена.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:В изчакване",
+    "domain": "volunteer_nav",
+    "default": "В изчакване",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:В изчакване — ще получиш известие при потвърждение.",
+    "domain": "volunteer_nav",
+    "default": "В изчакване — ще получиш известие при потвърждение.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:В процес",
+    "domain": "public",
+    "default": "В процес",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Важно:",
+    "domain": "volunteer_nav",
+    "default": "Важно:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Виж",
+    "domain": "volunteer_nav",
+    "default": "Виж",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Виж детайли",
+    "domain": "volunteer_nav",
+    "default": "Виж детайли",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Виж други активни заявки",
+    "domain": "volunteer_nav",
+    "default": "Виж други активни заявки",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Виж подадените от теб заявки и статуса им.",
+    "domain": "volunteer_nav",
+    "default": "Виж подадените от теб заявки и статуса им.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Виж пример",
+    "domain": "volunteer_nav",
+    "default": "Виж пример",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Виждаш тази заявка, защото съвпада с профила ти",
+    "domain": "volunteer_nav",
+    "default": "Виждаш тази заявка, защото съвпада с профила ти",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Вход",
+    "domain": "public_nav",
+    "default": "Вход",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Готовност за свързване",
+    "domain": "volunteer_nav",
+    "default": "Готовност за свързване",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Да, ще помогна",
+    "domain": "volunteer_nav",
+    "default": "Да, ще помогна",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Демо: детайлите ще изглеждат така. Реалните ще отварят страница.",
+    "domain": "volunteer_nav",
+    "default": "Демо: детайлите ще изглеждат така. Реалните ще отварят страница.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.",
+    "domain": "volunteer_nav",
+    "default": "Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Демо: нищо не се записва.",
+    "domain": "volunteer_nav",
+    "default": "Демо: нищо не се записва.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Демо: помощта е заявена. Нищо не се поема автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Демо: помощта е заявена. Нищо не се поема автоматично.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш.",
+    "domain": "volunteer_nav",
+    "default": "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Детайли за заявка",
+    "domain": "volunteer_nav",
+    "default": "Детайли за заявка",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Детайлите ще се показват тук. Нищо не е изпратено автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Детайлите ще се показват тук. Нищо не е изпратено автоматично.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Доброволци",
+    "domain": "public",
+    "default": "Доброволци",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Завършено",
+    "domain": "volunteer_nav",
+    "default": "Завършено",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Затвори",
+    "domain": "volunteer_nav",
+    "default": "Затвори",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Заявка",
+    "domain": "volunteer_nav",
+    "default": "Заявка",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Заявката е изпратена. Ще получиш известие при решение.",
+    "domain": "volunteer_nav",
+    "default": "Заявката е изпратена. Ще получиш известие при решение.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Заявки",
+    "domain": "public",
+    "default": "Заявки",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта.",
+    "domain": "volunteer_nav",
+    "default": "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Изпрати отново",
+    "domain": "public",
+    "default": "Изпрати отново",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Изпратихме линк за потвърждение на:",
+    "domain": "public",
+    "default": "Изпратихме линк за потвърждение на:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Изпращане...",
+    "domain": "public",
+    "default": "Изпращане...",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Изход",
+    "domain": "volunteer_nav",
+    "default": "Изход",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Изчакване",
+    "domain": "volunteer_nav",
+    "default": "Изчакване",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.",
+    "domain": "volunteer_nav",
+    "default": "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Име",
+    "domain": "public",
+    "default": "Име",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Имейл",
+    "domain": "public",
+    "default": "Имейл",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Искам да помогна",
+    "domain": "volunteer_nav",
+    "default": "Искам да помогна",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:История",
+    "domain": "public",
+    "default": "История",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Как работи HelpChain →",
+    "domain": "volunteer_nav",
+    "default": "Как работи HelpChain →",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Как работи свързването →",
+    "domain": "volunteer_nav",
+    "default": "Как работи свързването →",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Как ще изглежда заявка",
+    "domain": "volunteer_nav",
+    "default": "Как ще изглежда заявка",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Какво да очакваш",
+    "domain": "volunteer_nav",
+    "default": "Какво да очакваш",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Какво следва",
+    "domain": "volunteer_nav",
+    "default": "Какво следва",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Какво става, ако натиснеш?",
+    "domain": "volunteer_nav",
+    "default": "Какво става, ако натиснеш?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Кандидатурата е получена",
+    "domain": "volunteer_nav",
+    "default": "Кандидатурата е получена",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш.",
+    "domain": "volunteer_nav",
+    "default": "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Копирай имейла",
+    "domain": "public",
+    "default": "Копирай имейла",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Копирано",
+    "domain": "public",
+    "default": "Копирано",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Към началната страница",
+    "domain": "volunteer_nav",
+    "default": "Към началната страница",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Линкът е валиден 15 минути.",
+    "domain": "public",
+    "default": "Линкът е валиден 15 минути.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Липсва",
+    "domain": "volunteer_nav",
+    "default": "Липсва",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Личните данни се показват само при нужда/съгласие.",
+    "domain": "volunteer_nav",
+    "default": "Личните данни се показват само при нужда/съгласие.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Локация",
+    "domain": "public",
+    "default": "Локация",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Локация:",
+    "domain": "volunteer_nav",
+    "default": "Локация:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Мога да помогна",
+    "domain": "volunteer_nav",
+    "default": "Мога да помогна",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Моето табло",
+    "domain": "volunteer_nav",
+    "default": "Моето табло",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Можете да изпратите отново след",
+    "domain": "public",
+    "default": "Можете да изпратите отново след",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Можеш да откажеш без обяснения.",
+    "domain": "volunteer_nav",
+    "default": "Можеш да откажеш без обяснения.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Моите заявки",
+    "domain": "volunteer_nav",
+    "default": "Моите заявки",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:НОВО",
+    "domain": "volunteer_nav",
+    "default": "НОВО",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Назад",
+    "domain": "volunteer_nav",
+    "default": "Назад",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Назначен/а",
+    "domain": "volunteer_nav",
+    "default": "Назначен/а",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Наличност",
+    "domain": "volunteer_nav",
+    "default": "Наличност",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Наличност:",
+    "domain": "volunteer_nav",
+    "default": "Наличност:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Натисни “Искам да помогна”, за да поискаш достъп.",
+    "domain": "volunteer_nav",
+    "default": "Натисни “Искам да помогна”, за да поискаш достъп.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Не мога да помогна",
+    "domain": "volunteer_nav",
+    "default": "Не мога да помогна",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Не успях да копирам. Опитай ръчно.",
+    "domain": "public",
+    "default": "Не успях да копирам. Опитай ръчно.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Нищо не се поема автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Нищо не се поема автоматично.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Нищо не си задължен/длъжна на този етап.",
+    "domain": "volunteer_nav",
+    "default": "Нищо не си задължен/длъжна на този етап.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Нова",
+    "domain": "volunteer_nav",
+    "default": "Нова",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Нова заявка",
+    "domain": "volunteer_nav",
+    "default": "Нова заявка",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма",
+    "domain": "public",
+    "default": "Няма",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма автоматични ангажименти.",
+    "domain": "volunteer_nav",
+    "default": "Няма автоматични ангажименти.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма автоматично включване.",
+    "domain": "volunteer_nav",
+    "default": "Няма автоматично включване.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма активни заявки в момента",
+    "domain": "volunteer_nav",
+    "default": "Няма активни заявки в момента",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма заявки в този статус",
+    "domain": "volunteer_nav",
+    "default": "Няма заявки в този статус",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма намерени доброволци",
+    "domain": "public",
+    "default": "Няма намерени доброволци",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма намерени заявки",
+    "domain": "public",
+    "default": "Няма намерени заявки",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма описание.",
+    "domain": "volunteer_nav",
+    "default": "Няма описание.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти.",
+    "domain": "volunteer_nav",
+    "default": "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.",
+    "domain": "volunteer_nav",
+    "default": "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Обработва се…",
+    "domain": "volunteer_nav",
+    "default": "Обработва се…",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Общо заявки",
+    "domain": "public",
+    "default": "Общо заявки",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Одобрен/а",
+    "domain": "volunteer_nav",
+    "default": "Одобрен/а",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Одобрен/а си. Отвори заявката за контакт и следващи стъпки.",
+    "domain": "volunteer_nav",
+    "default": "Одобрен/а си. Отвори заявката за контакт и следващи стъпки.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Одобрени",
+    "domain": "volunteer_nav",
+    "default": "Одобрени",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Онлайн",
+    "domain": "volunteer_nav",
+    "default": "Онлайн",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Описание",
+    "domain": "public",
+    "default": "Описание",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Отвори имейл приложението",
+    "domain": "public",
+    "default": "Отвори имейл приложението",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Откажи",
+    "domain": "volunteer_nav",
+    "default": "Откажи",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Отказани",
+    "domain": "volunteer_nav",
+    "default": "Отказани",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Отказано",
+    "domain": "volunteer_nav",
+    "default": "Отказано",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Отхвърлен/а",
+    "domain": "volunteer_nav",
+    "default": "Отхвърлен/а",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:По-точна локация + 2–3 умения = по-бърз match.",
+    "domain": "volunteer_nav",
+    "default": "По-точна локация + 2–3 умения = по-бърз match.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Показваме само липсващото, за да станеш готов за свързване.",
+    "domain": "volunteer_nav",
+    "default": "Показваме само липсващото, за да станеш готов за свързване.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Получихме твоята кандидатура за доброволец.",
+    "domain": "volunteer_nav",
+    "default": "Получихме твоята кандидатура за доброволец.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Помощ с документи",
+    "domain": "volunteer_nav",
+    "default": "Помощ с документи",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Помощта е заявена. Очаква се кратко потвърждение от екипа.",
+    "domain": "volunteer_nav",
+    "default": "Помощта е заявена. Очаква се кратко потвърждение от екипа.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Попълни профила",
+    "domain": "volunteer_nav",
+    "default": "Попълни профила",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Попълни профила си",
+    "domain": "volunteer_nav",
+    "default": "Попълни профила си",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Потвърдено",
+    "domain": "volunteer_nav",
+    "default": "Потвърдено",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Потвърди помощта",
+    "domain": "volunteer_nav",
+    "default": "Потвърди помощта",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Преглеждаме информацията ти.",
+    "domain": "volunteer_nav",
+    "default": "Преглеждаме информацията ти.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:При подходящи заявки ще можеш да избереш дали да се включиш.",
+    "domain": "volunteer_nav",
+    "default": "При подходящи заявки ще можеш да избереш дали да се включиш.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Пример (демо)",
+    "domain": "volunteer_nav",
+    "default": "Пример (демо)",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Пример, за да знаеш какво да очакваш.",
+    "domain": "volunteer_nav",
+    "default": "Пример, за да знаеш какво да очакваш.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Примерна заявка",
+    "domain": "volunteer_nav",
+    "default": "Примерна заявка",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Проверете и папките Spam/Promotions.",
+    "domain": "public",
+    "default": "Проверете и папките Spam/Promotions.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Проверете имейла си",
+    "domain": "public",
+    "default": "Проверете имейла си",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Продължаваме?",
+    "domain": "volunteer_nav",
+    "default": "Продължаваме?",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Профил",
+    "domain": "volunteer_nav",
+    "default": "Профил",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Профил на доброволец",
+    "domain": "volunteer_nav",
+    "default": "Профил на доброволец",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Профилът е готов",
+    "domain": "volunteer_nav",
+    "default": "Профилът е готов",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Рег.",
+    "domain": "public_nav",
+    "default": "Рег.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Редактирай профила",
+    "domain": "volunteer_nav",
+    "default": "Редактирай профила",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Сгреших имейла / Подай заявката отново",
+    "domain": "public",
+    "default": "Сгреших имейла / Подай заявката отново",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Сесията изтече. Моля, върнете се към формата.",
+    "domain": "public",
+    "default": "Сесията изтече. Моля, върнете се към формата.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Следва кратък преглед и потвърждение.",
+    "domain": "volunteer_nav",
+    "default": "Следва кратък преглед и потвърждение.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Статус",
+    "domain": "public",
+    "default": "Статус",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Статус: Активен",
+    "domain": "volunteer_nav",
+    "default": "Статус: Активен",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Съвет:",
+    "domain": "volunteer_nav",
+    "default": "Съвет:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Тази заявка вече е поета. Виж други активни заявки.",
+    "domain": "volunteer_nav",
+    "default": "Тази заявка вече е поета. Виж други активни заявки.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Твоят сигнал",
+    "domain": "volunteer_nav",
+    "default": "Твоят сигнал",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Телефон",
+    "domain": "public",
+    "default": "Телефон",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ти контролираш ангажимента си.",
+    "domain": "volunteer_nav",
+    "default": "Ти контролираш ангажимента си.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно.",
+    "domain": "volunteer_nav",
+    "default": "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.",
+    "domain": "volunteer_nav",
+    "default": "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти.",
+    "domain": "volunteer_nav",
+    "default": "Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.",
+    "domain": "volunteer_nav",
+    "default": "Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Това е само пример — реалните заявки ще се покажат автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Това е само пример — реалните заявки ще се покажат автоматично.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Това изпраща сигнал към админите.",
+    "domain": "volunteer_nav",
+    "default": "Това изпраща сигнал към админите.",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Току-що се появи. Провери дали ти е удобно.",
+    "domain": "volunteer_nav",
+    "default": "Току-що се появи. Провери дали ти е удобно.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.",
+    "domain": "volunteer_nav",
+    "default": "Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Умения",
+    "domain": "public",
+    "default": "Умения",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Умения:",
+    "domain": "volunteer_nav",
+    "default": "Умения:",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Чакащи",
+    "domain": "public",
+    "default": "Чакащи",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Човек търси помощ за документи и насоки къде да ги подаде.",
+    "domain": "volunteer_nav",
+    "default": "Човек търси помощ за документи и насоки къде да ги подаде.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.",
+    "domain": "volunteer_nav",
+    "default": "Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.",
+    "domain": "volunteer_nav",
+    "default": "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:Ще помогна",
+    "domain": "volunteer_nav",
+    "default": "Ще помогна",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно).",
+    "domain": "volunteer_nav",
+    "default": "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно).",
+    "kind": "msgid",
+    "tier": "inventory"
+  },
+  {
+    "key": "msgid:не е зададена",
+    "domain": "volunteer_nav",
+    "default": "не е зададена",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:по избор",
+    "domain": "volunteer_nav",
+    "default": "по избор",
+    "kind": "msgid",
+    "tier": "core"
+  },
+  {
+    "key": "msgid:току-що",
+    "domain": "volunteer_nav",
+    "default": "току-що",
+    "kind": "msgid",
+    "tier": "core"
+  }
+]

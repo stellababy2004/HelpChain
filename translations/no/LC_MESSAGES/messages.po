@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-24 23:28+0100\n"
+"POT-Creation-Date: 2026-03-06 11:35+0100\n"
 "PO-Revision-Date: 2026-02-24 13:47+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: no\n"
@@ -43,317 +43,494 @@ msgstr "Бзпрати заявката"
 msgid "Категории помощ"
 msgstr "Категории помощ"
 
-#: backend/helpchain_backend/src/routes/main.py:549
+#: backend/helpchain_backend/src/routes/main.py:598
 msgid "Your session has been cleared."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:817 templates/dashboard_helper.html:25
-#: templates/dashboard_requester.html:28 templates/profile_requester.html:56 templates/submit_request.html:54
+#: backend/helpchain_backend/src/routes/main.py:869
+#: templates/dashboard_helper.html:25 templates/dashboard_requester.html:28
+#: templates/profile_requester.html:56 templates/submit_request.html:54
 msgid "Request"
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:951
+#: backend/helpchain_backend/src/routes/main.py:1011
 msgid "If the email is valid, you will receive a login link."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1171 backend/helpchain_backend/src/routes/main.py:2415
+#: backend/helpchain_backend/src/routes/main.py:1233
+#: backend/helpchain_backend/src/routes/main.py:2562
 msgid "Sans mot de passe. Recevez un lien sécurisé par e-mail."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1173 backend/helpchain_backend/src/routes/main.py:2417
+#: backend/helpchain_backend/src/routes/main.py:1235
+#: backend/helpchain_backend/src/routes/main.py:2564
 msgid "Ouvrir mon lien de connexion"
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1175 backend/helpchain_backend/src/routes/main.py:2419
+#: backend/helpchain_backend/src/routes/main.py:1237
+#: backend/helpchain_backend/src/routes/main.py:2566
 msgid "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1177 backend/helpchain_backend/src/routes/main.py:2421
+#: backend/helpchain_backend/src/routes/main.py:1239
+#: backend/helpchain_backend/src/routes/main.py:2568
+#: templates/become_volunteer.html:25 templates/professionnels_pilote.html:22
 msgid "Données minimales, respect RGPD"
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1179 backend/helpchain_backend/src/routes/main.py:2423
+#: backend/helpchain_backend/src/routes/main.py:1241
+#: backend/helpchain_backend/src/routes/main.py:2570
 msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1259
+#: backend/helpchain_backend/src/routes/main.py:1321
 msgid "You're all set! You can now see requests where your help matters."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:1846 backend/helpchain_backend/src/routes/main.py:1901
-#: backend/helpchain_backend/src/routes/main.py:1920
+#: backend/helpchain_backend/src/routes/main.py:1905
+#: backend/helpchain_backend/src/routes/main.py:1958
+#: backend/helpchain_backend/src/routes/main.py:1975
 msgid "Got it. Your signal was sent to the team."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2139
+#: backend/helpchain_backend/src/routes/main.py:2194
 msgid "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2152
+#: backend/helpchain_backend/src/routes/main.py:2207
 msgid "Please shorten the text."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2154
+#: backend/helpchain_backend/src/routes/main.py:2209
 #, python-format
 msgid "Please shorten the %(field)s."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2163
+#: backend/helpchain_backend/src/routes/main.py:2218
 msgid "Invalid characters detected."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2166
+#: backend/helpchain_backend/src/routes/main.py:2222
+msgid "Suspicious content detected."
+msgstr ""
+
+#: backend/helpchain_backend/src/routes/main.py:2225
 msgid "Моля, въведете име (поне 2 символа)."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2169
+#: backend/helpchain_backend/src/routes/main.py:2228
 msgid "Моля, опишете проблема (поне 10 символа)."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2172
+#: backend/helpchain_backend/src/routes/main.py:2231
 msgid "Моля, въведете поне телефон или имейл."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2178
+#: backend/helpchain_backend/src/routes/main.py:2248
 msgid "Please select a valid category."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2182
+#: backend/helpchain_backend/src/routes/main.py:2252
 msgid "Please select a valid urgency."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2216 backend/helpchain_backend/src/routes/main.py:2299
+#: backend/helpchain_backend/src/routes/main.py:2286
+#: backend/helpchain_backend/src/routes/main.py:2445
 msgid "Verified volunteers only"
 msgstr "Kun verifiserte frivillige"
 
-#: backend/helpchain_backend/src/routes/main.py:2217 backend/helpchain_backend/src/routes/main.py:2300
+#: backend/helpchain_backend/src/routes/main.py:2287
+#: backend/helpchain_backend/src/routes/main.py:2446
 msgid "Fast matching - no bureaucracy"
 msgstr "Rask matching - ingen byråkrati"
 
-#: backend/helpchain_backend/src/routes/main.py:2218 backend/helpchain_backend/src/routes/main.py:2301
+#: backend/helpchain_backend/src/routes/main.py:2288
+#: backend/helpchain_backend/src/routes/main.py:2447
 msgid "We keep your data private"
 msgstr "Vi holder opplysningene dine private"
 
-#: backend/helpchain_backend/src/routes/main.py:2261
+#: backend/helpchain_backend/src/routes/main.py:2331
 msgid "Please correct the errors below."
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2274
+#: backend/helpchain_backend/src/routes/main.py:2349
 #, python-format
 msgid "Заявка: %(category)s"
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2276
+#: backend/helpchain_backend/src/routes/main.py:2351
 msgid "Заявка за помощ"
 msgstr ""
 
-#: backend/helpchain_backend/src/routes/main.py:2310
+#: backend/helpchain_backend/src/routes/main.py:2456
 msgid "Сесията изтече. Моля, подай заявката отново."
 msgstr ""
 
-#: templates/about.html:3 templates/base.html:816
+#: templates/about.html:3 templates/base.html:213 templates/base.html:1011
+#: templates/partials/navbar_public.html:6
 msgid "À propos"
 msgstr ""
 
-#: templates/about.html:13
+#: templates/about.html:4
+msgid ""
+"Découvrez HelpChain : une infrastructure numérique de coordination conçue"
+" pour structurer, sécuriser et piloter la prise en charge des situations "
+"sociales."
+msgstr ""
+
+#: templates/about.html:5 templates/about.html:17
 msgid "À propos de HelpChain"
 msgstr ""
 
-#: templates/about.html:15
-msgid ""
-"HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en "
-"charge des situations sociales."
+#: templates/about.html:7
+msgid "Preview image for the About HelpChain page"
 msgstr ""
 
-#: templates/about.html:24 templates/all_categories.html:77 templates/orienter.html:57 templates/submit_request.html:4
+#: templates/about.html:19
+msgid ""
+"HelpChain est une infrastructure numérique de coordination conçue pour "
+"structurer, sécuriser et piloter la prise en charge des situations "
+"sociales."
+msgstr ""
+
+#: templates/about.html:28 templates/all_categories.html:77
+#: templates/orienter.html:59 templates/submit_request.html:4
 msgid "Déposer une demande"
 msgstr ""
 
-#: templates/about.html:31 templates/home_new_slim.html:24 templates/orienter.html:3 templates/orienter.html:11
+#: templates/about.html:35 templates/orienter.html:3 templates/orienter.html:13
 msgid "Orienter une demande"
 msgstr ""
 
-#: templates/about.html:36 templates/about.html:140 templates/orienter.html:86
-msgid "Conformité RGPD"
+#: templates/about.html:40 templates/about.html:151
+msgid "Cadre RGPD"
 msgstr ""
 
-#: templates/about.html:36 templates/about.html:147
-msgid "Hébergement européen"
+#: templates/about.html:40 templates/about.html:158
+msgid "Sécurité opérationnelle"
 msgstr ""
 
-#: templates/about.html:36
-msgid "Traçabilité opérationnelle"
+#: templates/about.html:40 templates/about.html:165
+msgid "Hébergement & souveraineté"
 msgstr ""
 
-#: templates/about.html:42
+#: templates/about.html:46
 msgid "Conçu et opéré depuis la France."
 msgstr ""
 
-#: templates/about.html:44
+#: templates/about.html:48
 msgid "Infrastructure à vocation européenne."
 msgstr ""
 
-#: templates/about.html:50
+#: templates/about.html:54
 msgid "Repères"
 msgstr ""
 
-#: templates/about.html:52
+#: templates/about.html:56
 msgid "Approche"
 msgstr ""
 
-#: templates/about.html:53
+#: templates/about.html:57
 msgid "Structurée"
 msgstr ""
 
-#: templates/about.html:56
+#: templates/about.html:60 templates/public/pour_les_structures.html:56
 msgid "Pilotage"
 msgstr ""
 
-#: templates/about.html:57
+#: templates/about.html:61
 msgid "Opérationnel"
 msgstr ""
 
-#: templates/about.html:60
+#: templates/about.html:64
 msgid "Conformité"
 msgstr ""
 
-#: templates/about.html:61
+#: templates/about.html:65 templates/professionnels_pilote.html:86
 msgid "RGPD"
 msgstr ""
 
-#: templates/about.html:72
+#: templates/about.html:76
 msgid "Notre mission"
 msgstr ""
 
-#: templates/about.html:74
-msgid "Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable."
+#: templates/about.html:78
+msgid ""
+"Fournir un cadre de coordination clair permettant une prise en charge "
+"cohérente, mesurable et responsable."
 msgstr ""
 
-#: templates/about.html:80
+#: templates/about.html:84
 msgid "Orientation claire"
 msgstr ""
 
-#: templates/about.html:82
-msgid "Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé."
+#: templates/about.html:86
+msgid ""
+"Structurer l’entrée des demandes avec une catégorisation fonctionnelle et"
+" un formulaire guidé."
 msgstr ""
 
-#: templates/about.html:87
+#: templates/about.html:91
 msgid "Coordination traçable"
 msgstr ""
 
-#: templates/about.html:89
-msgid "Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions."
+#: templates/about.html:93
+msgid ""
+"Assurer une continuité opérationnelle grâce à la traçabilité des actions "
+"et des décisions."
 msgstr ""
 
-#: templates/about.html:94
+#: templates/about.html:98
 msgid "Pilotage opérationnel"
 msgstr ""
 
-#: templates/about.html:96
-msgid "Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement."
-msgstr ""
-
-#: templates/about.html:104
-msgid "Pour qui"
-msgstr ""
-
-#: templates/about.html:106
+#: templates/about.html:100
 msgid ""
-"HelpChain est pensé pour les organisations et acteurs territoriaux qui ont besoin d’un dispositif fiable de "
-"coordination."
+"Offrir une visibilité terrain via des indicateurs, des alertes et une "
+"gouvernance de traitement."
 msgstr ""
 
-#: templates/about.html:113
-msgid "Associations"
+#: templates/about.html:108
+msgid "Cas d’usage — pour qui ?"
 msgstr ""
 
-#: templates/about.html:113
+#: templates/about.html:110
+msgid ""
+"Un cadre commun pour traiter, attribuer et suivre les demandes sociales, "
+"avec traçabilité et pilotage."
+msgstr ""
+
+#: templates/about.html:117
+msgid "Associations et structures sociales"
+msgstr ""
+
+#: templates/about.html:117
 msgid "structuration des parcours, suivi et coordination multi-intervenants."
 msgstr ""
 
-#: templates/about.html:114
-msgid "Services publics"
+#: templates/about.html:118
+msgid "Services publics locaux (CCAS, collectivités)"
 msgstr ""
 
-#: templates/about.html:114
+#: templates/about.html:118
 msgid "orientation, traçabilité et pilotage des prises en charge."
 msgstr ""
 
-#: templates/about.html:115
-msgid "Réseaux professionnels"
+#: templates/about.html:119
+msgid "Réseaux professionnels d’accompagnement"
 msgstr ""
 
-#: templates/about.html:115
+#: templates/about.html:119
 msgid "coordination de l’intervention et continuité opérationnelle."
 msgstr ""
 
-#: templates/about.html:121
+#: templates/about.html:125
 msgid "Ce que HelpChain n’est pas"
 msgstr ""
 
-#: templates/about.html:123
+#: templates/about.html:127
 msgid ""
-"Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des "
-"processus et de la gouvernance."
-msgstr ""
-
-#: templates/about.html:132
-msgid "Sécurité & conformité"
+"Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est "
+"une couche de coordination, avec des processus et de la gouvernance."
 msgstr ""
 
 #: templates/about.html:134
-msgid "Une base institutionnelle : conformité, contrôle et responsabilité."
+msgid "Approche territoriale"
 msgstr ""
 
-#: templates/about.html:142
-msgid "Minimisation des données, finalités explicites et gestion des accès."
+#: templates/about.html:136
+msgid ""
+"HelpChain peut être déployé à l’échelle d’une structure, d’un réseau "
+"associatif ou d’un territoire local (ville ou intercommunalité)."
 msgstr ""
 
-#: templates/about.html:149
-msgid "Données hébergées en Europe, avec une approche orientée sécurité."
+#: templates/about.html:143
+msgid "Gouvernance & conformité (RGPD)"
 msgstr ""
 
-#: templates/about.html:154
-msgid "Traçabilité"
+#: templates/about.html:145
+msgid ""
+"Une infrastructure conçue pour la traçabilité, la sécurité et le pilotage"
+" institutionnel."
 msgstr ""
 
-#: templates/about.html:156
-msgid "Journalisation des actions clés, visibilité sur les délais et la prise en charge."
+#: templates/about.html:153
+msgid ""
+"Finalités explicites, minimisation des données et droits des personnes "
+"encadrés."
 msgstr ""
 
-#: templates/about.html:164
-msgid "Notre vision"
+#: templates/about.html:160
+msgid ""
+"Contrôles d’accès par rôles, journalisation des actions et protection "
+"anti-abus."
 msgstr ""
 
-#: templates/about.html:166
-msgid "Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation."
+#: templates/about.html:167
+msgid ""
+"Données hébergées en Europe, pilotage par structure, conçu et opéré "
+"depuis la France."
 msgstr ""
 
 #: templates/about.html:175
-msgid "Commencer"
+msgid "Phase pilote — cadre simple"
 msgstr ""
 
-#: templates/about.html:182 templates/home_new_slim.html:30
+#: templates/about.html:177
+msgid ""
+"HelpChain est actuellement déployé en phase pilote avec un nombre limité "
+"de structures."
+msgstr ""
+
+#: templates/about.html:179
+msgid "Objectif du pilote :"
+msgstr ""
+
+#: templates/about.html:181
+msgid "tester la coordination sur des cas réels"
+msgstr ""
+
+#: templates/about.html:182
+msgid "observer les gains de visibilité et de suivi"
+msgstr ""
+
+#: templates/about.html:183
+msgid "adapter l’outil aux réalités du terrain"
+msgstr ""
+
+#: templates/about.html:186
+msgid "Durée du pilote : 30 à 60 jours"
+msgstr ""
+
+#: templates/about.html:187
+msgid "Accès validé manuellement pour garantir un réseau structuré."
+msgstr ""
+
+#: templates/about.html:194
+msgid "Périmètre possible d’un pilote"
+msgstr ""
+
+#: templates/about.html:196
+msgid ""
+"Un pilote HelpChain peut être déployé avec une structure locale (CCAS, "
+"association ou réseau professionnel) afin de tester la coordination sur "
+"un nombre limité de situations."
+msgstr ""
+
+#: templates/about.html:198
+msgid "Exemple de cadre pilote :"
+msgstr ""
+
+#: templates/about.html:200
+#, fuzzy
+msgid "1 structure référente"
+msgstr "Strukturerte data"
+
+#: templates/about.html:201
+msgid "3 à 10 intervenants impliqués"
+msgstr ""
+
+#: templates/about.html:202
+msgid "10 à 30 demandes suivies dans l’outil"
+msgstr ""
+
+#: templates/about.html:203
+msgid "durée : 30 à 60 jours"
+msgstr ""
+
+#: templates/about.html:206
+msgid ""
+"L’objectif est d’observer les gains de visibilité, de coordination et de "
+"traçabilité des actions."
+msgstr ""
+
+#: templates/about.html:213 templates/about.html:214
+msgid "Expérimentation territoriale"
+msgstr ""
+
+#: templates/about.html:216
+msgid ""
+"HelpChain est actuellement en phase de mise en place de premiers pilotes "
+"locaux avec des structures associatives et des acteurs de "
+"l’accompagnement social."
+msgstr ""
+
+#: templates/about.html:219
+msgid ""
+"L’objectif est d’expérimenter un cadre simple de coordination et "
+"d’observer les gains de visibilité et de suivi des situations."
+msgstr ""
+
+#: templates/about.html:222
+msgid "Les structures intéressées peuvent rejoindre cette phase pilote."
+msgstr ""
+
+#: templates/about.html:229
+msgid "Notre vision"
+msgstr ""
+
+#: templates/about.html:231
+msgid ""
+"Une coordination efficace repose sur la structure, la responsabilité et "
+"la transparence — pas sur l’improvisation."
+msgstr ""
+
+#: templates/about.html:240 templates/base.html:224
+#: templates/partials/navbar_public.html:8
+#: templates/public/pour_les_structures.html:26
+msgid "Demander un échange"
+msgstr ""
+
+#: templates/about.html:247
 msgid "Espace professionnel"
+msgstr ""
+
+#: templates/about.html:252
+msgid ""
+"Pour les structures intéressées par un pilote local, un échange direct "
+"peut être organisé."
+msgstr ""
+
+#: templates/about.html:253
+#, fuzzy
+msgid "Contact :"
+msgstr "Kontakt"
+
+#: templates/about.html:257
+msgid "Cadre institutionnel"
+msgstr ""
+
+#: templates/about.html:259
+msgid ""
+"HelpChain est une infrastructure numérique conçue et opérée depuis la "
+"France, destinée à soutenir la coordination des demandes sociales entre "
+"structures locales, associations et professionnels."
+msgstr ""
+
+#: templates/about.html:262
+msgid ""
+"Le projet est développé avec une approche centrée sur la traçabilité des "
+"actions, la responsabilité des acteurs et le respect du cadre RGPD."
 msgstr ""
 
 #: templates/admin_analytics.html:132
 msgid "Export JSON"
 msgstr "Eksporter JSON"
 
-#: templates/admin_analytics.html:135
+#: templates/admin/requests.html:187 templates/admin_analytics.html:135
 msgid "Export CSV"
 msgstr "Eksporter CSV"
 
-#: templates/admin/requests.html:12 templates/admin_analytics.html:683
-msgid "⚠️ This export contains personal data."
+#: templates/admin/requests.html:13 templates/admin_analytics.html:683
+#, fuzzy
+msgid " This export contains personal data."
 msgstr "⚠️ Denne eksporten inneholder personopplysninger."
 
-#: templates/admin/requests.html:13 templates/admin_analytics.html:684
+#: templates/admin/requests.html:14 templates/admin_analytics.html:684
 msgid "Internal use only."
 msgstr "Kun intern bruk."
 
-#: templates/admin/requests.html:15 templates/admin_analytics.html:686
+#: templates/admin/requests.html:16 templates/admin_analytics.html:686
 msgid "Are you sure you want to continue?"
 msgstr "Er du sikker på at du vil fortsette?"
 
@@ -365,10 +542,12 @@ msgstr "Admin-panelet"
 msgid "Pending"
 msgstr "Venter"
 
+#: templates/admin/requests.html:33 templates/admin/requests.html:54
 #: templates/admin_dashboard.html:14
 msgid "In progress"
 msgstr "I gang"
 
+#: templates/admin/requests.html:34 templates/admin/requests.html:58
 #: templates/admin_dashboard.html:16
 msgid "Completed"
 msgstr "Ferdig"
@@ -385,7 +564,7 @@ msgstr "Ukjend"
 msgid "Admin dashboard"
 msgstr "Admin dashboard"
 
-#: templates/admin_dashboard.html:39 templates/pilot_dashboard.html:29
+#: templates/admin_dashboard.html:39 templates/pilot_dashboard.html:31
 msgid "Total requests"
 msgstr "Totalt antall forespørsler"
 
@@ -402,7 +581,8 @@ msgid "Requests by city (Top 10)"
 msgstr "Forespørsler etter by (Top 10)"
 
 #: templates/admin_dashboard.html:209
-msgid "📈 Requests trend (last 30 days)"
+#, fuzzy
+msgid " Requests trend (last 30 days)"
 msgstr "📈 Ønsker trend (siste 30 dager)"
 
 #: templates/admin_dashboard.html:225
@@ -413,7 +593,8 @@ msgstr "cialis"
 msgid "Чакащи"
 msgstr "Чакаи"
 
-#: templates/admin_dashboard.html:241 templates/volunteer_dashboard.html:334 templates/volunteer_request_details.html:80
+#: templates/admin_dashboard.html:241 templates/volunteer_dashboard.html:332
+#: templates/volunteer_request_details.html:80
 msgid "В процес"
 msgstr "Троцес"
 
@@ -429,7 +610,8 @@ msgstr "Баявки"
 msgid "Име"
 msgstr "cialis"
 
-#: templates/admin_dashboard.html:264 templates/submit_request.html:190 templates/volunteer_request_details.html:64
+#: templates/admin_dashboard.html:264
+#: templates/volunteer_request_details.html:64
 msgid "Описание"
 msgstr "Описание"
 
@@ -441,7 +623,9 @@ msgstr "Статус"
 msgid "История"
 msgstr "Бстория"
 
-#: templates/admin_dashboard.html:267 templates/admin_roles.html:103 templates/admin_roles.html:184
+#: templates/admin/requests.html:326 templates/admin/requests.html:514
+#: templates/admin/roles.html:28 templates/admin_dashboard.html:267
+#: templates/admin_roles.html:103 templates/admin_roles.html:184
 #: templates/admin_volunteers.html:289 templates/dashboard.html:267
 msgid "Actions"
 msgstr "Administrer push-varsler"
@@ -467,11 +651,11 @@ msgstr "Handlinger for forespørsel   %(id)s  "
 msgid "Няма намерени заявки"
 msgstr "Ряма намерени заявки"
 
-#: templates/admin_dashboard.html:324 templates/submit_request.html:117
+#: templates/admin_dashboard.html:324
 msgid "Имейл"
 msgstr "ИMMейл"
 
-#: templates/admin_dashboard.html:325 templates/submit_request.html:103
+#: templates/admin_dashboard.html:325
 msgid "Телефон"
 msgstr "Телеон"
 
@@ -539,545 +723,1398 @@ msgstr ""
 msgid "Devenir bénévole"
 msgstr ""
 
-#: templates/all_categories.html:101
+#: templates/all_categories.html:101 templates/become_volunteer.html:156
 msgid "Retour à l’accueil"
 msgstr ""
 
-#: templates/base.html:9 templates/base.html:14 templates/base.html:25
+#: templates/base.html:9
 msgid ""
-"Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation "
-"européenne."
+"Orientation structurée, coordination traçable, pilotage responsable. "
+"Conçu et opéré depuis la France, à vocation européenne."
 msgstr ""
 
-#: templates/base.html:13 templates/base.html:24
-msgid "HelpChain - Infrastructure numérique de coordination"
-msgstr ""
-
-#: templates/base.html:58
+#: templates/base.html:132
 msgid "Skip to main content"
 msgstr ""
 
-#: templates/base.html:133
+#: templates/base.html:166
 msgid "Toggle navigation"
 msgstr "navigation"
 
-#: templates/base.html:143 templates/base.html:144 templates/base.html:351
+#: templates/base.html:176 templates/base.html:177 templates/base.html:437
 msgid "Language"
 msgstr ""
 
-#: templates/admin/requests.html:25 templates/base.html:159
-msgid "Home"
-msgstr "Hjem"
-
-#: templates/base.html:164
-msgid "Orienter"
+#: templates/base.html:192 templates/home_new_slim.html:3
+#: templates/partials/navbar_public.html:2 templates/submit_request.html:23
+msgid "Accueil"
 msgstr ""
 
-#: templates/base.html:169
-msgid "About"
-msgstr "Om"
-
-#: templates/base.html:174 templates/professionnels.html:2
-msgid "Professionnels"
+#: templates/base.html:197 templates/partials/navbar_public.html:3
+msgid "Fonctionnement"
 msgstr ""
 
-#: templates/base.html:181
-msgid "Pilot (KPI)"
-msgstr "Pilot (KPI)"
+#: templates/base.html:202 templates/partials/navbar_public.html:4
+msgid "Demandes"
+msgstr ""
 
-#: templates/base.html:182
-msgid "LIVE"
-msgstr "LIVE"
+#: templates/base.html:208 templates/partials/navbar_public.html:5
+#: templates/public/pour_les_structures.html:3
+#, fuzzy
+msgid "Structures"
+msgstr "Strukturerte data"
 
-#: templates/base.html:188 templates/magic_link_invalid.html:13
-msgid "Submit a request"
-msgstr "Send en forespørsel"
+#: templates/base.html:218 templates/base.html:1031 templates/contact.html:2
+#: templates/contact.html:4 templates/contact.html:13
+#: templates/home_new_slim.html:266
+msgid "Contact & coopération"
+msgstr ""
 
-#: templates/admin/requests.html:2 templates/base.html:195
+#: templates/admin/audit.html:2 templates/admin/audit.html:30
+#: templates/admin/audit.html:58 templates/admin/requests.html:2
+#: templates/admin/roles.html:2 templates/admin/security.html:2
+#: templates/admin/security.html:230
+#: templates/admin/translations_coverage.html:2
+#: templates/admin/translations_key.html:2
+#: templates/admin/translations_list.html:2 templates/base.html:231
+#: templates/become_volunteer.html:70 templates/become_volunteer.html:93
 msgid "Admin"
 msgstr "Admin"
 
-#: templates/base.html:222 templates/base.html:292
+#: templates/base.html:268 templates/base.html:338
 msgid "Logout"
 msgstr "Logg ut"
 
-#: templates/base.html:229
+#: templates/base.html:275
 msgid "My dashboard"
 msgstr "Min dashboard"
 
-#: templates/base.html:239 templates/base.html:253 templates/base.html:333 templates/volunteer_dashboard.html:113
-#: templates/volunteer_notifications.html:2 templates/volunteer_notifications.html:8
+#: templates/base.html:285 templates/base.html:299 templates/base.html:419
+#: templates/volunteer_dashboard.html:113
+#: templates/volunteer_notifications.html:2
+#: templates/volunteer_notifications.html:8
 msgid "Notifications"
 msgstr "Administrer push-varsler"
 
-#: templates/base.html:244
+#: templates/base.html:290
 msgid "unread notifications"
 msgstr ""
 
-#: templates/base.html:255
+#: templates/base.html:301
 msgid "View all"
 msgstr ""
 
-#: templates/base.html:259
+#: templates/base.html:305
 msgid "No notifications"
 msgstr ""
 
-#: templates/base.html:260
+#: templates/base.html:306
 msgid "When you get matched, you'll see it here."
 msgstr ""
 
-#: templates/base.html:269
+#: templates/base.html:315
 msgid "Notification"
 msgstr ""
 
-#: templates/base.html:270 templates/volunteer_notifications.html:44
+#: templates/admin/requests.html:31 templates/admin/requests.html:46
+#: templates/base.html:316 templates/volunteer_notifications.html:43
 msgid "New"
 msgstr ""
 
-#: templates/base.html:275
+#: templates/base.html:321
 msgid "Mark as seen & open"
 msgstr ""
 
-#: templates/base.html:285 templates/base.html:782 templates/profile_requester.html:2
+#: templates/base.html:331 templates/base.html:977
+#: templates/profile_requester.html:2
 msgid "Profile"
 msgstr "Profil"
 
-#: templates/base.html:308
+#: templates/base.html:354
 msgid "Search…"
 msgstr ""
 
-#: templates/admin/requests.html:136 templates/base.html:309 templates/base.html:312 templates/search_results.html:2
-#: templates/search_results.html:7 templates/search_results.html:14 templates/search_results.html:15
+#: templates/admin/requests.html:158 templates/admin/requests.html:168
+#: templates/base.html:355 templates/base.html:358
+#: templates/search_results.html:2 templates/search_results.html:7
+#: templates/search_results.html:14 templates/search_results.html:15
 #: templates/search_results.html:17
 msgid "Search"
 msgstr "Søk"
 
-#: templates/base.html:327
+#: templates/base.html:364 templates/base.html:1035
+msgid "Accès intervenants"
+msgstr ""
+
+#: templates/base.html:365 templates/base.html:367 templates/base.html:1038
+msgid "Connexion intervenant"
+msgstr ""
+
+#: templates/base.html:369
+#, fuzzy
+msgid "Вход"
+msgstr "cialis"
+
+#: templates/base.html:373 templates/base.html:375 templates/base.html:1041
+msgid "Inscription intervenant"
+msgstr ""
+
+#: templates/base.html:377
+msgid "Рег."
+msgstr ""
+
+#: templates/base.html:413
 msgid "Toggle theme"
 msgstr "Bytt tema"
 
-#: templates/base.html:352 templates/base.html:447 templates/volunteer_dashboard.html:246
-#: templates/volunteer_dashboard.html:713
+#: templates/base.html:438 templates/base.html:533
+#: templates/volunteer_dashboard.html:244
+#: templates/volunteer_dashboard.html:710
 msgid "Close"
 msgstr ""
 
-#: templates/base.html:403
+#: templates/base.html:489
 msgid "Accessibility settings"
 msgstr ""
 
-#: templates/base.html:427
+#: templates/base.html:513
 msgid "Accessibility menu"
 msgstr ""
 
-#: templates/base.html:442 templates/base.html:443
+#: templates/base.html:528 templates/base.html:529
 msgid "Toggle accessibility settings"
 msgstr ""
 
-#: templates/base.html:453
+#: templates/base.html:539
 msgid "Accessibility"
 msgstr ""
 
-#: templates/base.html:455
+#: templates/base.html:541
 msgid "Adjust readability and motion. Settings are saved on this device."
 msgstr ""
 
-#: templates/base.html:466 templates/base.html:470
+#: templates/base.html:552 templates/base.html:556
 msgid "No options enabled"
 msgstr ""
 
-#: templates/base.html:467
+#: templates/base.html:553
 msgid "1 option enabled"
 msgstr ""
 
-#: templates/base.html:468
+#: templates/base.html:554
 #, python-brace-format
 msgid "{count} options enabled"
 msgstr ""
 
-#: templates/base.html:469
+#: templates/base.html:555
 msgid "Accessibility paused"
 msgstr ""
 
-#: templates/base.html:474 templates/base.html:477
+#: templates/base.html:560 templates/base.html:563
 msgid "Following system"
 msgstr ""
 
-#: templates/base.html:475
+#: templates/base.html:561
 msgid "Power off"
 msgstr ""
 
-#: templates/base.html:480
+#: templates/base.html:566
 msgid "Accessibility sections"
 msgstr ""
 
-#: templates/base.html:483
+#: templates/base.html:569
 msgid "Display"
 msgstr ""
 
-#: templates/base.html:487
+#: templates/base.html:573
 msgid "Navigation"
 msgstr ""
 
-#: templates/base.html:497 templates/base.html:650 templates/base.html:669 templates/base.html:743
+#: templates/base.html:583 templates/base.html:845 templates/base.html:864
+#: templates/base.html:938
 msgid "Translations"
 msgstr ""
 
-#: templates/base.html:501
+#: templates/base.html:587
 msgid "Audio"
 msgstr ""
 
-#: templates/base.html:505
+#: templates/base.html:591
 msgid "Motor"
 msgstr ""
 
-#: templates/base.html:509
+#: templates/base.html:595
 msgid "Eco"
 msgstr ""
 
-#: templates/base.html:513
+#: templates/base.html:599
 msgid "More"
 msgstr ""
 
-#: templates/base.html:520
+#: templates/base.html:606
 msgid "Display & reading"
 msgstr ""
 
-#: templates/base.html:521
+#: templates/base.html:607
 msgid "Improve readability and visual comfort"
 msgstr ""
 
-#: templates/base.html:527
+#: templates/base.html:613
 msgid "High contrast"
 msgstr ""
 
-#: templates/base.html:528
+#: templates/base.html:614
 msgid "Increase visual contrast across the interface"
 msgstr ""
 
-#: templates/base.html:536 templates/base.html:539
+#: templates/base.html:622 templates/base.html:625
 msgid "Text size"
 msgstr ""
 
-#: templates/base.html:537
+#: templates/base.html:623
 msgid "Choose a comfortable reading size"
 msgstr ""
 
-#: templates/base.html:540
+#: templates/base.html:626 templates/base.html:762
 msgid "Normal"
 msgstr ""
 
-#: templates/base.html:541
+#: templates/base.html:627
 msgid "Large"
 msgstr ""
 
-#: templates/base.html:542
+#: templates/base.html:628
 msgid "Extra large"
 msgstr ""
 
-#: templates/base.html:550
+#: templates/base.html:636
 msgid "Dyslexia-friendly font"
 msgstr ""
 
-#: templates/base.html:551
+#: templates/base.html:637
 msgid "Use a clearer fallback font stack with increased spacing"
 msgstr ""
 
-#: templates/base.html:560
+#: templates/base.html:646
 msgid "Navigation comfort"
 msgstr ""
 
-#: templates/base.html:561
+#: templates/base.html:647
 msgid "Reduce distraction and simplify movement across pages"
 msgstr ""
 
-#: templates/base.html:564
+#: templates/base.html:650
 msgid "Navigation profiles"
 msgstr ""
 
-#: templates/base.html:568
+#: templates/base.html:654
 msgid "Reading comfort"
 msgstr ""
 
-#: templates/base.html:569
+#: templates/base.html:655
 msgid "Larger text with cleaner reading spacing"
 msgstr ""
 
-#: templates/base.html:571 templates/base.html:578 templates/base.html:585 templates/dashboard_helper.html:43
-#: templates/pilot_dashboard.html:34
+#: templates/base.html:657 templates/base.html:664 templates/base.html:671
+#: templates/dashboard_helper.html:43 templates/pilot_dashboard.html:36
 msgid "Open"
 msgstr "Åpne"
 
-#: templates/base.html:576
+#: templates/base.html:662
 msgid "High contrast and larger text for central vision comfort"
 msgstr ""
 
-#: templates/base.html:583
+#: templates/base.html:669
 msgid "Extra-large text and simplified visuals for easier reading"
 msgstr ""
 
-#: templates/base.html:590
+#: templates/base.html:676
 msgid "Visual presets"
 msgstr ""
 
-#: templates/base.html:593
+#: templates/base.html:679
 msgid "Balanced"
 msgstr ""
 
-#: templates/base.html:594
+#: templates/base.html:680
 msgid "Keep a clean look without changing text size"
 msgstr ""
 
-#: templates/base.html:597
+#: templates/base.html:683
 msgid "Focus mode"
 msgstr ""
 
-#: templates/base.html:598
+#: templates/base.html:684
 msgid "Reduce motion and visual noise"
 msgstr ""
 
-#: templates/base.html:601
+#: templates/base.html:687
 msgid "High visibility"
 msgstr ""
 
-#: templates/base.html:602
+#: templates/base.html:688
 msgid "High contrast + bigger text"
 msgstr ""
 
-#: templates/base.html:610
+#: templates/base.html:696
 msgid "Reduce motion"
 msgstr ""
 
-#: templates/base.html:611
+#: templates/base.html:697
 msgid "Limit animations and transitions"
 msgstr ""
 
-#: templates/base.html:620
+#: templates/base.html:706
 msgid "Simplified mode"
 msgstr ""
 
-#: templates/base.html:621
+#: templates/base.html:707
 msgid "Hide decorative elements and reduce visual noise"
 msgstr ""
 
-#: templates/base.html:630
+#: templates/base.html:716
 msgid "Audio support"
 msgstr ""
 
-#: templates/base.html:631
-msgid "Placeholder section for future speech and sound accessibility tools"
+#: templates/base.html:717
+msgid "Read content aloud and tune voice feedback for better accessibility"
 msgstr ""
 
-#: templates/base.html:634
-msgid "Coming soon: read aloud, voice guidance, and audio feedback options."
+#: templates/base.html:724 templates/base.html:727
+msgid ""
+"Uses your browser or device voice. Availability depends on browser "
+"support."
 msgstr ""
 
-#: templates/base.html:640
-msgid "Motor assistance"
+#: templates/base.html:725
+msgid "Speech playback is not available in this browser."
 msgstr ""
 
-#: templates/base.html:641
-msgid "Placeholder section for click targets, dwell, and keyboard assistance"
+#: templates/base.html:733
+msgid "Read aloud"
 msgstr ""
 
-#: templates/base.html:644
-msgid "Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers."
+#: templates/base.html:734
+msgid "Enable speech playback for reading content"
 msgstr ""
 
-#: templates/base.html:651 templates/base.html:673
-msgid "Choose the interface language"
+#: templates/base.html:741
+msgid ""
+"Turn on Read aloud, close the menu, and select text on the page. Play / "
+"Stop will appear."
 msgstr ""
 
-#: templates/base.html:684
-msgid "Eco display"
+#: templates/base.html:748
+msgid "Voice guidance"
 msgstr ""
 
-#: templates/base.html:685
-msgid "Lighter pages for faster display and lower data/energy use"
+#: templates/base.html:749
+msgid "Allow short spoken confirmations for key actions (future)"
 msgstr ""
 
-#: templates/base.html:691
-msgid "Eco mode"
+#: templates/base.html:757 templates/base.html:760
+msgid "Speech rate"
 msgstr ""
 
-#: templates/base.html:692
-msgid "Lighter pages with reduced visual effects to improve speed and lower data/energy use"
+#: templates/base.html:758
+msgid "Choose a comfortable reading speed"
 msgstr ""
 
-#: templates/base.html:701
-msgid "More options"
+#: templates/base.html:761
+msgid "Slow"
 msgstr ""
 
-#: templates/base.html:702
-msgid "This section is ready for future accessibility modules"
+#: templates/base.html:763
+msgid "Fast"
 msgstr ""
 
-#: templates/base.html:705
-msgid "You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.)."
+#: templates/base.html:770
+#, fuzzy
+msgid "Volume"
+msgstr "Hjem"
+
+#: templates/base.html:771
+msgid "Adjust speech playback volume"
 msgstr ""
 
-#: templates/base.html:712
-msgid "Reset only this section"
+#: templates/base.html:774
+msgid "Speech volume"
 msgstr ""
 
-#: templates/base.html:715
-msgid "Reset"
-msgstr ""
-
-#: templates/base.html:718
-msgid "Restore system defaults"
-msgstr ""
-
-#: templates/base.html:721
-msgid "Save as my profile"
-msgstr ""
-
-#: templates/base.html:724
-msgid "Done"
-msgstr ""
-
-#: templates/base.html:728
-msgid "Shortcut: Alt + A"
-msgstr ""
-
-#: templates/base.html:738 templates/base.html:777 templates/pilot_dashboard.html:19
-msgid "Back"
-msgstr "Tilbake"
-
-#: templates/base.html:744
-msgid "Select language"
+#: templates/base.html:782 templates/base.html:785
+msgid "Voice"
 msgstr ""
 
 #: templates/base.html:783
-msgid "Profile details"
+msgid "Choose a browser voice when available"
 msgstr ""
 
-#: templates/base.html:788
-msgid "Preset description"
+#: templates/base.html:786
+msgid "Default voice"
 msgstr ""
 
-#: templates/base.html:789
-msgid "This profile applies"
+#: templates/base.html:793
+msgid "Voice test"
 msgstr ""
 
-#: templates/base.html:791
-msgid "Loading profile…"
+#: templates/base.html:794
+msgid "Try the selected voice and settings before saving"
 msgstr ""
 
-#: templates/base.html:796
-msgid "Apply profile"
+#: templates/base.html:801
+msgid "Accessibility voice test. This is a preview of your audio settings."
 msgstr ""
 
-#: templates/base.html:812 templates/orienter.html:86
-msgid "Données hébergées en Europe"
-msgstr ""
+#: templates/base.html:803
+#, fuzzy
+msgid "Test voice"
+msgstr "Tjenestevilkår"
 
-#: templates/base.html:812
-msgid "Conforme RGPD"
-msgstr ""
-
-#: templates/base.html:812
-msgid "Sécurité renforcée"
-msgstr ""
-
-#: templates/base.html:812
-msgid "Développé et opéré en France"
+#: templates/base.html:806 templates/base.html:1060
+msgid "Stop"
 msgstr ""
 
 #: templates/base.html:815
+msgid "Highlight while reading"
+msgstr ""
+
+#: templates/base.html:816
+msgid "Highlight the current paragraph or block during page reading"
+msgstr ""
+
+#: templates/base.html:825
+msgid "Auto-read on page load"
+msgstr ""
+
+#: templates/base.html:826
+msgid "Start reading automatically when supported (future)"
+msgstr ""
+
+#: templates/base.html:835
+msgid "Motor assistance"
+msgstr ""
+
+#: templates/base.html:836
+msgid "Placeholder section for click targets, dwell, and keyboard assistance"
+msgstr ""
+
+#: templates/base.html:839
+msgid ""
+"Coming soon: larger touch targets, click delay settings, and keyboard "
+"navigation helpers."
+msgstr ""
+
+#: templates/base.html:846 templates/base.html:868
+msgid "Choose the interface language"
+msgstr ""
+
+#: templates/base.html:879
+msgid "Eco display"
+msgstr ""
+
+#: templates/base.html:880
+msgid "Lighter pages for faster display and lower data/energy use"
+msgstr ""
+
+#: templates/base.html:886
+msgid "Eco mode"
+msgstr ""
+
+#: templates/base.html:887
+msgid ""
+"Lighter pages with reduced visual effects to improve speed and lower "
+"data/energy use"
+msgstr ""
+
+#: templates/base.html:896
+msgid "More options"
+msgstr ""
+
+#: templates/base.html:897
+msgid "This section is ready for future accessibility modules"
+msgstr ""
+
+#: templates/base.html:900
+msgid ""
+"You can add more grouped settings here later (audio, keyboard help, "
+"reading profiles, etc.)."
+msgstr ""
+
+#: templates/base.html:907
+msgid "Reset only this section"
+msgstr ""
+
+#: templates/admin/requests.html:224 templates/base.html:910
+msgid "Reset"
+msgstr ""
+
+#: templates/base.html:913
+msgid "Restore system defaults"
+msgstr ""
+
+#: templates/base.html:916
+msgid "Save as my profile"
+msgstr ""
+
+#: templates/base.html:919
+msgid "Done"
+msgstr ""
+
+#: templates/base.html:923
+msgid "Shortcut: Alt + A"
+msgstr ""
+
+#: templates/base.html:933 templates/base.html:972
+#: templates/pilot_dashboard.html:21
+msgid "Back"
+msgstr "Tilbake"
+
+#: templates/base.html:939
+msgid "Select language"
+msgstr ""
+
+#: templates/base.html:978
+msgid "Profile details"
+msgstr ""
+
+#: templates/base.html:983
+msgid "Preset description"
+msgstr ""
+
+#: templates/base.html:984
+msgid "This profile applies"
+msgstr ""
+
+#: templates/base.html:986
+msgid "Loading profile…"
+msgstr ""
+
+#: templates/base.html:991
+msgid "Apply profile"
+msgstr ""
+
+#: templates/base.html:1007 templates/orienter.html:88
+msgid "Données hébergées en Europe"
+msgstr ""
+
+#: templates/base.html:1007
+msgid "Conforme RGPD"
+msgstr ""
+
+#: templates/base.html:1007
+msgid "Sécurité renforcée"
+msgstr ""
+
+#: templates/base.html:1007
+msgid "Conçu et opéré depuis la France"
+msgstr ""
+
+#: templates/base.html:1010
 msgid "Footer"
 msgstr ""
 
-#: templates/base.html:818
+#: templates/base.html:1013 templates/comment_ca_marche.html:2
+#: templates/comment_ca_marche.html:4 templates/comment_ca_marche.html:11
+#: templates/home_new_slim.html:95 templates/home_new_slim.html:170
+#: templates/home_new_slim.html:241
+msgid "Comment fonctionne HelpChain"
+msgstr ""
+
+#: templates/base.html:1015 templates/collectivites_associations.html:2
+#: templates/collectivites_associations.html:4
+#: templates/collectivites_associations.html:11
+#: templates/home_new_slim.html:251
+msgid "Pour les collectivités et associations"
+msgstr ""
+
+#: templates/base.html:1017 templates/cas_usage.html:2
+#: templates/cas_usage.html:4 templates/cas_usage.html:11
+#: templates/home_new_slim.html:246
+msgid "Cas d’usage"
+msgstr ""
+
+#: templates/base.html:1019 templates/home_new_slim.html:286
+msgid "Pilotage & indicateurs"
+msgstr ""
+
+#: templates/base.html:1021 templates/home_new_slim.html:256
+#: templates/partenariats.html:2 templates/partenariats.html:4
+#: templates/partenariats.html:11
+msgid "Partenariats & déploiement territorial"
+msgstr ""
+
+#: templates/base.html:1023 templates/home_new_slim.html:276
+#: templates/pourquoi_helpchain.html:2 templates/pourquoi_helpchain.html:4
+#: templates/pourquoi_helpchain.html:11
+#, fuzzy
+msgid "Pourquoi HelpChain"
+msgstr "HjelpChain"
+
+#: templates/base.html:1025 templates/home_new_slim.html:281
+#: templates/vision_europeenne.html:2 templates/vision_europeenne.html:4
+#: templates/vision_europeenne.html:11
+msgid "Projet & Vision européenne"
+msgstr ""
+
+#: templates/base.html:1027 templates/faq.html:2 templates/faq.html:4
+#: templates/faq.html:11
+msgid "Questions fréquentes"
+msgstr ""
+
+#: templates/base.html:1029
 msgid "Mentions légales"
 msgstr ""
 
-#: templates/base.html:820 templates/contact.html:2 templates/contact.html:9 templates/privacy.html:49
-#: templates/terms.html:37
-msgid "Contact"
-msgstr "Kontakt"
-
-#: templates/base.html:824
-msgid "Accès intervenants"
+#: templates/base.html:1054
+msgid "Selected text audio controls"
 msgstr ""
 
-#: templates/base.html:827
-msgid "Connexion intervenant"
+#: templates/base.html:1057
+msgid "Play"
 msgstr ""
 
-#: templates/base.html:830
-msgid "Inscription intervenant"
-msgstr ""
-
-#: templates/become_volunteer.html:2 templates/volunteer_login.html:25
+#: templates/become_volunteer.html:2 templates/become_volunteer.html:14
+#: templates/volunteer_login.html:25
 msgid "Accès intervenant"
 msgstr ""
 
+#: templates/become_volunteer.html:14 templates/become_volunteer.html:113
+#: templates/volunteer_login.html:87
+msgid "Demander un accès intervenant"
+msgstr ""
+
+#: templates/become_volunteer.html:16 templates/volunteer_login.html:27
+msgid "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe."
+msgstr ""
+
+#: templates/become_volunteer.html:16
+msgid ""
+"Demandez un accès intervenant. Nous vous enverrons un lien sécurisé par "
+"e-mail."
+msgstr ""
+
+#: templates/become_volunteer.html:21 templates/professionnels_pilote.html:18
+msgid "Confiance et confidentialité"
+msgstr ""
+
+#: templates/become_volunteer.html:23 templates/professionnels_pilote.html:20
+msgid "Accès réservé aux intervenants autorisés"
+msgstr ""
+
+#: templates/become_volunteer.html:24 templates/professionnels_pilote.html:21
+msgid "Processus simple, traçable et responsable"
+msgstr ""
+
+#: templates/become_volunteer.html:33
+msgid "Accéder à mon espace intervenant"
+msgstr ""
+
+#: templates/become_volunteer.html:33
+msgid "1 minute pour commencer"
+msgstr ""
+
+#: templates/become_volunteer.html:34
+msgid "Nous vous envoyons un lien de connexion. Aucun mot de passe."
+msgstr ""
+
 #: templates/become_volunteer.html:37
-msgid "Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes."
+msgid ""
+"Si l'adresse est valide, vous recevrez un lien de connexion sous quelques"
+" minutes."
+msgstr ""
+
+#: templates/become_volunteer.html:37 templates/volunteer_link_sent.html:84
+#, fuzzy
+msgid "Sending…"
+msgstr "Venter"
+
+#: templates/become_volunteer.html:45
+msgid "Connexion sécurisée — aucun mot de passe"
+msgstr ""
+
+#: templates/become_volunteer.html:50
+msgid "Adresse e-mail"
+msgstr ""
+
+#: templates/become_volunteer.html:51 templates/professionnels_pilote.html:44
+#, fuzzy
+msgid "vous@email.com"
+msgstr "din@email.com"
+
+#: templates/become_volunteer.html:52
+msgid ""
+"Nous ne partageons jamais votre e-mail. Vous pourrez supprimer votre "
+"compte à tout moment."
 msgstr ""
 
 #: templates/become_volunteer.html:53
 msgid "Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes)."
 msgstr ""
 
-#: templates/contact.html:11
-msgid "A question, a suggestion, or a concern? Write to us — a real human will read your message."
+#: templates/become_volunteer.html:58
+msgid "Ajouter ville et compétences (optionnel)"
 msgstr ""
 
-#: templates/contact.html:19
-msgid "Your email"
+#: templates/become_volunteer.html:60 templates/become_volunteer.html:83
+msgid "Ville / Localité"
 msgstr ""
 
-#: templates/contact.html:24
-msgid "Subject"
+#: templates/become_volunteer.html:60 templates/become_volunteer.html:66
+msgid "optionnel"
+msgstr ""
+
+#: templates/become_volunteer.html:61 templates/become_volunteer.html:84
+msgid "Paris, Boulogne-Billancourt…"
+msgstr ""
+
+#: templates/become_volunteer.html:62 templates/become_volunteer.html:85
+msgid "Une zone approximative suffit."
+msgstr ""
+
+#: templates/become_volunteer.html:66 templates/become_volunteer.html:89
+msgid "Compétences (max 5)"
+msgstr ""
+
+#: templates/become_volunteer.html:68 templates/become_volunteer.html:91
+msgid "Transport"
+msgstr ""
+
+#: templates/become_volunteer.html:69 templates/become_volunteer.html:92
+#, fuzzy
+msgid "Courses"
+msgstr "Lukket"
+
+#: templates/become_volunteer.html:71 templates/become_volunteer.html:94
+#: templates/submit_request.html:44 templates/submit_request.html:140
+msgid "Aide médicale"
+msgstr ""
+
+#: templates/become_volunteer.html:72 templates/become_volunteer.html:95
+msgid "Soutien émotionnel"
+msgstr ""
+
+#: templates/become_volunteer.html:73 templates/become_volunteer.html:96
+#: templates/submit_request.html:144
+#, fuzzy
+msgid "Autre"
+msgstr "Om"
+
+#: templates/become_volunteer.html:76 templates/become_volunteer.html:99
+#, python-format
+msgid "(%(count)s/%(max)s) skills selected"
+msgstr ""
+
+#: templates/become_volunteer.html:77 templates/become_volunteer.html:100
+#, python-format
+msgid "Maximum %(max)s skills. You can adjust later."
+msgstr ""
+
+#: templates/become_volunteer.html:77 templates/become_volunteer.html:100
+msgid "Maximum 5 compétences."
+msgstr ""
+
+#: templates/become_volunteer.html:78 templates/become_volunteer.html:101
+msgid "Vous pourrez ajuster plus tard."
+msgstr ""
+
+#: templates/become_volunteer.html:108
+msgid "J’accepte les"
+msgstr ""
+
+#: templates/become_volunteer.html:108
+msgid "conditions d’utilisation"
+msgstr ""
+
+#: templates/become_volunteer.html:108
+msgid "et la"
+msgstr ""
+
+#: templates/become_volunteer.html:108
+msgid "politique de confidentialité"
+msgstr ""
+
+#: templates/become_volunteer.html:113 templates/volunteer_login.html:70
+msgid "Recevoir mon lien de connexion"
+msgstr ""
+
+#: templates/become_volunteer.html:124
+msgid "Comment ça marche ?"
+msgstr ""
+
+#: templates/become_volunteer.html:126
+msgid "Vous recevez un lien sécurisé par e-mail."
+msgstr ""
+
+#: templates/become_volunteer.html:127
+msgid "Vous choisissez les demandes qui vous conviennent."
+msgstr ""
+
+#: templates/become_volunteer.html:128
+msgid "Vous pouvez arrêter à tout moment, sans justification."
+msgstr ""
+
+#: templates/become_volunteer.html:133
+msgid "Vos données"
+msgstr ""
+
+#: templates/become_volunteer.html:135
+msgid ""
+"Nous collectons uniquement les informations nécessaires pour vous mettre "
+"en relation. Vous gardez le contrôle."
+msgstr ""
+
+#: templates/become_volunteer.html:141
+msgid "Vérifiez votre e-mail"
+msgstr ""
+
+#: templates/become_volunteer.html:143
+msgid "Si cet e-mail existe, nous venons d’envoyer un lien sécurisé."
+msgstr ""
+
+#: templates/become_volunteer.html:144
+msgid "Aucun mot de passe."
+msgstr ""
+
+#: templates/become_volunteer.html:147
+msgid "Lien valable"
+msgstr ""
+
+#: templates/become_volunteer.html:147 templates/volunteer_link_sent.html:13
+msgid "minutes"
+msgstr ""
+
+#: templates/become_volunteer.html:148
+msgid "Regardez aussi vos spams"
+msgstr ""
+
+#: templates/become_volunteer.html:149
+msgid "Vous gardez le contrôle. Vous pourrez arrêter à tout moment."
+msgstr ""
+
+#: templates/become_volunteer.html:153
+msgid "Placeholder (backend à venir)"
+msgstr ""
+
+#: templates/become_volunteer.html:154
+msgid "Renvoyer le lien"
+msgstr ""
+
+#: templates/cas_usage.html:3
+msgid ""
+"Exemples concrets d’utilisation de HelpChain pour les collectivités, "
+"CCAS, associations, structures sociales et bénévoles."
+msgstr ""
+
+#: templates/cas_usage.html:6
+msgid "Aperçu de la page Cas d’usage"
+msgstr ""
+
+#: templates/cas_usage.html:13
+msgid ""
+"HelpChain est une plateforme destinée à faciliter la coordination entre "
+"personnes en situation de besoin, bénévoles et acteurs associatifs."
+msgstr ""
+
+#: templates/cas_usage.html:16
+msgid ""
+"Les exemples ci-dessous illustrent différentes situations dans lesquelles"
+" la plateforme peut être utilisée afin d'améliorer l’organisation et la "
+"coordination des actions de solidarité."
+msgstr ""
+
+#: templates/cas_usage.html:22
+msgid "CAS 1 — Accompagnement administratif"
+msgstr ""
+
+#: templates/cas_usage.html:24
+msgid ""
+"Une personne rencontre des difficultés dans certaines démarches "
+"administratives."
+msgstr ""
+
+#: templates/cas_usage.html:27
+msgid ""
+"Une demande peut être déposée sur la plateforme afin de trouver un "
+"bénévole ou une structure capable d’apporter un accompagnement ponctuel."
+msgstr ""
+
+#: templates/cas_usage.html:30
+msgid ""
+"La plateforme permet ensuite de suivre la demande et de coordonner les "
+"actions nécessaires."
+msgstr ""
+
+#: templates/cas_usage.html:37
+msgid "CAS 2 — Soutien ponctuel"
+msgstr ""
+
+#: templates/cas_usage.html:39
+msgid "Certaines situations nécessitent une aide simple et rapide."
+msgstr ""
+
+#: templates/cas_usage.html:42
+msgid ""
+"Un utilisateur peut signaler un besoin spécifique, et un bénévole peut "
+"proposer son aide en fonction de sa disponibilité."
+msgstr ""
+
+#: templates/cas_usage.html:45
+msgid ""
+"La plateforme facilite ainsi la mise en relation entre les besoins "
+"exprimés et les personnes prêtes à intervenir."
+msgstr ""
+
+#: templates/cas_usage.html:52
+msgid "CAS 3 — Coordination entre plusieurs acteurs"
+msgstr ""
+
+#: templates/cas_usage.html:54
+msgid ""
+"Dans certaines situations, plusieurs personnes ou structures peuvent être"
+" impliquées."
+msgstr ""
+
+#: templates/cas_usage.html:57
+msgid ""
+"HelpChain permet de centraliser l’information et d’améliorer la "
+"coordination entre les différents intervenants."
+msgstr ""
+
+#: templates/cas_usage.html:60
+msgid "Cela peut faciliter l’organisation des actions et le suivi des situations."
+msgstr ""
+
+#: templates/cas_usage.html:67
+msgid "CAS 4 — Soutien aux initiatives locales"
+msgstr ""
+
+#: templates/cas_usage.html:69
+msgid ""
+"Les associations ou structures locales peuvent également utiliser la "
+"plateforme pour organiser certaines initiatives d’entraide."
+msgstr ""
+
+#: templates/cas_usage.html:72
+msgid ""
+"HelpChain agit alors comme un outil de coordination permettant de mieux "
+"structurer les actions et de faciliter la communication entre les "
+"participants."
+msgstr ""
+
+#: templates/cas_usage.html:79 templates/collectivites_associations.html:91
+#: templates/comment_ca_marche.html:93 templates/contact.html:56
+#: templates/faq.html:89 templates/partenariats.html:86
+#: templates/pilotage_indicateurs.html:88 templates/pourquoi_helpchain.html:86
+#: templates/vision_europeenne.html:76
+msgid "Conclusion"
+msgstr ""
+
+#: templates/cas_usage.html:81
+msgid ""
+"HelpChain vise à soutenir les initiatives de solidarité en facilitant "
+"l’organisation et la coordination des actions entre citoyens, bénévoles "
+"et structures locales."
+msgstr ""
+
+#: templates/cas_usage.html:84
+msgid ""
+"La plateforme constitue un outil numérique au service de la coopération "
+"et de l’entraide."
+msgstr ""
+
+#: templates/collectivites_associations.html:3
+msgid ""
+"Présentation institutionnelle de HelpChain pour les collectivités "
+"locales, CCAS, associations et structures sociales."
+msgstr ""
+
+#: templates/collectivites_associations.html:6
+msgid "Aperçu de la page Pour les collectivités et associations"
+msgstr ""
+
+#: templates/collectivites_associations.html:13
+msgid ""
+"HelpChain est une plateforme numérique conçue pour faciliter la "
+"coordination entre personnes en situation de besoin, bénévoles et acteurs"
+" associatifs."
+msgstr ""
+
+#: templates/collectivites_associations.html:16
+msgid ""
+"La plateforme peut également être utilisée par des collectivités locales,"
+" des centres communaux d’action sociale (CCAS) et des associations afin "
+"de mieux organiser certaines situations nécessitant un suivi ou une "
+"coordination."
+msgstr ""
+
+#: templates/collectivites_associations.html:22
+msgid "SECTION 1 — Un outil de coordination"
+msgstr ""
+
+#: templates/collectivites_associations.html:24
+msgid ""
+"HelpChain permet de centraliser et d’organiser différentes demandes "
+"d’aide au sein d’un même espace numérique."
+msgstr ""
+
+#: templates/collectivites_associations.html:26
+msgid "Les structures peuvent ainsi :"
+msgstr ""
+
+#: templates/collectivites_associations.html:28
+msgid "visualiser les demandes en cours"
+msgstr ""
+
+#: templates/collectivites_associations.html:29
+msgid "suivre l’évolution de certaines situations"
+msgstr ""
+
+#: templates/collectivites_associations.html:30
+msgid "faciliter la coordination entre différents intervenants"
+msgstr ""
+
+#: templates/collectivites_associations.html:37
+msgid "SECTION 2 — Une meilleure visibilité des situations"
+msgstr ""
+
+#: templates/collectivites_associations.html:39
+msgid ""
+"La plateforme permet d’avoir une vue d’ensemble des demandes et de leur "
+"évolution."
+msgstr ""
+
+#: templates/collectivites_associations.html:41
+msgid "Cela facilite :"
+msgstr ""
+
+#: templates/collectivites_associations.html:43
+msgid "l’identification des situations prioritaires"
+msgstr ""
+
+#: templates/collectivites_associations.html:44
+msgid "la répartition des actions"
+msgstr ""
+
+#: templates/collectivites_associations.html:45
+msgid "la coordination entre bénévoles et structures locales"
+msgstr ""
+
+#: templates/collectivites_associations.html:52
+msgid "SECTION 3 — Un soutien aux initiatives locales"
+msgstr ""
+
+#: templates/collectivites_associations.html:54
+#: templates/pourquoi_helpchain.html:61
+msgid "HelpChain n’a pas vocation à remplacer les structures existantes."
+msgstr ""
+
+#: templates/collectivites_associations.html:57
+msgid ""
+"La plateforme agit comme un outil complémentaire permettant de soutenir "
+"l’organisation et la coordination d’initiatives locales."
+msgstr ""
+
+#: templates/collectivites_associations.html:60
+msgid ""
+"Elle peut ainsi contribuer à améliorer la circulation de l’information "
+"entre les différents acteurs impliqués."
+msgstr ""
+
+#: templates/collectivites_associations.html:67
+msgid "SECTION 4 — Respect des données et confidentialité"
+msgstr ""
+
+#: templates/collectivites_associations.html:69 templates/faq.html:60
+msgid ""
+"HelpChain est conçu dans le respect des principes du Règlement Général "
+"sur la Protection des Données (RGPD)."
+msgstr ""
+
+#: templates/collectivites_associations.html:72
+msgid ""
+"Les données collectées sont limitées aux informations nécessaires au "
+"fonctionnement du service et sont traitées avec un niveau de sécurité "
+"adapté."
+msgstr ""
+
+#: templates/collectivites_associations.html:79
+msgid "SECTION 5 — Un outil en évolution"
+msgstr ""
+
+#: templates/collectivites_associations.html:81
+msgid ""
+"La plateforme évolue progressivement afin de s’adapter aux besoins des "
+"structures et des acteurs impliqués dans des actions de solidarité."
+msgstr ""
+
+#: templates/collectivites_associations.html:84
+msgid ""
+"HelpChain vise à proposer un outil simple, sécurisé et adapté à la "
+"coordination d’initiatives locales."
+msgstr ""
+
+#: templates/collectivites_associations.html:93 templates/partenariats.html:88
+msgid ""
+"HelpChain a pour objectif de faciliter la coopération entre citoyens, "
+"bénévoles, associations et structures publiques."
+msgstr ""
+
+#: templates/collectivites_associations.html:96
+msgid ""
+"La plateforme constitue un outil numérique destiné à soutenir "
+"l’organisation et la coordination des actions de solidarité."
+msgstr ""
+
+#: templates/comment_ca_marche.html:3
+msgid ""
+"Explication claire du fonctionnement de HelpChain pour les personnes en "
+"situation de besoin, les bénévoles et les structures partenaires."
+msgstr ""
+
+#: templates/comment_ca_marche.html:6
+msgid "Aperçu de la page Comment fonctionne HelpChain"
+msgstr ""
+
+#: templates/comment_ca_marche.html:13 templates/faq.html:21
+#: templates/partenariats.html:13
+msgid ""
+"HelpChain est une plateforme numérique destinée à faciliter la "
+"coordination entre personnes en situation de besoin, bénévoles et acteurs"
+" associatifs."
+msgstr ""
+
+#: templates/comment_ca_marche.html:16
+msgid ""
+"L’objectif de la plateforme est de permettre une organisation plus simple"
+" et plus efficace des demandes d’aide et des actions de solidarité."
+msgstr ""
+
+#: templates/comment_ca_marche.html:22
+msgid "SECTION 1 — Déposer une demande"
+msgstr ""
+
+#: templates/comment_ca_marche.html:23
+msgid "Une personne peut déposer une demande d’aide via la plateforme."
+msgstr ""
+
+#: templates/comment_ca_marche.html:24
+msgid "La demande peut concerner différents types de situations, par exemple :"
+msgstr ""
+
+#: templates/comment_ca_marche.html:26
+msgid "accompagnement administratif"
+msgstr ""
+
+#: templates/comment_ca_marche.html:27
+msgid "aide ponctuelle"
+msgstr ""
+
+#: templates/comment_ca_marche.html:28
+msgid "orientation vers des ressources locales"
+msgstr ""
+
+#: templates/comment_ca_marche.html:29
+msgid "soutien dans certaines démarches"
+msgstr ""
+
+#: templates/comment_ca_marche.html:32
+msgid ""
+"Les informations fournies permettent de mieux comprendre la situation et "
+"d’orienter la demande vers les personnes ou structures susceptibles "
+"d’apporter une aide."
+msgstr ""
+
+#: templates/comment_ca_marche.html:39
+msgid "SECTION 2 — Mobilisation des bénévoles"
+msgstr ""
+
+#: templates/comment_ca_marche.html:41
+msgid ""
+"Les bénévoles inscrits sur la plateforme peuvent consulter les demandes "
+"et proposer leur aide en fonction de leurs disponibilités et de leurs "
+"compétences."
+msgstr ""
+
+#: templates/comment_ca_marche.html:44
+msgid ""
+"La plateforme facilite ainsi la mise en relation entre les besoins "
+"exprimés et les personnes prêtes à apporter leur soutien."
+msgstr ""
+
+#: templates/comment_ca_marche.html:51
+msgid "SECTION 3 — Coordination et suivi"
+msgstr ""
+
+#: templates/comment_ca_marche.html:53
+msgid ""
+"Les demandes peuvent être suivies et organisées à l’aide des outils de "
+"coordination de la plateforme."
+msgstr ""
+
+#: templates/comment_ca_marche.html:55
+msgid "Cela permet :"
+msgstr ""
+
+#: templates/comment_ca_marche.html:57
+msgid "de visualiser les demandes en cours"
+msgstr ""
+
+#: templates/comment_ca_marche.html:58
+msgid "d’identifier les situations prioritaires"
+msgstr ""
+
+#: templates/comment_ca_marche.html:59
+msgid "de faciliter la communication entre les personnes impliquées"
+msgstr ""
+
+#: templates/comment_ca_marche.html:66
+msgid "SECTION 4 — Rôle des associations et structures partenaires"
+msgstr ""
+
+#: templates/comment_ca_marche.html:68
+msgid ""
+"HelpChain peut également être utilisé par des associations ou des "
+"structures locales afin de mieux coordonner certaines actions de "
+"solidarité."
+msgstr ""
+
+#: templates/comment_ca_marche.html:71
+msgid ""
+"La plateforme agit comme un outil de soutien à l’organisation et à la "
+"coordination des initiatives locales."
+msgstr ""
+
+#: templates/comment_ca_marche.html:78
+msgid "SECTION 5 — Respect des personnes et des données"
+msgstr ""
+
+#: templates/comment_ca_marche.html:79 templates/home_new_slim.html:220
+msgid "La plateforme est conçue dans le respect :"
+msgstr ""
+
+#: templates/comment_ca_marche.html:81 templates/home_new_slim.html:224
+#: templates/pourquoi_helpchain.html:75
+msgid "de la confidentialité des informations"
+msgstr ""
+
+#: templates/comment_ca_marche.html:82 templates/home_new_slim.html:222
+#: templates/pourquoi_helpchain.html:74
+msgid "de la protection des données personnelles"
+msgstr ""
+
+#: templates/comment_ca_marche.html:83
+msgid "de la dignité des personnes concernées"
+msgstr ""
+
+#: templates/comment_ca_marche.html:86
+msgid ""
+"HelpChain applique les principes du RGPD et veille à limiter la collecte "
+"de données aux informations strictement nécessaires au fonctionnement du "
+"service."
+msgstr ""
+
+#: templates/comment_ca_marche.html:95
+msgid ""
+"HelpChain vise à faciliter l’entraide et la coordination entre les "
+"différents acteurs impliqués dans des actions de solidarité."
+msgstr ""
+
+#: templates/comment_ca_marche.html:98
+msgid ""
+"La plateforme constitue un outil numérique au service de l’organisation "
+"et de la coopération entre citoyens, bénévoles et structures locales."
+msgstr ""
+
+#: templates/contact.html:3
+msgid ""
+"Contact et coopération avec le projet HelpChain pour collectivités, CCAS,"
+" associations et partenaires territoriaux."
+msgstr ""
+
+#: templates/contact.html:6
+msgid "Aperçu de la page Contact et coopération"
+msgstr ""
+
+#: templates/contact.html:15 templates/vision_europeenne.html:13
+msgid ""
+"HelpChain est un projet visant à faciliter la coordination entre "
+"citoyens, bénévoles, associations et structures publiques dans le cadre "
+"d’initiatives de solidarité."
+msgstr ""
+
+#: templates/contact.html:18
+msgid ""
+"La plateforme est conçue pour soutenir l’organisation et la coopération "
+"entre les différents acteurs impliqués dans ces actions."
+msgstr ""
+
+#: templates/contact.html:23
+msgid "SECTION 1 — Coopération avec les collectivités et associations"
 msgstr ""
 
 #: templates/contact.html:25
-msgid "What is this about?"
+msgid ""
+"Les collectivités locales, centres communaux d’action sociale (CCAS), "
+"associations et structures territoriales peuvent être intéressés par "
+"l’utilisation de la plateforme dans le cadre de leurs initiatives "
+"locales."
+msgstr ""
+
+#: templates/contact.html:27
+msgid "HelpChain peut contribuer à faciliter :"
 msgstr ""
 
 #: templates/contact.html:29
-msgid "Message"
+msgid "la coordination entre acteurs"
 msgstr ""
 
 #: templates/contact.html:30
-msgid "Write your message here…"
+msgid "la circulation de l’information"
 msgstr ""
 
-#: templates/contact.html:35
-msgid "Send message"
+#: templates/contact.html:31
+msgid "le suivi de certaines situations"
+msgstr ""
+
+#: templates/contact.html:36
+msgid "SECTION 2 — Échanges et partenariats"
 msgstr ""
 
 #: templates/contact.html:38
-msgid "This form is informational for now. Please use email below."
+msgid ""
+"Le projet est ouvert aux échanges avec les acteurs intéressés par le "
+"développement d’outils facilitant la coopération et les actions de "
+"solidarité."
+msgstr ""
+
+#: templates/contact.html:41
+msgid ""
+"Les structures souhaitant en savoir plus sur la plateforme ou explorer "
+"des possibilités de collaboration peuvent prendre contact avec l’équipe "
+"du projet."
 msgstr ""
 
 #: templates/contact.html:46
-msgid "Direct contact"
+msgid "SECTION 3 — Contact"
 msgstr ""
 
-#: templates/contact.html:53
-msgid "Response time"
+#: templates/contact.html:48
+msgid ""
+"Pour toute demande d’information ou proposition de coopération, vous "
+"pouvez contacter le projet HelpChain à l’adresse suivante :"
 msgstr ""
 
-#: templates/contact.html:55
-msgid "We usually reply within 24–48 hours on business days."
+#: templates/contact.html:58
+msgid ""
+"HelpChain vise à soutenir les initiatives locales de solidarité en "
+"facilitant la coopération entre citoyens, bénévoles, associations et "
+"structures publiques."
 msgstr ""
 
-#: templates/contact.html:60
-msgid "Security & privacy"
-msgstr ""
-
-#: templates/contact.html:62
-msgid "We never sell or share contact data."
-msgstr ""
-
-#: templates/contact.html:63
-msgid "No automated marketing emails."
-msgstr ""
-
-#: templates/contact.html:65
-msgid "Security issues can be reported at"
+#: templates/contact.html:61
+msgid ""
+"Le projet reste ouvert aux échanges avec les acteurs souhaitant "
+"contribuer à cette dynamique."
 msgstr ""
 
 #: templates/dashboard_helper.html:6
@@ -1088,20 +2125,27 @@ msgstr ""
 msgid "Requester"
 msgstr ""
 
-#: templates/dashboard_helper.html:65 templates/volunteer_request_details.html:202
+#: templates/dashboard_helper.html:65
+#: templates/volunteer_request_details.html:202
 msgid "Email requester"
 msgstr ""
 
-#: templates/dashboard_helper.html:70 templates/volunteer_request_details.html:207
+#: templates/dashboard_helper.html:70
+#: templates/volunteer_request_details.html:207
 msgid "Call requester"
 msgstr ""
 
 #: templates/dashboard_helper.html:75
-msgid "Use only this contact for this request. Stay respectful and keep it focused on solving the issue."
+msgid ""
+"Use only this contact for this request. Stay respectful and keep it "
+"focused on solving the issue."
 msgstr ""
 
-#: templates/dashboard_helper.html:79 templates/volunteer_request_details.html:218
-msgid "Contact appears once the request is assigned, in progress, and the requester shared details."
+#: templates/dashboard_helper.html:79
+#: templates/volunteer_request_details.html:218
+msgid ""
+"Contact appears once the request is assigned, in progress, and the "
+"requester shared details."
 msgstr ""
 
 #: templates/dashboard_helper.html:87
@@ -1116,6 +2160,7 @@ msgstr ""
 msgid "Submit a new request"
 msgstr ""
 
+#: templates/admin/requests.html:32 templates/admin/requests.html:50
 #: templates/dashboard_requester.html:44 templates/profile_requester.html:67
 msgid "Assigned"
 msgstr ""
@@ -1149,6 +2194,8 @@ msgid "Detected role:"
 msgstr ""
 
 #: templates/dashboard_unknown_role.html:12
+#: templates/professionnels_pilote_thanks.html:16
+#: templates/volunteer_link_sent.html:28
 msgid "Back to home"
 msgstr ""
 
@@ -1200,102 +2247,676 @@ msgstr "Rekneark"
 msgid "Preview"
 msgstr "Forhåndsvisning"
 
-#: templates/export_data.html:244
+#: templates/admin/requests.html:179 templates/export_data.html:244
 msgid "Export"
 msgstr "Eksporter"
 
-#: templates/home_new_slim.html:3 templates/submit_request.html:23
-msgid "Accueil"
+#: templates/faq.html:3
+msgid ""
+"Questions fréquentes sur le fonctionnement de la plateforme HelpChain "
+"pour citoyens, bénévoles, associations et collectivités."
 msgstr ""
 
-#: templates/home_new_slim.html:13
-msgid "Infrastructure numérique de coordination des situations sociales."
+#: templates/faq.html:6
+msgid "Aperçu de la page Questions fréquentes"
 msgstr ""
 
-#: templates/home_new_slim.html:17
-msgid "Orientation structurée. Coordination traçable. Pilotage responsable."
+#: templates/faq.html:13
+msgid ""
+"Cette page répond aux principales questions concernant le fonctionnement "
+"de la plateforme HelpChain."
 msgstr ""
 
-#: templates/home_new_slim.html:35
-msgid "Conçu et opéré depuis la France"
+#: templates/faq.html:19
+msgid "Qu’est-ce que HelpChain ?"
 msgstr ""
 
-#: templates/home_new_slim.html:35
-msgid "Infrastructure à vocation européenne"
+#: templates/faq.html:24
+msgid ""
+"Elle permet d’organiser plus facilement certaines demandes d’aide et de "
+"faciliter la mise en relation entre les personnes concernées."
+msgstr ""
+
+#: templates/faq.html:31
+msgid "Qui peut utiliser la plateforme ?"
+msgstr ""
+
+#: templates/faq.html:32
+msgid "La plateforme peut être utilisée par :"
+msgstr ""
+
+#: templates/faq.html:34
+msgid "des citoyens"
+msgstr ""
+
+#: templates/faq.html:35 templates/pourquoi_helpchain.html:47
+msgid "des bénévoles"
+msgstr ""
+
+#: templates/faq.html:36 templates/pourquoi_helpchain.html:48
+#, fuzzy
+msgid "des associations"
+msgstr "Administrer push-varsler"
+
+#: templates/faq.html:37 templates/pourquoi_helpchain.html:49
+msgid "des structures locales"
+msgstr ""
+
+#: templates/faq.html:40
+msgid ""
+"L’objectif est de faciliter la coopération entre différents acteurs "
+"impliqués dans des actions de solidarité."
+msgstr ""
+
+#: templates/faq.html:47
+msgid "La plateforme remplace-t-elle les structures existantes ?"
+msgstr ""
+
+#: templates/faq.html:48 templates/faq.html:71
+msgid "Non."
+msgstr ""
+
+#: templates/faq.html:50
+msgid ""
+"HelpChain ne remplace pas les structures existantes. La plateforme agit "
+"comme un outil complémentaire permettant de faciliter la coordination "
+"entre différents acteurs."
+msgstr ""
+
+#: templates/faq.html:57
+msgid "Les données personnelles sont-elles protégées ?"
+msgstr ""
+
+#: templates/faq.html:58
+msgid "Oui."
+msgstr ""
+
+#: templates/faq.html:63
+msgid ""
+"Les données collectées sont limitées aux informations nécessaires au "
+"fonctionnement du service."
+msgstr ""
+
+#: templates/faq.html:70
+msgid "Faut-il installer un logiciel ?"
+msgstr ""
+
+#: templates/faq.html:73
+msgid ""
+"HelpChain est accessible directement via un navigateur internet et ne "
+"nécessite aucune installation spécifique."
+msgstr ""
+
+#: templates/faq.html:80
+msgid "Qui gère la plateforme ?"
+msgstr ""
+
+#: templates/faq.html:82
+msgid ""
+"La plateforme est développée et maintenue dans le cadre du projet "
+"HelpChain, avec pour objectif de soutenir les initiatives de solidarité "
+"et la coordination entre acteurs locaux."
+msgstr ""
+
+#: templates/faq.html:91
+msgid ""
+"Pour toute question complémentaire, vous pouvez contacter l’équipe "
+"HelpChain à l’adresse suivante :"
+msgstr ""
+
+#: templates/home_new_slim.html:4
+msgid ""
+"Infrastructure numérique de coordination des situations sociales. "
+"Orientation structurée, coordination traçable et pilotage responsable "
+"pour associations et réseaux professionnels."
+msgstr ""
+
+#: templates/home_new_slim.html:5
+msgid ""
+"HelpChain | Infrastructure numérique de coordination des situations "
+"sociales"
+msgstr ""
+
+#: templates/home_new_slim.html:15
+msgid ""
+"Infrastructure numérique de coordination pour les initiatives de "
+"solidarité locales"
+msgstr ""
+
+#: templates/home_new_slim.html:19
+msgid ""
+"HelpChain facilite l’organisation, le suivi et la coordination des "
+"demandes d’aide entre citoyens, bénévoles, associations et structures "
+"publiques au sein d’un espace numérique partagé."
+msgstr ""
+
+#: templates/home_new_slim.html:23
+msgid ""
+"Conçu pour soutenir la coordination locale, le suivi des situations et la"
+" coopération entre acteurs de terrain."
+msgstr ""
+
+#: templates/home_new_slim.html:30 templates/home_new_slim.html:71
+msgid "Organiser une demande"
+msgstr ""
+
+#: templates/home_new_slim.html:36
+msgid "Espace collectivités & associations"
+msgstr ""
+
+#: templates/home_new_slim.html:41 templates/home_new_slim.html:117
+msgid "Hébergement européen"
+msgstr ""
+
+#: templates/home_new_slim.html:41 templates/home_new_slim.html:112
+#: templates/orienter.html:88
+msgid "Conformité RGPD"
+msgstr ""
+
+#: templates/home_new_slim.html:41 templates/home_new_slim.html:122
+msgid "Sécurité des données"
 msgstr ""
 
 #: templates/home_new_slim.html:41
-msgid "Vue opérationnelle"
+msgid "Coordination locale"
 msgstr ""
 
-#: templates/home_new_slim.html:46
-msgid "Situations traitées"
+#: templates/home_new_slim.html:47
+msgid "Phase pilote"
+msgstr ""
+
+#: templates/home_new_slim.html:49
+msgid "Coordination locale en cours"
+msgstr ""
+
+#: templates/home_new_slim.html:50
+msgid "Premières situations suivies"
 msgstr ""
 
 #: templates/home_new_slim.html:51
-msgid "Intervenants actifs"
+msgid "Déploiement progressif sur le terrain"
 msgstr ""
 
-#: templates/home_new_slim.html:56
-msgid "Territoires"
+#: templates/home_new_slim.html:54
+msgid "Approche progressive"
 msgstr ""
 
-#: templates/home_new_slim.html:61
-msgid "Processus structuré"
+#: templates/home_new_slim.html:54
+msgid "Suivi structuré"
 msgstr ""
 
-#: templates/home_new_slim.html:61
-msgid "Suivi traçable"
+#: templates/home_new_slim.html:54
+msgid "Amélioration continue"
 msgstr ""
 
-#: templates/home_new_slim.html:61
-msgid "Coordination continue"
+#: templates/home_new_slim.html:65
+msgid "Accès rapides"
+msgstr ""
+
+#: templates/home_new_slim.html:66
+msgid "Accéder rapidement aux principales fonctionnalités de la plateforme."
 msgstr ""
 
 #: templates/home_new_slim.html:72
-msgid "Fonctionnement structuré"
+msgid "Créer et suivre une demande d’aide au sein de la plateforme."
 msgstr ""
 
-#: templates/home_new_slim.html:74
-msgid "Un cadre clair pour organiser l'orientation et la coordination des situations."
+#: templates/home_new_slim.html:73 templates/home_new_slim.html:79
+#: templates/home_new_slim.html:85 templates/home_new_slim.html:91
+#: templates/home_new_slim.html:97
+msgid "Accéder"
 msgstr ""
 
-#: templates/home_new_slim.html:80
-msgid "1. Orientation"
+#: templates/home_new_slim.html:77
+msgid "Signaler une situation"
 msgstr ""
 
-#: templates/home_new_slim.html:82
-msgid "Classification structurée des situations et qualification initiale."
+#: templates/home_new_slim.html:78
+msgid "Signaler une situation nécessitant une coordination locale."
 msgstr ""
 
-#: templates/home_new_slim.html:87
-msgid "2. Coordination"
+#: templates/home_new_slim.html:83
+msgid "Espace collectivités"
+msgstr ""
+
+#: templates/home_new_slim.html:84
+msgid "Accès aux informations et outils pour les collectivités locales."
 msgstr ""
 
 #: templates/home_new_slim.html:89
-msgid "Attribution responsable et suivi continu des interventions."
+msgid "Associations et acteurs locaux"
 msgstr ""
 
-#: templates/home_new_slim.html:94
-msgid "3. Pilotage"
+#: templates/home_new_slim.html:90
+msgid "Découvrir comment les associations peuvent utiliser la plateforme."
 msgstr ""
 
 #: templates/home_new_slim.html:96
-msgid "Indicateurs opérationnels, visibilité et traçabilité des actions."
+msgid "Comprendre le fonctionnement de la plateforme et son organisation."
+msgstr ""
+
+#: templates/home_new_slim.html:106
+msgid "Principes de confiance"
 msgstr ""
 
 #: templates/home_new_slim.html:107
-msgid "Une infrastructure, pas un annuaire."
+msgid "Des principes opérationnels clairs pour un usage institutionnel et local."
 msgstr ""
 
-#: templates/home_new_slim.html:109
+#: templates/home_new_slim.html:113
 msgid ""
-"HelpChain fournit une couche de coordination destinée aux associations, services publics et réseaux professionnels, "
-"avec un cadre structuré et sécurisé."
+"La gestion des données s’appuie sur les principes du RGPD et sur une "
+"collecte strictement nécessaire au service."
 msgstr ""
 
-#: templates/home_new_slim.html:115
-msgid "Découvrir l'espace professionnel"
+#: templates/home_new_slim.html:118
+msgid ""
+"Les données sont hébergées sur une infrastructure située en Europe afin "
+"de renforcer la conformité et la maîtrise opérationnelle."
+msgstr ""
+
+#: templates/home_new_slim.html:123
+msgid ""
+"Des mesures techniques et organisationnelles sont mises en œuvre pour "
+"protéger la confidentialité et l’intégrité des informations."
+msgstr ""
+
+#: templates/home_new_slim.html:127
+msgid "Coordination des acteurs"
+msgstr ""
+
+#: templates/home_new_slim.html:128
+msgid ""
+"La plateforme facilite l’organisation entre citoyens, bénévoles, "
+"associations et structures publiques autour d’un suivi partagé."
+msgstr ""
+
+#: templates/home_new_slim.html:137
+msgid "Publics concernés"
+msgstr ""
+
+#: templates/home_new_slim.html:139
+msgid ""
+"La plateforme s’adresse à différents publics impliqués dans des "
+"initiatives de solidarité locales."
+msgstr ""
+
+#: templates/home_new_slim.html:145
+#, fuzzy
+msgid "Citoyens"
+msgstr "Administrer push-varsler"
+
+#: templates/home_new_slim.html:146
+msgid ""
+"Signaler une situation ou formuler une demande nécessitant un soutien ou "
+"une coordination."
+msgstr ""
+
+#: templates/home_new_slim.html:150
+msgid "Bénévoles"
+msgstr ""
+
+#: templates/home_new_slim.html:151
+msgid ""
+"Proposer une aide ponctuelle ou contribuer à des actions de solidarité "
+"locales."
+msgstr ""
+
+#: templates/home_new_slim.html:155
+msgid "Associations"
+msgstr ""
+
+#: templates/home_new_slim.html:156
+msgid ""
+"Mieux organiser certaines demandes et faciliter la coordination entre "
+"acteurs de terrain."
+msgstr ""
+
+#: templates/home_new_slim.html:160
+msgid "Collectivités et structures sociales"
+msgstr ""
+
+#: templates/home_new_slim.html:161
+msgid ""
+"Disposer d’un outil numérique de suivi, d’organisation et de coordination"
+" locale."
+msgstr ""
+
+#: templates/home_new_slim.html:176
+msgid "Une demande est signalée"
+msgstr ""
+
+#: templates/home_new_slim.html:177
+msgid ""
+"Une situation nécessitant un soutien ou une coordination peut être "
+"signalée sur la plateforme."
+msgstr ""
+
+#: templates/home_new_slim.html:182
+msgid "La situation est organisée et suivie"
+msgstr ""
+
+#: templates/home_new_slim.html:183
+msgid ""
+"Les acteurs concernés peuvent organiser l’action, suivre l’évolution et "
+"coordonner les interventions."
+msgstr ""
+
+#: templates/home_new_slim.html:188
+msgid "La coordination locale s’améliore"
+msgstr ""
+
+#: templates/home_new_slim.html:189
+msgid ""
+"La plateforme contribue à structurer certaines initiatives et à faciliter"
+" la coopération entre acteurs locaux."
+msgstr ""
+
+#: templates/home_new_slim.html:199
+msgid "Ce que permet la plateforme"
+msgstr ""
+
+#: templates/home_new_slim.html:200
+msgid "HelpChain propose des outils permettant de :"
+msgstr ""
+
+#: templates/home_new_slim.html:202
+msgid "centraliser certaines demandes d’aide"
+msgstr ""
+
+#: templates/home_new_slim.html:203
+msgid "faciliter la mise en relation entre acteurs"
+msgstr ""
+
+#: templates/home_new_slim.html:204
+msgid "suivre l’évolution des situations"
+msgstr ""
+
+#: templates/home_new_slim.html:205
+msgid "améliorer la coordination entre bénévoles et structures locales"
+msgstr ""
+
+#: templates/home_new_slim.html:215
+msgid "Une approche responsable"
+msgstr ""
+
+#: templates/home_new_slim.html:223 templates/pourquoi_helpchain.html:76
+msgid "des principes du RGPD"
+msgstr ""
+
+#: templates/home_new_slim.html:226
+msgid ""
+"HelpChain vise à proposer une infrastructure numérique fiable et "
+"respectueuse des utilisateurs."
+msgstr ""
+
+#: templates/home_new_slim.html:235
+msgid "En savoir plus"
+msgstr ""
+
+#: templates/home_new_slim.html:236
+msgid ""
+"Ressources institutionnelles pour comprendre le fonctionnement et les "
+"usages de la plateforme."
+msgstr ""
+
+#: templates/home_new_slim.html:242
+msgid ""
+"Vue d’ensemble du fonctionnement opérationnel pour les citoyens, "
+"bénévoles et structures."
+msgstr ""
+
+#: templates/home_new_slim.html:243 templates/home_new_slim.html:248
+#: templates/home_new_slim.html:253 templates/home_new_slim.html:258
+#: templates/home_new_slim.html:263 templates/home_new_slim.html:268
+#: templates/home_new_slim.html:273 templates/home_new_slim.html:278
+#: templates/home_new_slim.html:283 templates/home_new_slim.html:288
+msgid "Consulter"
+msgstr ""
+
+#: templates/home_new_slim.html:247
+msgid ""
+"Exemples concrets d’utilisation dans des situations locales de "
+"coordination solidaire."
+msgstr ""
+
+#: templates/home_new_slim.html:252
+msgid ""
+"Cadre d’usage pour les collectivités, CCAS et associations engagées sur "
+"le terrain."
+msgstr ""
+
+#: templates/home_new_slim.html:257
+msgid ""
+"Approche de déploiement progressif et de coopération avec les acteurs "
+"locaux."
+msgstr ""
+
+#: templates/home_new_slim.html:261
+msgid "Sécurité & conformité"
+msgstr ""
+
+#: templates/home_new_slim.html:262
+msgid ""
+"Références juridiques, protection des données et principes de conformité "
+"applicables."
+msgstr ""
+
+#: templates/home_new_slim.html:267
+msgid ""
+"Canal de contact pour les collectivités, associations et partenaires "
+"institutionnels."
+msgstr ""
+
+#: templates/home_new_slim.html:271
+msgid "FAQ"
+msgstr ""
+
+#: templates/home_new_slim.html:272
+msgid "Réponses claires aux questions fréquentes sur l’usage de la plateforme."
+msgstr ""
+
+#: templates/home_new_slim.html:277
+msgid "Vision, raison d’être du projet et besoin de coordination territoriale."
+msgstr ""
+
+#: templates/home_new_slim.html:282
+msgid ""
+"Perspective de coopération progressive entre initiatives locales et "
+"européennes."
+msgstr ""
+
+#: templates/home_new_slim.html:287
+msgid "Repères opérationnels pour suivre les demandes et coordonner les actions."
+msgstr ""
+
+#: templates/home_new_slim.html:297
+msgid "Comment une collectivité peut utiliser HelpChain"
+msgstr ""
+
+#: templates/home_new_slim.html:299
+msgid ""
+"HelpChain peut être utilisé par des collectivités locales et des "
+"structures sociales afin de faciliter la coordination de certaines "
+"situations nécessitant un suivi ou une organisation collective."
+msgstr ""
+
+#: templates/home_new_slim.html:302
+msgid ""
+"La plateforme permet de centraliser l’information, de faciliter la "
+"communication entre les acteurs et de mieux organiser certaines actions "
+"de solidarité."
+msgstr ""
+
+#: templates/home_new_slim.html:308
+msgid "Étape 1 — Identifier une situation"
+msgstr ""
+
+#: templates/home_new_slim.html:310
+msgid ""
+"Une demande peut être signalée par un citoyen, un bénévole ou une "
+"structure locale."
+msgstr ""
+
+#: templates/home_new_slim.html:313
+msgid ""
+"La plateforme permet de centraliser cette information et de rendre la "
+"situation visible pour les acteurs concernés."
+msgstr ""
+
+#: templates/home_new_slim.html:318
+msgid "Étape 2 — Mobiliser les acteurs"
+msgstr ""
+
+#: templates/home_new_slim.html:320
+msgid ""
+"Les bénévoles, associations ou structures partenaires peuvent être "
+"mobilisés afin d’apporter une réponse adaptée."
+msgstr ""
+
+#: templates/home_new_slim.html:323
+msgid "HelpChain facilite la mise en relation entre les différents intervenants."
+msgstr ""
+
+#: templates/home_new_slim.html:328
+msgid "Étape 3 — Suivre l’évolution"
+msgstr ""
+
+#: templates/home_new_slim.html:330
+msgid ""
+"La plateforme permet de suivre l’évolution des situations et de "
+"coordonner les actions réalisées."
+msgstr ""
+
+#: templates/home_new_slim.html:333
+msgid ""
+"Les structures peuvent ainsi disposer d’une vision plus claire des "
+"demandes et des actions en cours."
+msgstr ""
+
+#: templates/home_new_slim.html:340
+msgid ""
+"HelpChain vise à soutenir les initiatives locales en facilitant la "
+"coopération entre citoyens, bénévoles, associations et structures "
+"publiques."
+msgstr ""
+
+#: templates/home_new_slim.html:343
+msgid ""
+"La plateforme constitue un outil numérique permettant d’améliorer la "
+"coordination et l’organisation des actions de solidarité."
+msgstr ""
+
+#: templates/home_new_slim.html:353
+msgid "Une infrastructure de coordination, pas un annuaire"
+msgstr ""
+
+#: templates/home_new_slim.html:355
+msgid ""
+"HelpChain propose un cadre de coordination destiné aux associations, "
+"services publics et réseaux professionnels, avec une organisation "
+"structurée et sécurisée."
+msgstr ""
+
+#: templates/home_new_slim.html:361
+msgid "Découvrir l’espace professionnel"
+msgstr ""
+
+#: templates/home_new_slim.html:371
+msgid "Transparence & Gouvernance"
+msgstr ""
+
+#: templates/home_new_slim.html:373
+msgid ""
+"HelpChain est conçu comme une infrastructure numérique de coordination au"
+" service des initiatives de solidarité locales."
+msgstr ""
+
+#: templates/home_new_slim.html:379
+msgid "Le projet vise à :"
+msgstr ""
+
+#: templates/home_new_slim.html:381
+msgid ""
+"faciliter la coopération entre citoyens, bénévoles, associations et "
+"structures publiques"
+msgstr ""
+
+#: templates/home_new_slim.html:382
+msgid "améliorer l’organisation et le suivi de certaines situations locales"
+msgstr ""
+
+#: templates/home_new_slim.html:383
+msgid ""
+"proposer un outil numérique simple, sécurisé et conforme aux exigences "
+"européennes."
+msgstr ""
+
+#: templates/home_new_slim.html:386
+msgid ""
+"Le développement de la plateforme repose sur une approche progressive, "
+"avec des phases pilotes et une amélioration continue."
+msgstr ""
+
+#: templates/home_new_slim.html:396
+msgid "Phase pilote territoriale"
+msgstr ""
+
+#: templates/home_new_slim.html:398
+msgid ""
+"HelpChain peut être expérimenté dans le cadre de phases pilotes locales, "
+"en collaboration avec des collectivités, associations ou structures "
+"sociales."
+msgstr ""
+
+#: templates/home_new_slim.html:404
+msgid "Ces phases pilotes permettent :"
+msgstr ""
+
+#: templates/home_new_slim.html:406
+msgid "d’expérimenter la plateforme dans un contexte réel"
+msgstr ""
+
+#: templates/home_new_slim.html:407
+msgid "d’adapter les usages aux besoins du territoire"
+msgstr ""
+
+#: templates/home_new_slim.html:408
+msgid "d’améliorer progressivement l’outil avec les acteurs locaux."
+msgstr ""
+
+#: templates/home_new_slim.html:411
+msgid ""
+"Les structures intéressées peuvent contacter l’équipe HelpChain afin "
+"d’étudier la mise en place d’une expérimentation."
+msgstr ""
+
+#: templates/home_new_slim.html:421
+msgid "Contact institutionnel"
+msgstr ""
+
+#: templates/home_new_slim.html:423
+msgid ""
+"Les collectivités, associations ou structures intéressées par une phase "
+"pilote ou une coopération peuvent contacter l’équipe HelpChain."
+msgstr ""
+
+#: templates/legal.html:2
+msgid "Mentions légales & Protection des données"
+msgstr ""
+
+#: templates/legal.html:3
+msgid ""
+"Mentions légales et protection des données HelpChain : informations de "
+"publication, hébergement, cadre RGPD et droits des utilisateurs."
+msgstr ""
+
+#: templates/legal.html:4
+msgid "Mentions légales & Protection des données | HelpChain"
+msgstr ""
+
+#: templates/legal.html:6
+msgid "Preview image for the HelpChain legal and data protection page"
 msgstr ""
 
 #: templates/magic_link_invalid.html:2
@@ -1310,445 +2931,865 @@ msgstr ""
 msgid "Ce lien n’est plus valable. Veuillez demander un nouveau lien."
 msgstr ""
 
+#: templates/magic_link_invalid.html:13
+msgid "Submit a request"
+msgstr "Send en forespørsel"
+
 #: templates/magic_link_invalid.html:14
 msgid "Register"
 msgstr "Registrer"
 
-#: templates/orienter.html:13
-msgid "Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée."
+#: templates/orienter.html:4
+msgid ""
+"Sélectionnez le domaine principal pour orienter une demande et structurer"
+" la prise en charge avec une coordination adaptée."
 msgstr ""
 
-#: templates/orienter.html:22
+#: templates/orienter.html:5
+msgid "Orienter une demande | HelpChain"
+msgstr ""
+
+#: templates/orienter.html:15
+msgid ""
+"Sélectionnez le domaine principal afin de structurer la prise en charge "
+"et d’assurer une coordination adaptée."
+msgstr ""
+
+#: templates/orienter.html:24
 msgid "Accès alimentaire"
 msgstr ""
 
-#: templates/orienter.html:22
-msgid "Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles."
+#: templates/orienter.html:24
+msgid ""
+"Soutien et coordination des situations liées à l’accès aux ressources "
+"alimentaires essentielles."
 msgstr ""
 
-#: templates/orienter.html:23
+#: templates/orienter.html:25
 msgid "Accompagnement administratif"
 msgstr ""
 
-#: templates/orienter.html:23
-msgid "Appui dans les démarches administratives, accès aux droits et médiation institutionnelle."
+#: templates/orienter.html:25
+msgid ""
+"Appui dans les démarches administratives, accès aux droits et médiation "
+"institutionnelle."
 msgstr ""
 
-#: templates/orienter.html:24
+#: templates/orienter.html:26
 msgid "Soutien psychosocial"
 msgstr ""
 
-#: templates/orienter.html:24
-msgid "Orientation et coordination pour les situations nécessitant un accompagnement individuel."
+#: templates/orienter.html:26
+msgid ""
+"Orientation et coordination pour les situations nécessitant un "
+"accompagnement individuel."
 msgstr ""
 
-#: templates/orienter.html:25
+#: templates/orienter.html:27
 msgid "Accès aux soins"
 msgstr ""
 
-#: templates/orienter.html:25
-msgid "Mise en relation et suivi pour les situations liées à l’accès aux services de santé."
+#: templates/orienter.html:27
+msgid ""
+"Mise en relation et suivi pour les situations liées à l’accès aux "
+"services de santé."
 msgstr ""
 
-#: templates/orienter.html:26
+#: templates/orienter.html:28
 msgid "Inclusion numérique"
 msgstr ""
 
-#: templates/orienter.html:26
+#: templates/orienter.html:28
 msgid "Accompagnement vers l’accès aux outils et services numériques."
 msgstr ""
 
-#: templates/orienter.html:27
+#: templates/orienter.html:29
 msgid "Urgences & situations critiques"
 msgstr ""
 
-#: templates/orienter.html:27
-msgid "Coordination prioritaire des situations nécessitant une prise en charge rapide."
+#: templates/orienter.html:29
+msgid ""
+"Coordination prioritaire des situations nécessitant une prise en charge "
+"rapide."
 msgstr ""
 
-#: templates/orienter.html:45
+#: templates/orienter.html:47
 msgid "Coordination structurée"
 msgstr ""
 
-#: templates/orienter.html:59
+#: templates/orienter.html:61
 msgid "Formulaire guidé – moins de 3 minutes."
 msgstr ""
 
-#: templates/orienter.html:66
+#: templates/orienter.html:68
 msgid "Vous représentez une structure ?"
 msgstr ""
 
-#: templates/orienter.html:69
+#: templates/orienter.html:71
 msgid ""
-"HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux "
-"professionnels."
+"HelpChain propose une infrastructure de coordination destinée aux "
+"associations, services publics et réseaux professionnels."
 msgstr ""
 
-#: templates/orienter.html:79
+#: templates/orienter.html:81
 msgid "Accéder à l’espace professionnel"
 msgstr ""
 
-#: templates/orienter.html:86
+#: templates/orienter.html:88
 msgid "Infrastructure numérique de coordination"
 msgstr ""
 
-#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:13
+#: templates/partenariats.html:3
+msgid ""
+"Présentation de HelpChain dans un cadre de partenariats territoriaux avec"
+" collectivités, CCAS, associations et structures locales."
+msgstr ""
+
+#: templates/partenariats.html:6
+msgid "Aperçu de la page Partenariats et déploiement territorial"
+msgstr ""
+
+#: templates/partenariats.html:16
+msgid ""
+"La plateforme peut également être utilisée dans le cadre de partenariats "
+"locaux afin de soutenir l’organisation et la coordination d’initiatives "
+"de solidarité."
+msgstr ""
+
+#: templates/partenariats.html:22
+msgid "SECTION 1 — Une plateforme au service des territoires"
+msgstr ""
+
+#: templates/partenariats.html:24
+msgid ""
+"HelpChain peut être utilisé par des collectivités locales ou des "
+"associations afin de mieux organiser certaines situations nécessitant un "
+"suivi ou une coordination."
+msgstr ""
+
+#: templates/partenariats.html:27
+msgid ""
+"La plateforme permet de centraliser les demandes, de faciliter la mise en"
+" relation entre les acteurs et d’améliorer la visibilité des actions "
+"menées."
+msgstr ""
+
+#: templates/partenariats.html:34
+msgid "SECTION 2 — Soutien aux acteurs locaux"
+msgstr ""
+
+#: templates/partenariats.html:36
+msgid ""
+"Les structures locales jouent un rôle essentiel dans les actions de "
+"solidarité."
+msgstr ""
+
+#: templates/partenariats.html:39
+msgid ""
+"HelpChain vise à proposer un outil numérique permettant de soutenir ces "
+"acteurs en facilitant la coordination entre les différents participants."
+msgstr ""
+
+#: templates/partenariats.html:46
+msgid "SECTION 3 — Coordination entre citoyens, bénévoles et structures"
+msgstr ""
+
+#: templates/partenariats.html:47
+msgid ""
+"La plateforme permet de favoriser la coopération entre différents acteurs"
+" :"
+msgstr ""
+
+#: templates/partenariats.html:49
+#, fuzzy
+msgid "citoyens"
+msgstr "Administrer push-varsler"
+
+#: templates/partenariats.html:50
+msgid "bénévoles"
+msgstr ""
+
+#: templates/partenariats.html:51
+#, fuzzy
+msgid "associations"
+msgstr "Administrer push-varsler"
+
+#: templates/partenariats.html:52
+msgid "structures publiques"
+msgstr ""
+
+#: templates/partenariats.html:55
+msgid ""
+"Cela peut contribuer à améliorer la circulation de l’information et "
+"l’organisation des actions."
+msgstr ""
+
+#: templates/partenariats.html:62
+msgid "SECTION 4 — Adaptation aux besoins locaux"
+msgstr ""
+
+#: templates/partenariats.html:64
+msgid "Chaque territoire possède des besoins et des organisations spécifiques."
+msgstr ""
+
+#: templates/partenariats.html:67
+msgid ""
+"HelpChain a vocation à s’adapter aux différents contextes locaux afin de "
+"soutenir les initiatives existantes et faciliter la coordination entre "
+"les acteurs."
+msgstr ""
+
+#: templates/partenariats.html:74
+msgid "SECTION 5 — Déploiement progressif"
+msgstr ""
+
+#: templates/partenariats.html:76
+msgid ""
+"La mise en place de la plateforme peut se faire progressivement en "
+"fonction des besoins et des usages."
+msgstr ""
+
+#: templates/partenariats.html:79
+msgid ""
+"HelpChain vise à proposer un outil simple et accessible permettant de "
+"soutenir l’organisation des initiatives locales."
+msgstr ""
+
+#: templates/partenariats.html:91
+msgid ""
+"La plateforme constitue un outil numérique destiné à soutenir les "
+"initiatives de solidarité et à améliorer la coordination des actions au "
+"niveau local."
+msgstr ""
+
+#: templates/pilot_dashboard.html:2 templates/pilot_dashboard.html:15
 msgid "Pilot Dashboard"
 msgstr "Pilot Dashboard"
 
-#: templates/pilot_dashboard.html:15
+#: templates/pilot_dashboard.html:4
+msgid "Preview image for the HelpChain pilot dashboard page"
+msgstr ""
+
+#: templates/pilot_dashboard.html:17
 msgid "Read-only KPI overview (no personal data)."
 msgstr "Lesbar KPI-oversikt (ingen personopplysninger)."
 
-#: templates/pilot_dashboard.html:16
+#: templates/pilot_dashboard.html:18
 msgid "Generated:"
 msgstr "Generert:"
 
-#: templates/pilot_dashboard.html:23
-msgid "This page contains only aggregated metrics and excludes personal data (GDPR-safe)."
-msgstr "Denne siden inneholder kun aggregerte beregninger og utelukker personopplysninger (GDPR-safe)."
+#: templates/pilot_dashboard.html:25
+msgid ""
+"This page contains only aggregated metrics and excludes personal data "
+"(GDPR-safe)."
+msgstr ""
+"Denne siden inneholder kun aggregerte beregninger og utelukker "
+"personopplysninger (GDPR-safe)."
 
-#: templates/pilot_dashboard.html:26
+#: templates/pilot_dashboard.html:28
 msgid "Impact"
 msgstr "Effekt"
 
-#: templates/pilot_dashboard.html:36
+#: templates/pilot_dashboard.html:38
 msgid "Not done / not rejected"
 msgstr "Ikke gjort / ikke avvist"
 
-#: templates/admin/requests.html:207 templates/admin/requests.html:282 templates/pilot_dashboard.html:40
+#: templates/admin/requests.html:35 templates/admin/requests.html:322
+#: templates/admin/requests.html:428 templates/pilot_dashboard.html:42
 msgid "Closed"
 msgstr "Lukket"
 
-#: templates/pilot_dashboard.html:45
+#: templates/pilot_dashboard.html:47
 msgid "Closed (last 7 days)"
 msgstr "Lukket (siste 7 dager)"
 
-#: templates/pilot_dashboard.html:50
+#: templates/pilot_dashboard.html:52
 msgid "Avg resolution"
 msgstr "Avg-oppløsning"
 
-#: templates/pilot_dashboard.html:59 templates/pilot_dashboard.html:78
+#: templates/pilot_dashboard.html:61 templates/pilot_dashboard.html:80
 msgid "Unassigned > 48h"
 msgstr "Usignert > 48h"
 
-#: templates/pilot_dashboard.html:61
+#: templates/pilot_dashboard.html:63
 msgid "Open without owner"
 msgstr "Åpne uten eier"
 
-#: templates/pilot_dashboard.html:65
+#: templates/pilot_dashboard.html:67
 msgid "Top risks"
 msgstr "Topp risiko"
 
-#: templates/pilot_dashboard.html:68
+#: templates/pilot_dashboard.html:70
 msgid "High priority open"
 msgstr "Høy prioritet åpen"
 
-#: templates/pilot_dashboard.html:73
+#: templates/pilot_dashboard.html:75
 msgid "Stale > 7 days"
 msgstr "Stale > 7 dager"
 
-#: templates/pilot_dashboard.html:88
+#: templates/pilot_dashboard.html:90
 msgid "Requests by status"
 msgstr "Forespørsler etter status"
 
-#: templates/pilot_dashboard.html:94
+#: templates/pilot_dashboard.html:96
 msgid "Requests by category"
 msgstr "Forespørsler etter kategori"
 
-#: templates/pilot_dashboard.html:102
+#: templates/pilot_dashboard.html:104
 #, python-format
 msgid "New requests (last %(days)s days)"
 msgstr "Nye forespørsler (siste   %(days)s    dager)"
 
-#: templates/admin/requests.html:2 templates/pilot_dashboard.html:118 templates/search_results.html:37
+#: templates/admin/requests.html:2 templates/admin/requests.html:22
+#: templates/pilot_dashboard.html:120 templates/search_results.html:37
 msgid "Requests"
 msgstr "Forespørsler"
 
-#: templates/pilot_dashboard.html:124
+#: templates/pilot_dashboard.html:126
 msgid "New requests"
 msgstr "Nye forespørsler"
 
-#: templates/privacy.html:2 templates/privacy.html:7
+#: templates/pilotage_indicateurs.html:2 templates/pilotage_indicateurs.html:4
+#: templates/pilotage_indicateurs.html:11
+msgid "Pilotage & Indicateurs"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:3
+msgid ""
+"Présentation du pilotage opérationnel et des indicateurs de suivi sur "
+"HelpChain pour collectivités, CCAS et associations."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:6
+msgid "Aperçu de la page Pilotage et indicateurs"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:13
+msgid ""
+"HelpChain propose des outils permettant de mieux organiser et suivre les "
+"demandes d’aide ainsi que les actions menées par les bénévoles et les "
+"structures partenaires."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:16
+msgid ""
+"La plateforme permet ainsi d’avoir une vision claire des situations en "
+"cours et de faciliter la coordination entre les différents acteurs."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:22
+msgid "SECTION 1 — Suivi des demandes"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:24
+msgid ""
+"La plateforme permet de visualiser les demandes d’aide en cours et leur "
+"évolution."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:26
+msgid "Les utilisateurs peuvent ainsi :"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:28
+msgid "identifier les demandes en attente"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:29
+msgid "suivre l’avancement des situations"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:30
+msgid "repérer les situations nécessitant une attention particulière"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:37
+msgid "SECTION 2 — Coordination des actions"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:39
+msgid ""
+"HelpChain facilite la coordination entre les personnes impliquées dans "
+"une situation."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:41
+msgid "La plateforme permet notamment de :"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:43
+msgid "suivre les actions réalisées"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:44
+msgid "organiser les interventions"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:45
+msgid "améliorer la communication entre les participants"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:52
+msgid "SECTION 3 — Vision globale des situations"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:54
+msgid ""
+"Les outils de pilotage permettent d’obtenir une vue d’ensemble des "
+"demandes et de leur évolution."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:57
+msgid ""
+"Cela peut aider les structures et les associations à mieux comprendre les"
+" besoins et à adapter leurs actions."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:64
+msgid "SECTION 4 — Identification des priorités"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:66
+msgid "Certaines situations peuvent nécessiter une intervention plus rapide."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:69
+msgid ""
+"La plateforme permet d’identifier plus facilement les situations "
+"prioritaires et de faciliter la mobilisation des ressources disponibles."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:76
+msgid "SECTION 5 — Amélioration continue"
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:78
+msgid ""
+"Les informations issues de la plateforme peuvent contribuer à améliorer "
+"l’organisation des actions de solidarité et à mieux comprendre les "
+"besoins rencontrés sur le terrain."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:81
+msgid ""
+"HelpChain vise ainsi à proposer un outil numérique permettant de soutenir"
+" la coordination et la coopération entre les différents acteurs."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:90
+msgid ""
+"HelpChain a pour objectif de faciliter l’organisation, le suivi et la "
+"coordination des actions de solidarité."
+msgstr ""
+
+#: templates/pilotage_indicateurs.html:93
+msgid ""
+"La plateforme constitue un outil numérique destiné à soutenir les "
+"initiatives locales et à améliorer la coopération entre citoyens, "
+"bénévoles et structures."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:3
+msgid ""
+"Vision et raison d’être de HelpChain: faciliter la coordination solidaire"
+" entre citoyens, bénévoles, associations et collectivités."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:6
+msgid "Aperçu de la page Pourquoi HelpChain"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:13
+msgid ""
+"Dans de nombreuses situations, des personnes rencontrent des difficultés "
+"ponctuelles pour lesquelles une aide simple pourrait faire une réelle "
+"différence."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:16
+msgid ""
+"Dans le même temps, de nombreux bénévoles, associations et acteurs locaux"
+" souhaitent s’engager et apporter leur soutien."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:19
+msgid ""
+"Cependant, la coordination entre ces différents acteurs peut parfois être"
+" complexe."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:25
+msgid "SECTION 1 — Un besoin de coordination"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:27
+msgid "Les initiatives de solidarité existent déjà dans de nombreux territoires."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:29
+msgid "Mais il peut être difficile de :"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:31
+msgid "identifier les besoins"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:32
+msgid "coordonner les actions"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:33
+msgid "suivre certaines situations"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:36
+msgid ""
+"HelpChain vise à faciliter cette coordination grâce à un outil numérique "
+"simple et accessible."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:43
+msgid "SECTION 2 — Faciliter la mise en relation"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:44
+msgid "La plateforme permet de mettre en relation :"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:46
+msgid "des personnes en situation de besoin"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:52
+msgid "L’objectif est de rendre cette coopération plus fluide et plus organisée."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:59
+msgid "SECTION 3 — Soutenir les initiatives locales"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:64
+msgid ""
+"La plateforme agit comme un outil permettant de soutenir les initiatives "
+"déjà présentes sur le terrain et d’améliorer la coordination entre les "
+"différents acteurs."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:71
+msgid "SECTION 4 — Une approche responsable"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:72
+msgid "Le projet est développé dans le respect :"
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:79
+msgid ""
+"L’objectif est de proposer une plateforme utile, fiable et respectueuse "
+"des utilisateurs."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:88
+msgid ""
+"HelpChain a pour ambition de faciliter l’entraide et la coopération entre"
+" citoyens, bénévoles, associations et structures publiques."
+msgstr ""
+
+#: templates/pourquoi_helpchain.html:91
+msgid ""
+"La plateforme vise à proposer un outil numérique permettant de mieux "
+"organiser certaines actions de solidarité au niveau local."
+msgstr ""
+
+#: templates/privacy.html:2 templates/privacy.html:11
 msgid "Privacy policy"
 msgstr "Personvernerklæring"
 
-#: templates/privacy.html:10 templates/terms.html:10
+#: templates/privacy.html:3
+msgid ""
+"Privacy policy for HelpChain: what data we collect, how we use it, "
+"retention, your rights, and how to contact us."
+msgstr ""
+
+#: templates/privacy.html:4
+#, fuzzy
+msgid "Privacy policy | HelpChain"
+msgstr "Personvernerklæring"
+
+#: templates/privacy.html:6
+msgid "Preview image for the HelpChain privacy policy page"
+msgstr ""
+
+#: templates/privacy.html:14 templates/terms.html:14
 msgid "Last updated:"
 msgstr "Sist oppdatert:"
 
-#: templates/privacy.html:14
+#: templates/privacy.html:18
 msgid ""
-"HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with "
-"volunteers. We do not sell your data."
+"HelpChain is a solidarity platform. We only collect what is necessary to "
+"connect people who need help with volunteers. We do not sell your data."
 msgstr ""
-"HelpChain er en solidaritetsplattform. Vi samler bare det som er nødvendig for å koble folk som trenger hjelp med "
-"frivillige. Vi selger ikke dataene dine."
+"HelpChain er en solidaritetsplattform. Vi samler bare det som er "
+"nødvendig for å koble folk som trenger hjelp med frivillige. Vi selger "
+"ikke dataene dine."
 
-#: templates/privacy.html:19
+#: templates/privacy.html:23
 msgid "What data we collect"
 msgstr "Hvilke data vi samler inn"
 
-#: templates/privacy.html:21
-msgid "Account and contact details you provide (name, email, phone - if you choose)."
-msgstr "Konto og kontaktinformasjon du oppgir (navn, e-post, telefon - hvis du velger)."
-
-#: templates/privacy.html:22
-msgid "Request information you submit (category, description, location - if needed for the service)."
-msgstr "Be om informasjon du sender (kategori, beskrivelse, plassering - om nødvendig for tjenesten)."
-
-#: templates/privacy.html:23
-msgid "Basic technical data for security (e.g., IP address, logs) to prevent abuse."
-msgstr "Grunnleggende tekniske data for sikkerhet (f.eks. IP-adresse, logger) for å hindre misbruk."
+#: templates/privacy.html:25
+msgid ""
+"Account and contact details you provide (name, email, phone - if you "
+"choose)."
+msgstr ""
+"Konto og kontaktinformasjon du oppgir (navn, e-post, telefon - hvis du "
+"velger)."
 
 #: templates/privacy.html:26
+msgid ""
+"Request information you submit (category, description, location - if "
+"needed for the service)."
+msgstr ""
+"Be om informasjon du sender (kategori, beskrivelse, plassering - om "
+"nødvendig for tjenesten)."
+
+#: templates/privacy.html:27
+msgid ""
+"Basic technical data for security (e.g., IP address, logs) to prevent "
+"abuse."
+msgstr ""
+"Grunnleggende tekniske data for sikkerhet (f.eks. IP-adresse, logger) for"
+" å hindre misbruk."
+
+#: templates/privacy.html:30
 msgid "How we use it"
 msgstr "Hvordan vi bruker det"
 
-#: templates/privacy.html:28
+#: templates/privacy.html:32
 msgid "To operate the service and match requests with volunteers."
 msgstr "For å betjene tjenesten og matche forespørsler med frivillige."
 
-#: templates/privacy.html:29
-msgid "To communicate about your request (updates, messages, notifications)."
-msgstr "For å kommunisere om forespørselen din (oppdateringer, meldinger, varsler)."
-
-#: templates/privacy.html:30
-msgid "To keep the platform safe (fraud prevention, security monitoring)."
-msgstr "For å holde plattformen trygg (forebygging av svindel, sikkerhetsovervåkning)."
-
 #: templates/privacy.html:33
+msgid "To communicate about your request (updates, messages, notifications)."
+msgstr ""
+"For å kommunisere om forespørselen din (oppdateringer, meldinger, "
+"varsler)."
+
+#: templates/privacy.html:34
+msgid "To keep the platform safe (fraud prevention, security monitoring)."
+msgstr ""
+"For å holde plattformen trygg (forebygging av svindel, "
+"sikkerhetsovervåkning)."
+
+#: templates/privacy.html:37
 msgid "What we do not do"
 msgstr "Hva vi ikke gjør"
 
-#: templates/privacy.html:35
+#: templates/privacy.html:39
 msgid "We do not sell personal data."
 msgstr "Vi selger ikke personopplysninger."
 
-#: templates/privacy.html:36
+#: templates/privacy.html:40
 msgid "We do not run advertising profiling."
 msgstr "Vi kjører ikke reklameprofilering."
 
-#: templates/privacy.html:39
+#: templates/privacy.html:43
 msgid "Data retention"
 msgstr "Databevaring"
 
-#: templates/privacy.html:41
+#: templates/privacy.html:45
 msgid ""
-"We keep data only as long as needed for the service and legal obligations. You can request deletion of your account "
-"data."
+"We keep data only as long as needed for the service and legal "
+"obligations. You can request deletion of your account data."
 msgstr ""
-"Vi oppbevarer kun data så lenge det er nødvendig for tjenesten og juridiske forpliktelser. Du kan be om sletting av "
-"kontodataene dine."
+"Vi oppbevarer kun data så lenge det er nødvendig for tjenesten og "
+"juridiske forpliktelser. Du kan be om sletting av kontodataene dine."
 
-#: templates/privacy.html:44
+#: templates/privacy.html:48
 msgid "Your rights"
 msgstr "Dine rettigheter"
 
-#: templates/privacy.html:46
+#: templates/privacy.html:50
 msgid ""
-"You can request access, correction, or deletion of your personal data. You can also object to certain processing "
-"where applicable."
+"You can request access, correction, or deletion of your personal data. "
+"You can also object to certain processing where applicable."
 msgstr ""
-"Du kan be om tilgang, rettelse eller sletting av dine personopplysninger. Du kan også motsette deg visse behandlinger"
-" der det er relevant."
+"Du kan be om tilgang, rettelse eller sletting av dine personopplysninger."
+" Du kan også motsette deg visse behandlinger der det er relevant."
 
-#: templates/privacy.html:51
+#: templates/partials/navbar_public.html:7 templates/privacy.html:53
+#: templates/terms.html:41
+msgid "Contact"
+msgstr "Kontakt"
+
+#: templates/privacy.html:55
 msgid "Questions about privacy? Contact us at"
 msgstr "Spørsmål om personvern? Kontakt oss på"
 
-#: templates/professionnels.html:14
-msgid "Infrastructure sociale"
+#: templates/professionnels.html:2
+msgid "Professionnels"
 msgstr ""
 
-#: templates/professionnels.html:14
-msgid "France"
+#: templates/professionnels.html:3
+msgid ""
+"Espace professionnel HelpChain : infrastructure de coordination pour "
+"associations, structures locales et professionnels avec suivi structuré, "
+"traçabilité et pilotage opérationnel."
+msgstr ""
+
+#: templates/professionnels.html:4
+msgid "Professionnels | HelpChain"
+msgstr ""
+
+#: templates/professionnels.html:6
+msgid "Preview image for the HelpChain professionals page"
 msgstr ""
 
 #: templates/professionnels.html:18
-msgid "Infrastructure numerique de coordination - pour associations et professionnels"
+msgid "Infrastructure sociale"
+msgstr ""
+
+#: templates/professionnels.html:18
+msgid "France"
 msgstr ""
 
 #: templates/professionnels.html:22
-msgid "Centralisez les demandes, attribuez les dossiers et pilotez chaque action"
+msgid "Infrastructure numérique pour la coordination des demandes sociales"
 msgstr ""
 
-#: templates/professionnels.html:23
-msgid "dans un cadre structuré, sécurisé et traçable."
-msgstr ""
-
-#: templates/professionnels.html:28
-msgid "Demander un accès professionnel — phase pilote"
+#: templates/professionnels.html:26
+msgid ""
+"Centralisez les demandes, attribuez les dossiers et pilotez chaque action"
+" dans un cadre structuré, sécurisé et traçable."
 msgstr ""
 
 #: templates/professionnels.html:31
-msgid "Voir comment ca marche"
+msgid "Demander un accès professionnel — phase pilote"
 msgstr ""
 
-#: templates/professionnels.html:36
-msgid "Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable."
+#: templates/professionnels.html:34
+msgid "Voir comment ça marche"
 msgstr ""
 
 #: templates/professionnels.html:39
+msgid ""
+"Phase pilote : accès validé manuellement afin de garantir un réseau "
+"structuré et fiable."
+msgstr ""
+
+#: templates/professionnels.html:42
 msgid "Conçu pour les associations et réseaux professionnels opérant en France."
 msgstr ""
 
-#: templates/professionnels.html:52
-msgid "Pour qui ?"
+#: templates/professionnels_pilote.html:2
+msgid "Phase pilote | Professionnels — HelpChain"
 msgstr ""
 
-#: templates/professionnels.html:55
-msgid "Une infrastructure conçue pour structurer la coordination entre acteurs locaux et professionnels qualifiés."
+#: templates/professionnels_pilote.html:12
+msgid "Phase pilote — Professionnels"
 msgstr ""
 
-#: templates/professionnels.html:62
-msgid "Associations & structures locales"
-msgstr ""
-
-#: templates/professionnels.html:64
-msgid "Centralisation structurée des demandes"
-msgstr ""
-
-#: templates/professionnels.html:65
-msgid "Attribution claire des responsables"
-msgstr ""
-
-#: templates/professionnels.html:66
-msgid "Suivi par statut avec historique complet"
-msgstr ""
-
-#: templates/professionnels.html:67
-msgid "Réduction des canaux informels"
-msgstr ""
-
-#: templates/professionnels.html:68
-msgid "Visibilité opérationnelle sur l’activité et les délais"
-msgstr ""
-
-#: templates/professionnels.html:75
-msgid "Professionnels partenaires"
-msgstr ""
-
-#: templates/professionnels.html:77
-msgid "Dossiers structurés et contextualisés"
-msgstr ""
-
-#: templates/professionnels.html:78
-msgid "Qualification préalable des demandes"
-msgstr ""
-
-#: templates/professionnels.html:79
-msgid "Cadre opérationnel clair (nouvelle -> en cours -> résolue)"
-msgstr ""
-
-#: templates/professionnels.html:80
-msgid "Traçabilité complète des actions"
-msgstr ""
-
-#: templates/professionnels.html:81
-msgid "Respect du temps et des priorités professionnelles"
-msgstr ""
-
-#: templates/professionnels.html:90
-msgid "HelpChain n’est pas une plateforme d’annonces."
-msgstr ""
-
-#: templates/professionnels.html:93
-msgid "C’est une infrastructure de coordination structurée."
-msgstr ""
-
-#: templates/professionnels.html:105
-msgid "Comment fonctionne HelpChain"
-msgstr ""
-
-#: templates/professionnels.html:113
-msgid "Entree structuree"
-msgstr ""
-
-#: templates/professionnels.html:115
-msgid "Une situation humaine devient un dossier exploitable :"
-msgstr ""
-
-#: templates/professionnels.html:116
-msgid "categorie, localisation, contexte."
-msgstr ""
-
-#: templates/professionnels.html:124
-msgid "Qualification & tri"
-msgstr ""
-
-#: templates/professionnels.html:126
-msgid "Infos cles verifiees. Reduction du bruit."
-msgstr ""
-
-#: templates/professionnels.html:127
-msgid "Protection du temps des equipes."
-msgstr ""
-
-#: templates/professionnels.html:135
-msgid "Matching cible"
-msgstr ""
-
-#: templates/professionnels.html:137
-msgid "La bonne demande au bon moment :"
-msgstr ""
-
-#: templates/professionnels.html:138
-msgid "pertinence, localisation, tracabilite."
-msgstr ""
-
-#: templates/professionnels.html:146
-msgid "Suivi & cloture"
-msgstr ""
-
-#: templates/professionnels.html:148
-msgid "Historique complet, statut clair,"
-msgstr ""
-
-#: templates/professionnels.html:149
-msgid "coordination mesurable."
-msgstr ""
-
-#: templates/professionnels.html:165
-msgid "Sécurité & conformité (RGPD)"
-msgstr ""
-
-#: templates/professionnels.html:168
+#: templates/professionnels_pilote.html:14
+#: templates/professionnels_pilote.html:31
 msgid ""
-"La protection des données, la gouvernance des accès et la traçabilité des actions constituent le socle de "
-"l’infrastructure."
+"Inscription gratuite pendant la phase pilote. On vous recontacte "
+"rapidement."
 msgstr ""
 
-#: templates/professionnels.html:174
-msgid "Accès sécurisé et contrôle des rôles"
+#: templates/professionnels_pilote.html:30
+#: templates/professionnels_pilote.html:79
+msgid "Rejoindre le pilote"
 msgstr ""
 
-#: templates/professionnels.html:175
-msgid "Journalisation complète des actions"
+#: templates/professionnels_pilote.html:38
+msgid "Votre métier"
 msgstr ""
 
-#: templates/professionnels.html:181
-msgid "Données minimisées et usage encadré (RGPD)"
+#: templates/professionnels_pilote.html:39
+msgid "Psychologue, avocat, médecin, assistant social..."
 msgstr ""
 
-#: templates/professionnels.html:182
-msgid "Hébergement conforme aux standards européens"
+#: templates/professionnels_pilote.html:43
+#, fuzzy
+msgid "E-mail"
+msgstr "Detaljer"
+
+#: templates/professionnels_pilote.html:49
+msgid "Nom (optionnel)"
 msgstr ""
 
-#: templates/professionnels.html:195
-msgid "Rejoindre la phase pilote"
+#: templates/professionnels_pilote.html:50
+msgid "Nom Prénom"
 msgstr ""
 
-#: templates/professionnels.html:197
-msgid "L'acces est valide manuellement afin de garantir un environnement structure,"
+#: templates/professionnels_pilote.html:53
+msgid "Téléphone (optionnel)"
 msgstr ""
 
-#: templates/professionnels.html:198
-msgid "securise et utile."
+#: templates/professionnels_pilote.html:54
+msgid "+33..."
 msgstr ""
 
-#: templates/professionnels.html:202
-msgid "Demander un acces professionnel"
+#: templates/professionnels_pilote.html:60
+msgid "Ville / zone (optionnel)"
+msgstr ""
+
+#: templates/professionnels_pilote.html:61
+msgid "Paris, Boulogne-Billancourt..."
+msgstr ""
+
+#: templates/professionnels_pilote.html:64
+msgid "Organisation (optionnel)"
+msgstr ""
+
+#: templates/professionnels_pilote.html:65
+msgid "Cabinet, association, structure..."
+msgstr ""
+
+#: templates/professionnels_pilote.html:70
+msgid "Disponibilité (optionnel)"
+msgstr ""
+
+#: templates/professionnels_pilote.html:71
+msgid "Ex: 2h/semaine, soirs, urgences..."
+msgstr ""
+
+#: templates/professionnels_pilote.html:75
+msgid "Message (optionnel)"
+msgstr ""
+
+#: templates/professionnels_pilote.html:76
+msgid "Type de demandes, conditions, périmètre..."
+msgstr ""
+
+#: templates/professionnels_pilote.html:82
+msgid "Retour"
+msgstr ""
+
+#: templates/professionnels_pilote.html:86
+msgid "Données minimales"
+msgstr ""
+
+#: templates/professionnels_pilote.html:86
+msgid "Pas de spam."
+msgstr ""
+
+#: templates/professionnels_pilote_thanks.html:2
+msgid "Thank you — Pilot phase"
+msgstr ""
+
+#: templates/professionnels_pilote_thanks.html:7
+msgid "Thank you"
+msgstr ""
+
+#: templates/professionnels_pilote_thanks.html:9
+msgid ""
+"Your request has been registered successfully. We will contact you "
+"shortly."
+msgstr ""
+
+#: templates/professionnels_pilote_thanks.html:12
+msgid "Reference:"
 msgstr ""
 
 #: templates/profile_requester.html:9
@@ -1771,7 +3812,7 @@ msgstr ""
 msgid "Account"
 msgstr ""
 
-#: templates/profile_requester.html:35
+#: templates/admin/roles.html:27 templates/profile_requester.html:35
 msgid "Role"
 msgstr ""
 
@@ -1779,7 +3820,8 @@ msgstr ""
 msgid "Session for"
 msgstr ""
 
-#: templates/profile_requester.html:41
+#: templates/admin/roles.html:26 templates/profile_requester.html:41
+#: templates/submit_request.html:117
 msgid "Email"
 msgstr ""
 
@@ -1790,6 +3832,19 @@ msgstr "Send en forespørsel"
 #: templates/profile_requester.html:72
 msgid "Not assigned yet. Someone will take it soon."
 msgstr ""
+
+#: templates/request_category.html:3 templates/request_category.html:7
+msgid "Orientation des demandes"
+msgstr ""
+
+#: templates/request_category.html:11
+msgid "Catégorie introuvable"
+msgstr ""
+
+#: templates/request_category.html:18 templates/submit_request.html:137
+#, fuzzy
+msgid "Catégorie"
+msgstr "Kategorier"
 
 #: templates/search_results.html:22
 msgid "Type a keyword to search across requests, categories and professionals."
@@ -1820,19 +3875,15 @@ msgid "Décrivez votre situation — on s’occupe du reste."
 msgstr ""
 
 #: templates/submit_request.html:42
-msgid "Примери:"
-msgstr ""
-
-#: templates/submit_request.html:44 templates/submit_request.html:140
-msgid "Медицинска помощ"
+msgid "Exemples :"
 msgstr ""
 
 #: templates/submit_request.html:45 templates/submit_request.html:141
-msgid "Социална подкрепа"
+msgid "Soutien social"
 msgstr ""
 
 #: templates/submit_request.html:46 templates/submit_request.html:142
-msgid "Технически проблем"
+msgid "Problème technique"
 msgstr ""
 
 #: templates/submit_request.html:56
@@ -1860,15 +3911,19 @@ msgid "En cas d’urgence, votre demande est priorisée"
 msgstr ""
 
 #: templates/submit_request.html:88
-msgid "Вашето име"
+msgid "Votre nom"
 msgstr ""
 
 #: templates/submit_request.html:96
-msgid "Напр. Мария Иванова"
+msgid "Ex. Maria Ivanova"
 msgstr ""
 
 #: templates/submit_request.html:99
-msgid "Поне 2 символа."
+msgid "Au moins 2 caractères."
+msgstr ""
+
+#: templates/submit_request.html:103
+msgid "Téléphone"
 msgstr ""
 
 #: templates/submit_request.html:112
@@ -1879,91 +3934,89 @@ msgstr ""
 msgid "Ajoutez un téléphone ou un email — pour qu’on puisse vous recontacter."
 msgstr ""
 
-#: templates/submit_request.html:137
-msgid "Категория"
-msgstr ""
-
 #: templates/submit_request.html:139
-msgid "Избери…"
+msgid "Choisir…"
 msgstr ""
 
-#: templates/submit_request.html:143 templates/volunteer_dashboard.html:644
-msgid "Административна помощ"
-msgstr ""
-
-#: templates/submit_request.html:144
-msgid "Друго"
+#: templates/submit_request.html:143
+msgid "Aide administrative"
 msgstr ""
 
 #: templates/submit_request.html:146
-msgid "Ако не избереш, системата ще запише “general”."
+msgid "Si vous ne choisissez pas, la catégorie “general” sera utilisée."
 msgstr ""
 
 #: templates/submit_request.html:150
-msgid "Спешност"
+msgid "Urgence"
 msgstr ""
 
 #: templates/submit_request.html:152
-msgid "Ниска"
-msgstr ""
+#, fuzzy
+msgid "Faible"
+msgstr "Lagret filter"
 
 #: templates/submit_request.html:153
-msgid "Нормална"
+msgid "Normale"
 msgstr ""
 
 #: templates/submit_request.html:154
-msgid "Спешна"
+msgid "Urgente"
 msgstr ""
 
 #: templates/submit_request.html:155
-msgid "Критична"
+msgid "Critique"
 msgstr ""
 
 #: templates/submit_request.html:157
-msgid "Това влияе на приоритета (low/medium/high)."
+msgid "Ce choix influence la priorité (low/medium/high)."
 msgstr ""
 
 #: templates/submit_request.html:161
-msgid "Кратко заглавие (по избор)"
+msgid "Titre court (optionnel)"
 msgstr ""
 
 #: templates/submit_request.html:170
-msgid "Напр. Нужен придружител до лекар"
+msgid "Ex. Accompagnement chez le médecin"
 msgstr ""
 
 #: templates/submit_request.html:172
-msgid "Ако оставиш празно, системата ще го попълни автоматично."
+msgid "Si vide, le système le complétera automatiquement."
 msgstr ""
 
 #: templates/submit_request.html:177
-msgid "Локация / адрес"
+msgid "Localisation / adresse"
 msgstr ""
 
 #: templates/submit_request.html:185
-msgid "Град, квартал (без точен адрес, ако не е нужно)"
+msgid "Ville, quartier (sans adresse exacte si inutile)"
+msgstr ""
+
+#: templates/submit_request.html:190
+msgid "Description"
 msgstr ""
 
 #: templates/submit_request.html:199
-msgid "Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
+msgid "Décrivez en 2–3 phrases la situation et l’aide recherchée."
 msgstr ""
 
 #: templates/submit_request.html:201
-msgid "Минимум 10 символа."
+msgid "Minimum 10 caractères."
 msgstr ""
 
 #: templates/submit_request.html:217
-msgid "I agree to the Privacy Policy (GDPR)."
+msgid "J’accepte la Politique de confidentialité (RGPD)."
 msgstr ""
 
 #: templates/submit_request.html:223
-msgid "Отказ"
+msgid "Annuler"
 msgstr ""
 
 #: templates/submit_request.html:224
-msgid "Изпрати заявка"
+msgid "Envoyer la demande"
 msgstr ""
 
-#: templates/submit_request_check_email.html:3 templates/submit_request_check_email.html:9
+#: templates/submit_request_check_email.html:3
+#: templates/submit_request_check_email.html:9
 msgid "Проверете имейла си"
 msgstr ""
 
@@ -1987,7 +4040,8 @@ msgstr ""
 msgid "Проверете и папките Spam/Promotions."
 msgstr ""
 
-#: templates/submit_request_check_email.html:55 templates/submit_request_check_email.html:140
+#: templates/submit_request_check_email.html:55
+#: templates/submit_request_check_email.html:140
 msgid "Изпрати отново"
 msgstr ""
 
@@ -2004,8 +4058,9 @@ msgid "Сгреших имейла / Подай заявката отново"
 msgstr ""
 
 #: templates/submit_request_check_email.html:121
-msgid "Копирано ✅"
-msgstr ""
+#, fuzzy
+msgid "Копирано "
+msgstr "Описание"
 
 #: templates/submit_request_check_email.html:126
 msgid "Не успях да копирам. Опитай ръчно."
@@ -2019,118 +4074,251 @@ msgstr ""
 msgid "Изпращане..."
 msgstr ""
 
-#: templates/terms.html:2 templates/terms.html:7
+#: templates/terms.html:2 templates/terms.html:11
 msgid "Terms of service"
 msgstr "Tjenestevilkår"
 
-#: templates/terms.html:14
+#: templates/terms.html:3
 msgid ""
-"HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic "
-"rules to keep everyone safe."
+"Terms of service for HelpChain: platform usage rules, safety principles, "
+"liability information, and contact details."
 msgstr ""
-"Hjelp Kjede hjelper mennesker som trenger hjelp med frivillige. Ved å bruke plattformen, samtykker du i å følge disse"
-" grunnleggende reglene for å holde alle trygge."
 
-#: templates/terms.html:19
+#: templates/terms.html:4
+#, fuzzy
+msgid "Terms of service | HelpChain"
+msgstr "Tjenestevilkår"
+
+#: templates/terms.html:6
+msgid "Preview image for the HelpChain terms of service page"
+msgstr ""
+
+#: templates/terms.html:18
+msgid ""
+"HelpChain helps connect people who need help with volunteers. By using "
+"the platform, you agree to follow these basic rules to keep everyone "
+"safe."
+msgstr ""
+"Hjelp Kjede hjelper mennesker som trenger hjelp med frivillige. Ved å "
+"bruke plattformen, samtykker du i å følge disse grunnleggende reglene for"
+" å holde alle trygge."
+
+#: templates/terms.html:23
 msgid "Use of the platform"
 msgstr "Bruk av plattformen"
 
-#: templates/terms.html:21
+#: templates/terms.html:25
 msgid "Provide accurate information and use respectful language."
 msgstr "Gi nøyaktig informasjon og bruk respektfullt språk."
 
-#: templates/terms.html:22
+#: templates/terms.html:26
 msgid "Do not post illegal, harmful, or abusive content."
 msgstr "Ikke legg ut ulovlig, skadelig eller støtende innhold."
 
-#: templates/terms.html:23
+#: templates/terms.html:27
 msgid "Do not impersonate others or misrepresent your identity."
 msgstr "Ikke identifiser andre eller feilrepresenter din identitet."
 
-#: templates/terms.html:26
+#: templates/terms.html:30
 msgid "Safety"
 msgstr "Sikkerhet"
 
-#: templates/terms.html:28
-msgid ""
-"HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency "
-"services."
-msgstr "HelpChain er en tilkoblingsplattform, ikke en nødtjeneste. Hvis det er fare umiddelbart, kontakt lokale nødtjenester."
-
-#: templates/terms.html:29
-msgid "We may limit or suspend accounts to prevent abuse or protect the community."
-msgstr "Vi kan begrense eller suspendere kontoene for å hindre misbruk eller beskytte samfunnet."
-
 #: templates/terms.html:32
+msgid ""
+"HelpChain is a connection platform, not an emergency service. If there is"
+" immediate danger, contact local emergency services."
+msgstr ""
+"HelpChain er en tilkoblingsplattform, ikke en nødtjeneste. Hvis det er "
+"fare umiddelbart, kontakt lokale nødtjenester."
+
+#: templates/terms.html:33
+msgid ""
+"We may limit or suspend accounts to prevent abuse or protect the "
+"community."
+msgstr ""
+"Vi kan begrense eller suspendere kontoene for å hindre misbruk eller "
+"beskytte samfunnet."
+
+#: templates/terms.html:36
 msgid "Liability"
 msgstr "Ansvar"
 
-#: templates/terms.html:34
+#: templates/terms.html:38
 msgid ""
-"Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions "
-"taken by users. We encourage safe, transparent communication and caution when sharing personal details."
+"Volunteering involves human interactions. HelpChain cannot guarantee "
+"outcomes and is not responsible for actions taken by users. We encourage "
+"safe, transparent communication and caution when sharing personal "
+"details."
 msgstr ""
-"Frivillig arbeid innebærer menneskelig interaksjon. Hjelp Kjede kan ikke garantere resultater og er ikke ansvarlig "
-"for handlinger som tas av brukerne. Vi oppfordrer til trygg, gjennomsiktig kommunikasjon og forsiktighet når vi deler"
-" personlige detaljer."
+"Frivillig arbeid innebærer menneskelig interaksjon. Hjelp Kjede kan ikke "
+"garantere resultater og er ikke ansvarlig for handlinger som tas av "
+"brukerne. Vi oppfordrer til trygg, gjennomsiktig kommunikasjon og "
+"forsiktighet når vi deler personlige detaljer."
 
-#: templates/terms.html:39
+#: templates/terms.html:43
 msgid "Questions about these terms? Contact us at"
 msgstr "Spørsmål om disse vilkårene? Kontakt oss på"
+
+#: templates/vision_europeenne.html:3
+msgid ""
+"Vision à long terme de HelpChain et perspective de coopération solidaire "
+"à l’échelle européenne, ancrée dans les territoires."
+msgstr ""
+
+#: templates/vision_europeenne.html:6
+msgid "Aperçu de la page Projet et Vision européenne"
+msgstr ""
+
+#: templates/vision_europeenne.html:16
+msgid ""
+"La plateforme est conçue pour soutenir l’organisation et la coopération "
+"entre différents acteurs impliqués dans des actions d’entraide."
+msgstr ""
+
+#: templates/vision_europeenne.html:22
+msgid "SECTION 1 — Un projet ancré dans les territoires"
+msgstr ""
+
+#: templates/vision_europeenne.html:24
+msgid ""
+"HelpChain se développe progressivement en s’appuyant sur les initiatives "
+"locales."
+msgstr ""
+
+#: templates/vision_europeenne.html:27
+msgid ""
+"Les collectivités, associations et bénévoles jouent un rôle essentiel "
+"dans la mise en œuvre d’actions de solidarité au niveau territorial."
+msgstr ""
+
+#: templates/vision_europeenne.html:30
+msgid ""
+"La plateforme vise à soutenir ces initiatives en facilitant la "
+"coordination et la circulation de l’information."
+msgstr ""
+
+#: templates/vision_europeenne.html:37
+msgid "SECTION 2 — Favoriser la coopération"
+msgstr ""
+
+#: templates/vision_europeenne.html:39
+msgid ""
+"La coopération entre acteurs locaux constitue un élément clé pour "
+"répondre à certaines situations sociales."
+msgstr ""
+
+#: templates/vision_europeenne.html:42
+msgid ""
+"HelpChain cherche à faciliter cette coopération en proposant un outil "
+"numérique simple permettant de coordonner les actions et de mieux suivre "
+"certaines situations."
+msgstr ""
+
+#: templates/vision_europeenne.html:49
+msgid "SECTION 3 — Une perspective européenne"
+msgstr ""
+
+#: templates/vision_europeenne.html:51
+msgid "De nombreuses initiatives de solidarité existent à travers l’Europe."
+msgstr ""
+
+#: templates/vision_europeenne.html:54
+msgid ""
+"La vision du projet HelpChain est de contribuer à renforcer la "
+"coopération entre ces initiatives et à faciliter le partage d’expériences"
+" et de bonnes pratiques."
+msgstr ""
+
+#: templates/vision_europeenne.html:57
+msgid ""
+"La plateforme s’inscrit dans une perspective d’évolution progressive vers"
+" une collaboration plus large entre acteurs européens."
+msgstr ""
+
+#: templates/vision_europeenne.html:64
+msgid "SECTION 4 — Innovation sociale et numérique"
+msgstr ""
+
+#: templates/vision_europeenne.html:66
+msgid ""
+"HelpChain s’inscrit dans une démarche d’innovation sociale en utilisant "
+"des outils numériques pour améliorer l’organisation des actions de "
+"solidarité."
+msgstr ""
+
+#: templates/vision_europeenne.html:69
+msgid ""
+"L’objectif est de proposer des solutions simples et accessibles "
+"permettant de soutenir les initiatives locales et la coopération entre "
+"les différents acteurs."
+msgstr ""
+
+#: templates/vision_europeenne.html:78
+msgid ""
+"HelpChain vise à soutenir la coopération entre citoyens, bénévoles, "
+"associations et structures publiques."
+msgstr ""
+
+#: templates/vision_europeenne.html:81
+msgid ""
+"La plateforme ambitionne de contribuer, à long terme, au développement "
+"d’outils numériques favorisant la solidarité et la coopération à "
+"l’échelle européenne."
+msgstr ""
 
 #: templates/volunteer_confirmation.html:2
 msgid "Кандидатурата е получена"
 msgstr "Кандидатурата е получена"
 
-#: templates/volunteer_confirmation.html:11
+#: templates/volunteer_confirmation.html:9
 msgid "Благодарим ти"
 msgstr ""
 
-#: templates/volunteer_confirmation.html:14
+#: templates/volunteer_confirmation.html:12
 msgid "Получихме твоята кандидатура за доброволец."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:15
+#: templates/volunteer_confirmation.html:13
 msgid "Нищо не си задължен/длъжна на този етап."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:19
+#: templates/volunteer_confirmation.html:17
 msgid "Какво следва"
 msgstr ""
 
-#: templates/volunteer_confirmation.html:21
+#: templates/volunteer_confirmation.html:19
 msgid "Преглеждаме информацията ти."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:22
+#: templates/volunteer_confirmation.html:20
 msgid "При подходящи заявки ще можеш да избереш дали да се включиш."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:23
+#: templates/volunteer_confirmation.html:21
 msgid "Ако решиш - ще се свържеш директно с човека в нужда."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:27
+#: templates/volunteer_confirmation.html:25
 msgid "Няма автоматично включване."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:27
+#: templates/volunteer_confirmation.html:25
 msgid "Ти контролираш ангажимента си."
 msgstr ""
 
-#: templates/volunteer_confirmation.html:33
+#: templates/volunteer_confirmation.html:31
 msgid "Към началната страница"
 msgstr ""
 
-#: templates/volunteer_confirmation.html:37
+#: templates/volunteer_confirmation.html:35
 msgid "Как работи HelpChain →"
 msgstr ""
 
-#: templates/volunteer_confirmation.html:42
+#: templates/volunteer_confirmation.html:40
 msgid "Важно:"
 msgstr ""
 
-#: templates/volunteer_confirmation.html:42
+#: templates/volunteer_confirmation.html:40
 msgid "HelpChain не е платформа за спешни случаи и не замества институции."
 msgstr ""
 
@@ -2140,9 +4328,11 @@ msgstr "Min dashboard"
 
 #: templates/volunteer_dashboard.html:18
 msgid ""
-"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти "
-"решаваш</strong>."
-msgstr "Her ser du forespørsler som passer til profilen din. Ingenting tas automatisk - du bestemmer."
+"Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не "
+"се поема автоматично — <strong>ти решаваш</strong>."
+msgstr ""
+"Her ser du forespørsler som passer til profilen din. Ingenting tas "
+"automatisk - du bestemmer."
 
 #: templates/volunteer_dashboard.html:124
 msgid "Recommended for you"
@@ -2164,19 +4354,23 @@ msgstr ""
 msgid "Min match"
 msgstr ""
 
-#: templates/admin/requests.html:204 templates/components/match_card.html:60 templates/volunteer_dashboard.html:146
+#: templates/admin/requests.html:319 templates/components/match_card.html:60
+#: templates/volunteer_dashboard.html:146
 msgid "Priority"
 msgstr "Prioritet"
 
+#: templates/admin/audit.html:23 templates/admin/requests.html:30
 #: templates/volunteer_dashboard.html:148
 msgid "All"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:149 templates/volunteer_dashboard.html:174
+#: templates/volunteer_dashboard.html:149
+#: templates/volunteer_dashboard.html:174
 msgid "Urgent only"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:150 templates/volunteer_dashboard.html:176
+#: templates/volunteer_dashboard.html:150
+#: templates/volunteer_dashboard.html:176
 msgid "High+"
 msgstr ""
 
@@ -2192,7 +4386,7 @@ msgstr ""
 msgid "Enable location in profile to use Near me."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:164
+#: templates/admin/requests.html:255 templates/volunteer_dashboard.html:164
 msgid "Apply filters"
 msgstr ""
 
@@ -2209,340 +4403,437 @@ msgstr ""
 msgid "Improve your profile to unlock stronger matches."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:199
+#: templates/volunteer_dashboard.html:198
 msgid "Help us match you better"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:200
-msgid "Add your location and a few skills. Then you will start seeing high-confidence matches."
+#: templates/volunteer_dashboard.html:199
+msgid ""
+"Add your location and a few skills. Then you will start seeing high-"
+"confidence matches."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:203
+#: templates/volunteer_dashboard.html:202
 msgid "Profile completeness"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:213
+#: templates/volunteer_dashboard.html:212
 msgid "Update my profile"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:218
+#: templates/volunteer_dashboard.html:216
 msgid "No strong matches yet"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:219
+#: templates/volunteer_dashboard.html:217
 msgid "Add more specific skills or enable location to improve matching."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:222
+#: templates/volunteer_dashboard.html:220
 #, python-format
 msgid "Try 50%%"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:224
+#: templates/volunteer_dashboard.html:222
 msgid "Improve my profile"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:256
+#: templates/volunteer_dashboard.html:254
 msgid "Показваме само липсващото, за да станеш готов за свързване."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:263 templates/volunteer_dashboard.html:269
+#: templates/volunteer_dashboard.html:261
+#: templates/volunteer_dashboard.html:267
 msgid "не е зададена"
 msgstr "ikke satt"
 
-#: templates/volunteer_dashboard.html:277
+#: templates/volunteer_dashboard.html:275
 msgid "Попълни профила"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:280
+#: templates/volunteer_dashboard.html:278
 msgid "Профилът е готов"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:282
+#: templates/volunteer_dashboard.html:280
 msgid "Ако искаш, можеш да обновиш наличност или умения по-късно."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:285
+#: templates/volunteer_dashboard.html:283
 msgid "Редактирай профила"
 msgstr "Rediger profil"
 
-#: templates/volunteer_dashboard.html:291
+#: templates/volunteer_dashboard.html:289
 msgid "по избор"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:300
+#: templates/volunteer_dashboard.html:298
 msgid "All active requests"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:302
+#: templates/volunteer_dashboard.html:300
 msgid "Open requests ordered by freshness."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:305
-msgid "This list is not personalized. Use the section above for intelligent matching."
+#: templates/volunteer_dashboard.html:303
+msgid ""
+"This list is not personalized. Use the section above for intelligent "
+"matching."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:312 templates/volunteer_dashboard.html:711
-msgid "Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."
-msgstr "Dette er en invitasjon, ikke en forpliktelse. Du kan lese detaljene og bestemme."
+#: templates/volunteer_dashboard.html:310
+#: templates/volunteer_dashboard.html:708
+msgid ""
+"Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да "
+"решиш."
+msgstr ""
+"Dette er en invitasjon, ikke en forpliktelse. Du kan lese detaljene og "
+"bestemme."
 
-#: templates/volunteer_dashboard.html:328 templates/volunteer_request_details.html:82
+#: templates/volunteer_dashboard.html:326
+#: templates/volunteer_request_details.html:82
 msgid "Завършено"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:331 templates/volunteer_request_details.html:84
+#: templates/volunteer_dashboard.html:329
+#: templates/volunteer_request_details.html:84
 msgid "Отказано"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:337 templates/volunteer_request_details.html:86
+#: templates/volunteer_dashboard.html:335
+#: templates/volunteer_request_details.html:86
 msgid "Нова"
 msgstr "Ny"
 
-#: templates/volunteer_dashboard.html:342
+#: templates/volunteer_dashboard.html:340
 msgid "Assigned to you"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:345 templates/volunteer_request_details.html:93
+#: templates/volunteer_dashboard.html:343
+#: templates/volunteer_request_details.html:93
 msgid "Одобрен/а"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:348 templates/volunteer_dashboard.html:431 templates/volunteer_dashboard.html:554
-#: templates/volunteer_dashboard.html:697 templates/volunteer_request_details.html:97
+#: templates/volunteer_dashboard.html:346
+#: templates/volunteer_dashboard.html:429
+#: templates/volunteer_dashboard.html:551
+#: templates/volunteer_dashboard.html:694
+#: templates/volunteer_request_details.html:97
 msgid "В изчакване"
 msgstr "Venter"
 
-#: templates/volunteer_dashboard.html:351 templates/volunteer_request_details.html:95
+#: templates/volunteer_dashboard.html:349
+#: templates/volunteer_request_details.html:95
 msgid "Отхвърлен/а"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:361
+#: templates/volunteer_dashboard.html:359
 msgid "Нова заявка"
 msgstr "Ny forespørsel"
 
-#: templates/volunteer_dashboard.html:372
+#: templates/volunteer_dashboard.html:370
 msgid "Assigned to you. Next action: open details."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:374
+#: templates/volunteer_dashboard.html:372
 msgid "В изчакване — ще получиш известие при потвърждение."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:387
+#: templates/volunteer_dashboard.html:385
 msgid "Благодарим! Заявката е маркирана като приключена."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:389
+#: templates/volunteer_dashboard.html:387
 msgid "Assigned to you. Next action: click “View details”."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:391
+#: templates/volunteer_dashboard.html:389
 msgid "Одобрен/а си. Отвори заявката за контакт и следващи стъпки."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:393
+#: templates/volunteer_dashboard.html:391
 msgid "Тази заявка вече е поета. Виж други активни заявки."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:395
+#: templates/volunteer_dashboard.html:393
 msgid "Администратор преглежда интереса ти. Ще получиш известие."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:397
+#: templates/volunteer_dashboard.html:395
 msgid "Натисни “Искам да помогна”, за да поискаш достъп."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:408 templates/volunteer_dashboard.html:511 templates/volunteer_dashboard.html:722
+#: templates/volunteer_dashboard.html:406
+#: templates/volunteer_dashboard.html:508
+#: templates/volunteer_dashboard.html:719
 #, python-format
 msgid "Виждаш тази заявка, защото съвпада с профила ти в %(loc)s"
-msgstr "Du ser denne forespørselen fordi den passer til profilen din i   %(loc)s   "
+msgstr ""
+"Du ser denne forespørselen fordi den passer til profilen din i   %(loc)s"
+"   "
 
-#: templates/volunteer_dashboard.html:410 templates/volunteer_dashboard.html:513 templates/volunteer_dashboard.html:722
+#: templates/volunteer_dashboard.html:408
+#: templates/volunteer_dashboard.html:510
+#: templates/volunteer_dashboard.html:719
 msgid "Виждаш тази заявка, защото съвпада с профила ти"
 msgstr "Du ser denne forespørselen fordi den passer til profilen din."
 
-#: templates/volunteer_dashboard.html:418 templates/volunteer_dashboard.html:428
+#: templates/volunteer_dashboard.html:416
+#: templates/volunteer_dashboard.html:426
 msgid "Виж други активни заявки"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:423 templates/volunteer_dashboard.html:655 templates/volunteer_dashboard.html:709
+#: templates/volunteer_dashboard.html:421
+#: templates/volunteer_dashboard.html:652
+#: templates/volunteer_dashboard.html:706
 msgid "Виж детайли"
 msgstr "Se detaljer"
 
-#: templates/volunteer_dashboard.html:437
+#: templates/volunteer_dashboard.html:435
 msgid "Искам да помогна"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:467
+#: templates/volunteer_dashboard.html:465
 msgid "Това изпраща сигнал към админите."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:471
+#: templates/volunteer_dashboard.html:469
 msgid "Нищо не се поема автоматично."
 msgstr "Ingenting blir tatt automatisk."
 
-#: templates/volunteer_dashboard.html:479
+#: templates/volunteer_dashboard.html:476
 msgid "Няма активни заявки в момента"
 msgstr "Ingen aktive henvendelser akkurat nå"
 
-#: templates/volunteer_dashboard.html:484
+#: templates/volunteer_dashboard.html:481
 msgid "По-точна локация + 2–3 умения = по-бърз match."
 msgstr "Mer nøyaktig plassering + 2–3 ferdigheter = raskere match."
 
-#: templates/volunteer_dashboard.html:487
+#: templates/volunteer_dashboard.html:484
 msgid "Виж пример"
 msgstr "Se et eksempel"
 
-#: templates/volunteer_dashboard.html:489
+#: templates/volunteer_dashboard.html:486
 msgid "Това е само пример — реалните заявки ще се покажат автоматично."
 msgstr "Dette er bare en prøve - ekte forespørsler vil vises automatisk."
 
-#: templates/volunteer_dashboard.html:495 templates/volunteer_dashboard.html:704
+#: templates/volunteer_dashboard.html:492
+#: templates/volunteer_dashboard.html:701
 msgid "Примерна заявка"
 msgstr "Prøveforespørsel"
 
-#: templates/volunteer_dashboard.html:499 templates/volunteer_dashboard.html:705
+#: templates/volunteer_dashboard.html:496
+#: templates/volunteer_dashboard.html:702
 msgid "току-що"
 msgstr "Akkurat nå"
 
-#: templates/volunteer_dashboard.html:502 templates/volunteer_dashboard.html:706
+#: templates/volunteer_dashboard.html:499
+#: templates/volunteer_dashboard.html:703
 msgid "Пример (демо)"
 msgstr "Prøve (demo)"
 
-#: templates/volunteer_dashboard.html:506 templates/volunteer_dashboard.html:707
+#: templates/volunteer_dashboard.html:503
+#: templates/volunteer_dashboard.html:704
 msgid "Току-що се появи. Провери дали ти е удобно."
 msgstr "Bare dukket opp. Sjekk om det passer deg."
 
-#: templates/volunteer_dashboard.html:508 templates/volunteer_dashboard.html:708
+#: templates/volunteer_dashboard.html:505
+#: templates/volunteer_dashboard.html:705
 msgid "Човек търси помощ за документи и насоки къде да ги подаде."
 msgstr "Noen trenger hjelp med dokumenter og hvor de skal sendes inn."
 
-#: templates/volunteer_dashboard.html:540 templates/volunteer_dashboard.html:546
+#: templates/volunteer_dashboard.html:537
+#: templates/volunteer_dashboard.html:543
 msgid "Моите заявки"
 msgstr "Mine forespørsler"
 
-#: templates/volunteer_dashboard.html:542
+#: templates/volunteer_dashboard.html:539
 msgid "Виж подадените от теб заявки и статуса им."
 msgstr "Se forespørsler du har sendt inn og deres status."
 
-#: templates/volunteer_dashboard.html:565
+#: templates/volunteer_dashboard.html:562
 msgid "Одобрени"
 msgstr "Godkjent"
 
-#: templates/volunteer_dashboard.html:576
+#: templates/volunteer_dashboard.html:573
 msgid "Отказани"
 msgstr "Avvist"
 
-#: templates/volunteer_dashboard.html:585
+#: templates/volunteer_dashboard.html:582
 msgid "Няма заявки в този статус"
 msgstr "Ingen ønsker i denne statusen"
 
-#: templates/volunteer_dashboard.html:599
+#: templates/volunteer_dashboard.html:596
 msgid "Виж"
 msgstr "Vis"
 
-#: templates/volunteer_dashboard.html:638
+#: templates/volunteer_dashboard.html:635
 msgid "Как ще изглежда заявка"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:639
+#: templates/volunteer_dashboard.html:636
 msgid "Пример, за да знаеш какво да очакваш."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:646
+#: templates/volunteer_dashboard.html:641
+msgid "Административна помощ"
+msgstr ""
+
+#: templates/volunteer_dashboard.html:643
 msgid "Онлайн"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:649
+#: templates/volunteer_dashboard.html:646
 msgid "Помощ с документи"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:651
-msgid "Човек търси помощ за попълване на документи и ориентация къде да подаде заявление."
+#: templates/volunteer_dashboard.html:648
+msgid ""
+"Човек търси помощ за попълване на документи и ориентация къде да подаде "
+"заявление."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:656 templates/volunteer_dashboard.html:710
+#: templates/volunteer_dashboard.html:653
+#: templates/volunteer_dashboard.html:707
 #: templates/volunteer_request_details.html:15
 msgid "Ще помогна"
 msgstr "Jeg hjelper"
 
-#: templates/volunteer_dashboard.html:660
-msgid "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш."
+#: templates/volunteer_dashboard.html:657
+msgid ""
+"Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да "
+"помогнеш."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:667
+#: templates/volunteer_dashboard.html:664
 msgid "Потвърди помощта"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:669
-msgid "Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично."
+#: templates/volunteer_dashboard.html:666
+msgid ""
+"Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш "
+"дали да поемеш. Нищо не се поема автоматично."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:674
+#: templates/volunteer_dashboard.html:671
 msgid "Откажи"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:677
+#: templates/volunteer_dashboard.html:674
 msgid "Да, ще помогна"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:684
+#: templates/volunteer_dashboard.html:681
 msgid "Помощта е заявена. Очаква се кратко потвърждение от екипа."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:688
+#: templates/volunteer_dashboard.html:685
 msgid "Детайлите ще се показват тук. Нищо не е изпратено автоматично."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:694
-msgid "ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
+#: templates/volunteer_dashboard.html:691
+msgid " Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:695
-msgid "Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."
+#: templates/volunteer_dashboard.html:692
+msgid ""
+"Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно"
+" решаваш."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:696
-msgid "Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично."
+#: templates/volunteer_dashboard.html:693
+msgid ""
+"Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема "
+"автоматично."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:696
+#: templates/volunteer_dashboard.html:693
 msgid "Продължаваме?"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:698
-msgid "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+#: templates/volunteer_dashboard.html:695
+#, fuzzy
+msgid " Демо: помощта е заявена. Нищо не се поема автоматично."
+msgstr "Ingenting blir tatt automatisk."
+
+#: templates/volunteer_dashboard.html:696
+msgid " Помощта е заявена. Очаква се кратко потвърждение от екипа."
 msgstr ""
+
+#: templates/volunteer_dashboard.html:697
+msgid ""
+" Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница "
+"с детайли."
+msgstr ""
+
+#: templates/volunteer_dashboard.html:698
+#, fuzzy
+msgid " НОВО"
+msgstr "Ny"
 
 #: templates/volunteer_dashboard.html:699
-msgid "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
-msgstr ""
-
-#: templates/volunteer_dashboard.html:700
-msgid "ℹ️ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."
-msgstr ""
-
-#: templates/volunteer_dashboard.html:701
-msgid "🟢 НОВО"
-msgstr ""
-
-#: templates/volunteer_dashboard.html:702
 msgid "Какво става, ако натиснеш?"
 msgstr ""
 
-#: templates/volunteer_dashboard.html:703
-msgid "Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."
+#: templates/volunteer_dashboard.html:700
+msgid ""
+"Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да"
+" поемеш. Нищо не става автоматично."
 msgstr ""
 
-#: templates/volunteer_dashboard.html:712
+#: templates/volunteer_dashboard.html:709
 msgid "Обработва се…"
+msgstr ""
+
+#: templates/volunteer_link_sent.html:2 templates/volunteer_link_sent.html:7
+#, fuzzy
+msgid "Check your email"
+msgstr "din@email.com"
+
+#: templates/volunteer_link_sent.html:9
+msgid "If this email exists, a secure link has just been sent."
+msgstr ""
+
+#: templates/volunteer_link_sent.html:10
+#, fuzzy
+msgid "No password."
+msgstr "Passord"
+
+#: templates/volunteer_link_sent.html:13
+msgid "Link valid for"
+msgstr ""
+
+#: templates/volunteer_link_sent.html:14
+msgid "Also check your spam folder"
+msgstr ""
+
+#: templates/volunteer_link_sent.html:15
+msgid "You stay in control. You can stop at any time."
+msgstr ""
+
+#: templates/volunteer_link_sent.html:26 templates/volunteer_link_sent.html:67
+#: templates/volunteer_link_sent.html:75 templates/volunteer_link_sent.html:78
+msgid "Resend link"
+msgstr ""
+
+#: templates/volunteer_link_sent.html:31
+msgid "If you do not see it within 1 minute, check Spam/Junk."
+msgstr ""
+
+#: templates/volunteer_link_sent.html:56
+msgid "Please start again from the form."
+msgstr ""
+
+#: templates/volunteer_link_sent.html:114
+msgid "Link sent again (if the address is valid)."
+msgstr ""
+
+#: templates/volunteer_link_sent.html:117
+msgid "Unable to resend right now. Please try again shortly."
 msgstr ""
 
 #: templates/volunteer_login.html:6
 msgid "Intervenant access - HelpChain"
-msgstr ""
-
-#: templates/volunteer_login.html:27
-msgid "Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe."
 msgstr ""
 
 #: templates/volunteer_login.html:51
@@ -2553,17 +4844,9 @@ msgstr "E-postadresse"
 msgid "your@email.com"
 msgstr "din@email.com"
 
-#: templates/volunteer_login.html:70
-msgid "Recevoir mon lien de connexion"
-msgstr ""
-
 #: templates/volunteer_login.html:72
 msgid "~2 min."
 msgstr "2 min."
-
-#: templates/volunteer_login.html:87
-msgid "Demander un accès intervenant"
-msgstr ""
 
 #: templates/volunteer_login.html:92
 msgid "Back to home page"
@@ -2581,19 +4864,19 @@ msgstr "Sender..."
 msgid "Unread"
 msgstr ""
 
-#: templates/volunteer_notifications.html:19
+#: templates/volunteer_notifications.html:18
 msgid "No notifications yet"
 msgstr ""
 
-#: templates/volunteer_notifications.html:20
+#: templates/volunteer_notifications.html:19
 msgid "When a request matches your profile, you'll see it here."
 msgstr ""
 
-#: templates/volunteer_notifications.html:23
+#: templates/volunteer_notifications.html:22
 msgid "View requests"
 msgstr ""
 
-#: templates/volunteer_notifications.html:64
+#: templates/volunteer_notifications.html:63
 msgid "Open request"
 msgstr ""
 
@@ -2605,8 +4888,9 @@ msgstr "Профил"
 msgid "Профил на доброволец"
 msgstr "Профил на доброволец"
 
-#: templates/volunteer_profile.html:28 templates/volunteer_profile.html:35 templates/volunteer_profile.html:41
-#: templates/volunteer_profile.html:50 templates/volunteer_profile.html:57
+#: templates/volunteer_profile.html:28 templates/volunteer_profile.html:35
+#: templates/volunteer_profile.html:41 templates/volunteer_profile.html:50
+#: templates/volunteer_profile.html:57
 msgid "Затвори"
 msgstr "Батвори"
 
@@ -2623,14 +4907,19 @@ msgid "Готовност за свързване"
 msgstr "Klar til å koble til"
 
 #: templates/volunteer_profile.html:82
-msgid "Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш."
-msgstr "Колкото по-точно е това, толкова по-качествени заявки Бе виздаз. Сио не се поема автоматично - ти резаваз."
+msgid ""
+"Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не "
+"се поема автоматично - ти решаваш."
+msgstr ""
+"Колкото по-точно е това, толкова по-качествени заявки Бе виздаз. Сио не "
+"се поема автоматично - ти резаваз."
 
 #: templates/volunteer_profile.html:88
 msgid "Локация:"
 msgstr "Рокация:"
 
-#: templates/volunteer_profile.html:89 templates/volunteer_profile.html:93 templates/volunteer_profile.html:101
+#: templates/volunteer_profile.html:89 templates/volunteer_profile.html:93
+#: templates/volunteer_profile.html:101
 msgid "Липсва"
 msgstr "Бипсва"
 
@@ -2655,16 +4944,24 @@ msgid "Попълни профила си"
 msgstr "Попилни проРила си"
 
 #: templates/volunteer_profile.html:154
-msgid "Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти."
-msgstr "Това е всичко. Когато има заявка, която пасва - Бе я видич в таблото. Ряма автоматични ангажименти."
+msgid ""
+"Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. "
+"Няма автоматични ангажименти."
+msgstr ""
+"Това е всичко. Когато има заявка, която пасва - Бе я видич в таблото. "
+"Ряма автоматични ангажименти."
 
 #: templates/volunteer_profile.html:243
 msgid "Какво да очакваш"
 msgstr "Какво да очаквач"
 
 #: templates/volunteer_profile.html:244
-msgid "HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш."
-msgstr "HjelpChain не е “чат за всичко”. Показваме ти заявки, ти резавадали да помогнеч."
+msgid ""
+"HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да "
+"помогнеш."
+msgstr ""
+"HjelpChain не е “чат за всичко”. Показваме ти заявки, ти резавадали да "
+"помогнеч."
 
 #: templates/volunteer_profile.html:248
 msgid "Няма автоматични ангажименти."
@@ -2686,7 +4983,8 @@ msgstr "Свет:"
 msgid "Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо."
 msgstr "око добавия точна локация + 2-3 умения, Сансзт за match се вдига осезамо."
 
-#: templates/volunteer_request_details.html:2 templates/volunteer_request_details.html:28
+#: templates/volunteer_request_details.html:2
+#: templates/volunteer_request_details.html:28
 msgid "Детайли за заявка"
 msgstr ""
 
@@ -2714,7 +5012,8 @@ msgstr ""
 msgid "You marked that you can't help right now."
 msgstr ""
 
-#: templates/volunteer_request_details.html:45 templates/volunteer_request_details.html:139
+#: templates/volunteer_request_details.html:45
+#: templates/volunteer_request_details.html:139
 msgid "Last signal"
 msgstr ""
 
@@ -2735,7 +5034,9 @@ msgid "Назначен/а"
 msgstr ""
 
 #: templates/volunteer_request_details.html:103
-msgid "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
+msgid ""
+"Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се "
+"свържеш с човека."
 msgstr ""
 
 #: templates/volunteer_request_details.html:107
@@ -2743,11 +5044,15 @@ msgid "Заявката е изпратена. Ще получиш извест�
 msgstr ""
 
 #: templates/volunteer_request_details.html:113
-msgid "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
+msgid ""
+"Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е "
+"нужно)."
 msgstr ""
 
 #: templates/volunteer_request_details.html:115
-msgid "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
+msgid ""
+"Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай "
+"спокойно."
 msgstr ""
 
 #: templates/volunteer_request_details.html:117
@@ -2755,7 +5060,9 @@ msgid "Няма проблем — можеш да помогнеш по дру�
 msgstr ""
 
 #: templates/volunteer_request_details.html:119
-msgid "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
+msgid ""
+"Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да"
+" те свържем."
 msgstr ""
 
 #: templates/volunteer_request_details.html:133
@@ -2763,14 +5070,18 @@ msgid "Твоят сигнал"
 msgstr ""
 
 #: templates/volunteer_request_details.html:135
-msgid "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
+msgid ""
+"Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме "
+"по-точно."
 msgstr ""
 
-#: templates/admin/request_details.html:221 templates/admin/requests.html:305 templates/volunteer_request_details.html:142
+#: templates/admin/request_details.html:294 templates/admin/requests.html:451
+#: templates/volunteer_request_details.html:142
 msgid "Can help"
 msgstr ""
 
-#: templates/admin/request_details.html:223 templates/admin/requests.html:307 templates/volunteer_request_details.html:144
+#: templates/admin/request_details.html:296 templates/admin/requests.html:453
+#: templates/volunteer_request_details.html:144
 msgid "Can't help"
 msgstr ""
 
@@ -2795,18 +5106,96 @@ msgid "Потвърдено"
 msgstr ""
 
 #: templates/volunteer_request_details.html:213
-msgid "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
+msgid ""
+"Използвай този контакт само за тази заявка. Бъди уважителен/а и "
+"конкретен/а — това ускорява помощта."
 msgstr ""
 
-#: templates/admin/login.html:6 templates/admin/login.html:19
+#: templates/admin/audit.html:2 templates/admin/audit.html:13
+msgid "Audit trail"
+msgstr ""
+
+#: templates/admin/audit.html:14
+msgid "Who changed what and when"
+msgstr ""
+
+#: templates/admin/audit.html:16 templates/admin/security.html:18
+#, fuzzy
+msgid "Back to requests"
+msgstr "Totalt antall forespørsler"
+
+#: templates/admin/audit.html:21 templates/admin/audit.html:57
+#: templates/admin/security.html:231
+#, fuzzy
+msgid "Action"
+msgstr "Administrer push-varsler"
+
+#: templates/admin/audit.html:34
+#, fuzzy
+msgid "Request ID"
+msgstr "Forespørsler"
+
+#: templates/admin/audit.html:38
+msgid "Days"
+msgstr ""
+
+#: templates/admin/audit.html:46
+msgid "Filter"
+msgstr "Lagret filter"
+
+#: templates/admin/audit.html:56 templates/admin/security.html:195
+#: templates/admin/security.html:229
+#, fuzzy
+msgid "Time"
+msgstr "Tittel"
+
+#: templates/admin/audit.html:59 templates/admin/security.html:232
+msgid "Target"
+msgstr ""
+
+#: templates/admin/audit.html:60
+msgid "Change"
+msgstr ""
+
+#: templates/admin/audit.html:73 templates/admin/security.html:244
+#, fuzzy
+msgid "view"
+msgstr "Forhåndsvisning"
+
+#: templates/admin/audit.html:94
+msgid "No audit events for selected filters."
+msgstr ""
+
+#: templates/admin/audit.html:104
+msgid "Page"
+msgstr ""
+
+#: templates/admin/audit.html:104
+msgid "events"
+msgstr ""
+
+#: templates/admin/audit.html:109
+#, fuzzy
+msgid "Prev"
+msgstr "Forhåndsvisning"
+
+#: templates/admin/audit.html:112
+#, fuzzy
+msgid "Next"
+msgstr "Eksporter"
+
+#: templates/admin/login.html:6
 msgid "Admin login"
 msgstr "Admin-innlogging"
 
-#: templates/admin/login.html:32 templates/admin/login.html:41 templates/admin/login.html:42
+#: templates/admin/login.html:32 templates/admin/login.html:41
+#: templates/admin/login.html:42 templates/admin/roles.html:25
+#: templates/admin/security.html:128 templates/admin/security.html:196
 msgid "Username"
 msgstr "Brukernavn"
 
-#: templates/admin/login.html:48 templates/admin/login.html:57 templates/admin/login.html:58
+#: templates/admin/login.html:48 templates/admin/login.html:57
+#: templates/admin/login.html:58
 msgid "Password"
 msgstr "Passord"
 
@@ -2819,8 +5208,12 @@ msgid "Set up MFA"
 msgstr "Sett opp MFA"
 
 #: templates/admin/mfa_setup.html:6
-msgid "Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code."
-msgstr "Skann QR-koden med Google Authenticator / Authy / Microsoft Authenticator, og skriv deretter inn 6-siffers koden."
+msgid ""
+"Scan the QR code with Google Authenticator / Authy / Microsoft "
+"Authenticator, then enter the 6-digit code."
+msgstr ""
+"Skann QR-koden med Google Authenticator / Authy / Microsoft "
+"Authenticator, og skriv deretter inn 6-siffers koden."
 
 #: templates/admin/mfa_setup.html:14
 msgid "Manual key (if QR does not work):"
@@ -2834,81 +5227,428 @@ msgstr "Verifiseringskode (6 siffer)"
 msgid "Activate MFA"
 msgstr "Aktiver MFA"
 
-#: templates/admin/request_details.html:219 templates/admin/requests.html:210
+#: templates/admin/request_details.html:292 templates/admin/requests.html:325
 msgid "Volunteer signal"
 msgstr ""
 
-#: templates/admin/requests.html:124 templates/admin/requests.html:203
-msgid "Status"
-msgstr "Status"
+#: templates/admin/requests.html:23
+#, fuzzy
+msgid "Structured view by status"
+msgstr "Strukturerte data"
 
-#: templates/admin/requests.html:125
-msgid "All statuses"
+#: templates/admin/requests.html:26
+msgid "Home"
+msgstr "Hjem"
+
+#: templates/admin/requests.html:36
+#, fuzzy
+msgid "Action only"
+msgstr "Administrer push-varsler"
+
+#: templates/admin/requests.html:37 templates/admin/requests.html:40
+msgid "Copy link"
+msgstr ""
+
+#: templates/admin/requests.html:71
+#, fuzzy
+msgid "Clear filter"
+msgstr "Lagret filter"
+
+#: templates/admin/requests.html:86
+msgid "Insights"
+msgstr ""
+
+#: templates/admin/requests.html:87
+msgid "Operational status, KPIs and live queue snapshot"
+msgstr ""
+
+#: templates/admin/requests.html:94
+#, fuzzy
+msgid "Operational status"
 msgstr "Alle statuser"
 
-#: templates/admin/requests.html:136
+#: templates/admin/requests.html:103
+#, fuzzy
+msgid "Operational dashboard"
+msgstr "Pilot Dashboard"
+
+#: templates/admin/requests.html:105
+msgid "Window: 30 days"
+msgstr ""
+
+#: templates/admin/requests.html:107
+#, fuzzy
+msgid "7 days"
+msgstr "Stale > 7 dager"
+
+#: templates/admin/requests.html:108
+msgid "30 days"
+msgstr ""
+
+#: templates/admin/requests.html:109
+msgid "90 days"
+msgstr ""
+
+#: templates/admin/requests.html:158
 msgid "Search by name, title, description..."
 msgstr "Søk etter navn, tittel, beskrivelse..."
 
-#: templates/admin/requests.html:143
-msgid "Filter"
+#: templates/admin/requests.html:174
+#, fuzzy
+msgid "Filters"
 msgstr "Lagret filter"
 
-#: templates/admin/requests.html:156
+#: templates/admin/requests.html:195
+#, fuzzy
+msgid "Export XLSX"
+msgstr "Eksporter CSV"
+
+#: templates/admin/requests.html:204
+#, fuzzy
+msgid "Export CSV (anonymized)"
+msgstr "Eksporter CSV"
+
+#: templates/admin/requests.html:212
+msgid "Export XLSX (anonymized)"
+msgstr ""
+
+#: templates/admin/requests.html:218
+#, fuzzy
+msgid "View export logs"
+msgstr "Vis detaljer"
+
+#: templates/admin/requests.html:230 templates/admin/requests.html:318
+msgid "Status"
+msgstr "Status"
+
+#: templates/admin/requests.html:231
+msgid "All statuses"
+msgstr "Alle statuser"
+
+#: templates/admin/requests.html:250
 msgid "Show deleted"
 msgstr "Vis slettet"
 
-#: templates/admin/requests.html:200
-msgid "ID"
-msgstr "ID"
-
-#: templates/admin/requests.html:201
-msgid "Title"
-msgstr "Tittel"
-
-#: templates/admin/requests.html:202
-msgid "Name"
-msgstr "Navn"
-
-#: templates/admin/requests.html:205
+#: templates/admin/requests.html:272 templates/admin/requests.html:320
 msgid "Category"
 msgstr "Kategori"
 
-#: templates/admin/requests.html:206 templates/admin/requests.html:266
-msgid "Created"
-msgstr "Ekstern"
-
-#: templates/admin/requests.html:208
-msgid "SLA"
-msgstr "SLA"
-
-#: templates/admin/requests.html:209
-msgid "Signals"
+#: templates/admin/requests.html:274
+msgid "Clear"
 msgstr ""
 
-#: templates/admin/requests.html:211 templates/admin/requests.html:357
-msgid "Details"
-msgstr "Detaljer"
+#: templates/admin/requests.html:281
+msgid "Select visible"
+msgstr ""
 
-#: templates/admin/requests.html:276
-msgid "No owner assigned"
-msgstr "Ingen eier tildelt"
+#: templates/admin/requests.html:283
+#, fuzzy
+msgid "0 selected"
+msgstr "Vis slettet"
 
-#: templates/admin/requests.html:276
+#: templates/admin/requests.html:285
+#, fuzzy
+msgid "Bulk action"
+msgstr "Administrer push-varsler"
+
+#: templates/admin/requests.html:286
+msgid "Prendre en charge (moi)"
+msgstr ""
+
+#: templates/admin/requests.html:287
+#, fuzzy
+msgid "Open selected"
+msgstr "Ferdig"
+
+#: templates/admin/requests.html:288
+msgid "Copy IDs"
+msgstr ""
+
+#: templates/admin/requests.html:289
+#, fuzzy
+msgid "Copy links"
+msgstr "Topp risiko"
+
+#: templates/admin/requests.html:290
+msgid "Nudge selected volunteers"
+msgstr ""
+
+#: templates/admin/requests.html:291
+msgid "Set status: Pending"
+msgstr ""
+
+#: templates/admin/requests.html:292
+#, fuzzy
+msgid "Set status: In progress"
+msgstr "I gang"
+
+#: templates/admin/requests.html:293
+msgid "Set status: Done"
+msgstr ""
+
+#: templates/admin/requests.html:294
+msgid "Set status: Rejected"
+msgstr ""
+
+#: templates/admin/requests.html:296
+msgid "Apply"
+msgstr ""
+
+#: templates/admin/requests.html:297
+msgid "Clear selection"
+msgstr ""
+
+#: templates/admin/requests.html:298
+msgid "/ search · j/k move · Enter open"
+msgstr ""
+
+#: templates/admin/requests.html:301 templates/admin/requests.html:422
 msgid "No owner"
 msgstr "Ingen eier"
 
-#: templates/admin/requests.html:279
-msgid "Stale request"
-msgstr "Send en forespørsel"
-
-#: templates/admin/requests.html:279
+#: templates/admin/requests.html:302 templates/admin/requests.html:425
 msgid "Stale"
 msgstr "Stale"
 
-#: templates/admin/requests.html:361
+#: templates/admin/requests.html:303
+msgid "Urgent"
+msgstr ""
+
+#: templates/admin/requests.html:304
+msgid "Has CAN_HELP"
+msgstr ""
+
+#: templates/admin/requests.html:305
+msgid "Clear quick filters"
+msgstr ""
+
+#: templates/admin/requests.html:312 templates/admin/requests.html:313
+msgid "Select"
+msgstr ""
+
+#: templates/admin/requests.html:315
+msgid "ID"
+msgstr "ID"
+
+#: templates/admin/requests.html:316
+msgid "Title"
+msgstr "Tittel"
+
+#: templates/admin/requests.html:317
+msgid "Name"
+msgstr "Navn"
+
+#: templates/admin/requests.html:321 templates/admin/requests.html:412
+msgid "Created"
+msgstr "Ekstern"
+
+#: templates/admin/requests.html:323
+msgid "SLA"
+msgstr "SLA"
+
+#: templates/admin/requests.html:324
+msgid "Signals"
+msgstr ""
+
+#: templates/admin/requests.html:377
+#, fuzzy
+msgid "Select request"
+msgstr "Send en forespørsel"
+
+#: templates/admin/requests.html:399
+#, fuzzy
+msgid "Non assigné"
+msgstr "Ingen eier tildelt"
+
+#: templates/admin/requests.html:401
+msgid "À moi"
+msgstr ""
+
+#: templates/admin/requests.html:403 templates/admin/requests.html:508
+#, fuzzy
+msgid "Pris"
+msgstr "Topp risiko"
+
+#: templates/admin/requests.html:422
+msgid "No owner assigned"
+msgstr "Ingen eier tildelt"
+
+#: templates/admin/requests.html:425
+msgid "Stale request"
+msgstr "Send en forespørsel"
+
+#: templates/admin/requests.html:499
+msgid "Prendre en charge"
+msgstr ""
+
+#: templates/admin/requests.html:504
+msgid "Ouvrir"
+msgstr ""
+
+#: templates/admin/requests.html:518
+#, fuzzy
+msgid "Open details"
+msgstr "Vis detaljer"
+
+#: templates/admin/requests.html:534
+#, fuzzy
+msgid "Assign volunteer"
+msgstr "Totalt frivillige"
+
+#: templates/admin/requests.html:546
+#, fuzzy
+msgid "Nudge volunteer"
+msgstr "Totalt frivillige"
+
+#: templates/admin/requests.html:554
 msgid "No results."
 msgstr "Ingen trykk"
+
+#: templates/admin/requests.html:570
+#, fuzzy
+msgid "Live"
+msgstr "LIVE"
+
+#: templates/admin/requests.html:571
+msgid "Instant operational status"
+msgstr ""
+
+#: templates/admin/roles.html:2
+#, fuzzy
+msgid "Roles"
+msgstr "Profil"
+
+#: templates/admin/roles.html:13
+#, fuzzy
+msgid "Admin roles"
+msgstr "I gang"
+
+#: templates/admin/roles.html:14
+msgid "Governance: superadmin / ops / readonly"
+msgstr ""
+
+#: templates/admin/roles.html:16
+msgid "Back to security"
+msgstr ""
+
+#: templates/admin/roles.html:49
+#, fuzzy
+msgid "Save"
+msgstr "Stale"
+
+#: templates/admin/roles.html:54
+msgid "Last superadmin"
+msgstr ""
+
+#: templates/admin/roles.html:60
+msgid "No admin users found."
+msgstr ""
+
+#: templates/admin/roles.html:66
+msgid "Superadmin count"
+msgstr ""
+
+#: templates/admin/security.html:2 templates/admin/security.html:13
+msgid "Security overview"
+msgstr ""
+
+#: templates/admin/security.html:14
+msgid "Operational signal for admin authentication and risky actions (last 24h)."
+msgstr ""
+
+#: templates/admin/security.html:17
+msgid "Open audit trail"
+msgstr ""
+
+#: templates/admin/security.html:26
+msgid "Successful logins (24h)"
+msgstr ""
+
+#: templates/admin/security.html:32
+msgid "Failed logins (24h)"
+msgstr ""
+
+#: templates/admin/security.html:38
+msgid "Lockout buckets (24h)"
+msgstr ""
+
+#: templates/admin/security.html:44
+msgid "Risky actions (24h)"
+msgstr ""
+
+#: templates/admin/security.html:50
+msgid "Denied actions (24h)"
+msgstr ""
+
+#: templates/admin/security.html:58
+msgid "Anomaly indicators"
+msgstr ""
+
+#: templates/admin/security.html:59
+msgid "failed_1h"
+msgstr ""
+
+#: templates/admin/security.html:59
+msgid "avg_hourly"
+msgstr ""
+
+#: templates/admin/security.html:63
+msgid "Failed-login spike"
+msgstr ""
+
+#: templates/admin/security.html:66
+msgid "Repeated fails by IP"
+msgstr ""
+
+#: templates/admin/security.html:69
+msgid "Repeated fails by username"
+msgstr ""
+
+#: templates/admin/security.html:97
+msgid "Risky actions monitored:"
+msgstr ""
+
+#: templates/admin/security.html:104
+msgid "Top failed-login IPs (24h)"
+msgstr ""
+
+#: templates/admin/security.html:108 templates/admin/security.html:128
+#, fuzzy
+msgid "Fails"
+msgstr "Detaljer"
+
+#: templates/admin/security.html:115 templates/admin/security.html:135
+#: templates/admin/security.html:158 templates/admin/security.html:178
+#: templates/admin/security.html:215 templates/admin/security.html:250
+#, fuzzy
+msgid "No data"
+msgstr "Eksporter data"
+
+#: templates/admin/security.html:124
+msgid "Top failed-login usernames (24h)"
+msgstr ""
+
+#: templates/admin/security.html:190
+msgid "Recent login attempts"
+msgstr ""
+
+#: templates/admin/security.html:198
+#, fuzzy
+msgid "Result"
+msgstr "Ingen trykk"
+
+#: templates/admin/security.html:209
+msgid "success"
+msgstr ""
+
+#: templates/admin/security.html:209
+#, fuzzy
+msgid "failed"
+msgstr "Lagret filter"
+
+#: templates/admin/security.html:224
+msgid "Recent risky actions"
+msgstr ""
 
 #: templates/components/match_card.html:9
 #, python-format
@@ -2963,4 +5703,520 @@ msgstr ""
 #, python-format
 msgid "Why %(pct)s%%?"
 msgstr ""
+
+#: templates/partials/navbar_public.html:1
+msgid "Navigation principale"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:4
+msgid ""
+"Pilotage, traçabilité et gouvernance pour les structures qui coordonnent "
+"des demandes sociales à l’échelle locale."
+msgstr ""
+
+#: templates/public/pour_les_structures.html:5
+msgid "Pour les structures | HelpChain"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:13
+msgid ""
+"Une infrastructure de pilotage pour centraliser, attribuer et suivre les "
+"demandes avec traçabilité opérationnelle, gouvernance mesurable et "
+"continuité."
+msgstr ""
+
+#: templates/public/pour_les_structures.html:15
+msgid ""
+"HelpChain fournit un périmètre clair de coordination pour les structures "
+"locales."
+msgstr ""
+
+#: templates/public/pour_les_structures.html:16
+msgid ""
+"Déploiement progressif en phase pilote, avec indicateurs de suivi et "
+"cadre de responsabilité."
+msgstr ""
+
+#: templates/public/pour_les_structures.html:20
+msgid "Dossier institutionnel"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:22
+msgid ""
+"Ce document présente l’infrastructure HelpChain, son cadre de gouvernance"
+" et les conditions d’un pilote territorial."
+msgstr ""
+
+#: templates/public/pour_les_structures.html:27
+msgid "Télécharger le dossier institutionnel"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:34
+msgid "Cadre opérationnel"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:36
+msgid ""
+"Une approche orientée pilotage: chaque demande suit un cycle maîtrisé, "
+"avec attribution explicite, statut lisible et traçabilité de bout en "
+"bout."
+msgstr ""
+
+#: templates/public/pour_les_structures.html:40
+msgid "Centralisation"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:42
+msgid "Entrée structurée des demandes"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:43
+msgid "Périmètre partagé entre équipes"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:44
+msgid "Réduction des canaux informels"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:48
+msgid "Attribution"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:50
+msgid "Règles d’affectation explicites"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:51
+msgid "Responsabilité claire par dossier"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:52
+msgid "Phase pilote contrôlée"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:58
+msgid "Indicateurs de délai et de charge"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:59
+msgid "Traçabilité des actions"
+msgstr ""
+
+#: templates/public/pour_les_structures.html:60
+msgid "Gouvernance orientée résultat"
+msgstr ""
+
+#~ msgid "Traçabilité opérationnelle"
+#~ msgstr ""
+
+#~ msgid "Pour qui"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "HelpChain est pensé pour les "
+#~ "organisations et acteurs territoriaux qui "
+#~ "ont besoin d’un dispositif fiable de "
+#~ "coordination."
+#~ msgstr ""
+
+#~ msgid "Services publics"
+#~ msgstr ""
+
+#~ msgid "Réseaux professionnels"
+#~ msgstr ""
+
+#~ msgid "Une base institutionnelle : conformité, contrôle et responsabilité."
+#~ msgstr ""
+
+#~ msgid "Minimisation des données, finalités explicites et gestion des accès."
+#~ msgstr ""
+
+#~ msgid "Données hébergées en Europe, avec une approche orientée sécurité."
+#~ msgstr ""
+
+#~ msgid "Traçabilité"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Journalisation des actions clés, visibilité"
+#~ " sur les délais et la prise en"
+#~ " charge."
+#~ msgstr ""
+
+#~ msgid "Commencer"
+#~ msgstr ""
+
+#~ msgid "HelpChain - Infrastructure numérique de coordination"
+#~ msgstr ""
+
+#~ msgid "Orienter"
+#~ msgstr ""
+
+#~ msgid "Pilot (KPI)"
+#~ msgstr "Pilot (KPI)"
+
+#~ msgid "Placeholder section for future speech and sound accessibility tools"
+#~ msgstr ""
+
+#~ msgid "Coming soon: read aloud, voice guidance, and audio feedback options."
+#~ msgstr ""
+
+#~ msgid "Développé et opéré en France"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "A question, a suggestion, or a "
+#~ "concern? Write to us — a real "
+#~ "human will read your message."
+#~ msgstr ""
+
+#~ msgid "Your email"
+#~ msgstr ""
+
+#~ msgid "Subject"
+#~ msgstr ""
+
+#~ msgid "What is this about?"
+#~ msgstr ""
+
+#~ msgid "Message"
+#~ msgstr ""
+
+#~ msgid "Write your message here…"
+#~ msgstr ""
+
+#~ msgid "Send message"
+#~ msgstr ""
+
+#~ msgid "This form is informational for now. Please use email below."
+#~ msgstr ""
+
+#~ msgid "Direct contact"
+#~ msgstr ""
+
+#~ msgid "Response time"
+#~ msgstr ""
+
+#~ msgid "We usually reply within 24–48 hours on business days."
+#~ msgstr ""
+
+#~ msgid "Security & privacy"
+#~ msgstr ""
+
+#~ msgid "We never sell or share contact data."
+#~ msgstr ""
+
+#~ msgid "No automated marketing emails."
+#~ msgstr ""
+
+#~ msgid "Security issues can be reported at"
+#~ msgstr ""
+
+#~ msgid "Infrastructure numérique de coordination des situations sociales."
+#~ msgstr ""
+
+#~ msgid "Orientation structurée. Coordination traçable. Pilotage responsable."
+#~ msgstr ""
+
+#~ msgid "Infrastructure à vocation européenne"
+#~ msgstr ""
+
+#~ msgid "Vue opérationnelle"
+#~ msgstr ""
+
+#~ msgid "Situations traitées"
+#~ msgstr ""
+
+#~ msgid "Intervenants actifs"
+#~ msgstr ""
+
+#~ msgid "Territoires"
+#~ msgstr ""
+
+#~ msgid "Processus structuré"
+#~ msgstr ""
+
+#~ msgid "Suivi traçable"
+#~ msgstr ""
+
+#~ msgid "Coordination continue"
+#~ msgstr ""
+
+#~ msgid "Fonctionnement structuré"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Un cadre clair pour organiser "
+#~ "l'orientation et la coordination des "
+#~ "situations."
+#~ msgstr ""
+
+#~ msgid "1. Orientation"
+#~ msgstr ""
+
+#~ msgid "Classification structurée des situations et qualification initiale."
+#~ msgstr ""
+
+#~ msgid "2. Coordination"
+#~ msgstr ""
+
+#~ msgid "Attribution responsable et suivi continu des interventions."
+#~ msgstr ""
+
+#~ msgid "3. Pilotage"
+#~ msgstr ""
+
+#~ msgid "Indicateurs opérationnels, visibilité et traçabilité des actions."
+#~ msgstr ""
+
+#~ msgid "Une infrastructure, pas un annuaire."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "HelpChain fournit une couche de "
+#~ "coordination destinée aux associations, "
+#~ "services publics et réseaux professionnels,"
+#~ " avec un cadre structuré et sécurisé."
+#~ msgstr ""
+
+#~ msgid "Découvrir l'espace professionnel"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Infrastructure numerique de coordination - "
+#~ "pour associations et professionnels"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Centralisez les demandes, attribuez les "
+#~ "dossiers et pilotez chaque action"
+#~ msgstr ""
+
+#~ msgid "dans un cadre structuré, sécurisé et traçable."
+#~ msgstr ""
+
+#~ msgid "Voir comment ca marche"
+#~ msgstr ""
+
+#~ msgid "Pour qui ?"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Une infrastructure conçue pour structurer "
+#~ "la coordination entre acteurs locaux et"
+#~ " professionnels qualifiés."
+#~ msgstr ""
+
+#~ msgid "Associations & structures locales"
+#~ msgstr ""
+
+#~ msgid "Centralisation structurée des demandes"
+#~ msgstr ""
+
+#~ msgid "Attribution claire des responsables"
+#~ msgstr ""
+
+#~ msgid "Suivi par statut avec historique complet"
+#~ msgstr ""
+
+#~ msgid "Visibilité opérationnelle sur l’activité et les délais"
+#~ msgstr ""
+
+#~ msgid "Professionnels partenaires"
+#~ msgstr ""
+
+#~ msgid "Dossiers structurés et contextualisés"
+#~ msgstr ""
+
+#~ msgid "Qualification préalable des demandes"
+#~ msgstr ""
+
+#~ msgid "Cadre opérationnel clair (nouvelle -> en cours -> résolue)"
+#~ msgstr ""
+
+#~ msgid "Traçabilité complète des actions"
+#~ msgstr ""
+
+#~ msgid "Respect du temps et des priorités professionnelles"
+#~ msgstr ""
+
+#~ msgid "HelpChain n’est pas une plateforme d’annonces."
+#~ msgstr ""
+
+#~ msgid "C’est une infrastructure de coordination structurée."
+#~ msgstr ""
+
+#~ msgid "Entree structuree"
+#~ msgstr ""
+
+#~ msgid "Une situation humaine devient un dossier exploitable :"
+#~ msgstr ""
+
+#~ msgid "categorie, localisation, contexte."
+#~ msgstr ""
+
+#~ msgid "Qualification & tri"
+#~ msgstr ""
+
+#~ msgid "Infos cles verifiees. Reduction du bruit."
+#~ msgstr ""
+
+#~ msgid "Protection du temps des equipes."
+#~ msgstr ""
+
+#~ msgid "Matching cible"
+#~ msgstr ""
+
+#~ msgid "La bonne demande au bon moment :"
+#~ msgstr ""
+
+#~ msgid "pertinence, localisation, tracabilite."
+#~ msgstr ""
+
+#~ msgid "Suivi & cloture"
+#~ msgstr ""
+
+#~ msgid "Historique complet, statut clair,"
+#~ msgstr ""
+
+#~ msgid "coordination mesurable."
+#~ msgstr ""
+
+#~ msgid "Sécurité & conformité (RGPD)"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "La protection des données, la "
+#~ "gouvernance des accès et la traçabilité"
+#~ " des actions constituent le socle de"
+#~ " l’infrastructure."
+#~ msgstr ""
+
+#~ msgid "Accès sécurisé et contrôle des rôles"
+#~ msgstr ""
+
+#~ msgid "Journalisation complète des actions"
+#~ msgstr ""
+
+#~ msgid "Données minimisées et usage encadré (RGPD)"
+#~ msgstr ""
+
+#~ msgid "Hébergement conforme aux standards européens"
+#~ msgstr ""
+
+#~ msgid "Rejoindre la phase pilote"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "L'acces est valide manuellement afin de"
+#~ " garantir un environnement structure,"
+#~ msgstr ""
+
+#~ msgid "securise et utile."
+#~ msgstr ""
+
+#~ msgid "Demander un acces professionnel"
+#~ msgstr ""
+
+#~ msgid "Примери:"
+#~ msgstr ""
+
+#~ msgid "Медицинска помощ"
+#~ msgstr ""
+
+#~ msgid "Социална подкрепа"
+#~ msgstr ""
+
+#~ msgid "Технически проблем"
+#~ msgstr ""
+
+#~ msgid "Вашето име"
+#~ msgstr ""
+
+#~ msgid "Напр. Мария Иванова"
+#~ msgstr ""
+
+#~ msgid "Поне 2 символа."
+#~ msgstr ""
+
+#~ msgid "Категория"
+#~ msgstr ""
+
+#~ msgid "Избери…"
+#~ msgstr ""
+
+#~ msgid "Друго"
+#~ msgstr ""
+
+#~ msgid "Ако не избереш, системата ще запише “general”."
+#~ msgstr ""
+
+#~ msgid "Спешност"
+#~ msgstr ""
+
+#~ msgid "Ниска"
+#~ msgstr ""
+
+#~ msgid "Нормална"
+#~ msgstr ""
+
+#~ msgid "Спешна"
+#~ msgstr ""
+
+#~ msgid "Критична"
+#~ msgstr ""
+
+#~ msgid "Това влияе на приоритета (low/medium/high)."
+#~ msgstr ""
+
+#~ msgid "Кратко заглавие (по избор)"
+#~ msgstr ""
+
+#~ msgid "Напр. Нужен придружител до лекар"
+#~ msgstr ""
+
+#~ msgid "Ако оставиш празно, системата ще го попълни автоматично."
+#~ msgstr ""
+
+#~ msgid "Локация / адрес"
+#~ msgstr ""
+
+#~ msgid "Град, квартал (без точен адрес, ако не е нужно)"
+#~ msgstr ""
+
+#~ msgid "Напиши с 2–3 изречения какво се случва и каква помощ търсиш."
+#~ msgstr ""
+
+#~ msgid "Минимум 10 символа."
+#~ msgstr ""
+
+#~ msgid "I agree to the Privacy Policy (GDPR)."
+#~ msgstr ""
+
+#~ msgid "Отказ"
+#~ msgstr ""
+
+#~ msgid "Изпрати заявка"
+#~ msgstr ""
+
+#~ msgid "Копирано ✅"
+#~ msgstr ""
+
+#~ msgid "ℹ️ Демо: детайлите ще изглеждат така. Реалните ще отварят страница."
+#~ msgstr ""
+
+#~ msgid "✅ Демо: помощта е заявена. Нищо не се поема автоматично."
+#~ msgstr ""
+
+#~ msgid "✅ Помощта е заявена. Очаква се кратко потвърждение от екипа."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "ℹ️ Демо: детайлите ще се показват "
+#~ "тук. Реалните заявки ще отварят страница"
+#~ " с детайли."
+#~ msgstr ""
+
+#~ msgid "🟢 НОВО"
+#~ msgstr ""
 

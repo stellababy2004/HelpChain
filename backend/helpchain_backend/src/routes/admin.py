@@ -6,6 +6,8 @@ import math
 import secrets
 import threading
 import time
+import re
+from pathlib import Path
 from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
 from io import BytesIO, StringIO
@@ -28,6 +30,8 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
+from flask_babel import force_locale, gettext as _
+from babel.support import Translations
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.audit import log_activity
@@ -53,6 +57,10 @@ from ..models import (
     RequestActivity,
     RequestLog,
     RequestMetric,
+    UiLocaleLock,
+    UiTranslationFreeze,
+    UiTranslation,
+    UiTranslationEvent,
     Volunteer,
     VolunteerAction,
     VolunteerInterest,
@@ -69,11 +77,24 @@ except ImportError:
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..security_logging import log_security_event
 
-INVALID_CREDENTIALS_MSG = "Грешно потребителско име или парола"
+INVALID_CREDENTIALS_MSG = "Invalid username or password"
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
 VOLUNTEER_ASSIGN_SLA_HOURS = 72
+SLA_QUEUE_KINDS = {
+    "resolution_overdue": "SLA resolution overdue",
+    "owner_assignment_overdue": "SLA owner assignment overdue",
+    "volunteer_assignment_overdue": "Volunteer assignment overdue",
+}
+SLA_BREAKDOWN_TYPE_TO_KIND = {
+    "resolve": "resolution_overdue",
+    "owner_assign": "owner_assignment_overdue",
+    "volunteer_assign": "volunteer_assignment_overdue",
+}
+SLA_KIND_TO_BREAKDOWN_TYPE = {
+    v: k for k, v in SLA_BREAKDOWN_TYPE_TO_KIND.items()
+}
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
 PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
 RISKY_ACTIONS = (
@@ -91,6 +112,18 @@ ADMIN_LOGIN_LOCKOUT_MIN = 15
 ADMIN_SESSION_IDLE_TIMEOUT_MIN = 20
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 _SCHEMA_TABLE_CACHE: dict[str, bool] = {}
+_CTRL_CHARS_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
+_UI_KEYS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_keys.json"
+_UI_DOMAINS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_domains.json"
+_TERMINOLOGY_PATH = Path(__file__).resolve().parents[4] / "i18n" / "terminology.json"
+_HF_MODEL_MAP = {
+    "en": "Helsinki-NLP/opus-mt-fr-en",
+    "de": "Helsinki-NLP/opus-mt-fr-de",
+    "bg": "Helsinki-NLP/opus-mt-fr-bg",
+}
+_HF_TRANSLATORS: dict[str, tuple[object, object]] = {}
+_HF_TRANSLATOR_FAILED: set[str] = set()
+_HF_TRANSLATOR_LOCK = threading.Lock()
 
 
 def _table_has_column(table_name: str, column_name: str) -> bool:
@@ -220,11 +253,193 @@ def _client_ip() -> str:
     return request.remote_addr or "0.0.0.0"
 
 
+def _compute_case_signals(
+    req: Request,
+    activities: list[RequestActivity] | None,
+    now: datetime,
+) -> list[dict]:
+    """Rules-based, explainable case signals for admin case rail."""
+    signals: list[dict] = []
+    acts = activities or []
+    status = (getattr(req, "status", "") or "").upper()
+    priority = (getattr(req, "priority", "medium") or "medium").lower()
+    has_owner = bool(getattr(req, "owner_id", None))
+    has_phone = bool((getattr(req, "phone", "") or "").strip())
+    has_email = bool((getattr(req, "email", "") or "").strip())
+
+    def _as_aware(dt_val: datetime | None) -> datetime | None:
+        if not dt_val:
+            return None
+        if dt_val.tzinfo is None:
+            return dt_val.replace(tzinfo=timezone.utc)
+        return dt_val
+
+    created_at = _as_aware(getattr(req, "created_at", None))
+    updated_at = _as_aware(getattr(req, "updated_at", None))
+    owned_at = _as_aware(getattr(req, "owned_at", None))
+    last_activity_at = _as_aware(acts[0].created_at) if acts else None
+    reference_dt = last_activity_at or updated_at or created_at
+
+    if not has_owner:
+        signals.append(
+            {
+                "code": "no_owner",
+                "level": "danger",
+                "title": "Aucun responsable assigne",
+                "why": "Sans owner, le dossier n'a pas de pilotage clair.",
+                "cta_label": "Assigner owner",
+                "cta_href": "#owner-actions",
+            }
+        )
+    elif owned_at and (now - owned_at) > timedelta(hours=24) and (
+        not last_activity_at or (now - last_activity_at) > timedelta(hours=24)
+    ):
+        signals.append(
+            {
+                "code": "owner_idle",
+                "level": "warning",
+                "title": "Owner inactif",
+                "why": "Responsable assigne mais pas d'activite recente.",
+                "cta_label": "Verifier activite",
+                "cta_href": "#activity-timeline",
+            }
+        )
+
+    if priority in {"high", "urgent"} and status == "NEW":
+        signals.append(
+            {
+                "code": "urgent_not_started",
+                "level": "danger",
+                "title": "Urgence non demarree",
+                "why": "Priorite elevee avec statut nouveau.",
+                "cta_label": "Passer en cours",
+                "cta_href": "#status-controls",
+            }
+        )
+    elif priority in {"high", "urgent"} and status == "IN_PROGRESS":
+        signals.append(
+            {
+                "code": "urgent_in_progress",
+                "level": "warning",
+                "title": "Urgence en cours",
+                "why": "Suivi actif requis jusqu'a resolution.",
+                "cta_label": "Ajouter note",
+                "cta_href": "#internal-note",
+            }
+        )
+
+    if reference_dt and (now - reference_dt) > timedelta(days=3):
+        signals.append(
+            {
+                "code": "stale_case",
+                "level": "warning",
+                "title": "Dossier stale",
+                "why": "Aucune activite significative depuis plus de 72h.",
+                "cta_label": "Revoir dossier",
+                "cta_href": "#activity-timeline",
+            }
+        )
+
+    if status == "NEW" and created_at and (now - created_at) > timedelta(hours=24):
+        signals.append(
+            {
+                "code": "no_first_action_24h",
+                "level": "warning",
+                "title": "Aucune premiere action > 24h",
+                "why": "Le dossier est nouveau mais non traite depuis 24h.",
+                "cta_label": "Demarrer traitement",
+                "cta_href": "#status-controls",
+            }
+        )
+
+    if not has_phone and not has_email:
+        signals.append(
+            {
+                "code": "missing_contact",
+                "level": "danger",
+                "title": "Contact manquant",
+                "why": "Ni telephone ni email n'est renseigne.",
+                "cta_label": "Ajouter note interne",
+                "cta_href": "#internal-note",
+            }
+        )
+    elif has_email and not has_phone:
+        signals.append(
+            {
+                "code": "partial_contact",
+                "level": "info",
+                "title": "Contact partiel",
+                "why": "Email disponible, telephone absent.",
+                "cta_label": "Contacter par email",
+                "cta_href": "#contact-block",
+            }
+        )
+
+    if status in {"RESOLVED", "COMPLETED"}:
+        has_resolution = any(
+            (a.action == "status_change")
+            and (a.new_value or "").upper() in {"RESOLVED", "COMPLETED"}
+            for a in acts
+        )
+        has_note = any(a.action == "note" for a in acts)
+        if not has_resolution and not has_note:
+            signals.append(
+                {
+                    "code": "closure_without_note",
+                    "level": "warning",
+                    "title": "Cloture sans note",
+                    "why": "Ajouter une note de resolution pour la tracabilite.",
+                    "cta_label": "Ajouter note",
+                    "cta_href": "#internal-note",
+                }
+            )
+
+    if not signals:
+        signals.append(
+            {
+                "code": "all_good",
+                "level": "ok",
+                "title": "Dossier sous controle",
+                "why": "Aucun signal critique detecte.",
+                "cta_label": "Voir activite",
+                "cta_href": "#activity-timeline",
+            }
+        )
+
+    return signals[:5]
+
+
 def _norm_username(username: str | None) -> str | None:
     if not username:
         return None
     value = username.strip().lower()
     return value or None
+
+
+def _find_admin_user(login_identifier: str) -> AdminUser | None:
+    ident = (login_identifier or "").strip()
+    if not ident:
+        return None
+    ident_l = ident.lower()
+    return (
+        AdminUser.query.filter(
+            or_(
+                func.lower(func.coalesce(AdminUser.username, "")) == ident_l,
+                func.lower(func.coalesce(AdminUser.email, "")) == ident_l,
+            )
+        )
+        .limit(1)
+        .first()
+    )
+
+
+def _verify_admin_password(user: AdminUser | None, password: str) -> bool:
+    if not user or not getattr(user, "password_hash", None):
+        return False
+    try:
+        return bool(user.check_password(password))
+    except Exception:
+        return False
 
 
 def _admin_login_is_locked(
@@ -245,11 +460,23 @@ def _admin_login_is_locked(
     if username:
         query = query.filter(AdminLoginAttempt.username == username)
 
-    fail_count = query.count()
+    try:
+        fail_count = query.count()
+    except Exception:
+        # Fail-open for login if local/dev DB drift broke this table schema.
+        # We prefer allowing login over returning a 500 on auth form submit.
+        db.session.rollback()
+        _SCHEMA_TABLE_CACHE.pop("admin_login_attempts", None)
+        return False, 0
     if fail_count < ADMIN_LOGIN_MAX_FAILS:
         return False, 0
 
-    last_fail = query.order_by(AdminLoginAttempt.created_at.desc()).first()
+    try:
+        last_fail = query.order_by(AdminLoginAttempt.created_at.desc()).first()
+    except Exception:
+        db.session.rollback()
+        _SCHEMA_TABLE_CACHE.pop("admin_login_attempts", None)
+        return False, 0
     if not last_fail or not last_fail.created_at:
         return False, 0
 
@@ -483,6 +710,91 @@ def _to_utc_naive(dt: datetime | None) -> datetime | None:
     if dt.tzinfo is None:
         return dt
     return dt.astimezone(UTC).replace(tzinfo=None)
+
+
+def _normalize_sla_kind(raw_kind: str | None) -> str | None:
+    kind = (raw_kind or "").strip().lower()
+    if kind in SLA_QUEUE_KINDS:
+        return kind
+    # Backward-compatible aliases from /admin/sla type selector.
+    alias = {
+        "resolve": "resolution_overdue",
+        "owner_assign": "owner_assignment_overdue",
+        "volunteer_assign": "volunteer_assignment_overdue",
+    }
+    return alias.get(kind)
+
+
+def _normalize_sla_days(raw_days) -> int:
+    try:
+        val = int(raw_days)
+    except (TypeError, ValueError):
+        val = 30
+    return max(1, min(val, 365))
+
+
+def _sla_open_filter():
+    return or_(
+        Request.status.is_(None), ~func.lower(Request.status).in_(CLOSED_STATUSES)
+    )
+
+
+def _sla_base_window_query(base_query, *, days: int, now: datetime):
+    window_start = now - timedelta(days=days)
+    return (
+        base_query.filter(Request.created_at.isnot(None))
+        .filter(Request.created_at >= window_start)
+        .filter(_sla_open_filter())
+    )
+
+
+def _sla_kind_condition(sla_kind: str, *, now: datetime):
+    if sla_kind == "resolution_overdue":
+        return and_(
+            Request.completed_at.is_(None),
+            Request.created_at < (now - timedelta(days=RESOLVE_SLA_DAYS)),
+        )
+    if sla_kind == "owner_assignment_overdue":
+        return and_(
+            Request.owner_id.is_(None),
+            Request.created_at < (now - timedelta(hours=ASSIGN_SLA_HOURS)),
+        )
+    if sla_kind == "volunteer_assignment_overdue":
+        return and_(
+            Request.assigned_volunteer_id.is_(None),
+            Request.created_at < (now - timedelta(hours=VOLUNTEER_ASSIGN_SLA_HOURS)),
+        )
+    return None
+
+
+def _apply_sla_queue_filter(base_query, *, sla_kind: str, days: int, now: datetime):
+    cond = _sla_kind_condition(sla_kind, now=now)
+    if cond is None:
+        return base_query
+    return _sla_base_window_query(base_query, days=days, now=now).filter(cond)
+
+
+def _sla_overdue_hours_by_kind(req, *, now: datetime) -> dict[str, float]:
+    created_at = _to_utc_naive(getattr(req, "created_at", None))
+    if not created_at:
+        return {}
+    age_hours = max(0.0, (now - created_at).total_seconds() / 3600.0)
+    out: dict[str, float] = {}
+
+    resolve_sla_hours = float(RESOLVE_SLA_DAYS * 24)
+    owner_assign_sla_hours = float(ASSIGN_SLA_HOURS)
+    volunteer_assign_sla_hours = float(VOLUNTEER_ASSIGN_SLA_HOURS)
+
+    if getattr(req, "completed_at", None) is None and age_hours > resolve_sla_hours:
+        out["resolution_overdue"] = age_hours - resolve_sla_hours
+    if getattr(req, "owner_id", None) is None and age_hours > owner_assign_sla_hours:
+        out["owner_assignment_overdue"] = age_hours - owner_assign_sla_hours
+    if (
+        getattr(req, "assigned_volunteer_id", None) is None
+        and age_hours > volunteer_assign_sla_hours
+    ):
+        out["volunteer_assignment_overdue"] = age_hours - volunteer_assign_sla_hours
+    return out
 
 
 def _delta_seconds(start: datetime | None, end: datetime | None) -> int | None:
@@ -781,9 +1093,1217 @@ def admin_dashboard_redirect():
     return redirect(url_for("admin.admin_requests"))
 
 
+@admin_bp.get("/translations")
+def admin_translations_list():
+    q = (request.args.get("q") or "").strip()
+    locale = (request.args.get("locale") or "fr").strip().lower()
+    view = (request.args.get("view") or "ops").strip().lower()
+    if view not in {"ops", "core", "inventory", "all"}:
+        view = "ops"
+    only_missing = request.args.get("only_missing") == "1"
+    page = max(int(request.args.get("page") or 1), 1)
+    per_page = min(max(int(request.args.get("per_page") or 50), 10), 200)
+
+    supported = _supported_locales()
+    if locale not in supported:
+        locale = current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+    registry_view = _registry_entries_for_view(view)
+    registry_keys = [r["key"] for r in registry_view]
+    kpi = _translation_kpi(locale, registry_keys)
+    locale_lock = _get_locale_lock(locale)
+    is_locale_locked = bool(locale_lock and locale_lock.is_locked)
+    freeze_state = _get_translation_freeze_state()
+    is_translation_frozen = bool(freeze_state and freeze_state.is_active)
+    can_l10n_write = _can_l10n_write()
+    can_l10n_delete = _can_l10n_delete()
+    can_l10n_write_effective = can_l10n_write and (not is_locale_locked or can_l10n_delete)
+
+    missing_registry = []
+    pagination = None
+    items = []
+
+    if only_missing:
+        existing: set[str] = set()
+        if registry_keys:
+            existing = {
+                k
+                for (k,) in db.session.query(UiTranslation.key)
+                .filter(
+                    UiTranslation.locale == locale,
+                    UiTranslation.key.in_(registry_keys),
+                )
+                .all()
+            }
+
+        filtered = [r for r in registry_view if r["key"] not in existing]
+        if q:
+            ql = q.lower()
+            filtered = [
+                r
+                for r in filtered
+                if ql in r["key"].lower()
+                or ql in (r.get("default") or "").lower()
+                or ql in (r.get("domain") or "").lower()
+            ]
+
+        start = (page - 1) * per_page
+        end = start + per_page
+        missing_registry = filtered[start:end]
+    else:
+        query = UiTranslation.query.filter(UiTranslation.locale == locale)
+        if registry_keys:
+            query = query.filter(UiTranslation.key.in_(registry_keys))
+        else:
+            query = query.filter(UiTranslation.key == "__no_registry_match__")
+        if q:
+            query = query.filter(UiTranslation.key.ilike(f"%{q}%"))
+        query = query.order_by(UiTranslation.key.asc())
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        items = pagination.items
+
+    return render_template(
+        "admin/translations_list.html",
+        q=q,
+        locale=locale,
+        view=view,
+        only_missing=only_missing,
+        supported_locales=supported,
+        items=items,
+        missing_registry=missing_registry,
+        pagination=pagination,
+        kpi=kpi,
+        can_l10n_write=can_l10n_write_effective,
+        can_l10n_delete=can_l10n_delete,
+        is_locale_locked=is_locale_locked,
+        locale_lock=locale_lock,
+        is_translation_frozen=is_translation_frozen,
+        translation_freeze=freeze_state,
+    )
+
+
+@admin_bp.get("/translations/coverage")
+def admin_translations_coverage():
+    role = _admin_role_value()
+    if role not in {"ops", "superadmin"}:
+        abort(403)
+
+    locales = ["fr", "en", "de", "bg"]
+    registry = _load_ui_key_registry()
+    ops_domains = set(_load_ui_domains().get("core_ops_domains", []))
+    buckets = ("public", "volunteer", "admin", "ops")
+
+    bucket_keys: dict[str, set[str]] = {b: set() for b in buckets}
+    all_keys: set[str] = set()
+    for row in registry:
+        key = (row.get("key") or "").strip()
+        if not key:
+            continue
+        domain = (row.get("domain") or "").strip().lower()
+        bucket = _coverage_bucket_for_domain(domain, ops_domains)
+        bucket_keys[bucket].add(key)
+        all_keys.add(key)
+
+    locale_keysets: dict[str, set[str]] = {lc: set() for lc in locales}
+    if all_keys:
+        rows = (
+            UiTranslation.query.with_entities(UiTranslation.locale, UiTranslation.key)
+            .filter(UiTranslation.locale.in_(locales))
+            .filter(UiTranslation.key.in_(list(all_keys)))
+            .filter(UiTranslation.is_active.is_(True))
+            .all()
+        )
+        for locale, key in rows:
+            locale_keysets.setdefault(locale, set()).add(key)
+
+    coverage: dict[str, dict] = {}
+    for locale in locales:
+        row_data: dict[str, dict | float] = {}
+        locale_keys = locale_keysets.get(locale, set())
+        for bucket in buckets:
+            keys = bucket_keys[bucket]
+            total = len(keys)
+            translated = len(locale_keys.intersection(keys))
+            ratio = (float(translated) / float(total)) if total else 1.0
+            row_data[bucket] = {
+                "ratio": ratio,
+                "percent": round(ratio * 100.0, 1),
+                "translated": translated,
+                "total": total,
+                "class": _coverage_class(ratio),
+            }
+        total_all = len(all_keys)
+        translated_all = len(locale_keys.intersection(all_keys))
+        total_ratio = (float(translated_all) / float(total_all)) if total_all else 1.0
+        row_data["total"] = {
+            "ratio": total_ratio,
+            "percent": round(total_ratio * 100.0, 1),
+            "translated": translated_all,
+            "total": total_all,
+            "class": _coverage_class(total_ratio),
+        }
+        coverage[locale] = row_data
+
+    translations_count = (
+        db.session.query(func.count(UiTranslation.id))
+        .filter(UiTranslation.locale.in_(locales))
+        .filter(UiTranslation.key.in_(list(all_keys)) if all_keys else UiTranslation.key == "__no_registry_match__")
+        .filter(UiTranslation.is_active.is_(True))
+        .scalar()
+        or 0
+    )
+    avg_coverage = (
+        round(
+            (sum(float(coverage[lc]["total"]["ratio"]) for lc in locales) / float(len(locales)))
+            * 100.0,
+            1,
+        )
+        if locales
+        else 0.0
+    )
+
+    if (request.args.get("format") or "").strip().lower() == "json":
+        payload = {
+            "locales": locales,
+            "buckets": list(buckets),
+            "kpi": {
+                "locales": len(locales),
+                "registry_keys": len(all_keys),
+                "translations": int(translations_count),
+                "average_coverage_percent": avg_coverage,
+            },
+            "coverage": coverage,
+        }
+        return jsonify(payload), 200
+
+    return render_template(
+        "admin/translations_coverage.html",
+        locales=locales,
+        coverage=coverage,
+        buckets=buckets,
+        kpi={
+            "locales": len(locales),
+            "registry_keys": len(all_keys),
+            "translations": int(translations_count),
+            "average_coverage_percent": avg_coverage,
+        },
+    )
+
+
+@admin_bp.get("/translations/<path:key>")
+def admin_translations_key(key: str):
+    key = (key or "").strip()
+    if not key:
+        abort(404)
+
+    locale = (request.args.get("locale") or "fr").strip().lower()
+    supported = _supported_locales()
+    if locale not in supported:
+        locale = current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+
+    row = UiTranslation.query.filter_by(key=key, locale=locale).first()
+    reg = _registry_index().get(key) or {}
+    fallback_text = _fallback_preview(key, locale)
+    status = "db_override" if row and row.text else ("fallback" if fallback_text != key else "missing")
+    history = []
+    if _table_exists("ui_translation_events"):
+        history = (
+            UiTranslationEvent.query.filter(
+                UiTranslationEvent.locale == locale,
+                UiTranslationEvent.key == key,
+            )
+            .order_by(UiTranslationEvent.created_at.desc())
+            .limit(20)
+            .all()
+        )
+    last_event = history[0] if history else None
+    locale_lock = _get_locale_lock(locale)
+    is_locale_locked = bool(locale_lock and locale_lock.is_locked)
+    freeze_state = _get_translation_freeze_state()
+    is_translation_frozen = bool(freeze_state and freeze_state.is_active)
+    can_l10n_write = _can_l10n_write()
+    can_l10n_delete = _can_l10n_delete()
+    can_l10n_write_effective = can_l10n_write and (not is_locale_locked or can_l10n_delete)
+
+    return render_template(
+        "admin/translations_key.html",
+        key=key,
+        locale=locale,
+        supported_locales=supported,
+        row=row,
+        fallback_text=fallback_text,
+        status=status,
+        registry_default=(reg.get("default") or ""),
+        registry_domain=(reg.get("domain") or ""),
+        can_l10n_write=can_l10n_write_effective,
+        can_l10n_delete=can_l10n_delete,
+        is_locale_locked=is_locale_locked,
+        locale_lock=locale_lock,
+        is_translation_frozen=is_translation_frozen,
+        translation_freeze=freeze_state,
+        history_events=history,
+        last_event=last_event,
+    )
+
+
+@admin_bp.post("/translations/upsert")
+def admin_translations_upsert():
+    _require_l10n_write()
+    key = (request.form.get("key") or "").strip()
+    locale = (request.form.get("locale") or "").strip().lower()
+    locked = _blocked_by_locale_lock(locale)
+    if locked is not None:
+        return locked
+    text = _sanitize_translation_text(request.form.get("text") or "")
+
+    if not key or not locale:
+        flash("Invalid key/locale.", "danger")
+        return redirect(url_for("admin.admin_translations_list"))
+
+    supported = _supported_locales()
+    if locale not in supported:
+        flash("Unsupported locale.", "danger")
+        return redirect(url_for("admin.admin_translations_list"))
+
+    if len(key) > 255:
+        flash("Key too long.", "danger")
+        return redirect(url_for("admin.admin_translations_list", locale=locale))
+
+    if len(text) > 4000:
+        flash("Text too long (max 4000).", "danger")
+        return redirect(url_for("admin.admin_translations_key", key=key, locale=locale))
+
+    existing = UiTranslation.query.filter_by(key=key, locale=locale).first()
+    freeze_block = _blocked_by_translation_freeze(
+        locale=locale,
+        action="create",
+        allow=existing is not None,
+    )
+    if freeze_block is not None:
+        return freeze_block
+
+    row, action, old_text, changed = _ui_translation_upsert(locale=locale, key=key, text=text)
+    if changed:
+        _log_translation_event(
+            action=action,
+            locale=locale,
+            key=key,
+            old_text=old_text,
+            new_text=text,
+            source="human",
+            translation_id=getattr(row, "id", None),
+        )
+
+    db.session.commit()
+    flash("Translation saved." if changed else "No changes.", "success" if changed else "info")
+    return redirect(url_for("admin.admin_translations_key", key=key, locale=locale))
+
+
+@admin_bp.post("/translations/delete")
+def admin_translations_delete():
+    _require_l10n_delete()
+    key = (request.form.get("key") or "").strip()
+    locale = (request.form.get("locale") or "").strip().lower()
+    locked = _blocked_by_locale_lock(locale)
+    if locked is not None:
+        return locked
+    frozen = _blocked_by_translation_freeze(locale=locale, action="delete")
+    if frozen is not None:
+        return frozen
+
+    row = UiTranslation.query.filter_by(key=key, locale=locale).first()
+    if row:
+        old_text = row.text
+        translation_id = row.id
+        db.session.delete(row)
+        _log_translation_event(
+            action="deleted",
+            locale=locale,
+            key=key,
+            old_text=old_text,
+            new_text=None,
+            source="human",
+            translation_id=translation_id,
+        )
+        db.session.commit()
+        flash("DB override deleted (fallback will be used).", "warning")
+    else:
+        flash("Nothing to delete.", "info")
+
+    return redirect(url_for("admin.admin_translations_key", key=key, locale=locale))
+
+
+@admin_bp.post("/translations/suggest")
+def admin_translations_suggest():
+    key = (request.form.get("key") or "").strip()
+    locale = (request.form.get("locale") or "").strip().lower()
+    if not key or not locale:
+        return jsonify({"error": "missing key/locale"}), 400
+
+    if locale not in _supported_locales():
+        return jsonify({"error": "unsupported locale"}), 400
+
+    meta = _ui_registry_get(key)
+    default = (meta.get("default") or "").strip()
+    domain = (meta.get("domain") or "public").strip()
+    suggestions = _rules_suggest(key=key, locale=locale, default=default, domain=domain)
+    return jsonify(
+        {
+            "key": key,
+            "locale": locale,
+            "domain": domain,
+            "default": default,
+            "provider": "rules",
+            "suggestions": suggestions,
+        }
+    )
+
+
+@admin_bp.post("/translations/ai-suggest")
+def admin_translations_ai_suggest():
+    key = (request.form.get("key") or "").strip()
+    locale = (request.form.get("locale") or "").strip().lower()
+    provider = (request.form.get("provider") or "hf_local").strip().lower()
+    if not key or not locale:
+        return jsonify({"error": "missing key/locale"}), 400
+    if locale not in _supported_locales():
+        return jsonify({"error": "unsupported locale"}), 400
+
+    meta = _ui_registry_get(key)
+    default = (meta.get("default") or "").strip()
+    domain = (meta.get("domain") or "public").strip()
+    source_text = _source_text_for_ai(key=key, default=default)
+    suggestions = _ai_suggest(
+        key=key,
+        locale=locale,
+        default=default,
+        domain=domain,
+        source_text=source_text,
+        provider=provider,
+    )
+    return jsonify(
+        {
+            "key": key,
+            "locale": locale,
+            "domain": domain,
+            "default": default,
+            "provider": provider,
+            "suggestions": suggestions,
+        }
+    )
+
+
+@admin_bp.post("/translations/bulk-suggest-apply")
+def admin_translations_bulk_suggest_apply():
+    _require_l10n_write()
+    locale = (
+        request.form.get("locale")
+        or request.args.get("locale")
+        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+    ).strip().lower()
+    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    dry_run = (request.form.get("dry_run") or request.args.get("dry_run") or "") == "1"
+    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+
+    try:
+        limit = int(request.form.get("limit") or request.args.get("limit") or "120")
+    except ValueError:
+        limit = 120
+    limit = max(1, min(limit, 500))
+
+    supported = _supported_locales()
+    if locale not in supported:
+        return jsonify({"ok": False, "error": "unsupported locale"}), 400
+    locked = _blocked_by_locale_lock(locale)
+    if locked is not None:
+        return locked
+    if not dry_run:
+        frozen = _blocked_by_translation_freeze(locale=locale, action="bulk")
+        if frozen is not None:
+            return frozen
+    if view not in {"ops", "core", "inventory", "all"}:
+        view = "ops"
+
+    entries = _registry_entries_for_view(view)
+    keys = [e["key"] for e in entries if e.get("key")]
+
+    existing_keys: set[str] = set()
+    if keys:
+        existing_keys = {
+            row.key
+            for row in UiTranslation.query.filter(
+                UiTranslation.locale == locale,
+                UiTranslation.key.in_(keys),
+            ).all()
+        }
+
+    missing_entries = [e for e in entries if e.get("key") and e["key"] not in existing_keys]
+    to_process = missing_entries[:limit]
+
+    applied = 0
+    skipped = 0
+    for entry in to_process:
+        key = entry["key"]
+        default = (entry.get("default") or "").strip()
+        domain = (entry.get("domain") or "").strip()
+        suggestions = _rules_suggest(key=key, locale=locale, default=default, domain=domain)
+        if not suggestions:
+            skipped += 1
+            continue
+        best = (suggestions[0].get("text") or "").strip()
+        if not best:
+            skipped += 1
+            continue
+        if not dry_run:
+            row, _action, old_text, changed = _ui_translation_upsert(locale=locale, key=key, text=best)
+            if changed:
+                _log_translation_event(
+                    action="bulk_rules",
+                    locale=locale,
+                    key=key,
+                    old_text=old_text,
+                    new_text=best,
+                    source="rules_v1",
+                    translation_id=getattr(row, "id", None),
+                )
+        applied += 1
+
+    if not dry_run:
+        db.session.commit()
+
+    report = {
+        "ok": True,
+        "locale": locale,
+        "view": view,
+        "limit": limit,
+        "dry_run": dry_run,
+        "missing": len(missing_entries),
+        "applied": applied,
+        "skipped": skipped,
+        "limit_hit": len(missing_entries) > limit,
+    }
+
+    if resp_format == "json" or request.accept_mimetypes.best == "application/json":
+        return jsonify(report), 200
+
+    flash(
+        f"Auto-fill ({locale}/{view}): applied={applied}, skipped={skipped}, "
+        f"missing={len(missing_entries)}{' (dry-run)' if dry_run else ''}.",
+        "success" if applied > 0 else "info",
+    )
+
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
+    return redirect(
+        url_for(
+            "admin.admin_translations_list",
+            locale=locale,
+            view=view,
+            only_missing="1",
+        )
+    )
+
+
+@admin_bp.post("/translations/bootstrap-from-po")
+def admin_translations_bootstrap_from_po():
+    _require_l10n_write()
+    locale = (
+        request.form.get("locale")
+        or request.args.get("locale")
+        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+    ).strip().lower()
+    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    dry_run = (request.form.get("dry_run") or request.args.get("dry_run") or "") == "1"
+    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+
+    try:
+        limit = int(request.form.get("limit") or request.args.get("limit") or "300")
+    except ValueError:
+        limit = 300
+    limit = max(1, min(limit, 1000))
+
+    supported = _supported_locales()
+    if locale not in supported:
+        return jsonify({"ok": False, "error": "unsupported locale"}), 400
+    locked = _blocked_by_locale_lock(locale)
+    if locked is not None:
+        return locked
+    if not dry_run:
+        frozen = _blocked_by_translation_freeze(locale=locale, action="bootstrap")
+        if frozen is not None:
+            return frozen
+    if view not in {"ops", "core", "inventory", "all"}:
+        view = "ops"
+
+    entries = [
+        e
+        for e in _registry_entries_for_view(view)
+        if str(e.get("key") or "").startswith("msgid:")
+    ]
+    keys = [e["key"] for e in entries if e.get("key")]
+
+    existing_keys: set[str] = set()
+    if keys:
+        existing_keys = {
+            row.key
+            for row in UiTranslation.query.filter(
+                UiTranslation.locale == locale,
+                UiTranslation.key.in_(keys),
+            ).all()
+        }
+
+    missing_entries = [e for e in entries if e.get("key") and e["key"] not in existing_keys]
+    translations = _load_babel_translations(locale)
+    to_process = missing_entries[:limit]
+
+    applied = 0
+    skipped_existing = len(entries) - len(missing_entries)
+    skipped_not_found = 0
+
+    for entry in to_process:
+        key = entry["key"]
+        msgid = key.split("msgid:", 1)[1].strip()
+        if not msgid:
+            skipped_not_found += 1
+            continue
+        translated = (translations.gettext(msgid) if translations else msgid).strip()
+        if not translated or translated == msgid:
+            skipped_not_found += 1
+            continue
+        if not dry_run:
+            row, _action, old_text, changed = _ui_translation_upsert(locale=locale, key=key, text=translated)
+            if changed:
+                _log_translation_event(
+                    action="po_sync",
+                    locale=locale,
+                    key=key,
+                    old_text=old_text,
+                    new_text=translated,
+                    source="po_sync",
+                    translation_id=getattr(row, "id", None),
+                )
+        applied += 1
+
+    if not dry_run:
+        db.session.commit()
+
+    report = {
+        "ok": True,
+        "locale": locale,
+        "view": view,
+        "limit": limit,
+        "dry_run": dry_run,
+        "missing_total": len(missing_entries),
+        "db_existing_skipped": skipped_existing,
+        "po_found_applied": applied,
+        "po_not_found_skipped": skipped_not_found,
+        "limit_hit": len(missing_entries) > limit,
+    }
+
+    if resp_format == "json" or request.accept_mimetypes.best == "application/json":
+        return jsonify(report), 200
+
+    flash(
+        f"PO bootstrap ({locale}/{view}): applied={applied}, existing={skipped_existing}, "
+        f"not_found={skipped_not_found}{' (dry-run)' if dry_run else ''}.",
+        "success" if applied > 0 else "info",
+    )
+
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
+    return redirect(
+        url_for(
+            "admin.admin_translations_list",
+            locale=locale,
+            view=view,
+            only_missing="1",
+        )
+    )
+
+
+@admin_bp.post("/translations/locale-lock")
+def admin_translations_locale_lock():
+    _require_l10n_delete()
+    locale = (
+        request.form.get("locale")
+        or request.args.get("locale")
+        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+    ).strip().lower()
+    action = (request.form.get("action") or request.args.get("action") or "").strip().lower()
+    note = (request.form.get("note") or "").strip()
+    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+
+    if locale not in _supported_locales():
+        return jsonify({"ok": False, "error": "unsupported locale"}), 400
+    if action not in {"lock", "unlock"}:
+        return jsonify({"ok": False, "error": "invalid action"}), 400
+    if len(note) > 255:
+        note = note[:255]
+
+    row = _get_locale_lock(locale)
+    if row is None:
+        row = UiLocaleLock(locale=locale, is_locked=False)
+        db.session.add(row)
+
+    if action == "lock":
+        row.is_locked = True
+        row.locked_at = _utc_now()
+        row.locked_by_admin_user_id = getattr(current_user, "id", None)
+        row.note = note or row.note
+    else:
+        row.is_locked = False
+        row.note = note or row.note
+
+    db.session.commit()
+    result = {
+        "ok": True,
+        "locale": locale,
+        "is_locked": bool(row.is_locked),
+        "action": action,
+    }
+
+    if resp_format == "json" or request.accept_mimetypes.best == "application/json":
+        return jsonify(result), 200
+
+    flash(
+        f"Locale {locale.upper()} {'locked' if row.is_locked else 'unlocked'}.",
+        "success",
+    )
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
+    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+
+
+@admin_bp.post("/translations/freeze")
+def admin_translations_freeze_toggle():
+    _require_l10n_delete()
+    action = (request.form.get("action") or request.args.get("action") or "").strip().lower()
+    release_tag = (request.form.get("release_tag") or "").strip()[:64]
+    note = (request.form.get("note") or "").strip()[:255]
+    next_url = (request.form.get("next") or "").strip()
+    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+
+    if action not in {"activate", "deactivate"}:
+        return jsonify({"ok": False, "error": "invalid action"}), 400
+
+    row = _get_translation_freeze_state()
+    if row is None:
+        row = UiTranslationFreeze(is_active=False)
+        db.session.add(row)
+
+    if action == "activate":
+        row.is_active = True
+        row.activated_at = _utc_now()
+        row.activated_by_admin_user_id = getattr(current_user, "id", None)
+        if release_tag:
+            row.release_tag = release_tag
+        if note:
+            row.note = note
+    else:
+        row.is_active = False
+        if release_tag:
+            row.release_tag = release_tag
+        if note:
+            row.note = note
+
+    db.session.commit()
+    result = {
+        "ok": True,
+        "is_active": bool(row.is_active),
+        "release_tag": row.release_tag,
+    }
+
+    if resp_format == "json" or request.accept_mimetypes.best == "application/json":
+        return jsonify(result), 200
+
+    flash(
+        f"Translation freeze {'activated' if row.is_active else 'deactivated'}.",
+        "success",
+    )
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url, code=303)
+    return redirect(url_for("admin.admin_translations_list"), code=303)
+
+
 def admin_required_404():
     if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
         abort(404)
+
+
+def _supported_locales() -> list[str]:
+    configured = current_app.config.get("SUPPORTED_LOCALES") or ("fr", "en", "de", "bg")
+    locales = [str(x).strip().lower() for x in configured if str(x).strip()]
+    return sorted(set(locales))
+
+
+def _can_l10n_write() -> bool:
+    return _admin_role_value() in {"ops", "superadmin"}
+
+
+def _can_l10n_delete() -> bool:
+    return _admin_role_value() == "superadmin"
+
+
+def _get_locale_lock(locale: str) -> UiLocaleLock | None:
+    loc = (locale or "").strip().lower()
+    if not loc:
+        return None
+    return UiLocaleLock.query.filter_by(locale=loc).first()
+
+
+def _get_translation_freeze_state() -> UiTranslationFreeze | None:
+    if not _table_exists("ui_translation_freeze"):
+        return None
+    return UiTranslationFreeze.query.order_by(UiTranslationFreeze.id.asc()).first()
+
+
+def _is_translation_frozen() -> bool:
+    row = _get_translation_freeze_state()
+    return bool(row and row.is_active)
+
+
+def _is_locale_locked(locale: str) -> bool:
+    row = _get_locale_lock(locale)
+    return bool(row and row.is_locked)
+
+
+def _require_l10n_write() -> None:
+    if _can_l10n_write():
+        return
+    _audit_denied_action(required_roles={"ops", "superadmin"}, actor_role=_admin_role_value())
+    abort(403)
+
+
+def _require_l10n_delete() -> None:
+    if _can_l10n_delete():
+        return
+    _audit_denied_action(required_roles={"superadmin"}, actor_role=_admin_role_value())
+    abort(403)
+
+
+def _blocked_by_locale_lock(locale: str):
+    if not _is_locale_locked(locale):
+        return None
+    if _can_l10n_delete():
+        return None
+    wants_json = (
+        (request.form.get("format") or request.args.get("format") or "").strip().lower()
+        == "json"
+        or request.accept_mimetypes.best == "application/json"
+    )
+    if wants_json:
+        return jsonify({"ok": False, "error": "locale_locked", "locale": locale}), 423
+    flash(f"Locale {locale.upper()} is locked.", "warning")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url, code=303)
+    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+
+
+def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = False):
+    if allow or not _is_translation_frozen():
+        return None
+    wants_json = (
+        (request.form.get("format") or request.args.get("format") or "").strip().lower()
+        == "json"
+        or request.accept_mimetypes.best == "application/json"
+    )
+    freeze = _get_translation_freeze_state()
+    payload = {
+        "ok": False,
+        "error": "translation_frozen",
+        "action": action,
+        "locale": locale,
+        "release_tag": (freeze.release_tag if freeze else None),
+    }
+    if wants_json:
+        return jsonify(payload), 423
+    msg = "Translation freeze is active for release."
+    if freeze and freeze.release_tag:
+        msg = f"Translation freeze active ({freeze.release_tag})."
+    flash(msg, "warning")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url, code=303)
+    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+
+
+def _sanitize_translation_text(value: str) -> str:
+    cleaned = _CTRL_CHARS_RE.sub("", value or "")
+    return cleaned.strip()
+
+
+def _fallback_preview(key: str, locale: str) -> str:
+    try:
+        with force_locale(locale):
+            text = _(key)
+        return text or key
+    except Exception:
+        return key
+
+
+def _load_ui_key_registry() -> list[dict]:
+    if not _UI_KEYS_PATH.exists():
+        return []
+    try:
+        rows = json.loads(_UI_KEYS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    out: list[dict] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        key = str(row.get("key") or "").strip()
+        if not key:
+            continue
+        out.append(
+            {
+                "key": key,
+                "default": str(row.get("default") or "").strip(),
+                "domain": str(row.get("domain") or "").strip(),
+                "kind": str(row.get("kind") or "tkey").strip() or "tkey",
+                "tier": str(row.get("tier") or "core").strip() or "core",
+            }
+        )
+    return out
+
+
+def _load_ui_domains() -> dict:
+    if not _UI_DOMAINS_PATH.exists():
+        return {"core_ops_domains": []}
+    try:
+        data = json.loads(_UI_DOMAINS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {"core_ops_domains": []}
+    if not isinstance(data, dict):
+        return {"core_ops_domains": []}
+    domains = data.get("core_ops_domains") or []
+    if not isinstance(domains, list):
+        domains = []
+    return {"core_ops_domains": [str(x).strip() for x in domains if str(x).strip()]}
+
+
+def _registry_entries_for_view(view: str) -> list[dict]:
+    registry_all = _load_ui_key_registry()
+    view_norm = (view or "ops").strip().lower()
+    if view_norm not in {"ops", "core", "inventory", "all"}:
+        view_norm = "ops"
+    ops_domains = set(_load_ui_domains().get("core_ops_domains", []))
+
+    def _match(row: dict) -> bool:
+        row_tier = row.get("tier") or "core"
+        row_dom = row.get("domain") or ""
+        if view_norm == "ops":
+            return row_tier == "core" and row_dom in ops_domains
+        if view_norm == "core":
+            return row_tier == "core"
+        if view_norm == "inventory":
+            return row_tier == "inventory"
+        return True
+
+    return [row for row in registry_all if _match(row)]
+
+
+def _registry_index() -> dict[str, dict]:
+    return {row["key"]: row for row in _load_ui_key_registry()}
+
+
+def _ui_registry_get(key: str) -> dict:
+    return _registry_index().get((key or "").strip(), {})
+
+
+def _ui_translation_upsert(locale: str, key: str, text: str) -> tuple[UiTranslation, str, str | None, bool]:
+    row = UiTranslation.query.filter_by(key=key, locale=locale).first()
+    if row is None:
+        row = UiTranslation(key=key, locale=locale, text=text)
+        db.session.add(row)
+        return row, "created", None, True
+    old_text = row.text
+    changed = old_text != text
+    if changed:
+        row.text = text
+    row.is_active = True
+    return row, "updated", old_text, changed
+
+
+def _current_admin_email() -> str | None:
+    email = (getattr(current_user, "email", None) or "").strip()
+    if email:
+        return email
+    username = (getattr(current_user, "username", None) or "").strip()
+    return username or None
+
+
+def _log_translation_event(
+    *,
+    action: str,
+    locale: str,
+    key: str,
+    old_text: str | None = None,
+    new_text: str | None = None,
+    source: str = "human",
+    translation_id: int | None = None,
+) -> None:
+    if not _table_exists("ui_translation_events"):
+        return
+    db.session.add(
+        UiTranslationEvent(
+            translation_id=translation_id,
+            locale=(locale or "").strip().lower(),
+            key=(key or "").strip(),
+            action=(action or "").strip(),
+            source=(source or "human").strip(),
+            actor_admin_user_id=getattr(current_user, "id", None),
+            actor_email=_current_admin_email(),
+            old_text=old_text,
+            new_text=new_text,
+        )
+    )
+
+
+def _load_babel_translations(locale: str) -> Translations | None:
+    raw_dirs = str(current_app.config.get("BABEL_TRANSLATION_DIRECTORIES") or "translations")
+    candidates = [part.strip() for part in re.split(r"[;,]", raw_dirs) if part.strip()]
+    if not candidates:
+        candidates = ["translations"]
+    for directory in candidates:
+        try:
+            return Translations.load(directory, locales=[locale], domain="messages")
+        except Exception:
+            continue
+    return None
+
+
+def _translation_kpi(locale: str, keys: list[str]) -> dict:
+    total = len(keys)
+    if total == 0:
+        return {"total": 0, "overrides": 0, "missing": 0, "coverage": 0.0}
+
+    overrides = (
+        db.session.query(func.count(UiTranslation.key.distinct()))
+        .filter(
+            UiTranslation.locale == locale,
+            UiTranslation.key.in_(keys),
+        )
+        .scalar()
+        or 0
+    )
+    missing = max(total - int(overrides), 0)
+    coverage = round((float(overrides) / float(total)) * 100.0, 1) if total else 0.0
+    return {
+        "total": int(total),
+        "overrides": int(overrides),
+        "missing": int(missing),
+        "coverage": float(coverage),
+    }
+
+
+def _coverage_bucket_for_domain(domain: str, ops_domains: set[str]) -> str:
+    dom = (domain or "").strip().lower()
+    if dom in ops_domains:
+        return "ops"
+    if dom.startswith("admin"):
+        return "admin"
+    if dom.startswith("volunteer"):
+        return "volunteer"
+    return "public"
+
+
+def _coverage_class(ratio: float) -> str:
+    if ratio > 0.9:
+        return "success"
+    if ratio > 0.6:
+        return "warning"
+    return "danger"
+
+
+def _load_terminology() -> dict:
+    if not _TERMINOLOGY_PATH.exists():
+        return {}
+    try:
+        return json.loads(_TERMINOLOGY_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _infer_kind(key: str) -> str:
+    k = (key or "").lower()
+    if any(p in k for p in ["btn_", "cta_", "action_", "submit_", "save_", "close_", "assign_"]):
+        return "button"
+    if any(p in k for p in ["title_", "header_", "nav_", "menu_"]):
+        return "title"
+    if any(p in k for p in ["hint_", "help_", "desc_", "subtitle_", "empty_"]):
+        return "helper"
+    return "label"
+
+
+def _rules_suggest(key: str, locale: str, default: str, domain: str) -> list[dict]:
+    """Rules-based suggestions (deterministic/explainable, no external calls)."""
+    kind = _infer_kind(key)
+    term = _load_terminology()
+    loc_terms = term.get(locale, {})
+    is_admin = (domain or "").strip().lower() == "admin"
+    k = (key or "").lower()
+    default = (default or "").strip()
+
+    def t(token: str, fallback: str) -> str:
+        return str(loc_terms.get(token, fallback) or fallback).strip()
+
+    if "dashboard" in k:
+        base = t("dashboard", "Dashboard")
+        reason_base = "Term: dashboard"
+    elif "assign" in k or "claim" in k or "prendre_en_charge" in k:
+        base = t("assign", "Übernehmen" if locale == "de" else "Assign")
+        reason_base = "Term: assign/claim"
+    elif "status" in k:
+        base = t("status", "Status")
+        reason_base = "Term: status"
+    elif "request" in k or "demande" in k:
+        base = t("request", "Anfrage" if locale == "de" else "Request")
+        reason_base = "Term: request"
+    elif "case" in k or "dossier" in k:
+        base = t("case", "Vorgang" if locale == "de" else "Case")
+        reason_base = "Term: case"
+    else:
+        base = default or key
+        reason_base = "Fallback: default/key"
+
+    if kind == "button":
+        v1 = base
+        v2 = f"{base}..." if len(base) <= 20 else base
+        v3 = base.upper() if (is_admin and len(base) <= 16) else base
+        return [
+            {"text": v1, "reason": f"Button label (short). {reason_base}"},
+            {"text": v2, "reason": f"Button label (progressive). {reason_base}"},
+            {"text": v3, "reason": f"Button label (ops emphasis). {reason_base}"},
+        ]
+
+    if kind == "title":
+        v1 = base
+        v2 = f"{base} — {t('dashboard', 'Dashboard')}" if ("dashboard" not in k and len(base) <= 24) else base
+        v3 = f"{base} ({locale.upper()})" if (is_admin and len(base) <= 24) else base
+        return [
+            {"text": v1, "reason": f"Title. {reason_base}"},
+            {"text": v2, "reason": f"Title with context. {reason_base}"},
+            {"text": v3, "reason": f"Title (admin clarity). {reason_base}"},
+        ]
+
+    if kind == "helper":
+        v1 = base
+        v2 = f"{base}. {t('status', 'Status')}." if ("status" not in k and len(base) <= 40) else base
+        v3 = f"{base}." if base and not base.endswith(".") else base
+        return [
+            {"text": v1, "reason": f"Helper text (concise). {reason_base}"},
+            {"text": v2, "reason": f"Helper text (adds cue). {reason_base}"},
+            {"text": v3, "reason": f"Helper text (punctuation). {reason_base}"},
+        ]
+
+    v1 = base
+    v2 = base.capitalize() if base else base
+    v3 = base
+    return [
+        {"text": v1, "reason": f"Label. {reason_base}"},
+        {"text": v2, "reason": f"Label (capitalization). {reason_base}"},
+        {"text": v3, "reason": f"Label (stable). {reason_base}"},
+    ]
+
+
+def _source_text_for_ai(*, key: str, default: str) -> str:
+    if default:
+        return default.strip()
+    if (key or "").startswith("msgid:"):
+        return key.split("msgid:", 1)[1].strip()
+    return (key or "").strip()
+
+
+def _ai_suggest(
+    *,
+    key: str,
+    locale: str,
+    default: str,
+    domain: str,
+    source_text: str,
+    provider: str,
+) -> list[dict]:
+    # Always produce deterministic fallback suggestions.
+    rules = _rules_suggest(key=key, locale=locale, default=default, domain=domain)
+    if provider != "hf_local":
+        return rules
+
+    translated = _hf_translate_fr_to(locale=locale, text=source_text)
+    out: list[dict] = []
+    seen: set[str] = set()
+
+    if translated:
+        ai_text = translated.strip()
+        if ai_text and ai_text not in seen:
+            out.append(
+                {
+                    "text": ai_text,
+                    "reason": "AI suggestion (hf_local MarianMT).",
+                }
+            )
+            seen.add(ai_text)
+
+    for item in rules:
+        txt = (item.get("text") or "").strip()
+        if not txt or txt in seen:
+            continue
+        out.append({"text": txt, "reason": item.get("reason") or "Rules fallback."})
+        seen.add(txt)
+        if len(out) >= 3:
+            break
+
+    return out[:3] if out else rules[:3]
+
+
+def _hf_translate_fr_to(*, locale: str, text: str) -> str | None:
+    target = (locale or "").strip().lower()
+    src_text = (text or "").strip()
+    if not src_text:
+        return None
+    if target == "fr":
+        return src_text
+    model_name = _HF_MODEL_MAP.get(target)
+    if not model_name:
+        return None
+
+    with _HF_TRANSLATOR_LOCK:
+        if model_name in _HF_TRANSLATOR_FAILED:
+            return None
+        pair = _HF_TRANSLATORS.get(model_name)
+
+    if pair is None:
+        try:
+            from transformers import MarianMTModel, MarianTokenizer
+        except Exception:
+            with _HF_TRANSLATOR_LOCK:
+                _HF_TRANSLATOR_FAILED.add(model_name)
+            return None
+        try:
+            tokenizer = MarianTokenizer.from_pretrained(model_name)
+            model = MarianMTModel.from_pretrained(model_name)
+        except Exception:
+            with _HF_TRANSLATOR_LOCK:
+                _HF_TRANSLATOR_FAILED.add(model_name)
+            return None
+        with _HF_TRANSLATOR_LOCK:
+            _HF_TRANSLATORS[model_name] = (tokenizer, model)
+            pair = (tokenizer, model)
+
+    try:
+        tokenizer, model = pair
+        tokens = tokenizer(src_text, return_tensors="pt", truncation=True)
+        generated = model.generate(**tokens)
+        out = tokenizer.decode(generated[0], skip_special_tokens=True).strip()
+        return out or None
+    except Exception:
+        return None
 
 
 def _is_local_request() -> bool:
@@ -1123,7 +2643,7 @@ def emergency_requests():
     admin_required_404()
     # Admin guard (same as admin_dashboard)
     if not getattr(current_user, "is_admin", False):
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     q = (request.args.get("q") or "").strip()
@@ -1237,7 +2757,7 @@ def api_volunteers():
 def volunteer_detail(id):
     admin_required_404()
     if not current_user.is_admin:
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
     from flask import abort
 
@@ -1370,12 +2890,8 @@ def admin_ops_login():
             return _lockout_response(retry_after, next_url=next_url)
 
         password = request.form.get("password", "")
-        user = AdminUser.query.filter_by(username=username).first()
-        if (
-            not user
-            or not getattr(user, "password_hash", None)
-            or not check_password_hash(user.password_hash, password)
-        ):
+        user = _find_admin_user(username)
+        if not _verify_admin_password(user, password):
             _log_admin_attempt(username=username_norm, ip=ip, success=False)
             log_security_event(
                 "auth_admin_login_failed",
@@ -1410,12 +2926,8 @@ def admin_login_legacy():
             return _lockout_response(retry_after, next_url=next_url)
 
         password = request.form.get("password", "")
-        user = AdminUser.query.filter_by(username=username).first()
-        if (
-            not user
-            or not getattr(user, "password_hash", None)
-            or not check_password_hash(user.password_hash, password)
-        ):
+        user = _find_admin_user(username)
+        if not _verify_admin_password(user, password):
             _log_admin_attempt(username=username_norm, ip=ip, success=False)
             flash(INVALID_CREDENTIALS_MSG, "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
@@ -1470,7 +2982,7 @@ def admin_mfa_setup():
     if getattr(current_user, "mfa_enabled", False) and getattr(
         current_user, "totp_secret", None
     ):
-        flash("MFA вече е активиран.", "info")
+        flash(_("MFA is already enabled."), "info")
         return redirect(url_for("admin.admin_mfa_verify"))
 
     pending_secret = session.get(MFA_PENDING_SECRET_KEY)
@@ -1486,7 +2998,7 @@ def admin_mfa_setup():
     if request.method == "POST":
         code = (request.form.get("code") or "").strip().replace(" ", "")
         if not code:
-            flash("Въведи 6-цифрения код от приложението.", "danger")
+            flash(_("Enter the 6-digit code from the app."), "danger")
             return render_template(
                 "admin/mfa_setup.html",
                 qr_b64=qr_b64,
@@ -1513,8 +3025,8 @@ def admin_mfa_setup():
 
         _mfa_ok_set()
         session.pop(MFA_PENDING_SECRET_KEY, None)
-        flash("✅ MFA е активиран успешно.", "success")
-        flash("Сега си генерирай backup codes (спасителният пояс).", "info")
+        flash(_("MFA has been enabled successfully."), "success")
+        flash(_("Generate backup codes now (recovery option)."), "info")
         return redirect(url_for("admin.admin_mfa_backup_codes"))
 
     return render_template(
@@ -1584,7 +3096,7 @@ def admin_mfa_verify():
             message="Admin MFA verified",
             persist=True,
         )
-        flash("✅ MFA потвърдено.", "success")
+        flash(_("MFA verified."), "success")
         nxt = request.args.get("next")
         if nxt and nxt.startswith("/"):
             return redirect(nxt)
@@ -1593,12 +3105,12 @@ def admin_mfa_verify():
     _mfa_attempt_fail()
     locked, remaining = _mfa_lock_is_active()
     if locked:
-        flash(f"Грешен код. Заключено за ~{max(1, remaining // 60)} мин.", "danger")
+        flash(_("Invalid code. Locked for about %(minutes)s min.", minutes=max(1, remaining // 60)), "danger")
     else:
         left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(
             session.get("mfa_attempts", 0)
         )
-        flash(f"Грешен код. Оставащи опити: {max(left, 0)}.", "danger")
+        flash(_("Invalid code. Attempts remaining: %(count)s.", count=max(left, 0)), "danger")
 
     return redirect(
         url_for("admin.admin_mfa_verify", next=request.args.get("next", ""))
@@ -1615,7 +3127,7 @@ def admin_mfa_backup_codes():
         getattr(current_user, "mfa_enabled", False)
         and getattr(current_user, "totp_secret", None)
     ):
-        flash("Първо активирай MFA от Setup.", "warning")
+        flash(_("Enable MFA from setup first."), "warning")
         return redirect(url_for("admin.admin_mfa_setup"))
 
     if request.method == "POST":
@@ -1661,7 +3173,7 @@ def admin_2fa():
             session.pop("pending_admin_user_id", None)
             return redirect(url_for("admin.admin_dashboard"))
         else:
-            flash("Невалиден 2FA код.", "error")
+            flash(_("Invalid 2FA code."), "error")
 
     return render_template("admin_2fa.html")
 
@@ -1679,7 +3191,7 @@ def admin_email_2fa():
             session.pop("email_2fa_code", None)
             session.pop("email_2fa_expires", None)
             return redirect(url_for("admin.admin_dashboard"))
-        flash("Невалиден код за верификация.", "danger")
+        flash(_("Invalid verification code."), "danger")
 
     return render_template("admin_email_2fa.html")
 
@@ -1690,17 +3202,17 @@ def admin_2fa_setup():
     admin_required_404()
     """Настройка на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
         token = request.form.get("token")
         if current_user.verify_totp(token):
             current_user.enable_2fa()
-            flash("2FA е активиран успешно!", "success")
+            flash(_("2FA has been enabled successfully!"), "success")
             return redirect(url_for("admin.admin_dashboard"))
         else:
-            flash("Невалиден код.", "error")
+            flash(_("Invalid code."), "error")
 
     uri = current_user.get_totp_uri()
     return render_template("admin_2fa_setup.html", totp_uri=uri)
@@ -1712,11 +3224,11 @@ def admin_2fa_disable():
     admin_required_404()
     """Деактивиране на 2FA за админ"""
     if not isinstance(current_user, AdminUser):
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     current_user.disable_2fa()
-    flash("2FA е деактивиран.", "success")
+    flash(_("2FA has been disabled."), "success")
     return redirect(url_for("admin.admin_dashboard"))
 
 
@@ -2414,7 +3926,7 @@ def admin_dashboard():
         f"[DEBUG] admin_dashboard: is_authenticated={getattr(current_user, 'is_authenticated', None)}, is_admin={getattr(current_user, 'is_admin', None)}, id={getattr(current_user, 'id', None)}, username={getattr(current_user, 'username', None)}"
     )
     if not current_user.is_admin:
-        flash("Нямате достъп до админ панела.", "error")
+        flash(_("You do not have access to the admin panel."), "error")
         return redirect(url_for("main.dashboard"))
 
     requests = _scope_requests(Request.query).all()
@@ -2657,7 +4169,7 @@ def admin_volunteers():
         f"[DEBUG] admin_volunteers: is_authenticated={getattr(current_user, 'is_authenticated', None)}, is_admin={getattr(current_user, 'is_admin', None)}, id={getattr(current_user, 'id', None)}, username={getattr(current_user, 'username', None)}"
     )
     if not current_user.is_admin:
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     volunteers = Volunteer.query.all()
@@ -2677,7 +4189,7 @@ def add_volunteer():
     admin_required_404()
     """Добавяне на доброволец"""
     if not current_user.is_admin:
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
@@ -2690,7 +4202,7 @@ def add_volunteer():
         )
         db.session.add(volunteer)
         db.session.commit()
-        flash("Доброволецът е добавен успешно!", "success")
+        flash(_("Volunteer added successfully!"), "success")
         return redirect(url_for("admin.admin_volunteers"))
 
     return render_template("add_volunteer.html")
@@ -2702,7 +4214,7 @@ def delete_volunteer(id):
     admin_required_404()
     """Изтриване на доброволец"""
     if not current_user.is_admin:
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     from flask import abort
@@ -2712,7 +4224,7 @@ def delete_volunteer(id):
         abort(404)
     db.session.delete(volunteer)
     db.session.commit()
-    flash("Доброволецът е изтрит успешно!", "success")
+    flash(_("Volunteer deleted successfully!"), "success")
     return redirect(url_for("admin.admin_volunteers"))
 
 
@@ -2722,7 +4234,7 @@ def edit_volunteer(id):
     admin_required_404()
     """Редактиране на доброволец"""
     if not current_user.is_admin:
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     from flask import abort
@@ -2747,7 +4259,7 @@ def edit_volunteer(id):
         logging.warning(
             f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}"
         )
-        flash("Промените са запазени!", "success")
+        flash(_("Changes saved!"), "success")
         return redirect(url_for("admin.admin_volunteers"))
 
     return render_template("edit_volunteer.html", volunteer=volunteer)
@@ -2759,7 +4271,7 @@ def export_volunteers():
     admin_required_404()
     """Експорт на доброволци като CSV"""
     if not current_user.is_admin:
-        flash("Нямате достъп.", "error")
+        flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
     import csv
@@ -2988,7 +4500,7 @@ def update_status(req_id):
         request.accept_mimetypes and request.accept_mimetypes.best == "application/json"
     ):
         return jsonify({"success": True, "status": new_status or req.status})
-    flash("Статусът е обновен.", "success")
+    flash(_("Status updated."), "success")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
@@ -3139,7 +4651,7 @@ def admin_request_archive(req_id: int):
 
 
 from flask import current_app, flash, redirect, render_template, request, url_for
-from sqlalchemy import func, or_, tuple_
+from sqlalchemy import and_, func, or_, tuple_
 
 from ..models import Request, RequestActivity, db
 
@@ -3179,26 +4691,11 @@ def admin_sla_breakdown():
     if breach_type not in {"all", "resolve", "owner_assign", "volunteer_assign"}:
         breach_type = "owner_assign"
     sort = (request.args.get("sort") or "overdue").strip().lower()
-    days = max(1, min(int(request.args.get("days", 30) or 30), 365))
+    days = _normalize_sla_days(request.args.get("days", 30))
     limit = max(1, min(int(request.args.get("limit", 200) or 200), 1000))
 
     now = datetime.now(UTC).replace(tzinfo=None)
-    window_start = now - timedelta(days=days)
-
-    open_filter = or_(
-        Request.status.is_(None), ~func.lower(Request.status).in_(CLOSED_STATUSES)
-    )
-
-    owner_assign_sla_hours = int(ASSIGN_SLA_HOURS)
-    resolve_sla_hours = int(RESOLVE_SLA_DAYS * 24)
-    volunteer_assign_sla_hours = int(VOLUNTEER_ASSIGN_SLA_HOURS)
-
-    q = (
-        db.session.query(Request)
-        .filter(Request.created_at.isnot(None))
-        .filter(Request.created_at >= window_start)
-        .filter(open_filter)
-    )
+    q = _sla_base_window_query(_scope_requests(Request.query), days=days, now=now)
 
     if breach_type == "resolve":
         breach_label = "SLA résolution"
@@ -3209,42 +4706,45 @@ def admin_sla_breakdown():
     else:
         breach_label = "Toutes violations"
 
+    resolve_count = (
+        _apply_sla_queue_filter(
+            _scope_requests(Request.query),
+            sla_kind="resolution_overdue",
+            days=days,
+            now=now,
+        ).count()
+        or 0
+    )
+    owner_assign_count = (
+        _apply_sla_queue_filter(
+            _scope_requests(Request.query),
+            sla_kind="owner_assignment_overdue",
+            days=days,
+            now=now,
+        ).count()
+        or 0
+    )
+    volunteer_assign_count = (
+        _apply_sla_queue_filter(
+            _scope_requests(Request.query),
+            sla_kind="volunteer_assignment_overdue",
+            days=days,
+            now=now,
+        ).count()
+        or 0
+    )
+
     requests = q.all()
 
     rows: list[dict] = []
-    resolve_count = 0
-    owner_assign_count = 0
-    volunteer_assign_count = 0
 
     for req in requests:
-        created_at = _to_utc_naive(getattr(req, "created_at", None))
-        if not created_at:
-            continue
-        age_hours = max(0.0, (now - created_at).total_seconds() / 3600.0)
-
-        resolve_overdue = None
-        owner_assign_overdue = None
-        volunteer_assign_overdue = None
-
-        if req.completed_at is None and age_hours > resolve_sla_hours:
-            resolve_overdue = age_hours - resolve_sla_hours
-            resolve_count += 1
-
-        if req.owner_id is None and age_hours > owner_assign_sla_hours:
-            owner_assign_overdue = age_hours - owner_assign_sla_hours
-            owner_assign_count += 1
-
-        if req.assigned_volunteer_id is None and age_hours > volunteer_assign_sla_hours:
-            volunteer_assign_overdue = age_hours - volunteer_assign_sla_hours
-            volunteer_assign_count += 1
-
-        candidates = []
-        if resolve_overdue is not None:
-            candidates.append(("resolve", resolve_overdue))
-        if owner_assign_overdue is not None:
-            candidates.append(("owner_assign", owner_assign_overdue))
-        if volunteer_assign_overdue is not None:
-            candidates.append(("volunteer_assign", volunteer_assign_overdue))
+        overdue_by_kind = _sla_overdue_hours_by_kind(req, now=now)
+        candidates = [
+            (SLA_KIND_TO_BREAKDOWN_TYPE[kind], overdue)
+            for kind, overdue in overdue_by_kind.items()
+            if kind in SLA_KIND_TO_BREAKDOWN_TYPE
+        ]
 
         if not candidates:
             continue
@@ -3312,15 +4812,49 @@ def admin_requests():
         "rejected": "Отхвърлени",
     }
 
+    queue = (request.args.get("queue") or "").strip().lower()
+    sla_kind = _normalize_sla_kind(request.args.get("sla_kind"))
+    sla_days = _normalize_sla_days(request.args.get("sla_days", 30))
+    active_sla_queue = bool(queue == "sla" and sla_kind)
+    active_sla_filter_label = (
+        SLA_QUEUE_KINDS.get(sla_kind, "") if active_sla_queue else ""
+    )
     show_deleted = (request.args.get("deleted") or "").strip() == "1"
     query = _scope_requests(Request.query)
-    query, status, q, risk = build_requests_query(query, request.args)
+    query, status, q, risk, risk_level, no_owner, not_seen_72h, sort = (
+        build_requests_query(query, request.args)
+    )
     requests = query.all()
     now_aware = utc_now()
     now_naive = datetime.now(UTC).replace(tzinfo=None)
     SLA_WARN_NO_OWNER_DAYS = 2
     SLA_STALE_DAYS = 7
     risk_notseen_tier_hours = _notseen_hours_from_risk(risk)
+    risk_columns_ready = _table_has_column("requests", "risk_level") and _table_has_column(
+        "requests", "risk_signals"
+    )
+    critical_count = 0
+    attention_count = 0
+    no_owner_count = 0
+    not_seen_72h_count = 0
+    if risk_columns_ready:
+        overview_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
+        critical_count = (
+            overview_query.filter(func.lower(func.coalesce(Request.risk_level, "")) == "critical").count()
+        )
+        attention_count = (
+            overview_query.filter(func.lower(func.coalesce(Request.risk_level, "")) == "attention").count()
+        )
+        no_owner_count = (
+            overview_query.filter(
+                func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+            ).count()
+        )
+        not_seen_72h_count = (
+            overview_query.filter(
+                func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
+            ).count()
+        )
 
     # Volunteer signals counts per request
     action_counts = {}
@@ -3488,6 +5022,10 @@ def admin_requests():
         status=status,
         q=q,
         risk=risk,
+        risk_level=risk_level,
+        no_owner=no_owner,
+        not_seen_72h=not_seen_72h,
+        sort=sort,
         show_deleted=show_deleted,
         now_aware=now_aware,
         now_naive=now_naive,
@@ -3498,6 +5036,15 @@ def admin_requests():
         engagement_by_request=engagement_by_request,
         nudge_ui=nudge_ui,
         risk_notseen_tier_hours=risk_notseen_tier_hours,
+        queue=queue,
+        sla_kind=sla_kind,
+        sla_days=sla_days,
+        active_sla_queue=active_sla_queue,
+        active_sla_filter_label=active_sla_filter_label,
+        critical_count=critical_count,
+        attention_count=attention_count,
+        no_owner_count=no_owner_count,
+        not_seen_72h_count=not_seen_72h_count,
     )
 
 
@@ -3568,7 +5115,14 @@ def build_requests_query(base_query, request_args):
     q = (request_args.get("q") or "").strip()
     category = (request_args.get("category") or "").strip()
     risk = (request_args.get("risk") or "").strip().lower()
+    risk_level = (request_args.get("risk_level") or "").strip().lower()
+    no_owner = (request_args.get("no_owner") or "").strip() == "1"
+    not_seen_72h = (request_args.get("not_seen_72h") or "").strip() == "1"
+    sort = (request_args.get("sort") or "").strip().lower()
     show_deleted = (request_args.get("deleted") or "").strip() == "1"
+    queue = (request_args.get("queue") or "").strip().lower()
+    sla_kind = _normalize_sla_kind(request_args.get("sla_kind"))
+    sla_days = _normalize_sla_days(request_args.get("sla_days", 30))
     now = datetime.now(UTC).replace(tzinfo=None)
 
     if show_deleted:
@@ -3594,16 +5148,47 @@ def build_requests_query(base_query, request_args):
         base_query = base_query.filter(func.lower(Request.category) == category.lower())
 
     base_query = apply_risk_filter(base_query, risk, now)
-
-    base_query = base_query.order_by(Request.id.desc())
-    return base_query, status, q, risk
+    if risk_level in {"critical", "attention", "standard"}:
+        base_query = base_query.filter(
+            func.lower(func.coalesce(Request.risk_level, "standard")) == risk_level
+        )
+    if no_owner:
+        base_query = base_query.filter(
+            func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+        )
+    if not_seen_72h:
+        base_query = base_query.filter(
+            func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
+        )
+    if queue == "sla" and sla_kind:
+        base_query = _apply_sla_queue_filter(
+            base_query, sla_kind=sla_kind, days=sla_days, now=now
+        )
+    created_sort_col = func.coalesce(Request.created_at, Request.updated_at)
+    if sort == "created_asc":
+        base_query = base_query.order_by(created_sort_col.asc(), Request.id.asc())
+    elif sort == "created_desc":
+        base_query = base_query.order_by(created_sort_col.desc(), Request.id.desc())
+    elif sort == "risk_asc":
+        base_query = base_query.order_by(
+            func.coalesce(Request.risk_score, 0).asc(),
+            created_sort_col.desc(),
+            Request.id.desc(),
+        )
+    else:
+        base_query = base_query.order_by(
+            func.coalesce(Request.risk_score, 0).desc(),
+            created_sort_col.desc(),
+            Request.id.desc(),
+        )
+    return base_query, status, q, risk, risk_level, no_owner, not_seen_72h, sort
 
 
 @admin_bp.get("/requests/export.csv")
 @admin_required
 def admin_requests_export_csv():
     admin_required_404()
-    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
+    query, *_ = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
     log_activity(
         entity_type="export",
@@ -3670,7 +5255,7 @@ def admin_requests_export_xlsx():
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
-    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
+    query, *_ = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
     log_activity(
         entity_type="export",
@@ -3754,7 +5339,7 @@ def admin_requests_export_xlsx():
 @admin_required
 def admin_requests_export_csv_anonymized():
     admin_required_404()
-    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
+    query, *_ = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
     log_activity(
         entity_type="export",
@@ -3815,7 +5400,7 @@ def admin_requests_export_xlsx_anonymized():
     except Exception:
         return Response("openpyxl is not installed", status=500)
 
-    query, _status, _q, _risk = build_requests_query(Request.query, request.args)
+    query, *_ = build_requests_query(Request.query, request.args)
     rows = query.limit(5000).all()
     log_activity(
         entity_type="export",
@@ -4049,6 +5634,7 @@ def admin_request_details(req_id: int):
                     latest_actions=latest_actions,
                     volunteer_engagement=volunteer_engagement,
                     audit_logs=audit_logs,
+                    case_signals=_compute_case_signals(req, activities, now),
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -4133,6 +5719,7 @@ def admin_request_details(req_id: int):
     )
     can_help_count = sum(1 for va in volunteer_signals if va.action == "CAN_HELP")
     cant_help_count = sum(1 for va in volunteer_signals if va.action == "CANT_HELP")
+    case_signals = _compute_case_signals(req, activities, now)
 
     return (
         render_template(
@@ -4160,6 +5747,7 @@ def admin_request_details(req_id: int):
             latest_actions=latest_actions,
             volunteer_engagement=volunteer_engagement,
             audit_logs=audit_logs,
+            case_signals=case_signals,
         ),
         200,
     )
@@ -4392,11 +5980,17 @@ def admin_request_assign(req_id: int):
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
-    takeover = False
     if req.owner_id and req.owner_id != getattr(current_user, "id", None):
-        if _admin_role_value() != "superadmin" and not is_stale(req):
-            abort(403)
-        takeover = True
+        flash("Deja pris en charge.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+    if req.owner_id == getattr(current_user, "id", None):
+        flash("Deja assigne a vous.", "info")
+        next_url = (request.form.get("next") or "").strip()
+        if next_url and is_safe_url(next_url):
+            return redirect(next_url)
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    takeover = False
     old_owner = req.owner_id
     req.owner_id = current_user.id
     req.owned_at = utc_now()
@@ -4441,9 +6035,9 @@ def admin_request_assign(req_id: int):
             "new": {"owner_id": current_user.id},
         },
     )
-    flash("Заявката е assign-ната към теб.", "success")
+    flash(_("The request has been assigned to you."), "success")
     next_url = (request.form.get("next") or "").strip()
-    if next_url and next_url.startswith("/"):
+    if next_url and is_safe_url(next_url):
         return redirect(next_url)
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
@@ -4495,7 +6089,7 @@ def admin_request_unassign(req_id: int):
             "new": {"owner_id": None},
         },
     )
-    flash("Owner е премахнат.", "info")
+    flash(_("Owner removed."), "info")
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
@@ -5346,3 +6940,5 @@ def admin_pro_access_reject(pro_id: int):
     db.session.commit()
     flash("Rejected.", "success")
     return redirect(url_for("admin.admin_pro_access_detail", pro_id=pro_id), code=303)
+    active_sla_queue = bool(queue == "sla" and sla_kind)
+    active_sla_filter_label = SLA_QUEUE_KINDS.get(sla_kind, "") if active_sla_queue else ""

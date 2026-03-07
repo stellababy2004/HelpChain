@@ -821,6 +821,12 @@ class Request(db.Model):
     owner = relationship("AdminUser", foreign_keys=[owner_id], lazy="joined")
     requester_token_hash = Column(String(128), nullable=True, index=True)
     requester_token_created_at = Column(DateTime, nullable=True)
+    risk_score = Column(Integer, nullable=False, default=0, server_default="0")
+    risk_level = Column(
+        String(20), nullable=False, default="standard", server_default="standard"
+    )
+    risk_signals = Column(Text, nullable=True)
+    risk_last_updated = Column(DateTime(timezone=True), nullable=True)
     logs = db.relationship(
         "RequestLog",
         back_populates="request",
@@ -886,6 +892,80 @@ class SocialRequestEvent(db.Model):
     old_value = Column(String(255), nullable=True)
     new_value = Column(String(255), nullable=True)
     created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+
+
+class UiTranslation(db.Model):
+    """DB-backed runtime translation override by key + locale."""
+
+    __tablename__ = "ui_translations"
+
+    id = Column(Integer, primary_key=True)
+    key = Column(String(255), nullable=False, index=True)
+    locale = Column(String(16), nullable=False, index=True)
+    text = Column(Text, nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True, server_default=db.text("1"))
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+
+    __table_args__ = (
+        UniqueConstraint("key", "locale", name="uq_ui_translations_key_locale"),
+        Index("ix_ui_translations_locale_key", "locale", "key"),
+    )
+
+
+class UiLocaleLock(db.Model):
+    """Per-locale baseline lock for translation writes."""
+
+    __tablename__ = "ui_locale_locks"
+
+    id = Column(Integer, primary_key=True)
+    locale = Column(String(16), nullable=False, unique=True, index=True)
+    is_locked = Column(Boolean, nullable=False, default=False, server_default=db.text("0"))
+    locked_at = Column(DateTime, nullable=True, index=True)
+    locked_by_admin_user_id = Column(
+        Integer, ForeignKey("admin_users.id"), nullable=True, index=True
+    )
+    note = Column(String(255), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+
+
+class UiTranslationEvent(db.Model):
+    """Append-only audit trail for UI translation changes."""
+
+    __tablename__ = "ui_translation_events"
+
+    id = Column(Integer, primary_key=True)
+    translation_id = Column(Integer, ForeignKey("ui_translations.id"), nullable=True, index=True)
+    locale = Column(String(16), nullable=False, index=True)
+    key = Column(String(255), nullable=False, index=True)
+    action = Column(String(32), nullable=False, index=True)
+    source = Column(String(32), nullable=False, default="human", server_default="human")
+    actor_admin_user_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    actor_email = Column(String(255), nullable=True)
+    old_text = Column(Text, nullable=True)
+    new_text = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+
+    __table_args__ = (
+        Index("ix_ui_translation_events_locale_key_created_at", "locale", "key", "created_at"),
+    )
+
+
+class UiTranslationFreeze(db.Model):
+    """Global translation freeze state for release windows."""
+
+    __tablename__ = "ui_translation_freeze"
+
+    id = Column(Integer, primary_key=True)
+    is_active = Column(Boolean, nullable=False, default=False, server_default=db.text("0"))
+    release_tag = Column(String(64), nullable=True)
+    note = Column(String(255), nullable=True)
+    activated_at = Column(DateTime, nullable=True, index=True)
+    activated_by_admin_user_id = Column(
+        Integer, ForeignKey("admin_users.id"), nullable=True, index=True
+    )
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
 
 
 # Backward-compat alias (legacy code expects HelpRequest)

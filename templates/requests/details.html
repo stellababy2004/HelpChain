@@ -3,15 +3,18 @@
 <div class="container py-4" style="max-width: 980px;">
   <div class="d-flex align-items-start justify-content-between gap-3">
     <div>
-      <h1 class="mb-1">Demande #{{ sr.id }}</h1>
+      <h1 class="mb-1">{{ _("Request") }} #{{ sr.id }}</h1>
       <div class="text-muted">
-        Structure: <strong>{{ structure.name if structure else sr.structure_id }}</strong>
-        - Creee: {{ sr.created_at }}
+        {{ _("Structure") }}: <strong>{{ structure.name if structure else sr.structure_id }}</strong>
+        - {{ _("Created") }}: {{ sr.created_at }}
+      </div>
+      <div class="text-muted small mt-1">
+        {{ _("Canonical social path") }}: <code>/requests/{{ sr.id }}</code>
       </div>
     </div>
     <div class="d-flex gap-2">
-      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests') }}">Retour</a>
-      <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">Nouvelle</a>
+      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests') }}">{{ _("Back") }}</a>
+      <a class="btn btn-primary" href="{{ url_for('social_requests.new_request') }}">{{ _("New request") }}</a>
     </div>
   </div>
 
@@ -21,7 +24,7 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Type</div>
+          <div class="text-muted small">{{ _("Type") }}</div>
           <div class="fs-5"><code>{{ sr.need_type }}</code></div>
         </div>
       </div>
@@ -30,7 +33,7 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Urgence</div>
+          <div class="text-muted small">{{ _("Urgency") }}</div>
           <div class="fs-5">{{ sr.urgency }}</div>
         </div>
       </div>
@@ -39,7 +42,7 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Statut</div>
+          <div class="text-muted small">{{ _("Status") }}</div>
           <div class="fs-5"><span class="badge text-bg-secondary">{{ sr.status }}</span></div>
         </div>
       </div>
@@ -48,23 +51,23 @@
 
   <div class="card mt-3">
     <div class="card-body">
-      <div class="text-muted small mb-1">Reference personne (optionnel)</div>
+      <div class="text-muted small mb-1">{{ _("Person reference (optional)") }}</div>
       <div>{{ sr.person_ref or "-" }}</div>
 
       <hr>
 
-      <div class="text-muted small mb-1">Description</div>
+      <div class="text-muted small mb-1">{{ _("Description") }}</div>
       <div style="white-space: pre-wrap;">{{ sr.description }}</div>
     </div>
   </div>
 
   <div class="card mt-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">Assignation</h2>
+      <h2 class="h5 mb-3">{{ _("Assignment") }}</h2>
 
       {% if assignee %}
       <div class="mb-2">
-        <span class="text-muted">Assigne a:</span>
+        <span class="text-muted">{{ _("Assigned to:") }}</span>
         <strong>{{ assignee.email }}</strong>
         <span class="text-muted">({{ assignee.username }})</span>
         {% if sr.assigned_at %}<span class="text-muted">- {{ sr.assigned_at }}</span>{% endif %}
@@ -72,22 +75,22 @@
 
       <form method="post" action="{{ url_for('social_requests.unassign', req_id=sr.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn btn-outline-danger btn-sm" type="submit">Unassign</button>
+        <button class="btn btn-outline-danger btn-sm" type="submit">{{ _("Unassign") }}</button>
       </form>
       {% else %}
       <form method="post" action="{{ url_for('social_requests.assign', req_id=sr.id) }}" class="row g-2 align-items-end">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-md-8">
-          <label class="form-label">Assigner a</label>
+          <label class="form-label">{{ _("Assign to") }}</label>
           <select class="form-select" name="assigned_to_user_id" required>
-            <option value="" selected disabled>Choisir un utilisateur...</option>
+            <option value="" selected disabled>{{ _("Choose a user...") }}</option>
             {% for u in users %}
             <option value="{{ u.id }}">{{ u.email or u.username or u.id }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-4">
-          <button class="btn btn-primary w-100" type="submit">Assigner</button>
+          <button class="btn btn-primary w-100" type="submit">{{ _("Assign") }}</button>
         </div>
       </form>
       {% endif %}
@@ -96,47 +99,86 @@
 
   <div class="card mt-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">Suivi</h2>
+      <h2 class="h5 mb-3">{{ _("Tracking") }}</h2>
 
       <div class="d-flex flex-wrap gap-2">
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="new">
-          <button class="btn btn-outline-secondary btn-sm" type="submit" {% if sr.status == "new" %}disabled{% endif %}>Nouvelle</button>
+          <button class="btn btn-outline-secondary btn-sm" type="submit" {% if sr.status == "new" %}disabled{% endif %}>{{ _("New") }}</button>
         </form>
 
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="in_progress">
-          <button class="btn btn-outline-primary btn-sm" type="submit" {% if sr.status == "in_progress" %}disabled{% endif %}>En cours</button>
+          <button class="btn btn-outline-primary btn-sm" type="submit" {% if sr.status == "in_progress" %}disabled{% endif %}>{{ _("In progress") }}</button>
         </form>
 
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="resolved">
-          <button class="btn btn-outline-success btn-sm" type="submit" {% if sr.status == "resolved" %}disabled{% endif %}>Traitee</button>
+          <button class="btn btn-outline-success btn-sm" type="submit" {% if sr.status == "resolved" %}disabled{% endif %}>{{ _("Resolved") }}</button>
         </form>
 
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="status" value="closed">
-          <button class="btn btn-outline-dark btn-sm" type="submit" {% if sr.status == "closed" %}disabled{% endif %}>Fermee</button>
+          <button class="btn btn-outline-dark btn-sm" type="submit" {% if sr.status == "closed" %}disabled{% endif %}>{{ _("Closed") }}</button>
         </form>
       </div>
 
       <div class="text-muted small mt-2">
-        Workflow MVP. Historique d'actions: prochaine iteration.
+        {{ _("MVP workflow. Action history: next iteration.") }}
       </div>
     </div>
   </div>
 
   <div class="alert alert-info mt-3 mb-0">
-    <strong>Prochaine etape:</strong> Assignation + suivi (statuts) via actions ici.
+    <strong>{{ _("Next step:") }}</strong> {{ _("Assignment + status tracking via actions here.") }}
   </div>
 
   <div class="card mt-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">Historique</h2>
+      <h2 class="h5 mb-3">{{ _("Internal notes") }}</h2>
+      <form method="post" action="{{ url_for('social_requests.add_note', req_id=sr.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <textarea
+          class="form-control"
+          name="note"
+          rows="3"
+          maxlength="2000"
+          placeholder="{{ _('Add an internal note (action taken, next step, blocker...)') }}"
+          required
+        ></textarea>
+        <div class="d-flex justify-content-between align-items-center mt-2">
+          <small class="text-muted">{{ _("Internal trace, without sensitive data.") }}</small>
+          <button class="btn btn-outline-primary btn-sm" type="submit">{{ _("Add note") }}</button>
+        </div>
+      </form>
+
+      <hr>
+
+      <ul class="list-group">
+        {% for n in note_events %}
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div>
+                <div class="small text-muted">{{ _("By:") }} {{ n.old_value or _("system") }}</div>
+                <div style="white-space: pre-wrap;">{{ n.new_value }}</div>
+              </div>
+              <div class="text-muted small">{{ n.created_at }}</div>
+            </div>
+          </li>
+        {% else %}
+          <li class="list-group-item text-muted">{{ _("No internal notes.") }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("History") }}</h2>
 
       <ul class="list-group">
         {% for e in events %}
@@ -154,7 +196,7 @@
             <div class="text-muted small">{{ e.created_at }}</div>
           </li>
         {% else %}
-          <li class="list-group-item text-muted">Aucun evenement.</li>
+          <li class="list-group-item text-muted">{{ _("No events.") }}</li>
         {% endfor %}
       </ul>
     </div>

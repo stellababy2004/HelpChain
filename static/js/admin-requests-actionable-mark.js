@@ -4,10 +4,10 @@
 
   function isActionable(tr){
     const status = (tr.dataset.hcStatusRow || "").trim();
-    const assigned = (tr.dataset.assignedVolunteerId || "").trim();
+    const owner = (tr.dataset.ownerId || "").trim();
     const canHelp = parseInt(tr.dataset.sigCanHelp || "0", 10);
 
-    const unassignedOpen = (!assigned && !["CLOSED","COMPLETED"].includes(status));
+    const unassignedOpen = (!owner && !["CLOSED","COMPLETED"].includes(status));
     const inProgress = (status === "IN_PROGRESS");
     const hasCanHelp = (canHelp > 0);
 

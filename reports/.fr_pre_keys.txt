@@ -1,0 +1,1824 @@
+ Requests trend (last 30 days)
+ This export contains personal data.
+ Демо: детайлите ще изглеждат така. Реалните ще отварят страница.
+ Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли.
+ Демо: помощта е заявена. Нищо не се поема автоматично.
+ НОВО
+ Помощта е заявена. Очаква се кратко потвърждение от екипа.
+%(pct)s%% Match
+&copy; 2025 HelpChain. All rights reserved.
+(%(count)s/%(max)s) skills selected
++ visibility
++33...
+, to get access.
+/ search · j/k move · Enter open
+0 selected
+06 00 00 00 00
+1 minute pour commencer
+1 option enabled
+1 pilot structure (association or social service)
+1 structure référente
+10 à 30 demandes suivies dans l’outil
+24/7 support
+2FA
+2FA code
+2FA has been disabled.
+2FA has been enabled successfully!
+2FA setup
+3 à 10 intervenants impliqués
+30 days
+5-10 participants maximum
+7 days
+90 days
+> 3 days, unassigned
+> 8 days, not closed
+A short guide before you start helping.
+ACL
+AI Suggest (free)
+ALL_NOTIFIED
+AMD
+Access control
+Access denied.
+Accessibility
+Accessibility menu
+Accessibility paused
+Accessibility sections
+Accessibility settings
+Accessibility voice test. This is a preview of your audio settings.
+Accompagnement administratif
+Accompagnement vers l’accès aux outils et services numériques.
+Account
+Account and contact details you provide (name, email, phone - if you choose).
+Accueil
+Accès alimentaire
+Accès aux informations et outils pour les collectivités locales.
+Accès aux soins
+Accès intervenant
+Accès intervenants
+Accès rapides
+Accès réservé aux intervenants autorisés
+Accès validé manuellement pour garantir un réseau structuré.
+Accéder
+Accéder rapidement aux principales fonctionnalités de la plateforme.
+Accéder à l’espace professionnel
+Accéder à mon espace intervenant
+Achievements
+Achievements and
+Action
+Action logging (audit) and case traceability.
+Action only
+Actionable queue for ops follow-up
+Actions
+Actions for request %(id)s
+Activate MFA
+Active
+Active requests
+Active session
+Active sessions
+Active volunteers
+Activity
+Add a bit more detail (20+ chars)
+Add an internal note (action taken, next step, blocker...)
+Add more specific skills or enable location to improve matching.
+Add note
+Add your location and a few skills. Then you will start seeing high-confidence matches.
+Adjust readability and motion. Settings are saved on this device.
+Adjust speech playback volume
+Admin
+Admin dashboard
+Admin login
+Admin panel
+Admin roles
+Administrator
+Administrators
+Adresse e-mail
+Aide administrative
+Aide médicale
+Ajouter ville et compétences (optionnel)
+Ajoutez un téléphone ou un email afin de permettre un recontact rapide.
+All
+All active requests
+All statuses
+All structures
+Allow short spoken confirmations for key actions (future)
+Already assigned
+Also check your spam folder
+Amélioration continue
+Améliorer la visibilité locale
+Analytics and statistics
+Analytics is available only to administrators.
+Annuler
+Anomaly indicators
+Anonymous aggregated data - no personal information.
+Anti-abuse protection: rate limiting, lockout, non-exposed paths.
+Aperçu de la page Cas d’usage
+Aperçu de la page Comment fonctionne HelpChain
+Aperçu de la page Contact et coopération
+Aperçu de la page Partenariats et déploiement territorial
+Aperçu de la page Pilotage et indicateurs
+Aperçu de la page Pour les collectivités et associations
+Aperçu de la page Pourquoi HelpChain
+Aperçu de la page Projet et Vision européenne
+Aperçu de la page Questions fréquentes
+Apply
+Apply filters
+Apply profile
+Approche
+Approche de déploiement progressif et de coopération avec les acteurs locaux.
+Approche progressive
+Approche territoriale
+Approve
+Appui dans les démarches administratives, accès aux droits et médiation institutionnelle.
+Are you sure you want to continue?
+Assign
+Assign a volunteer or close
+Assign owner
+Assign to
+Assign to me
+Assign to this request
+Assign volunteer
+Assigned
+Assigned to you
+Assigned to you. Next action: click “View details”.
+Assigned to you. Next action: open details.
+Assigned to:
+Assigning an owner avoids duplicates and keeps responsibility clear.
+Assignment
+Assignment + status tracking via actions here.
+Assignment completed.
+Assignment removed.
+Association networks & coordination
+Associations
+Associations et acteurs locaux
+Associations et structures sociales
+Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions.
+Attribution
+Au moins 2 caractères.
+Aucun cookie publicitaire ou de traçage commercial n’est utilisé.
+Aucun mot de passe.
+Aucun mot de passe. Un lien sécurisé par e-mail (valable 15 minutes).
+Aucune donnée non nécessaire au fonctionnement du service n’est collectée.
+Audio
+Audio support
+Audit
+Audit trail
+Auto-read on page load
+Autre
+Available volunteers
+Average assignment delay
+Average coverage
+Average resolution delay
+Average time to first response (7 days):
+Average time to resolution (30 days):
+Avg first action
+Avg first seen
+Avg resolution
+Back
+Back to home
+Back to home page
+Back to list
+Back to requests
+Back to security
+Back to site
+Back to top
+Back to top of page
+Back to translations
+Backups and monitoring: automated supervision + backups.
+Balanced
+Based on
+Based on city match
+Basic technical data for security (e.g., IP address, logs) to prevent abuse.
+Besoin d’aide ?
+Boundaries
+Bulk action
+By:
+Bénévoles
+CAN_HELP -> Assigned
+CAS 1 — Accompagnement administratif
+CAS 2 — Soutien ponctuel
+CAS 3 — Coordination entre plusieurs acteurs
+CAS 4 — Soutien aux initiatives locales
+CCAS / municipal services
+CSV
+Cabinet, association, structure...
+Cadre RGPD
+Cadre d’usage pour les collectivités, CCAS et associations engagées sur le terrain.
+Cadre institutionnel
+Cadre opérationnel
+Call
+Call requester
+Can help
+Can't help
+Canal de contact pour les collectivités, associations et partenaires institutionnels.
+Cancel
+Cancelled
+Canonical social path
+Cas d’usage
+Cas d’usage — pour qui ?
+Case
+Categories
+Category
+Category:
+Catégorie
+Catégorie introuvable
+Catégories d'aide
+Ce choix influence la priorité de traitement.
+Ce document présente l’infrastructure HelpChain, son cadre de gouvernance et les conditions d’un pilote territorial.
+Ce lien n’est plus valable. Veuillez demander un nouveau lien.
+Ce n’est pas un annuaire, ni un espace social généraliste. HelpChain est une couche de coordination, avec des processus et de la gouvernance.
+Ce que HelpChain n’est pas
+Ce que permet la plateforme
+Cela facilite :
+Cela permet :
+Cela peut aider les structures et les associations à mieux comprendre les besoins et à adapter leurs actions.
+Cela peut contribuer à améliorer la circulation de l’information et l’organisation des actions.
+Cela peut faciliter l’organisation des actions et le suivi des situations.
+Centralisation
+Centraliser les demandes
+Centralisez les demandes, attribuez les dossiers et pilotez chaque action dans un cadre structuré, sécurisé et traçable.
+Cependant, la coordination entre ces différents acteurs peut parfois être complexe.
+Certaines situations nécessitent une aide simple et rapide.
+Certaines situations peuvent nécessiter une intervention plus rapide.
+Ces phases pilotes permettent :
+Ces scénarios illustrent une coordination progressive entre citoyens, bénévoles, associations et structures publiques.
+Cette page répond aux principales questions concernant le fonctionnement de la plateforme HelpChain.
+Change
+Changes saved!
+Chaque territoire possède des besoins et des organisations spécifiques.
+Chat
+Check your email
+Choisir…
+Choose a browser voice when available
+Choose a comfortable reading size
+Choose a comfortable reading speed
+Choose a structure...
+Choose a user...
+Choose format
+Choose the interface language
+Choose...
+Citoyens
+City
+City:
+Claim ownership (me)
+Clear
+Clear filter
+Clear ownership + continuity of support
+Clear quick filters
+Clear selection
+Click an action to access
+Close
+Close / Archive
+Close for archive / delete (tombstone)
+Closed
+Closed (last 7 days)
+Code (6 digits)
+Collectivités et structures sociales
+Coming soon: larger touch targets, click delay settings, and keyboard navigation helpers.
+Comma separated
+Comment fonctionne HelpChain
+Comment ça marche ?
+Communication with people in need and other volunteers.
+Community
+Completed
+Completed (7 days)
+Compliance and controlled scope
+Comprendre le fonctionnement de la plateforme et son organisation.
+Compétences (max 5)
+Conclusion
+Confiance et confidentialité
+Confirm
+Confirm and submit
+Conforme RGPD
+Conformité
+Conformité RGPD
+Conformément au RGPD, toute personne dispose des droits suivants concernant ses données personnelles :
+Connexion intervenant
+Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe.
+Connexion sécurisée — aucun mot de passe
+Consecutive days
+Consulter
+Contact
+Contact & coopération
+Contact :
+Contact appears once the request is assigned, in progress, and the requester shared details.
+Contact details
+Contact et coopération avec le projet HelpChain pour collectivités, CCAS, associations et partenaires territoriaux.
+Contact institutionnel
+Contact:
+Contacted at:
+Controlled sharing (role-based access)
+Contrôles d’accès par rôles, journalisation des actions et protection anti-abus.
+Conçu et opéré depuis la France
+Conçu et opéré depuis la France.
+Conçu pour les associations et réseaux professionnels opérant en France.
+Conçu pour soutenir la coordination locale, le suivi des situations et la coopération entre acteurs de terrain.
+Coordination des acteurs
+Coordination locale
+Coordination locale en cours
+Coordination prioritaire des situations nécessitant une prise en charge rapide.
+Coordination structurée
+Coordination traçable
+Coordonner les acteurs
+Copy
+Copy IDs
+Copy email
+Copy link
+Copy links
+Copy phone
+Courses
+Create
+Create a new intake request.
+Created
+Created:
+Critical attention risk
+Critique
+Cross-structure coordination
+Créer et suivre une demande d’aide au sein de la plateforme.
+Current owner
+DATA:
+DB override
+DENIED
+Dans certaines situations, plusieurs personnes ou structures peuvent être impliquées.
+Dans de nombreuses situations, des personnes rencontrent des difficultés ponctuelles pour lesquelles une aide simple pourrait faire une réelle différence.
+Dans le cadre de l’utilisation de la plateforme, HelpChain peut être amené à collecter uniquement les données strictement nécessaires au fonctionnement du service, notamment :
+Dans le même temps, de nombreux bénévoles, associations et acteurs locaux souhaitent s’engager et apporter leur soutien.
+Dashboard
+Dashboard access
+Data export
+Data minimization: only necessary collection, structured fields.
+Data retention
+Data subject rights: access, rectification, deletion, export.
+Database
+Days
+De nombreuses initiatives de solidarité existent à travers l’Europe.
+Default voice
+Default:
+Delete (tombstone)
+Delete DB override
+Deleted
+Demander de l’aide
+Demander un accès intervenant
+Demander un accès professionnel — phase pilote
+Demander un échange
+Demandes
+Demandez un accès intervenant. Nous vous enverrons un lien sécurisé par e-mail.
+Denied actions (24h)
+Denied spike
+Denied:
+Dernière mise à jour : 2026
+Des mesures techniques et organisationnelles sont mises en œuvre pour protéger la confidentialité et l’intégrité des informations.
+Des principes opérationnels clairs pour un usage institutionnel et local.
+Description
+Description is required.
+Description:
+Detailed activity reports will be available soon.
+Detected role:
+Devenir bénévole
+Direction du projet HelpChain
+Dismiss this request for 48 hours
+Display
+Display & reading
+Disponibilité (optionnel)
+Disposer d’un outil numérique de suivi, d’organisation et de coordination locale.
+Distribution by category
+Dites-nous de quoi vous avez besoin — on s'occupe du reste.
+Do not impersonate others or misrepresent your identity.
+Do not post illegal, harmful, or abusive content.
+Done
+Donner une lecture plus claire des besoins et des actions en cours.
+Données hébergées en Europe
+Données hébergées en Europe · Conformité RGPD · Sécurité renforcée
+Données hébergées en Europe, pilotage par structure, conçu et opéré depuis la France.
+Données minimales
+Données minimales, respect RGPD
+Dossier institutionnel
+Download data from the system in various formats
+Duration: 30 days
+Durée du pilote : 30 à 60 jours
+Dyslexia-friendly font
+Déconnexion demandeur
+Découvrez HelpChain : une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.
+Découvrir comment les associations peuvent utiliser la plateforme.
+Découvrir l’espace professionnel
+Décrivez la situation et l’aide recherchée en quelques phrases.
+Déploiement progressif en phase pilote, avec indicateurs de suivi et cadre de responsabilité.
+Déploiement progressif sur le terrain
+Déposer une demande
+Déposer une demande d’aide
+Déposez une demande — nous trouverons une personne pour vous répondre.
+E-mail
+Eco
+Eco display
+Eco mode
+Edit
+Edit translation
+Editable
+Either the link is invalid, or you do not have access to this request yet.
+Elevated attention risk
+Elle permet d’organiser plus facilement certaines demandes d’aide et de faciliter la mise en relation entre les personnes concernées.
+Elle peut ainsi contribuer à améliorer la circulation de l’information entre les différents acteurs impliqués.
+Elles peuvent ensuite être supprimées, anonymisées ou archivées conformément aux obligations légales applicables.
+Email
+Email 2FA
+Email address
+Email contains
+Email requester
+Email:
+En cas d’urgence, la demande est traitée en priorité.
+En savoir plus
+Enable 2FA
+Enable MFA from setup first.
+Enable location in profile
+Enable location in profile to use Near me.
+Enable speech playback for reading content
+Engagement:
+Enter the 6-digit code from the app.
+Enter the 6-digit code from your 2FA app:
+Enter the code from the app
+Enter the code from your authenticator app to continue. You can also use a backup code.
+Enter translation...
+Entrée structurée des demandes
+Envoyer la demande
+Espace collectivités
+Espace collectivités & associations
+Espace professionnel
+Espace professionnel HelpChain : infrastructure de coordination pour associations, structures locales et professionnels avec suivi structuré, traçabilité et pilotage opérationnel.
+Ex: 2h/semaine, soirs, urgences...
+Example: "CCAS file #A-2026-0042".
+Example: Called the requester, waiting for documents, next follow-up tomorrow...
+Excel
+Exemple de cadre pilote :
+Exemples concrets d’utilisation dans des situations locales de coordination solidaire.
+Exemples concrets d’utilisation de HelpChain pour les collectivités, CCAS, associations, structures sociales et bénévoles.
+Exemples d’utilisation de la plateforme dans des situations nécessitant organisation, suivi et coordination locale.
+Explication claire du fonctionnement de HelpChain pour les personnes en situation de besoin, les bénévoles et les structures partenaires.
+Explicit purposes and legal bases (request management, coordination, follow-up).
+Export
+Export CSV
+Export CSV (anonymized)
+Export JSON
+Export XLSX
+Export XLSX (anonymized)
+Export data
+Expérimentation territoriale
+Extra large
+Extra-large text and simplified visuals for easier reading
+FAQ
+FREEZE
+Facebook
+Faciliter l’organisation entre citoyens, bénévoles, associations et structures.
+Faible
+Failed logins (24h)
+Failed-login spike
+Fails
+Fallback
+Fallback preview
+Fast
+Fast matching - no bureaucracy
+Fast support
+Faut-il installer un logiciel ?
+Features
+Filter
+Filters
+Finalités explicites, minimisation des données et droits des personnes encadrés.
+Focus mode
+Following system
+Fonctionnement
+Footer
+For security reasons, they are not shown again.
+Formatted document
+Formulaire guidé – moins de 3 minutes.
+Formulaire public de coordination — durée estimée : 2 minutes.
+Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable.
+France
+Free
+Freeze active: delete blocked
+Frequently asked questions
+Full traceability
+GDPR framework
+Generate backup codes
+Generate backup codes now (recovery option).
+Generated:
+Go to contact
+Got it. Your signal was sent to the team.
+Gouvernance & conformité (RGPD)
+Gouvernance orientée résultat
+Governance & compliance (GDPR)
+Governance: superadmin / ops / readonly
+Has CAN_HELP
+Health / legal / social
+Heatmap by locale and domain
+Help categories
+Help categories - HelpChain
+Help request
+Help us match you better
+HelpChain
+HelpChain - Connecting people in need with volunteers
+HelpChain a pour ambition de faciliter l’entraide et la coopération entre citoyens, bénévoles, associations et structures publiques.
+HelpChain a pour objectif de faciliter la coopération entre citoyens, bénévoles, associations et structures publiques.
+HelpChain a pour objectif de faciliter l’organisation, le suivi et la coordination des actions de solidarité.
+HelpChain a vocation à s’adapter aux différents contextes locaux afin de soutenir les initiatives existantes et faciliter la coordination entre les acteurs.
+HelpChain accorde une importance particulière à la protection des données personnelles et s’engage à respecter les dispositions du Règlement Général sur la Protection des Données (RGPD – UE 2016/679).
+HelpChain agit alors comme un outil de coordination permettant de mieux structurer les actions et de faciliter la communication entre les participants.
+HelpChain applique les principes du RGPD et veille à limiter la collecte de données aux informations strictement nécessaires au fonctionnement du service.
+HelpChain cherche à faciliter cette coopération en proposant un outil numérique simple permettant de coordonner les actions et de mieux suivre certaines situations.
+HelpChain est accessible directement via un navigateur internet et ne nécessite aucune installation spécifique.
+HelpChain est actuellement déployé en phase pilote avec un nombre limité de structures.
+HelpChain est actuellement en phase de mise en place de premiers pilotes locaux avec des structures associatives et des acteurs de l’accompagnement social.
+HelpChain est conçu comme une infrastructure numérique de coordination au service des initiatives de solidarité locales.
+HelpChain est conçu dans le respect des principes du Règlement Général sur la Protection des Données (RGPD).
+HelpChain est un projet visant à faciliter la coordination entre citoyens, bénévoles, associations et structures publiques dans le cadre d’initiatives de solidarité.
+HelpChain est une infrastructure numérique conçue et opérée depuis la France, destinée à soutenir la coordination des demandes sociales entre structures locales, associations et professionnels.
+HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.
+HelpChain est une plateforme destinée à faciliter la coordination entre personnes en situation de besoin, bénévoles et acteurs associatifs.
+HelpChain est une plateforme numérique conçue pour faciliter la coordination entre personnes en situation de besoin, bénévoles et acteurs associatifs.
+HelpChain est une plateforme numérique destinée à faciliter la coordination entre personnes en situation de besoin, bénévoles et acteurs associatifs.
+HelpChain facilite la coordination entre les personnes impliquées dans une situation.
+HelpChain facilite la mise en relation entre les différents intervenants.
+HelpChain facilite l’organisation, le suivi et la coordination des demandes d’aide entre citoyens, bénévoles, associations et structures publiques au sein d’un espace numérique partagé.
+HelpChain fournit un périmètre clair de coordination pour les structures locales.
+HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic rules to keep everyone safe.
+HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency services.
+HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with volunteers. We do not sell your data.
+HelpChain met en œuvre des mesures techniques et organisationnelles appropriées afin de garantir :
+HelpChain ne remplace pas les structures existantes. La plateforme agit comme un outil complémentaire permettant de faciliter la coordination entre différents acteurs.
+HelpChain n’a pas vocation à remplacer les structures existantes.
+HelpChain operations
+HelpChain permet de centraliser et d’organiser différentes demandes d’aide au sein d’un même espace numérique.
+HelpChain permet de centraliser l’information et d’améliorer la coordination entre les différents intervenants.
+HelpChain peut contribuer à faciliter :
+HelpChain peut également être utilisé par des associations ou des structures locales afin de mieux coordonner certaines actions de solidarité.
+HelpChain peut être déployé à l’échelle d’une structure, d’un réseau associatif ou d’un territoire local (ville ou intercommunalité).
+HelpChain peut être expérimenté dans le cadre de phases pilotes locales, en collaboration avec des collectivités, associations ou structures sociales.
+HelpChain peut être utilisé par des collectivités locales ou des associations afin de mieux organiser certaines situations nécessitant un suivi ou une coordination.
+HelpChain propose des outils permettant de mieux organiser et suivre les demandes d’aide ainsi que les actions menées par les bénévoles et les structures partenaires.
+HelpChain propose un cadre de coordination destiné aux associations, services publics et réseaux professionnels, avec une organisation structurée et sécurisée.
+HelpChain propose une infrastructure de coordination destinée aux associations, services publics et réseaux professionnels.
+HelpChain se développe progressivement en s’appuyant sur les initiatives locales.
+HelpChain s’engage à traiter les demandes dans les meilleurs délais, conformément aux obligations réglementaires applicables.
+HelpChain s’inscrit dans une démarche d’innovation sociale en utilisant des outils numériques pour améliorer l’organisation des actions de solidarité.
+HelpChain vise ainsi à proposer un outil numérique permettant de soutenir la coordination et la coopération entre les différents acteurs.
+HelpChain vise à faciliter cette coordination grâce à un outil numérique simple et accessible.
+HelpChain vise à faciliter l’entraide et la coordination entre les différents acteurs impliqués dans des actions de solidarité.
+HelpChain vise à proposer un outil numérique permettant de soutenir ces acteurs en facilitant la coordination entre les différents participants.
+HelpChain vise à proposer un outil simple et accessible permettant de soutenir l’organisation des initiatives locales.
+HelpChain vise à proposer un outil simple, sécurisé et adapté à la coordination d’initiatives locales.
+HelpChain vise à soutenir la coopération entre citoyens, bénévoles, associations et structures publiques.
+HelpChain vise à soutenir les initiatives de solidarité en facilitant l’organisation et la coordination des actions entre citoyens, bénévoles et structures locales.
+HelpChain vise à soutenir les initiatives locales de solidarité en facilitant la coopération entre citoyens, bénévoles, associations et structures publiques.
+HelpChain vise à soutenir les initiatives locales en facilitant la coopération entre citoyens, bénévoles, associations et structures publiques.
+HelpChain | Infrastructure numérique de coordination des situations sociales
+HelpChain не е платформа за спешни случаи и не замества институции.
+HelpChain не е “чат за всичко”. Показваме ти заявки, ти решаваш дали да помогнеш.
+Hide decorative elements and reduce visual noise
+High contrast
+High contrast + bigger text
+High contrast and larger text for central vision comfort
+High priority
+High priority open
+High visibility
+High+
+Highlight the current paragraph or block during page reading
+Highlight while reading
+History
+Home
+Hosting & sovereignty
+How it works
+How we use it
+Hébergement & souveraineté
+Hébergement européen
+I understand, show me requests
+I want to help
+I'll help
+ID
+IP
+If codes keep failing, check your phone time settings.
+If the email is valid, you will receive a login link.
+If this email exists, a secure link has just been sent.
+If you do not see it within 1 minute, check Spam/Junk.
+Impact
+Improve my profile
+Improve readability and visual comfort
+Improve your profile to unlock stronger matches.
+In Progress
+In progress
+Inclusion numérique
+Increase visual contrast across the interface
+Indicateurs de délai et de charge
+Information:
+Infrastructure numérique de coordination
+Infrastructure numérique de coordination des situations sociales. Orientation structurée, coordination traçable et pilotage responsable pour associations et réseaux professionnels.
+Infrastructure numérique de coordination pour les initiatives de solidarité locales
+Infrastructure numérique pour la coordination des demandes sociales
+Infrastructure sociale
+Infrastructure à vocation européenne.
+Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.
+Inscription intervenant
+Insights
+Instagram
+Instant operational status
+Institutional dossier
+Interested
+Internal note
+Internal note added.
+Internal notes
+Internal notes...
+Internal ref (no sensitive data)
+Internal trace, without sensitive data.
+Internal use only.
+Intervenant access - HelpChain
+Invalid 2FA code.
+Invalid characters detected.
+Invalid code.
+Invalid code. Attempts remaining: %(count)s.
+Invalid code. Locked for about %(minutes)s min.
+Invalid status.
+Invalid user.
+Invalid verification code.
+JSON
+Je veux aider
+J’accepte la Politique de confidentialité (RGPD).
+J’accepte les
+J’ai besoin d’aide
+KPI
+Keep a clean look without changing text size
+LOCKED
+LOG
+La coopération entre acteurs locaux constitue un élément clé pour répondre à certaines situations sociales.
+La coordination locale s’améliore
+La demande peut concerner différents types de situations, par exemple :
+La gestion des données s’appuie sur les principes du RGPD et sur une collecte strictement nécessaire au service.
+La mise en place de la plateforme peut se faire progressivement en fonction des besoins et des usages.
+La plateforme agit comme un outil complémentaire permettant de soutenir l’organisation et la coordination d’initiatives locales.
+La plateforme agit comme un outil de soutien à l’organisation et à la coordination des initiatives locales.
+La plateforme agit comme un outil permettant de soutenir les initiatives déjà présentes sur le terrain et d’améliorer la coordination entre les différents acteurs.
+La plateforme ambitionne de contribuer, à long terme, au développement d’outils numériques favorisant la solidarité et la coopération à l’échelle européenne.
+La plateforme constitue un outil numérique au service de la coopération et de l’entraide.
+La plateforme constitue un outil numérique au service de l’organisation et de la coopération entre citoyens, bénévoles et structures locales.
+La plateforme constitue un outil numérique destiné à soutenir les initiatives de solidarité et à améliorer la coordination des actions au niveau local.
+La plateforme constitue un outil numérique destiné à soutenir les initiatives locales et à améliorer la coopération entre citoyens, bénévoles et structures.
+La plateforme constitue un outil numérique destiné à soutenir l’organisation et la coordination des actions de solidarité.
+La plateforme constitue un outil numérique permettant d’améliorer la coordination et l’organisation des actions de solidarité.
+La plateforme contribue à structurer certaines initiatives et à faciliter la coopération entre acteurs locaux.
+La plateforme est conçue dans le respect :
+La plateforme est conçue pour soutenir l’organisation et la coopération entre différents acteurs impliqués dans des actions d’entraide.
+La plateforme est conçue pour soutenir l’organisation et la coopération entre les différents acteurs impliqués dans ces actions.
+La plateforme est développée et maintenue dans le cadre du projet HelpChain, avec pour objectif de soutenir les initiatives de solidarité et la coordination entre acteurs locaux.
+La plateforme facilite ainsi la mise en relation entre les besoins exprimés et les personnes prêtes à apporter leur soutien.
+La plateforme facilite ainsi la mise en relation entre les besoins exprimés et les personnes prêtes à intervenir.
+La plateforme facilite l’organisation entre citoyens, bénévoles, associations et structures publiques autour d’un suivi partagé.
+La plateforme permet ainsi d’avoir une vision claire des situations en cours et de faciliter la coordination entre les différents acteurs.
+La plateforme permet de centraliser cette information et de rendre la situation visible pour les acteurs concernés.
+La plateforme permet de centraliser les demandes, de faciliter la mise en relation entre les acteurs et d’améliorer la visibilité des actions menées.
+La plateforme permet de favoriser la coopération entre différents acteurs :
+La plateforme permet de mettre en relation :
+La plateforme permet de suivre l’évolution des situations et de coordonner les actions réalisées.
+La plateforme permet de visualiser les demandes d’aide en cours et leur évolution.
+La plateforme permet d’avoir une vue d’ensemble des demandes et de leur évolution.
+La plateforme permet d’identifier plus facilement les situations prioritaires et de faciliter la mobilisation des ressources disponibles.
+La plateforme permet ensuite de suivre la demande et de coordonner les actions nécessaires.
+La plateforme permet notamment de :
+La plateforme peut également être utilisée dans le cadre de partenariats locaux afin de soutenir l’organisation et la coordination d’initiatives de solidarité.
+La plateforme peut également être utilisée par des collectivités locales, des centres communaux d’action sociale (CCAS) et des associations afin de mieux organiser certaines situations nécessitant un suivi ou une coordination.
+La plateforme peut être utilisée par :
+La plateforme remplace-t-elle les structures existantes ?
+La plateforme s’adresse à différents publics impliqués dans des initiatives de solidarité locales.
+La plateforme s’inscrit dans une perspective d’évolution progressive vers une collaboration plus large entre acteurs européens.
+La plateforme vise à proposer un outil numérique permettant de mieux organiser certaines actions de solidarité au niveau local.
+La plateforme vise à soutenir ces initiatives en facilitant la coordination et la circulation de l’information.
+La plateforme évolue progressivement afin de s’adapter aux besoins des structures et des acteurs impliqués dans des actions de solidarité.
+La présente page peut être mise à jour afin de refléter :
+La situation est organisée et suivie
+La vision du projet HelpChain est de contribuer à renforcer la coopération entre ces initiatives et à faciliter le partage d’expériences et de bonnes pratiques.
+Language
+Large
+Larger text with cleaner reading spacing
+Last 50 events
+Last 7 days
+Last activity:
+Last modified:
+Last signal
+Last superadmin
+Last updated:
+Latest 200 requests.
+Latest leads captured via /professionnels/pilote.
+Latest requests
+Le développement de la plateforme repose sur une approche progressive, avec des phases pilotes et une amélioration continue.
+Le projet est développé avec une approche centrée sur la traçabilité des actions, la responsabilité des acteurs et le respect du cadre RGPD.
+Le projet est développé dans le respect :
+Le projet est ouvert aux échanges avec les acteurs intéressés par le développement d’outils facilitant la coopération et les actions de solidarité.
+Le projet reste ouvert aux échanges avec les acteurs souhaitant contribuer à cette dynamique.
+Le projet vise à :
+Le présent site internet est édité par :
+Le site HelpChain est hébergé sur une infrastructure cloud sécurisée.
+Le site HelpChain utilise uniquement des cookies strictement nécessaires au fonctionnement technique de la plateforme.
+Lead
+Leads
+Les acteurs concernés peuvent organiser l’action, suivre l’évolution et coordonner les interventions.
+Les associations ou structures locales peuvent également utiliser la plateforme pour organiser certaines initiatives d’entraide.
+Les bénévoles inscrits sur la plateforme peuvent consulter les demandes et proposer leur aide en fonction de leurs disponibilités et de leurs compétences.
+Les bénévoles, associations ou structures partenaires peuvent être mobilisés afin d’apporter une réponse adaptée.
+Les collectivités locales, centres communaux d’action sociale (CCAS), associations et structures territoriales peuvent être intéressés par l’utilisation de la plateforme dans le cadre de leurs initiatives locales.
+Les collectivités, associations et bénévoles jouent un rôle essentiel dans la mise en œuvre d’actions de solidarité au niveau territorial.
+Les collectivités, associations ou structures intéressées par une phase pilote ou une coopération peuvent contacter l’équipe HelpChain.
+Les demandes peuvent être suivies et organisées à l’aide des outils de coordination de la plateforme.
+Les données collectées sont limitées aux informations nécessaires au fonctionnement du service et sont traitées avec un niveau de sécurité adapté.
+Les données collectées sont limitées aux informations nécessaires au fonctionnement du service.
+Les données collectées sont utilisées exclusivement pour :
+Les données ne sont pas utilisées à des fins publicitaires ou commerciales.
+Les données personnelles sont conservées uniquement pendant la durée nécessaire au traitement des demandes et à la gestion des actions associées.
+Les données personnelles sont-elles protégées ?
+Les données sont hébergées sur une infrastructure située en Europe afin de renforcer la conformité et la maîtrise opérationnelle.
+Les données sont stockées et traitées conformément aux exigences européennes en matière de protection des données.
+Les exemples ci-dessous illustrent différentes situations dans lesquelles la plateforme peut être utilisée afin d'améliorer l’organisation et la coordination des actions de solidarité.
+Les informations collectées sont utilisées uniquement pour le suivi de la situation.
+Les informations fournies permettent de mieux comprendre la situation et d’orienter la demande vers les personnes ou structures susceptibles d’apporter une aide.
+Les informations issues de la plateforme peuvent contribuer à améliorer l’organisation des actions de solidarité et à mieux comprendre les besoins rencontrés sur le terrain.
+Les initiatives de solidarité existent déjà dans de nombreux territoires.
+Les outils de pilotage permettent d’obtenir une vue d’ensemble des demandes et de leur évolution.
+Les structures intéressées peuvent contacter l’équipe HelpChain afin d’étudier la mise en place d’une expérimentation.
+Les structures intéressées peuvent rejoindre cette phase pilote.
+Les structures locales jouent un rôle essentiel dans les actions de solidarité.
+Les structures peuvent ainsi :
+Les structures peuvent ainsi disposer d’une vision plus claire des demandes et des actions en cours.
+Les structures souhaitant en savoir plus sur la plateforme ou explorer des possibilités de collaboration peuvent prendre contact avec l’équipe du projet.
+Les utilisateurs peuvent ainsi :
+Level
+Liability
+Lien invalide
+Lien invalide ou expiré
+Lien valable
+Lighter pages for faster display and lower data/energy use
+Lighter pages with reduced visual effects to improve speed and lower data/energy use
+Limit animations and transitions
+Link sent again (if the address is valid).
+Link valid for
+LinkedIn
+Live
+Live impact
+Loading profile…
+Loading...
+Local authorities
+Local structures
+Locale
+Locales
+Localisation / adresse
+Localisation des serveurs : Union européenne.
+Location
+Location match
+Location:
+Lock note:
+Locked
+Locked (done/cancelled or by another admin)
+Locked. Try again in %(minutes)s min.
+Lockout buckets (24h)
+Login as a requester
+Logout
+L’accès aux données est strictement limité aux personnes autorisées dans le cadre du fonctionnement de la plateforme.
+L’ensemble du contenu présent sur le site HelpChain, incluant notamment les textes, interfaces, éléments graphiques et fonctionnalités, est protégé par les dispositions applicables en matière de propriété intellectuelle.
+L’objectif de la plateforme est de permettre une organisation plus simple et plus efficace des demandes d’aide et des actions de solidarité.
+L’objectif est de faciliter la coopération entre différents acteurs impliqués dans des actions de solidarité.
+L’objectif est de proposer des solutions simples et accessibles permettant de soutenir les initiatives locales et la coopération entre les différents acteurs.
+L’objectif est de proposer une plateforme utile, fiable et respectueuse des utilisateurs.
+L’objectif est de rendre cette coopération plus fluide et plus organisée.
+L’objectif est d’expérimenter un cadre simple de coordination et d’observer les gains de visibilité et de suivi des situations.
+L’objectif est d’observer les gains de visibilité, de coordination et de traçabilité des actions.
+MFA QR
+MFA backup codes
+MFA has been enabled successfully.
+MFA is already enabled.
+MFA verified.
+MFA verify
+MVP workflow. Action history: next iteration.
+Main content
+Main navigation
+Mais il peut être difficile de :
+Manage push notifications
+Manage your volunteer settings.
+Management dashboard
+Management oversight
+Manual key (if QR does not work):
+Mark as seen & open
+Mark contacted
+Match & engagement
+Match score + urgency + freshness.
+Matched
+Matched (24h)
+Matched volunteers
+Max 2000 characters.
+Maximum %(max)s skills. You can adjust later.
+Maximum 5 compétences.
+Mentions légales
+Mentions légales & Protection des données
+Mentions légales & Protection des données | HelpChain
+Mentions légales et protection des données HelpChain : informations de publication, hébergement, cadre RGPD et droits des utilisateurs.
+Message (optionnel)
+Mieux organiser certaines demandes et faciliter la coordination entre acteurs de terrain.
+Min match
+Mine
+Minimal data, GDPR compliant
+Minimum 10 caractères.
+Mise en relation et suivi pour les situations liées à l’accès aux services de santé.
+Missing
+Mobile accessibility
+More
+More options
+Most overdue
+Motor
+Motor assistance
+My assignments
+My dashboard
+My profile
+My requests
+Name
+Name:
+Navigation
+Navigation comfort
+Navigation principale
+Navigation profiles
+Near
+Near me
+Need type
+Need type is required.
+Needs follow-up
+Needs urgent follow-up
+New
+New (24h)
+New request
+New requests
+New requests (last %(days)s days)
+Next
+Next step:
+No SLA violations.
+No access
+No achievements available
+No activity yet.
+No admin users found.
+No audit events for selected filters.
+No city-based matches for this request yet.
+No data
+No events.
+No history
+No history events yet.
+No internal notes.
+No leads yet.
+No notifications
+No notifications yet
+No options enabled
+No outliers yet.
+No owner
+No owner assigned
+No password.
+No recent activity.
+No requests.
+No results found.
+No results.
+No signals yet.
+No strong matches yet
+No volunteer actions yet.
+Nom (optionnel)
+Nom Prénom
+Non.
+None
+Normal
+Normale
+Not assigned yet. A volunteer/pro will take it as soon as possible.
+Not assigned yet. Someone will take it soon.
+Not done / not rejected
+Not enough data for ranking
+Not for me (48h)
+Not seen (24h+)
+Not seen (48h+)
+Not seen (72h+)
+Not seen 24h queue - view filtered requests
+Not seen 48h queue - view filtered requests
+Not seen 72h queue - view filtered requests
+Not seen risk tier
+Note is too long (max 2000).
+Note is too short.
+Notes
+Notification
+Notifications
+Notified
+Notre mission
+Notre vision
+Nous collectons uniquement les informations nécessaires pour vous mettre en relation. Vous gardez le contrôle.
+Nous ne partageons jamais votre e-mail. Vous pourrez supprimer votre compte à tout moment.
+Nous vous envoyons un lien de connexion. Aucun mot de passe.
+Now
+Nudge selected volunteers
+Nudge volunteer
+OFF
+ON
+Objectif du pilote :
+Objective:
+Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement.
+Oldest first
+Once assigned, you help and update the status.
+Only the owner or a super admin can change ownership.
+Open
+Open audit trail
+Open details
+Open full profile
+Open menu
+Open request
+Open requests
+Open requests ordered by freshness.
+Open selected
+Open without owner
+Operational Intelligence
+Operational control
+Operational dashboard
+Operational security
+Operational signal for admin authentication and risky actions (last 24h).
+Operational status
+Operational status, KPIs and live queue snapshot
+Operations
+Opérationnel
+Or enter manually:
+Organisation (optionnel)
+Organiser une demande
+Orientation claire
+Orientation des demandes
+Orientation et coordination pour les situations nécessitant un accompagnement individuel.
+Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.
+Orienter une demande
+Orienter une demande | HelpChain
+Oui.
+Outcome / Resolution
+Ouvrir mon lien de connexion
+Overdue
+Owner
+Owner assignment
+Owner removed.
+Owner:
+PDF
+Page
+Page not found.
+Paris, Boulogne-Billancourt...
+Paris, Boulogne-Billancourt…
+Partenariats & déploiement territorial
+Pas de spam.
+Password
+Pending
+Pending requests
+People helped
+Person reference (optional)
+Perspective de coopération progressive entre initiatives locales et européennes.
+Phase pilote
+Phase pilote : accès validé manuellement afin de garantir un réseau structuré et fiable.
+Phase pilote contrôlée
+Phase pilote territoriale
+Phase pilote | Professionnels — HelpChain
+Phase pilote — Professionnels
+Phase pilote — cadre simple
+Phone
+Phone:
+Pilot Dashboard
+Pilot framework
+Pilotage
+Pilotage & Indicateurs
+Pilotage & indicateurs
+Pilotage opérationnel
+Pilotage, traçabilité et gouvernance pour les structures qui coordonnent des demandes sociales à l’échelle locale.
+Placeholder (backend à venir)
+Placeholder section for click targets, dwell, and keyboard assistance
+Plateforme numérique de coordination et de mise en relation entre personnes en situation de besoin, bénévoles et acteurs associatifs.
+Play
+Please correct the errors below.
+Please describe the issue (at least 10 characters).
+Please enter a name (at least 2 characters).
+Please log in as an administrator.
+Please provide at least a phone number or an email.
+Please provide at least your email and your role.
+Please select a valid category.
+Please select a valid urgency.
+Please shorten the %(field)s.
+Please shorten the text.
+Please start again from the form.
+Pour les collectivités et associations
+Pour les structures intéressées par un pilote local, un échange direct peut être organisé.
+Pour les structures | HelpChain
+Pour toute demande d’information ou proposition de coopération, vous pouvez contacter le projet HelpChain à l’adresse suivante :
+Pour toute question complémentaire, vous pouvez contacter l’équipe HelpChain à l’adresse suivante :
+Pourquoi HelpChain
+Power off
+Premières situations suivies
+Presbyopia
+Preset description
+Prev
+Preview
+Preview image for the About HelpChain page
+Preview image for the HelpChain legal and data protection page
+Preview image for the HelpChain pilot dashboard page
+Preview image for the HelpChain privacy policy page
+Preview image for the HelpChain professionals page
+Preview image for the HelpChain terms of service page
+Principes de confiance
+Priority
+Priority boost
+Priority:
+Priority: assign or close
+Privacy
+Privacy policy
+Privacy policy for HelpChain: what data we collect, how we use it, retention, your rights, and how to contact us.
+Privacy policy | HelpChain
+Pro Access
+Problème technique
+Processus simple, traçable et responsable
+Profession
+Professional lead
+Professional leads
+Professionals
+Professionnels
+Professionnels | HelpChain
+Profile
+Profile completeness
+Profile details
+Projet & Vision européenne
+Proposer une aide ponctuelle ou contribuer à des actions de solidarité locales.
+Pros
+Pros Leads
+Provide accurate information and use respectful language.
+Présentation de HelpChain dans un cadre de partenariats territoriaux avec collectivités, CCAS, associations et structures locales.
+Présentation du pilotage opérationnel et des indicateurs de suivi sur HelpChain pour collectivités, CCAS et associations.
+Présentation institutionnelle de HelpChain pour les collectivités locales, CCAS, associations et structures sociales.
+Psychologue, avocat, médecin, assistant social...
+Publics concernés
+Périmètre partagé entre équipes
+Périmètre possible d’un pilote
+QR code
+Questions about privacy? Contact us at
+Questions about these terms? Contact us at
+Questions fréquentes
+Questions fréquentes sur le fonctionnement de la plateforme HelpChain pour citoyens, bénévoles, associations et collectivités.
+Qui gère la plateforme ?
+Qui peut utiliser la plateforme ?
+Quick links
+Qu’est-ce que HelpChain ?
+RGPD
+Rassembler certaines demandes d’aide dans un espace structuré.
+Read aloud
+Read content aloud and tune voice feedback for better accessibility
+Read-only
+Read-only KPI overview (no personal data).
+Read-only mode.
+Reading comfort
+Real-time activity
+Real-time operations center.
+Recent login attempts
+Recent risky actions
+Recevoir mon lien de connexion
+Recommended for you
+Reduce distraction and simplify movement across pages
+Reduce motion
+Reduce motion and visual noise
+Reference:
+Regardez aussi vos spams
+Regenerate (invalidates old codes)
+Register
+Registry keys
+Reject
+Rejoignez notre communauté de bénévoles.
+Rejoindre le pilote
+Renseignez les informations essentielles pour faciliter le traitement de votre demande.
+Renvoyer le lien
+Repeated IP:
+Repeated denied
+Repeated fails by IP
+Repeated fails by username
+Repeated username:
+Reports
+Repères
+Repères opérationnels pour suivre les demandes et coordonner les actions.
+Request
+Request #
+Request ID
+Request a discussion
+Request created.
+Request information you submit (category, description, location - if needed for the service).
+Request management
+Request preview
+Request: %(category)s
+Requester
+Requests
+Requests by category
+Requests by city (Top 10)
+Requests by status
+Requests waiting > 7d
+Resend link
+Reset
+Reset only this section
+Resolution
+Resolved
+Resolved today
+Responsabilité claire par dossier
+Response Performance
+Ressources institutionnelles pour comprendre le fonctionnement et les usages de la plateforme.
+Restore system defaults
+Result
+Results for
+Retention periods configurable per structure.
+Retour
+Retour à l’accueil
+Return to the request list and click
+Risk
+Risk Panel
+Risky actions (24h)
+Risky actions monitored:
+Role
+Role- and structure-based access controls (multi-tenant).
+Roles
+Roles and users
+Rules + free AI (hf_local, fallback-safe).
+Règles d’affectation explicites
+Réduction des canaux informels
+Références juridiques, protection des données et principes de conformité applicables.
+Réponses claires aux questions fréquentes sur l’usage de la plateforme.
+Réseaux professionnels d’accompagnement
+SECTION 1 — Coopération avec les collectivités et associations
+SECTION 1 — Déposer une demande
+SECTION 1 — Suivi des demandes
+SECTION 1 — Un besoin de coordination
+SECTION 1 — Un outil de coordination
+SECTION 1 — Un projet ancré dans les territoires
+SECTION 1 — Une plateforme au service des territoires
+SECTION 1 — Éditeur du site
+SECTION 10 — Cookies
+SECTION 11 — Propriété intellectuelle
+SECTION 12 — Évolution
+SECTION 2 — Coordination des actions
+SECTION 2 — Faciliter la mise en relation
+SECTION 2 — Favoriser la coopération
+SECTION 2 — Hébergement
+SECTION 2 — Mobilisation des bénévoles
+SECTION 2 — Soutien aux acteurs locaux
+SECTION 2 — Une meilleure visibilité des situations
+SECTION 2 — Échanges et partenariats
+SECTION 3 — Contact
+SECTION 3 — Coordination entre citoyens, bénévoles et structures
+SECTION 3 — Coordination et suivi
+SECTION 3 — Protection des données personnelles
+SECTION 3 — Soutenir les initiatives locales
+SECTION 3 — Un soutien aux initiatives locales
+SECTION 3 — Une perspective européenne
+SECTION 3 — Vision globale des situations
+SECTION 4 — Adaptation aux besoins locaux
+SECTION 4 — Données collectées
+SECTION 4 — Identification des priorités
+SECTION 4 — Innovation sociale et numérique
+SECTION 4 — Respect des données et confidentialité
+SECTION 4 — Rôle des associations et structures partenaires
+SECTION 4 — Une approche responsable
+SECTION 5 — Amélioration continue
+SECTION 5 — Déploiement progressif
+SECTION 5 — Finalité du traitement
+SECTION 5 — Respect des personnes et des données
+SECTION 5 — Un outil en évolution
+SECTION 6 — Durée de conservation
+SECTION 7 — Sécurité des données
+SECTION 8 — Droits des utilisateurs
+SECTION 9 — Exercice des droits
+SLA
+SLA Breakdown
+SLA compliance
+SLA owner assignment overdue
+SLA queue:
+SLA resolution overdue
+SLA tracking and priority situations
+Safety
+Sans mot de passe. Recevez un lien sécurisé par e-mail.
+Save
+Save as my profile
+Save failed. Please try again.
+Save status
+Save them now.
+Saved in Activity
+Saved in DB. If deleted, fallback will be used.
+Scan the QR code with Google Authenticator / Authy / Microsoft Authenticator, then enter the 6-digit code.
+Scan the QR code with your 2FA app (Google Authenticator, Authy, etc.):
+Schema: Social request -> Orientation -> Responsible assignment -> Action tracking -> Territorial oversight
+Search
+Search by name, title, description...
+Search in HelpChain...
+Search…
+Security
+Security overview
+Seen
+Select
+Select language
+Select request
+Select visible
+Selected text audio controls
+Sending...
+Sending…
+Server
+Services publics locaux (CCAS, collectivités)
+Session expired. Please submit the request again.
+Session for
+Set status: Done
+Set status: In progress
+Set status: Pending
+Set status: Rejected
+Set up 2FA
+Set up MFA
+Settings
+Shortcut: Alt + A
+Show deleted
+Shown only once.
+Si cet e-mail existe, nous venons d’envoyer un lien sécurisé.
+Si l'adresse est valide, vous recevrez un lien de connexion sous quelques minutes.
+Si le bouton ne fonctionne pas, copiez-collez ce lien :
+Si vide, le système le complétera automatiquement.
+Si vous ne choisissez pas de catégorie, une catégorie générale sera appliquée.
+Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.
+Sign in as admin
+Signaler une situation
+Signaler une situation nécessitant une coordination locale.
+Signaler une situation ou formuler une demande nécessitant un soutien ou une coordination.
+Signals
+Simplified mode
+Simplified operations
+Single history per case
+Site information
+Site web :
+Skills
+Skills match
+Skip for now
+Skip to main content
+Slow
+Slowest responses (7d)
+Smooth handover
+Soon, chat communication will be available.
+Sorted by match score & urgency
+Source
+Source:
+Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles.
+Soutien psychosocial
+Soutien social
+Soutien émotionnel
+Speech playback is not available in this browser.
+Speech rate
+Speech volume
+Spike:
+Spreadsheet
+Stable
+Stale
+Stale > 7 days
+Stale request
+Stale requests
+Start reading automatically when supported (future)
+Status
+Status updated.
+Status:
+Stop
+Structure
+Structure is required.
+Structure:
+Structured data
+Structured view by status
+Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé.
+Structures
+Structurée
+Submit a new request
+Submit a request
+Submit your first request
+Successful logins (24h)
+Sufficient info
+Suggestions (Rules-based)
+Suggestions (rules)
+Suivi structuré
+Suivre les situations
+Superadmin count
+Support and setup included
+Suspicious content detected.
+Switch between light and dark theme
+Switch to dark theme
+Switch to light theme
+System logs
+System settings
+Sécurité & conformité
+Sécurité des données
+Sécurité opérationnelle
+Sécurité renforcée
+Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée.
+Sélectionnez le domaine principal pour orienter une demande et structurer la prise en charge avec une coordination adaptée.
+Take over
+Take ownership
+Taken
+Target
+Terms of service
+Terms of service for HelpChain: platform usage rules, safety principles, liability information, and contact details.
+Terms of service | HelpChain
+Terms of use
+Territorial overview
+Test voice
+Text size
+Thank you
+Thank you — Pilot phase
+Thank you! Your interest has been recorded (demo).
+The request has been assigned to you.
+This is where you track your requests and their progress.
+This list is not personalized. Use the section above for intelligent matching.
+This module is under development. Soon you will be able to start secure video sessions directly from the platform.
+This page contains only aggregated metrics and excludes personal data (GDPR-safe).
+This page is not accessible
+This page is under development.
+This page shows only requests with SLA breaches.
+This profile applies
+This request is closed. Thank you.
+This section is ready for future accessibility modules
+Time
+Title
+Titre court (optionnel)
+Titre de la demande
+To communicate about your request (updates, messages, notifications).
+To keep the platform safe (fraud prevention, security monitoring).
+To monitor
+To operate the service and match requests with volunteers.
+Toggle accessibility settings
+Toggle navigation
+Toggle theme
+Top
+Top 5 risky requests
+Top categories (7 days)
+Top denied IP:
+Top denied username:
+Top denied-action IPs (24h)
+Top denied-action usernames (24h)
+Top failed-login IPs (24h)
+Top failed-login usernames (24h)
+Top risks
+Total
+Total points
+Total requests
+Total volunteers
+Toute demande relative aux données personnelles peut être adressée à :
+Toute reproduction, distribution, modification ou utilisation sans autorisation préalable est interdite.
+Traceability of actions and decisions
+Track your progress and unlock new achievements!
+Tracking
+Translation Coverage
+Translation History
+Translation freeze is active. Creating new override keys is blocked for this release.
+Translations
+Transparence & Gouvernance
+Transport
+Traçabilité des actions
+Try 50%%
+Try the selected voice and settings before saving
+Turn on Read aloud, close the menu, and select text on the page. Play / Stop will appear.
+Twitter
+Two-factor authentication
+Type
+Type a keyword to search across requests, categories and professionals.
+Type de demandes, conditions, périmètre...
+Télécharger le dossier institutionnel
+Téléphone
+Téléphone (optionnel)
+USERNAME
+Un cadre commun pour traiter, attribuer et suivre les demandes sociales, avec traçabilité et pilotage.
+Un pilote HelpChain peut être déployé avec une structure locale (CCAS, association ou réseau professionnel) afin de tester la coordination sur un nombre limité de situations.
+Un utilisateur peut signaler un besoin spécifique, et un bénévole peut proposer son aide en fonction de sa disponibilité.
+Unable to resend right now. Please try again shortly.
+Unassign
+Unassign will notify the volunteer.
+Unassigned
+Unassigned > 48h
+Unassigned aging
+Unavailable volunteers
+Une approche orientée pilotage: chaque demande suit un cycle maîtrisé, avec attribution explicite, statut lisible et traçabilité de bout en bout.
+Une coordination efficace repose sur la structure, la responsabilité et la transparence — pas sur l’improvisation.
+Une demande est signalée
+Une demande peut être déposée sur la plateforme afin de trouver un bénévole ou une structure capable d’apporter un accompagnement ponctuel.
+Une demande peut être signalée par un citoyen, un bénévole ou une structure locale.
+Une infrastructure conçue pour la traçabilité, la sécurité et le pilotage institutionnel.
+Une infrastructure de coordination, pas un annuaire
+Une infrastructure de pilotage pour centraliser, attribuer et suivre les demandes avec traçabilité opérationnelle, gouvernance mesurable et continuité.
+Une personne peut déposer une demande d’aide via la plateforme.
+Une personne rencontre des difficultés dans certaines démarches administratives.
+Une situation nécessitant un soutien ou une coordination peut être signalée sur la plateforme.
+Une zone approximative suffit.
+Unknown
+Unlock
+Unlocked achievements
+Unread
+Untitled request
+Update my profile
+Update the status as soon as possible
+Updated
+Updated:
+Updated: -
+Urgence
+Urgences & situations critiques
+Urgencies
+Urgency
+Urgency:
+Urgent
+Urgent only
+Urgente
+Use a clearer fallback font stack with increased spacing
+Use cases - for whom?
+Use of the platform
+Use only this contact for this request. Stay respectful and keep it focused on solving the issue.
+User is required.
+Username
+Uses your browser or device voice. Availability depends on browser support.
+Validated professional access (pilot phase)
+Verification code
+Verification code (6 digits)
+Verified volunteers only
+Version
+Veuillez accepter la Politique de confidentialité (RGPD) pour continuer.
+Video chat
+View
+View all
+View details
+View export logs
+View governance
+View queue
+View requests
+Ville / Localité
+Ville / zone (optionnel)
+Ville ou commune
+Visible for admins only
+Vision et raison d’être de HelpChain: faciliter la coordination solidaire entre citoyens, bénévoles, associations et collectivités.
+Vision à long terme de HelpChain et perspective de coopération solidaire à l’échelle européenne, ancrée dans les territoires.
+Vision, raison d’être du projet et besoin de coordination territoriale.
+Visit us on Facebook
+Visit us on Instagram
+Visit us on LinkedIn
+Visit us on Twitter
+Visual presets
+Visualiser l’évolution des situations et des actions engagées.
+Voice
+Voice guidance
+Voice test
+Voir comment ça marche
+Volume
+Volunteer
+Volunteer ID
+Volunteer actions
+Volunteer added successfully!
+Volunteer assignment
+Volunteer assignment overdue
+Volunteer attention risk
+Volunteer deleted successfully!
+Volunteer interest
+Volunteer login
+Volunteer management
+Volunteer onboarding
+Volunteer signal
+Volunteer signals
+Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions taken by users. We encourage safe, transparent communication and caution when sharing personal details.
+Volunteers
+Volunteers ready to help
+Vos données
+Votre demande est transmise à l’équipe de coordination.
+Votre métier
+Votre nom
+Vous choisissez les demandes qui vous conviennent.
+Vous gardez le contrôle. Vous pourrez arrêter à tout moment.
+Vous pourrez ajuster plus tard.
+Vous pouvez arrêter à tout moment, sans justification.
+Vous recevez un lien sécurisé par e-mail.
+Vous représentez une structure ?
+Vous voulez aider ?
+Vue d’ensemble du fonctionnement opérationnel pour les citoyens, bénévoles et structures.
+Vérifiez votre e-mail
+Waiting for KPI data.
+We connect people in need with volunteers for a better world.
+We couldn't determine your role for dashboard access.
+We do not run advertising profiling.
+We do not sell personal data.
+We found %(n)s low-confidence matches (40-54%%).
+We keep data only as long as needed for the service and legal obligations. You can request deletion of your account data.
+We keep your data private
+We may limit or suspend accounts to prevent abuse or protect the community.
+We will notify you when contact is available.
+Website
+Welcome to HelpChain!
+Welcome. Here is how volunteering works.
+What data we collect
+What happens next
+What needs action
+What we do not do
+When a request matches your profile, you'll see it here.
+When you get matched, you'll see it here.
+Who changed what and when
+Why %(pct)s%%?
+Why choose HelpChain?
+Window:
+Window: 30 days
+You
+You are not expected to solve everything. If something feels out of scope, you can stop or ask for support.
+You can add more grouped settings here later (audio, keyboard help, reading profiles, etc.).
+You can request access, correction, or deletion of your personal data. You can also object to certain processing where applicable.
+You choose which requests you are interested in.
+You do not have access to the admin panel.
+You do not have backup codes yet.
+You don't have any assigned requests yet.
+You have active backup codes
+You haven't sent a signal yet.
+You haven't submitted any requests yet.
+You marked that you can help.
+You marked that you can't help right now.
+You stay in control. You can stop at any time.
+You will be able to manage your settings and preferences soon.
+You will see requests from people who need help.
+You're all set! You can now see requests where your help matters.
+Your reports and volunteer statistics.
+Your request has been registered successfully. We will contact you shortly.
+Your rights
+Your role is to help safely, within your availability and limits.
+Your session has been cleared.
+accompagnement administratif
+action traceability
+adapter l’outil aux réalités du terrain
+adresse électronique
+aide ponctuelle
+améliorer la communication entre les participants
+améliorer l’organisation et le suivi de certaines situations locales
+approved
+associations
+avg_hourly
+by
+by management.
+bénévoles
+citoyens
+conditions d’utilisation
+coordination de l’intervention et continuité opérationnelle.
+coordonner les actions
+d
+days
+de faciliter la communication entre les personnes impliquées
+de la confidentialité des informations
+de la dignité des personnes concernées
+de la protection des données personnelles
+de visualiser les demandes en cours
+denied
+des associations
+des bénévoles
+des citoyens
+des personnes en situation de besoin
+des principes du RGPD
+des structures locales
+droit de rectification
+droit d’accès
+droit d’effacement
+droit d’opposition au traitement
+droit à la limitation du traitement
+durée : 30 à 60 jours
+d’adapter les usages aux besoins du territoire
+d’améliorer progressivement l’outil avec les acteurs locaux.
+d’expérimenter la plateforme dans un contexte réel
+d’identifier les situations prioritaires
+e.g. 123
+e.g. orange.fr
+et la
+events
+faciliter la coopération entre citoyens, bénévoles, associations et structures publiques
+faciliter la coordination entre différents intervenants
+failed
+failed_1h
+fails
+from
+generated
+hours
+identifier les besoins
+identifier les demandes en attente
+in last 1h vs avg
+informations communiquées volontairement dans le cadre d’une demande d’aide ou d’une proposition de volontariat
+la circulation de l’information
+la confidentialité des informations
+la coordination entre acteurs
+la coordination entre bénévoles et structures locales
+la gestion et le suivi des demandes
+la mise en relation entre personnes en demande d’aide et bénévoles
+la répartition des actions
+la structuration de la plateforme
+la sécurité des systèmes d’information
+le suivi de certaines situations
+les évolutions du projet
+les évolutions réglementaires applicables
+l’amélioration continue du service
+l’identification des situations prioritaires
+l’intégrité des données
+l’organisation et la coordination des actions de soutien
+management oversight
+matches
+minutes
+new
+new:
+no user loaded
+nom ou pseudonyme
+nom@exemple.fr
+notified matches with an action.
+observer les gains de visibilité et de suivi
+old:
+optionnel
+organiser les interventions
+orientation vers des ressources locales
+orientation, traçabilité et pilotage des prises en charge.
+owner assign
+pending
+politique de confidentialité
+processing times
+proposer un outil numérique simple, sécurisé et conforme aux exigences européennes.
+rejected
+repérer les situations nécessitant une attention particulière
+resolution
+rewards
+soutien dans certaines démarches
+structuration des parcours, suivi et coordination multi-intervenants.
+structures publiques
+success
+suivre certaines situations
+suivre les actions réalisées
+suivre l’avancement des situations
+suivre l’évolution de certaines situations
+system
+tester la coordination sur des cas réels
+threshold
+to
+traceability.
+unread notifications
+view
+ville ou localisation approximative
+visualiser les demandes en cours
+volunteer
+vous@email.com
+your@email.com
+{count} options enabled
+~2 min.
+À propos
+À propos de HelpChain
+Ça prend ~2 minutes
+Étape 1 — Identifier une situation
+Étape 2 — Mobiliser les acteurs
+Étape 3 — Suivre l’évolution
+Административна помощ
+Администратор преглежда интереса ти. Ще получиш известие.
+Ако адресът е валиден, ще изпратим нов линк.
+Ако добавиш точна локация + 2-3 умения, шансът за match се вдига осезаемо.
+Ако искаш, можеш да обновиш наличност или умения по-късно.
+Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем.
+Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина.
+Ако решиш - ще се свържеш директно с човека в нужда.
+Без име
+Без описание
+Благодарим ти
+Благодарим! Заявката е маркирана като приключена.
+В изчакване
+В изчакване — ще получиш известие при потвърждение.
+В процес
+Важно:
+Виж
+Виж детайли
+Виж други активни заявки
+Виж подадените от теб заявки и статуса им.
+Виж пример
+Виждаш тази заявка, защото съвпада с профила ти
+Виждаш тази заявка, защото съвпада с профила ти в %(loc)s
+Вход
+Готовност за свързване
+Да, ще помогна
+Демо: нищо не се записва.
+Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш.
+Детайли за заявка
+Детайлите ще се показват тук. Нищо не е изпратено автоматично.
+Доброволецът е добавен успешно!
+Доброволци
+Завършено
+Затвори
+Заявка
+Заявката е изпратена. Ще получиш известие при решение.
+Заявки
+Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта.
+Изпрати заявката
+Изпрати отново
+Изпратихме линк за потвърждение на:
+Изпращане...
+Изход
+Изчакване
+Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека.
+Име
+Имейл
+Искам да помогна
+История
+Как работи HelpChain →
+Как работи свързването →
+Как ще изглежда заявка
+Какво да очакваш
+Какво следва
+Какво става, ако натиснеш?
+Кандидатурата е получена
+Категории помощ
+Колкото по-точно е това, толкова по-качествени заявки ще виждаш. Нищо не се поема автоматично - ти решаваш.
+Копирай имейла
+Копирано 
+Към началната страница
+Линкът е валиден 15 минути.
+Липсва
+Личните данни се показват само при нужда/съгласие.
+Локация
+Локация:
+Мога да помогна
+Моето табло
+Можете да изпратите отново след
+Можеш да откажеш без обяснения.
+Моите заявки
+Назад
+Назначен/а
+Наличност
+Наличност:
+Натисни “Искам да помогна”, за да поискаш достъп.
+Не мога да помогна
+Не успях да копирам. Опитай ръчно.
+Нищо не се поема автоматично.
+Нищо не си задължен/длъжна на този етап.
+Нова
+Нова заявка
+Няма
+Няма автоматични ангажименти.
+Няма автоматично включване.
+Няма активни заявки в момента
+Няма заявки в този статус
+Няма намерени доброволци
+Няма намерени заявки
+Няма описание.
+Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти.
+Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.
+Обработва се…
+Общо заявки
+Одобрен/а
+Одобрен/а си. Отвори заявката за контакт и следващи стъпки.
+Одобрени
+Онлайн
+Описание
+Отвори имейл приложението
+Откажи
+Отказани
+Отказано
+Отхвърлен/а
+По-точна локация + 2–3 умения = по-бърз match.
+Подай заявка за помощ
+Показваме само липсващото, за да станеш готов за свързване.
+Получихме твоята кандидатура за доброволец.
+Помощ с документи
+Помощта е заявена. Очаква се кратко потвърждение от екипа.
+Попълни профила
+Попълни профила си
+Попълни формата и екипът ни ще се свърже с теб възможно най-бързо.
+Потвърдено
+Потвърди помощта
+Преглеждаме информацията ти.
+При подходящи заявки ще можеш да избереш дали да се включиш.
+Пример (демо)
+Пример, за да знаеш какво да очакваш.
+Примерна заявка
+Проверете и папките Spam/Promotions.
+Проверете имейла си
+Продължаваме?
+Профил
+Профил на доброволец
+Профилът е готов
+Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично.
+Рег.
+Редактирай профила
+Сгреших имейла / Подай заявката отново
+Сесията изтече. Моля, върнете се към формата.
+Следва кратък преглед и потвърждение.
+Статус
+Статус: Активен
+Съвет:
+Тази заявка вече е поета. Виж други активни заявки.
+Твоят сигнал
+Телефон
+Ти контролираш ангажимента си.
+Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно.
+Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно.
+Това е всичко. Когато има заявка, която пасва - ще я видиш в таблото. Няма автоматични ангажименти.
+Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично.
+Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.
+Това е само пример — реалните заявки ще се покажат автоматично.
+Това изпраща сигнал към админите.
+Току-що се появи. Провери дали ти е удобно.
+Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.
+Умения
+Умения:
+Чакащи
+Човек търси помощ за документи и насоки къде да ги подаде.
+Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.
+Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.
+Ще помогна
+Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно).
+не е зададена
+по избор
+току-що
+• Available (CAN_HELP): 0
+• Completed
+• In progress
+• In progress: 0
+• No volunteer assigned
+• Without assigned volunteer: 0

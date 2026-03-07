@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="bg">
+<html lang="{{ g.locale if g is defined and g.locale else 'fr' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2FA - HelpChain</title>
+    <title>{{ _("2FA") }} - HelpChain</title>
     <link
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
@@ -16,14 +16,14 @@
         <div class="col-md-6">
           <div class="card">
             <div class="card-header bg-warning">
-              <h3 class="text-center">Двуфакторна автентикация</h3>
+              <h3 class="text-center">{{ _("Two-factor authentication") }}</h3>
             </div>
             <div class="card-body">
-              <p>Въведете 6-цифрения код от вашето 2FA приложение:</p>
+              <p>{{ _("Enter the 6-digit code from your 2FA app:") }}</p>
               <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
-                  <label for="token" class="form-label">2FA Код</label>
+                  <label for="token" class="form-label">{{ _("2FA code") }}</label>
                   <input
                     type="text"
                     class="form-control text-center"
@@ -34,11 +34,11 @@
                   />
                 </div>
                 <button type="submit" class="btn btn-warning w-100">
-                  Потвърди
+                  {{ _("Confirm") }}
                 </button>
               </form>
               <div class="text-center mt-3">
-                <a href="{{ safe_url_for('admin.ops_login') }}">Обратно</a>
+                <a href="{{ safe_url_for('admin.ops_login') }}">{{ _("Back") }}</a>
               </div>
             </div>
           </div>

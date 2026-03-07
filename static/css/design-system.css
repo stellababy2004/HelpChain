@@ -1,6 +1,7 @@
 /* Placeholder: design system styles to be added. */
 
 :root {
+  --hc-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   /* Neutrals (v1 official) */
   --hc-bg: #f7f9fc;
   --hc-surface: #ffffff;
@@ -25,21 +26,68 @@
   /* Layout */
   --hc-radius: 16px;
   --hc-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  --hc-icon-inline-size: 16px;
+  --hc-icon-card-size: 22px;
+  --hc-icon-box-size: 44px;
 
   /* Aliases (legacy usage) */
   --hc-card: var(--hc-surface);
   --hc-text-main: var(--hc-text);
   --hc-text-soft: #94a3b8;
-  --bs-body-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --bs-body-font-family: var(--hc-font-sans);
+}
+
+/* Icon system baseline (Type A: boxed / Type B: inline) */
+i.fas,
+i.fab,
+i.bi {
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.hc-icon-inline {
+  font-size: var(--hc-icon-inline-size);
+  color: var(--hc-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hc-icon-box {
+  width: var(--hc-icon-box-size);
+  height: var(--hc-icon-box-size);
+  border-radius: 10px;
+  border: 1px solid var(--hc-primary);
+  color: var(--hc-primary);
+  background: var(--hc-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--hc-icon-box-size);
+}
+
+.hc-icon-box i {
+  font-size: var(--hc-icon-card-size);
+  line-height: 1;
+  color: inherit;
 }
 
 html, body {
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--hc-font-sans);
 }
 
 body {
   background: var(--hc-bg);
   color: var(--hc-text-main);
+  font-family: var(--hc-font-sans);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--hc-font-sans);
+}
+
+p, li, span, a, button, input, textarea, select, label, th, td {
+  font-family: var(--hc-font-sans);
 }
 
 .hc-card {

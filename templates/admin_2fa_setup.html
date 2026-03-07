@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="bg">
+<html lang="{{ g.locale if g is defined and g.locale else 'fr' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Настройка 2FA - HelpChain</title>
+    <title>{{ _("2FA setup") }} - HelpChain</title>
     <link
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
@@ -16,31 +16,30 @@
         <div class="col-md-8">
           <div class="card">
             <div class="card-header bg-info text-white">
-              <h3 class="text-center">Настройка на 2FA</h3>
+              <h3 class="text-center">{{ _("Set up 2FA") }}</h3>
             </div>
             <div class="card-body">
               <p>
-                Сканирайте QR кода с вашето 2FA приложение (Google
-                Authenticator, Authy и др.):
+                {{ _("Scan the QR code with your 2FA app (Google Authenticator, Authy, etc.):") }}
               </p>
 
               <div class="text-center mb-4">
                 <img
                   src="data:image/png;base64,{{ qrcode }}"
-                  alt="QR Code"
+                  alt="{{ _('QR code') }}"
                   class="img-fluid"
                 />
               </div>
 
               <p class="text-muted">
-                Или въведете ръчно: <code>{{ totp_uri }}</code>
+                {{ _("Or enter manually:") }} <code>{{ totp_uri }}</code>
               </p>
 
               <form method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="mb-3">
                   <label for="token" class="form-label"
-                    >Въведете кода от приложението</label
+                    >{{ _("Enter the code from the app") }}</label
                   >
                   <input
                     type="text"
@@ -52,12 +51,12 @@
                   />
                 </div>
                 <button type="submit" class="btn btn-info w-100">
-                  Активирай 2FA
+                  {{ _("Enable 2FA") }}
                 </button>
               </form>
 
               <div class="text-center mt-3">
-                <a href="{{ safe_url_for('admin.admin_dashboard') }}">Пропусни засега</a>
+                <a href="{{ safe_url_for('admin.admin_dashboard') }}">{{ _("Skip for now") }}</a>
               </div>
             </div>
           </div>

@@ -1,0 +1,47 @@
+name: Translation Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - "i18n/**"
+      - "templates/**"
+      - "translations/**"
+      - "scripts/check_translations.py"
+
+jobs:
+  i18n-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install polib
+
+      - name: Run translation check
+        run: |
+          python scripts/check_translations.py \
+            --registry i18n/ui_keys.json \
+            --templates-dir templates \
+            --translations-dir translations \
+            --fail-locales fr \
+            --warn-locales en,de,bg
+
+      - name: Run i18n CI guard
+        run: |
+          python scripts/i18n_ci_guard.py \
+            --base-ref origin/main \
+            --fr-po translations/fr/LC_MESSAGES/messages.po

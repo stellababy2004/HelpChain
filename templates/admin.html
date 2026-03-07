@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Администраторски панел - HelpChain</title>
+    <title>{{ _('Admin panel') }} - HelpChain</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -45,7 +45,7 @@
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
-          title="Отвори меню"
+          title="{{ _('Open menu') }}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -78,7 +78,7 @@
                     class="dropdown-item dropdown-item-modern"
                     href="{{ url_for('admin.admin_volunteers') }}"
                   >
-                    <i class="fas fa-users me-2"></i>Доброволци
+                    <i class="fas fa-users me-2"></i>{{ _('Volunteers') }}
                   </a>
                 </li>
                 <li>
@@ -86,7 +86,7 @@
                     class="dropdown-item dropdown-item-modern"
                     href="{{ url_for('admin.admin_requests') }}"
                   >
-                    <i class="fas fa-clipboard-list me-2"></i>Заявки
+                    <i class="fas fa-clipboard-list me-2"></i>{{ _('Requests') }}
                   </a>
                 </li>
                 <li>
@@ -94,7 +94,7 @@
                     class="dropdown-item dropdown-item-modern"
                     href="{{ url_for('admin.admin_dashboard') }}"
                   >
-                    <i class="fas fa-user-shield me-2"></i>Роли и потребители
+                    <i class="fas fa-user-shield me-2"></i>{{ _('Roles and users') }}
                   </a>
                 </li>
               </ul>
@@ -126,7 +126,7 @@
               <button
                 class="theme-toggle"
                 id="themeToggle"
-                title="Превключи тема"
+                title="{{ _('Toggle theme') }}"
               >
                 <i class="fas fa-moon"></i>
               </button>
@@ -148,14 +148,14 @@
     <section class="admin-hero">
       <div class="admin-welcome">
         <h1 class="admin-title">
-          <i class="fas fa-tools me-3"></i>Администраторски панел
+          <i class="fas fa-tools me-3"></i>{{ _('Administrator') }}ски панел
         </h1>
         <p class="admin-subtitle">
           Управлявайте системата HelpChain и следете ключовите метрики
         </p>
         <div class="admin-badges">
           <span class="admin-badge">
-            <i class="fas fa-shield-alt me-1"></i>Администратор
+            <i class="fas fa-shield-alt me-1"></i>{{ _('Administrator') }}
           </span>
           <span class="admin-badge">
             <i class="fas fa-clock me-1"></i>{{ moment().format('DD/MM/YYYY
@@ -177,7 +177,7 @@
               <i class="fas fa-users"></i>
             </div>
             <div class="stats-value-modern">{{ volunteers_count or 0 }}</div>
-            <p class="stats-label-modern">Доброволци</p>
+            <p class="stats-label-modern">{{ _('Volunteers') }}</p>
           </div>
         </div>
 
@@ -187,7 +187,7 @@
               <i class="fas fa-clipboard-list"></i>
             </div>
             <div class="stats-value-modern">{{ requests_count or 0 }}</div>
-            <p class="stats-label-modern">Заявки</p>
+            <p class="stats-label-modern">{{ _('Requests') }}</p>
           </div>
         </div>
 
@@ -197,7 +197,7 @@
               <i class="fas fa-user-shield"></i>
             </div>
             <div class="stats-value-modern">{{ admins_count or 0 }}</div>
-            <p class="stats-label-modern">Администратори</p>
+            <p class="stats-label-modern">{{ _('Administrators') }}</p>
           </div>
         </div>
 
@@ -207,14 +207,14 @@
               <i class="fas fa-chart-line"></i>
             </div>
             <div class="stats-value-modern">{{ active_sessions or 0 }}</div>
-            <p class="stats-label-modern">Активни сесии</p>
+            <p class="stats-label-modern">{{ _('Active sessions') }}</p>
           </div>
         </div>
       </div>
 
       <div class="hc-health fade-in" id="hc-health">
         <div>
-          <div class="hc-health__label">État opérationnel</div>
+          <div class="hc-health__label">{{ _('Operational status') }}</div>
           <div class="hc-health__sub" id="hc-health-sub">—</div>
           <div class="hc-health__secondary" id="hc-health-secondary"></div>
           <div class="hc-health__cta-container">
@@ -226,31 +226,31 @@
 
       <section class="hc-ops-kpis fade-in" data-days="30">
         <div class="hc-ops-kpis__header">
-          <h2 class="hc-h2">Pilotage opérationnel</h2>
-          <div class="hc-ops-kpis__meta">Fenêtre: 30 jours</div>
+          <h2 class="hc-h2">{{ _('Operational dashboard') }}</h2>
+          <div class="hc-ops-kpis__meta">{{ _('Window: 30 days') }}</div>
         </div>
 
         <div class="hc-ops-kpis__grid">
           <div class="hc-kpi-card">
-            <div class="hc-kpi-label">Nouveaux dossiers</div>
+            <div class="hc-kpi-label">{{ _('New requests') }}</div>
             <div class="hc-kpi-value" id="kpi-new">—</div>
           </div>
 
           <div class="hc-kpi-card">
-            <div class="hc-kpi-label">Résolus</div>
+            <div class="hc-kpi-label">{{ _('Resolved') }}</div>
             <div class="hc-kpi-value" id="kpi-resolved">—</div>
           </div>
 
           <div class="hc-kpi-card">
-            <div class="hc-kpi-label">Délai moyen assignation</div>
+            <div class="hc-kpi-label">{{ _('Average assignment delay') }}</div>
             <div class="hc-kpi-value" id="kpi-assign">—</div>
-            <div class="hc-kpi-sub">heures</div>
+            <div class="hc-kpi-sub">{{ _('hours') }}</div>
           </div>
 
           <div class="hc-kpi-card">
-            <div class="hc-kpi-label">Délai moyen résolution</div>
+            <div class="hc-kpi-label">{{ _('Average resolution delay') }}</div>
             <div class="hc-kpi-value" id="kpi-resolve">—</div>
-            <div class="hc-kpi-sub">heures</div>
+            <div class="hc-kpi-sub">{{ _('hours') }}</div>
           </div>
 
           <div class="hc-kpi-card hc-kpi-card--alert">
@@ -273,7 +273,7 @@
           <h3 class="mb-0">
             <i class="fas fa-bolt text-warning me-2"></i>Бързи действия
           </h3>
-          <small class="text-muted">Кликнете върху действие за достъп</small>
+          <small class="text-muted">{{ _('Click an action to access') }}</small>
         </div>
 
         <div class="actions-grid">
@@ -281,7 +281,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-users"></i>
             </div>
-            <div class="action-title-modern">Управление на доброволци</div>
+            <div class="action-title-modern">{{ _('Volunteer management') }}</div>
             <div class="action-description-modern">
               Добавяне, редактиране и управление на доброволци в системата.
               Преглед на профили и активност.
@@ -292,7 +292,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-clipboard-list"></i>
             </div>
-            <div class="action-title-modern">Управление на заявки</div>
+            <div class="action-title-modern">{{ _('Request management') }}</div>
             <div class="action-description-modern">
               Преглед и управление на всички заявки за помощ. Присвояване на
               доброволци и проследяване.
@@ -303,7 +303,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-chart-bar"></i>
             </div>
-            <div class="action-title-modern">Аналитика и статистика</div>
+            <div class="action-title-modern">{{ _('Analytics and statistics') }}</div>
             <div class="action-description-modern">
               Подробни метрики, графики и аналитика на системата. Проследяване
               на ефективността.
@@ -314,7 +314,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-user-shield"></i>
             </div>
-            <div class="action-title-modern">Роли и потребители</div>
+            <div class="action-title-modern">{{ _('Roles and users') }}</div>
             <div class="action-description-modern">
               Управление на роли, разрешения и потребителски акаунти. Настройки
               за сигурност.
@@ -325,7 +325,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-history"></i>
             </div>
-            <div class="action-title-modern">Системни логове</div>
+            <div class="action-title-modern">{{ _('System logs') }}</div>
             <div class="action-description-modern">
               Преглед на системни логове и одит на действията. Проследяване на
               промени и грешки.
@@ -336,7 +336,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-download"></i>
             </div>
-            <div class="action-title-modern">Експорт на данни</div>
+            <div class="action-title-modern">{{ _('Data export') }}</div>
             <div class="action-description-modern">
               Експортиране на данни в различни формати. Създаване на отчети и
               архиви.
@@ -347,7 +347,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-shield-alt"></i>
             </div>
-            <div class="action-title-modern">Двуфакторна автентикация</div>
+            <div class="action-title-modern">{{ _('Two-factor authentication') }}</div>
             <div class="action-description-modern">
               Управление на 2FA настройки за администратори. Подобряване на
               сигурността.
@@ -358,7 +358,7 @@
             <div class="action-icon-modern">
               <i class="fas fa-cogs"></i>
             </div>
-            <div class="action-title-modern">Системни настройки</div>
+            <div class="action-title-modern">{{ _('System settings') }}</div>
             <div class="action-description-modern">
               Конфигурация и настройки на системата. Персонализиране на
               функционалности.
@@ -383,13 +383,13 @@
 
         <div class="system-info-grid">
           <div class="info-item">
-            <div class="info-label">Версия</div>
+            <div class="info-label">{{ _('Version') }}</div>
             <div class="info-value">HelpChain v1.0.0</div>
-            <span class="info-status status-active">Стабилна</span>
+            <span class="info-status status-active">{{ _('Stable') }}</span>
           </div>
 
           <div class="info-item">
-            <div class="info-label">База данни</div>
+            <div class="info-label">{{ _('Database') }}</div>
             <div class="info-value">SQLite</div>
             <small class="text-muted"
               >Последна актуализация: {{ moment().format('DD/MM/YYYY') }}</small
@@ -397,15 +397,15 @@
           </div>
 
           <div class="info-item">
-            <div class="info-label">Администратор</div>
+            <div class="info-label">{{ _('Administrator') }}</div>
             <div class="info-value">
               {{ current_user.username if current_user else 'Неизвестен' }}
             </div>
-            <small class="text-muted">Активна сесия</small>
+            <small class="text-muted">{{ _('Active session') }}</small>
           </div>
 
           <div class="info-item">
-            <div class="info-label">Сървър</div>
+            <div class="info-label">{{ _('Server') }}</div>
             <div class="info-value">Python Flask</div>
             <small class="text-muted">Port: 8000</small>
           </div>

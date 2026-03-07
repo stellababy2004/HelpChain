@@ -1,24 +1,10 @@
 @echo off
-echo ========================================
-echo    HelpChain Server Launcher (Background)
-echo ========================================
-echo.
-
-echo [1/3] Stopping any existing Python processes...
+cd /d C:\dev\HelpChain.bg
 taskkill /f /im python.exe 2>nul
 timeout /t 1 /nobreak >nul
-
-echo [2/3] Starting HelpChain server in background...
-powershell -Command "Start-Job -ScriptBlock { Set-Location 'c:\Users\Stella Barbarella\OneDrive\Documents\chatGPT\Projet BG\HelpChain'; python start_server.py } | Out-Null"
-
-echo [3/3] Waiting for server to start...
-timeout /t 5 /nobreak >nul
-
-echo.
-echo ✅ Server should be running now!
-echo 🌐 Open browser: http://127.0.0.1:5000
-echo 👨‍💼 Admin panel: http://127.0.0.1:5000/admin_login
-echo 👥 Volunteer login: http://127.0.0.1:5000/volunteer_login
-echo.
-echo 💡 To stop server: Run 'stop_server.bat'
-echo ========================================
+set HC_DB_PATH=C:\dev\HelpChain.bg\instance\hc_local_dev.db
+set SQLALCHEMY_DATABASE_URI=sqlite:///C:/dev/HelpChain.bg/instance/hc_local_dev.db
+set PORT=5000
+start "HelpChain Server" cmd /k "cd /d C:\dev\HelpChain.bg && set HC_DB_PATH=C:\dev\HelpChain.bg\instance\hc_local_dev.db && set SQLALCHEMY_DATABASE_URI=sqlite:///C:/dev/HelpChain.bg/instance/hc_local_dev.db && set PORT=5000 && C:\dev\HelpChain.bg\.venv\Scripts\python.exe run.py"
+timeout /t 3 /nobreak >nul
+echo Server started on http://127.0.0.1:5000

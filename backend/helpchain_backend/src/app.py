@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
 import os
+import threading
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, make_response, render_template, request, session
+from flask import Flask, g, jsonify, make_response, render_template, request, session
 from flask_babel import get_locale as babel_get_locale
+from flask_babel import gettext as babel_gettext
 from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -27,15 +30,17 @@ except ModuleNotFoundError:
 load_dotenv()
 
 SUPPORTED_LOCALES = (
-    "fr", "en", "es", "it", "de", "ar", "br", "ca", "cs", "co", "cy", "da",
-    "et", "eu", "sw", "mfe", "lv", "lb", "lt", "hu", "nl", "no", "oc", "pl",
-    "pt", "ro", "sk", "sl", "fi", "sv", "vi", "tr", "el", "bg", "ru", "uk",
-    "yi", "he", "ps", "hi", "th", "ko", "zh", "ja",
+    "fr",
+    "en",
+    "de",
+    "bg",
 )
 DEFAULT_LOCALE = "fr"
 
 # Guard against duplicate SQLAlchemy event registration under the dev reloader.
 _SLOW_SQL_HOOKS_INSTALLED = False
+_L10N_MISSING_SEEN: set[str] = set()
+_L10N_MISSING_LOCK = threading.Lock()
 
 
 def _install_slow_sql_logger(app: Flask) -> None:
@@ -269,6 +274,7 @@ def create_app(config_object=None) -> Flask:
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)
+    app.config.setdefault("SUPPORTED_LOCALES", list(SUPPORTED_LOCALES))
     # FR-first: keep a single default locale across dev/prod unless explicitly overridden by env.
     app.config["BABEL_DEFAULT_LOCALE"] = os.getenv(
         "BABEL_DEFAULT_LOCALE", DEFAULT_LOCALE
@@ -355,12 +361,87 @@ def create_app(config_object=None) -> Flask:
         # Single canonical model import (avoid multiple MetaData instances)
         from . import models  # noqa: F401
         from .models.audit_guard import install_admin_audit_append_only_guard
+        from .services.risk_engine import register_request_risk_hooks
 
         install_admin_audit_append_only_guard()
+        register_request_risk_hooks()
 
     # CSRF helper for Jinja (if templates call {{ csrf_token() }})
     app.jinja_env.globals["csrf_token"] = generate_csrf
     app.jinja_env.globals["get_locale"] = babel_get_locale
+
+    @app.template_filter("from_json")
+    def from_json_filter(value):
+        if not value:
+            return []
+        try:
+            return json.loads(value)
+        except Exception:
+            return []
+
+    def db_t(
+        key: str,
+        default: str | None = None,
+        locale: str | None = None,
+        domain: str | None = None,
+    ) -> str:
+        """
+        DB translation override helper for templates.
+        Usage:
+          {{ t("submit_request") }}
+          {{ t("submit_request", "Soumettre") }}
+        """
+        k = (key or "").strip()
+        if not k:
+            return ""
+
+        loc = (locale or str(babel_get_locale()) or DEFAULT_LOCALE).strip().lower()
+        loc_short = loc.split("-")[0]
+
+        # Request-local cache to avoid repeated DB lookups.
+        cache = getattr(g, "_ui_tr_cache", None)
+        if cache is None:
+            cache = {}
+            g._ui_tr_cache = cache
+        cache_key = f"{loc}|{k}"
+        if cache_key in cache:
+            return cache[cache_key]
+
+        text = None
+        try:
+            try:
+                from backend.models import UiTranslation
+            except ModuleNotFoundError:
+                from models import UiTranslation
+
+            row = (
+                UiTranslation.query.filter_by(key=k, locale=loc, is_active=True).first()
+                or UiTranslation.query.filter_by(key=k, locale=loc_short, is_active=True).first()
+            )
+            if row and row.text:
+                text = row.text
+        except Exception:
+            # Fail-open: never break page rendering because of i18n DB issue.
+            text = None
+
+        if not text:
+            gettext_text = babel_gettext(k) or ""
+            missing_gettext = (not gettext_text) or (gettext_text == k)
+            if missing_gettext:
+                fallback = default or k
+                _log_l10n_missing_once(
+                    locale=loc,
+                    key=k,
+                    domain=domain,
+                    fallback=fallback,
+                )
+                text = fallback
+            else:
+                text = gettext_text
+        cache[cache_key] = text
+        return text
+
+    app.jinja_env.globals["t"] = db_t
 
     # Login manager (admin UI)
     login_manager = LoginManager()
@@ -625,6 +706,36 @@ def create_app(config_object=None) -> Flask:
             }
 
     return app
+
+
+def _log_l10n_missing_once(
+    *,
+    locale: str,
+    key: str,
+    domain: str | None = None,
+    fallback: str | None = None,
+) -> None:
+    cache_key = f"{(locale or '').lower()}:{(key or '').strip()}"
+    if not cache_key or cache_key.endswith(":"):
+        return
+    with _L10N_MISSING_LOCK:
+        if cache_key in _L10N_MISSING_SEEN:
+            return
+        if len(_L10N_MISSING_SEEN) > 10000:
+            _L10N_MISSING_SEEN.clear()
+        _L10N_MISSING_SEEN.add(cache_key)
+    try:
+        from flask import current_app
+
+        current_app.logger.warning(
+            "[L10N_MISSING] locale=%s key=%s domain=%s fallback=%s",
+            locale,
+            key,
+            (domain or "-"),
+            (fallback or ""),
+        )
+    except Exception:
+        return
 
 
 if __name__ == "__main__":

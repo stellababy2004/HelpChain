@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Admin - Request #{{ req.id }}{% endblock %}
+{% block title %}{{ _('Admin') }} - {{ _('Request') }} #{{ req.id }}{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
@@ -17,30 +17,30 @@
     <div class="card-body">
       <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
         <div>
-          <div class="text-muted small">Dossier #{{ req.id }}</div>
-          <h2 class="mb-1 fw-bold">{{ req.title or ("Demande #" ~ req.id) }}</h2>
+          <div class="text-muted small">{{ _('Case') }} #{{ req.id }}</div>
+          <h2 class="mb-1 fw-bold">{{ req.title or (_('Request #') ~ req.id) }}</h2>
           <div class="d-flex flex-wrap align-items-center gap-2">
             <span class="{{ sm.badge_class }}">
               <i class="bi {{ sm.icon }} me-1"></i>{{ sm.label }}
             </span>
             {% if _prio == 'urgent' %}
-              <span class="badge text-bg-danger">Urgence: {{ _prio }}</span>
+              <span class="badge text-bg-danger">{{ _('Priority:') }} {{ _prio }}</span>
             {% elif _prio == 'low' %}
-              <span class="badge text-bg-secondary">Urgence: {{ _prio }}</span>
+              <span class="badge text-bg-secondary">{{ _('Priority:') }} {{ _prio }}</span>
             {% else %}
-              <span class="badge text-bg-warning text-dark">Urgence: {{ _prio }}</span>
+              <span class="badge text-bg-warning text-dark">{{ _('Priority:') }} {{ _prio }}</span>
             {% endif %}
             <span class="badge text-bg-light border">{{ req.category }}</span>
           </div>
         </div>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Back to requests</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">{{ _('Back to requests') }}</a>
       </div>
 
       <div class="row g-2 mt-2 small text-muted">
-        <div class="col-md-3"><strong>Ville:</strong> {{ req.city or "—" }}</div>
-        <div class="col-md-3"><strong>Structure:</strong> {{ req.structure_id or "—" }}</div>
+        <div class="col-md-3"><strong>{{ _('City:') }}</strong> {{ req.city or "—" }}</div>
+        <div class="col-md-3"><strong>{{ _('Structure:') }}</strong> {{ req.structure_id or "—" }}</div>
         <div class="col-md-3">
-          <strong>Responsable:</strong>
+          <strong>{{ _('Owner:') }}</strong>
           {% if req.owner %}
             {{ req.owner.username }}
           {% elif req.owner_id %}
@@ -49,19 +49,19 @@
             —
           {% endif %}
         </div>
-        <div class="col-md-3"><strong>Derniere activite:</strong> {{ req.updated_at or req.created_at or "-" }}</div>
+        <div class="col-md-3"><strong>{{ _('Last activity:') }}</strong> {{ req.updated_at or req.created_at or "-" }}</div>
       </div>
 
       <div class="d-flex flex-wrap align-items-end gap-2 mt-3">
         {% if not req.owner_id %}
           <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled{% endif %}>Assign</button>
+            <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled{% endif %}>{{ _('Assign') }}</button>
           </form>
         {% elif can_edit %}
           <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled{% endif %}>Unassign</button>
+            <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled{% endif %}>{{ _('Unassign') }}</button>
           </form>
         {% endif %}
 
@@ -79,25 +79,25 @@
                 name="resolution_note"
                 class="form-control form-control-sm"
                 minlength="5"
-                placeholder="Outcome / Resolution"
+                placeholder="{{ _('Outcome / Resolution') }}"
               >
             </div>
-            <button type="submit" class="btn btn-primary btn-sm">Save status</button>
+            <button type="submit" class="btn btn-primary btn-sm">{{ _('Save status') }}</button>
           </form>
 
           <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-secondary btn-sm" {% if is_closed_status %}disabled{% endif %}>Close / Archive</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm" {% if is_closed_status %}disabled{% endif %}>{{ _('Close / Archive') }}</button>
           </form>
         {% endif %}
 
         {% if req.phone %}
-          <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">Call</a>
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.phone }}">Copy phone</button>
+          <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">{{ _('Call') }}</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.phone }}">{{ _('Copy phone') }}</button>
         {% endif %}
         {% if req.email %}
-          <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">Email</a>
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.email }}">Copy email</button>
+          <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">{{ _('Email') }}</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.email }}">{{ _('Copy email') }}</button>
         {% endif %}
       </div>
       <script>
@@ -125,32 +125,57 @@
     </div>
   </div>
 
+  <section class="hc-card mb-3">
+    {% set risk_level_key = (req.risk_level or 'standard')|lower %}
+    {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
+      {% set risk_level_key = 'standard' %}
+    {% endif %}
+    {% set parsed_signals = req.risk_signals|from_json %}
+    <h3>{{ _('AI Social Risk Engine') }}</h3>
+    <p><strong>{{ _('Risk score:') }}</strong> {{ req.risk_score or 0 }}/100</p>
+    <p><strong>{{ _('Risk level:') }}</strong> {{ risk_level_key|capitalize }}</p>
+    <p><strong>{{ _('Last updated:') }}</strong> {{ req.risk_last_updated or "—" }}</p>
+    <p><strong>{{ _('Signals:') }}</strong></p>
+    <ul>
+      {% if parsed_signals %}
+        {% for signal in parsed_signals %}
+          <li>{{ signal }}</li>
+        {% endfor %}
+      {% else %}
+        <li>{{ _('No signals') }}</li>
+      {% endif %}
+    </ul>
+    <p class="hc-muted">
+      {{ _('HelpChain provides prioritization assistance and does not replace human assessment.') }}
+    </p>
+  </section>
+
   <!-- V3: Match & engagement (city-based) -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h5 class="card-title mb-0">Match & engagement</h5>
+        <h5 class="card-title mb-0">{{ _('Match & engagement') }}</h5>
         <div class="text-muted small">City-based match: <strong>{{ req.city or '—' }}</strong></div>
       </div>
       <div class="row text-center">
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">Matched</div>
+          <div class="text-muted small">{{ _('Matched') }}</div>
           <div class="fs-5 fw-semibold">{{ matched_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">Notified</div>
+          <div class="text-muted small">{{ _('Notified') }}</div>
           <div class="fs-5 fw-semibold">{{ notified_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">Seen</div>
+          <div class="text-muted small">{{ _('Seen') }}</div>
           <div class="fs-5 fw-semibold">{{ seen_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">Interested</div>
+          <div class="text-muted small">{{ _('Interested') }}</div>
           <div class="fs-5 fw-semibold">{{ interested_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">Assigned</div>
+          <div class="text-muted small">{{ _('Assigned') }}</div>
           <div class="fs-5 fw-semibold">
             {% if assigned_volunteer %}
               {% set label = assigned_volunteer.name or assigned_volunteer.email or ('#' ~ assigned_volunteer.id) %}
@@ -170,8 +195,8 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h5 class="card-title mb-0">Matched volunteers</h5>
-        <div class="text-muted small">Based on city match</div>
+        <h5 class="card-title mb-0">{{ _('Matched volunteers') }}</h5>
+        <div class="text-muted small">{{ _('Based on city match') }}</div>
       </div>
       {% if csrf_token is defined %}
         {% set csrf = csrf_token() %}
@@ -183,12 +208,12 @@
           <table class="table align-middle">
             <thead>
               <tr>
-                <th>Volunteer</th>
-                <th>Location</th>
-                <th>Notified</th>
-                <th>Seen</th>
-                <th>Interested</th>
-                <th>Action</th>
+                <th>{{ _('Volunteer') }}</th>
+                <th>{{ _('Location') }}</th>
+                <th>{{ _('Notified') }}</th>
+                <th>{{ _('Seen') }}</th>
+                <th>{{ _('Interested') }}</th>
+                <th>{{ _('Action') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -222,13 +247,13 @@
                           data-confirm="Unassign will notify the volunteer. Proceed?">
                           Unassign
                         </button>
-                        <div class="text-muted small mt-1">Unassign will notify the volunteer.</div>
+                        <div class="text-muted small mt-1">{{ _('Unassign will notify the volunteer.') }}</div>
                       </form>
                     {% else %}
                       <form method="post" action="{{ url_for('admin.admin_assign_volunteer', req_id=req.id, volunteer_id=v.id) }}" class="d-inline hc-assign-form" data-volunteer-id="{{ v.id }}" data-request-id="{{ req.id }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if req.assigned_volunteer_id and req.assigned_volunteer_id != v.id %}
-                          <span class="text-muted small me-2">Already assigned</span>
+                          <span class="text-muted small me-2">{{ _('Already assigned') }}</span>
                           <button type="submit" class="btn btn-sm btn-outline-primary" disabled title="Already assigned">
                             Assign
                           </button>
@@ -249,7 +274,7 @@
           </table>
         </div>
       {% else %}
-        <p class="text-muted mb-0">No city-based matches for this request yet.</p>
+        <p class="text-muted mb-0">{{ _('No city-based matches for this request yet.') }}</p>
       {% endif %}
     </div>
   </div>
@@ -257,7 +282,7 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h5 class="card-title mb-0">Volunteer signals</h5>
+        <h5 class="card-title mb-0">{{ _('Volunteer signals') }}</h5>
         <div class="text-muted small">
           {% if can_help_count %} {{ can_help_count }} can help{% endif %}
           {% if cant_help_count %} <span class="ms-2"> {{ cant_help_count }} can’t help</span>{% endif %}
@@ -291,9 +316,9 @@
           <table class="table align-middle">
             <thead>
               <tr>
-                <th>Volunteer</th>
-                <th>Action</th>
-                <th>Updated</th>
+                <th>{{ _('Volunteer') }}</th>
+                <th>{{ _('Action') }}</th>
+                <th>{{ _('Updated') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -326,7 +351,7 @@
           </table>
         </div>
       {% else %}
-        <p class="text-muted mb-0">No signals yet.</p>
+        <p class="text-muted mb-0">{{ _('No signals yet.') }}</p>
       {% endif %}
     </div>
   </div>
@@ -334,7 +359,7 @@
   <div class="card border-0 shadow-sm mb-3 hc-card">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h5 class="card-title mb-0">Volunteer actions</h5>
+        <h5 class="card-title mb-0">{{ _('Volunteer actions') }}</h5>
       </div>
       {% if volunteer_engagement %}
         <ul class="hc-mini-list mb-3">
@@ -347,7 +372,7 @@
         </ul>
       {% endif %}
       {% if not latest_actions %}
-        <div class="text-muted">No volunteer actions yet.</div>
+        <div class="text-muted">{{ _('No volunteer actions yet.') }}</div>
       {% else %}
         {% set ACTION_LABELS = {
           "volunteer_can_help": "Volunteer: can help",
@@ -381,7 +406,7 @@
           </div>
           <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-sm btn-outline-dark" type="submit">Unlock</button>
+            <button class="btn btn-sm btn-outline-dark" type="submit">{{ _('Unlock') }}</button>
           </form>
         </div>
       {% endif %}
@@ -392,16 +417,16 @@
             <div>
               <h5 class="card-title mb-1">{{ req.title }}</h5>
               <div class="text-muted small">
-                <span class="me-2"><strong>Name:</strong> {{ req.name or "-" }}</span>
+                <span class="me-2"><strong>{{ _('Name:') }}</strong> {{ req.name or "-" }}</span>
                 <span class="mx-2">|</span>
-                <span><strong>Location:</strong> {{ req.location_text or "-" }}</span>
+                <span><strong>{{ _('Location:') }}</strong> {{ req.location_text or "-" }}</span>
               </div>
             </div>
           </div>
 
           <hr class="my-3" />
 
-          <div class="fw-semibold mb-2">Description</div>
+          <div class="fw-semibold mb-2">{{ _('Description') }}</div>
           <div class="text-body" style="white-space: pre-wrap;">{{ req.description }}</div>
         </div>
       </div>
@@ -410,7 +435,7 @@
       <div class="card border-0 shadow-sm mb-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
-            <h5 class="card-title mb-0">Интерес от доброволци</h5>
+            <h5 class="card-title mb-0">{{ _('Volunteer interest') }}</h5>
             <span class="badge text-bg-light border">{{ interests|length }} записи</span>
           </div>
           {% if is_locked %}
@@ -423,11 +448,11 @@
             <table class="table table-sm align-middle">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Volunteer ID</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th class="text-end">Actions</th>
+                  <th>{{ _('ID') }}</th>
+                  <th>{{ _('Volunteer ID') }}</th>
+                  <th>{{ _('Status') }}</th>
+                  <th>{{ _('Created') }}</th>
+                  <th class="text-end">{{ _('Actions') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -437,11 +462,11 @@
                     <td>{{ i.volunteer_id }}</td>
                     <td>
                       {% if i.status == 'pending' %}
-                        <span class="badge bg-secondary">pending</span>
+                        <span class="badge bg-secondary">{{ _('pending') }}</span>
                       {% elif i.status == 'approved' %}
-                        <span class="badge bg-success">approved</span>
+                        <span class="badge bg-success">{{ _('approved') }}</span>
                       {% elif i.status == 'rejected' %}
-                        <span class="badge bg-danger">rejected</span>
+                        <span class="badge bg-danger">{{ _('rejected') }}</span>
                       {% else %}
                         <span class="badge bg-light text-dark">{{ i.status }}</span>
                       {% endif %}
@@ -451,11 +476,11 @@
                       {% if i.status == 'pending' %}
                         <form method="post" action="{{ url_for('admin.admin_interest_approve', req_id=req.id, interest_id=i.id) }}" class="d-inline">
                           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                          <button class="btn btn-sm btn-success" {% if is_locked %}disabled title="Locked (done/cancelled or by another admin)"{% endif %}>Approve</button>
+                          <button class="btn btn-sm btn-success" {% if is_locked %}disabled title="{{ _('Locked (done/cancelled or by another admin)') }}"{% endif %}>{{ _('Approve') }}</button>
                         </form>
                         <form method="post" action="{{ url_for('admin.admin_interest_reject', req_id=req.id, interest_id=i.id) }}" class="d-inline">
                           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                          <button class="btn btn-sm btn-outline-danger" {% if is_locked %}disabled title="Locked (done/cancelled or by another admin)"{% endif %}>Reject</button>
+                          <button class="btn btn-sm btn-outline-danger" {% if is_locked %}disabled title="{{ _('Locked (done/cancelled or by another admin)') }}"{% endif %}>{{ _('Reject') }}</button>
                         </form>
                       {% else %}
                         <span class="text-muted">-</span>
@@ -473,17 +498,17 @@
       <div class="card border-0 shadow-sm hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between gap-2">
-            <div class="fw-semibold">Contact details</div>
-            <div class="text-muted small">Visible for admins only</div>
+            <div class="fw-semibold">{{ _('Contact details') }}</div>
+            <div class="text-muted small">{{ _('Visible for admins only') }}</div>
           </div>
 
           <div class="row g-2 mt-2">
             <div class="col-md-6">
-              <div class="text-muted small">Email</div>
+              <div class="text-muted small">{{ _('Email') }}</div>
               {% if req.email %}
                 <div class="d-flex align-items-center gap-2">
                   <a href="mailto:{{ req.email }}">{{ req.email }}</a>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" data-action="copyText" data-copy="{{ req.email }}">Copy</button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" data-action="copyText" data-copy="{{ req.email }}">{{ _('Copy') }}</button>
                 </div>
               {% else %}
                 <div>-</div>
@@ -491,11 +516,11 @@
             </div>
 
             <div class="col-md-6">
-              <div class="text-muted small">Phone</div>
+              <div class="text-muted small">{{ _('Phone') }}</div>
               {% if req.phone %}
                 <div class="d-flex align-items-center gap-2">
                   <a href="tel:{{ req.phone }}">{{ req.phone }}</a>
-                  <button class="btn btn-sm btn-outline-secondary" type="button" data-action="copyText" data-copy="{{ req.phone }}">Copy</button>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" data-action="copyText" data-copy="{{ req.phone }}">{{ _('Copy') }}</button>
                 </div>
               {% else %}
                 <div>-</div>
@@ -515,11 +540,11 @@
       <div class="card border-0 shadow-sm mb-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
-            <div class="fw-semibold">Status</div>
+            <div class="fw-semibold">{{ _('Status') }}</div>
             {% if can_edit %}
-              <span class="badge text-bg-success">Editable</span>
+              <span class="badge text-bg-success">{{ _('Editable') }}</span>
             {% else %}
-              <span class="badge text-bg-light border">Read-only</span>
+              <span class="badge text-bg-light border">{{ _('Read-only') }}</span>
             {% endif %}
           </div>
 
@@ -539,7 +564,7 @@
                 {% endfor %}
               </select>
               <div id="resolutionWrap" class="w-100 mt-2" style="display:none;">
-                <label for="resolutionNote" class="form-label form-label-sm mb-1">Outcome / Résolution</label>
+                <label for="resolutionNote" class="form-label form-label-sm mb-1">{{ _('Outcome / Resolution') }}</label>
                 <textarea
                   id="resolutionNote"
                   name="resolution_note"
@@ -549,7 +574,7 @@
                   placeholder="Short outcome summary..."
                 >{{ resolution_note_value or '' }}</textarea>
               </div>
-              <button type="submit" class="btn btn-sm btn-primary">Save</button>
+              <button type="submit" class="btn btn-sm btn-primary">{{ _('Save') }}</button>
             </form>
             <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" class="mt-2">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -590,13 +615,13 @@
       <!-- Ownership -->
       <div class="card border-0 shadow-sm hc-card">
         <div class="card-body">
-          <div class="fw-semibold mb-1">Owner</div>
+          <div class="fw-semibold mb-1">{{ _('Owner') }}</div>
           <div class="text-muted small mb-3">
-            Assigning an owner avoids duplicates and keeps responsibility clear.
+            {{ _('Assigning an owner avoids duplicates and keeps responsibility clear.') }}
           </div>
 
           <div class="p-3 bg-light border rounded-3 mb-3">
-            <div class="small text-muted">Current owner</div>
+            <div class="small text-muted">{{ _('Current owner') }}</div>
             <div class="fw-semibold">
               {% if req.owner %}
                 {{ req.owner.username }} (id={{ req.owner.id }})
@@ -604,12 +629,12 @@
                   <span class="text-muted fw-normal">(since {{ req.owned_at }})</span>
                 {% endif %}
               {% elif req.owner_id %}
-                id={{ req.owner_id }} <span class="text-muted fw-normal">(no user loaded)</span>
+                id={{ req.owner_id }} <span class="text-muted fw-normal">({{ _('no user loaded') }})</span>
                 {% if req.owned_at %}
                   <span class="text-muted fw-normal">(since {{ req.owned_at }})</span>
                 {% endif %}
               {% else %}
-                <span class="text-muted">None</span>
+                <span class="text-muted">{{ _('None') }}</span>
               {% endif %}
             </div>
           </div>
@@ -618,24 +643,24 @@
             {% if not req.owner_id %}
               <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>Assign to me</button>
+                <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>{{ _('Assign to me') }}</button>
               </form>
 
             {% elif can_edit %}
               <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>Unassign</button>
+                <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>{{ _('Unassign') }}</button>
               </form>
 
             {% elif req.owner_id and req.owner_id != current_user.id and is_stale(req) %}
               <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-warning btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>Take over</button>
+                <button type="submit" class="btn btn-warning btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>{{ _('Take over') }}</button>
               </form>
 
             {% else %}
-              <div class="text-muted small">
-                Only the owner or a super admin can change ownership.
+                <div class="text-muted small">
+                {{ _('Only the owner or a super admin can change ownership.') }}
               </div>
             {% endif %}
           </div>
@@ -646,7 +671,7 @@
       <div class="card border-0 shadow-sm mt-3 hc-card">
         <div class="card-body">
           {% set can_delete = (((req.status or '')|upper == 'CLOSED') and req.is_archived) %}
-          <div class="fw-semibold mb-1">Delete (tombstone)</div>
+          <div class="fw-semibold mb-1">{{ _('Delete (tombstone)') }}</div>
           <div class="text-muted small mb-3">
             Deleted requests are hidden from lists. You can restore later (restored requests stay archived).
           </div>
@@ -654,7 +679,7 @@
           {% if req.deleted_at %}
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div>
-                <span class="badge bg-danger">Deleted</span>
+                <span class="badge bg-danger">{{ _('Deleted') }}</span>
                 <span class="text-muted small ms-2">{{ req.deleted_at }}</span>
               </div>
               {% if can_edit %}
@@ -698,27 +723,27 @@
 
       <div class="card border-0 shadow-sm mt-3 hc-card">
         <div class="card-body">
-          <h3>Now</h3>
-          <div class="hc-muted">Ce qui nécessite une action</div>
+          <h3>{{ _('Now') }}</h3>
+          <div class="hc-muted">{{ _('What needs action') }}</div>
 
           {% if not req.assigned_volunteer_id %}
           <div class="hc-activity-item">
-            <p class="hc-activity-title">• Aucun bénévole assigné</p>
-            <div class="hc-activity-meta">Assigner un bénévole ou clôturer</div>
+            <p class="hc-activity-title">{{ _('• No volunteer assigned') }}</p>
+            <div class="hc-activity-meta">{{ _('Assign a volunteer or close') }}</div>
           </div>
           {% endif %}
 
           {% if req.status == "IN_PROGRESS" %}
           <div class="hc-activity-item">
-            <p class="hc-activity-title">• En cours</p>
-            <div class="hc-activity-meta">Mettre à jour le statut dès que possible</div>
+            <p class="hc-activity-title">{{ _('• In progress') }}</p>
+            <div class="hc-activity-meta">{{ _('Update the status as soon as possible') }}</div>
           </div>
           {% endif %}
 
           {% if req.status == "COMPLETED" %}
           <div class="hc-activity-item">
-            <p class="hc-activity-title">• Terminé</p>
-            <div class="hc-activity-meta">Clôturer pour архив / delete (tombstone)</div>
+            <p class="hc-activity-title">{{ _('• Completed') }}</p>
+            <div class="hc-activity-meta">{{ _('Close for archive / delete (tombstone)') }}</div>
           </div>
           {% endif %}
         </div>
@@ -727,8 +752,8 @@
       <div class="card border-0 shadow-sm mt-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
-            <div class="fw-semibold">Internal note</div>
-            <div class="text-muted small">Saved in Activity</div>
+            <div class="fw-semibold">{{ _('Internal note') }}</div>
+            <div class="text-muted small">{{ _('Saved in Activity') }}</div>
           </div>
 
           <div class="text-muted small mt-1">
@@ -744,12 +769,12 @@
               class="form-control"
               rows="4"
               maxlength="2000"
-              placeholder="Example: Called the requester, waiting for documents, next follow-up tomorrow..."
+              placeholder="{{ _('Example: Called the requester, waiting for documents, next follow-up tomorrow...') }}"
             ></textarea>
 
             <div class="d-flex align-items-center justify-content-between mt-2">
-              <div class="small text-muted">Max 2000 characters.</div>
-              <button type="submit" class="btn btn-primary btn-sm">Add note</button>
+              <div class="small text-muted">{{ _('Max 2000 characters.') }}</div>
+              <button type="submit" class="btn btn-primary btn-sm">{{ _('Add note') }}</button>
             </div>
           </form>
         </div>
@@ -762,8 +787,8 @@
   <div class="card border-0 shadow-sm mt-3 hc-card">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between">
-        <div class="fw-semibold">Activity</div>
-        <div class="text-muted small">Last 50 events</div>
+        <div class="fw-semibold">{{ _('Activity') }}</div>
+        <div class="text-muted small">{{ _('Last 50 events') }}</div>
       </div>
 
       <hr class="my-3" />
@@ -797,7 +822,7 @@
                 {% if ev.actor %}
                   <strong>{{ ev.actor.username }}</strong>
                 {% else %}
-                  <span class="text-muted">system</span>
+                  <span class="text-muted">{{ _('system') }}</span>
                 {% endif %}
               </div>
 
@@ -807,15 +832,15 @@
 
               {% if ev.action != "note" and (ev.old_value or ev.new_value) %}
                 <div class="small text-muted mt-2">
-                  {% if ev.old_value %}<span class="me-2">from <code>{{ ev.old_value }}</code></span>{% endif %}
-                  {% if ev.new_value %}<span>to <code>{{ ev.new_value }}</code></span>{% endif %}
+                  {% if ev.old_value %}<span class="me-2">{{ _('from') }} <code>{{ ev.old_value }}</code></span>{% endif %}
+                  {% if ev.new_value %}<span>{{ _('to') }} <code>{{ ev.new_value }}</code></span>{% endif %}
                 </div>
               {% endif %}
             </div>
           {% endfor %}
         </div>
       {% else %}
-        <div class="text-muted small">No activity yet.</div>
+        <div class="text-muted small">{{ _('No activity yet.') }}</div>
       {% endif %}
     </div>
   </div>
@@ -823,8 +848,8 @@
   <div class="offcanvas offcanvas-end hc-offcanvas" tabindex="-1" id="hcVolunteerDrawer" aria-labelledby="hcVolunteerDrawerLabel">
     <div class="offcanvas-header">
       <div>
-        <div class="hc-offcanvas__kicker">Volunteer</div>
-        <h5 class="offcanvas-title" id="hcVolunteerDrawerLabel">Loading…</h5>
+        <div class="hc-offcanvas__kicker">{{ _('Volunteer') }}</div>
+        <h5 class="offcanvas-title" id="hcVolunteerDrawerLabel">{{ _('Loading...') }}</h5>
       </div>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -838,10 +863,10 @@
 
       <div class="hc-offcanvas__footer">
         <div class="d-flex gap-2 flex-wrap">
-          <a href="#" class="btn btn-outline-dark btn-sm" id="hcVolProfileBtn" target="_blank" rel="noopener">Open full profile</a>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyEmail">Copy email</button>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyPhone">Copy phone</button>
-          <button type="button" class="btn btn-primary btn-sm" id="hcDrawerAssignBtn">Assign to this request</button>
+          <a href="#" class="btn btn-outline-dark btn-sm" id="hcVolProfileBtn" target="_blank" rel="noopener">{{ _('Open full profile') }}</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyEmail">{{ _('Copy email') }}</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyPhone">{{ _('Copy phone') }}</button>
+          <button type="button" class="btn btn-primary btn-sm" id="hcDrawerAssignBtn">{{ _('Assign to this request') }}</button>
         </div>
         <div id="hcDrawerAssignHint" class="text-muted small mt-2 d-none">
           No assign action available for this volunteer on this request.
@@ -859,4 +884,3 @@
   {{ super() }}
   <script src="{{ url_for('static', filename='js/admin-volunteer-drawer.js') }}"></script>
 {% endblock %}
-

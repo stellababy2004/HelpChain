@@ -19,6 +19,13 @@
     {% set _hreflang_public_eps = [
       'main.index',
       'main.orienter',
+      'main.comment_ca_marche',
+      'main.collectivites_associations',
+      'main.cas_usage',
+      'main.pilotage_indicateurs',
+      'main.partenariats',
+      'main.pourquoi_helpchain',
+      'main.vision_europeenne',
       'main.pour_les_structures',
       'main.about',
       'main.professionnels',
@@ -38,7 +45,7 @@
       {% elif _seo_ep == 'main.become_volunteer' %}
         {% set _hreflang_next = url_for('main.become_volunteer') %}
       {% endif %}
-      {% for _lang in ['fr', 'en', 'bg'] %}
+      {% for _lang in ['fr', 'en', 'de', 'bg'] %}
     <link rel="alternate" hreflang="{{ _lang }}" href="{{ url_for('main.set_lang', locale=_lang, next=_hreflang_next, _external=True) }}">
       {% endfor %}
     <link rel="alternate" hreflang="x-default" href="{{ url_for('main.set_lang', locale='fr', next=_hreflang_next, _external=True) }}">
@@ -62,6 +69,9 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 
     <title>{% block title %}HelpChain — Infrastructure numérique de coordination{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fonts/inter.css') }}">
     <!-- Bootstrap CSS -->
     <link
@@ -80,6 +90,40 @@
       href="{{ url_lang('static', filename='css/styles.css') }}?v=20260214-reqcards"
     />
     {% block extra_css %}{% endblock %}
+    <style>
+      .hc-server-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid rgba(20, 40, 80, 0.16);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: rgba(20, 40, 80, 0.85);
+        background: rgba(255, 255, 255, 0.75);
+      }
+      .hc-server-indicator__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #94a3b8;
+      }
+      .hc-server-indicator[data-state="up"] .hc-server-indicator__dot {
+        background: #16a34a;
+      }
+      .hc-server-indicator[data-state="down"] .hc-server-indicator__dot {
+        background: #dc2626;
+      }
+      .hc-health-check-btn {
+        border: 1px solid rgba(20, 40, 80, 0.16);
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        line-height: 1.2;
+        background: rgba(255, 255, 255, 0.85);
+        color: rgba(20, 40, 80, 0.9);
+      }
+    </style>
     {% block head %}{% endblock %}
   </head>
 
@@ -100,57 +144,38 @@
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
     {% set hc_locale_code = ((session.get('lang') or (get_locale()|string) or 'fr')|string)[:2]|lower %}
     {% set hc_lang_return = request.full_path if (request and request.query_string) else request.path %}
-    {% set hc_languages = [
+    {% set hc_languages_all = [
       {'code': 'fr', 'name': 'Français', 'flag': ''},
       {'code': 'en', 'name': 'English', 'flag': ''},
-      {'code': 'es', 'name': 'Español', 'flag': ''},
-      {'code': 'it', 'name': 'Italiano', 'flag': ''},
       {'code': 'de', 'name': 'Deutsch', 'flag': ''},
-      {'code': 'ar', 'name': 'العربية', 'flag': ''},
-      {'code': 'br', 'name': 'Brezhoneg', 'flag': '', 'note': 'Régional'},
-      {'code': 'ca', 'name': 'Català', 'flag': '', 'note': 'Régional'},
-      {'code': 'cs', 'name': 'Čeština', 'flag': ''},
-      {'code': 'co', 'name': 'Corsu', 'flag': '', 'note': 'Régional'},
-      {'code': 'cy', 'name': 'Cymraeg', 'flag': ''},
-      {'code': 'da', 'name': 'Dansk', 'flag': ''},
-      {'code': 'et', 'name': 'Eesti', 'flag': ''},
-      {'code': 'eu', 'name': 'Euskara', 'flag': '', 'note': 'Régional'},
-      {'code': 'sw', 'name': 'Kiswahili', 'flag': ''},
-      {'code': 'mfe', 'name': 'Kreol Morisien', 'flag': ''},
-      {'code': 'lv', 'name': 'Latviešu', 'flag': ''},
-      {'code': 'lb', 'name': 'Lëtzebuergesch', 'flag': ''},
-      {'code': 'lt', 'name': 'Lietuvių', 'flag': ''},
-      {'code': 'hu', 'name': 'Magyar', 'flag': ''},
-      {'code': 'nl', 'name': 'Nederlands', 'flag': ''},
-      {'code': 'no', 'name': 'Norsk', 'flag': ''},
-      {'code': 'oc', 'name': 'Occitan', 'flag': '', 'note': 'Régional'},
-      {'code': 'pl', 'name': 'Polski', 'flag': ''},
-      {'code': 'pt', 'name': 'Português', 'flag': ''},
-      {'code': 'ro', 'name': 'Română', 'flag': ''},
-      {'code': 'sk', 'name': 'Slovenčina', 'flag': ''},
-      {'code': 'sl', 'name': 'Slovenščina', 'flag': ''},
-      {'code': 'fi', 'name': 'Suomi', 'flag': ''},
-      {'code': 'sv', 'name': 'Svenska', 'flag': ''},
-      {'code': 'vi', 'name': 'Tiếng Việt', 'flag': ''},
-      {'code': 'tr', 'name': 'Türkçe', 'flag': ''},
-      {'code': 'el', 'name': 'Ελληνικά', 'flag': ''},
-      {'code': 'bg', 'name': 'Български', 'flag': ''},
-      {'code': 'ru', 'name': 'Русский', 'flag': ''},
-      {'code': 'uk', 'name': 'Українська', 'flag': ''},
-      {'code': 'yi', 'name': 'ייִדיש', 'flag': ''},
-      {'code': 'he', 'name': 'עברית', 'flag': ''},
-      {'code': 'ps', 'name': 'پښتو', 'flag': ''},
-      {'code': 'hi', 'name': 'हिन्दी', 'flag': ''},
-      {'code': 'th', 'name': 'ไทย', 'flag': ''},
-      {'code': 'ko', 'name': '한국어', 'flag': ''},
-      {'code': 'zh', 'name': '中文', 'flag': ''},
-      {'code': 'ja', 'name': '日本語', 'flag': ''}
+      {'code': 'bg', 'name': 'Български', 'flag': ''}
     ] %}
+    {% set hc_institutional_public_eps = [
+      'main.index',
+      'main.comment_ca_marche',
+      'main.collectivites_associations',
+      'main.cas_usage',
+      'main.pilotage_indicateurs',
+      'main.partenariats',
+      'main.faq',
+      'main.pourquoi_helpchain',
+      'main.vision_europeenne',
+      'main.contact',
+      'main.mentions_legales'
+    ] %}
+    {# Public policy (temporary): FR is the only officially published institutional language.
+       EN/DE/BG stay enabled technically in Babel/routes but are hidden from the public switcher
+       until editorial human validation is completed. #}
+    {% set hc_languages = (
+      [{'code': 'fr', 'name': 'Français', 'flag': ''}]
+      if ((request.endpoint or '') in hc_institutional_public_eps and not is_any_logged_in)
+      else hc_languages_all
+    ) %}
     <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
-          <span>HelpChain.live</span>
+          <span>{{ _('HelpChain.live') }}</span>
         </a>
         <button
           class="navbar-toggler"
@@ -211,7 +236,7 @@
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if ep.startswith('main.contact') %}aria-current="page"{% endif %}>
-                <i class="fas fa-envelope me-1" aria-hidden="true"></i>{{ _('Contact') }}
+                <i class="fas fa-envelope me-1" aria-hidden="true"></i>{{ _('Contact & coopération') }}
               </a>
             </li>
             <li class="nav-item">
@@ -228,21 +253,29 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_risk_panel') }}">Risk</a>
+                  <a class="nav-link nav-link--secondary {{ 'active' if ep == 'social_requests.operations' else '' }}" href="{{ url_for('social_requests.operations') }}">
+                    Ops
+                  </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_professional_leads') }}">Pros Leads</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Risk') }}</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Pros Leads') }}</a>
                 </li>
                 {% if HC_PRO_ACCESS_AVAILABLE %}
                 <li class="nav-item">
-                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_pro_access_list') }}">Pro Access</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_pro_access_list') }}">{{ _('Pro Access') }}</a>
                 </li>
                 {% endif %}
                 <li class="nav-item">
-                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_sla_breakdown') }}">SLA</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('SLA') }}</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_audit') }}">Audit</a>
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_audit') }}">{{ _('Audit') }}</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_translations_list') }}">{{ _('Translations') }}</a>
                 </li>
               {% endif %}
               <li class="nav-item">
@@ -344,7 +377,7 @@
                 autocomplete="off"
               />
               <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="{{ _('Search') }}">
-                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fas fa-magnifying-glass"></i>
               </button>
             </div>
           </form>
@@ -378,6 +411,25 @@
           {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}
           {% if show_nav_chrome %}
           <div class="d-flex align-items-center ms-2 hc-topbar-actions">
+            <span
+              id="hcServerIndicator"
+              class="hc-server-indicator me-2"
+              data-state="checking"
+              title="{{ _('Server status: checking') }}"
+            >
+              <span class="hc-server-indicator__dot" aria-hidden="true"></span>
+              <span id="hcServerIndicatorText">{{ _('Server') }}</span>
+            </span>
+            {% if admin_logged_in %}
+            <button
+              type="button"
+              id="hcHealthCheckBtn"
+              class="hc-health-check-btn me-2"
+              title="{{ _('Run health check') }}"
+            >
+              {{ _('Health check') }}
+            </button>
+            {% endif %}
             <button class="btn btn-link text-secondary nav-utility hc-iconbtn" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
               <i class="fas fa-moon" aria-hidden="true"></i>
@@ -409,9 +461,7 @@
       <div class="offcanvas-body">
         <div class="hc-lang-sheet__list" role="list">
           {% for lang in hc_languages %}
-            <form method="post" action="{{ url_for('main.set_language') }}" class="hc-lang-form" role="listitem">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <input type="hidden" name="lang" value="{{ lang.code }}">
+            <form method="get" action="{{ url_for('main.set_lang', locale=lang.code) }}" class="hc-lang-form" role="listitem">
               <input type="hidden" name="next" value="{{ hc_lang_return }}">
               <button
                 type="submit"
@@ -486,7 +536,7 @@
 
             <div class="hc-a11y-topbar__brand" aria-hidden="true">
               <span class="hc-a11y-topbar__brand-mark">♞</span>
-              <span class="hc-a11y-topbar__brand-text">HelpChain</span>
+              <span class="hc-a11y-topbar__brand-text">{{ _('HelpChain') }}</span>
             </div>
 
             <div class="hc-a11y-topbar__actions">
@@ -627,14 +677,14 @@
                   </button>
                   <button type="button" class="hc-a11y-preset" data-a11y-preset="dmla" data-a11y-profile-open="dmla" role="listitem">
                     <span class="hc-a11y-preset__main">
-                      <span class="hc-a11y-preset__name">DMLA</span>
+                      <span class="hc-a11y-preset__name">{{ _('AMD') }}</span>
                       <span class="hc-a11y-preset__desc">{{ _('High contrast and larger text for central vision comfort') }}</span>
                     </span>
                     <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
                   </button>
                   <button type="button" class="hc-a11y-preset" data-a11y-preset="presbyopia" data-a11y-profile-open="presbyopia" role="listitem">
                     <span class="hc-a11y-preset__main">
-                      <span class="hc-a11y-preset__name">Presbyopia</span>
+                      <span class="hc-a11y-preset__name">{{ _('Presbyopia') }}</span>
                       <span class="hc-a11y-preset__desc">{{ _('Extra-large text and simplified visuals for easier reading') }}</span>
                     </span>
                     <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
@@ -911,9 +961,7 @@
 
             <div class="hc-a11y-langscreen-list" role="list">
               {% for lang in hc_languages %}
-                <form method="post" action="{{ url_for('main.set_language') }}" class="hc-lang-form" role="listitem">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <input type="hidden" name="lang" value="{{ lang.code }}">
+                <form method="get" action="{{ url_for('main.set_lang', locale=lang.code) }}" class="hc-lang-form" role="listitem">
                   <input type="hidden" name="next" value="{{ hc_lang_return }}">
                   <button type="submit" class="hc-a11y-langitem hc-a11y-langitem--screen {% if lang.code == hc_locale_code %}is-active{% endif %}">
                     <span class="hc-lang-flag" aria-hidden="true">{{ lang.code|upper }}</span>
@@ -979,9 +1027,25 @@
           <nav class="hc-footer__nav" aria-label="{{ _('Footer') }}">
             <a class="hc-footer__link" href="{{ url_for('main.about') }}">{{ _('À propos') }}</a>
             <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.comment_ca_marche') }}">{{ _('Comment fonctionne HelpChain') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.collectivites_associations') }}">{{ _('Pour les collectivités et associations') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.cas_usage') }}">{{ _('Cas d’usage') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.pilotage_indicateurs') }}">{{ _('Pilotage & indicateurs') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.partenariats') }}">{{ _('Partenariats & déploiement territorial') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.pourquoi_helpchain') }}">{{ _('Pourquoi HelpChain') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.vision_europeenne') }}">{{ _('Projet & Vision européenne') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
+            <a class="hc-footer__link" href="{{ url_for('main.faq') }}">{{ _('Questions fréquentes') }}</a>
+            <span class="hc-footer__dot" aria-hidden="true">·</span>
             <a class="hc-footer__link" href="{{ url_for('main.mentions_legales') }}">{{ _('Mentions légales') }}</a>
             <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.contact') }}">{{ _('Contact') }}</a>
+            <a class="hc-footer__link" href="{{ url_for('main.contact') }}">{{ _('Contact & coopération') }}</a>
           </nav>
 
           <div class="hc-footer__intervenants">
@@ -1028,6 +1092,82 @@
     <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/nav-scroll.js') }}" defer></script>
     <script defer src="{{ url_for('static', filename='js/volunteer-actions-ui.js') }}"></script>
+    <script>
+      (function () {
+        const el = document.getElementById("hcServerIndicator");
+        const text = document.getElementById("hcServerIndicatorText");
+        if (!el || !text) return;
+        const checkBtn = document.getElementById("hcHealthCheckBtn");
+        const toast = document.getElementById("hc-toast");
+
+        function showToast(message) {
+          if (!toast) {
+            try { window.alert(message); } catch (_) {}
+            return;
+          }
+          toast.textContent = message;
+          toast.classList.add("hc-toast--show");
+          window.setTimeout(() => {
+            toast.classList.remove("hc-toast--show");
+          }, 1800);
+        }
+
+        async function ping() {
+          try {
+            const res = await fetch("/health", { cache: "no-store" });
+            if (res.ok) {
+              el.setAttribute("data-state", "up");
+              el.title = "Server status: UP";
+              text.textContent = "Server OK";
+              return;
+            }
+          } catch (e) {
+          }
+          el.setAttribute("data-state", "down");
+          el.title = "Server status: DOWN";
+          text.textContent = "Server DOWN";
+        }
+
+        async function runHealthCheck() {
+          if (checkBtn) {
+            checkBtn.disabled = true;
+            checkBtn.textContent = "Checking...";
+          }
+          try {
+            const res = await fetch("/health", { cache: "no-store" });
+            if (!res.ok) {
+              el.setAttribute("data-state", "down");
+              el.title = `Server status: DOWN (${res.status})`;
+              text.textContent = "Server DOWN";
+              showToast(`Health check failed (${res.status})`);
+              return;
+            }
+            const data = await res.json();
+            const marker = (data && data.hc_code_marker) ? ` (${data.hc_code_marker})` : "";
+            el.setAttribute("data-state", "up");
+            el.title = "Server status: UP";
+            text.textContent = "Server OK";
+            showToast(`Health OK${marker}`);
+          } catch (e) {
+            el.setAttribute("data-state", "down");
+            el.title = "Server status: DOWN";
+            text.textContent = "Server DOWN";
+            showToast("Health check failed (network)");
+          } finally {
+            if (checkBtn) {
+              checkBtn.disabled = false;
+              checkBtn.textContent = "Health check";
+            }
+          }
+        }
+
+        ping();
+        window.setInterval(ping, 7000);
+        if (checkBtn) {
+          checkBtn.addEventListener("click", runHealthCheck);
+        }
+      })();
+    </script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>

@@ -322,6 +322,173 @@ form select.form-select {
   padding: 2.2rem 1.6rem;
   box-shadow: 0 16px 48px rgba(15, 23, 42, 0.08);
 }
+
+/* Home institutional polish (micro-pass, no layout redesign) */
+body.hc-page-home .hc-home__hero {
+  padding-top: clamp(48px, 6vw, 72px);
+  padding-bottom: clamp(24px, 3.2vw, 36px);
+}
+
+body.hc-page-home .hc-home__hero-inner {
+  align-items: start;
+  gap: clamp(20px, 3vw, 36px);
+}
+
+body.hc-page-home .hc-home__title {
+  font-size: clamp(2rem, 4.2vw, 3.15rem);
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  font-weight: 650;
+  margin-bottom: 0.9rem;
+  text-wrap: balance;
+}
+
+body.hc-page-home .hc-home__subtitle {
+  font-size: clamp(1rem, 1.42vw, 1.12rem);
+  line-height: 1.65;
+  color: rgba(15, 23, 42, 0.88);
+  margin-bottom: 0.75rem;
+  max-width: 72ch;
+}
+
+body.hc-page-home .hc-home__trust {
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: rgba(15, 23, 42, 0.72);
+  margin-top: 0.55rem;
+  margin-bottom: 0.9rem;
+}
+
+body.hc-page-home .hc-home__actions {
+  margin-top: 1rem;
+  margin-bottom: 0.55rem;
+}
+
+body.hc-page-home .hc-home__snapshot-card {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  padding: 1rem 1rem 0.9rem;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+body.hc-page-home .hc-home__snapshot-title {
+  font-size: 1.02rem;
+  line-height: 1.4;
+  font-weight: 650;
+  margin-bottom: 0.55rem;
+}
+
+body.hc-page-home .hc-home__snapshot-sub {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: rgba(15, 23, 42, 0.64);
+  margin-top: 0.7rem;
+}
+
+body.hc-page-home .hc-home__how {
+  padding-block: clamp(26px, 3.6vw, 42px);
+}
+
+body.hc-page-home .hc-home__positioning {
+  padding-block: clamp(26px, 3.6vw, 42px);
+}
+
+body.hc-page-home .hc-home__section-head h2 {
+  font-size: clamp(1.34rem, 2.25vw, 1.84rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.62rem;
+}
+
+body.hc-page-home .hc-home__section-head p {
+  font-size: 1rem;
+  line-height: 1.62;
+  color: rgba(15, 23, 42, 0.78);
+  margin-bottom: 0;
+}
+
+body.hc-page-home .hc-home__how-grid {
+  gap: clamp(12px, 1.6vw, 18px);
+}
+
+body.hc-page-home .hc-home__card {
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+  padding: 1rem 1rem 0.9rem;
+}
+
+body.hc-page-home .hc-home__card:hover {
+  transform: none;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+}
+
+body.hc-page-home .hc-home__card h3 {
+  font-size: 1.02rem;
+  line-height: 1.35;
+  font-weight: 650;
+  margin-bottom: 0.52rem;
+}
+
+body.hc-page-home .hc-home__card p,
+body.hc-page-home .hc-home__card li,
+body.hc-page-home .hc-home__positioning-copy p {
+  font-size: 0.96rem;
+  line-height: 1.62;
+  color: rgba(15, 23, 42, 0.8);
+}
+
+body.hc-page-home .hc-home__card ul {
+  margin-bottom: 0;
+  padding-left: 1.05rem;
+}
+
+body.hc-page-home .hc-home__positioning-inner {
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.04);
+  gap: 1rem;
+}
+
+body.hc-page-home .hc-home__positioning-copy h2 {
+  font-size: clamp(1.28rem, 2vw, 1.66rem);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+body.hc-page-home .hc-home__card h3 i {
+  width: 1.1rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+@media (max-width: 991.98px) {
+  body.hc-page-home .hc-home__hero-inner {
+    gap: 18px;
+  }
+  body.hc-page-home .hc-home__snapshot-card {
+    padding: 0.95rem 0.95rem 0.85rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body.hc-page-home .hc-home__hero {
+    padding-top: 42px;
+    padding-bottom: 22px;
+  }
+  body.hc-page-home .hc-home__title {
+    font-size: clamp(1.62rem, 8.2vw, 2.1rem);
+    line-height: 1.2;
+  }
+  body.hc-page-home .hc-home__subtitle {
+    font-size: 0.98rem;
+    line-height: 1.58;
+  }
+  body.hc-page-home .hc-home__section-head h2 {
+    margin-bottom: 0.5rem;
+  }
+}
 .hc-empty__icon {
   width: 64px;
   height: 64px;
@@ -2701,7 +2868,7 @@ form select.form-select {
 }
 
 .hc-a11y-topbar__brand-text {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-weight: 700;
   letter-spacing: 0.01em;
   font-size: 1.6rem;
@@ -3899,7 +4066,7 @@ html[data-a11y-font="dyslexic"] input,
 html[data-a11y-font="dyslexic"] textarea,
 html[data-a11y-font="dyslexic"] select,
 html[data-a11y-font="dyslexic"] button {
-  font-family: "Atkinson Hyperlegible", "Verdana", "Trebuchet MS", "Arial", sans-serif !important;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
 }
 
 html[data-a11y-font="dyslexic"] p,
@@ -5353,5 +5520,139 @@ body.hc-page-structures .hc-institutional .hc-btn--ghost{
 @media (max-width: 900px){
   .hc-navbar .nav-link--secondary{
     display: none;
+  }
+}
+
+/* Global institutional type scale (no layout/template changes) */
+body h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  max-width: 900px;
+}
+
+body h2 {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.25;
+  max-width: 900px;
+}
+
+body h3 {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+body p {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+  max-width: 720px;
+}
+
+body .section-text,
+body .content-text,
+body .hero-text {
+  max-width: 720px;
+}
+
+body .text-muted,
+body .small,
+body small,
+body .form-text,
+body .hc-muted,
+body .hc-soft,
+body .hc-home__card p,
+body .hc-home__card li,
+body .hc-home__snapshot-sub,
+body .hc-home__trust {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  max-width: none;
+}
+
+body label,
+body .form-label,
+body .hc-label,
+body .kpi-label,
+body .hc-kpi-label,
+body .impact-kpi-label,
+body .table thead th,
+body .hc-home__metric-label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Hero title: dominant level */
+body.hc-page-home .hc-home__title,
+body.hc-page-home .hc-hero h1 {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+/* Keep text containers fluid inside cards/blocks */
+body .card p,
+body .table p,
+body .modal p,
+body .alert p,
+body .hc-card p,
+body .dashboard-section p,
+body .hc-admin-page p,
+body.hc-page-admin p {
+  max-width: none;
+}
+
+body .card h1,
+body .card h2,
+body .table h1,
+body .table h2,
+body .hc-admin-page h1,
+body .hc-admin-page h2,
+body.hc-page-admin h1,
+body.hc-page-admin h2 {
+  max-width: none;
+}
+
+@media (max-width: 991.98px) {
+  body.hc-page-home .hc-home__title,
+  body.hc-page-home .hc-hero h1 {
+    font-size: 40px;
+  }
+
+  body h2 {
+    font-size: 28px;
+  }
+
+  body h3 {
+    font-size: 20px;
+  }
+
+  body p {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body.hc-page-home .hc-home__title,
+  body.hc-page-home .hc-hero h1 {
+    font-size: 32px;
+    line-height: 1.2;
+  }
+
+  body h2 {
+    font-size: 24px;
+  }
+
+  body h3 {
+    font-size: 18px;
+  }
+
+  body p {
+    font-size: 16px;
+    line-height: 1.6;
   }
 }

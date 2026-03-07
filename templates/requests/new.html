@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container py-4" style="max-width: 860px;">
-  <h1 class="mb-3">Nouvelle demande</h1>
-  <p class="text-muted">Création d'une demande (intake).</p>
+  <h1 class="mb-3">{{ _("New request") }}</h1>
+  <p class="text-muted">{{ _("Create a new intake request.") }}</p>
 
   <form method="post" action="{{ url_for('social_requests.create_request') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="mb-3">
-      <label class="form-label">Structure</label>
+      <label class="form-label">{{ _("Structure") }}</label>
       <select class="form-select" name="structure_id" required>
-        <option value="" selected disabled>Choisir une structure...</option>
+        <option value="" selected disabled>{{ _("Choose a structure...") }}</option>
         {% for s in structures %}
           <option value="{{ s.id }}">{{ s.name }}</option>
         {% endfor %}
@@ -18,9 +18,9 @@
 
     <div class="row g-3">
       <div class="col-md-6">
-        <label class="form-label">Type de besoin</label>
+        <label class="form-label">{{ _("Need type") }}</label>
         <select class="form-select" name="need_type" required>
-          <option value="" selected disabled>Choisir...</option>
+          <option value="" selected disabled>{{ _("Choose...") }}</option>
           {% for value, label in need_types %}
             <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
@@ -28,7 +28,7 @@
       </div>
 
       <div class="col-md-6">
-        <label class="form-label">Urgence</label>
+        <label class="form-label">{{ _("Urgency") }}</label>
         <select class="form-select" name="urgency" required>
           {% for value, label in urgencies %}
             <option value="{{ value }}" {% if value == "medium" %}selected{% endif %}>{{ label }}</option>
@@ -38,19 +38,19 @@
     </div>
 
     <div class="mt-3">
-      <label class="form-label">Reference personne (optionnel)</label>
-      <input class="form-control" name="person_ref" placeholder="Ref interne (pas de donnees sensibles)">
-      <div class="form-text">Ex: "Dossier CCAS #A-2026-0042".</div>
+      <label class="form-label">{{ _("Person reference (optional)") }}</label>
+      <input class="form-control" name="person_ref" placeholder="{{ _('Internal ref (no sensitive data)') }}">
+      <div class="form-text">{{ _("Example: \"CCAS file #A-2026-0042\".") }}</div>
     </div>
 
     <div class="mt-3">
-      <label class="form-label">Description</label>
+      <label class="form-label">{{ _("Description") }}</label>
       <textarea class="form-control" name="description" rows="5" required></textarea>
     </div>
 
     <div class="mt-4 d-flex gap-2">
-      <button class="btn btn-primary" type="submit">Creer</button>
-      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests') }}">Annuler</a>
+      <button class="btn btn-primary" type="submit">{{ _("Create") }}</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests') }}">{{ _("Cancel") }}</a>
     </div>
   </form>
 </div>

@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Pros – Leads | Admin{% endblock %}
+{% block title %}{{ _('Pros') }} - {{ _('Leads') }} | {{ _('Admin') }}{% endblock %}
 
 {% block content %}
 <section class="hc-wrap" style="max-width:1100px; margin: 0 auto; padding: 1.25rem;">
   <header style="display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
     <div>
-      <h1 style="margin:0;">Professional leads</h1>
-      <p class="hc-muted" style="margin:.35rem 0 0;">Derniers leads captés via /professionnels/pilote.</p>
+      <h1 style="margin:0;">{{ _('Professional leads') }}</h1>
+      <p class="hc-muted" style="margin:.35rem 0 0;">{{ _('Latest leads captured via /professionnels/pilote.') }}</p>
     </div>
   </header>
 
   <form method="GET" style="margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap; align-items:flex-end;">
     <div style="flex:1; min-width:220px;">
-      <label class="hc-muted" for="q">Email contains</label>
-      <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="ex: orange.fr" />
+      <label class="hc-muted" for="q">{{ _('Email contains') }}</label>
+      <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="{{ _('e.g. orange.fr') }}" />
     </div>
 
     <div style="min-width:220px;">
-      <label class="hc-muted" for="profession">Profession</label>
+      <label class="hc-muted" for="profession">{{ _('Profession') }}</label>
       <select id="profession" name="profession" class="hc-input">
-        <option value="">All</option>
+        <option value="">{{ _('All') }}</option>
         {% for p in professions %}
           <option value="{{ p }}" {% if p == profession %}selected{% endif %}>{{ p }}</option>
         {% endfor %}
@@ -27,36 +27,36 @@
     </div>
 
     <div style="min-width:200px;">
-      <label class="hc-muted" for="city">City</label>
-      <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="Paris" />
+      <label class="hc-muted" for="city">{{ _('City') }}</label>
+      <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="{{ _('City') }}" />
     </div>
 
     <div style="min-width:200px;">
-      <label class="hc-muted" for="status">Status</label>
+      <label class="hc-muted" for="status">{{ _('Status') }}</label>
       <select id="status" name="status" class="hc-input">
-        <option value="">All</option>
+        <option value="">{{ _('All') }}</option>
         {% for s in status_choices %}
           <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
       </select>
     </div>
 
-    <button class="hc-btn" type="submit">Filter</button>
-    <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_leads') }}">Reset</a>
+    <button class="hc-btn" type="submit">{{ _('Filter') }}</button>
+    <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Reset') }}</a>
   </form>
 
   <div class="hc-card" style="margin-top:1rem; overflow:auto;">
     <table class="hc-table" style="width:100%; border-collapse:collapse;">
       <thead>
         <tr>
-          <th style="text-align:left; padding:.7rem;">ID</th>
-          <th style="text-align:left; padding:.7rem;">Email</th>
-          <th style="text-align:left; padding:.7rem;">Profession</th>
-          <th style="text-align:left; padding:.7rem;">City</th>
-          <th style="text-align:left; padding:.7rem;">Created</th>
-          <th style="text-align:left; padding:.7rem;">Status</th>
-          <th style="text-align:left; padding:.7rem;">Source</th>
-          <th style="text-align:left; padding:.7rem;">Actions</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('ID') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('Email') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('Profession') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('City') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('Created') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('Status') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('Source') }}</th>
+          <th style="text-align:left; padding:.7rem;">{{ _('Actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -73,19 +73,19 @@
             <td style="padding:.7rem; white-space:nowrap;">
               {{ l.created_at }}
             </td>
-            <td style="padding:.7rem; white-space:nowrap;">{{ l.status or "new" }}</td>
+            <td style="padding:.7rem; white-space:nowrap;">{{ l.status or _("new") }}</td>
             <td style="padding:.7rem;">{{ l.source or "-" }}</td>
             <td style="padding:.7rem; white-space:nowrap;">
               <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" style="display:inline;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="hc-btn hc-btn--ghost" type="submit">Mark contacted</button>
+                <button class="hc-btn hc-btn--ghost" type="submit">{{ _('Mark contacted') }}</button>
               </form>
-              <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">Edit</a>
+              <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="8" class="hc-muted" style="padding:1rem;">No leads yet.</td>
+            <td colspan="8" class="hc-muted" style="padding:1rem;">{{ _('No leads yet.') }}</td>
           </tr>
         {% endfor %}
       </tbody>

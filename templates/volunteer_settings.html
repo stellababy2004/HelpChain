@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="bg">
+<html lang="{{ g.locale if g is defined and g.locale else 'fr' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Настройки - HelpChain</title>
+    <title>{{ _("Settings") }} - HelpChain</title>
     <link
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.1.3.min.css') }}"
       rel="stylesheet"
@@ -16,26 +16,26 @@
         <a class="navbar-brand" href="{{ safe_url_for('main.index') }}">HelpChain</a>
         <div class="navbar-nav ms-auto">
           <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}"
-            >Табло</a
+            >{{ _("Dashboard") }}</a
           >
           <a class="nav-link active" href="{{ safe_url_for('volunteer_settings') }}"
-            >Настройки</a
+            >{{ _("Settings") }}</a
           >
           <form class="d-inline" method="post" action="{{ safe_url_for('main.volunteer_logout') }}">
             {% if csrf_token %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
-            <button class="nav-link btn btn-link p-0 text-decoration-none" type="submit">Изход</button>
+            <button class="nav-link btn btn-link p-0 text-decoration-none" type="submit">{{ _("Logout") }}</button>
           </form>
         </div>
       </div>
     </nav>
 
     <div class="container mt-4">
-      <h1>Настройки</h1>
-      <p class="text-muted">Управление на вашите настройки като доброволец.</p>
+      <h1>{{ _("Settings") }}</h1>
+      <p class="text-muted">{{ _("Manage your volunteer settings.") }}</p>
 
       <div class="alert alert-info">
-        <strong>Информация:</strong> Тази страница е в процес на разработка.
-        Скоро ще можете да управлявате своите настройки и предпочитания.
+        <strong>{{ _("Information:") }}</strong> {{ _("This page is under development.") }}
+        {{ _("You will be able to manage your settings and preferences soon.") }}
       </div>
     </div>
 

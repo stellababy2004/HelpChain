@@ -38,8 +38,8 @@
     {% endif %}
   {% else %}
     <div class="hc-vdash-empty">
-      <div class="hc-vdash-empty__title">No matches right now</div>
-      <div class="hc-vdash-empty__text">We’ll notify you when a request fits your profile.</div>
+      <div class="hc-vdash-empty__title">{{ _('No matches right now') }}</div>
+      <div class="hc-vdash-empty__text">{{ _('We will notify you when a request fits your profile.') }}</div>
     </div>
   {% endif %}
 
@@ -229,7 +229,7 @@
     <div class="hc-modal__backdrop" data-close="1"></div>
     <div class="hc-modal__panel" role="dialog" aria-modal="true" aria-labelledby="matchModalTitle">
       <div class="hc-modal__head">
-        <h3 id="matchModalTitle">Match explanation</h3>
+        <h3 id="matchModalTitle">{{ _('Match explanation') }}</h3>
         <button class="hc-modal__x" type="button" data-close="1">✕</button>
       </div>
       <div class="hc-modal__body">
@@ -456,9 +456,9 @@
                       I can’t help
                     </button>
                     {% if act == 'CAN_HELP' %}
-                      <span class="badge text-bg-success ms-2"> Sent: I can help</span>
+                      <span class="badge text-bg-success ms-2">{{ _('Sent: I can help') }}</span>
                     {% elif act == 'CANT_HELP' %}
-                      <span class="badge text-bg-secondary ms-2"> Sent: I can’t help</span>
+                      <span class="badge text-bg-secondary ms-2">{{ _('Sent: I can’t help') }}</span>
                     {% endif %}
                   </form>
                 </div>
@@ -491,7 +491,7 @@
                 <div class="hc-match__titleWrap">
                   <strong class="hc-match__title">{{ _('Примерна заявка') }}</strong>
                   <div class="hc-match__meta">
-                <span class="hc-match__city"> Paris</span>
+                <span class="hc-match__city">{{ _('Paris') }}</span>
                 <span class="hc-dotSep" aria-hidden="true">•</span>
                 <span class="hc-match__time">{{ _('току-що') }}</span>
               </div>
@@ -639,7 +639,7 @@
     <article class="hc-previewCard">
       <div class="hc-previewCard__chips">
         <span class="hc-pill">{{ _("Административна помощ") }}</span>
-        <span class="hc-pill">Paris</span>
+        <span class="hc-pill">{{ _('Paris') }}</span>
         <span class="hc-pill">{{ _("Онлайн") }}</span>
       </div>
 

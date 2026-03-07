@@ -1,0 +1,300 @@
+Доброволецът е добавен успешно!
+HelpChain
+Подай заявка за помощ
+Попълни формата и екипът ни ще се свърже с теб възможно най-бързо.
+Изпрати заявката
+Категории помощ
+Your session has been cleared.
+Request
+If the email is valid, you will receive a login link.
+Sans mot de passe. Recevez un lien sécurisé par e-mail.
+Ouvrir mon lien de connexion
+Si le bouton ne fonctionne pas, copiez-collez ce lien :
+Données minimales, respect RGPD
+Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail.
+You're all set! You can now see requests where your help matters.
+Got it. Your signal was sent to the team.
+Veuillez accepter la Politique de confidentialité (RGPD) pour continuer.
+Please shorten the text.
+Please shorten the %(field)s.
+Invalid characters detected.
+Invalid characters detected.
+Моля, въведете име (поне 2 символа).
+Моля, опишете проблема (поне 10 символа).
+Моля, въведете поне телефон или имейл.
+Please select a valid category.
+Please select a valid urgency.
+Verified volunteers only
+Fast matching - no bureaucracy
+We keep your data private
+Please correct the errors below.
+Заявка: %(category)s
+Заявка за помощ
+Сесията изтече. Моля, подай заявката отново.
+À propos
+À propos de HelpChain
+À propos de HelpChain
+Déposer une demande
+Orienter une demande
+Orienter une demande
+Orienter une demande
+Conçu et opéré depuis la France.
+Infrastructure à vocation européenne.
+Repères
+Approche
+Structurée
+Pilotage
+Opérationnel
+Conformité
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+RGPD
+structuration des parcours, suivi et coordination multi-intervenants.
+structuration des parcours, suivi et coordination multi-intervenants.
+orientation, traçabilité et pilotage des prises en charge.
+orientation, traçabilité et pilotage des prises en charge.
+coordination de l’intervention et continuité opérationnelle.
+Ce que HelpChain n’est pas
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Espace professionnel
+Espace professionnel
+Espace professionnel
+Export JSON
+Export CSV
+Export CSV
+Internal use only.
+Are you sure you want to continue?
+Admin panel
+Pending
+In progress
+Completed
+Cancelled
+Unknown
+Admin dashboard
+Total requests
+Pending requests
+Total volunteers
+Requests by city (Top 10)
+Requests by city (Top 10)
+Общо заявки
+Чакащи
+В процес
+Доброволци
+Заявки
+Име
+Описание
+Статус
+История
+Actions
+Без име
+Без описание
+No history
+Actions for request %(id)s
+Няма намерени заявки
+Имейл
+Телефон
+Локация
+Умения
+Няма
+Няма намерени доброволци
+Help categories - HelpChain
+Catégories d'aide
+Dites-nous de quoi vous avez besoin — on s'occupe du reste.
+J’ai besoin d’aide
+Je veux aider
+Demander de l’aide
+Ça prend ~2 minutes
+Besoin d’aide ?
+Déposez une demande — nous trouverons une personne pour vous répondre.
+Vous voulez aider ?
+Rejoignez notre communauté de bénévoles.
+Devenir bénévole
+Retour à l’accueil
+Skip to main content
+Toggle navigation
+Language
+Language
+Language
+Language
+Admin
+Logout
+My dashboard
+Notifications
+unread notifications
+View all
+No notifications
+When you get matched, you'll see it here.
+Notification
+New
+Mark as seen & open
+Profile
+Search
+Search
+Search
+Search
+Search
+Toggle theme
+Close
+Accessibility settings
+Accessibility menu
+Toggle accessibility settings
+Accessibility
+Adjust readability and motion. Settings are saved on this device.
+No options enabled
+1 option enabled
+{count} options enabled
+Accessibility paused
+Following system
+Power off
+Accessibility sections
+Display
+Navigation
+Translations
+Audio
+Motor
+Eco
+More
+Display & reading
+Improve readability and visual comfort
+High contrast
+Increase visual contrast across the interface
+Text size
+Choose a comfortable reading size
+Normal
+Large
+Extra large
+Dyslexia-friendly font
+Use a clearer fallback font stack with increased spacing
+Navigation comfort
+Reduce distraction and simplify movement across pages
+Navigation profiles
+Reading comfort
+Larger text with cleaner reading spacing
+Open
+High contrast and larger text for central vision comfort
+Extra-large text and simplified visuals for easier reading
+Visual presets
+Balanced
+Keep a clean look without changing text size
+Focus mode
+Reduce motion and visual noise
+High visibility
+High contrast + bigger text
+Reduce motion
+Limit animations and transitions
+Simplified mode
+Hide decorative elements and reduce visual noise
+Audio support
+Read content aloud and tune voice feedback for better accessibility
+Read content aloud and tune voice feedback for better accessibility
+Speech playback is not available in this browser.
+Read aloud
+Enable speech playback for reading content
+Enable speech playback for reading content
+Voice guidance
+Allow short spoken confirmations for key actions (future)
+Speech rate
+Choose a comfortable reading speed
+Slow
+Fast
+Adjust speech playback volume
+Speech volume
+Voice
+Choose a browser voice when available
+Default voice
+Voice test
+Try the selected voice and settings before saving
+Accessibility voice test. This is a preview of your audio settings.
+Test voice
+Stop
+Highlight while reading
+Highlight the current paragraph or block during page reading
+Auto-read on page load
+Start reading automatically when supported (future)
+Motor assistance
+Placeholder section for click targets, dwell, and keyboard assistance
+Placeholder section for click targets, dwell, and keyboard assistance
+Choose the interface language
+Eco display
+Lighter pages for faster display and lower data/energy use
+Eco mode
+Eco mode
+More options
+This section is ready for future accessibility modules
+This section is ready for future accessibility modules
+Reset only this section
+Reset
+Restore system defaults
+Save as my profile
+Done
+Shortcut: Alt + A
+Back
+Select language
+Profile details
+Preset description
+This profile applies
+Loading profile…
+Apply profile
+Données hébergées en Europe
+Conforme RGPD
+Sécurité renforcée
+Sécurité renforcée
+Footer
+Footer
+Footer
+Footer
+Footer
+Footer
+Footer
+Footer
+Footer
+Footer
+Selected text audio controls
+Play
+Accès intervenant
+Demander un accès intervenant
+Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe.
+Connexion par lien sécurisé (valable 15 minutes). Aucun mot de passe.
+Confiance et confidentialité
+Accès réservé aux intervenants autorisés
+Processus simple, traçable et responsable
+Accéder à mon espace intervenant
+1 minute pour commencer
+Nous vous envoyons un lien de connexion. Aucun mot de passe.
+Nous vous envoyons un lien de connexion. Aucun mot de passe.
+Sending…
+Connexion sécurisée — aucun mot de passe

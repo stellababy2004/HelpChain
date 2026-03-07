@@ -68,6 +68,11 @@ COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 main_bp = Blueprint("main", __name__)
 
 
+def _allowed_locales() -> set[str]:
+    configured = current_app.config.get("SUPPORTED_LOCALES") or ("fr", "en", "de", "bg")
+    return {str(x).strip().lower() for x in configured if str(x).strip()}
+
+
 def _current_structure_id():
     return int(current_structure().id)
 
@@ -736,7 +741,7 @@ def magic_link_alias(token: str):
 @main_bp.get("/set-lang/<lang>")
 def set_lang_switch(lang):
     lang = (lang or "").lower().strip()
-    if lang not in ("bg", "fr", "en"):
+    if lang not in _allowed_locales():
         abort(404)
 
     session["lang"] = lang
@@ -751,6 +756,13 @@ def set_lang_switch(lang):
     except Exception:
         next_url = url_for("main.index")
 
+    current_app.logger.info(
+        "[i18n.switch] route=/set-lang lang=%s session_lang=%s cookie_lang=%s next=%s",
+        lang,
+        session.get("lang"),
+        request.cookies.get("hc_lang"),
+        next_url,
+    )
     resp = make_response(redirect(next_url))
     resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
     return resp
@@ -759,7 +771,7 @@ def set_lang_switch(lang):
 @main_bp.get("/lang/<locale>")
 def set_lang(locale):
     locale = (locale or "").lower()
-    if locale not in ("bg", "fr", "en"):
+    if locale not in _allowed_locales():
         abort(404)
 
     session["lang"] = locale
@@ -773,6 +785,13 @@ def set_lang(locale):
     except Exception:
         next_url = url_for("main.index")
 
+    current_app.logger.info(
+        "[i18n.switch] route=/lang lang=%s session_lang=%s cookie_lang=%s next=%s",
+        locale,
+        session.get("lang"),
+        request.cookies.get("hc_lang"),
+        next_url,
+    )
     resp = make_response(redirect(next_url))
     resp.set_cookie("hc_lang", locale, max_age=60 * 60 * 24 * 365, samesite="Lax")
     return resp
@@ -1231,7 +1250,7 @@ def become_volunteer():
                 "fallback_text": _(
                     "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
                 ),
-                "privacy_line": _("Données minimales, respect RGPD"),
+                "privacy_line": _("Minimal data, GDPR compliant"),
                 "ignore_line": _(
                     "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
                 ),
@@ -1558,7 +1577,7 @@ def volunteer_dashboard():
                 "cta": "Ouvrir la demande",
             },
             "request_done": {
-                "title": "Cette demande est terminée. Merci.",
+                "title": _("This request is closed. Thank you."),
                 "body": "Aidez une autre personne quand vous le souhaitez.",
                 "cta": "Voir les demandes",
             },
@@ -1575,7 +1594,7 @@ def volunteer_dashboard():
                 "cta": "Отвори заявката",
             },
             "request_done": {
-                "title": "Тази заявка е приключена. Благодарим.",
+                "title": _("This request is closed. Thank you."),
                 "body": "Можеш да помогнеш на друг човек, когато решиш.",
                 "cta": "Виж заявки",
             },
@@ -1976,7 +1995,7 @@ def volunteer_cant_help(req_id: int):
 def volunteer_request_help_demo():
     """Demo: не записваме нищо, само връщаме UX feedback."""
     session["demo_pending"] = True
-    flash("Благодарим! Интересът ти е отбелязан (демо).", "success")
+    flash(_("Thank you! Your interest has been recorded (demo)."), "success")
     return redirect(url_for("main.volunteer_request_demo"))
 
 
@@ -2217,13 +2236,13 @@ def validate_submit_request_form(form):
         errors["description"] = _("Suspicious content detected.")
 
     if len(name) < 2:
-        errors["name"] = _("Моля, въведете име (поне 2 символа).")
+        errors["name"] = _("Please enter a name (at least 2 characters).")
 
     if len(description) < 10:
-        errors["description"] = _("Моля, опишете проблема (поне 10 символа).")
+        errors["description"] = _("Please describe the issue (at least 10 characters).")
 
     if not phone and not email:
-        msg = _("Моля, въведете поне телефон или имейл.")
+        msg = _("Please provide at least a phone number or an email.")
         errors["phone"] = msg
         errors["email"] = msg
 
@@ -2327,7 +2346,7 @@ def submit_request():
             if "description" in errors and "suspicious" in str(
                 errors["description"]
             ).lower():
-                flash("Suspicious content detected.", "danger")
+                flash(_("Suspicious content detected."), "danger")
             status_code = 200 if current_app.config.get("TESTING", False) else 400
             return (
                 render_template(
@@ -2341,9 +2360,9 @@ def submit_request():
         # ✅ title is NOT NULL in DB
         if not cleaned["title"]:
             cleaned["title"] = (
-                _("Заявка: %(category)s", category=cleaned["category"])
+                _("Request: %(category)s", category=cleaned["category"])
                 if cleaned["category"]
-                else _("Заявка за помощ")
+                else _("Help request")
             )
 
         session["request_draft"] = {
@@ -2378,7 +2397,7 @@ def submit_request():
                     db.session.flush()
 
                 hr = HelpRequest(
-                    title=cleaned["title"] or "Заявка за помощ",
+                    title=cleaned["title"] or _("Help request"),
                     description=cleaned["description"],
                     name=cleaned["name"],
                     email=cleaned["email"],
@@ -2448,7 +2467,7 @@ def submit_request():
 def submit_request_confirm():
     draft = session.get("request_draft")
     if not draft:
-        flash(_("Сесията изтече. Моля, подай заявката отново."), "error")
+        flash(_("Session expired. Please submit the request again."), "error")
         return redirect(url_for("main.submit_request"))
 
     try:
@@ -2560,7 +2579,7 @@ def submit_request_confirm():
                     "fallback_text": _(
                         "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
                     ),
-                    "privacy_line": _("Données minimales, respect RGPD"),
+                    "privacy_line": _("Minimal data, GDPR compliant"),
                     "ignore_line": _(
                         "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
                     ),
@@ -2613,7 +2632,7 @@ def submit_request_confirm():
     except Exception as e:
         current_app.logger.exception("CONFIRM FAILED: %s", e)
         db.session.rollback()
-        flash("Грешка при записване. Моля, опитай отново.", "error")
+        flash(_("Save failed. Please try again."), "error")
         return redirect(url_for("main.submit_request"))
 
 
@@ -2902,7 +2921,7 @@ def admin_dashboard_legacy():
         return render_template("admin/login.html"), 200
     if session.get("admin_logged_in"):
         return render_template("admin_dashboard_legacy.html"), 200
-    flash("Моля, влезте като администратор.", "warning")
+    flash(_("Please log in as an administrator."), "warning")
     return redirect(url_for("admin.admin_login_legacy"))
 
 
@@ -3031,7 +3050,7 @@ def professionnels_pilote():
     message = (request.form.get("message") or "").strip()
 
     if not email or "@" not in email or not profession:
-        flash("Merci de renseigner au minimum votre e-mail et votre métier.", "error")
+        flash(_("Please provide at least your email and your role."), "error")
         return render_template("professionnels_pilote.html"), 400
 
     existing = (
@@ -3148,6 +3167,47 @@ def legal():
     return render_template("legal.html")
 
 
+@main_bp.get("/comment-ca-marche")
+@main_bp.get("/comment_ca_marche")
+def comment_ca_marche():
+    return render_template("comment_ca_marche.html")
+
+
+@main_bp.get("/collectivites-associations")
+@main_bp.get("/collectivites_associations")
+def collectivites_associations():
+    return render_template("collectivites_associations.html")
+
+
+@main_bp.get("/cas-usage")
+@main_bp.get("/cas_usage")
+def cas_usage():
+    return render_template("cas_usage.html")
+
+
+@main_bp.get("/pilotage-indicateurs")
+@main_bp.get("/pilotage_indicateurs")
+def pilotage_indicateurs():
+    return render_template("pilotage_indicateurs.html")
+
+
+@main_bp.get("/partenariats")
+def partenariats():
+    return render_template("partenariats.html")
+
+
+@main_bp.get("/pourquoi-helpchain")
+@main_bp.get("/pourquoi_helpchain")
+def pourquoi_helpchain():
+    return render_template("pourquoi_helpchain.html")
+
+
+@main_bp.get("/vision-europeenne")
+@main_bp.get("/vision_europeenne")
+def vision_europeenne():
+    return render_template("vision_europeenne.html")
+
+
 @main_bp.get("/mentions-legales")
 @main_bp.get("/mentions_legales")
 def mentions_legales():
@@ -3208,20 +3268,25 @@ def request_public(req_id: int):
 @main_bp.post("/set-language")
 @main_bp.post("/set_language")
 def set_language():
-    supported = {
-        "fr", "en", "es", "it", "de", "ar", "br", "ca", "cs", "co", "cy", "da",
-        "et", "eu", "sw", "mfe", "lv", "lb", "lt", "hu", "nl", "no", "oc", "pl",
-        "pt", "ro", "sk", "sl", "fi", "sv", "vi", "tr", "el", "bg", "ru", "uk",
-        "yi", "he", "ps", "hi", "th", "ko", "zh", "ja",
-    }
+    supported = _allowed_locales()
     lang = (request.form.get("lang") or "").strip().lower()
     if lang not in supported:
-        lang = "bg"
+        lang = "fr"
 
     session["lang"] = lang
     session.modified = True
 
     next_url = request.form.get("next") or request.referrer or url_for("main.index")
+    if not is_safe_url(next_url):
+        next_url = url_for("main.index")
+
+    current_app.logger.info(
+        "[i18n.switch] route=/set-language lang=%s session_lang=%s cookie_lang=%s next=%s",
+        lang,
+        session.get("lang"),
+        request.cookies.get("hc_lang"),
+        next_url,
+    )
     resp = make_response(redirect(next_url))
     resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
     return resp

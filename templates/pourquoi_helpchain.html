@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Pourquoi HelpChain") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Vision et raison d’être de HelpChain: faciliter la coordination solidaire entre citoyens, bénévoles, associations et collectivités.") }}{% endblock %}
+{% block og_title %}{{ _("Pourquoi HelpChain") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Pourquoi HelpChain") }}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 920px;">
+  <header class="mb-4">
+    <h1 class="h3 mb-2">{{ _("Pourquoi HelpChain") }}</h1>
+    <p class="text-muted mb-0">
+      {{ _("Dans de nombreuses situations, des personnes rencontrent des difficultés ponctuelles pour lesquelles une aide simple pourrait faire une réelle différence.") }}
+    </p>
+    <p class="text-muted mb-0">
+      {{ _("Dans le même temps, de nombreux bénévoles, associations et acteurs locaux souhaitent s’engager et apporter leur soutien.") }}
+    </p>
+    <p class="text-muted mb-0">
+      {{ _("Cependant, la coordination entre ces différents acteurs peut parfois être complexe.") }}
+    </p>
+  </header>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 1 — Un besoin de coordination") }}</h2>
+      <p class="mb-2">
+        {{ _("Les initiatives de solidarité existent déjà dans de nombreux territoires.") }}
+      </p>
+      <p class="mb-2">{{ _("Mais il peut être difficile de :") }}</p>
+      <ul class="mb-2">
+        <li>{{ _("identifier les besoins") }}</li>
+        <li>{{ _("coordonner les actions") }}</li>
+        <li>{{ _("suivre certaines situations") }}</li>
+      </ul>
+      <p class="mb-0">
+        {{ _("HelpChain vise à faciliter cette coordination grâce à un outil numérique simple et accessible.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 2 — Faciliter la mise en relation") }}</h2>
+      <p class="mb-2">{{ _("La plateforme permet de mettre en relation :") }}</p>
+      <ul class="mb-2">
+        <li>{{ _("des personnes en situation de besoin") }}</li>
+        <li>{{ _("des bénévoles") }}</li>
+        <li>{{ _("des associations") }}</li>
+        <li>{{ _("des structures locales") }}</li>
+      </ul>
+      <p class="mb-0">
+        {{ _("L’objectif est de rendre cette coopération plus fluide et plus organisée.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 3 — Soutenir les initiatives locales") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain n’a pas vocation à remplacer les structures existantes.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("La plateforme agit comme un outil permettant de soutenir les initiatives déjà présentes sur le terrain et d’améliorer la coordination entre les différents acteurs.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 4 — Une approche responsable") }}</h2>
+      <p class="mb-2">{{ _("Le projet est développé dans le respect :") }}</p>
+      <ul class="mb-2">
+        <li>{{ _("de la protection des données personnelles") }}</li>
+        <li>{{ _("de la confidentialité des informations") }}</li>
+        <li>{{ _("des principes du RGPD") }}</li>
+      </ul>
+      <p class="mb-0">
+        {{ _("L’objectif est de proposer une plateforme utile, fiable et respectueuse des utilisateurs.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain a pour ambition de faciliter l’entraide et la coopération entre citoyens, bénévoles, associations et structures publiques.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("La plateforme vise à proposer un outil numérique permettant de mieux organiser certaines actions de solidarité au niveau local.") }}
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -21,6 +21,10 @@ from backend.models import (  # noqa: F401
     canonical_role,
     utc_now,
     Structure,
+    UiTranslation,
+    UiTranslationEvent,
+    UiLocaleLock,
+    UiTranslationFreeze,
 )
 
 # Local wrappers for canonical/legacy models (defined in `backend.models`)
@@ -56,6 +60,10 @@ __all__ = [
     "RequestLog",
     "RequestActivity",
     "RequestMetric",
+    "UiTranslation",
+    "UiTranslationEvent",
+    "UiLocaleLock",
+    "UiTranslationFreeze",
     "Notification",
     "NotificationSubscription",
     "RefreshToken",

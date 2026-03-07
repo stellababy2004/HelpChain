@@ -76,7 +76,7 @@
         <div class="mt-3 text-center">
           <a class="btn btn-outline-secondary btn-sm"
              href="{{ url_for('main.volunteer_login') }}?dev=1">
-            Accès de test (intervenant) — {{ VOLUNTEER_DEV_BYPASS_EMAIL }}
+            {{ _('Test access (volunteer) - %(email)s', email=VOLUNTEER_DEV_BYPASS_EMAIL) }}
           </a>
         </div>
         {% endif %}

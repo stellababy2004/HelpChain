@@ -1,0 +1,592 @@
+[
+  {
+    "file": "admin/translations_list.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_analytics_legacy.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_dashboard_legacy.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_emergency_requests.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_profile.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_settings.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_volunteers_legacy.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "analytics.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "available_tasks.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "chatbot.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "create_permission.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "create_role.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "create_user.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "edit_role.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "emails/magic_link.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "emails/professional_lead_notify.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "errors/500.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "leaderboard.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "login.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "manage_user_roles.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "my_tasks.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "notification_dashboard.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "profile.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "register.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "video_chat_room.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "volunteer_dashboard_legacy.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "volunteer_register_legacy.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "volunteer_verify_code.html",
+    "score": 0,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_volunteers.html",
+    "score": 2,
+    "bucket": "RED"
+  },
+  {
+    "file": "dashboard.html",
+    "score": 2,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_analytics.html",
+    "score": 3,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_roles.html",
+    "score": 5,
+    "bucket": "RED"
+  },
+  {
+    "file": "achievements.html",
+    "score": 35,
+    "bucket": "RED"
+  },
+  {
+    "file": "export_data.html",
+    "score": 35,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin.html",
+    "score": 45,
+    "bucket": "RED"
+  },
+  {
+    "file": "404.html",
+    "score": 50,
+    "bucket": "RED"
+  },
+  {
+    "file": "admin_dashboard.html",
+    "score": 53,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "dashboard_requester.html",
+    "score": 53,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "public/pour_les_structures.html",
+    "score": 53,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "dashboard_helper.html",
+    "score": 61,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "components/match_card.html",
+    "score": 70,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "index.html",
+    "score": 70,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "volunteer_profile.html",
+    "score": 70,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "profile_requester.html",
+    "score": 71,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "admin/request_details.html",
+    "score": 74,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "admin/risk_panel.html",
+    "score": 75,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "volunteer_dashboard.html",
+    "score": 78,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "admin/requests.html",
+    "score": 79,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "pilot_dashboard.html",
+    "score": 80,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "professionnels_pilote_thanks.html",
+    "score": 80,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "volunteer_request_details.html",
+    "score": 80,
+    "bucket": "YELLOW"
+  },
+  {
+    "file": "volunteer_chat.html",
+    "score": 81,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_reports.html",
+    "score": 81,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_settings.html",
+    "score": 81,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "base.html",
+    "score": 82,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/mfa_backup_codes.html",
+    "score": 84,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/login.html",
+    "score": 85,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin_2fa.html",
+    "score": 85,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_notifications.html",
+    "score": 85,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin_2fa_setup.html",
+    "score": 87,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "home_new_slim.html",
+    "score": 87,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "submit_request.html",
+    "score": 87,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "terms.html",
+    "score": 87,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/professional_lead_detail.html",
+    "score": 88,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/sla.html",
+    "score": 88,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "legal.html",
+    "score": 89,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "privacy.html",
+    "score": 90,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "request_preview.html",
+    "score": 90,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_link_sent.html",
+    "score": 90,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/audit.html",
+    "score": 92,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "requests/list.html",
+    "score": 92,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/request_detail.html",
+    "score": 93,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/translations_key.html",
+    "score": 94,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "contact.html",
+    "score": 94,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/security.html",
+    "score": 95,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "orienter.html",
+    "score": 95,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "professionnels_pilote.html",
+    "score": 95,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "about.html",
+    "score": 96,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "become_volunteer.html",
+    "score": 96,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "faq.html",
+    "score": 96,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "professionnels.html",
+    "score": 96,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "requests/details.html",
+    "score": 97,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "_forms.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/mfa_setup.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/mfa_verify.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/professional_leads.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/roles.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin/translations_coverage.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin_analytics_professional.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin_email_2fa.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "admin_professionnels_leads.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "all_categories.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "backend/templates/contact.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "cas_usage.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "collectivites_associations.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "comment_ca_marche.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "dashboard_unknown_role.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "errors/404.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "magic_link_invalid.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "partenariats.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "partials/navbar_public.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "pilotage_indicateurs.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "pourquoi_helpchain.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "predictive_analytics.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "request_category.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "requests/dashboard.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "requests/new.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "requests/operations.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "search_results.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "smart_matching.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "submit_request_check_email.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "success.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "video_chat.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "vision_europeenne.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_404.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_confirmation.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_login.html",
+    "score": 100,
+    "bucket": "GREEN"
+  },
+  {
+    "file": "volunteer_onboarding.html",
+    "score": 100,
+    "bucket": "GREEN"
+  }
+]

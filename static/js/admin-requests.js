@@ -5,6 +5,19 @@
   const searchEl = document.getElementById("hcAdminFilterSearch");
   const deletedEl = document.getElementById("filterDeleted");
   const hasQuery = new URLSearchParams(window.location.search);
+  const toolbar = document.getElementById("hcRequestsToolbar");
+
+  function syncToolbarHeightVar() {
+    if (!toolbar) return;
+    const h = toolbar.getBoundingClientRect().height || 0;
+    document.documentElement.style.setProperty(
+      "--hc-requests-toolbar-height",
+      `${Math.ceil(h)}px`,
+    );
+  }
+  syncToolbarHeightVar();
+  window.addEventListener("resize", syncToolbarHeightVar);
+  window.addEventListener("load", syncToolbarHeightVar);
 
   if (form && statusEl && searchEl) {
     const saveFilters = () => {
@@ -119,7 +132,7 @@
 
   function rowMatchesQuickFilters(row) {
     if (!quickState.size) return true;
-    const hasNoOwner = !String(row.dataset.assignedVolunteerId || "").trim();
+    const hasNoOwner = !String(row.dataset.ownerId || "").trim();
     const isUrgent = String(row.dataset.priority || "").toUpperCase() === "URGENT";
     const hasCanHelp = Number(row.dataset.sigCanHelp || 0) > 0;
     const isStale = !!row.querySelector('[title*="Stale request"], [title*="Stale"]');
@@ -228,6 +241,14 @@
         if (action === "nudge") {
           for (const id of ids) {
             const ok = await postForm(`/admin/requests/${id}/nudge`, { csrf_token: csrf });
+            if (ok) okCount += 1;
+          }
+        } else if (action === "claim_me") {
+          for (const id of ids) {
+            const ok = await postForm(`/admin/requests/${id}/assign`, {
+              csrf_token: csrf,
+              next: "/admin/requests",
+            });
             if (ok) okCount += 1;
           }
         } else if (action.startsWith("status:")) {

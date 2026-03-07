@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="bg">
+<html lang="{{ g.locale if g is defined and g.locale else 'fr' }}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,7 +16,7 @@
         <div class="col-md-6">
           <div class="card">
             <div class="card-header bg-danger text-white">
-              <h3 class="text-center">Вход за администратор</h3>
+              <h3 class="text-center">{{ _('Admin login') }}</h3>
             </div>
             <div class="card-body">
               <form method="post" action="{{ url_for('admin.ops_login') }}">
@@ -64,7 +64,7 @@
   </button>
 </form>
               <div class="text-center mt-3">
-                <a href="/">Обратно към сайта</a>
+                <a href="/">{{ _('Back to site') }}</a>
               </div>
             </div>
           </div>

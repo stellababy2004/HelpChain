@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HelpChain - Свързваме нуждаещи се с доброволци</title>
+    <title>{{ _('HelpChain - Connecting people in need with volunteers') }}</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -54,7 +54,7 @@
 
 <body class="hc-page-home" data-theme="light">
     <!-- Skip to main content -->
-    <a href="#main-content" class="skip-link">Отиди към основното съдържание</a>
+    <a href="#main-content" class="skip-link">{{ _('Skip to main content') }}</a>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
@@ -65,10 +65,10 @@
     <nav
       class="navbar-light main-nav"
       role="navigation"
-      aria-label="Основна навигация"
+      aria-label="{{ _('Main navigation') }}"
     >
       <div class="container">
-        <a class="navbar-brand-light" href="/">HelpChain</a>
+        <a class="navbar-brand-light" href="/">{{ _('HelpChain') }}</a>
 
         <button
           class="navbar-toggler d-md-none"
@@ -77,38 +77,38 @@
           data-bs-target="#navbarNav"
           aria-expanded="false"
           aria-controls="navbarNav"
-          title="Отвори меню"
+          title="{{ _('Open menu') }}"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
           <ul class="nav-menu">
-            <li><a class="nav-link-light" href="#features">Функции</a></li>
+            <li><a class="nav-link-light" href="#features">{{ _('Features') }}</a></li>
             <li>
               <a class="nav-link-light" href="{{ safe_url_for('main.orienter') }}"
-                >Категории</a
+                >{{ _('Categories') }}</a
               >
             </li>
             <li>
-              <a class="nav-link-light" href="{{ safe_url_for('main.faq') }}">ЧЗВ</a>
+              <a class="nav-link-light" href="{{ safe_url_for('main.faq') }}">{{ _('FAQ') }}</a>
             </li>
             <li>
               <a class="nav-link-light" href="{{ safe_url_for('main.become_volunteer') }}"
-                >Регистрация</a
+                >{{ _('Register') }}</a
               >
             </li>
             <li>
               <a class="nav-link-light" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}"
-                >Вход за доброволци</a
+                >{{ _('Volunteer login') }}</a
               >
             </li>
             <li>
               <button
                 class="btn btn-sm ms-3 focus-visible"
                 id="themeToggle"
-                title="Превключи тема"
-                aria-label="Превключи между светла и тъмна тема"
+                title="{{ _('Toggle theme') }}"
+                aria-label="{{ _('Switch between light and dark theme') }}"
               >
                 <i class="fas fa-moon" aria-hidden="true"></i>
               </button>
@@ -117,8 +117,8 @@
               <button
                 class="btn btn-sm ms-2 focus-visible push-notifications"
                 id="pushNotifications"
-                title="Управление на push известия"
-                aria-label="Управление на push известия"
+                title="{{ _('Manage push notifications') }}"
+                aria-label="{{ _('Manage push notifications') }}"
               >
                 <i class="fas fa-bell" aria-hidden="true"></i>
               </button>
@@ -132,10 +132,10 @@
             <input
               type="text"
               class="search-input"
-              placeholder="Търси в HelpChain..."
-              aria-label="Търсене"
+              placeholder="{{ _('Search in HelpChain...') }}"
+              aria-label="{{ _('Search') }}"
             />
-            <button class="search-button" aria-label="Търси">
+            <button class="search-button" aria-label="{{ _('Search') }}">
               <i class="fas fa-search" aria-hidden="true"></i>
             </button>
           </div>
@@ -153,7 +153,7 @@
 
       <div class="container">
         <div class="hero-content text-center">
-          <h1 id="hero-title" class="hero-title">Добре дошли в HelpChain!</h1>
+          <h1 id="hero-title" class="hero-title">{{ _('Welcome to HelpChain!') }}</h1>
           <p class="hero-subtitle">
             Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ.
             Заедно можем да направим света по-добро място.
@@ -179,7 +179,7 @@
           </div>
 
           <!-- Live Impact (public, no personal data) -->
-          <div class="hero-impact" aria-label="Реален ефект на живо">
+          <div class="hero-impact" aria-label="{{ _('Live impact') }}">
             <span class="hero-impact-badge">
               <strong id="heroActiveRequests">-</strong> активни заявки
             </span>
@@ -199,7 +199,7 @@
       id="main-content"
       class="main-content"
       role="main"
-      aria-label="Основно съдържание"
+      aria-label="{{ _('Main content') }}"
     >
       <!-- Stats Section -->
       <section class="stats-section">
@@ -209,19 +209,19 @@
               <div class="stat-number-light" id="volunteersCount">
                 {{ volunteers_count }}
               </div>
-              <div class="stat-label-light">Активни доброволци</div>
+              <div class="stat-label-light">{{ _('Active volunteers') }}</div>
             </div>
             <div class="stat-card-light">
               <div class="stat-number-light" id="requestsCount">
                 {{ requests_count }}
               </div>
-              <div class="stat-label-light">Помогнати хора</div>
+              <div class="stat-label-light">{{ _('People helped') }}</div>
             </div>
             <div class="stat-card-light">
               <div class="stat-number-light" id="openRequestsCount">
                 {{ open_requests }}
               </div>
-              <div class="stat-label-light">Отворени заявки</div>
+              <div class="stat-label-light">{{ _('Open requests') }}</div>
             </div>
           </div>
         </div>
@@ -231,7 +231,7 @@
       <section class="features-section" id="features">
         <div class="container">
           <div class="text-center mb-5">
-            <h2 class="h1 mb-3">Защо да изберете HelpChain?</h2>
+            <h2 class="h1 mb-3">{{ _('Why choose HelpChain?') }}</h2>
             <p class="lead text-muted">
               Ние предлагаме модерна платформа за свързване на хората, които се
               нуждаят от помощ, с тези, които искат да помогнат.
@@ -243,7 +243,7 @@
               <div class="feature-icon-light">
                 <i class="fas fa-bolt"></i>
               </div>
-              <h3 class="feature-title-light">Бърза помощ</h3>
+              <h3 class="feature-title-light">{{ _('Fast support') }}</h3>
               <p class="feature-description-light">
                 Нашата платформа свързва нуждаещите се с доброволци в рамките на
                 минути, осигурявайки бърза и ефективна помощ.
@@ -254,7 +254,7 @@
               <div class="feature-icon-light">
                 <i class="fas fa-shield-alt"></i>
               </div>
-              <h3 class="feature-title-light">Сигурност</h3>
+              <h3 class="feature-title-light">{{ _('Security') }}</h3>
               <p class="feature-description-light">
                 Всички потребители преминават през верификация, а комуникацията
                 е защитена с най-съвременни технологии за сигурност.
@@ -265,7 +265,7 @@
               <div class="feature-icon-light">
                 <i class="fas fa-users"></i>
               </div>
-              <h3 class="feature-title-light">Общност</h3>
+              <h3 class="feature-title-light">{{ _('Community') }}</h3>
               <p class="feature-description-light">
                 Присъединете се към растящата общност от доброволци и хора,
                 които вярват, че заедно можем да направим света по-добро място.
@@ -276,7 +276,7 @@
               <div class="feature-icon-light">
                 <i class="fas fa-mobile-alt"></i>
               </div>
-              <h3 class="feature-title-light">Мобилна достъпност</h3>
+              <h3 class="feature-title-light">{{ _('Mobile accessibility') }}</h3>
               <p class="feature-description-light">
                 Нашата платформа работи перфектно на всички устройства - от
                 смартфони до десктоп компютри.
@@ -287,7 +287,7 @@
               <div class="feature-icon-light">
                 <i class="fas fa-clock"></i>
               </div>
-              <h3 class="feature-title-light">24/7 поддръжка</h3>
+              <h3 class="feature-title-light">{{ _('24/7 support') }}</h3>
               <p class="feature-description-light">
                 Нашият екип е винаги на разположение да помогне. Независимо от
                 часа, можете да разчитате на нашата поддръжка.
@@ -298,7 +298,7 @@
               <div class="feature-icon-light">
                 <i class="fas fa-heart"></i>
               </div>
-              <h3 class="feature-title-light">Безплатно</h3>
+              <h3 class="feature-title-light">{{ _('Free') }}</h3>
               <p class="feature-description-light">
                 HelpChain е напълно безплатна платформа. Ние вярваме, че помощта
                 трябва да бъде достъпна за всички.
@@ -312,29 +312,29 @@
       <section class="impact" id="impact">
         <div class="impact-card">
           <div class="impact-head">
-            <h2>Реален ефект (на живо)</h2>
-            <p class="muted">Анонимни, агрегирани данни - без лична информация.</p>
+            <h2>{{ _('Live impact') }}</h2>
+            <p class="muted">{{ _('Anonymous aggregated data - no personal information.') }}</p>
           </div>
 
           <div class="impact-grid">
-            <div class="kpi"><div class="k">Активни заявки</div><div class="v" id="kpiActive">-</div></div>
-            <div class="kpi"><div class="k">Нови (24ч)</div><div class="v" id="kpiNew24h">-</div></div>
-            <div class="kpi"><div class="k">Свързани (24ч)</div><div class="v" id="kpiMatched24h">-</div></div>
-            <div class="kpi"><div class="k">Приключени (7 дни)</div><div class="v" id="kpiDone7d">-</div></div>
+            <div class="kpi"><div class="k">{{ _('Active requests') }}</div><div class="v" id="kpiActive">-</div></div>
+            <div class="kpi"><div class="k">{{ _('New (24h)') }}</div><div class="v" id="kpiNew24h">-</div></div>
+            <div class="kpi"><div class="k">{{ _('Matched (24h)') }}</div><div class="v" id="kpiMatched24h">-</div></div>
+            <div class="kpi"><div class="k">{{ _('Completed (7 days)') }}</div><div class="v" id="kpiDone7d">-</div></div>
           </div>
 
           <div class="impact-sla">
-            <div><span class="muted">Средно време до първа реакция (7 дни):</span> <b id="slaFirst">-</b></div>
-            <div><span class="muted">Средно време до решаване (30 дни):</span> <b id="slaResolution">-</b></div>
+            <div><span class="muted">{{ _('Average time to first response (7 days):') }}</span> <b id="slaFirst">-</b></div>
+            <div><span class="muted">{{ _('Average time to resolution (30 days):') }}</span> <b id="slaResolution">-</b></div>
           </div>
 
           <div class="impact-cats">
-            <div class="muted">Топ категории (7 дни)</div>
+            <div class="muted">{{ _('Top categories (7 days)') }}</div>
             <ul id="impactCats"></ul>
           </div>
 
             <div class="impact-foot muted">
-              <span id="impactUpdated">Обновено: -</span>
+              <span id="impactUpdated">{{ _('Updated: -') }}</span>
               <button type="button" class="impact-refresh" id="impactRefresh">
                 Обнови
               </button>
@@ -346,41 +346,41 @@
       <footer
         class="footer bg-dark text-light py-5 mt-5"
         role="contentinfo"
-        aria-label="Информация за сайта"
+        aria-label="{{ _('Site information') }}"
       >
         <div class="container">
           <div class="row">
             <div class="col-md-4">
-              <h5>HelpChain</h5>
-              <p>Свързваме нуждаещи се с доброволци за по-добър свят.</p>
+              <h5>{{ _('HelpChain') }}</h5>
+              <p>{{ _('We connect people in need with volunteers for a better world.') }}</p>
             </div>
             <div class="col-md-4">
-              <h5>Бързи връзки</h5>
+              <h5>{{ _('Quick links') }}</h5>
               <ul class="list-unstyled">
                 <li>
                   <a href="{{ safe_url_for('main.orienter') }}" class="text-light"
-                    >Категории помощ</a
+                    >{{ _('Help categories') }}</a
                   >
                 </li>
                 <li>
                   <a href="{{ safe_url_for('main.faq') }}" class="text-light"
-                    >Често задавани въпроси</a
+                    >{{ _('Frequently asked questions') }}</a
                   >
                 </li>
                 <li>
                   <a href="{{ safe_url_for('main.privacy') }}" class="text-light"
-                    >Поверителност</a
+                    >{{ _('Privacy') }}</a
                   >
                 </li>
                 <li>
                   <a href="{{ safe_url_for('main.terms') }}" class="text-light"
-                    >Условия за ползване</a
+                    >{{ _('Terms of use') }}</a
                   >
                 </li>
               </ul>
             </div>
             <div class="col-md-4">
-              <h5>Контакти</h5>
+              <h5>{{ _('Contact') }}</h5>
               <p>
                 <i class="fas fa-envelope me-2" aria-hidden="true"></i
                 >contact@helpchain.live
@@ -393,32 +393,32 @@
                 <a
                   href="#"
                   class="text-light me-3"
-                  title="Facebook"
-                  aria-label="Посети ни във Facebook"
+                  title="{{ _('Facebook') }}"
+                  aria-label="{{ _('Visit us on Facebook') }}"
                 >
                   <i class="fab fa-facebook-f" aria-hidden="true"></i>
                 </a>
                 <a
                   href="#"
                   class="text-light me-3"
-                  title="Twitter"
-                  aria-label="Посети ни в Twitter"
+                  title="{{ _('Twitter') }}"
+                  aria-label="{{ _('Visit us on Twitter') }}"
                 >
                   <i class="fab fa-twitter" aria-hidden="true"></i>
                 </a>
                 <a
                   href="#"
                   class="text-light me-3"
-                  title="Instagram"
-                  aria-label="Посети ни в Instagram"
+                  title="{{ _('Instagram') }}"
+                  aria-label="{{ _('Visit us on Instagram') }}"
                 >
                   <i class="fab fa-instagram" aria-hidden="true"></i>
                 </a>
                 <a
                   href="#"
                   class="text-light"
-                  title="LinkedIn"
-                  aria-label="Посети ни в LinkedIn"
+                  title="{{ _('LinkedIn') }}"
+                  aria-label="{{ _('Visit us on LinkedIn') }}"
                 >
                   <i class="fab fa-linkedin-in" aria-hidden="true"></i>
                 </a>
@@ -427,7 +427,7 @@
           </div>
           <hr class="my-4" />
           <div class="text-center">
-            <p>&copy; 2025 HelpChain. Всички права запазени.</p>
+            <p>{{ _('&copy; 2025 HelpChain. All rights reserved.') }}</p>
           </div>
         </div>
       </footer>
@@ -436,8 +436,8 @@
     <!-- Back to Top Button -->
     <button
       class="back-to-top"
-      aria-label="Обратно към началото на страницата"
-      title="Обратно към началото"
+      aria-label="{{ _('Back to top of page') }}"
+      title="{{ _('Back to top') }}"
     >
       <i class="fas fa-arrow-up" aria-hidden="true"></i>
     </button>

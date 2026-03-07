@@ -1,42 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Volunteer Onboarding{% endblock %}
+{% block title %}{{ _("Volunteer onboarding") }}{% endblock %}
 
 {% block content %}
 <div class="container py-5" style="max-width: 720px;">
   <div class="text-center mb-4">
-    <h1 class="h3 mb-2">Welcome. Here’s how volunteering works.</h1>
-    <p class="text-muted mb-0">Bienvenue. Voici comment fonctionne le bénévolat.</p>
+    <h1 class="h3 mb-2">{{ _("Welcome. Here is how volunteering works.") }}</h1>
+    <p class="text-muted mb-0">{{ _("A short guide before you start helping.") }}</p>
   </div>
 
   <div class="card shadow-sm mb-4">
     <div class="card-body">
-      <h5 class="card-title">How it works</h5>
+      <h5 class="card-title">{{ _("How it works") }}</h5>
       <ul class="mb-3">
-        <li>You’ll see requests from people who need help.</li>
-        <li>You choose which requests you’re interested in.</li>
-        <li>Once assigned, you help and update the status.</li>
-      </ul>
-      <h5 class="card-title mt-4">Comment ça marche</h5>
-      <ul class="mb-0">
-        <li>Vous verrez des demandes de personnes ayant besoin d’aide.</li>
-        <li>Vous choisissez celles qui vous correspondent.</li>
-        <li>Une fois assigné·e, vous aidez et mettez à jour le statut.</li>
+        <li>{{ _("You will see requests from people who need help.") }}</li>
+        <li>{{ _("You choose which requests you are interested in.") }}</li>
+        <li>{{ _("Once assigned, you help and update the status.") }}</li>
       </ul>
     </div>
   </div>
 
   <div class="card shadow-sm mb-4 border-warning">
     <div class="card-body">
-      <h5 class="card-title text-warning mb-3">Boundaries / Cadre clair</h5>
-      <p class="mb-2">You are not expected to solve everything. If something feels out of scope, you can stop or ask for support.</p>
-      <p class="mb-0">Vous n’êtes pas censé·e tout résoudre. Si quelque chose dépasse votre périmètre, vous pouvez arrêter ou demander de l’aide.</p>
+      <h5 class="card-title text-warning mb-3">{{ _("Boundaries") }}</h5>
+      <p class="mb-2">{{ _("You are not expected to solve everything. If something feels out of scope, you can stop or ask for support.") }}</p>
+      <p class="mb-0">{{ _("Your role is to help safely, within your availability and limits.") }}</p>
     </div>
   </div>
 
   <form method="post" action="{{ url_for('main.volunteer_onboarding') }}" class="text-center">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-primary btn-lg px-4">
-      I understand, show me requests / J’ai compris, voir les demandes
+      {{ _("I understand, show me requests") }}
     </button>
   </form>
 </div>

@@ -1,71 +1,65 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Contact") }} | HelpChain{% endblock %}
+{% block title %}{{ _("Contact & coopération") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Contact et coopération avec le projet HelpChain pour collectivités, CCAS, associations et partenaires territoriaux.") }}{% endblock %}
+{% block og_title %}{{ _("Contact & coopération") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Contact et coopération") }}{% endblock %}
 
 {% block content %}
 <section class="hc-page">
   <div class="hc-container hc-container--narrow">
 
     <header class="hc-page__head">
-      <h1 class="hc-title">{{ _("Contact") }}</h1>
+      <h1 class="hc-title">{{ _("Contact & coopération") }}</h1>
       <p class="hc-subtitle">
-        {{ _("A question, a suggestion, or a concern? Write to us — a real human will read your message.") }}
+        {{ _("HelpChain est un projet visant à faciliter la coordination entre citoyens, bénévoles, associations et structures publiques dans le cadre d’initiatives de solidarité.") }}
+      </p>
+      <p class="hc-subtitle">
+        {{ _("La plateforme est conçue pour soutenir l’organisation et la coopération entre les différents acteurs impliqués dans ces actions.") }}
       </p>
     </header>
 
     <div class="hc-card hc-card--pad-lg hc-mb-16">
-      <form class="hc-form">
-
-        <div class="hc-form-group">
-          <label class="hc-label">{{ _("Your email") }}</label>
-          <input type="email" class="hc-input" placeholder="you@email.com" required>
-        </div>
-
-        <div class="hc-form-group">
-          <label class="hc-label">{{ _("Subject") }}</label>
-          <input type="text" class="hc-input" placeholder="{{ _('What is this about?') }}">
-        </div>
-
-        <div class="hc-form-group">
-          <label class="hc-label">{{ _("Message") }}</label>
-          <textarea class="hc-textarea" rows="5" placeholder="{{ _('Write your message here…') }}"></textarea>
-        </div>
-
-        <div class="hc-form-actions">
-          <button class="hc-btn hc-btn--primary" disabled>
-            {{ _("Send message") }}
-          </button>
-          <div class="hc-help">
-            {{ _("This form is informational for now. Please use email below.") }}
-          </div>
-        </div>
-
-      </form>
-    </div>
-
-    <div class="hc-card hc-mb-16">
-      <div class="hc-label">{{ _("Direct contact") }}</div>
-      <div class="hc-text">
-        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
-      </div>
-    </div>
-
-    <div class="hc-card hc-mb-16">
-      <div class="hc-label">{{ _("Response time") }}</div>
-      <div class="hc-text">
-        {{ _("We usually reply within 24–48 hours on business days.") }}
-      </div>
-    </div>
-
-    <div class="hc-card">
-      <div class="hc-label">{{ _("Security & privacy") }}</div>
-      <ul class="hc-list hc-mt-8">
-        <li>{{ _("We never sell or share contact data.") }}</li>
-        <li>{{ _("No automated marketing emails.") }}</li>
-        <li>
-          {{ _("Security issues can be reported at") }}
-          <a href="mailto:security@helpchain.live">security@helpchain.live</a>
-        </li>
+      <h2 class="h5 mb-3">{{ _("SECTION 1 — Coopération avec les collectivités et associations") }}</h2>
+      <p class="mb-2">
+        {{ _("Les collectivités locales, centres communaux d’action sociale (CCAS), associations et structures territoriales peuvent être intéressés par l’utilisation de la plateforme dans le cadre de leurs initiatives locales.") }}
+      </p>
+      <p class="mb-2">{{ _("HelpChain peut contribuer à faciliter :") }}</p>
+      <ul class="hc-list hc-mt-8 mb-0">
+        <li>{{ _("la coordination entre acteurs") }}</li>
+        <li>{{ _("la circulation de l’information") }}</li>
+        <li>{{ _("le suivi de certaines situations") }}</li>
       </ul>
+    </div>
+
+    <div class="hc-card hc-card--pad-lg hc-mb-16">
+      <h2 class="h5 mb-3">{{ _("SECTION 2 — Échanges et partenariats") }}</h2>
+      <p class="mb-2">
+        {{ _("Le projet est ouvert aux échanges avec les acteurs intéressés par le développement d’outils facilitant la coopération et les actions de solidarité.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Les structures souhaitant en savoir plus sur la plateforme ou explorer des possibilités de collaboration peuvent prendre contact avec l’équipe du projet.") }}
+      </p>
+    </div>
+
+    <div class="hc-card hc-card--pad-lg hc-mb-16">
+      <h2 class="h5 mb-3">{{ _("SECTION 3 — Contact") }}</h2>
+      <p class="mb-2">
+        {{ _("Pour toute demande d’information ou proposition de coopération, vous pouvez contacter le projet HelpChain à l’adresse suivante :") }}
+      </p>
+      <p class="mb-0">
+        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+      </p>
+    </div>
+
+    <div class="hc-card hc-card--pad-lg">
+      <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain vise à soutenir les initiatives locales de solidarité en facilitant la coopération entre citoyens, bénévoles, associations et structures publiques.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Le projet reste ouvert aux échanges avec les acteurs souhaitant contribuer à cette dynamique.") }}
+      </p>
     </div>
 
   </div>

@@ -1,0 +1,31 @@
+{
+  "fr": {
+    "request": "demande",
+    "case": "dossier",
+    "assign": "prendre en charge",
+    "dashboard": "tableau de pilotage",
+    "status": "statut"
+  },
+  "de": {
+    "request": "Anfrage",
+    "case": "Vorgang",
+    "assign": "Übernehmen",
+    "dashboard": "Dashboard",
+    "status": "Status"
+  },
+  "en": {
+    "request": "request",
+    "case": "case",
+    "assign": "assign",
+    "dashboard": "dashboard",
+    "status": "status"
+  },
+  "bg": {
+    "request": "заявка",
+    "case": "случай",
+    "assign": "поеми",
+    "dashboard": "табло",
+    "status": "статус"
+  }
+}
+

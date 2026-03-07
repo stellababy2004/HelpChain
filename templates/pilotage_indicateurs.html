@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Pilotage & Indicateurs") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Présentation du pilotage opérationnel et des indicateurs de suivi sur HelpChain pour collectivités, CCAS et associations.") }}{% endblock %}
+{% block og_title %}{{ _("Pilotage & Indicateurs") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Pilotage et indicateurs") }}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 920px;">
+  <header class="mb-4">
+    <h1 class="h3 mb-2">{{ _("Pilotage & Indicateurs") }}</h1>
+    <p class="text-muted mb-0">
+      {{ _("HelpChain propose des outils permettant de mieux organiser et suivre les demandes d’aide ainsi que les actions menées par les bénévoles et les structures partenaires.") }}
+    </p>
+    <p class="text-muted mb-0">
+      {{ _("La plateforme permet ainsi d’avoir une vision claire des situations en cours et de faciliter la coordination entre les différents acteurs.") }}
+    </p>
+  </header>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 1 — Suivi des demandes") }}</h2>
+      <p class="mb-2">
+        {{ _("La plateforme permet de visualiser les demandes d’aide en cours et leur évolution.") }}
+      </p>
+      <p class="mb-2">{{ _("Les utilisateurs peuvent ainsi :") }}</p>
+      <ul class="mb-0">
+        <li>{{ _("identifier les demandes en attente") }}</li>
+        <li>{{ _("suivre l’avancement des situations") }}</li>
+        <li>{{ _("repérer les situations nécessitant une attention particulière") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 2 — Coordination des actions") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain facilite la coordination entre les personnes impliquées dans une situation.") }}
+      </p>
+      <p class="mb-2">{{ _("La plateforme permet notamment de :") }}</p>
+      <ul class="mb-0">
+        <li>{{ _("suivre les actions réalisées") }}</li>
+        <li>{{ _("organiser les interventions") }}</li>
+        <li>{{ _("améliorer la communication entre les participants") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 3 — Vision globale des situations") }}</h2>
+      <p class="mb-0">
+        {{ _("Les outils de pilotage permettent d’obtenir une vue d’ensemble des demandes et de leur évolution.") }}
+      </p>
+      <p class="mt-2 mb-0">
+        {{ _("Cela peut aider les structures et les associations à mieux comprendre les besoins et à adapter leurs actions.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 4 — Identification des priorités") }}</h2>
+      <p class="mb-0">
+        {{ _("Certaines situations peuvent nécessiter une intervention plus rapide.") }}
+      </p>
+      <p class="mt-2 mb-0">
+        {{ _("La plateforme permet d’identifier plus facilement les situations prioritaires et de faciliter la mobilisation des ressources disponibles.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("SECTION 5 — Amélioration continue") }}</h2>
+      <p class="mb-2">
+        {{ _("Les informations issues de la plateforme peuvent contribuer à améliorer l’organisation des actions de solidarité et à mieux comprendre les besoins rencontrés sur le terrain.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("HelpChain vise ainsi à proposer un outil numérique permettant de soutenir la coordination et la coopération entre les différents acteurs.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain a pour objectif de faciliter l’organisation, le suivi et la coordination des actions de solidarité.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("La plateforme constitue un outil numérique destiné à soutenir les initiatives locales et à améliorer la coopération entre citoyens, bénévoles et structures.") }}
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

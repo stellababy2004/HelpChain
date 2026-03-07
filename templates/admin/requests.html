@@ -61,6 +61,18 @@
     </div>
   </div>
 
+  {% if active_sla_queue %}
+  <div class="alert alert-info d-flex align-items-center justify-content-between mb-3" role="status">
+    <div>
+      <strong>{{ _('SLA queue:') }}</strong> {{ _(active_sla_filter_label) }}{% if sla_days %} • {{ sla_days }}{{ _('d') }}{% endif %}
+    </div>
+    <a class="btn btn-sm btn-outline-primary"
+       href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, category=request.args.get('category') or None) }}">
+      {{ _('Clear filter') }}
+    </a>
+  </div>
+  {% endif %}
+
   <section class="hc-insights hc-card mb-3 hc-fold" id="hcInsights">
     <button
       type="button"
@@ -101,34 +113,34 @@
 
     <div class="hc-ops-kpis__grid">
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Nouveaux dossiers</div>
+        <div class="hc-kpi-label">{{ _('New requests') }}</div>
         <div class="hc-kpi-value" id="kpi-new">—</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Résolus</div>
+        <div class="hc-kpi-label">{{ _('Resolved') }}</div>
         <div class="hc-kpi-value" id="kpi-resolved">—</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Délai moyen assignation</div>
+        <div class="hc-kpi-label">{{ _('Average assignment delay') }}</div>
         <div class="hc-kpi-value" id="kpi-assign">—</div>
-        <div class="hc-kpi-sub">heures</div>
+        <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Délai moyen résolution</div>
+        <div class="hc-kpi-label">{{ _('Average resolution delay') }}</div>
         <div class="hc-kpi-value" id="kpi-resolve">—</div>
-        <div class="hc-kpi-sub">heures</div>
+        <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
 
       <div class="hc-kpi-card hc-kpi-card--alert" id="kpi-stale-card">
-        <div class="hc-kpi-label">Dossiers en attente &gt; 7j</div>
+        <div class="hc-kpi-label">{{ _('Requests waiting > 7d') }}</div>
         <div class="hc-kpi-value" id="kpi-stale">—</div>
       </div>
 
       <div class="hc-kpi-card hc-kpi-card--wide">
-        <div class="hc-kpi-label">Répartition par catégorie</div>
+        <div class="hc-kpi-label">{{ _('Distribution by category') }}</div>
         <ul class="hc-kpi-list" id="kpi-category">
           <li>—</li>
         </ul>
@@ -138,7 +150,34 @@
     </div>
   </section>
 
-  <div class="hc-admin-stickybar mb-3">
+  <div class="hc-requests-toolbar mb-3" id="hcRequestsToolbar">
+  <div class="hc-risk-overview mb-2">
+    <div class="hc-risk-overview__item">
+      <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
+      <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
+    </div>
+    <div class="hc-risk-overview__item">
+      <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
+      <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
+    </div>
+    <div class="hc-risk-overview__item">
+      <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
+      <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
+    </div>
+    <div class="hc-risk-overview__item">
+      <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
+      <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
+    </div>
+  </div>
+
+  <div class="hc-risk-filters mb-2">
+    <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical') }}">{{ _('Critique') }}</a>
+    <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention') }}">{{ _('Attention') }}</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1') }}">{{ _('Sans responsable') }}</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1') }}">{{ _('Sans action 72h') }}</a>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">{{ _('Reset filters') }}</a>
+  </div>
+
   <form class="row g-2 align-items-end mb-2" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
     <div class="col-xl-10 col-lg-9">
       <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
@@ -148,6 +187,13 @@
       {% if show_deleted %}<input type="hidden" name="deleted" value="1">{% endif %}
       {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
       {% if request.args.get('category') %}<input type="hidden" name="category" value="{{ request.args.get('category') }}">{% endif %}
+      {% if queue %}<input type="hidden" name="queue" value="{{ queue }}">{% endif %}
+      {% if sla_kind %}<input type="hidden" name="sla_kind" value="{{ sla_kind }}">{% endif %}
+      {% if sla_days %}<input type="hidden" name="sla_days" value="{{ sla_days }}">{% endif %}
+      {% if risk_level %}<input type="hidden" name="risk_level" value="{{ risk_level }}">{% endif %}
+      {% if no_owner %}<input type="hidden" name="no_owner" value="1">{% endif %}
+      {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
+      {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
     </div>
     <div class="col-xl-2 col-lg-3 d-grid">
       <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
@@ -245,6 +291,13 @@
       {% if request.args.get('category') %}
       <input type="hidden" name="category" value="{{ request.args.get('category') }}">
       {% endif %}
+      {% if queue %}<input type="hidden" name="queue" value="{{ queue }}">{% endif %}
+      {% if sla_kind %}<input type="hidden" name="sla_kind" value="{{ sla_kind }}">{% endif %}
+      {% if sla_days %}<input type="hidden" name="sla_days" value="{{ sla_days }}">{% endif %}
+      {% if risk_level %}<input type="hidden" name="risk_level" value="{{ risk_level }}">{% endif %}
+      {% if no_owner %}<input type="hidden" name="no_owner" value="1">{% endif %}
+      {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
+      {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
     </form>
   </div>
 
@@ -253,7 +306,7 @@
     <span class="badge text-bg-primary">
       {{ _('Category') }}: {{ request.args.get('category') }}
     </span>
-    <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None) }}">{{ _('Clear') }}</a>
+    <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days if queue == 'sla' and sla_kind else None) }}">{{ _('Clear') }}</a>
   </div>
   {% endif %}
 
@@ -265,6 +318,7 @@
     <span class="hc-bulkbar__count" id="hcBulkCount">{{ _('0 selected') }}</span>
     <select class="form-select form-select-sm hc-bulkbar__select" id="hcBulkAction">
       <option value="">{{ _('Bulk action') }}</option>
+      <option value="claim_me">{{ _('Claim ownership (me)') }}</option>
       <option value="open">{{ _('Open selected') }}</option>
       <option value="copy_ids">{{ _('Copy IDs') }}</option>
       <option value="copy_links">{{ _('Copy links') }}</option>
@@ -286,7 +340,7 @@
     <button type="button" class="hc-quickchip hc-quickchip--ghost" data-quick-filter="clear">{{ _('Clear quick filters') }}</button>
   </div>
   </div>
-  <div class="table-responsive hc-admin-tablewrap">
+  <div class="table-responsive hc-admin-tablewrap hc-requests-list">
     <table class="table table-hover align-middle hc-admin-table">
       <thead>
         <tr>
@@ -298,13 +352,14 @@
           <th style="width:180px;">{{ _('Name') }}</th>
           <th style="width:140px;">{{ _('Status') }}</th>
           <th style="width:120px;">{{ _('Priority') }}</th>
+          <th style="width:140px;">{{ _('Risk level') }}</th>
           <th style="width:140px;">{{ _('Category') }}</th>
           <th style="width:120px;">{{ _('Created') }}</th>
           <th style="width:120px;">{{ _('Closed') }}</th>
           <th style="width:130px;">{{ _('SLA') }}</th>
           <th style="width:140px;">{{ _('Signals') }}</th>
           <th style="width:190px;">{{ _('Volunteer signal') }}</th>
-          <th style="width:120px;">{{ _('Details') }}</th>
+          <th style="width:210px;">{{ _('Actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -332,11 +387,20 @@
         {% else %}
           {% set row_status = row_status_raw %}
         {% endif %}
+        {% if not r.owner_id %}
+          {% set owner_state = 'free' %}
+        {% elif r.owner_id == current_user.id %}
+          {% set owner_state = 'mine' %}
+        {% else %}
+          {% set owner_state = 'taken' %}
+        {% endif %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
             data-request-id="{{ r.id }}"
             data-hc-status-row="{{ row_status }}"
             data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
+            data-owner-id="{{ r.owner_id or '' }}"
+            data-owner-state="{{ owner_state }}"
             data-sig-can-help="{{ ch }}"
             data-sig-cant-help="{{ cc }}"
             data-priority="{{ row_priority }}"
@@ -367,8 +431,27 @@
               'closed':'bg-secondary'
             }.get(status_key, 'bg-secondary') %}
             <span class="badge {{ status_class }}">{{ _(STATUS_LABELS.get(r.status, r.status)) }}</span>
+            {% if not r.owner_id %}
+              <span class="badge text-bg-primary ms-1">{{ _('Unassigned') }}</span>
+            {% elif r.owner_id == current_user.id %}
+              <span class="badge text-bg-success ms-1">{{ _('Mine') }}</span>
+            {% else %}
+              <span class="badge text-bg-secondary ms-1">{{ _('Taken') }}</span>
+            {% endif %}
           </td>
           <td>{{ _(r.priority) if r.priority else '' }}</td>
+          <td>
+            {% set risk_level_key = (r.risk_level or 'standard')|lower %}
+            {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
+              {% set risk_level_key = 'standard' %}
+            {% endif %}
+            <div class="hc-risk-cell">
+              <strong>{{ r.risk_score or 0 }}/100</strong><br>
+              <span class="hc-risk-badge hc-risk-badge--{{ risk_level_key }}">
+                {{ risk_level_key|capitalize }}
+              </span>
+            </div>
+          </td>
           <td>{{ _(r.category) if r.category else '' }}</td>
           <td>{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '-' }}</td>
           <td>{{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}</td>
@@ -381,7 +464,7 @@
               {% else %}
                 {% set risk_badge_class = 'text-bg-warning' %}
               {% endif %}
-              <span class="badge {{ risk_badge_class }} ms-1" title="Not seen risk tier">{{ risk_notseen_tier_hours }}h+</span>
+              <span class="badge {{ risk_badge_class }} ms-1" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
             {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
               <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}"> {{ _('No owner') }}</span>
@@ -395,12 +478,12 @@
           </td>
           <td>
             {% if ch > 0 %}
-              <span class="hc-chip hc-chip--pos" title="Volontaires disponibles">
+              <span class="hc-chip hc-chip--pos" title="{{ _('Available volunteers') }}">
                 <span class="hc-chip__dot"></span> +{{ ch }} CAN_HELP
               </span>
             {% endif %}
             {% if cc > 0 %}
-              <span class="hc-chip hc-chip--neg ms-1" title="Volontaires indisponibles">
+              <span class="hc-chip hc-chip--neg ms-1" title="{{ _('Unavailable volunteers') }}">
                 <span class="hc-chip__dot"></span> +{{ cc }} CANT_HELP
               </span>
             {% endif %}
@@ -437,7 +520,7 @@
               <span class="text-muted small">—</span>
             {% endif %}
             <div class="text-muted small mt-1">
-              Engagement:
+              {{ _('Engagement:') }}
               {% if eng %}
                 {{ eng.label }} (score {{ eng.score }})
               {% else %}
@@ -450,6 +533,30 @@
             {% set is_disabled = nu.get('disabled', False) %}
             {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
             {% set sig = last_signal_by_req.get(r.id) %}
+            <div class="mb-1 d-flex justify-content-end">
+              {% if not r.owner_id %}
+                <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=r.id) }}" data-no-rowclick>
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-sm"
+                    data-no-rowclick
+                    onclick="this.disabled=true; this.form.submit(); return false;"
+                  >
+                    {{ _('Take ownership') }}
+                  </button>
+                </form>
+              {% elif r.owner_id == current_user.id %}
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
+                  {{ _('Open') }}
+                </a>
+              {% else %}
+                <button class="btn btn-outline-secondary btn-sm" type="button" disabled data-no-rowclick>
+                  {{ _('Taken') }}
+                </button>
+              {% endif %}
+            </div>
             <details class="hc-rowmenu" data-no-rowclick>
               <summary class="btn btn-sm btn-outline-secondary hc-rowmenu__summary" data-no-rowclick>
                 {{ _('Actions') }}
@@ -515,18 +622,18 @@
     </button>
     <div class="hc-live-body hc-fold__body" id="hcLiveBody" hidden>
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné: 0</p>
-        <div class="hc-activity-meta">Priorité: assigner ou clôturer</div>
+        <p class="hc-activity-title" id="hcLiveUnassigned">{{ _('• Without assigned volunteer: 0') }}</p>
+        <div class="hc-activity-meta">{{ _('Priority: assign or close') }}</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveInProgress">• En cours: 0</p>
-        <div class="hc-activity-meta">À surveiller</div>
+        <p class="hc-activity-title" id="hcLiveInProgress">{{ _('• In progress: 0') }}</p>
+        <div class="hc-activity-meta">{{ _('To monitor') }}</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP): 0</p>
-        <div class="hc-activity-meta">Volontaires prêts à aider</div>
+        <p class="hc-activity-title" id="hcLiveCanHelp">{{ _('• Available (CAN_HELP): 0') }}</p>
+        <div class="hc-activity-meta">{{ _('Volunteers ready to help') }}</div>
       </div>
     </div>
   </div>

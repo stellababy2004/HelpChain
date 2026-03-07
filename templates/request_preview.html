@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Преглед на заявката{% endblock %}
+{% block title %}{{ _("Request preview") }}{% endblock %}
 
 {% block content %}
 <div class="container py-4" style="max-width: 760px;">
-  <h1 class="h4 mb-3">Преглед на заявката</h1>
+  <h1 class="h4 mb-3">{{ _("Request preview") }}</h1>
 
   <div class="card shadow-sm mb-3">
     <div class="card-body">
-      <p><strong>Име:</strong> {{ draft.name }}</p>
-      <p><strong>Контакт:</strong>
+      <p><strong>{{ _("Name:") }}</strong> {{ draft.name }}</p>
+      <p><strong>{{ _("Contact:") }}</strong>
         {{ draft.phone or "" }}
         {% if draft.phone and draft.email %} / {% endif %}
         {{ draft.email or "" }}
       </p>
-      <p><strong>Категория:</strong> {{ draft.category }}</p>
-      <p><strong>Спешност:</strong> {{ draft.urgency }}</p>
-      <p><strong>Локация:</strong> {{ draft.location_text or "-" }}</p>
+      <p><strong>{{ _("Category:") }}</strong> {{ draft.category }}</p>
+      <p><strong>{{ _("Urgency:") }}</strong> {{ draft.urgency }}</p>
+      <p><strong>{{ _("Location:") }}</strong> {{ draft.location_text or "-" }}</p>
       <hr>
-      <p><strong>Описание:</strong></p>
+      <p><strong>{{ _("Description:") }}</strong></p>
       <p>{{ draft.description }}</p>
     </div>
   </div>
@@ -26,7 +26,7 @@
   <div class="d-flex justify-content-between">
     <a class="btn btn-outline-secondary"
        href="{{ url_for('main.submit_request') }}">
-      ← Редактирай
+      ← {{ _("Edit") }}
     </a>
 
     <form method="post" action="{{ url_for('main.submit_request_confirm') }}">
@@ -36,7 +36,7 @@
       <input type="text" name="website" id="hp_website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
       <input type="hidden" name="started_at" id="started_at" value="{{ draft.started_at or '' }}">
       <button type="submit" class="btn btn-primary">
-        Потвърди и изпрати
+        {{ _("Confirm and submit") }}
       </button>
     </form>
   </div>

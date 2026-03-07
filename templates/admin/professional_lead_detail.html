@@ -1,22 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Lead #{{ lead.id }} | Admin{% endblock %}
+{% block title %}{{ _('Lead') }} #{{ lead.id }} | {{ _('Admin') }}{% endblock %}
 
 {% block content %}
 <section class="hc-wrap" style="max-width:900px; margin:0 auto; padding:1.25rem;">
   <div class="hc-card">
-    <h1 style="margin:0;">Professional lead #{{ lead.id }}</h1>
+    <h1 style="margin:0;">{{ _('Professional lead') }} #{{ lead.id }}</h1>
     <p class="hc-muted" style="margin:.35rem 0 0;">
       {{ lead.email }} • {{ lead.profession }} • {{ lead.city or "-" }}
     </p>
     <p class="hc-muted" style="margin:.35rem 0 0;">
-      Created: {{ lead.created_at }} | Source: {{ lead.source or "-" }}
+      {{ _('Created:') }} {{ lead.created_at }} | {{ _('Source:') }} {{ lead.source or "-" }}
     </p>
 
     <form method="POST" style="margin-top:1rem;">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="hc-field">
-        <label for="status">Status</label>
+        <label for="status">{{ _('Status') }}</label>
         <select id="status" name="status" class="hc-input">
           {% for s in status_choices %}
             <option value="{{ s }}" {% if (lead.status or 'new') == s %}selected{% endif %}>{{ s }}</option>
@@ -25,17 +25,17 @@
       </div>
 
       <div class="hc-field" style="margin-top:.75rem;">
-        <label for="notes">Notes</label>
-        <textarea id="notes" name="notes" rows="8" class="hc-input" placeholder="Internal notes...">{{ lead.notes or "" }}</textarea>
+        <label for="notes">{{ _('Notes') }}</label>
+        <textarea id="notes" name="notes" rows="8" class="hc-input" placeholder="{{ _('Internal notes...') }}">{{ lead.notes or "" }}</textarea>
       </div>
 
       <p class="hc-muted" style="margin-top:.5rem;">
-        Contacted at: {{ lead.contacted_at or "-" }}
+        {{ _('Contacted at:') }} {{ lead.contacted_at or "-" }}
       </p>
 
       <div style="display:flex; gap:.75rem; margin-top:1rem;">
-        <button class="hc-btn hc-btn--primary" type="submit">Save</button>
-        <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_leads') }}">Back to list</a>
+        <button class="hc-btn hc-btn--primary" type="submit">{{ _('Save') }}</button>
+        <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Back to list') }}</a>
       </div>
     </form>
   </div>

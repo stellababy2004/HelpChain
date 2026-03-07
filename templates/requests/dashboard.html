@@ -2,18 +2,18 @@
 {% block content %}
 <div class="container py-4">
 
-<h1 class="mb-4">Pilotage</h1>
+<h1 class="mb-4">{{ _("Dashboard") }}</h1>
 
 <form method="get" class="d-flex gap-2 align-items-center mb-3">
   <select class="form-select" name="structure_id" style="max-width: 420px;">
-    <option value="" {% if not selected_structure_id %}selected{% endif %}>Toutes les structures</option>
+    <option value="" {% if not selected_structure_id %}selected{% endif %}>{{ _("All structures") }}</option>
     {% for s in structures %}
     <option value="{{ s.id }}" {% if selected_structure_id == s.id %}selected{% endif %}>{{ s.name }}</option>
     {% endfor %}
   </select>
-  <button class="btn btn-outline-secondary" type="submit">Appliquer</button>
-  <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">Operations</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">Retour liste</a>
+  <button class="btn btn-outline-secondary" type="submit">{{ _("Apply") }}</button>
+  <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">{{ _("Operations") }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">{{ _("Back to list") }}</a>
 </form>
 
 <div class="row g-3">
@@ -22,7 +22,7 @@
 <div class="card text-center">
 <div class="card-body">
 <h2>{{ total }}</h2>
-<div class="text-muted">Demandes totales</div>
+<div class="text-muted">{{ _("Total requests") }}</div>
 </div>
 </div>
 </div>
@@ -31,7 +31,7 @@
 <div class="card text-center">
 <div class="card-body">
 <h2>{{ active }}</h2>
-<div class="text-muted">Actives</div>
+<div class="text-muted">{{ _("Active") }}</div>
 </div>
 </div>
 </div>
@@ -40,7 +40,7 @@
 <div class="card text-center">
 <div class="card-body">
 <h2>{{ resolved }}</h2>
-<div class="text-muted">Resolues</div>
+<div class="text-muted">{{ _("Resolved") }}</div>
 </div>
 </div>
 </div>
@@ -49,7 +49,7 @@
 <div class="card text-center">
 <div class="card-body">
 <h2>{{ closed }}</h2>
-<div class="text-muted">Fermees</div>
+<div class="text-muted">{{ _("Closed") }}</div>
 </div>
 </div>
 </div>
@@ -58,7 +58,7 @@
 <div class="card text-center border-danger">
 <div class="card-body">
 <h2 class="text-danger">{{ urgent }}</h2>
-<div class="text-muted">Urgentes</div>
+<div class="text-muted">{{ _("Urgent") }}</div>
 </div>
 </div>
 </div>

@@ -13,13 +13,8 @@ $env:FLASK_DEBUG = "0"
 $env:VOLUNTEER_DEV_BYPASS_ENABLED = "0"
 $env:VOLUNTEER_DEV_BYPASS_EMAIL = ""
 
-# Force a healthy local DB (avoids corrupted backend/instance/app_clean.db overrides)
-# Prefer a root-level patched DB copy if present (admin+magic-link friendly).
-if (Test-Path ".\\hc_magic_adminfix.db") {
-  $env:HC_DB_PATH = "C:/dev/HelpChain.bg/hc_magic_adminfix.db"
-} else {
-  $env:HC_DB_PATH = "C:/dev/HelpChain.bg/backend/instance/app_clean_copy.db"
-}
+# Force a single stable local DB (avoid random drift between copies).
+$env:HC_DB_PATH = "C:/dev/HelpChain.bg/instance/hc_local_dev.db"
 Remove-Item Env:SQLALCHEMY_DATABASE_URI -ErrorAction SilentlyContinue
 Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
 

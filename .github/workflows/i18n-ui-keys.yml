@@ -1,0 +1,34 @@
+name: UI Keys Extract (report)
+
+on:
+  pull_request:
+  push:
+    paths:
+      - "templates/**"
+      - "scripts/extract_ui_keys.py"
+
+permissions:
+  contents: read
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Extract report
+        run: |
+          python scripts/extract_ui_keys.py --report reports/ui_keys_extract.json
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-keys-report
+          path: reports/ui_keys_extract.json
+

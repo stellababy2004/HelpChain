@@ -1,0 +1,13 @@
+{
+  "core_ops_domains": [
+    "admin_nav",
+    "admin_requests",
+    "admin_case",
+    "admin_translations",
+    "public_nav",
+    "volunteer_nav",
+    "buttons",
+    "badges"
+  ]
+}
+

@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 <div style="max-width:420px;margin:24px auto;padding:18px;border:1px solid #333;border-radius:12px;">
-  <h2 style="margin:0 0 10px 0;">MFA Verify</h2>
-  <p style="opacity:.85;margin-top:0;">Въведи кода от приложението, за да продължиш. Можеш да използваш и backup код.</p>
+  <h2 style="margin:0 0 10px 0;">{{ _("MFA verify") }}</h2>
+  <p style="opacity:.85;margin-top:0;">{{ _("Enter the code from your authenticator app to continue. You can also use a backup code.") }}</p>
 
   {% if locked %}
-    <p style="color:#c33;">Заключено. Опитай пак след {{ (remaining // 60) }} мин.</p>
+    <p style="color:#c33;">{{ _("Locked. Try again in %(minutes)s min.", minutes=(remaining // 60)) }}</p>
   {% endif %}
 
   <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label style="display:block;margin-bottom:6px;">Код (6 цифри)</label>
+    <label style="display:block;margin-bottom:6px;">{{ _("Code (6 digits)") }}</label>
     <input name="code" inputmode="numeric" autocomplete="one-time-code"
            style="width:100%;padding:10px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;"
            placeholder="123456">
     <button type="submit" style="margin-top:12px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;">
-      Потвърди
+      {{ _("Confirm") }}
     </button>
   </form>
 
   <div style="margin-top:12px;font-size:12px;opacity:.75;">
-    Ако кодовете са “вечно грешни” - часовникът на телефона ти е виновен.
+    {{ _("If codes keep failing, check your phone time settings.") }}
   </div>
 </div>
 {% endblock %}
