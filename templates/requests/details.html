@@ -99,7 +99,7 @@
 
   <div class="card mt-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Tracking") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Suivi") }}</h2>
 
       <div class="d-flex flex-wrap gap-2">
         <form method="post" action="{{ url_for('social_requests.set_status', req_id=sr.id) }}">
@@ -134,7 +134,7 @@
   </div>
 
   <div class="alert alert-info mt-3 mb-0">
-    <strong>{{ _("Next step:") }}</strong> {{ _("Assignment + status tracking via actions here.") }}
+    <strong>{{ _("Next step:") }}</strong> {{ _("Affectation + suivi du statut via les actions ci-dessus.") }}
   </div>
 
   <div class="card mt-3">
@@ -203,3 +203,4 @@
   </div>
 </div>
 {% endblock %}
+

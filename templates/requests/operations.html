@@ -6,7 +6,7 @@
       <h1 class="mb-0">{{ _("HelpChain operations") }}</h1>
       <div class="text-muted">{{ _("Real-time operations center.") }}</div>
     </div>
-    <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">{{ _("Back to requests") }}</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">{{ _("Retour aux demandes") }}</a>
   </div>
 
   <form method="get" class="d-flex gap-2 align-items-center mb-4">
@@ -85,3 +85,4 @@
   }, 10000);
 </script>
 {% endblock %}
+

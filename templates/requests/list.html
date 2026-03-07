@@ -16,7 +16,7 @@
         </select>
         <button class="btn btn-outline-secondary" type="submit">{{ _("Filter") }}</button>
         <a class="btn btn-outline-primary" href="{{ url_for('social_requests.dashboard', structure_id=selected_structure_id) }}">
-          {{ _("Dashboard") }}
+          {{ _("Tableau de bord") }}
         </a>
         <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">
           {{ _("Operations") }}
@@ -58,3 +58,4 @@
   </div>
 </div>
 {% endblock %}
+

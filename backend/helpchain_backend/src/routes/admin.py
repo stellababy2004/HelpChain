@@ -7,6 +7,7 @@ import secrets
 import threading
 import time
 import re
+from types import SimpleNamespace
 from pathlib import Path
 from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
@@ -76,6 +77,7 @@ except ImportError:
 
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..security_logging import log_security_event
+from ..services.recommendation_engine import compute_recommendation
 
 INVALID_CREDENTIALS_MSG = "Invalid username or password"
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
@@ -4797,6 +4799,129 @@ def admin_sla_breakdown():
     )
 
 
+@admin_bp.get("/pilotage")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin", "admin")
+def admin_pilotage():
+    admin_required_404()
+
+    base_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
+
+    has_risk_level = _table_has_column("requests", "risk_level")
+    has_risk_signals = _table_has_column("requests", "risk_signals")
+    has_risk_score = _table_has_column("requests", "risk_score")
+    has_created_at = _table_has_column("requests", "created_at")
+    has_owned_at = _table_has_column("requests", "owned_at")
+    has_completed_at = _table_has_column("requests", "completed_at")
+    has_updated_at = _table_has_column("requests", "updated_at")
+
+    critical_count = 0
+    attention_count = 0
+    standard_count = 0
+    if has_risk_level:
+        critical_count = (
+            base_query.filter(func.lower(func.coalesce(Request.risk_level, "")) == "critical").count()
+        )
+        attention_count = (
+            base_query.filter(func.lower(func.coalesce(Request.risk_level, "")) == "attention").count()
+        )
+        standard_count = (
+            base_query.filter(func.lower(func.coalesce(Request.risk_level, "standard")) == "standard").count()
+        )
+    elif has_risk_score:
+        critical_count = base_query.filter(func.coalesce(Request.risk_score, 0) >= 70).count()
+        attention_count = base_query.filter(
+            func.coalesce(Request.risk_score, 0) >= 40,
+            func.coalesce(Request.risk_score, 0) < 70,
+        ).count()
+        standard_count = base_query.filter(func.coalesce(Request.risk_score, 0) < 40).count()
+
+    no_owner_count = 0
+    not_seen_72h_count = 0
+    critical_no_owner_count = 0
+    if has_risk_signals:
+        no_owner_filter = func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+        not_seen_filter = func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
+        no_owner_count = base_query.filter(no_owner_filter).count()
+        not_seen_72h_count = base_query.filter(not_seen_filter).count()
+        if has_risk_level:
+            critical_no_owner_count = base_query.filter(
+                func.lower(func.coalesce(Request.risk_level, "")) == "critical",
+                no_owner_filter,
+            ).count()
+
+    priority_query = base_query
+    if has_risk_score:
+        priority_query = priority_query.order_by(func.coalesce(Request.risk_score, 0).desc())
+    if has_created_at and has_updated_at:
+        priority_query = priority_query.order_by(
+            func.coalesce(Request.created_at, Request.updated_at).desc(),
+            Request.id.desc(),
+        )
+    elif has_created_at:
+        priority_query = priority_query.order_by(Request.created_at.desc(), Request.id.desc())
+    elif has_updated_at:
+        priority_query = priority_query.order_by(Request.updated_at.desc(), Request.id.desc())
+    else:
+        priority_query = priority_query.order_by(Request.id.desc())
+    priority_requests = priority_query.limit(5).all()
+
+    rec_counts = {
+        "assign_immediately": 0,
+        "manager_review_today": 0,
+        "route_to_housing_partner": 0,
+        "route_to_food_support": 0,
+        "route_to_health_support": 0,
+    }
+    if has_risk_level or has_risk_signals:
+        rec_rows = base_query.with_entities(
+            (Request.risk_level if has_risk_level else func.literal("standard")),
+            (Request.risk_signals if has_risk_signals else func.literal("")),
+        ).all()
+        for risk_level, risk_signals in rec_rows:
+            rec = compute_recommendation(
+                SimpleNamespace(risk_level=risk_level, risk_signals=risk_signals)
+            )
+            action = rec.get("recommended_action")
+            if action in rec_counts:
+                rec_counts[action] += 1
+
+    now = datetime.now(UTC).replace(tzinfo=None)
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    day_end = day_start + timedelta(days=1)
+
+    received_today = 0
+    taken_today = 0
+    closed_today = 0
+    if has_created_at:
+        received_today = base_query.filter(
+            Request.created_at >= day_start, Request.created_at < day_end
+        ).count()
+    if has_owned_at:
+        taken_today = base_query.filter(
+            Request.owned_at >= day_start, Request.owned_at < day_end
+        ).count()
+    if has_completed_at:
+        closed_today = base_query.filter(
+            Request.completed_at >= day_start, Request.completed_at < day_end
+        ).count()
+
+    return render_template(
+        "admin/pilotage.html",
+        critical_count=critical_count,
+        attention_count=attention_count,
+        standard_count=standard_count,
+        no_owner_count=no_owner_count,
+        not_seen_72h_count=not_seen_72h_count,
+        critical_no_owner_count=critical_no_owner_count,
+        priority_requests=priority_requests,
+        rec_counts=rec_counts,
+        received_today=received_today,
+        taken_today=taken_today,
+        closed_today=closed_today,
+    )
+
+
 @admin_bp.get("/requests")
 @login_required
 @admin_required
@@ -5635,6 +5760,7 @@ def admin_request_details(req_id: int):
                     volunteer_engagement=volunteer_engagement,
                     audit_logs=audit_logs,
                     case_signals=_compute_case_signals(req, activities, now),
+                    recommendation=compute_recommendation(req),
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -5720,6 +5846,7 @@ def admin_request_details(req_id: int):
     can_help_count = sum(1 for va in volunteer_signals if va.action == "CAN_HELP")
     cant_help_count = sum(1 for va in volunteer_signals if va.action == "CANT_HELP")
     case_signals = _compute_case_signals(req, activities, now)
+    recommendation = compute_recommendation(req)
 
     return (
         render_template(
@@ -5748,6 +5875,7 @@ def admin_request_details(req_id: int):
             volunteer_engagement=volunteer_engagement,
             audit_logs=audit_logs,
             case_signals=case_signals,
+            recommendation=recommendation,
         ),
         200,
     )

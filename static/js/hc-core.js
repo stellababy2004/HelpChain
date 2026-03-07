@@ -83,7 +83,7 @@
 
   window.confirmSubmit = function (el) {
     var msg =
-      (el && el.getAttribute && el.getAttribute("data-confirm")) || "Are you sure?";
+      (el && el.getAttribute && el.getAttribute("data-confirm")) || "Confirmer cette action ?";
     if (!confirm(msg)) return;
 
     var form = el && el.closest ? el.closest("form") : null;
@@ -1018,7 +1018,7 @@
       if (!speechSupported) {
         setAudioReadStatus("unsupported", unsupportedMsg);
       } else if (!audioReadStatus || !audioReadStatus.textContent.trim()) {
-        setAudioReadStatus("idle", "Ready to read selected text or page content.");
+        setAudioReadStatus("idle", "Prêt à lire le texte sélectionné ou le contenu de la page.");
       }
       updateAudioPlaybackButtons();
     }
@@ -1438,14 +1438,14 @@
       try {
         window.speechSynthesis.speak(utterance);
       } catch (_) {
-        finishReading("stopped", "Reading stopped.");
+        finishReading("stopped", "Lecture arrêtée.");
       }
       updateAudioPlaybackButtons();
     }
 
     function startReadingQueue(queue, modeKey) {
       if (!speechSupported) {
-        setAudioReadStatus("unsupported", "Read aloud is not available in this browser.");
+        setAudioReadStatus("unsupported", "La lecture audio n’est pas disponible dans ce navigateur.");
         return false;
       }
       if (!queue || !queue.length) return false;
@@ -1462,7 +1462,7 @@
       speechReader.suppressEnd = false;
       setAudioReadStatus(
         modeKey === "selection" ? "reading-selection" : "reading-page",
-        modeKey === "selection" ? "Reading selected text…" : "Reading page content…",
+        modeKey === "selection" ? "Lecture du texte sélectionné…" : "Lecture du contenu de la page…",
       );
       speakQueueIndex(0);
       return true;
@@ -1488,7 +1488,7 @@
         speechReader.paused = false;
         setAudioReadStatus(
           speechReader.mode === "selection" ? "reading-selection" : "reading-page",
-          speechReader.mode === "selection" ? "Reading selected text…" : "Reading page content…",
+          speechReader.mode === "selection" ? "Lecture du texte sélectionné…" : "Lecture du contenu de la page…",
         );
         updateAudioPlaybackButtons();
         return true;
@@ -1702,7 +1702,7 @@
       } catch (_) {}
     }
     applyState(initial);
-    setAudioReadStatus("idle", "Ready to read selected text or page content.");
+    setAudioReadStatus("idle", "Prêt à lire le texte sélectionné ou le contenu de la page.");
     initVoiceGuidanceObservers();
     showA11yPane(currentPane);
 
@@ -1857,7 +1857,7 @@
         }
         var sample =
           audioTestBtn.getAttribute("data-sample-text") ||
-          "Accessibility voice test. This is a preview of your audio settings.";
+          "Test vocal d’accessibilité. Voici un aperçu de vos réglages audio.";
         stopSpeechPreview();
         try {
           var utterance = createSpeechUtterance(sample);
@@ -1889,7 +1889,7 @@
       selectionAudioPlayBtn.addEventListener("click", function () {
         var queue = buildSelectionReadQueue();
         if (!queue.length) {
-          setAudioReadStatus("no-selection", "No selected text found.");
+          setAudioReadStatus("no-selection", "Aucun texte sélectionné.");
           hideSelectionAudioToolbar();
           return;
         }
@@ -1927,7 +1927,7 @@
       readSelectionBtn.addEventListener("click", function () {
         var queue = buildSelectionReadQueue();
         if (!queue.length) {
-          setAudioReadStatus("no-selection", "No selected text found.");
+          setAudioReadStatus("no-selection", "Aucun texte sélectionné.");
           return;
         }
         startReadingQueue(queue, "selection");
@@ -1938,7 +1938,7 @@
       readPageBtn.addEventListener("click", function () {
         var queue = buildPageReadQueue();
         if (!queue.length) {
-          setAudioReadStatus("no-content", "No readable page content found.");
+          setAudioReadStatus("no-content", "Aucun contenu lisible détecté sur la page.");
           return;
         }
         startReadingQueue(queue, "page");
@@ -1975,14 +1975,14 @@
       saveProfileBtn.addEventListener("click", function () {
         var ok = saveUserProfile(currentState());
         var defaultLabel =
-          saveProfileBtn.getAttribute("data-label-default") || saveProfileBtn.textContent || "Save";
+          saveProfileBtn.getAttribute("data-label-default") || saveProfileBtn.textContent || "Enregistrer";
         if (!saveProfileBtn.getAttribute("data-label-default")) {
           saveProfileBtn.setAttribute("data-label-default", defaultLabel);
         }
         if (!ok) return;
         saveProfileBtn.classList.add("is-saved");
         saveProfileBtn.textContent =
-          saveProfileBtn.getAttribute("data-label-saved") || "Saved";
+          saveProfileBtn.getAttribute("data-label-saved") || "Enregistré";
         window.setTimeout(function () {
           saveProfileBtn.classList.remove("is-saved");
           saveProfileBtn.textContent =

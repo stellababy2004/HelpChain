@@ -339,6 +339,37 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+.hc-pilotage-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.hc-pilotage-card{
+  background: rgba(255,255,255,.94);
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: 12px;
+  padding: 14px;
+}
+.hc-pilotage-card h3{
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.hc-pilotage-table th{
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: rgba(15,23,42,.70);
+}
+.hc-pilotage-table td{
+  font-size: 14px;
+}
+@media (max-width: 992px){
+  .hc-pilotage-grid{
+    grid-template-columns: 1fr;
+  }
+}
 .hc-fold__head{
   position: relative;
   z-index: 1;

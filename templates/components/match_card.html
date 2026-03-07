@@ -8,7 +8,7 @@
   <div class="hc-card__top match-top">
     <div class="hc-pill hc-pill--match match-pill">{{ _('%(pct)s%% Match', pct=pct) }}</div>
     {% if breakdown.priority >= 15 %}
-      <div class="hc-pill hc-pill--urgent urgent-pill">{{ _('High priority') }}</div>
+      <div class="hc-pill hc-pill--urgent urgent-pill">{{ _('Priorité élevée') }}</div>
     {% endif %}
   </div>
 
@@ -57,10 +57,10 @@
       </div>
     </div>
     <div class="hc-bar">
-      <span>{{ _('Priority') }}</span>
+      <span>{{ _('Priorité') }}</span>
       <div class="hc-bar__track"
            role="progressbar"
-           aria-label="{{ _('Priority boost') }}"
+           aria-label="{{ _('Renforcement de priorité') }}"
            aria-valuemin="0"
            aria-valuemax="100"
            aria-valuenow="{{ prio_pct }}">
@@ -76,7 +76,7 @@
        data-pct="{{ pct }}"
        data-req-id="{{ req.id }}"
        href="{{ url_for('main.volunteer_request_details', req_id=req.id) }}">
-      {{ _('View details') }}
+      {{ _('Voir les détails') }}
     </a>
 
     <form method="post"

@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Search') }}{% if q %} • {{ q }}{% endif %} | HelpChain{% endblock %}
+{% block title %}{{ _('Rechercher') }}{% if q %} • {{ q }}{% endif %} | HelpChain{% endblock %}
 
 {% block content %}
 <div class="container py-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-    <h1 class="h4 m-0">{{ _('Search') }}</h1>
+    <h1 class="h4 m-0">{{ _('Rechercher') }}</h1>
     <form class="d-flex gap-2" action="{{ url_for('main.search') }}" method="get" role="search">
       <input
         class="form-control"
         type="search"
         name="q"
         value="{{ q or '' }}"
-        placeholder="{{ _('Search') }}..."
-        aria-label="{{ _('Search') }}"
+        placeholder="{{ _('Rechercher') }}..."
+        aria-label="{{ _('Rechercher') }}"
       >
-      <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
+      <button class="btn btn-primary" type="submit">{{ _('Rechercher') }}</button>
     </form>
   </div>
 
@@ -67,3 +67,4 @@
   {% endif %}
 </div>
 {% endblock %}
+

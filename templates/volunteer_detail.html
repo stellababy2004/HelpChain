@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Volunteer details') }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">{{ _('Volunteer details') }}</h1>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_volunteers') }}">
+      {{ _('Retour aux bénévoles') }}
+    </a>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <dl class="row mb-0">
+        <dt class="col-sm-3">{{ _('ID') }}</dt>
+        <dd class="col-sm-9">{{ volunteer.id }}</dd>
+
+        <dt class="col-sm-3">{{ _('Name') }}</dt>
+        <dd class="col-sm-9">{{ volunteer.name or '—' }}</dd>
+
+        <dt class="col-sm-3">{{ _('Email') }}</dt>
+        <dd class="col-sm-9">{{ volunteer.email or '—' }}</dd>
+
+        <dt class="col-sm-3">{{ _('Phone') }}</dt>
+        <dd class="col-sm-9">{{ volunteer.phone or '—' }}</dd>
+
+        <dt class="col-sm-3">{{ _('Location') }}</dt>
+        <dd class="col-sm-9">{{ volunteer.location or '—' }}</dd>
+
+        <dt class="col-sm-3">{{ _('Skills') }}</dt>
+        <dd class="col-sm-9">{{ volunteer.skills or '—' }}</dd>
+
+        <dt class="col-sm-3">{{ _('Active') }}</dt>
+        <dd class="col-sm-9">{{ _('Yes') if volunteer.is_active else _('No') }}</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+{% endblock %}

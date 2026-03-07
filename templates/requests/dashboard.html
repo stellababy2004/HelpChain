@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container py-4">
 
-<h1 class="mb-4">{{ _("Dashboard") }}</h1>
+<h1 class="mb-4">{{ _("Tableau de bord") }}</h1>
 
 <form method="get" class="d-flex gap-2 align-items-center mb-3">
   <select class="form-select" name="structure_id" style="max-width: 420px;">
@@ -13,7 +13,7 @@
   </select>
   <button class="btn btn-outline-secondary" type="submit">{{ _("Apply") }}</button>
   <a class="btn btn-outline-dark" href="{{ url_for('social_requests.operations', structure_id=selected_structure_id) }}">{{ _("Operations") }}</a>
-  <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">{{ _("Back to list") }}</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('social_requests.list_requests', structure_id=selected_structure_id) }}">{{ _("Retour à la liste") }}</a>
 </form>
 
 <div class="row g-3">
@@ -67,3 +67,4 @@
 
 </div>
 {% endblock %}
+

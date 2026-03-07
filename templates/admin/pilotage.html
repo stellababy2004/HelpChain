@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Pilotage des situations sociales{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Pilotage des situations sociales</h1>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+  </div>
+
+  <div class="hc-pilotage-grid mb-3">
+    <section class="hc-pilotage-card">
+      <h3>Indicateurs de risque</h3>
+      <ul class="mb-0">
+        <li>Situations critiques: <strong>{{ critical_count or 0 }}</strong></li>
+        <li>Situations à surveiller: <strong>{{ attention_count or 0 }}</strong></li>
+        <li>Situations standard: <strong>{{ standard_count or 0 }}</strong></li>
+      </ul>
+    </section>
+
+    <section class="hc-pilotage-card">
+      <h3>Alertes opérationnelles</h3>
+      <ul class="mb-0">
+        <li>Situations sans responsable: <strong>{{ no_owner_count or 0 }}</strong></li>
+        <li>Situations sans action depuis 72 heures: <strong>{{ not_seen_72h_count or 0 }}</strong></li>
+        <li>Situations critiques sans responsable: <strong>{{ critical_no_owner_count or 0 }}</strong></li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="hc-pilotage-card mb-3">
+    <h3>Situations prioritaires</h3>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle hc-pilotage-table mb-0">
+        <thead>
+          <tr>
+            <th>Identifiant</th>
+            <th>Niveau de risque</th>
+            <th>Titre</th>
+            <th>Responsable</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for req in priority_requests %}
+            <tr style="cursor:pointer;" onclick="window.location='{{ url_for('admin.admin_request_details', req_id=req.id) }}'">
+              <td>#{{ req.id }}</td>
+              <td>{{ (req.risk_level or 'standard')|capitalize }}</td>
+              <td>{{ req.title or ('Demande #' ~ req.id) }}</td>
+              <td>
+                {% if req.owner %}
+                  {{ req.owner.username }}
+                {% elif req.owner_id %}
+                  #{{ req.owner_id }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="text-muted">Aucune situation prioritaire.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="hc-pilotage-grid">
+    <section class="hc-pilotage-card">
+      <h3>Recommandations du système</h3>
+      <ul class="mb-0">
+        <li>Affectation immédiate recommandée: <strong>{{ rec_counts.assign_immediately or 0 }}</strong></li>
+        <li>Revue managériale aujourd’hui: <strong>{{ rec_counts.manager_review_today or 0 }}</strong></li>
+        <li>Orientation vers partenaire logement: <strong>{{ rec_counts.route_to_housing_partner or 0 }}</strong></li>
+        <li>Orientation vers aide alimentaire: <strong>{{ rec_counts.route_to_food_support or 0 }}</strong></li>
+        <li>Orientation vers accompagnement santé: <strong>{{ rec_counts.route_to_health_support or 0 }}</strong></li>
+      </ul>
+    </section>
+
+    <section class="hc-pilotage-card">
+      <h3>Activité du jour</h3>
+      <ul class="mb-0">
+        <li>Demandes reçues aujourd’hui: <strong>{{ received_today or 0 }}</strong></li>
+        <li>Demandes prises en charge aujourd’hui: <strong>{{ taken_today or 0 }}</strong></li>
+        <li>Demandes clôturées aujourd’hui: <strong>{{ closed_today or 0 }}</strong></li>
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

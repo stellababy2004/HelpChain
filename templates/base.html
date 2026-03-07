@@ -293,7 +293,7 @@
             {% elif volunteer_logged_in %}
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">
-                <i class="fas fa-hands-helping me-1" aria-hidden="true"></i>{{ _('My dashboard') }}
+                <i class="fas fa-hands-helping me-1" aria-hidden="true"></i>{{ _('Mon espace') }}
               </a>
             </li>
             <li class="nav-item dropdown">
@@ -372,11 +372,11 @@
                 type="search"
                 name="q"
                 value="{{ request.args.get('q','') if request else '' }}"
-                placeholder="{{ _('Search…') }}"
-                aria-label="{{ _('Search') }}"
+                placeholder="{{ _('Rechercher…') }}"
+                aria-label="{{ _('Rechercher') }}"
                 autocomplete="off"
               />
-              <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="{{ _('Search') }}">
+              <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="{{ _('Rechercher') }}">
                 <i class="fas fa-magnifying-glass"></i>
               </button>
             </div>
@@ -673,21 +673,21 @@
                       <span class="hc-a11y-preset__name">{{ _('Reading comfort') }}</span>
                       <span class="hc-a11y-preset__desc">{{ _('Larger text with cleaner reading spacing') }}</span>
                     </span>
-                    <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
+                    <span class="hc-a11y-preset__apply">{{ _('Ouvrir') }}</span>
                   </button>
                   <button type="button" class="hc-a11y-preset" data-a11y-preset="dmla" data-a11y-profile-open="dmla" role="listitem">
                     <span class="hc-a11y-preset__main">
                       <span class="hc-a11y-preset__name">{{ _('AMD') }}</span>
                       <span class="hc-a11y-preset__desc">{{ _('High contrast and larger text for central vision comfort') }}</span>
                     </span>
-                    <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
+                    <span class="hc-a11y-preset__apply">{{ _('Ouvrir') }}</span>
                   </button>
                   <button type="button" class="hc-a11y-preset" data-a11y-preset="presbyopia" data-a11y-profile-open="presbyopia" role="listitem">
                     <span class="hc-a11y-preset__main">
                       <span class="hc-a11y-preset__name">{{ _('Presbyopia') }}</span>
                       <span class="hc-a11y-preset__desc">{{ _('Extra-large text and simplified visuals for easier reading') }}</span>
                     </span>
-                    <span class="hc-a11y-preset__apply">{{ _('Open') }}</span>
+                    <span class="hc-a11y-preset__apply">{{ _('Ouvrir') }}</span>
                   </button>
                 </div>
               </div>
@@ -923,16 +923,16 @@
           <hr class="hc-a11y-sep">
           <div class="hc-a11y-actions">
             <button type="button" id="hcA11yResetSection" class="btn btn-outline-secondary btn-sm">
-              {{ _('Reset only this section') }}
+              {{ _('Réinitialiser uniquement cette section') }}
             </button>
             <button type="button" id="hcA11yReset" class="btn btn-outline-secondary btn-sm">
-              {{ _('Reset') }}
+              {{ _('Réinitialiser') }}
             </button>
             <button type="button" id="hcA11ySystem" class="btn btn-outline-light btn-sm">
               {{ _('Restore system defaults') }}
             </button>
             <button type="button" id="hcA11ySaveProfile" class="btn btn-outline-primary btn-sm">
-              {{ _('Save as my profile') }}
+              {{ _('Enregistrer comme mon profil') }}
             </button>
             <button type="button" class="btn btn-light btn-sm" data-a11y-close="true">
               {{ _('Done') }}
@@ -949,7 +949,7 @@
                 type="button"
                 id="hcA11yLangBack"
                 class="hc-a11y-subhead__back"
-                aria-label="{{ _('Back') }}"
+                aria-label="{{ _('Retour') }}"
               >
                 ‹
               </button>
@@ -986,7 +986,7 @@
                 type="button"
                 id="hcA11yProfileBack"
                 class="hc-a11y-subhead__back"
-                aria-label="{{ _('Back') }}"
+                aria-label="{{ _('Retour') }}"
               >
                 ‹
               </button>
@@ -1000,7 +1000,7 @@
               <p id="hcA11yProfileDesc" class="hc-a11y-profilecard__desc">{{ _('Preset description') }}</p>
               <div class="hc-a11y-profilecard__head">{{ _('This profile applies') }}</div>
               <ul id="hcA11yProfileList" class="hc-a11y-profilelist">
-                <li>{{ _('Loading profile…') }}</li>
+                <li>{{ _('Chargement du profil…') }}</li>
               </ul>
               <div id="hcA11yProfileBadges" class="hc-a11y-profilebadges"></div>
               <div class="hc-a11y-profilecard__actions">
@@ -1174,4 +1174,5 @@
     {% endif %}
   </body>
 </html>
+
 

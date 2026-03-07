@@ -1,18 +1,18 @@
 {% extends "base.html" %}
-{% block title %}{{ _("No access") }} | HelpChain{% endblock %}
+{% block title %}{{ _("Accès indisponible") }} | HelpChain{% endblock %}
 
 {% block content %}
 <section class="hc-empty">
-  <h1 class="hc-empty__title">{{ _("This page is not accessible") }}</h1>
+  <h1 class="hc-empty__title">{{ _("Cette page n’est pas accessible") }}</h1>
   <p class="hc-empty__text">
-    {{ _("Either the link is invalid, or you do not have access to this request yet.") }}
+    {{ _("Soit le lien est invalide, soit vous n’avez pas encore accès à cette demande.") }}
   </p>
   <p class="hc-empty__text">
-    {{ _("Return to the request list and click") }} <strong>{{ _("I want to help") }}</strong>{{ _(", to get access.") }}
+    {{ _("Retournez à la liste des demandes et cliquez sur") }} <strong>{{ _("Je veux aider") }}</strong>{{ _(", pour obtenir l’accès.") }}
   </p>
   <div class="hc-empty__actions">
-    <a class="hc-btn hc-btn--primary" href="/volunteer/dashboard">{{ _("View requests") }}</a>
-    <a class="hc-btn hc-btn--ghost" href="/">{{ _("Home") }}</a>
+    <a class="hc-btn hc-btn--primary" href="/volunteer/dashboard">{{ _("Voir les demandes") }}</a>
+    <a class="hc-btn hc-btn--ghost" href="/">{{ _("Accueil") }}</a>
   </div>
 </section>
 {% endblock %}

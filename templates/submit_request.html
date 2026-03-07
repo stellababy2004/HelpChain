@@ -46,7 +46,7 @@
         method="post"
         action="{{ url_for('main.submit_request') }}"
         novalidate
-        data-hc-autotitle-template="{{ _('Request') }}: {snippet}"
+        data-hc-autotitle-template="{{ _('Demande') }}: {snippet}"
         data-hc-autotitle-template-cat="{cat}: {snippet}"
         data-hc-hint-ok="{{ _('Sufficient info') }}"
         data-hc-hint-min="{{ _('Add a bit more detail (20+ chars)') }}"
@@ -233,3 +233,4 @@
   {{ super() }}
   <script src="{{ url_for('static', filename='js/pages/submit_request.js') }}" defer></script>
 {% endblock %}
+

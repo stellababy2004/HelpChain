@@ -38,8 +38,8 @@
     {% endif %}
   {% else %}
     <div class="hc-vdash-empty">
-      <div class="hc-vdash-empty__title">{{ _('No matches right now') }}</div>
-      <div class="hc-vdash-empty__text">{{ _('We will notify you when a request fits your profile.') }}</div>
+      <div class="hc-vdash-empty__title">{{ _('Aucune correspondance pour le moment') }}</div>
+      <div class="hc-vdash-empty__text">{{ _('Vous serez notifié dès qu’une demande correspondra à votre profil.') }}</div>
     </div>
   {% endif %}
 
@@ -66,14 +66,14 @@
       'empty': "Все още няма заявки, които да съвпадат с профила ти.\nТова е нормално — помощта ти е ценна.",
     },
     'en': {
-      'almost_ready': {'title': 'Your profile is almost ready', 'body': 'Add your location and availability to receive relevant requests.', 'cta': 'Complete profile'},
-      'waiting': {'title': "It’s calm for now", 'body': "We’re looking for requests that match your profile.\nYou’ll be notified as soon as there’s a match.", 'cta': 'How it works'},
-      'matches': {'title': 'Requests match your profile', 'body': 'Review them and choose how to help.', 'cta': 'View requests'},
-      'checklist_title': 'Your profile',
-      'label_location': 'Location',
-      'label_availability': 'Availability',
-      'steps': 'steps remaining',
-      'empty': "No requests match your profile yet.\nThis is normal — your help matters.",
+      'almost_ready': {'title': 'Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter mon profil'},
+      'waiting': {'title': "C’est calme pour l’instant", 'body': "Nous cherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une aide vous correspond.", 'cta': 'Comment ça marche ?'},
+      'matches': {'title': 'Des demandes correspondent à votre profil', 'body': 'Consultez-les et choisissez comment aider.', 'cta': 'Voir les demandes'},
+      'checklist_title': 'Votre profil',
+      'label_location': 'Localisation',
+      'label_availability': 'Disponibilité',
+      'steps': 'étapes restantes',
+      'empty': "Aucune demande ne correspond encore à votre profil.\nCela peut prendre un peu de temps — votre aide compte.",
     },
   } %}
   {% set copy_lang = copy_map.get(locale_code, copy_map['en']) %}
@@ -297,7 +297,7 @@
         <div>
           <h2 class="hc-card__title">{{ _('All active requests') }}</h2>
           <p class="hc-muted hc-matchesSub">
-            {{ _('Open requests ordered by freshness.') }}
+            {{ _('Demandes ouvertes triées par récence.') }}
           </p>
           <p class="hc-card__desc hc-muted">
             {{ _('This list is not personalized. Use the section above for intelligent matching.') }}
@@ -337,7 +337,7 @@
             {% endif %}
 
             {% if is_assigned %}
-              {% set vol_badge = _("Assigned to you") %}
+              {% set vol_badge = _("Affectée à vous") %}
               {% set vol_badge_mod = "hc-badge--assigned" %}
             {% elif istatus == "APPROVED" %}
               {% set vol_badge = _("Одобрен/а") %}
@@ -367,7 +367,7 @@
                 </div>
 
                 {% if is_assigned %}
-                  <div class="hc-statusCopy"> {{ _("Assigned to you. Next action: open details.") }}</div>
+                  <div class="hc-statusCopy"> {{ _("Affectée à vous. Prochaine étape : ouvrir les détails.") }}</div>
                 {% elif is_pending %}
                   <div class="hc-statusCopy"> {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
                 {% endif %}
@@ -384,7 +384,7 @@
                 {% if is_done %}
                   <span class="hc-reqmeta__hint">{{ _('Благодарим! Заявката е маркирана като приключена.') }}</span>
                 {% elif is_assigned %}
-                  <span class="hc-reqmeta__hint">{{ _('Assigned to you. Next action: click “View details”.') }}</span>
+                  <span class="hc-reqmeta__hint">{{ _('Affectée à vous. Prochaine étape : cliquer sur « Voir les détails ».') }}</span>
                 {% elif istatus == "APPROVED" %}
                   <span class="hc-reqmeta__hint">{{ _('Одобрен/а си. Отвори заявката за контакт и следващи стъпки.') }}</span>
                 {% elif istatus == "REJECTED" %}

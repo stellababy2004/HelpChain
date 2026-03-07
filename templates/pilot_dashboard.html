@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Pilot Dashboard') }} | HelpChain{% endblock %}
+{% block title %}{{ _('Tableau de bord pilote') }} | HelpChain{% endblock %}
 {% block og_image %}{{ og_image_url('og-pilot-1200x630.jpg') }}{% endblock %}
-{% block og_image_alt %}{{ _('Preview image for the HelpChain pilot dashboard page') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu visuel de la page de tableau de bord pilote de HelpChain") }}{% endblock %}
 
 {% block head %}
   <script defer src="{{ url_lang('static', filename='js/apexcharts.js') }}"></script>
@@ -12,44 +12,44 @@
 
   <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
     <div>
-      <h2 class="mb-1">{{ _('Pilot Dashboard') }}</h2>
+      <h2 class="mb-1">{{ _('Tableau de bord pilote') }}</h2>
       <div class="text-muted small">
-        {{ _('Read-only KPI overview (no personal data).') }}
-        {{ _('Generated:') }} {{ impact.generated_at }}
+        {{ _('Vue synthétique des indicateurs (sans données personnelles).') }}
+        {{ _('Généré le :') }} {{ impact.generated_at }}
       </div>
     </div>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">{{ _('Back') }}</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}">{{ _('Retour') }}</a>
   </div>
 
   <div class="alert alert-success small">
-     {{ _('This page contains only aggregated metrics and excludes personal data (GDPR-safe).') }}
+     {{ _('Cette page contient uniquement des indicateurs agrégés et exclut les données personnelles (compatible RGPD).') }}
   </div>
 
-  <h5 class="mt-3 mb-2">{{ _('Impact') }}</h5>
+  <h5 class="mt-3 mb-2">{{ _('Indicateurs d’impact') }}</h5>
   <div class="row g-3">
     <div class="col-md-4"><div class="card shadow-sm"><div class="card-body">
-      <div class="text-muted small">{{ _('Total requests') }}</div>
+      <div class="text-muted small">{{ _('Total des demandes') }}</div>
       <div class="fs-3 fw-bold">{{ impact.total }}</div>
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm"><div class="card-body">
-      <div class="text-muted small">{{ _('Open') }}</div>
+      <div class="text-muted small">{{ _('Demandes en cours') }}</div>
       <div class="fs-3 fw-bold">{{ impact.open }}</div>
-      <div class="small text-muted">{{ _('Not done / not rejected') }}</div>
+      <div class="small text-muted">{{ _('Non clôturées / non rejetées') }}</div>
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm"><div class="card-body">
-      <div class="text-muted small">{{ _('Closed') }}</div>
+      <div class="text-muted small">{{ _('Demandes clôturées') }}</div>
       <div class="fs-3 fw-bold">{{ impact.closed }}</div>
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm"><div class="card-body">
-      <div class="text-muted small">{{ _('Closed (last 7 days)') }}</div>
+      <div class="text-muted small">{{ _('Clôturées (7 derniers jours)') }}</div>
       <div class="fs-3 fw-bold">{{ impact.closed_last_7d }}</div>
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm"><div class="card-body">
-      <div class="text-muted small">{{ _('Avg resolution') }}</div>
+      <div class="text-muted small">{{ _('Délai moyen de résolution') }}</div>
       <div class="fs-3 fw-bold">
         {% if impact.avg_resolution_hours is not none %}
           {{ impact.avg_resolution_hours|round(1) }} h
@@ -58,26 +58,26 @@
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm border-warning"><div class="card-body">
-      <div class="text-muted small">{{ _('Unassigned > 48h') }}</div>
+      <div class="text-muted small">{{ _('Sans responsable > 48h') }}</div>
       <div class="fs-3 fw-bold">{{ impact.unassigned_48h }}</div>
-      <div class="small text-muted">{{ _('Open without owner') }}</div>
+      <div class="small text-muted">{{ _('Demandes ouvertes sans responsable') }}</div>
     </div></div></div>
   </div>
 
-  <h5 class="mt-4 mb-2">{{ _('Top risks') }}</h5>
+  <h5 class="mt-4 mb-2">{{ _('Situations prioritaires') }}</h5>
   <div class="row g-3">
     <div class="col-md-4"><div class="card shadow-sm border-danger"><div class="card-body">
-      <div class="text-muted small">{{ _('High priority open') }}</div>
+      <div class="text-muted small">{{ _('Priorité élevée en cours') }}</div>
       <div class="fs-3 fw-bold">{{ impact.high_open }}</div>
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm border-warning"><div class="card-body">
-      <div class="text-muted small">{{ _('Stale > 7 days') }}</div>
+      <div class="text-muted small">{{ _('Sans action > 7 jours') }}</div>
       <div class="fs-3 fw-bold">{{ impact.stale_7d }}</div>
     </div></div></div>
 
     <div class="col-md-4"><div class="card shadow-sm border-warning"><div class="card-body">
-      <div class="text-muted small">{{ _('Unassigned > 48h') }}</div>
+      <div class="text-muted small">{{ _('Sans responsable > 48h') }}</div>
       <div class="fs-3 fw-bold">{{ impact.unassigned_48h }}</div>
     </div></div></div>
   </div>
@@ -87,13 +87,13 @@
   <div class="row g-4">
     <div class="col-lg-6">
       <div class="card shadow-sm"><div class="card-body">
-        <h5 class="mb-3">{{ _('Requests by status') }}</h5>
+        <h5 class="mb-3">{{ _('Demandes par statut') }}</h5>
         <div id="pilotStatusChart"></div>
       </div></div>
     </div>
     <div class="col-lg-6">
       <div class="card shadow-sm"><div class="card-body">
-        <h5 class="mb-3">{{ _('Requests by category') }}</h5>
+        <h5 class="mb-3">{{ _('Demandes par catégorie') }}</h5>
         <div id="pilotCategoryChart"></div>
       </div></div>
     </div>
@@ -101,7 +101,7 @@
 
   <div class="card shadow-sm mt-4">
     <div class="card-body">
-      <h5 class="mb-3">{{ _('New requests (last %(days)s days)', days=impact.window_days) }}</h5>
+      <h5 class="mb-3">{{ _('Nouvelles demandes (%(days)s derniers jours)', days=impact.window_days) }}</h5>
       <div id="pilotTrendChart"></div>
     </div>
   </div>
@@ -117,7 +117,7 @@
 
   new ApexCharts(document.querySelector("#pilotCategoryChart"), {
     chart: { type: "bar", height: 320 },
-    series: [{ name: "{{ _('Requests') }}", data: {{ impact.cat_counts | tojson }} }],
+    series: [{ name: "{{ _('Demandes') }}", data: {{ impact.cat_counts | tojson }} }],
     xaxis: { categories: {{ impact.cat_labels | tojson }} }
   }).render();
 

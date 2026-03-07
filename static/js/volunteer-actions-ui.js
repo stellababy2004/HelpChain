@@ -18,7 +18,7 @@
       btns.forEach((b) => {
         b.disabled = true;
         b.dataset.prevText = b.textContent || "";
-        if (b.tagName.toLowerCase() === "button") b.textContent = "Saved";
+        if (b.tagName.toLowerCase() === "button") b.textContent = "Enregistré";
       });
 
       showToast("Action saved.");
@@ -26,3 +26,4 @@
     true
   );
 })();
+

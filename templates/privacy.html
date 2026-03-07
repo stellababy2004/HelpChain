@@ -1,58 +1,58 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Privacy policy") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Privacy policy for HelpChain: what data we collect, how we use it, retention, your rights, and how to contact us.') }}{% endblock %}
-{% block og_title %}{{ _('Privacy policy | HelpChain') }}{% endblock %}
+{% block title %}{{ _("Politique de confidentialité") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _('Politique de confidentialité HelpChain : données collectées, usages, durées de conservation, droits des personnes et modalités de contact.') }}{% endblock %}
+{% block og_title %}{{ _('Politique de confidentialité | HelpChain') }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-privacy-1200x630.jpg') }}{% endblock %}
-{% block og_image_alt %}{{ _('Preview image for the HelpChain privacy policy page') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu visuel de la page de politique de confidentialité de HelpChain") }}{% endblock %}
 
 {% block content %}
 <main class="container py-5" role="main">
   <div class="mx-auto" style="max-width: 860px;">
-    <h1 class="mb-3">{{ _("Privacy policy") }}</h1>
+    <h1 class="mb-3">{{ _("Politique de confidentialité") }}</h1>
 
     <p class="text-muted mb-4">
-      {{ _("Last updated:") }} 2026-01-21
+      {{ _("Dernière mise à jour :") }} 2026-01-21
     </p>
 
     <p class="lead">
-      {{ _("HelpChain is a solidarity platform. We only collect what is necessary to connect people who need help with volunteers. We do not sell your data.") }}
+      {{ _("HelpChain est une plateforme de solidarité. Nous collectons uniquement les données nécessaires pour mettre en relation les personnes ayant besoin d’aide avec les bénévoles. Nous ne vendons pas vos données.") }}
     </p>
 
     <hr class="my-4" />
 
-    <h2 class="h5 mt-4">{{ _("What data we collect") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Données collectées") }}</h2>
     <ul>
-      <li>{{ _("Account and contact details you provide (name, email, phone - if you choose).") }}</li>
-      <li>{{ _("Request information you submit (category, description, location - if needed for the service).") }}</li>
-      <li>{{ _("Basic technical data for security (e.g., IP address, logs) to prevent abuse.") }}</li>
+      <li>{{ _("Informations de compte et de contact fournies (nom, courriel, téléphone, selon votre choix).") }}</li>
+      <li>{{ _("Informations liées aux situations signalées (catégorie, description, localisation, lorsque nécessaire au service).") }}</li>
+      <li>{{ _("Données techniques de sécurité (ex. adresse IP, journaux) afin de prévenir les abus.") }}</li>
     </ul>
 
-    <h2 class="h5 mt-4">{{ _("How we use it") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Utilisation des données") }}</h2>
     <ul>
-      <li>{{ _("To operate the service and match requests with volunteers.") }}</li>
-      <li>{{ _("To communicate about your request (updates, messages, notifications).") }}</li>
-      <li>{{ _("To keep the platform safe (fraud prevention, security monitoring).") }}</li>
+      <li>{{ _("Assurer le fonctionnement du service et orienter les situations vers les bénévoles adaptés.") }}</li>
+      <li>{{ _("Communiquer sur le suivi de votre situation (mises à jour, messages, notifications).") }}</li>
+      <li>{{ _("Maintenir la sécurité de la plateforme (prévention de la fraude, supervision de sécurité).") }}</li>
     </ul>
 
-    <h2 class="h5 mt-4">{{ _("What we do not do") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Ce que nous ne faisons pas") }}</h2>
     <ul>
-      <li>{{ _("We do not sell personal data.") }}</li>
-      <li>{{ _("We do not run advertising profiling.") }}</li>
+      <li>{{ _("Nous ne vendons pas les données personnelles.") }}</li>
+      <li>{{ _("Nous ne réalisons pas de profilage publicitaire.") }}</li>
     </ul>
 
-    <h2 class="h5 mt-4">{{ _("Data retention") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Conservation des données") }}</h2>
     <p>
-      {{ _("We keep data only as long as needed for the service and legal obligations. You can request deletion of your account data.") }}
+      {{ _("Les données sont conservées uniquement pendant la durée nécessaire au service et au respect des obligations légales. Vous pouvez demander la suppression de vos données de compte.") }}
     </p>
 
-    <h2 class="h5 mt-4">{{ _("Your rights") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Vos droits") }}</h2>
     <p>
-      {{ _("You can request access, correction, or deletion of your personal data. You can also object to certain processing where applicable.") }}
+      {{ _("Vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles. Vous pouvez également vous opposer à certains traitements lorsque cela s’applique.") }}
     </p>
 
     <h2 class="h5 mt-4">{{ _("Contact") }}</h2>
     <p>
-      {{ _("Questions about privacy? Contact us at") }}
+      {{ _("Une question sur la confidentialité ? Contactez-nous à") }}
       <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>.
     </p>
   </div>

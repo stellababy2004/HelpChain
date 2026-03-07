@@ -213,6 +213,108 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .hc-how-it-works {
+      padding: 10px 0 34px;
+    }
+
+    .hc-how-it-works .hc-home__section-head {
+      margin-bottom: 14px;
+    }
+
+    .hc-how-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .hc-how-card {
+      border: 1px solid var(--hc-border);
+      border-radius: 12px;
+      background: var(--hc-surface);
+      padding: 18px;
+    }
+
+    .hc-how-card h3 {
+      margin: 8px 0 8px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--hc-text-main);
+    }
+
+    .hc-how-card p {
+      margin: 0;
+      color: var(--hc-text-muted);
+      line-height: 1.58;
+    }
+
+    .hc-how-step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid var(--hc-border);
+      background: #fff;
+      color: var(--hc-text-main);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 991.98px) {
+      .hc-how-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hc-structures {
+      padding: 2px 0 36px;
+    }
+
+    .hc-structures .hc-home__section-head {
+      margin-bottom: 14px;
+    }
+
+    .hc-structures-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .hc-structures-card {
+      border: 1px solid var(--hc-border);
+      border-radius: 12px;
+      background: var(--hc-surface);
+      padding: 18px;
+    }
+
+    .hc-structures-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--hc-text-main);
+    }
+
+    .hc-structures-card p {
+      margin: 0;
+      color: var(--hc-text-muted);
+      line-height: 1.58;
+    }
+
+    .hc-structures__actions {
+      display: flex;
+      justify-content: center;
+    }
+
+    @media (max-width: 991.98px) {
+      .hc-structures-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 {% endblock %}
 
@@ -266,6 +368,65 @@
             </p>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-how-it-works" aria-label="Comment fonctionne HelpChain">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>Comment fonctionne HelpChain</h2>
+        <p>Un processus simple pour coordonner les situations sociales sur un territoire.</p>
+      </header>
+
+      <div class="hc-how-grid">
+        <article class="hc-how-card">
+          <span class="hc-how-step" aria-hidden="true">1</span>
+          <h3>Signalement d’une situation</h3>
+          <p>Un citoyen, une association ou un professionnel peut signaler une situation nécessitant une aide ou une orientation.</p>
+        </article>
+
+        <article class="hc-how-card">
+          <span class="hc-how-step" aria-hidden="true">2</span>
+          <h3>Analyse et priorisation</h3>
+          <p>La situation est enregistrée, analysée et priorisée afin d’identifier les cas nécessitant une attention immédiate.</p>
+        </article>
+
+        <article class="hc-how-card">
+          <span class="hc-how-step" aria-hidden="true">3</span>
+          <h3>Coordination des acteurs</h3>
+          <p>Les acteurs compétents peuvent suivre la situation et coordonner les actions nécessaires.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-structures" aria-label="Pour les collectivités et associations">
+    <div class="hc-container">
+      <header class="hc-home__section-head">
+        <h2>Pour les collectivités et associations</h2>
+        <p>Un outil de coordination conçu pour les acteurs sociaux d’un territoire.</p>
+      </header>
+
+      <div class="hc-structures-grid">
+        <article class="hc-structures-card">
+          <h3>Suivi structuré des situations</h3>
+          <p>Les équipes peuvent enregistrer et suivre les situations sociales au sein d’un espace partagé, facilitant la coordination entre les différents acteurs.</p>
+        </article>
+
+        <article class="hc-structures-card">
+          <h3>Identification des situations prioritaires</h3>
+          <p>Le système permet d’identifier rapidement les situations nécessitant une attention particulière afin d’améliorer la réactivité des équipes.</p>
+        </article>
+
+        <article class="hc-structures-card">
+          <h3>Coordination entre structures</h3>
+          <p>Associations, services sociaux et professionnels peuvent collaborer autour d’un suivi commun des situations.</p>
+        </article>
+      </div>
+
+      <div class="hc-structures__actions">
+        <a class="hc-btn hc-btn-outline" href="/professionnels">Accéder à l’espace structures</a>
       </div>
     </div>
   </section>

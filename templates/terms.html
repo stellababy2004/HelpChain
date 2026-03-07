@@ -1,46 +1,46 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Terms of service") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Terms of service for HelpChain: platform usage rules, safety principles, liability information, and contact details.') }}{% endblock %}
-{% block og_title %}{{ _('Terms of service | HelpChain') }}{% endblock %}
+{% block title %}{{ _("Conditions d’utilisation") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _('Conditions d’utilisation HelpChain : règles d’usage de la plateforme, principes de sécurité, responsabilités et modalités de contact.') }}{% endblock %}
+{% block og_title %}{{ _('Conditions d’utilisation | HelpChain') }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-terms-1200x630.jpg') }}{% endblock %}
-{% block og_image_alt %}{{ _('Preview image for the HelpChain terms of service page') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu visuel de la page des conditions d’utilisation de HelpChain") }}{% endblock %}
 
 {% block content %}
 <main class="container py-5" role="main">
   <div class="mx-auto" style="max-width: 860px;">
-    <h1 class="mb-3">{{ _("Terms of service") }}</h1>
+    <h1 class="mb-3">{{ _("Conditions d’utilisation") }}</h1>
 
     <p class="text-muted mb-4">
-      {{ _("Last updated:") }} 2026-01-21
+      {{ _("Dernière mise à jour :") }} 2026-01-21
     </p>
 
     <p class="lead">
-      {{ _("HelpChain helps connect people who need help with volunteers. By using the platform, you agree to follow these basic rules to keep everyone safe.") }}
+      {{ _("HelpChain facilite la mise en relation entre les personnes ayant besoin d’aide et les bénévoles. En utilisant la plateforme, vous acceptez de respecter les règles ci-dessous afin de garantir un cadre sûr pour tous.") }}
     </p>
 
     <hr class="my-4" />
 
-    <h2 class="h5 mt-4">{{ _("Use of the platform") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Utilisation de la plateforme") }}</h2>
     <ul>
-      <li>{{ _("Provide accurate information and use respectful language.") }}</li>
-      <li>{{ _("Do not post illegal, harmful, or abusive content.") }}</li>
-      <li>{{ _("Do not impersonate others or misrepresent your identity.") }}</li>
+      <li>{{ _("Fournir des informations exactes et utiliser un langage respectueux.") }}</li>
+      <li>{{ _("Ne pas publier de contenu illégal, nuisible ou abusif.") }}</li>
+      <li>{{ _("Ne pas usurper l’identité d’autrui ni présenter de fausses informations.") }}</li>
     </ul>
 
-    <h2 class="h5 mt-4">{{ _("Safety") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Sécurité") }}</h2>
     <ul>
-      <li>{{ _("HelpChain is a connection platform, not an emergency service. If there is immediate danger, contact local emergency services.") }}</li>
-      <li>{{ _("We may limit or suspend accounts to prevent abuse or protect the community.") }}</li>
+      <li>{{ _("HelpChain est une plateforme de mise en relation, et non un service d’urgence. En cas de danger immédiat, contactez les services d’urgence locaux.") }}</li>
+      <li>{{ _("Nous pouvons limiter ou suspendre des comptes afin de prévenir les abus et protéger la communauté.") }}</li>
     </ul>
 
-    <h2 class="h5 mt-4">{{ _("Liability") }}</h2>
+    <h2 class="h5 mt-4">{{ _("Responsabilité") }}</h2>
     <p>
-      {{ _("Volunteering involves human interactions. HelpChain cannot guarantee outcomes and is not responsible for actions taken by users. We encourage safe, transparent communication and caution when sharing personal details.") }}
+      {{ _("Les actions de solidarité impliquent des interactions humaines. HelpChain ne peut garantir les résultats et n’est pas responsable des actions réalisées par les utilisateurs. Nous encourageons une communication transparente et prudente, notamment lors du partage d’informations personnelles.") }}
     </p>
 
     <h2 class="h5 mt-4">{{ _("Contact") }}</h2>
     <p>
-      {{ _("Questions about these terms? Contact us at") }}
+      {{ _("Une question sur ces conditions ? Contactez-nous à") }}
       <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>.
     </p>
   </div>

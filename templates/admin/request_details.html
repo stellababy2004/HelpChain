@@ -150,6 +150,17 @@
     </p>
   </section>
 
+  <section class="hc-card mb-3">
+    <h3>{{ _('AI Operational Recommendation') }}</h3>
+    <p><strong>{{ _('Recommended action:') }}</strong> {{ recommendation.recommended_action if recommendation else 'routine_queue' }}</p>
+    <p><strong>{{ _('Pathway:') }}</strong> {{ recommendation.recommended_pathway if recommendation else 'general_support' }}</p>
+    <p><strong>{{ _('Review window:') }}</strong> {{ recommendation.recommended_priority_window if recommendation else 'this_week' }}</p>
+    <p><strong>{{ _('Explanation:') }}</strong> {{ recommendation.explanation if recommendation else _('No recommendation available.') }}</p>
+    <p class="hc-muted">
+      {{ _('This recommendation supports case coordination and does not replace human decision-making.') }}
+    </p>
+  </section>
+
   <!-- V3: Match & engagement (city-based) -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">

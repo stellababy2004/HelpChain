@@ -19,7 +19,7 @@
       <p>{{ _("When a request matches your profile, you'll see it here.") }}</p>
 
       <a class="btn btn-primary" href="{{ url_for('main.volunteer_dashboard') }}">
-        {{ _("View requests") }}
+        {{ _("Voir les demandes") }}
       </a>
     </div>
   {% else %}
@@ -60,7 +60,7 @@
 
             {% if n.request_id %}
               <div class="hc-card__actions">
-                <span class="hc-btn hc-btn--ghost">{{ _("Open request") }}</span>
+                <span class="hc-btn hc-btn--ghost">{{ _("Ouvrir la demande") }}</span>
               </div>
             {% endif %}
           </button>

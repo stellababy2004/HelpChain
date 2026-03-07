@@ -1,15 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Dashboard | HelpChain{% endblock %}
+{% block title %}Tableau de bord | HelpChain{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-  <h1 class="h4 mb-3">{{ _('Dashboard access') }}</h1>
+  <h1 class="h4 mb-3">{{ _('Accès au tableau de bord') }}</h1>
   <div class="alert alert-warning" role="alert">
     {{ _("We couldn't determine your role for dashboard access.") }}
     {% if role %} {{ _("Detected role:") }} <strong>{{ role }}</strong>.{% endif %}
   </div>
   <a class="btn btn-outline-secondary" href="{{ url_for('main.index') }}">
-    {{ _('Back to home') }}
+    {{ _('Retour à l’accueil') }}
   </a>
 </div>
 {% endblock %}
+
