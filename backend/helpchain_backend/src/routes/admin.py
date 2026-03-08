@@ -713,7 +713,12 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
         action="admin.login.success",
         target_type="AdminUser",
         target_id=int(user.id or 0),
-        payload={"via": via, "next": (next_url or "")[:255]},
+        payload={
+            "via": via,
+            "next": (next_url or "")[:255],
+            "ip": _client_ip(),
+            "ua": (request.headers.get("User-Agent") or "")[:256],
+        },
     )
 
     # MFA flow
@@ -1199,6 +1204,8 @@ def _admin_idle_timeout_guard():
                 payload={
                     "route": request.path,
                     "idle_timeout_min": int(ADMIN_SESSION_IDLE_TIMEOUT_MIN),
+                    "ip": _client_ip(),
+                    "ua": (request.headers.get("User-Agent") or "")[:256],
                 },
             )
         session.pop("admin_logged_in", None)
@@ -3102,6 +3109,8 @@ def admin_ops_login():
                     "route": "admin.ops_login",
                     "username": username_norm,
                     "cleared_failures": int(cleared_fails),
+                    "ip": ip,
+                    "ua": (request.headers.get("User-Agent") or "")[:256],
                 },
             )
         # Successful login path
@@ -3155,6 +3164,8 @@ def admin_login_legacy():
                     "route": "admin.admin_login_legacy",
                     "username": username_norm,
                     "cleared_failures": int(cleared_fails),
+                    "ip": ip,
+                    "ua": (request.headers.get("User-Agent") or "")[:256],
                 },
             )
 
@@ -3198,7 +3209,12 @@ def admin_reauth():
                 action="admin.reauth.success",
                 target_type="AdminUser",
                 target_id=int(getattr(user, "id", 0) or 0),
-                payload={"next": (next_url or "")[:255], "route": request.path},
+                payload={
+                    "next": (next_url or "")[:255],
+                    "route": request.path,
+                    "ip": _client_ip(),
+                    "ua": (request.headers.get("User-Agent") or "")[:256],
+                },
             )
             flash("Vérification effectuée.", "success")
             return redirect(next_url or url_for("admin.admin_requests"), code=303)
@@ -3213,7 +3229,11 @@ def admin_reauth():
                 action="admin.reauth.failed",
                 target_type="AdminUser",
                 target_id=int(getattr(user, "id", 0) or 0),
-                payload={"route": request.path},
+                payload={
+                    "route": request.path,
+                    "ip": _client_ip(),
+                    "ua": (request.headers.get("User-Agent") or "")[:256],
+                },
             )
         flash("Veuillez confirmer votre identité pour continuer.", "danger")
 
@@ -3235,7 +3255,11 @@ def admin_logout():
         action="admin.logout",
         target_type="AdminUser",
         target_id=int(actor_id),
-        payload={"route": request.path},
+        payload={
+            "route": request.path,
+            "ip": _client_ip(),
+            "ua": (request.headers.get("User-Agent") or "")[:256],
+        },
     )
     _mfa_ok_clear()
     _mfa_attempt_reset()
@@ -3423,7 +3447,12 @@ def admin_mfa_backup_codes():
             action="admin.mfa_backup_codes_regenerated",
             target_type="AdminUser",
             target_id=int(getattr(current_user, "id", 0) or 0),
-            payload={"generated_codes_count": 10, "route": request.path},
+            payload={
+                "generated_codes_count": 10,
+                "route": request.path,
+                "ip": _client_ip(),
+                "ua": (request.headers.get("User-Agent") or "")[:256],
+            },
         )
         flash(
             "Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.",
