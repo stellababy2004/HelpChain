@@ -2,6 +2,11 @@
 """
 Database initialization script for HelpChain
 Creates default roles, permissions, and admin user
+
+WARNING:
+- Manual-only bootstrap helper.
+- Do not use in production runtime startup/request paths.
+- Use Alembic migrations for production schema changes.
 """
 
 import os

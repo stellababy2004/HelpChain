@@ -1788,10 +1788,9 @@ def admin_geo_data():
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     # Първоначално създай БД таблиците, ако липсват (за локална разработка)
-    with app.app_context():
-        try:
-            db.create_all()
-        except Exception as exc:
-            app.logger.warning("DB create_all skipped or failed: %s", exc)
+    app.logger.warning(
+        "Runtime db.create_all is disabled to avoid schema drift. "
+        "Use Alembic migrations or explicit manual bootstrap scripts."
+    )
 
     app.run(host="0.0.0.0", port=5000, debug=True)

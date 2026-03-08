@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run Alembic migrations using backend/migrations/alembic.ini.
+"""Run Alembic migrations using migrations/alembic.ini.
 
 This script is intentionally simple and safe for CI.
 It reads DATABASE_URL from the environment (falls back to sqlite:///test.db),
@@ -22,7 +22,7 @@ from alembic.config import Config
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parent
-    alembic_ini = repo_root / "backend" / "migrations" / "alembic.ini"
+    alembic_ini = repo_root / "migrations" / "alembic.ini"
 
     if not alembic_ini.exists():
         print(f"ERROR: alembic.ini not found at {alembic_ini}", file=sys.stderr)
@@ -58,7 +58,7 @@ def main() -> int:
 
     cfg = Config(str(alembic_ini))
     # Ensure Alembic uses the absolute migrations folder regardless of CWD
-    cfg.set_main_option("script_location", str(repo_root / "backend" / "migrations"))
+    cfg.set_main_option("script_location", str(repo_root / "migrations"))
     cfg.set_main_option("sqlalchemy.url", database_url)
 
     print(

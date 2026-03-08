@@ -50,6 +50,7 @@ Write-Host "[2/5] Installing dependencies" -ForegroundColor Yellow
 & $py -m pip install -r requirements.txt | Out-Host
 
 Write-Host "[3/5] Running Alembic migrations" -ForegroundColor Yellow
+Write-Host "Using canonical migration root: migrations/" -ForegroundColor DarkYellow
 try {
   $migOut = & $py run_migrations.py *>&1
   $migCode = $LASTEXITCODE

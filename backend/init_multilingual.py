@@ -1,6 +1,11 @@
 """
 HelpChain Multilingual Database Initialization
 Инициализира базата данни с основни езици и начални преводи
+
+WARNING:
+- Manual-only bootstrap helper.
+- Do not use in production runtime startup/request paths.
+- Use Alembic migrations for production schema changes.
 """
 
 from datetime import UTC, datetime

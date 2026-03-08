@@ -1,5 +1,10 @@
 """
 Скрипт за инициализация на чатбот базата данни с начални FAQ данни
+
+WARNING:
+- Manual-only bootstrap helper.
+- Do not use in production runtime startup/request paths.
+- Use Alembic migrations for production schema changes.
 """
 
 from datetime import datetime

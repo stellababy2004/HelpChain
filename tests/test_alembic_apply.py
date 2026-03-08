@@ -29,8 +29,8 @@ def test_alembic_upgrade_on_clean_sqlite(tmp_path):
     """
     repo_root = pathlib.Path(__file__).resolve().parents[1]
 
-    # The repository places alembic.ini under backend/migrations
-    alembic_ini = repo_root / "backend" / "migrations" / "alembic.ini"
+    # Canonical Alembic root is repository-level migrations/
+    alembic_ini = repo_root / "migrations" / "alembic.ini"
     assert alembic_ini.exists(), f"alembic.ini not found at {alembic_ini}"
 
     db_file = tmp_path / "alembic_test.db"
@@ -39,8 +39,8 @@ def test_alembic_upgrade_on_clean_sqlite(tmp_path):
     cfg = Config(str(alembic_ini))
     # Force the SQLAlchemy url to our temporary DB
     cfg.set_main_option("sqlalchemy.url", db_url)
-    # Ensure Alembic uses the repository migrations folder
-    cfg.set_main_option("script_location", str(repo_root / "backend" / "migrations"))
+    # Ensure Alembic uses the canonical repository migrations folder
+    cfg.set_main_option("script_location", str(repo_root / "migrations"))
 
     # Run the migrations. Alembic's env.py expects a Flask `current_app` with
     # the Flask-Migrate extension registered. Create a minimal app context

@@ -54,9 +54,42 @@
   - `sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db`
 - If runtime DB target is different, scripts must refuse automatically and exit non-zero.
 
+### Runtime Schema Rule
+- `db.create_all()` / `metadata.create_all()` are forbidden in runtime/app startup/request paths.
+- Allowed only in:
+  - tests
+  - explicit manual bootstrap/init scripts
+- Production/runtime schema changes must go through Alembic migrations.
+
+### Canonical Alembic Root
+- Canonical Alembic root is repository-level `migrations/`:
+  - `migrations/alembic.ini`
+  - `migrations/env.py`
+- Legacy directories are non-canonical and must not be used by runtime/tooling:
+  - `backend/migrations/`
+  - `backend/migrations_clean/`
+  - `backend/alembic/`
+- Local and production migration tooling must point only to `migrations/`.
+- Dev/CI guardrail recommendation: fail review if new active tooling references a secondary migration root.
+
 ### Legacy SQLite Paths (Non-Canonical)
 - `instance/hc_local_dev.db`
 - `instance/volunteers.db`
 - `instance/app.db`
 - `instance/hc_run.db`
 - These files are legacy/local artifacts and must not be used for local write workflows.
+
+## Secret Safety
+- Never commit credentials/secrets to the repository.
+- Use environment variables for passwords, keys, and tokens.
+- Local secret guard runs on pre-commit and blocks suspicious staged secrets.
+- Manual scan:
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\scan_secrets.ps1`
+  - `powershell -ExecutionPolicy Bypass -File .\scripts\scan_secrets.ps1 -StagedOnly`
+- See also: `docs/SECRET_SAFETY.md`.
+
+### Secrets Policy
+- Never commit credentials.
+- Use environment variables for credentials and tokens.
+- Local pre-commit secret guard protects local commits.
+- GitHub secret scanning protects the remote repository on push/pull request.

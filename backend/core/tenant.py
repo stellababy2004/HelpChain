@@ -39,30 +39,17 @@ def _load_default_structure_id() -> int:
             )
         except (OperationalError, ProgrammingError):
             if allow_bootstrap:
-                try:
-                    # Best-effort: create missing tables, then ensure default tenant row exists.
-                    db.create_all()
-                    default = (
-                        db.session.query(Structure)
-                        .filter(Structure.slug == TENANT_DEFAULT_SLUG)
-                        .first()
-                    )
-                    if not default:
-                        default = Structure(
-                            name="Default",
-                            slug=TENANT_DEFAULT_SLUG,
-                            created_at=datetime.utcnow(),
-                        )
-                        db.session.add(default)
-                        db.session.commit()
-                    _DEFAULT_STRUCTURE_ID = int(default.id)
+                # Runtime schema creation is forbidden here (drift risk).
+                # Use Alembic migrations or explicit manual bootstrap scripts.
+                if _is_test_env():
+                    # Legacy tests may call app.test_client() before DB bootstrap.
+                    _DEFAULT_STRUCTURE_ID = 1
                     return _DEFAULT_STRUCTURE_ID
-                except Exception:
-                    db.session.rollback()
-                    if _is_test_env():
-                        # Legacy tests may call app.test_client() before DB bootstrap.
-                        _DEFAULT_STRUCTURE_ID = 1
-                        return _DEFAULT_STRUCTURE_ID
+                if has_app_context():
+                    current_app.logger.warning(
+                        "Tenant bootstrap blocked: schema/table missing. "
+                        "Run Alembic migrations or manual bootstrap script."
+                    )
             raise
         if not default:
             if allow_bootstrap:

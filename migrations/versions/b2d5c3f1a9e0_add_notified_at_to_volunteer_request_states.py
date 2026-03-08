@@ -15,17 +15,31 @@ branch_labels = None
 depends_on = None
 
 
+def table_exists(bind, table_name):
+    insp = sa.inspect(bind)
+    return table_name in insp.get_table_names()
+
+
+def column_exists(bind, table_name, column_name):
+    insp = sa.inspect(bind)
+    if table_name not in insp.get_table_names():
+        return False
+    cols = [c["name"] for c in insp.get_columns(table_name)]
+    return column_name in cols
+
+
 def upgrade():
     bind = op.get_bind()
-    insp = sa.inspect(bind)
-    cols = {c["name"] for c in insp.get_columns("volunteer_request_states")}
+    if not table_exists(bind, "volunteer_request_states"):
+        return
 
-    if "notified_at" not in cols:
+    if not column_exists(bind, "volunteer_request_states", "notified_at"):
         op.add_column(
             "volunteer_request_states",
             sa.Column("notified_at", sa.DateTime(), nullable=True),
         )
 
+    insp = sa.inspect(bind)
     indexes = {idx["name"] for idx in insp.get_indexes("volunteer_request_states")}
     if "ix_volunteer_request_states_notified_at" not in indexes:
         op.create_index(
@@ -50,16 +64,18 @@ def upgrade():
         sa.column("created_at", sa.DateTime()),
     )
 
-    rows = bind.execute(
-        sa.select(
-            notif.c.volunteer_id,
-            notif.c.request_id,
-            sa.func.min(notif.c.created_at).label("first_notified_at"),
-        )
-        .where(notif.c.type == "new_match")
-        .where(notif.c.request_id.isnot(None))
-        .group_by(notif.c.volunteer_id, notif.c.request_id)
-    ).fetchall()
+    rows = []
+    if table_exists(bind, "notifications"):
+        rows = bind.execute(
+            sa.select(
+                notif.c.volunteer_id,
+                notif.c.request_id,
+                sa.func.min(notif.c.created_at).label("first_notified_at"),
+            )
+            .where(notif.c.type == "new_match")
+            .where(notif.c.request_id.isnot(None))
+            .group_by(notif.c.volunteer_id, notif.c.request_id)
+        ).fetchall()
 
     for row in rows:
         first_notified = row.first_notified_at
@@ -88,6 +104,9 @@ def upgrade():
 
 def downgrade():
     bind = op.get_bind()
+    if not table_exists(bind, "volunteer_request_states"):
+        return
+
     indexes = {
         idx["name"] for idx in sa.inspect(bind).get_indexes("volunteer_request_states")
     }
@@ -97,8 +116,5 @@ def downgrade():
             table_name="volunteer_request_states",
         )
 
-    cols = {
-        c["name"] for c in sa.inspect(bind).get_columns("volunteer_request_states")
-    }
-    if "notified_at" in cols:
+    if column_exists(bind, "volunteer_request_states", "notified_at"):
         op.drop_column("volunteer_request_states", "notified_at")
