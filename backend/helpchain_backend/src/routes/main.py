@@ -3146,9 +3146,143 @@ def success_stories():
     return render_template("success_stories.html")
 
 
-@main_bp.route("/contact")
+@main_bp.route("/contact", methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html"), 200
+    if request.method == "GET":
+        submitted = request.args.get("sent") == "1"
+        return render_template(
+            "contact.html",
+            submitted=submitted,
+            form_data={},
+            form_errors={},
+        ), 200
+
+    form_data = {
+        "full_name": (request.form.get("full_name") or "").strip(),
+        "fonction": (request.form.get("fonction") or "").strip(),
+        "structure": (request.form.get("structure") or "").strip(),
+        "structure_type": (request.form.get("structure_type") or "").strip(),
+        "city": (request.form.get("city") or "").strip(),
+        "email": (request.form.get("email") or "").strip().lower(),
+        "phone": (request.form.get("phone") or "").strip(),
+        "objet_echange": (request.form.get("objet_echange") or "").strip(),
+        "message": (request.form.get("message") or "").strip(),
+    }
+    form_errors: dict[str, str] = {}
+
+    required_fields = (
+        ("full_name", _("Veuillez renseigner votre nom et prénom.")),
+        ("fonction", _("Veuillez renseigner votre fonction.")),
+        ("structure", _("Veuillez renseigner le nom de votre structure.")),
+        ("structure_type", _("Veuillez sélectionner un type de structure.")),
+        ("city", _("Veuillez renseigner votre territoire ou ville.")),
+        ("email", _("Veuillez renseigner une adresse e-mail valide.")),
+        ("objet_echange", _("Veuillez sélectionner l’objet de l’échange.")),
+        ("message", _("Veuillez renseigner le contexte de votre demande.")),
+    )
+    for key, msg in required_fields:
+        if not form_data[key]:
+            form_errors[key] = msg
+
+    if form_data["email"] and ("@" not in form_data["email"] or "." not in form_data["email"]):
+        form_errors["email"] = _("Veuillez renseigner une adresse e-mail valide.")
+
+    if form_errors:
+        flash(_("Merci de corriger les champs indiqués."), "warning")
+        return render_template(
+            "contact.html",
+            submitted=False,
+            form_data=form_data,
+            form_errors=form_errors,
+        ), 400
+
+    lead_message = (
+        f"Type de structure : {form_data['structure_type']}\n"
+        f"Objet de l’échange : {form_data['objet_echange']}\n"
+        f"Téléphone : {form_data['phone'] or '-'}\n\n"
+        f"Contexte:\n{form_data['message']}"
+    )
+
+    existing = (
+        ProfessionalLead.query.filter(ProfessionalLead.email == form_data["email"])
+        .order_by(ProfessionalLead.id.desc())
+        .first()
+    )
+
+    if existing:
+        existing.full_name = form_data["full_name"]
+        existing.profession = form_data["fonction"]
+        existing.organization = form_data["structure"]
+        existing.city = form_data["city"]
+        existing.phone = form_data["phone"] or existing.phone
+        existing.availability = (
+            f"{form_data['structure_type']} | {form_data['objet_echange']}"
+        )
+        existing.message = lead_message
+        existing.locale = (
+            session.get("lang") or str(babel_get_locale() or "")
+        ).strip() or existing.locale
+        existing.ip = _client_ip() or existing.ip
+        existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
+        existing.source = "contact_echange"
+        db.session.commit()
+        lead = existing
+    else:
+        lead = ProfessionalLead(
+            email=form_data["email"],
+            full_name=form_data["full_name"],
+            phone=form_data["phone"] or None,
+            city=form_data["city"] or None,
+            profession=form_data["fonction"],
+            organization=form_data["structure"] or None,
+            availability=f"{form_data['structure_type']} | {form_data['objet_echange']}",
+            message=lead_message,
+            locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
+            ip=_client_ip(),
+            user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+            source="contact_echange",
+            created_at=datetime.now(UTC),
+        )
+        db.session.add(lead)
+        db.session.commit()
+
+    try:
+        from backend.mail_service import send_notification_email
+
+        admin_to = (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
+        if not admin_to:
+            admin_to = (current_app.config.get("ADMIN_NOTIFY_EMAIL") or "").strip()
+
+        ctx = {
+            "lead_id": lead.id,
+            "email": lead.email,
+            "full_name": lead.full_name,
+            "phone": lead.phone,
+            "city": lead.city,
+            "profession": lead.profession,
+            "organization": lead.organization,
+            "availability": lead.availability,
+            "message": lead.message,
+            "created_at": lead.created_at,
+            "source": lead.source,
+            "locale": lead.locale,
+            "ip": lead.ip,
+            "user_agent": lead.user_agent,
+            "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
+        }
+        if admin_to:
+            send_notification_email(
+                admin_to,
+                "[HelpChain] Nouvelle demande d’échange",
+                "emails/professional_lead_notify.html",
+                ctx,
+            )
+        else:
+            current_app.logger.info("[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL")
+    except Exception:
+        current_app.logger.exception("[CONTACT] notify email failed lead_id=%s", lead.id)
+
+    return redirect(url_for("main.contact", sent="1"), code=303)
 
 
 @main_bp.route("/privacy")

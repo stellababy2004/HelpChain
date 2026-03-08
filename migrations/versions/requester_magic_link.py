@@ -13,12 +13,45 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("requests", sa.Column("requester_token_hash", sa.String(length=128), nullable=True))
-    op.add_column("requests", sa.Column("requester_token_created_at", sa.DateTime(), nullable=True))
-    op.create_index("ix_requests_requester_token_hash", "requests", ["requester_token_hash"], unique=False)
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    tables = set(inspector.get_table_names())
+    if "requests" not in tables:
+        return
+
+    cols = {c["name"] for c in inspector.get_columns("requests")}
+    if "requester_token_hash" not in cols:
+        op.add_column(
+            "requests", sa.Column("requester_token_hash", sa.String(length=128), nullable=True)
+        )
+    if "requester_token_created_at" not in cols:
+        op.add_column(
+            "requests", sa.Column("requester_token_created_at", sa.DateTime(), nullable=True)
+        )
+
+    indexes = {idx["name"] for idx in inspector.get_indexes("requests")}
+    if "ix_requests_requester_token_hash" not in indexes:
+        op.create_index(
+            "ix_requests_requester_token_hash",
+            "requests",
+            ["requester_token_hash"],
+            unique=False,
+        )
 
 
 def downgrade():
-    op.drop_index("ix_requests_requester_token_hash", table_name="requests")
-    op.drop_column("requests", "requester_token_created_at")
-    op.drop_column("requests", "requester_token_hash")
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    tables = set(inspector.get_table_names())
+    if "requests" not in tables:
+        return
+
+    indexes = {idx["name"] for idx in inspector.get_indexes("requests")}
+    if "ix_requests_requester_token_hash" in indexes:
+        op.drop_index("ix_requests_requester_token_hash", table_name="requests")
+
+    cols = {c["name"] for c in inspector.get_columns("requests")}
+    if "requester_token_created_at" in cols:
+        op.drop_column("requests", "requester_token_created_at")
+    if "requester_token_hash" in cols:
+        op.drop_column("requests", "requester_token_hash")
