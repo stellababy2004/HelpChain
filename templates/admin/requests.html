@@ -33,11 +33,11 @@
       <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">{{ _('In progress') }}</button>
       <button type="button" class="hc-tab" data-hc-tab="COMPLETED">{{ _('Completed') }}</button>
       <button type="button" class="hc-tab" data-hc-tab="CLOSED">{{ _('Closed') }}</button>
-      <button type="button" class="hc-tab" id="hcToggleActionable">{{ _('Action only') }}</button>
-      <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="{{ _('Copy link') }}">
+      <button type="button" class="hc-tab" id="hcToggleActionable">Actions prioritaires</button>
+      <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
         <span aria-hidden="true"></span>
         <span class="hc-copy-tick" aria-hidden="true">✓</span>
-        <span class="visually-hidden">{{ _('Copy link') }}</span>
+        <span class="visually-hidden">Copier le lien</span>
       </button>
     </div>
 
@@ -68,7 +68,7 @@
     </div>
     <a class="btn btn-sm btn-outline-primary"
        href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, category=request.args.get('category') or None) }}">
-      {{ _('Clear filter') }}
+      Réinitialiser le filtre
     </a>
   </div>
   {% endif %}
@@ -83,8 +83,8 @@
       aria-controls="hcInsightsBody"
     >
       <span class="hc-live-header__copy">
-        <span class="hc-live-header__title hc-fold__title">{{ _('Insights') }}</span>
-        <span class="hc-muted hc-fold__subtitle">{{ _('Operational status, KPIs and live queue snapshot') }}</span>
+        <span class="hc-live-header__title hc-fold__title">Repères opérationnels</span>
+        <span class="hc-muted hc-fold__subtitle">État opérationnel, indicateurs et vue instantanée de la file</span>
       </span>
       <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">›</span>
     </button>
@@ -100,9 +100,9 @@
 
   <section class="hc-ops-kpis mb-0" data-days="30">
     <div class="hc-ops-kpis__header">
-      <h2 class="hc-h2">{{ _('Operational dashboard') }}</h2>
+      <h2 class="hc-h2">Pilotage opérationnel</h2>
       <div class="hc-ops-kpis__controls">
-        <span class="hc-ops-kpis__meta" id="opsWindowLabel">{{ _('Window: 30 days') }}</span>
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre: 30 jours</span>
         <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
           <option value="7">{{ _('7 days') }}</option>
           <option value="30" selected>{{ _('30 days') }}</option>
@@ -113,34 +113,34 @@
 
     <div class="hc-ops-kpis__grid">
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">{{ _('New requests') }}</div>
+        <div class="hc-kpi-label">Demandes reçues</div>
         <div class="hc-kpi-value" id="kpi-new">—</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">{{ _('Resolved') }}</div>
+        <div class="hc-kpi-label">Résolues</div>
         <div class="hc-kpi-value" id="kpi-resolved">—</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">{{ _('Average assignment delay') }}</div>
+        <div class="hc-kpi-label">Délai moyen avant affectation</div>
         <div class="hc-kpi-value" id="kpi-assign">—</div>
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">{{ _('Average resolution delay') }}</div>
+        <div class="hc-kpi-label">Délai moyen de résolution</div>
         <div class="hc-kpi-value" id="kpi-resolve">—</div>
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
 
       <div class="hc-kpi-card hc-kpi-card--alert" id="kpi-stale-card">
-        <div class="hc-kpi-label">{{ _('Requests waiting > 7d') }}</div>
+        <div class="hc-kpi-label">Demandes en attente > 7j</div>
         <div class="hc-kpi-value" id="kpi-stale">—</div>
       </div>
 
       <div class="hc-kpi-card hc-kpi-card--wide">
-        <div class="hc-kpi-label">{{ _('Distribution by category') }}</div>
+        <div class="hc-kpi-label">Répartition par catégorie</div>
         <ul class="hc-kpi-list" id="kpi-category">
           <li>—</li>
         </ul>
@@ -175,14 +175,14 @@
     <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention') }}">{{ _('Attention') }}</a>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1') }}">{{ _('Sans responsable') }}</a>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1') }}">{{ _('Sans action 72h') }}</a>
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">{{ _('Reset filters') }}</a>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Réinitialiser les filtres</a>
   </div>
 
   <form class="row g-2 align-items-end mb-2" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
     <div class="col-xl-10 col-lg-9">
       <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
         autofocus
-        placeholder="{{ _('Search by name, title, description...') }}" aria-label="{{ _('Search') }}" />
+        placeholder="Rechercher par nom, titre, description..." aria-label="Rechercher" />
       {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
       {% if show_deleted %}<input type="hidden" name="deleted" value="1">{% endif %}
       {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
@@ -196,13 +196,13 @@
       {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
     </div>
     <div class="col-xl-2 col-lg-3 d-grid">
-      <button class="btn btn-primary" type="submit">{{ _('Search') }}</button>
+      <button class="btn btn-primary" type="submit">Rechercher</button>
     </div>
   </form>
 
   <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#hcFiltersPanel" aria-expanded="false" aria-controls="hcFiltersPanel">
-      {{ _('Filters') }}
+      Filtres
     </button>
 
     <div class="dropdown">
@@ -252,7 +252,8 @@
       </ul>
     </div>
 
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">{{ _('Reset') }}</a>
+    <a class="btn btn-primary btn-sm ms-auto" href="{{ url_for('admin.admin_request_new') }}">Nouvelle demande</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Réinitialiser</a>
   </div>
 
   <div class="collapse {% if status or show_deleted or risk or request.args.get('category') %}show {% endif %}mb-2" id="hcFiltersPanel">
@@ -278,7 +279,7 @@
             value="1"
             {% if show_deleted %}checked{% endif %}
           />
-          <label class="form-check-label" for="filterDeleted">{{ _('Show deleted') }}</label>
+          <label class="form-check-label" for="filterDeleted">Afficher les supprimées</label>
         </div>
       </div>
 
@@ -317,11 +318,11 @@
     </label>
     <span class="hc-bulkbar__count" id="hcBulkCount">{{ _('0 selected') }}</span>
     <select class="form-select form-select-sm hc-bulkbar__select" id="hcBulkAction">
-      <option value="">{{ _('Bulk action') }}</option>
+      <option value="">Action groupée</option>
       <option value="claim_me">{{ _('Claim ownership (me)') }}</option>
       <option value="open">{{ _('Open selected') }}</option>
-      <option value="copy_ids">{{ _('Copy IDs') }}</option>
-      <option value="copy_links">{{ _('Copy links') }}</option>
+      <option value="copy_ids">Copier les identifiants</option>
+      <option value="copy_links">Copier les liens</option>
       <option value="nudge">{{ _('Nudge selected volunteers') }}</option>
       <option value="status:pending">{{ _('Set status: Pending') }}</option>
       <option value="status:in_progress">{{ _('Set status: In progress') }}</option>
@@ -329,11 +330,11 @@
       <option value="status:rejected">{{ _('Set status: Rejected') }}</option>
     </select>
     <button type="button" class="btn btn-sm btn-primary" id="hcBulkApply">{{ _('Apply') }}</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">{{ _('Clear selection') }}</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">Effacer la sélection</button>
     <span class="hc-bulkbar__hint">{{ _('/ search · j/k move · Enter open') }}</span>
   </div>
   <div class="hc-quickchips mt-2" id="hcQuickChips">
-    <button type="button" class="hc-quickchip" data-quick-filter="no_owner">{{ _('No owner') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="no_owner">Sans responsable</button>
     <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Stale') }}</button>
     <button type="button" class="hc-quickchip" data-quick-filter="urgent">{{ _('Urgent') }}</button>
     <button type="button" class="hc-quickchip" data-quick-filter="can_help">{{ _('Has CAN_HELP') }}</button>
@@ -358,7 +359,7 @@
           <th style="width:120px;">{{ _('Closed') }}</th>
           <th style="width:130px;">{{ _('SLA') }}</th>
           <th style="width:140px;">{{ _('Signals') }}</th>
-          <th style="width:190px;">{{ _('Volunteer signal') }}</th>
+          <th style="width:190px;">Signal bénévole</th>
           <th style="width:210px;">{{ _('Actions') }}</th>
         </tr>
       </thead>
@@ -432,7 +433,7 @@
             }.get(status_key, 'bg-secondary') %}
             <span class="badge {{ status_class }}">{{ _(STATUS_LABELS.get(r.status, r.status)) }}</span>
             {% if not r.owner_id %}
-              <span class="badge text-bg-primary ms-1">{{ _('Unassigned') }}</span>
+              <span class="badge text-bg-primary ms-1">Sans responsable</span>
             {% elif r.owner_id == current_user.id %}
               <span class="badge text-bg-success ms-1">{{ _('Mine') }}</span>
             {% else %}
@@ -467,7 +468,7 @@
               <span class="badge {{ risk_badge_class }} ms-1" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
             {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-warning ms-1" title="{{ _('No owner assigned') }}"> {{ _('No owner') }}</span>
+              <span class="badge text-bg-warning ms-1" title="Aucun responsable assigné"> Sans responsable</span>
             {% endif %}
             {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
               <span class="badge text-bg-danger ms-1" title="{{ _('Stale request') }}"> {{ _('Stale') }}</span>
@@ -563,7 +564,7 @@
               </summary>
               <div class="hc-rowmenu__list" data-no-rowclick>
                 <a class="hc-rowmenu__item" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
-                  {{ _('Open details') }}
+                  Détails
                 </a>
 
                 {% if sig and sig.action == 'CAN_HELP' and sig.volunteer_id %}
@@ -615,25 +616,25 @@
       aria-controls="hcLiveBody"
     >
       <span class="hc-live-header__copy">
-        <span class="hc-live-header__title hc-fold__title">{{ _('Live') }}</span>
-        <span class="hc-muted hc-fold__subtitle">{{ _('Instant operational status') }}</span>
+        <span class="hc-live-header__title hc-fold__title">Centre opérationnel</span>
+        <span class="hc-muted hc-fold__subtitle">État opérationnel immédiat</span>
       </span>
       <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">›</span>
     </button>
     <div class="hc-live-body hc-fold__body" id="hcLiveBody" hidden>
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveUnassigned">{{ _('• Without assigned volunteer: 0') }}</p>
-        <div class="hc-activity-meta">{{ _('Priority: assign or close') }}</div>
+        <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné: 0</p>
+        <div class="hc-activity-meta">Priorité: affecter ou clôturer</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveInProgress">{{ _('• In progress: 0') }}</p>
-        <div class="hc-activity-meta">{{ _('To monitor') }}</div>
+        <p class="hc-activity-title" id="hcLiveInProgress">• En cours: 0</p>
+        <div class="hc-activity-meta">À suivre</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveCanHelp">{{ _('• Available (CAN_HELP): 0') }}</p>
-        <div class="hc-activity-meta">{{ _('Volunteers ready to help') }}</div>
+        <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP): 0</p>
+        <div class="hc-activity-meta">Bénévoles mobilisables</div>
       </div>
     </div>
   </div>

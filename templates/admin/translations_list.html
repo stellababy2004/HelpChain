@@ -13,7 +13,7 @@
         <h1 class="hc-admin-title">Translations</h1>
         <div class="hc-muted">DB overrides (fallback: gettext/default)</div>
       </div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Back to requests</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
       <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_translations_coverage') }}">Coverage</a>
     </div>
   </div>
@@ -80,7 +80,7 @@
           <input type="hidden" name="action" value="{% if is_translation_frozen %}deactivate{% else %}activate{% endif %}">
           <input type="hidden" name="next" value="{{ url_for('admin.admin_translations_list', locale=locale, view=view, only_missing='1' if only_missing else None, q=q or None) }}">
           <input type="text" name="release_tag" class="form-control form-control-sm d-inline-block" style="width: 140px;" placeholder="Release tag" value="{{ translation_freeze.release_tag if translation_freeze else '' }}">
-          <input type="text" name="note" class="form-control form-control-sm d-inline-block" style="width: 220px;" placeholder="Freeze note (optional)" value="{{ translation_freeze.note if translation_freeze else '' }}">
+          <input type="text" name="note" class="form-control form-control-sm d-inline-block" style="width: 220px;" placeholder="Note de gel (optionnelle)" value="{{ translation_freeze.note if translation_freeze else '' }}">
           <button class="btn btn-sm {% if is_translation_frozen %}btn-outline-dark{% else %}btn-dark{% endif %}" type="submit">
             {% if is_translation_frozen %}Deactivate freeze{% else %}Activate freeze{% endif %}
           </button>
@@ -89,7 +89,7 @@
     {% endif %}
 
     <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
-      <input class="form-control" name="q" placeholder="Search key..." value="{{ q }}" style="max-width: 420px;">
+      <input class="form-control" name="q" placeholder="Rechercher une clé..." value="{{ q }}" style="max-width: 420px;">
 
       <select class="form-select" name="locale" style="max-width: 180px;">
         {% for lc in supported_locales %}
@@ -127,7 +127,7 @@
               {% if can_l10n_write and not is_translation_frozen %}
                 <button id="hc-i18n-run-now" type="button" class="btn btn-sm btn-success d-none">Run now</button>
               {% else %}
-                <span class="badge text-bg-light border">{% if is_translation_frozen %}Freeze{% elif is_locale_locked %}Locked{% else %}Read-only{% endif %}</span>
+                <span class="badge text-bg-light border">{% if is_translation_frozen %}Gel actif{% elif is_locale_locked %}Verrouillé{% else %}Lecture seule{% endif %}</span>
               {% endif %}
             </div>
           </div>
@@ -185,7 +185,7 @@
           </form>
         {% else %}
           <span class="badge text-bg-light border">
-            {% if is_translation_frozen %}Freeze active: preview only{% elif is_locale_locked %}Locale locked: preview only{% else %}Read-only access: preview only{% endif %}
+            {% if is_translation_frozen %}Gel actif: aperçu uniquement{% elif is_locale_locked %}Langue verrouillée: aperçu uniquement{% else %}Accès en lecture seule: aperçu uniquement{% endif %}
           </span>
         {% endif %}
       </div>

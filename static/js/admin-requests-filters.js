@@ -8,7 +8,7 @@
 
   let activeTab = "ALL";
   let actionOnly = false;
-  const actionLabelBase = btnAction ? (btnAction.textContent || "Action only").trim() : "Action only";
+  const actionLabelBase = btnAction ? (btnAction.textContent || "Actions prioritaires").trim() : "Actions prioritaires";
 
   function normalizeTab(v){
     const val = (v || "").toUpperCase();

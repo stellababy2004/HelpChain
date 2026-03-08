@@ -13,7 +13,7 @@
         <h1 class="hc-admin-title">{{ _('Audit trail') }}</h1>
         <div class="hc-muted">{{ _('Who changed what and when') }}</div>
       </div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">{{ _('Back to requests') }}</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
 
     <form class="row g-2 align-items-end" method="GET" action="{{ url_for('admin.admin_audit') }}">

@@ -32,39 +32,72 @@
   </div>
 
   <section class="hc-pilotage-card mb-3">
-    <h3>Situations prioritaires</h3>
+    <h3>Alertes critiques</h3>
+    <div class="hc-pilotage-grid">
+      <article class="hc-pilotage-card">
+        <div class="small text-muted">Situations critiques sans responsable</div>
+        <div class="h4 mb-0">{{ critical_without_owner_count or 0 }}</div>
+      </article>
+      <article class="hc-pilotage-card">
+        <div class="small text-muted">Situations sans action depuis 72 heures</div>
+        <div class="h4 mb-0">{{ not_seen_72h_count or 0 }}</div>
+      </article>
+      <article class="hc-pilotage-card">
+        <div class="small text-muted">Affectations immédiates recommandées</div>
+        <div class="h4 mb-0">{{ assign_immediately_count or 0 }}</div>
+      </article>
+      <article class="hc-pilotage-card">
+        <div class="small text-muted">Revues managériales à effectuer aujourd’hui</div>
+        <div class="h4 mb-0">{{ manager_review_today_count or 0 }}</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="hc-pilotage-card mb-3">
+    <h3>Situations à traiter en priorité</h3>
     <div class="table-responsive">
       <table class="table table-sm align-middle hc-pilotage-table mb-0">
         <thead>
           <tr>
             <th>Identifiant</th>
-            <th>Niveau de risque</th>
             <th>Titre</th>
-            <th>Responsable</th>
+            <th>Niveau de risque</th>
+            <th>Indicateur</th>
+            <th>Détails</th>
           </tr>
         </thead>
         <tbody>
-          {% for req in priority_requests %}
-            <tr style="cursor:pointer;" onclick="window.location='{{ url_for('admin.admin_request_details', req_id=req.id) }}'">
-              <td>#{{ req.id }}</td>
-              <td>{{ (req.risk_level or 'standard')|capitalize }}</td>
-              <td>{{ req.title or ('Demande #' ~ req.id) }}</td>
+          {% for item in priority_items %}
+            <tr>
+              <td>#{{ item.id }}</td>
               <td>
-                {% if req.owner %}
-                  {{ req.owner.username }}
-                {% elif req.owner_id %}
-                  #{{ req.owner_id }}
-                {% else %}
-                  —
+                <div>{{ item.title }}</div>
+                {% if item.summary_compact %}
+                  <div class="small text-muted">{{ item.summary_compact }}</div>
                 {% endif %}
+              </td>
+              <td>{{ (item.risk_level or 'standard')|capitalize }}</td>
+              <td>{{ item.indicator_label }}</td>
+              <td>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=item.id) }}">Voir les détails</a>
               </td>
             </tr>
           {% else %}
-            <tr><td colspan="4" class="text-muted">Aucune situation prioritaire.</td></tr>
+            <tr><td colspan="5" class="text-muted">Aucune situation prioritaire.</td></tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section class="hc-pilotage-card mb-3">
+    <h3>Tendances observées</h3>
+    <p class="text-muted mb-2">Repères simples issus de l’activité récente et des situations suivies.</p>
+    <ul class="mb-0">
+      <li>{{ category_trend_text }}</li>
+      <li>{{ assignment_delay_text }}</li>
+      <li>{{ vigilance_text }}</li>
+    </ul>
   </section>
 
   <div class="hc-pilotage-grid">

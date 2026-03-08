@@ -38,6 +38,17 @@
 .hc-case-section{
   margin-bottom: 0 !important;
 }
+.hc-case-workspace{
+  align-items: start;
+}
+.hc-op-list{
+  display: grid;
+  gap: 6px;
+  font-size: 0.93rem;
+}
+.hc-timeline .hc-timeline-item{
+  border-left: 3px solid rgba(20,40,80,.16) !important;
+}
 .hc-coordination{
   margin-top: 6px;
 }

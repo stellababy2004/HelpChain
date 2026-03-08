@@ -74,15 +74,15 @@
 
     const updated = document.createElement("span");
     updated.className = "text-muted";
-    updated.textContent = `Updated: ${updatedAt || "--"}`;
+    updated.textContent = `Mis à jour: ${updatedAt || "--"}`;
     meta.appendChild(updated);
 
     const badge = document.createElement("span");
     badge.className = `hc-badge ${isFallback ? "hc-badge--neutral" : "hc-badge--ok"}`;
     badge.title = isFallback
-      ? "Using fallback data source (DB unavailable or delayed)."
-      : "Live data source.";
-    badge.textContent = isFallback ? "DATA: FALLBACK" : "DATA: LIVE";
+      ? "Source de secours utilisée (BD indisponible ou retardée)."
+      : "Source de données en direct.";
+    badge.textContent = isFallback ? "Données: SECOURS" : "Données: DIRECT";
     meta.appendChild(badge);
   }
 
@@ -92,7 +92,7 @@
     if (!Array.isArray(items) || items.length === 0) {
       const empty = document.createElement("li");
       empty.className = "hc-risklist__empty";
-      empty.textContent = "No high-risk requests right now.";
+      empty.textContent = "Aucune situation à risque élevé pour le moment.";
       topList.appendChild(empty);
       return;
     }
@@ -110,19 +110,19 @@
       metaRow.className = "hc-riskitem__meta";
       const days = document.createElement("span");
       days.className = "hc-riskpill";
-      days.textContent = `${item.days_open || 0}d open`;
+      days.textContent = `${item.days_open || 0}j ouverts`;
       metaRow.appendChild(days);
 
       if (item.is_unassigned) {
         const unassigned = document.createElement("span");
         unassigned.className = "hc-riskpill hc-riskpill--warn";
-        unassigned.textContent = "Unassigned";
+        unassigned.textContent = "Sans responsable";
         metaRow.appendChild(unassigned);
       }
       if ((item.not_seen_count || 0) > 0) {
         const notSeen = document.createElement("span");
         notSeen.className = "hc-riskpill hc-riskpill--danger";
-        notSeen.textContent = `${item.not_seen_count} not seen`;
+        notSeen.textContent = `${item.not_seen_count} sans action`;
         metaRow.appendChild(notSeen);
       }
 
@@ -143,9 +143,9 @@
     setText('[data-kpi="sla_outliers_limit"]', fmt(d.sla_outliers_limit ?? 5));
     const sampleCount = Number(d.sla_samples ?? 0);
     if (sampleCount > 0) {
-      setText('[data-kpi="sla_hint"]', `Based on ${sampleCount} notified matches with an action.`);
+      setText('[data-kpi="sla_hint"]', `Basé sur ${sampleCount} appariements notifiés avec action.`);
     } else {
-      setText('[data-kpi="sla_hint"]', "No SLA samples yet. We'll start measuring once volunteers receive notifications and respond.");
+      setText('[data-kpi="sla_hint"]', "Aucun échantillon SLA pour le moment. La mesure commence après notification et réponse des bénévoles.");
     }
 
     // Outliers (slowest first-action responses)
@@ -169,7 +169,7 @@
           const a = document.createElement("a");
           a.className = "hc-mini-list__link";
           a.href = `/admin/requests/${encodeURIComponent(reqId)}`;
-          a.title = "Open request details";
+          a.title = "Ouvrir les détails de la demande";
 
           const left = document.createElement("div");
           left.className = "hc-mini-list__left";
@@ -180,7 +180,7 @@
 
           const sub = document.createElement("div");
           sub.className = "hc-mini-list__sub";
-          sub.textContent = volId ? `Volunteer ${safeText(volId)}` : "Volunteer —";
+          sub.textContent = volId ? `Bénévole ${safeText(volId)}` : "Bénévole —";
 
           left.appendChild(title);
           left.appendChild(sub);
@@ -213,12 +213,12 @@
         : `${d.conversion_pct}%`;
     kConv.textContent = conv;
 
-    kStaleSub.textContent = `> ${d.stale_days} days, not closed`;
-    kUnassignedSub.textContent = `> ${d.unassigned_days} days, unassigned`;
-    if (kNotSeen24Sub) kNotSeen24Sub.textContent = "Volunteer attention risk";
-    if (kNotSeen48Sub) kNotSeen48Sub.textContent = "Elevated attention risk";
-    if (kNotSeen72Sub) kNotSeen72Sub.textContent = "Critical attention risk";
-    kConvSub.textContent = `Last ${d.window_days} days - ${d.assigned_7d} assigned / ${d.can_help_7d} CAN_HELP`;
+    kStaleSub.textContent = `> ${d.stale_days} jours, non clôturées`;
+    kUnassignedSub.textContent = `> ${d.unassigned_days} jours, sans responsable`;
+    if (kNotSeen24Sub) kNotSeen24Sub.textContent = "Risque de suivi bénévole";
+    if (kNotSeen48Sub) kNotSeen48Sub.textContent = "Risque de suivi renforcé";
+    if (kNotSeen72Sub) kNotSeen72Sub.textContent = "Risque critique de suivi";
+    kConvSub.textContent = `Derniers ${d.window_days} jours - ${d.assigned_7d} affectés / ${d.can_help_7d} CAN_HELP`;
     const isFallback = Boolean(d.notified_source && d.notified_source !== "notified_at");
     renderMeta(d.generated_at, isFallback);
 
@@ -242,7 +242,7 @@
       const data = await load();
       render(data);
     } catch (_err) {
-      renderMeta("Failed to load KPIs", true);
+      renderMeta("Échec du chargement des indicateurs", true);
     }
   }
 

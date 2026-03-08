@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Risk Panel') }} | {{ _('Admin') }}{% endblock %}
+{% block title %}Pilotage des risques | {{ _('Admin') }}{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
@@ -10,14 +10,14 @@
   <div class="hc-admin-stickybar">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div>
-        <div class="hc-kicker">{{ _('Operational Intelligence') }}</div>
-        <h1 class="h5 mb-0">{{ _('Risk Panel') }}</h1>
-        <div class="hc-muted">{{ _('Response Performance') }} (<span id="hcSlaHours">12</span>h SLA)</div>
+        <div class="hc-kicker">Pilotage opérationnel</div>
+        <h1 class="h5 mb-0">Pilotage des risques</h1>
+        <div class="hc-muted">Performance de réponse (<span id="hcSlaHours">12</span>h SLA)</div>
       </div>
       <div class="hc-risk-meta" id="hcRiskMeta">
-        <span class="text-muted">{{ _('Updated:') }} --</span>
-        <span class="hc-badge hc-badge--neutral" title="{{ _('Waiting for KPI data.') }}">
-          {{ _('DATA:') }} --
+        <span class="text-muted">Mis à jour: --</span>
+        <span class="hc-badge hc-badge--neutral" title="En attente des données d’indicateurs.">
+          Données: --
         </span>
       </div>
     </div>
@@ -26,17 +26,17 @@
   <div class="row g-3 mt-2">
     <div class="col-12 col-md-6 col-xl-3">
       <a class="hc-riskcard hc-riskcard--red hc-riskcard--link" id="cardStale" href="{{ url_for('admin.admin_requests', risk='stale') }}">
-        <div class="hc-riskcard__label">{{ _('Stale requests') }}</div>
+        <div class="hc-riskcard__label">Demandes en attente prolongée</div>
         <div class="hc-riskcard__value" id="kStale">-</div>
-        <div class="hc-riskcard__sub" id="kStaleSub">{{ _('> 8 days, not closed') }}</div>
+        <div class="hc-riskcard__sub" id="kStaleSub">> 8 jours, non clôturées</div>
       </a>
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
       <a class="hc-riskcard hc-riskcard--amber hc-riskcard--link" id="cardUnassigned" href="{{ url_for('admin.admin_requests', risk='unassigned') }}">
-        <div class="hc-riskcard__label">{{ _('Unassigned aging') }}</div>
+        <div class="hc-riskcard__label">Sans responsable (ancienneté)</div>
         <div class="hc-riskcard__value" id="kUnassigned">-</div>
-        <div class="hc-riskcard__sub" id="kUnassignedSub">{{ _('> 3 days, unassigned') }}</div>
+        <div class="hc-riskcard__sub" id="kUnassignedSub">> 3 jours, sans responsable</div>
       </a>
     </div>
 
@@ -45,73 +45,73 @@
         class="hc-riskcard hc-riskcard--yellow hc-riskcard--link"
         id="cardNotSeen24"
         href="{{ url_for('admin.admin_requests', risk='notseen24') }}"
-        title="{{ _('View queue') }}"
-        aria-label="{{ _('Not seen 24h queue - view filtered requests') }}"
+        title="Voir la file"
+        aria-label="File sans action 24h - voir les demandes filtrées"
       >
-        <div class="hc-riskcard__label"><span id="kNotSeen24Icon" class="hc-riskcard__icon" hidden></span>{{ _('Not seen (24h+)') }}</div>
+        <div class="hc-riskcard__label"><span id="kNotSeen24Icon" class="hc-riskcard__icon" hidden></span>Sans action (24h+)</div>
         <div class="hc-riskcard__value" id="kNotSeen24">-</div>
-        <div class="hc-riskcard__sub" id="kNotSeen24Sub">{{ _('Volunteer attention risk') }}</div>
-        <div class="hc-riskcard__warn" id="kNotSeen24Warn" hidden> {{ _('Needs follow-up') }}</div>
+        <div class="hc-riskcard__sub" id="kNotSeen24Sub">Risque de suivi bénévole</div>
+        <div class="hc-riskcard__warn" id="kNotSeen24Warn" hidden> Suivi nécessaire</div>
       </a>
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <a class="hc-riskcard hc-riskcard--amber hc-riskcard--link" id="cardNotSeen48" href="{{ url_for('admin.admin_requests', risk='notseen48') }}" title="{{ _('View queue') }}" aria-label="{{ _('Not seen 48h queue - view filtered requests') }}">
-        <div class="hc-riskcard__label"><span id="kNotSeen48Icon" class="hc-riskcard__icon" hidden></span>{{ _('Not seen (48h+)') }}</div>
+      <a class="hc-riskcard hc-riskcard--amber hc-riskcard--link" id="cardNotSeen48" href="{{ url_for('admin.admin_requests', risk='notseen48') }}" title="Voir la file" aria-label="File sans action 48h - voir les demandes filtrées">
+        <div class="hc-riskcard__label"><span id="kNotSeen48Icon" class="hc-riskcard__icon" hidden></span>Sans action (48h+)</div>
         <div class="hc-riskcard__value" id="kNotSeen48">-</div>
-        <div class="hc-riskcard__sub" id="kNotSeen48Sub">{{ _('Elevated attention risk') }}</div>
-        <div class="hc-riskcard__warn" id="kNotSeen48Warn" hidden> {{ _('Needs follow-up') }}</div>
+        <div class="hc-riskcard__sub" id="kNotSeen48Sub">Risque de suivi renforcé</div>
+        <div class="hc-riskcard__warn" id="kNotSeen48Warn" hidden> Suivi nécessaire</div>
       </a>
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
-      <a class="hc-riskcard hc-riskcard--red hc-riskcard--link" id="cardNotSeen72" href="{{ url_for('admin.admin_requests', risk='notseen72') }}" title="{{ _('View queue') }}" aria-label="{{ _('Not seen 72h queue - view filtered requests') }}">
-        <div class="hc-riskcard__label"><span id="kNotSeen72Icon" class="hc-riskcard__icon" hidden></span>{{ _('Not seen (72h+)') }}</div>
+      <a class="hc-riskcard hc-riskcard--red hc-riskcard--link" id="cardNotSeen72" href="{{ url_for('admin.admin_requests', risk='notseen72') }}" title="Voir la file" aria-label="File sans action 72h - voir les demandes filtrées">
+        <div class="hc-riskcard__label"><span id="kNotSeen72Icon" class="hc-riskcard__icon" hidden></span>Sans action (72h+)</div>
         <div class="hc-riskcard__value" id="kNotSeen72">-</div>
-        <div class="hc-riskcard__sub" id="kNotSeen72Sub">{{ _('Critical attention risk') }}</div>
-        <div class="hc-riskcard__warn" id="kNotSeen72Warn" hidden> {{ _('Needs urgent follow-up') }}</div>
+        <div class="hc-riskcard__sub" id="kNotSeen72Sub">Risque critique de suivi</div>
+        <div class="hc-riskcard__warn" id="kNotSeen72Warn" hidden> Suivi urgent requis</div>
       </a>
     </div>
 
     <div class="col-12 col-md-6 col-xl-3">
       <a class="hc-riskcard hc-riskcard--blue hc-riskcard--link" id="cardConv" href="{{ url_for('admin.admin_requests', risk='assigned_recent') }}">
-        <div class="hc-riskcard__label">{{ _('CAN_HELP -> Assigned') }}</div>
+        <div class="hc-riskcard__label">CAN_HELP -> Affecté</div>
         <div class="hc-riskcard__value" id="kConv">-</div>
-        <div class="hc-riskcard__sub" id="kConvSub">{{ _('Last 7 days') }}</div>
+        <div class="hc-riskcard__sub" id="kConvSub">7 derniers jours</div>
       </a>
     </div>
   </div>
 
   <div class="hc-card mt-3" id="hcPerfCard">
     <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
-      <h2 class="h6 mb-0">{{ _('Response Performance') }} (<span data-kpi="sla_hours">12</span>h SLA)</h2>
+      <h2 class="h6 mb-0">Performance de réponse (<span data-kpi="sla_hours">12</span>h SLA)</h2>
       <span class="hc-badge hc-badge--neutral" data-kpi="sla_scope">{{ _('ALL_NOTIFIED') }}</span>
     </div>
     <div class="hc-perf-kpi-row mt-3">
       <div class="hc-perf-kpi">
-        <div class="hc-perf-kpi__label">{{ _('Avg first seen') }}</div>
+        <div class="hc-perf-kpi__label">Délai moyen première consultation</div>
         <div class="hc-perf-kpi__value" data-kpi="avg_first_seen">—</div>
       </div>
       <div class="hc-perf-kpi">
-        <div class="hc-perf-kpi__label">{{ _('Avg first action') }}</div>
+        <div class="hc-perf-kpi__label">Délai moyen première action</div>
         <div class="hc-perf-kpi__value" data-kpi="avg_first_action">—</div>
       </div>
       <div class="hc-perf-kpi">
-        <div class="hc-perf-kpi__label">{{ _('SLA compliance') }}</div>
+        <div class="hc-perf-kpi__label">Conformité SLA</div>
         <div class="hc-perf-kpi__value"><span data-kpi="sla_under">—</span>%</div>
       </div>
     </div>
     <div class="hc-perf-hint mt-2" data-kpi="sla_hint">
-      {{ _('Based on') }} <span data-kpi="sla_samples">0</span> {{ _('notified matches with an action.') }}
+      Basé sur <span data-kpi="sla_samples">0</span> appariements notifiés avec action.
     </div>
 
     <hr class="hc-perf__sep">
 
     <div class="hc-perf__outliers">
       <div class="hc-perf__outHead">
-        <div class="hc-perf__outTitle">{{ _('Slowest responses (7d)') }}</div>
+        <div class="hc-perf__outTitle">Réponses les plus lentes (7j)</div>
         <div class="hc-perf__outMeta">
-          {{ _('Top') }} <span data-kpi="sla_outliers_limit">5</span>
+          Top <span data-kpi="sla_outliers_limit">5</span>
         </div>
       </div>
 
@@ -119,7 +119,7 @@
       </ul>
 
       <div class="hc-perf__outEmpty" id="hcSlaOutliersEmpty" hidden>
-        {{ _('No outliers yet.') }}
+        Aucune valeur atypique pour le moment.
       </div>
     </div>
   </div>
@@ -127,13 +127,13 @@
   <div class="hc-card mt-3">
     <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
       <div>
-        <h2 class="h6 mb-1">{{ _('Top 5 risky requests') }}</h2>
-        <div class="hc-muted">{{ _('Actionable queue for ops follow-up') }}</div>
+        <h2 class="h6 mb-1">Top 5 situations à risque</h2>
+        <div class="hc-muted">File prioritaire pour suivi opérationnel</div>
       </div>
-      <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.admin_requests') }}">{{ _('Open requests') }}</a>
+      <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.admin_requests') }}">Ouvrir les demandes</a>
     </div>
     <ul class="hc-risklist mt-3" id="riskTopList">
-      <li class="hc-risklist__empty">{{ _('Loading...') }}</li>
+      <li class="hc-risklist__empty">Chargement...</li>
     </ul>
   </div>
 </div>

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle demande | HelpChain{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h1 class="h4 mb-1">Nouvelle demande</h1>
+      <p class="text-muted mb-0">Création d’une situation par un agent ou un opérateur</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+  </div>
+
+  <section class="hc-card p-3">
+    <form method="post" action="{{ url_for('admin.admin_request_new') }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label" for="title">Titre</label>
+          <input class="form-control {% if form_errors.get('title') %}is-invalid{% endif %}" id="title" name="title" value="{{ form_data.get('title','') }}" required>
+          {% if form_errors.get('title') %}<div class="invalid-feedback">{{ form_errors.get('title') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="priority">Priorité</label>
+          <select class="form-select {% if form_errors.get('priority') %}is-invalid{% endif %}" id="priority" name="priority" required>
+            {% set p = form_data.get('priority','standard') %}
+            <option value="standard" {% if p == 'standard' %}selected{% endif %}>Standard</option>
+            <option value="attention" {% if p == 'attention' %}selected{% endif %}>Attention</option>
+            <option value="urgent" {% if p == 'urgent' %}selected{% endif %}>Urgent</option>
+          </select>
+          {% if form_errors.get('priority') %}<div class="invalid-feedback">{{ form_errors.get('priority') }}</div>{% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="description">Description</label>
+          <textarea class="form-control {% if form_errors.get('description') %}is-invalid{% endif %}" id="description" name="description" rows="4" required>{{ form_data.get('description','') }}</textarea>
+          {% if form_errors.get('description') %}<div class="invalid-feedback">{{ form_errors.get('description') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="person_name">Nom de la personne concernée</label>
+          <input class="form-control {% if form_errors.get('person_name') %}is-invalid{% endif %}" id="person_name" name="person_name" value="{{ form_data.get('person_name','') }}" required>
+          {% if form_errors.get('person_name') %}<div class="invalid-feedback">{{ form_errors.get('person_name') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="city">Ville / territoire</label>
+          <input class="form-control {% if form_errors.get('city') %}is-invalid{% endif %}" id="city" name="city" value="{{ form_data.get('city','') }}" required>
+          {% if form_errors.get('city') %}<div class="invalid-feedback">{{ form_errors.get('city') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="email">Adresse e-mail</label>
+          <input type="email" class="form-control {% if form_errors.get('email') %}is-invalid{% endif %}" id="email" name="email" value="{{ form_data.get('email','') }}">
+          {% if form_errors.get('email') %}<div class="invalid-feedback">{{ form_errors.get('email') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="phone">Téléphone</label>
+          <input class="form-control" id="phone" name="phone" value="{{ form_data.get('phone','') }}">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="category">Catégorie</label>
+          <select class="form-select {% if form_errors.get('category') %}is-invalid{% endif %}" id="category" name="category" required>
+            <option value="">Sélectionner</option>
+            {% set c = form_data.get('category','') %}
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if c == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+          {% if form_errors.get('category') %}<div class="invalid-feedback">{{ form_errors.get('category') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="structure_id">Structure</label>
+          <select class="form-select {% if form_errors.get('structure_id') %}is-invalid{% endif %}" id="structure_id" name="structure_id">
+            <option value="">Aucune</option>
+            {% set s = form_data.get('structure_id','') %}
+            {% for st in structures %}
+              <option value="{{ st.id }}" {% if s == (st.id|string) %}selected{% endif %}>{{ st.name }}{% if st.slug %} ({{ st.slug }}){% endif %}</option>
+            {% endfor %}
+          </select>
+          {% if form_errors.get('structure_id') %}<div class="invalid-feedback">{{ form_errors.get('structure_id') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="owner_id">Responsable initial</label>
+          <select class="form-select {% if form_errors.get('owner_id') %}is-invalid{% endif %}" id="owner_id" name="owner_id">
+            <option value="">Non assigné</option>
+            {% set o = form_data.get('owner_id','') %}
+            {% for a in admins %}
+              <option value="{{ a.id }}" {% if o == (a.id|string) %}selected{% endif %}>{{ a.username }}</option>
+            {% endfor %}
+          </select>
+          {% if form_errors.get('owner_id') %}<div class="invalid-feedback">{{ form_errors.get('owner_id') }}</div>{% endif %}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="internal_notes">Notes internes</label>
+          <textarea class="form-control" id="internal_notes" name="internal_notes" rows="3">{{ form_data.get('internal_notes','') }}</textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-primary" type="submit">Créer la demande</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

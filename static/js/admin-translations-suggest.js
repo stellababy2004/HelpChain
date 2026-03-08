@@ -14,7 +14,7 @@
   async function loadSuggestions(btn) {
     const endpoint = btn.getAttribute("data-endpoint") || "/admin/translations/suggest";
     const provider = btn.getAttribute("data-provider") || "";
-    status.textContent = "Loading suggestions...";
+    status.textContent = "Chargement des suggestions...";
     list.innerHTML = "";
 
     const locale = (localeSel && localeSel.value) ? localeSel.value : (btn.getAttribute("data-locale") || "");
@@ -32,13 +32,13 @@
       });
 
       if (!res.ok) {
-        status.textContent = "Failed to load suggestions.";
+        status.textContent = "Échec du chargement des suggestions.";
         return;
       }
 
       const data = await res.json();
       const providerLabel = data.provider ? ` (${data.provider})` : "";
-      status.textContent = `Loaded suggestions${providerLabel}.`;
+      status.textContent = `Suggestions chargées${providerLabel}.`;
 
       (data.suggestions || []).forEach((s, idx) => {
         const item = document.createElement("div");
@@ -64,7 +64,7 @@
         list.appendChild(item);
       });
     } catch (_) {
-      status.textContent = "Failed to load suggestions.";
+      status.textContent = "Échec du chargement des suggestions.";
     }
   }
 

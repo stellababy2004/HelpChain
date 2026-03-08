@@ -7,40 +7,52 @@
 {% block content %}
 {% set is_locked = is_locked|default(false) %}
 {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
+{% set risk_level_key = (req.risk_level or 'standard')|lower %}
+{% if risk_level_key not in ['standard', 'attention', 'critical'] %}
+  {% set risk_level_key = 'standard' %}
+{% endif %}
+{% set priority_key = (req.priority or 'medium')|lower %}
 <div class="hc-admin-wrap">
 
   {% set sm = status_meta(req.status) %}
   {% set _prio = (req.priority or 'medium')|lower %}
   {% set is_closed_status = ((req.status or '')|upper == 'CLOSED') %}
 
-  <div class="card border-0 shadow-sm mb-3 hc-case-header">
+  <header class="card border-0 shadow-sm mb-3 hc-case-header">
     <div class="card-body">
       <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
         <div>
-          <div class="text-muted small">{{ _('Case') }} #{{ req.id }}</div>
-          <h2 class="mb-1 fw-bold">{{ req.title or (_('Request #') ~ req.id) }}</h2>
+          <div class="text-muted small">Demande #{{ req.id }}</div>
+          <h2 class="mb-1 fw-bold">{{ req.title or ('Demande #' ~ req.id) }}</h2>
           <div class="d-flex flex-wrap align-items-center gap-2">
             <span class="{{ sm.badge_class }}">
-              <i class="bi {{ sm.icon }} me-1"></i>{{ sm.label }}
+              <i class="bi {{ sm.icon }} me-1"></i>Statut: {{ sm.label }}
             </span>
-            {% if _prio == 'urgent' %}
-              <span class="badge text-bg-danger">{{ _('Priority:') }} {{ _prio }}</span>
-            {% elif _prio == 'low' %}
-              <span class="badge text-bg-secondary">{{ _('Priority:') }} {{ _prio }}</span>
+            {% if priority_key == 'urgent' %}
+              <span class="badge text-bg-danger">Priorité: Urgent</span>
+            {% elif priority_key in ['high', 'attention'] %}
+              <span class="badge text-bg-warning text-dark">Priorité: Attention</span>
             {% else %}
-              <span class="badge text-bg-warning text-dark">{{ _('Priority:') }} {{ _prio }}</span>
+              <span class="badge text-bg-secondary">Priorité: Standard</span>
+            {% endif %}
+            {% if risk_level_key == 'critical' %}
+              <span class="badge text-bg-danger">Risque: Critique</span>
+            {% elif risk_level_key == 'attention' %}
+              <span class="badge text-bg-warning text-dark">Risque: Attention</span>
+            {% else %}
+              <span class="badge text-bg-light border">Risque: Standard</span>
             {% endif %}
             <span class="badge text-bg-light border">{{ req.category }}</span>
           </div>
         </div>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">{{ _('Back to requests') }}</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
       </div>
 
       <div class="row g-2 mt-2 small text-muted">
-        <div class="col-md-3"><strong>{{ _('City:') }}</strong> {{ req.city or "—" }}</div>
-        <div class="col-md-3"><strong>{{ _('Structure:') }}</strong> {{ req.structure_id or "—" }}</div>
+        <div class="col-md-3"><strong>Ville / territoire:</strong> {{ req.city or "—" }}</div>
+        <div class="col-md-3"><strong>Structure:</strong> {{ req.structure_id or "—" }}</div>
         <div class="col-md-3">
-          <strong>{{ _('Owner:') }}</strong>
+          <strong>Responsable:</strong>
           {% if req.owner %}
             {{ req.owner.username }}
           {% elif req.owner_id %}
@@ -49,19 +61,19 @@
             —
           {% endif %}
         </div>
-        <div class="col-md-3"><strong>{{ _('Last activity:') }}</strong> {{ req.updated_at or req.created_at or "-" }}</div>
+        <div class="col-md-3"><strong>Dernière activité:</strong> {{ req.updated_at or req.created_at or "-" }}</div>
       </div>
 
       <div class="d-flex flex-wrap align-items-end gap-2 mt-3">
         {% if not req.owner_id %}
           <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled{% endif %}>{{ _('Assign') }}</button>
+            <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled{% endif %}>Affecter un responsable</button>
           </form>
         {% elif can_edit %}
           <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled{% endif %}>{{ _('Unassign') }}</button>
+            <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled{% endif %}>Retirer l’affectation</button>
           </form>
         {% endif %}
 
@@ -79,25 +91,25 @@
                 name="resolution_note"
                 class="form-control form-control-sm"
                 minlength="5"
-                placeholder="{{ _('Outcome / Resolution') }}"
+                placeholder="Résultat / clôture"
               >
             </div>
-            <button type="submit" class="btn btn-primary btn-sm">{{ _('Save status') }}</button>
+            <button type="submit" class="btn btn-primary btn-sm">Mettre à jour le statut</button>
           </form>
 
-          <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}">
+          <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" id="cloturer-situation">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-secondary btn-sm" {% if is_closed_status %}disabled{% endif %}>{{ _('Close / Archive') }}</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm" {% if is_closed_status %}disabled{% endif %}>Clôturer la situation</button>
           </form>
         {% endif %}
 
         {% if req.phone %}
-          <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">{{ _('Call') }}</a>
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.phone }}">{{ _('Copy phone') }}</button>
+          <a href="tel:{{ req.phone }}" class="btn btn-outline-primary btn-sm">Appeler</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.phone }}">Copier le téléphone</button>
         {% endif %}
         {% if req.email %}
-          <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">{{ _('Email') }}</a>
-          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.email }}">{{ _('Copy email') }}</button>
+          <a href="mailto:{{ req.email }}" class="btn btn-outline-success btn-sm">E-mail</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-action="copyText" data-copy="{{ req.email }}">Copier l’e-mail</button>
         {% endif %}
       </div>
       <script>
@@ -123,70 +135,55 @@
         })();
       </script>
     </div>
-  </div>
+  </header>
 
   <section class="hc-card mb-3">
-    {% set risk_level_key = (req.risk_level or 'standard')|lower %}
-    {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
-      {% set risk_level_key = 'standard' %}
-    {% endif %}
     {% set parsed_signals = req.risk_signals|from_json %}
-    <h3>{{ _('AI Social Risk Engine') }}</h3>
-    <p><strong>{{ _('Risk score:') }}</strong> {{ req.risk_score or 0 }}/100</p>
-    <p><strong>{{ _('Risk level:') }}</strong> {{ risk_level_key|capitalize }}</p>
-    <p><strong>{{ _('Last updated:') }}</strong> {{ req.risk_last_updated or "—" }}</p>
-    <p><strong>{{ _('Signals:') }}</strong></p>
+    <h3>Moteur de risque social</h3>
+    <p><strong>Score de risque:</strong> {{ req.risk_score or 0 }}/100</p>
+    <p><strong>Niveau de risque:</strong> {{ risk_level_key|capitalize }}</p>
+    <p><strong>Dernière mise à jour:</strong> {{ req.risk_last_updated or "—" }}</p>
+    <p><strong>Signaux:</strong></p>
     <ul>
       {% if parsed_signals %}
         {% for signal in parsed_signals %}
           <li>{{ signal }}</li>
         {% endfor %}
       {% else %}
-        <li>{{ _('No signals') }}</li>
+        <li>Aucun signal</li>
       {% endif %}
     </ul>
     <p class="hc-muted">
-      {{ _('HelpChain provides prioritization assistance and does not replace human assessment.') }}
+      HelpChain appuie la priorisation opérationnelle et ne remplace pas l’évaluation humaine.
     </p>
   </section>
 
-  <section class="hc-card mb-3">
-    <h3>{{ _('AI Operational Recommendation') }}</h3>
-    <p><strong>{{ _('Recommended action:') }}</strong> {{ recommendation.recommended_action if recommendation else 'routine_queue' }}</p>
-    <p><strong>{{ _('Pathway:') }}</strong> {{ recommendation.recommended_pathway if recommendation else 'general_support' }}</p>
-    <p><strong>{{ _('Review window:') }}</strong> {{ recommendation.recommended_priority_window if recommendation else 'this_week' }}</p>
-    <p><strong>{{ _('Explanation:') }}</strong> {{ recommendation.explanation if recommendation else _('No recommendation available.') }}</p>
-    <p class="hc-muted">
-      {{ _('This recommendation supports case coordination and does not replace human decision-making.') }}
-    </p>
-  </section>
-
-  <!-- V3: Match & engagement (city-based) -->
+  <!-- Appariement et mobilisation -->
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-3">
-        <h5 class="card-title mb-0">{{ _('Match & engagement') }}</h5>
-        <div class="text-muted small">City-based match: <strong>{{ req.city or '—' }}</strong></div>
+        <h5 class="card-title mb-0">Appariement et mobilisation</h5>
+        <div class="text-muted small">Appariement territorial: <strong>{{ req.city or '—' }}</strong></div>
       </div>
       <div class="row text-center">
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">{{ _('Matched') }}</div>
+          <div class="text-muted small">Appariés</div>
           <div class="fs-5 fw-semibold">{{ matched_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">{{ _('Notified') }}</div>
+          <div class="text-muted small">Notifiés</div>
           <div class="fs-5 fw-semibold">{{ notified_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">{{ _('Seen') }}</div>
+          <div class="text-muted small">Vus</div>
           <div class="fs-5 fw-semibold">{{ seen_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">{{ _('Interested') }}</div>
+          <div class="text-muted small">Intéressés</div>
           <div class="fs-5 fw-semibold">{{ interested_count }}</div>
         </div>
         <div class="col-6 col-md-2 mb-2">
-          <div class="text-muted small">{{ _('Assigned') }}</div>
+          <div class="text-muted small">Affecté</div>
           <div class="fs-5 fw-semibold">
             {% if assigned_volunteer %}
               {% set label = assigned_volunteer.name or assigned_volunteer.email or ('#' ~ assigned_volunteer.id) %}
@@ -206,8 +203,8 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h5 class="card-title mb-0">{{ _('Matched volunteers') }}</h5>
-        <div class="text-muted small">{{ _('Based on city match') }}</div>
+        <h5 class="card-title mb-0">Bénévoles appariés</h5>
+        <div class="text-muted small">Basé sur la correspondance territoriale</div>
       </div>
       {% if csrf_token is defined %}
         {% set csrf = csrf_token() %}
@@ -219,12 +216,12 @@
           <table class="table align-middle">
             <thead>
               <tr>
-                <th>{{ _('Volunteer') }}</th>
-                <th>{{ _('Location') }}</th>
-                <th>{{ _('Notified') }}</th>
-                <th>{{ _('Seen') }}</th>
-                <th>{{ _('Interested') }}</th>
-                <th>{{ _('Action') }}</th>
+                <th>Bénévole</th>
+                <th>Localisation</th>
+                <th>Notifié</th>
+                <th>Vu</th>
+                <th>Intéressé</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -242,7 +239,7 @@
                       aria-controls="hcVolunteerDrawer">
                       #{{ v.id }}
                     </button>
-                    <div class="fw-semibold">{{ v.name or ('Volunteer #' ~ v.id) }}</div>
+                    <div class="fw-semibold">{{ v.name or ('Bénévole #' ~ v.id) }}</div>
                     <div class="text-muted small">{{ v.email }}</div>
                   </td>
                   <td>{{ v.location or '—' }}</td>
@@ -255,25 +252,25 @@
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="button" class="btn btn-sm btn-outline-danger"
                           data-action="confirmSubmit"
-                          data-confirm="Unassign will notify the volunteer. Proceed?">
-                          Unassign
+                          data-confirm="Le désengagement notifiera le volontaire. Continuer ?">
+                          Désaffecter
                         </button>
-                        <div class="text-muted small mt-1">{{ _('Unassign will notify the volunteer.') }}</div>
+                        <div class="text-muted small mt-1">Le désengagement notifiera le volontaire.</div>
                       </form>
                     {% else %}
                       <form method="post" action="{{ url_for('admin.admin_assign_volunteer', req_id=req.id, volunteer_id=v.id) }}" class="d-inline hc-assign-form" data-volunteer-id="{{ v.id }}" data-request-id="{{ req.id }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         {% if req.assigned_volunteer_id and req.assigned_volunteer_id != v.id %}
-                          <span class="text-muted small me-2">{{ _('Already assigned') }}</span>
-                          <button type="submit" class="btn btn-sm btn-outline-primary" disabled title="Already assigned">
-                            Assign
+                          <span class="text-muted small me-2">Déjà affecté</span>
+                          <button type="submit" class="btn btn-sm btn-outline-primary" disabled title="Déjà affecté">
+                            Affecter
                           </button>
                         {% else %}
                           <button type="submit" class="btn btn-sm btn-outline-primary hc-assign-btn"
                             data-volunteer-id="{{ v.id }}"
                             data-request-id="{{ req.id }}"
-                            {% if req.assigned_volunteer_id %}disabled title="Already assigned"{% endif %}>
-                            Assign
+                            {% if req.assigned_volunteer_id %}disabled title="Déjà affecté"{% endif %}>
+                            Affecter
                           </button>
                         {% endif %}
                       </form>
@@ -285,7 +282,7 @@
           </table>
         </div>
       {% else %}
-        <p class="text-muted mb-0">{{ _('No city-based matches for this request yet.') }}</p>
+        <p class="text-muted mb-0">Aucun appariement territorial pour cette situation.</p>
       {% endif %}
     </div>
   </div>
@@ -293,20 +290,20 @@
   <div class="card border-0 shadow-sm mb-3">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h5 class="card-title mb-0">{{ _('Volunteer signals') }}</h5>
+        <h5 class="card-title mb-0">Signaux bénévoles</h5>
         <div class="text-muted small">
-          {% if can_help_count %} {{ can_help_count }} can help{% endif %}
-          {% if cant_help_count %} <span class="ms-2"> {{ cant_help_count }} can’t help</span>{% endif %}
+          {% if can_help_count %} {{ can_help_count }} peuvent aider{% endif %}
+          {% if cant_help_count %} <span class="ms-2"> {{ cant_help_count }} indisponibles</span>{% endif %}
           {% if not can_help_count and not cant_help_count %}—{% endif %}
         </div>
       </div>
       {% if last_vol_signal %}
         <div class="alert alert-info py-2 px-3 mb-3">
-          <strong>{{ _("Volunteer signal") }}:</strong>
+          <strong>Signal bénévole:</strong>
           {% if last_vol_signal.action == 'CAN_HELP' %}
-             {{ _("Can help") }}
+             Peut aider
           {% elif last_vol_signal.action == 'CANT_HELP' %}
-             {{ _("Can't help") }}
+             Ne peut pas aider
           {% else %}
             {{ last_vol_signal.action }}
           {% endif %}
@@ -327,9 +324,9 @@
           <table class="table align-middle">
             <thead>
               <tr>
-                <th>{{ _('Volunteer') }}</th>
-                <th>{{ _('Action') }}</th>
-                <th>{{ _('Updated') }}</th>
+                <th>Bénévole</th>
+                <th>Action</th>
+                <th>Mise à jour</th>
               </tr>
             </thead>
             <tbody>
@@ -347,11 +344,11 @@
                       aria-controls="hcVolunteerDrawer">
                       #{{ s.volunteer_id }}
                     </button>
-                    <div class="fw-semibold">{{ v.name if v else ('Volunteer #' ~ s.volunteer_id) }}</div>
+                    <div class="fw-semibold">{{ v.name if v else ('Bénévole #' ~ s.volunteer_id) }}</div>
                     <div class="text-muted small">{{ v.email if v else '' }}</div>
                   </td>
                   <td>
-                    {% if s.action == 'CAN_HELP' %} Can help{% elif s.action == 'CANT_HELP' %} Can’t help{% else %}{{ s.action }}{% endif %}
+                    {% if s.action == 'CAN_HELP' %} Peut aider{% elif s.action == 'CANT_HELP' %} Ne peut pas aider{% else %}{{ s.action }}{% endif %}
                   </td>
                   <td class="text-muted small">
                     {{ s.updated_at or s.created_at }}
@@ -362,7 +359,7 @@
           </table>
         </div>
       {% else %}
-        <p class="text-muted mb-0">{{ _('No signals yet.') }}</p>
+        <p class="text-muted mb-0">Aucun signal pour le moment.</p>
       {% endif %}
     </div>
   </div>
@@ -370,7 +367,7 @@
   <div class="card border-0 shadow-sm mb-3 hc-card">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h5 class="card-title mb-0">{{ _('Volunteer actions') }}</h5>
+        <h5 class="card-title mb-0">Actions bénévoles</h5>
       </div>
       {% if volunteer_engagement %}
         <ul class="hc-mini-list mb-3">
@@ -383,16 +380,16 @@
         </ul>
       {% endif %}
       {% if not latest_actions %}
-        <div class="text-muted">{{ _('No volunteer actions yet.') }}</div>
+        <div class="text-muted">Aucune action bénévole pour le moment.</div>
       {% else %}
         {% set ACTION_LABELS = {
-          "volunteer_can_help": "Volunteer: can help",
-          "volunteer_cant_help": "Volunteer: can't help"
+          "volunteer_can_help": "Volontaire: peut aider",
+          "volunteer_cant_help": "Volontaire: indisponible"
         } %}
         <ul class="hc-mini-list">
           {% for a in latest_actions %}
             <li>
-              <strong>{% if a.volunteer_id %}Volunteer #{{ a.volunteer_id }}{% else %}Volunteer{% endif %}</strong>
+              <strong>{% if a.volunteer_id %}Bénévole #{{ a.volunteer_id }}{% else %}Bénévole{% endif %}</strong>
               —
               {{ ACTION_LABELS.get(a.action, a.action) }}
               <span class="text-muted">· {{ a.created_at }}</span>
@@ -404,7 +401,7 @@
   </div>
 
   <!-- Main grid -->
-  <div class="hc-admin-grid">
+  <div class="hc-admin-grid hc-case-workspace">
 
     <!-- Left: request info -->
     <main>
@@ -412,8 +409,8 @@
       {% if is_locked %}
         <div class="alert alert-warning d-flex justify-content-between align-items-center">
           <div>
-             Заключено от admin #{{ locked_by }}.
-            Само той/тя може да редактира, освен ако не отключиш ръчно.
+            Situation verrouillée par l’admin #{{ locked_by }}.
+            Seul cet administrateur peut modifier la demande sauf déverrouillage manuel.
           </div>
           <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -422,7 +419,14 @@
         </div>
       {% endif %}
 
-      <div class="card border-0 shadow-sm mb-3 hc-card">
+      <section class="card border-0 shadow-sm mb-3 hc-card hc-case-section">
+        <div class="card-body">
+          <h3 class="mb-2">Résumé de la situation</h3>
+          <p class="mb-0">{{ case_summary or 'Résumé non disponible pour cette situation.' }}</p>
+        </div>
+      </section>
+
+      <section class="card border-0 shadow-sm mb-3 hc-card hc-case-section">
         <div class="card-body">
           <div class="d-flex align-items-start justify-content-between gap-3">
             <div>
@@ -437,21 +441,21 @@
 
           <hr class="my-3" />
 
-          <div class="fw-semibold mb-2">{{ _('Description') }}</div>
+          <h3 class="mb-2">Description</h3>
           <div class="text-body" style="white-space: pre-wrap;">{{ req.description }}</div>
         </div>
-      </div>
+      </section>
 
       {% if interests %}
       <div class="card border-0 shadow-sm mb-3 hc-card">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
-            <h5 class="card-title mb-0">{{ _('Volunteer interest') }}</h5>
+        <h5 class="card-title mb-0">Intérêt bénévole</h5>
             <span class="badge text-bg-light border">{{ interests|length }} записи</span>
           </div>
           {% if is_locked %}
             <div class="alert alert-warning py-2 mt-2 mb-2">
-               Заявката е заключена (done/cancelled). Смени статуса от dropdown-а, за да отключиш Approve/Reject.
+               La situation est verrouillée (terminée/annulée). Modifiez le statut pour réactiver les actions.
             </div>
           {% endif %}
 
@@ -460,7 +464,7 @@
               <thead>
                 <tr>
                   <th>{{ _('ID') }}</th>
-                  <th>{{ _('Volunteer ID') }}</th>
+                  <th>ID bénévole</th>
                   <th>{{ _('Status') }}</th>
                   <th>{{ _('Created') }}</th>
                   <th class="text-end">{{ _('Actions') }}</th>
@@ -487,11 +491,11 @@
                       {% if i.status == 'pending' %}
                         <form method="post" action="{{ url_for('admin.admin_interest_approve', req_id=req.id, interest_id=i.id) }}" class="d-inline">
                           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                          <button class="btn btn-sm btn-success" {% if is_locked %}disabled title="{{ _('Locked (done/cancelled or by another admin)') }}"{% endif %}>{{ _('Approve') }}</button>
+                          <button class="btn btn-sm btn-success" {% if is_locked %}disabled title="Verrouillée (terminée/annulée ou par un autre administrateur)"{% endif %}>Approuver</button>
                         </form>
                         <form method="post" action="{{ url_for('admin.admin_interest_reject', req_id=req.id, interest_id=i.id) }}" class="d-inline">
                           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                          <button class="btn btn-sm btn-outline-danger" {% if is_locked %}disabled title="{{ _('Locked (done/cancelled or by another admin)') }}"{% endif %}>{{ _('Reject') }}</button>
+                          <button class="btn btn-sm btn-outline-danger" {% if is_locked %}disabled title="Verrouillée (terminée/annulée ou par un autre administrateur)"{% endif %}>Rejeter</button>
                         </form>
                       {% else %}
                         <span class="text-muted">-</span>
@@ -506,7 +510,7 @@
       </div>
       {% endif %}
 
-      <div class="card border-0 shadow-sm hc-card">
+      <section class="card border-0 shadow-sm hc-card hc-case-section">
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between gap-2">
             <div class="fw-semibold">{{ _('Contact details') }}</div>
@@ -540,12 +544,62 @@
           </div>
 
         </div>
-      </div>
+      </section>
+
+      <section class="card border-0 shadow-sm mt-3 hc-card hc-case-section" id="notes-internes">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between">
+            <h3 class="mb-0">Notes internes</h3>
+            <div class="text-muted small">Coordination interne</div>
+          </div>
+          {% set note_events = activities|selectattr('action', 'equalto', 'note')|list %}
+          {% if note_events %}
+            <div class="vstack gap-2 mt-3">
+              {% for ev in note_events[:8] %}
+                <div class="p-2 border rounded-3">
+                  <div class="small text-muted">{{ ev.created_at.strftime('%d %b %Y, %H:%M') if ev.created_at else '-' }}</div>
+                  <div>{{ ev.new_value or 'Note sans contenu.' }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="text-muted mb-0 mt-2">Aucune note interne pour le moment.</p>
+          {% endif %}
+        </div>
+      </section>
 
     </main>
 
     <!-- Right: controls -->
     <aside class="hc-sticky">
+      <div class="card border-0 shadow-sm mb-3 hc-card">
+        <div class="card-body">
+          <h3>Informations opérationnelles</h3>
+          <ul class="list-unstyled mb-3 hc-op-list">
+            <li><strong>Responsable:</strong>
+              {% if req.owner %}{{ req.owner.username }}{% elif req.owner_id %}#{{ req.owner_id }}{% else %}—{% endif %}
+            </li>
+            <li><strong>Structure:</strong> {{ req.structure.name if req.structure else (req.structure_id or '—') }}</li>
+            <li><strong>Catégorie:</strong> {{ req.category or '—' }}</li>
+            <li><strong>Ville / territoire:</strong> {{ req.city or req.location_text or '—' }}</li>
+            <li><strong>Date de création:</strong> {{ req.created_at or '—' }}</li>
+            <li><strong>Dernière activité:</strong> {{ req.updated_at or req.created_at or '—' }}</li>
+          </ul>
+          <h3 class="mb-2">Actions rapides</h3>
+          <div class="d-grid gap-2" id="owner-actions">
+            <a class="btn btn-outline-primary btn-sm" href="#owner-actions">Affecter un responsable</a>
+            <a class="btn btn-outline-primary btn-sm" href="#notes-internes">Ajouter une note</a>
+            <a class="btn btn-outline-primary btn-sm" href="#headerStatusForm">Modifier la priorité</a>
+            <a class="btn btn-outline-danger btn-sm" href="#cloturer-situation">Clôturer la situation</a>
+          </div>
+          <hr class="my-3">
+          <h3>Recommandation HelpChain</h3>
+          <p class="mb-1"><strong>Action recommandée:</strong></p>
+          <p class="mb-2">{{ helpchain_recommendation.action if helpchain_recommendation else 'Maintenir le suivi courant' }}</p>
+          <p class="mb-1"><strong>Raison:</strong></p>
+          <p class="mb-0">{{ helpchain_recommendation.reason if helpchain_recommendation else 'Aucune alerte spécifique détectée.' }}</p>
+        </div>
+      </div>
 
       <!-- Status management -->
       <div class="card border-0 shadow-sm mb-3 hc-card">
@@ -553,14 +607,14 @@
           <div class="d-flex align-items-center justify-content-between">
             <div class="fw-semibold">{{ _('Status') }}</div>
             {% if can_edit %}
-              <span class="badge text-bg-success">{{ _('Editable') }}</span>
+            <span class="badge text-bg-success">Modifiable</span>
             {% else %}
-              <span class="badge text-bg-light border">{{ _('Read-only') }}</span>
+            <span class="badge text-bg-light border">Lecture seule</span>
             {% endif %}
           </div>
 
           <div class="text-muted small mt-1">
-            Select a new status and save.
+            Sélectionnez un statut puis enregistrez.
           </div>
 
           <hr class="my-3" />
@@ -575,17 +629,17 @@
                 {% endfor %}
               </select>
               <div id="resolutionWrap" class="w-100 mt-2" style="display:none;">
-                <label for="resolutionNote" class="form-label form-label-sm mb-1">{{ _('Outcome / Resolution') }}</label>
+                <label for="resolutionNote" class="form-label form-label-sm mb-1">Résultat / clôture</label>
                 <textarea
                   id="resolutionNote"
                   name="resolution_note"
                   class="form-control form-control-sm"
                   rows="3"
                   minlength="5"
-                  placeholder="Short outcome summary..."
+                  placeholder="Résumé court de clôture..."
                 >{{ resolution_note_value or '' }}</textarea>
               </div>
-              <button type="submit" class="btn btn-sm btn-primary">{{ _('Save') }}</button>
+              <button type="submit" class="btn btn-sm btn-primary">Enregistrer</button>
             </form>
             <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" class="mt-2">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -617,7 +671,7 @@
             </script>
           {% else %}
             <div class="alert alert-info mb-0 py-2">
-              You can edit status only if you are the owner or a super admin.
+              Vous pouvez modifier le statut uniquement si vous êtes responsable ou super administrateur.
             </div>
           {% endif %}
         </div>
@@ -654,19 +708,19 @@
             {% if not req.owner_id %}
               <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>{{ _('Assign to me') }}</button>
+                <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled title="Verrouillé par un autre administrateur"{% endif %}>M’affecter</button>
               </form>
 
             {% elif can_edit %}
               <form method="post" action="{{ url_for('admin.admin_request_unassign', req_id=req.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>{{ _('Unassign') }}</button>
+                <button type="submit" class="btn btn-outline-danger btn-sm" {% if is_locked %}disabled title="Verrouillé par un autre administrateur"{% endif %}>Retirer l’affectation</button>
               </form>
 
             {% elif req.owner_id and req.owner_id != current_user.id and is_stale(req) %}
               <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-warning btn-sm" {% if is_locked %}disabled title="Locked by another admin"{% endif %}>{{ _('Take over') }}</button>
+                <button type="submit" class="btn btn-warning btn-sm" {% if is_locked %}disabled title="Verrouillé par un autre administrateur"{% endif %}>Reprendre la situation</button>
               </form>
 
             {% else %}
@@ -682,22 +736,22 @@
       <div class="card border-0 shadow-sm mt-3 hc-card">
         <div class="card-body">
           {% set can_delete = (((req.status or '')|upper == 'CLOSED') and req.is_archived) %}
-          <div class="fw-semibold mb-1">{{ _('Delete (tombstone)') }}</div>
+          <div class="fw-semibold mb-1">Suppression (tombstone)</div>
           <div class="text-muted small mb-3">
-            Deleted requests are hidden from lists. You can restore later (restored requests stay archived).
+            Les demandes supprimées sont masquées des listes. Vous pouvez les restaurer ultérieurement.
           </div>
 
           {% if req.deleted_at %}
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
               <div>
-                <span class="badge bg-danger">{{ _('Deleted') }}</span>
+                <span class="badge bg-danger">Supprimée</span>
                 <span class="text-muted small ms-2">{{ req.deleted_at }}</span>
               </div>
               {% if can_edit %}
                 <form method="post" action="{{ url_for('admin.admin_request_restore_deleted', req_id=req.id) }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-success btn-sm">
-                    Restore from Deleted
+                    Restaurer
                   </button>
                 </form>
               {% endif %}
@@ -705,7 +759,7 @@
           {% else %}
             {% if (req.status or '')|upper != 'CLOSED' %}
               <div class="alert alert-warning py-2 mb-3">
-                Set status to Clôturée (CLOSED) first to enable Delete.
+                Définissez d’abord le statut sur Clôturée (CLOSED) pour activer la suppression.
               </div>
             {% elif not req.is_archived %}
               <div class="alert alert-warning py-2 mb-3">
@@ -722,9 +776,9 @@
                 <button type="button"
                         class="btn btn-outline-danger btn-sm"
                         data-action="confirmSubmit"
-                        data-confirm="Move to Deleted? You can restore it later."
+                        data-confirm="Déplacer vers Supprimées ? Vous pourrez restaurer plus tard."
                         {% if not can_delete %}disabled{% endif %}>
-                  Delete
+                  Supprimer
                 </button>
               </form>
             {% endif %}
@@ -739,21 +793,21 @@
 
           {% if not req.assigned_volunteer_id %}
           <div class="hc-activity-item">
-            <p class="hc-activity-title">{{ _('• No volunteer assigned') }}</p>
-            <div class="hc-activity-meta">{{ _('Assign a volunteer or close') }}</div>
+            <p class="hc-activity-title">• Aucun bénévole assigné</p>
+            <div class="hc-activity-meta">Affecter un bénévole ou clôturer</div>
           </div>
           {% endif %}
 
           {% if req.status == "IN_PROGRESS" %}
           <div class="hc-activity-item">
-            <p class="hc-activity-title">{{ _('• In progress') }}</p>
+            <p class="hc-activity-title">• En cours</p>
             <div class="hc-activity-meta">{{ _('Update the status as soon as possible') }}</div>
           </div>
           {% endif %}
 
           {% if req.status == "COMPLETED" %}
           <div class="hc-activity-item">
-            <p class="hc-activity-title">{{ _('• Completed') }}</p>
+            <p class="hc-activity-title">• Terminée</p>
             <div class="hc-activity-meta">{{ _('Close for archive / delete (tombstone)') }}</div>
           </div>
           {% endif %}
@@ -764,12 +818,10 @@
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div class="fw-semibold">{{ _('Internal note') }}</div>
-            <div class="text-muted small">{{ _('Saved in Activity') }}</div>
+            <div class="text-muted small">Enregistré dans l’historique</div>
           </div>
 
-          <div class="text-muted small mt-1">
-            Use notes for internal coordination (no personal data).
-          </div>
+          <div class="text-muted small mt-1">Utilisez ces notes pour la coordination interne (sans données sensibles).</div>
 
           <hr class="my-3" />
 
@@ -780,12 +832,12 @@
               class="form-control"
               rows="4"
               maxlength="2000"
-              placeholder="{{ _('Example: Called the requester, waiting for documents, next follow-up tomorrow...') }}"
+              placeholder="Exemple: contact établi, pièces en attente, prochain suivi demain..."
             ></textarea>
 
             <div class="d-flex align-items-center justify-content-between mt-2">
               <div class="small text-muted">{{ _('Max 2000 characters.') }}</div>
-              <button type="submit" class="btn btn-primary btn-sm">{{ _('Add note') }}</button>
+              <button type="submit" class="btn btn-primary btn-sm">Ajouter une note</button>
             </div>
           </form>
         </div>
@@ -795,11 +847,11 @@
   </div>
 
     <!-- Activity timeline -->
-  <div class="card border-0 shadow-sm mt-3 hc-card">
+  <section class="card border-0 shadow-sm mt-3 hc-card hc-case-section hc-timeline" id="activity-timeline">
     <div class="card-body">
       <div class="d-flex align-items-center justify-content-between">
-        <div class="fw-semibold">{{ _('Activity') }}</div>
-        <div class="text-muted small">{{ _('Last 50 events') }}</div>
+        <h3 class="mb-0">Historique de la situation</h3>
+        <div class="text-muted small">Derniers événements</div>
       </div>
 
       <hr class="my-3" />
@@ -807,17 +859,17 @@
       {% if activities and activities|length %}
         <div class="vstack gap-2">
           {% for ev in activities %}
-            <div class="p-3 border rounded-3">
+            <div class="p-3 border rounded-3 hc-timeline-item">
               <div class="d-flex align-items-center justify-content-between gap-2">
                 <div class="fw-semibold">
                   {% if ev.action == "status_change" %}
-                    Status change
+                    Changement de statut
                   {% elif ev.action == "assign" or ev.action == "takeover" %}
-                    Assigned
+                    Responsable assigné
                   {% elif ev.action == "unassign" %}
-                    Unassigned
+                    Désaffectation
                   {% elif ev.action == "note" %}
-                    Note
+                    Note interne ajoutée
                   {% else %}
                     {{ ev.action }}
                   {% endif %}
@@ -829,7 +881,7 @@
               </div>
 
               <div class="text-muted small mt-1">
-                By:
+                Par:
                 {% if ev.actor %}
                   <strong>{{ ev.actor.username }}</strong>
                 {% else %}
@@ -851,16 +903,16 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="text-muted small">{{ _('No activity yet.') }}</div>
+        <div class="text-muted small">Aucune activité pour le moment.</div>
       {% endif %}
     </div>
-  </div>
+  </section>
 
   <div class="offcanvas offcanvas-end hc-offcanvas" tabindex="-1" id="hcVolunteerDrawer" aria-labelledby="hcVolunteerDrawerLabel">
     <div class="offcanvas-header">
       <div>
-        <div class="hc-offcanvas__kicker">{{ _('Volunteer') }}</div>
-        <h5 class="offcanvas-title" id="hcVolunteerDrawerLabel">{{ _('Loading...') }}</h5>
+        <div class="hc-offcanvas__kicker">Bénévole</div>
+        <h5 class="offcanvas-title" id="hcVolunteerDrawerLabel">Chargement...</h5>
       </div>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -874,13 +926,13 @@
 
       <div class="hc-offcanvas__footer">
         <div class="d-flex gap-2 flex-wrap">
-          <a href="#" class="btn btn-outline-dark btn-sm" id="hcVolProfileBtn" target="_blank" rel="noopener">{{ _('Open full profile') }}</a>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyEmail">{{ _('Copy email') }}</button>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyPhone">{{ _('Copy phone') }}</button>
-          <button type="button" class="btn btn-primary btn-sm" id="hcDrawerAssignBtn">{{ _('Assign to this request') }}</button>
+          <a href="#" class="btn btn-outline-dark btn-sm" id="hcVolProfileBtn" target="_blank" rel="noopener">Ouvrir le profil complet</a>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyEmail">Copier l’e-mail</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hcVolCopyPhone">Copier le téléphone</button>
+          <button type="button" class="btn btn-primary btn-sm" id="hcDrawerAssignBtn">Affecter à cette situation</button>
         </div>
         <div id="hcDrawerAssignHint" class="text-muted small mt-2 d-none">
-          No assign action available for this volunteer on this request.
+          Aucune action d’affectation disponible pour ce volontaire sur cette situation.
         </div>
         <div class="small text-muted mt-2" id="hcVolHint"></div>
       </div>

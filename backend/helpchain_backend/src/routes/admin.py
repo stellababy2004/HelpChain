@@ -66,6 +66,8 @@ from ..models import (
     VolunteerAction,
     VolunteerInterest,
     VolunteerRequestState,
+    Structure,
+    User,
     current_structure,
     utc_now,
 )
@@ -76,6 +78,7 @@ except ImportError:
     ProAccessRequest = None
 
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
+from ..services.case_summary import build_case_summary, build_case_summary_snippet
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 
@@ -409,6 +412,91 @@ def _compute_case_signals(
         )
 
     return signals[:5]
+
+
+def _parse_risk_signals(value) -> set[str]:
+    if not value:
+        return set()
+    if isinstance(value, list):
+        return {str(x).strip().lower() for x in value if str(x).strip()}
+    if isinstance(value, str):
+        raw = value.strip()
+        if not raw:
+            return set()
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                return {str(x).strip().lower() for x in parsed if str(x).strip()}
+        except Exception:
+            pass
+        return {chunk.strip().lower() for chunk in raw.split(",") if chunk.strip()}
+    return set()
+
+
+def _build_helpchain_recommendation(
+    req: Request,
+    activities: list[RequestActivity] | None,
+    now: datetime,
+) -> dict[str, str]:
+    risk_level = (getattr(req, "risk_level", "") or "").strip().lower()
+    risk_signals = _parse_risk_signals(getattr(req, "risk_signals", None))
+    assigned_actor = (
+        getattr(getattr(req, "owner", None), "username", None)
+        or (f"#{req.owner_id}" if getattr(req, "owner_id", None) else "")
+        or "non assigné"
+    )
+
+    last_activity = None
+    if activities:
+        last_activity = getattr(activities[0], "created_at", None)
+    if not last_activity:
+        last_activity = getattr(req, "updated_at", None) or getattr(req, "created_at", None)
+    if isinstance(last_activity, datetime):
+        if last_activity.tzinfo is None:
+            last_activity = last_activity.replace(tzinfo=timezone.utc)
+        hours_since = max(0, int((now - last_activity).total_seconds() // 3600))
+        last_activity_label = f"il y a environ {hours_since} h"
+    else:
+        last_activity_label = "non disponible"
+
+    if risk_level == "critical" and not getattr(req, "owner_id", None):
+        return {
+            "priority": "Critique",
+            "action": "Affecter un responsable territorial",
+            "reason": (
+                "Niveau de risque critique et aucun acteur assigné. "
+                f"Dernière activité: {last_activity_label}."
+            ),
+        }
+
+    if "not_seen_72h" in risk_signals:
+        return {
+            "priority": "Élevée",
+            "action": "Vérifier la situation avec l’acteur assigné",
+            "reason": (
+                "Le signal not_seen_72h indique une absence d’action récente. "
+                f"Acteur assigné: {assigned_actor}. Dernière activité: {last_activity_label}."
+            ),
+        }
+
+    if risk_level == "attention":
+        return {
+            "priority": "Moyenne",
+            "action": "Planifier un suivi",
+            "reason": (
+                "Niveau de risque attention. "
+                f"Acteur assigné: {assigned_actor}. Dernière activité: {last_activity_label}."
+            ),
+        }
+
+    return {
+        "priority": "Standard",
+        "action": "Maintenir le suivi courant",
+        "reason": (
+            f"Pas de déclencheur critique détecté. Acteur assigné: {assigned_actor}. "
+            f"Dernière activité: {last_activity_label}."
+        ),
+    }
 
 
 def _norm_username(username: str | None) -> str | None:
@@ -4174,8 +4262,58 @@ def admin_volunteers():
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
 
-    volunteers = Volunteer.query.all()
-    return render_template("admin_volunteers.html", volunteers=volunteers)
+    search = (request.args.get("search") or "").strip()
+    location_filter = (request.args.get("location") or "").strip()
+    sort_by = (request.args.get("sort") or "created_at").strip().lower()
+    sort_order = (request.args.get("order") or "desc").strip().lower()
+    page = max(int(request.args.get("page") or 1), 1)
+    per_page = max(min(int(request.args.get("per_page") or 25), 100), 10)
+
+    query = Volunteer.query
+    if search:
+        q = f"%{search}%"
+        query = query.filter(
+            or_(
+                Volunteer.name.ilike(q),
+                Volunteer.email.ilike(q),
+                Volunteer.phone.ilike(q),
+                Volunteer.skills.ilike(q),
+            )
+        )
+    if location_filter:
+        query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
+
+    sort_map = {
+        "name": Volunteer.name,
+        "email": Volunteer.email,
+        "location": Volunteer.location,
+        "created_at": Volunteer.created_at,
+        "last_activity": Volunteer.last_activity,
+    }
+    sort_col = sort_map.get(sort_by, Volunteer.created_at)
+    if sort_order == "asc":
+        query = query.order_by(sort_col.asc(), Volunteer.id.asc())
+    else:
+        query = query.order_by(sort_col.desc(), Volunteer.id.desc())
+
+    total_volunteers = query.count()
+    total_pages = max(1, int(math.ceil(total_volunteers / float(per_page)))) if total_volunteers else 1
+    if page > total_pages:
+        page = total_pages
+
+    volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
+    return render_template(
+        "admin_volunteers.html",
+        volunteers=volunteers,
+        total_volunteers=total_volunteers,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        search=search,
+        location_filter=location_filter,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
 
 
 @admin_bp.route("/admin_volunteers", methods=["GET"])
@@ -4806,6 +4944,14 @@ def admin_pilotage():
     admin_required_404()
 
     base_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
+    active_query = base_query.filter(
+        or_(
+            Request.status.is_(None),
+            ~func.lower(func.coalesce(Request.status, "")).in_(
+                ("done", "cancelled", "rejected")
+            ),
+        )
+    )
 
     has_risk_level = _table_has_column("requests", "risk_level")
     has_risk_signals = _table_has_column("requests", "risk_signals")
@@ -4850,22 +4996,6 @@ def admin_pilotage():
                 no_owner_filter,
             ).count()
 
-    priority_query = base_query
-    if has_risk_score:
-        priority_query = priority_query.order_by(func.coalesce(Request.risk_score, 0).desc())
-    if has_created_at and has_updated_at:
-        priority_query = priority_query.order_by(
-            func.coalesce(Request.created_at, Request.updated_at).desc(),
-            Request.id.desc(),
-        )
-    elif has_created_at:
-        priority_query = priority_query.order_by(Request.created_at.desc(), Request.id.desc())
-    elif has_updated_at:
-        priority_query = priority_query.order_by(Request.updated_at.desc(), Request.id.desc())
-    else:
-        priority_query = priority_query.order_by(Request.id.desc())
-    priority_requests = priority_query.limit(5).all()
-
     rec_counts = {
         "assign_immediately": 0,
         "manager_review_today": 0,
@@ -4885,6 +5015,120 @@ def admin_pilotage():
             action = rec.get("recommended_action")
             if action in rec_counts:
                 rec_counts[action] += 1
+    assign_immediately_count = int(rec_counts.get("assign_immediately", 0) or 0)
+    manager_review_today_count = int(rec_counts.get("manager_review_today", 0) or 0)
+
+    def _signals_text(raw: object) -> str:
+        if raw is None:
+            return ""
+        if isinstance(raw, str):
+            return raw.strip().lower()
+        try:
+            return json.dumps(raw, ensure_ascii=False).lower()
+        except Exception:
+            return str(raw).strip().lower()
+
+    def _to_unix_ts(dt_value: object) -> float:
+        if not isinstance(dt_value, datetime):
+            return 0.0
+        try:
+            return float(dt_value.timestamp())
+        except Exception:
+            return 0.0
+
+    priority_cols = [
+        Request.id,
+        Request.title,
+        Request.description,
+        Request.owner_id,
+        (Request.risk_level if has_risk_level else func.literal("standard")),
+        (Request.risk_signals if has_risk_signals else func.literal("")),
+        (Request.risk_score if has_risk_score else func.literal(0)),
+        (Request.created_at if has_created_at else func.literal(None)),
+    ]
+    priority_rows = base_query.with_entities(*priority_cols).limit(500).all()
+
+    priority_items: list[dict[str, object]] = []
+    for (
+        rid,
+        title,
+        description,
+        owner_id,
+        risk_level,
+        risk_signals,
+        risk_score,
+        created_at,
+    ) in priority_rows:
+        risk_level_norm = (str(risk_level or "standard").strip().lower() or "standard")
+        if risk_level_norm not in {"standard", "attention", "critical"}:
+            risk_level_norm = "standard"
+        signals_text = _signals_text(risk_signals)
+        has_no_owner = "no_owner" in signals_text
+        has_not_seen_72h = "not_seen_72h" in signals_text
+
+        rec_action = "routine_queue"
+        try:
+            rec_action = (
+                compute_recommendation(
+                    SimpleNamespace(risk_level=risk_level_norm, risk_signals=risk_signals)
+                ).get("recommended_action")
+                or "routine_queue"
+            )
+        except Exception:
+            rec_action = "routine_queue"
+
+        if risk_level_norm == "critical" and has_no_owner:
+            indicator_label = "Sans responsable"
+            rank_group = 0
+        elif has_not_seen_72h:
+            indicator_label = "Sans action depuis 72 heures"
+            rank_group = 1
+        elif rec_action == "assign_immediately":
+            indicator_label = "Affectation immédiate recommandée"
+            rank_group = 2
+        elif rec_action == "manager_review_today":
+            indicator_label = "Revue managériale requise"
+            rank_group = 3
+        elif risk_level_norm == "critical":
+            indicator_label = "Niveau critique"
+            rank_group = 4
+        else:
+            continue
+
+        score_value = int(risk_score or 0)
+        summary_compact = build_case_summary_snippet(
+            SimpleNamespace(
+                title=title,
+                description=description,
+                risk_level=risk_level_norm,
+                risk_signals=risk_signals,
+                owner_id=owner_id,
+            ),
+            {"recommended_action": rec_action},
+            max_len=100,
+        )
+        priority_items.append(
+            {
+                "id": rid,
+                "title": title or f"Demande #{rid}",
+                "risk_level": risk_level_norm,
+                "indicator_label": indicator_label,
+                "summary_compact": summary_compact,
+                "rank_group": rank_group,
+                "risk_score": score_value,
+                "created_ts": _to_unix_ts(created_at),
+            }
+        )
+
+    priority_items.sort(
+        key=lambda item: (
+            int(item.get("rank_group") or 99),
+            -int(item.get("risk_score") or 0),
+            -float(item.get("created_ts") or 0.0),
+            -int(item.get("id") or 0),
+        )
+    )
+    priority_items = priority_items[:5]
 
     now = datetime.now(UTC).replace(tzinfo=None)
     day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -4906,6 +5150,90 @@ def admin_pilotage():
             Request.completed_at >= day_start, Request.completed_at < day_end
         ).count()
 
+    def _category_label(value: str | None) -> str:
+        norm = (value or "").strip().lower()
+        mapping = {
+            "housing": "logement",
+            "logement": "logement",
+            "health": "santé",
+            "sante": "santé",
+            "food": "aide alimentaire",
+            "emergency": "urgence",
+            "social": "accompagnement social",
+            "general": "suivi social",
+            "safety": "protection",
+        }
+        if norm in mapping:
+            return mapping[norm]
+        if not norm:
+            return ""
+        return norm.replace("_", " ")
+
+    top_category_row = (
+        active_query.with_entities(
+            func.lower(func.trim(func.coalesce(Request.category, ""))).label("cat"),
+            func.count(Request.id).label("cnt"),
+        )
+        .group_by("cat")
+        .order_by(func.count(Request.id).desc(), func.lower(Request.category).asc())
+        .all()
+    )
+    top_category = ""
+    top_category_count = 0
+    for row in top_category_row:
+        cat = (getattr(row, "cat", "") or "").strip()
+        if not cat:
+            continue
+        top_category = cat
+        top_category_count = int(getattr(row, "cnt", 0) or 0)
+        break
+    if top_category and top_category_count >= 2:
+        category_trend_text = (
+            f"La catégorie la plus fréquente actuellement concerne {_category_label(top_category)}."
+        )
+    else:
+        category_trend_text = "Aucune tendance catégorielle significative à ce stade."
+
+    assignment_delay_hours: list[float] = []
+    if has_created_at and has_owned_at:
+        assignment_rows = (
+            active_query.with_entities(Request.created_at, Request.owned_at)
+            .filter(Request.created_at.isnot(None), Request.owned_at.isnot(None))
+            .limit(1500)
+            .all()
+        )
+        for created_at, owned_at in assignment_rows:
+            if not isinstance(created_at, datetime) or not isinstance(owned_at, datetime):
+                continue
+            delta_sec = (owned_at - created_at).total_seconds()
+            if delta_sec < 0:
+                continue
+            assignment_delay_hours.append(delta_sec / 3600.0)
+    if len(assignment_delay_hours) >= 3:
+        avg_hours = round(sum(assignment_delay_hours) / len(assignment_delay_hours))
+        assignment_delay_text = (
+            f"Le délai moyen avant affectation est actuellement de {int(avg_hours)} heures."
+        )
+    else:
+        assignment_delay_text = (
+            "Données insuffisantes pour estimer le délai moyen avant affectation."
+        )
+
+    if int(critical_no_owner_count or 0) > 0:
+        vigilance_text = (
+            "Les situations critiques sans responsable nécessitent une vigilance renforcée."
+        )
+    elif int(not_seen_72h_count or 0) > 0:
+        vigilance_text = (
+            "Les situations sans action récente nécessitent une vigilance renforcée."
+        )
+    elif int(attention_count or 0) > int(critical_count or 0) and int(attention_count or 0) > 0:
+        vigilance_text = (
+            "Une part importante des situations est au niveau attention et appelle un suivi rapproché."
+        )
+    else:
+        vigilance_text = "Aucun signal de vigilance particulier n’est identifié à ce stade."
+
     return render_template(
         "admin/pilotage.html",
         critical_count=critical_count,
@@ -4914,11 +5242,17 @@ def admin_pilotage():
         no_owner_count=no_owner_count,
         not_seen_72h_count=not_seen_72h_count,
         critical_no_owner_count=critical_no_owner_count,
-        priority_requests=priority_requests,
+        critical_without_owner_count=critical_no_owner_count,
+        assign_immediately_count=assign_immediately_count,
+        manager_review_today_count=manager_review_today_count,
+        priority_items=priority_items,
         rec_counts=rec_counts,
         received_today=received_today,
         taken_today=taken_today,
         closed_today=closed_today,
+        category_trend_text=category_trend_text,
+        assignment_delay_text=assignment_delay_text,
+        vigilance_text=vigilance_text,
     )
 
 
@@ -5170,6 +5504,152 @@ def admin_requests():
         attention_count=attention_count,
         no_owner_count=no_owner_count,
         not_seen_72h_count=not_seen_72h_count,
+    )
+
+
+@admin_bp.route("/requests/new", methods=["GET", "POST"])
+@admin_required
+@admin_role_required("ops", "superadmin", "admin")
+def admin_request_new():
+    admin_required_404()
+
+    def _ensure_internal_requester_user() -> User:
+        email = "agent.intake@helpchain.local"
+        username = "agent_intake"
+        existing = User.query.filter(func.lower(User.email) == email).first()
+        if existing:
+            return existing
+        existing = User.query.filter(func.lower(User.username) == username).first()
+        if existing:
+            return existing
+        user = User(
+            username=username,
+            email=email,
+            role="requester",
+            is_active=True,
+            password_hash="",
+        )
+        try:
+            user.set_password(secrets.token_urlsafe(24))
+        except Exception:
+            user.password_hash = "!"
+        db.session.add(user)
+        db.session.flush()
+        return user
+
+    category_rows = (
+        db.session.query(Request.category)
+        .filter(Request.category.isnot(None), func.trim(Request.category) != "")
+        .distinct()
+        .order_by(Request.category.asc())
+        .all()
+    )
+    categories = [str(row[0]).strip() for row in category_rows if row and row[0]]
+    if not categories:
+        categories = [
+            "general",
+            "social",
+            "housing",
+            "health",
+            "food",
+            "emergency",
+            "safety",
+        ]
+
+    structures = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
+    admins = (
+        AdminUser.query.filter(AdminUser.is_active.is_(True))
+        .order_by(AdminUser.username.asc(), AdminUser.id.asc())
+        .all()
+    )
+
+    form_data = {
+        "title": (request.form.get("title") or "").strip(),
+        "description": (request.form.get("description") or "").strip(),
+        "person_name": (request.form.get("person_name") or "").strip(),
+        "email": (request.form.get("email") or "").strip(),
+        "phone": (request.form.get("phone") or "").strip(),
+        "city": (request.form.get("city") or "").strip(),
+        "category": (request.form.get("category") or "").strip(),
+        "priority": (request.form.get("priority") or "standard").strip().lower(),
+        "structure_id": (request.form.get("structure_id") or "").strip(),
+        "owner_id": (request.form.get("owner_id") or "").strip(),
+        "internal_notes": (request.form.get("internal_notes") or "").strip(),
+    }
+    form_errors: dict[str, str] = {}
+
+    if request.method == "POST":
+        if not form_data["title"]:
+            form_errors["title"] = "Veuillez renseigner le titre."
+        if not form_data["description"]:
+            form_errors["description"] = "Veuillez renseigner la description."
+        if not form_data["person_name"]:
+            form_errors["person_name"] = "Veuillez renseigner la personne concernée."
+        if not form_data["city"]:
+            form_errors["city"] = "Veuillez renseigner la ville ou le territoire."
+        if not form_data["category"]:
+            form_errors["category"] = "Veuillez sélectionner une catégorie."
+        if form_data["priority"] not in {"standard", "attention", "urgent"}:
+            form_errors["priority"] = "Veuillez sélectionner une priorité valide."
+        if form_data["email"] and "@" not in form_data["email"]:
+            form_errors["email"] = "Veuillez renseigner une adresse e-mail valide."
+
+        structure_id = None
+        if form_data["structure_id"]:
+            try:
+                structure_id = int(form_data["structure_id"])
+            except Exception:
+                form_errors["structure_id"] = "Structure invalide."
+            else:
+                if not db.session.get(Structure, structure_id):
+                    form_errors["structure_id"] = "Structure invalide."
+
+        owner_id = None
+        if form_data["owner_id"]:
+            try:
+                owner_id = int(form_data["owner_id"])
+            except Exception:
+                form_errors["owner_id"] = "Responsable initial invalide."
+            else:
+                if not db.session.get(AdminUser, owner_id):
+                    form_errors["owner_id"] = "Responsable initial invalide."
+
+        if form_errors:
+            flash("Veuillez corriger les champs indiqués.", "warning")
+        else:
+            requester_user = _ensure_internal_requester_user()
+            priority_map = {
+                "standard": "medium",
+                "attention": "high",
+                "urgent": "urgent",
+            }
+            req = Request(
+                title=form_data["title"],
+                description=form_data["description"],
+                name=form_data["person_name"],
+                email=form_data["email"] or None,
+                phone=form_data["phone"] or None,
+                city=form_data["city"],
+                category=form_data["category"],
+                priority=priority_map.get(form_data["priority"], "medium"),
+                status="pending",
+                structure_id=structure_id,
+                owner_id=owner_id,
+                message=form_data["internal_notes"] or None,
+                user_id=requester_user.id,
+            )
+            db.session.add(req)
+            db.session.commit()
+            flash("Demande créée avec succès.", "success")
+            return redirect(url_for("admin.admin_request_details", req_id=req.id), code=303)
+
+    return render_template(
+        "admin/request_new.html",
+        form_data=form_data,
+        form_errors=form_errors,
+        categories=categories,
+        structures=structures,
+        admins=admins,
     )
 
 
@@ -5747,6 +6227,7 @@ def admin_request_details(req_id: int):
                     .order_by(VolunteerInterest.created_at.desc())
                     .all()
                 )
+            locked_recommendation = compute_recommendation(req)
             return (
                 render_template(
                     "admin/request_details.html",
@@ -5760,7 +6241,11 @@ def admin_request_details(req_id: int):
                     volunteer_engagement=volunteer_engagement,
                     audit_logs=audit_logs,
                     case_signals=_compute_case_signals(req, activities, now),
-                    recommendation=compute_recommendation(req),
+                    recommendation=locked_recommendation,
+                    helpchain_recommendation=_build_helpchain_recommendation(
+                        req, activities, now
+                    ),
+                    case_summary=build_case_summary(req, locked_recommendation),
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -5847,6 +6332,8 @@ def admin_request_details(req_id: int):
     cant_help_count = sum(1 for va in volunteer_signals if va.action == "CANT_HELP")
     case_signals = _compute_case_signals(req, activities, now)
     recommendation = compute_recommendation(req)
+    helpchain_recommendation = _build_helpchain_recommendation(req, activities, now)
+    case_summary = build_case_summary(req, recommendation)
 
     return (
         render_template(
@@ -5876,6 +6363,8 @@ def admin_request_details(req_id: int):
             audit_logs=audit_logs,
             case_signals=case_signals,
             recommendation=recommendation,
+            helpchain_recommendation=helpchain_recommendation,
+            case_summary=case_summary,
         ),
         200,
     )
