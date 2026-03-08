@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -20,11 +21,14 @@ from backend.local_db_guard import (
 )
 
 ADMIN_EMAIL = "contact@helpchain.live"
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "943415Stoyanova!"
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 ADMIN_ROLE = "superadmin"
 
-
+if not ADMIN_PASSWORD:
+    raise RuntimeError(
+        "ADMIN_PASSWORD environment variable is required for reset_admin_local.py"
+    )
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Reset local admin user on canonical DB only")
     parser.add_argument(
