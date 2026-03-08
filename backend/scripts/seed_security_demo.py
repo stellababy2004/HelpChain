@@ -30,7 +30,15 @@ def _prepare_import_path() -> None:
 _prepare_import_path()
 
 from backend.extensions import db
-from backend.helpchain_backend.src.app import create_app
+from backend.appy import app
+from backend.local_db_guard import (
+    APP_IMPORT_PATH,
+    CANONICAL_DB_URI,
+    canonical_confirmation_error,
+    canonical_mismatch_error,
+    is_canonical_db_uri,
+    print_app_db_preflight,
+)
 from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
 from backend.models import (
     AdminAuditEvent,
@@ -59,20 +67,9 @@ def _is_production_env() -> bool:
 
 def _assert_safe_sqlite_db(app) -> None:
     uri = app.config.get("SQLALCHEMY_DATABASE_URI") or ""
-    uri_lower = uri.lower()
-
-    if "postgres" in uri_lower or "neon" in uri_lower:
-        raise SystemExit(f"REFUSE: DB looks non-sqlite: {uri}")
-    if not uri_lower.startswith("sqlite"):
-        raise SystemExit(f"REFUSE: DB is not sqlite: {uri}")
-
-    expected_tail = "backend/instance/app_clean.db"
-    uri_norm = uri.replace("\\", "/")
-    if expected_tail not in uri_norm:
-        raise SystemExit(
-            "REFUSE: allowed only for backend/instance/app_clean.db\n"
-            f"DB URI: {uri}"
-        )
+    print_app_db_preflight(uri)
+    if not is_canonical_db_uri(uri):
+        raise SystemExit(canonical_mismatch_error(uri))
 
 
 def _demo_ua(tag: str) -> str:
@@ -383,6 +380,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Exit without changes if rows for this tag already exist",
     )
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB writes",
+    )
     return parser.parse_args()
 
 
@@ -395,8 +397,9 @@ def main() -> None:
     if _is_production_env():
         raise SystemExit("REFUSE: production-like environment detected.")
 
-    app = create_app()
     with app.app_context():
+        if not args.confirm_canonical_db:
+            raise SystemExit(canonical_confirmation_error())
         _assert_safe_sqlite_db(app)
         if args.once and _has_demo_rows(tag):
             print(f"SEED_SECURITY_DEMO: SKIP (--once and rows exist for tag={tag})")

@@ -22,9 +22,22 @@ from pathlib import Path
 
 from werkzeug.security import generate_password_hash
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from backend.local_db_guard import (
+    APP_IMPORT_PATH,
+    canonical_confirmation_error,
+    canonical_mismatch_error,
+    db_path_from_sqlite_uri,
+    is_canonical_db_uri,
+    print_app_db_preflight,
+)
+
 
 def _default_db_path(project_root: Path) -> Path:
-    return project_root / "instance" / "hc_run.db"
+    return project_root / "backend" / "instance" / "app_clean.db"
 
 
 def _gen_password() -> str:
@@ -59,7 +72,7 @@ def _ensure_admin_row(
 
 
 def main() -> int:
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = PROJECT_ROOT
     parser = argparse.ArgumentParser(description="Reset HelpChain admin password")
     parser.add_argument(
         "--db",
@@ -89,7 +102,24 @@ def main() -> int:
     )
     parser.add_argument("--host", default="127.0.0.1", help="Host for printed login URL")
     parser.add_argument("--port", default="5000", help="Port for printed login URL")
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB write",
+    )
     args = parser.parse_args()
+
+    from backend.appy import app
+
+    with app.app_context():
+        runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        print_app_db_preflight(runtime_uri)
+        if not args.confirm_canonical_db:
+            print(canonical_confirmation_error(), file=sys.stderr)
+            return 2
+        if not is_canonical_db_uri(runtime_uri):
+            print(canonical_mismatch_error(runtime_uri), file=sys.stderr)
+            return 2
 
     src_db = args.db if args.db.is_absolute() else (project_root / args.db)
     target_db = (
@@ -97,6 +127,19 @@ def main() -> int:
         if args.copy_to
         else src_db
     )
+    canonical_db_path = db_path_from_sqlite_uri(runtime_uri)
+    if canonical_db_path is None:
+        print(f"ERROR: runtime DB is not sqlite: {runtime_uri}", file=sys.stderr)
+        return 2
+    canonical_db_path = canonical_db_path.resolve()
+    if src_db.resolve() != canonical_db_path:
+        print("ERROR: --db must point to canonical DB file only.", file=sys.stderr)
+        print(f"Expected DB path: {canonical_db_path}", file=sys.stderr)
+        print(f"Provided DB path: {src_db.resolve()}", file=sys.stderr)
+        return 2
+    if args.copy_to:
+        print("ERROR: --copy-to is disabled by local DB safety rules.", file=sys.stderr)
+        return 2
 
     if not src_db.exists():
         print(f"ERROR: DB file not found: {src_db}", file=sys.stderr)

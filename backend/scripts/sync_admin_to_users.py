@@ -65,6 +65,11 @@ def main(argv: list[str] | None = None) -> int:
         "--log-file",
         help="Optional path to append created usernames and passwords (only written on --commit).",
     )
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB writes on --commit.",
+    )
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -83,8 +88,15 @@ def main(argv: list[str] | None = None) -> int:
 
     # Import app and models via the project entrypoint so sys.path is set like normal
     try:
-        # `run.py` and other dev helpers add `backend/` to sys.path; we import app
-        from backend.app import AdminUser, User, app, db
+        from backend.appy import app
+        from backend.extensions import db
+        from backend.local_db_guard import (
+            canonical_confirmation_error,
+            canonical_mismatch_error,
+            is_canonical_db_uri,
+            print_app_db_preflight,
+        )
+        from backend.models import AdminUser, User
     except Exception as e:  # pragma: no cover - defensive import failure
         logging.error("Failed to import app/models: %s", e)
         return 2
@@ -96,6 +108,15 @@ def main(argv: list[str] | None = None) -> int:
     fixed_password = args.password
 
     with app.app_context():
+        runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        print_app_db_preflight(runtime_uri)
+        if not is_canonical_db_uri(runtime_uri):
+            logging.error(canonical_mismatch_error(runtime_uri))
+            return 2
+        if (not dry_run) and (not args.confirm_canonical_db):
+            logging.error(canonical_confirmation_error())
+            return 2
+
         try:
             admins = AdminUser.query.all()
         except Exception as e:  # pragma: no cover - DB query failure

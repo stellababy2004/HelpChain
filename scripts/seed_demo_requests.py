@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 from datetime import UTC, datetime, timedelta
@@ -10,9 +11,36 @@ if str(ROOT) not in sys.path:
 
 from backend.appy import app
 from backend.extensions import db
+from backend.local_db_guard import (
+    canonical_confirmation_error,
+    canonical_mismatch_error,
+    is_canonical_db_uri,
+    print_app_db_preflight,
+)
 from backend.models import AdminUser, Request, Structure, User, Volunteer
 
 DEMO_PREFIX = "[DEMO]"
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Seed structured demo requests")
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB writes",
+    )
+    return parser.parse_args()
+
+
+def _preflight_or_fail(*, actual_uri: str, confirmed: bool) -> int:
+    print_app_db_preflight(actual_uri)
+    if not confirmed:
+        print(canonical_confirmation_error())
+        return 2
+    if not is_canonical_db_uri(actual_uri):
+        print(canonical_mismatch_error(actual_uri))
+        return 2
+    return 0
 
 
 def _ensure_structure() -> Structure:
@@ -80,7 +108,16 @@ def _clear_demo_requests() -> int:
 
 
 def main() -> int:
+    args = _parse_args()
     with app.app_context():
+        actual_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        guard_rc = _preflight_or_fail(
+            actual_uri=actual_uri,
+            confirmed=bool(args.confirm_canonical_db),
+        )
+        if guard_rc != 0:
+            return guard_rc
+
         structure = _ensure_structure()
         admin_main = _ensure_admin("admin", "admin@helpchain.live", role="superadmin")
         admin_ops = _ensure_admin("ops_demo", "ops.demo@helpchain.live", role="ops")
@@ -99,7 +136,7 @@ def main() -> int:
         payloads = [
             {
                 "title": f"{DEMO_PREFIX} Violence + urgence médicale sans owner",
-                "description": "urgence medicale, violence, danger, children, homeless",
+                "description": "Contexte: signalement de violence avec risque immédiat. Demande: affectation d’un responsable territorial et contact médical d’urgence.",
                 "status": "new",
                 "priority": "urgent",
                 "category": "emergency",
@@ -114,7 +151,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Food + isolement en attente",
-                "description": "food hungry isolement sans reseau urgent",
+                "description": "Contexte: personne isolée sans ressources alimentaires. Demande: mise en relation rapide avec une aide alimentaire locale.",
                 "status": "pending",
                 "priority": "high",
                 "category": "food",
@@ -129,7 +166,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Logement instable avec owner",
-                "description": "logement expulsion shelter famille monoparentale",
+                "description": "Contexte: menace d’expulsion pour une famille monoparentale. Demande: sécuriser une solution d’hébergement et organiser le suivi social.",
                 "status": "in_progress",
                 "priority": "high",
                 "category": "housing",
@@ -144,7 +181,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Assistance standard déjà traitée",
-                "description": "demande d information administrative",
+                "description": "Contexte: besoin d’information administrative. Demande: orientation vers les démarches et clôture après retour à l’usager.",
                 "status": "done",
                 "priority": "medium",
                 "category": "general",
@@ -160,7 +197,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Cas rejeté après vérification",
-                "description": "request duplicate no urgent signal",
+                "description": "Contexte: demande en doublon déjà traitée. Demande: clôture administrative sans action opérationnelle supplémentaire.",
                 "status": "rejected",
                 "priority": "low",
                 "category": "general",
@@ -175,7 +212,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Unassigned urgent santé",
-                "description": "health treatment immediate need medical",
+                "description": "Contexte: besoin de soins sans interlocuteur identifié. Demande: affectation immédiate et coordination avec un acteur de santé.",
                 "status": "unassigned",
                 "priority": "urgent",
                 "category": "health",
@@ -190,7 +227,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Pending avec owner sans bénévole",
-                "description": "urgent alimentaire et famille avec enfant",
+                "description": "Contexte: famille avec enfant en tension alimentaire. Demande: mobilisation d’un bénévole et planification d’un suivi sous 24 heures.",
                 "status": "pending",
                 "priority": "high",
                 "category": "food",
@@ -205,7 +242,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} In progress avec bénévole mais stale",
-                "description": "housing help shelter needed",
+                "description": "Contexte: accompagnement logement engagé mais sans avancée récente. Demande: relance opérationnelle et mise à jour du plan d’action.",
                 "status": "in_progress",
                 "priority": "medium",
                 "category": "housing",
@@ -220,7 +257,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} New low priority no signal",
-                "description": "simple information request",
+                "description": "Contexte: demande d’information générale. Demande: réponse d’orientation et qualification du besoin.",
                 "status": "new",
                 "priority": "low",
                 "category": "general",
@@ -235,7 +272,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Pending violence owner assigned",
-                "description": "abuse unsafe immediate danger",
+                "description": "Contexte: situation de violence avec danger signalé. Demande: revue managériale du dossier et coordination de protection.",
                 "status": "pending",
                 "priority": "urgent",
                 "category": "safety",
@@ -250,7 +287,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Done after food support",
-                "description": "food support delivered",
+                "description": "Contexte: aide alimentaire organisée et délivrée. Demande: validation de la résolution et archivage du suivi.",
                 "status": "done",
                 "priority": "medium",
                 "category": "food",
@@ -266,7 +303,7 @@ def main() -> int:
             },
             {
                 "title": f"{DEMO_PREFIX} Pending no owner 72h+",
-                "description": "isolated single parent needs shelter and food",
+                "description": "Contexte: parent isolé sans hébergement stable ni ressources. Demande: prise en charge prioritaire et affectation d’un responsable.",
                 "status": "pending",
                 "priority": "high",
                 "category": "social",
@@ -286,6 +323,7 @@ def main() -> int:
             req = Request(
                 title=payload["title"],
                 description=payload["description"],
+                message=payload["description"],
                 status=payload["status"],
                 priority=payload["priority"],
                 category=payload["category"],

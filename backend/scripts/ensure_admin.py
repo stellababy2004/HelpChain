@@ -15,6 +15,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+import argparse
 
 
 def _prepare_import_path() -> None:
@@ -35,6 +36,13 @@ def _env_truthy(value: str | None) -> bool:
 
 def main() -> int:
     _prepare_import_path()
+    parser = argparse.ArgumentParser(description="Ensure admin user (canonical DB only)")
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB write",
+    )
+    args = parser.parse_args()
 
     username = (os.getenv("ADMIN_SEED_USERNAME") or "").strip()
     password = os.getenv("ADMIN_SEED_PASSWORD") or ""
@@ -57,12 +65,26 @@ def main() -> int:
         return 1
 
     from backend.extensions import db
-    from backend.helpchain_backend.src.app import create_app
+    from backend.local_db_guard import (
+        canonical_confirmation_error,
+        canonical_mismatch_error,
+        is_canonical_db_uri,
+        print_app_db_preflight,
+    )
     from backend.models import AdminUser
 
-    app = create_app()
+    from backend.appy import app
 
     with app.app_context():
+        runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        print_app_db_preflight(runtime_uri)
+        if not args.confirm_canonical_db:
+            print(canonical_confirmation_error())
+            return 2
+        if not is_canonical_db_uri(runtime_uri):
+            print(canonical_mismatch_error(runtime_uri))
+            return 2
+
         existing = db.session.query(AdminUser).filter_by(username=username).first()
         if existing:
             if not force_reset:

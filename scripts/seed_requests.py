@@ -1,6 +1,7 @@
 # scripts/seed_requests.py
 from __future__ import annotations
 
+import argparse
 import random
 import sys
 from datetime import datetime, timedelta
@@ -11,23 +12,50 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from backend.appy import app
 from backend.extensions import db
-from backend.helpchain_backend.src.app import create_app
+from backend.local_db_guard import (
+    canonical_confirmation_error,
+    canonical_mismatch_error,
+    print_app_db_preflight,
+    is_canonical_db_uri,
+)
 from backend.models import Request
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Seed 10 demo requests")
+    parser.add_argument("--force", action="store_true", help="Seed even if requests already exist")
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB writes",
+    )
+    return parser.parse_args()
+
+
+def _preflight_or_fail(*, actual_uri: str, confirmed: bool) -> int:
+    print_app_db_preflight(actual_uri)
+    if not confirmed:
+        print(canonical_confirmation_error())
+        return 2
+    if not is_canonical_db_uri(actual_uri):
+        print(canonical_mismatch_error(actual_uri))
+        return 2
+    return 0
+
+
 def main() -> int:
-    force = "--force" in sys.argv
-
-    app = create_app()
+    args = _parse_args()
+    force = bool(args.force)
     with app.app_context():
-        # покажи реалния DB файл (важно!)
-        try:
-            db_path = str(db.engine.url.database)
-        except Exception:
-            db_path = str(db.engine.url)
-
-        print(f"[seed] Using DB: {db_path}")
+        actual_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        guard_rc = _preflight_or_fail(
+            actual_uri=actual_uri,
+            confirmed=bool(args.confirm_canonical_db),
+        )
+        if guard_rc != 0:
+            return guard_rc
 
         existing = Request.query.count()
         print(f"[seed] Existing requests: {existing}")

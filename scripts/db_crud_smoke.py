@@ -1,19 +1,41 @@
 import os
 import sys
+import argparse
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from backend import models as m
+from backend.appy import app
 from backend.extensions import db
-from backend.helpchain_backend.src.app import create_app
+from backend.local_db_guard import (
+    canonical_confirmation_error,
+    canonical_mismatch_error,
+    is_canonical_db_uri,
+    print_app_db_preflight,
+)
 
 
 def main() -> int:
-    app = create_app()
+    parser = argparse.ArgumentParser(description="DB CRUD smoke (rollback-only)")
+    parser.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to run write-in-transaction smoke",
+    )
+    args = parser.parse_args()
 
     with app.app_context():
+        runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        print_app_db_preflight(runtime_uri)
+        if not args.confirm_canonical_db:
+            print(canonical_confirmation_error())
+            return 2
+        if not is_canonical_db_uri(runtime_uri):
+            print(canonical_mismatch_error(runtime_uri))
+            return 2
+
         session = db.session
 
         # =====================

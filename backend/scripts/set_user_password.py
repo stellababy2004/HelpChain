@@ -21,7 +21,13 @@ if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
 from backend import models
-from backend.app import app
+from backend.appy import app
+from backend.local_db_guard import (
+    canonical_confirmation_error,
+    canonical_mismatch_error,
+    is_canonical_db_uri,
+    print_app_db_preflight,
+)
 
 try:
     from backend.extensions import db as ext_db
@@ -34,9 +40,23 @@ def main():
     p.add_argument("--username", required=True)
     p.add_argument("--password", required=True)
     p.add_argument("--commit", action="store_true", help="Apply changes to DB")
+    p.add_argument(
+        "--confirm-canonical-db",
+        action="store_true",
+        help="Required safety flag to allow DB writes on --commit",
+    )
     args = p.parse_args()
 
     with app.app_context():
+        runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+        print_app_db_preflight(runtime_uri)
+        if not is_canonical_db_uri(runtime_uri):
+            print(canonical_mismatch_error(runtime_uri))
+            return
+        if args.commit and (not args.confirm_canonical_db):
+            print(canonical_confirmation_error())
+            return
+
         user = models.User.query.filter_by(username=args.username).first()
         if user is None:
             print(f"User {args.username} not found — will create (dry-run)")

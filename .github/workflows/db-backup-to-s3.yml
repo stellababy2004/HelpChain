@@ -3,7 +3,7 @@ name: DB Backup to S3 (Neon Postgres)
 on:
   workflow_dispatch:
   schedule:
-    # Every day at 02:05 UTC (adjust if you want)
+    # Daily backup at 02:05 UTC
     - cron: "5 2 * * *"
 
 permissions:
@@ -120,7 +120,43 @@ jobs:
           ls -lh "${out}"
 
           echo "OUT_FILE=${out}" >> "$GITHUB_ENV"
+          echo "OUT_SHA256_FILE=${out}.sha256" >> "$GITHUB_ENV"
+          echo "OUT_MANIFEST_FILE=${out}.manifest.json" >> "$GITHUB_ENV"
           echo "S3_KEY=postgres/${out}" >> "$GITHUB_ENV"
+          echo "S3_KEY_SHA256=postgres/${out}.sha256" >> "$GITHUB_ENV"
+          echo "S3_KEY_MANIFEST=postgres/${out}.manifest.json" >> "$GITHUB_ENV"
+
+      - name: Generate checksum and metadata manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sha256="$(sha256sum "${OUT_FILE}" | awk '{print $1}')"
+          size_bytes="$(wc -c < "${OUT_FILE}" | tr -d '[:space:]')"
+          generated_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+          printf '%s  %s\n' "${sha256}" "$(basename "${OUT_FILE}")" > "${OUT_SHA256_FILE}"
+
+          cat > "${OUT_MANIFEST_FILE}" <<JSON
+          {
+            "backup_file": "$(basename "${OUT_FILE}")",
+            "sha256": "${sha256}",
+            "size_bytes": ${size_bytes},
+            "generated_at_utc": "${generated_at}",
+            "source": "Neon Postgres",
+            "workflow": "${GITHUB_WORKFLOW}",
+            "run_id": "${GITHUB_RUN_ID}",
+            "run_number": "${GITHUB_RUN_NUMBER}",
+            "repository": "${GITHUB_REPOSITORY}",
+            "git_sha": "${GITHUB_SHA}",
+            "s3_key_backup": "${S3_KEY}",
+            "s3_key_checksum": "${S3_KEY_SHA256}",
+            "s3_key_manifest": "${S3_KEY_MANIFEST}"
+          }
+          JSON
+
+          echo "Checksum and manifest generated:"
+          ls -lh "${OUT_SHA256_FILE}" "${OUT_MANIFEST_FILE}"
 
       - name: Upload to S3
         shell: bash
@@ -136,24 +172,39 @@ jobs:
           aws s3 cp "${OUT_FILE}" "s3://${S3_BUCKET}/${S3_KEY}" \
             --only-show-errors
 
-          echo "Uploaded to s3://${S3_BUCKET}/${S3_KEY}"
+          aws s3 cp "${OUT_SHA256_FILE}" "s3://${S3_BUCKET}/${S3_KEY_SHA256}" \
+            --only-show-errors
 
-      - name: Retention (keep last 8 weekly-ish backups)
+          aws s3 cp "${OUT_MANIFEST_FILE}" "s3://${S3_BUCKET}/${S3_KEY_MANIFEST}" \
+            --only-show-errors
+
+          echo "Uploaded to s3://${S3_BUCKET}/${S3_KEY}"
+          echo "Uploaded checksum to s3://${S3_BUCKET}/${S3_KEY_SHA256}"
+          echo "Uploaded manifest to s3://${S3_BUCKET}/${S3_KEY_MANIFEST}"
+
+      - name: Retention fallback (keep last 30 daily backups)
         shell: bash
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
         run: |
           set -euo pipefail
 
-          # Keep newest 8 objects under postgres/
-          # (simple retention without lifecycle rules)
-          mapfile -t keys < <(aws s3api list-objects-v2 \
+          # Keep newest 30 *.sql.gz objects under postgres/ as a fallback.
+          # Primary policy should be an S3 lifecycle rule with 30-day expiry.
+          mapfile -t all_keys < <(aws s3api list-objects-v2 \
             --bucket "${S3_BUCKET}" \
             --prefix "postgres/helpchain_prod_" \
             --query 'reverse(sort_by(Contents,&LastModified))[*].Key' \
             --output text)
 
-          keep=8
+          keys=()
+          for k in "${all_keys[@]}"; do
+            if [[ "${k}" == *.sql.gz ]]; then
+              keys+=("${k}")
+            fi
+          done
+
+          keep=30
           count=${#keys[@]}
           echo "Found ${count} backups"
 
@@ -167,6 +218,8 @@ jobs:
             k="${keys[$i]}"
             echo "Deleting: ${k}"
             aws s3api delete-object --bucket "${S3_BUCKET}" --key "${k}" >/dev/null
+            aws s3api delete-object --bucket "${S3_BUCKET}" --key "${k}.sha256" >/dev/null || true
+            aws s3api delete-object --bucket "${S3_BUCKET}" --key "${k}.manifest.json" >/dev/null || true
           done
 
       - name: Done
