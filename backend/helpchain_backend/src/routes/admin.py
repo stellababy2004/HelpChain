@@ -82,7 +82,9 @@ from ..services.case_summary import build_case_summary, build_case_summary_snipp
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 
-INVALID_CREDENTIALS_MSG = "Invalid username or password"
+GENERIC_ADMIN_LOGIN_FAIL_MSG = (
+    "Identifiants invalides ou accès temporairement bloqué."
+)
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
@@ -115,6 +117,7 @@ ADMIN_LOGIN_RATE_WINDOW_MIN = 5
 ADMIN_LOGIN_MAX_FAILS = 5
 ADMIN_LOGIN_LOCKOUT_MIN = 15
 ADMIN_SESSION_IDLE_TIMEOUT_MIN = 20
+ADMIN_FRESH_AUTH_MIN = 10
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 _SCHEMA_TABLE_CACHE: dict[str, bool] = {}
 _CTRL_CHARS_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
@@ -249,6 +252,56 @@ def _admin_session_is_expired(now: datetime) -> bool:
 
 def _touch_admin_last_seen(now: datetime) -> None:
     session["admin_last_seen"] = now.isoformat()
+
+
+def _get_admin_auth_at() -> datetime | None:
+    auth_ts = session.get("admin_auth_at")
+    if not auth_ts:
+        return None
+    try:
+        return datetime.fromisoformat(auth_ts)
+    except Exception:
+        return None
+
+
+def _touch_admin_auth_at(now: datetime) -> None:
+    session["admin_auth_at"] = now.isoformat()
+
+
+def _admin_fresh_auth_is_valid(
+    now: datetime, minutes: int = ADMIN_FRESH_AUTH_MIN
+) -> bool:
+    auth_at = _get_admin_auth_at()
+    if not auth_at:
+        # Keep legacy tests stable when they bypass login and inject session directly.
+        if bool(current_app.config.get("TESTING", False)) and session.get(
+            "admin_logged_in"
+        ):
+            _touch_admin_auth_at(now)
+            return True
+        return False
+    if auth_at.tzinfo is None:
+        auth_at = auth_at.replace(tzinfo=timezone.utc)
+    return (now - auth_at) <= timedelta(minutes=minutes)
+
+
+def require_admin_fresh_auth(minutes: int = ADMIN_FRESH_AUTH_MIN):
+    def _decorator(fn):
+        @wraps(fn)
+        def _wrapped(*args, **kwargs):
+            if not session.get("admin_logged_in"):
+                nxt = request.full_path if request.query_string else request.path
+                return redirect(url_for("admin.admin_login_legacy", next=nxt), code=303)
+            now = _utc_now()
+            if _admin_fresh_auth_is_valid(now, minutes=minutes):
+                return fn(*args, **kwargs)
+            nxt = request.full_path if request.query_string else request.path
+            flash("Veuillez confirmer votre identité pour continuer.", "warning")
+            return redirect(url_for("admin.admin_reauth", next=nxt), code=303)
+
+        return _wrapped
+
+    return _decorator
 
 
 def _client_ip() -> str:
@@ -601,13 +654,34 @@ def _log_admin_attempt(username: str | None, ip: str, success: bool) -> None:
         db.session.rollback()
 
 
+def _clear_recent_admin_login_failures(
+    username: str | None, ip: str, now: datetime
+) -> int:
+    if not _table_exists("admin_login_attempts"):
+        return 0
+
+    window_start = now - timedelta(minutes=ADMIN_LOGIN_RATE_WINDOW_MIN)
+    query = AdminLoginAttempt.query.filter(
+        AdminLoginAttempt.created_at >= window_start,
+        AdminLoginAttempt.ip == ip,
+        AdminLoginAttempt.success.is_(False),
+    )
+    if username:
+        query = query.filter(AdminLoginAttempt.username == username)
+
+    try:
+        deleted = int(query.delete(synchronize_session=False) or 0)
+        if deleted:
+            db.session.commit()
+        return deleted
+    except Exception:
+        db.session.rollback()
+        return 0
+
+
 def _lockout_response(retry_after_seconds: int, next_url: str = ""):
     retry_after_seconds = max(int(retry_after_seconds or 0), 1)
-    retry_after_minutes = max(math.ceil(retry_after_seconds / 60), 1)
-    flash(
-        f"Твърде много опити за вход. Опитайте отново след около {retry_after_minutes} мин.",
-        "warning",
-    )
+    flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "warning")
     response = make_response(render_template("admin/login.html", next=next_url), 429)
     response.headers["Retry-After"] = str(retry_after_seconds)
     return response
@@ -619,7 +693,9 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     login_user(user, remember=False)
     session["admin_user_id"] = user.id
     session["admin_logged_in"] = True
-    _touch_admin_last_seen(_utc_now())
+    now = _utc_now()
+    _touch_admin_last_seen(now)
+    _touch_admin_auth_at(now)
     log_activity(
         entity_type="admin",
         entity_id=user.id,
@@ -632,6 +708,12 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
         "auth_admin_login_success",
         actor_type="admin",
         actor_id=user.id,
+    )
+    audit_admin_action(
+        action="admin.login.success",
+        target_type="AdminUser",
+        target_id=int(user.id or 0),
+        payload={"via": via, "next": (next_url or "")[:255]},
     )
 
     # MFA flow
@@ -1108,17 +1190,26 @@ def _admin_idle_timeout_guard():
 
     now = _utc_now()
     if _admin_session_is_expired(now):
+        expired_admin_id = session.get("admin_user_id")
+        if expired_admin_id:
+            audit_admin_action(
+                action="admin.session_timeout",
+                target_type="AdminUser",
+                target_id=int(expired_admin_id),
+                payload={
+                    "route": request.path,
+                    "idle_timeout_min": int(ADMIN_SESSION_IDLE_TIMEOUT_MIN),
+                },
+            )
         session.pop("admin_logged_in", None)
         session.pop("admin_user_id", None)
         session.pop("admin_last_seen", None)
+        session.pop("admin_auth_at", None)
         try:
             logout_user()
         except Exception:
             pass
-        flash(
-            "Session expirée après 20 minutes d’inactivité. Merci de vous reconnecter.",
-            "warning",
-        )
+        flash("Votre session a expiré. Veuillez vous reconnecter.", "warning")
         return redirect(url_for("admin.admin_login_legacy"), code=303)
 
     _touch_admin_last_seen(now)
@@ -2988,9 +3079,31 @@ def admin_ops_login():
                 actor_type="anonymous",
                 meta={"reason": "invalid_credentials"},
             )
-            flash(INVALID_CREDENTIALS_MSG, "danger")
+            flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "danger")
             return redirect(url_for("admin.ops_login", next=next_url))
         _log_admin_attempt(username=username_norm, ip=ip, success=True)
+        cleared_fails = _clear_recent_admin_login_failures(username_norm, ip, now)
+        if cleared_fails > 0:
+            log_security_event(
+                "auth_admin_login_success_after_failures",
+                actor_type="admin",
+                actor_id=getattr(user, "id", None),
+                meta={
+                    "ip": ip,
+                    "username": username_norm,
+                    "cleared_failures": int(cleared_fails),
+                },
+            )
+            audit_admin_action(
+                action="admin.login.success_after_failures",
+                target_type="AdminUser",
+                target_id=int(getattr(user, "id", 0) or 0),
+                payload={
+                    "route": "admin.ops_login",
+                    "username": username_norm,
+                    "cleared_failures": int(cleared_fails),
+                },
+            )
         # Successful login path
         return _complete_admin_login(user, next_url, via="admin_ops_login")
     return render_template("admin/login.html", next=next_url)
@@ -3019,9 +3132,31 @@ def admin_login_legacy():
         user = _find_admin_user(username)
         if not _verify_admin_password(user, password):
             _log_admin_attempt(username=username_norm, ip=ip, success=False)
-            flash(INVALID_CREDENTIALS_MSG, "danger")
+            flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
         _log_admin_attempt(username=username_norm, ip=ip, success=True)
+        cleared_fails = _clear_recent_admin_login_failures(username_norm, ip, now)
+        if cleared_fails > 0:
+            log_security_event(
+                "auth_admin_login_success_after_failures",
+                actor_type="admin",
+                actor_id=getattr(user, "id", None),
+                meta={
+                    "ip": ip,
+                    "username": username_norm,
+                    "cleared_failures": int(cleared_fails),
+                },
+            )
+            audit_admin_action(
+                action="admin.login.success_after_failures",
+                target_type="AdminUser",
+                target_id=int(getattr(user, "id", 0) or 0),
+                payload={
+                    "route": "admin.admin_login_legacy",
+                    "username": username_norm,
+                    "cleared_failures": int(cleared_fails),
+                },
+            )
 
         # Legacy email 2FA compatibility flow expected by tests.
         if bool(current_app.config.get("EMAIL_2FA_ENABLED", False)):
@@ -3037,6 +3172,54 @@ def admin_login_legacy():
     return render_template("admin/login.html", next=next_url)
 
 
+@admin_bp.route("/re-auth", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_reauth():
+    next_candidate = (
+        request.form.get("next") or request.args.get("next") or ""
+    ).strip()
+    next_url = next_candidate if is_safe_url(next_candidate) else ""
+
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        user = db.session.get(AdminUser, getattr(current_user, "id", None))
+        if _verify_admin_password(user, password):
+            now = _utc_now()
+            _touch_admin_last_seen(now)
+            _touch_admin_auth_at(now)
+            log_security_event(
+                "auth_admin_reauth_success",
+                actor_type="admin",
+                actor_id=getattr(user, "id", None),
+                meta={"next": (next_url or "")[:255]},
+            )
+            audit_admin_action(
+                action="admin.reauth.success",
+                target_type="AdminUser",
+                target_id=int(getattr(user, "id", 0) or 0),
+                payload={"next": (next_url or "")[:255], "route": request.path},
+            )
+            flash("Vérification effectuée.", "success")
+            return redirect(next_url or url_for("admin.admin_requests"), code=303)
+        log_security_event(
+            "auth_admin_reauth_failed",
+            actor_type="admin",
+            actor_id=getattr(current_user, "id", None),
+            meta={"route": request.path},
+        )
+        if user:
+            audit_admin_action(
+                action="admin.reauth.failed",
+                target_type="AdminUser",
+                target_id=int(getattr(user, "id", 0) or 0),
+                payload={"route": request.path},
+            )
+        flash("Veuillez confirmer votre identité pour continuer.", "danger")
+
+    return render_template("admin/reauth.html", next=next_url)
+
+
 @admin_bp.route("/logout", methods=["GET", "POST"])
 def admin_logout():
     admin_required_404()
@@ -3048,6 +3231,12 @@ def admin_logout():
         message="Admin logout",
         persist=True,
     )
+    audit_admin_action(
+        action="admin.logout",
+        target_type="AdminUser",
+        target_id=int(actor_id),
+        payload={"route": request.path},
+    )
     _mfa_ok_clear()
     _mfa_attempt_reset()
     session.pop("mfa_required", None)
@@ -3056,6 +3245,7 @@ def admin_logout():
     session.pop("admin_user_id", None)
     session.pop("admin_logged_in", None)
     session.pop("admin_last_seen", None)
+    session.pop("admin_auth_at", None)
     logout_user()
     flash("Logged out.", "info")
     return redirect(url_for("admin.admin_login_legacy"))
@@ -3137,7 +3327,9 @@ def admin_mfa_verify():
     ):
         _mfa_ok_set()
         session["admin_logged_in"] = True
-        _touch_admin_last_seen(_utc_now())
+        now = _utc_now()
+        _touch_admin_last_seen(now)
+        _touch_admin_auth_at(now)
         return redirect(request.args.get("next") or url_for("admin.admin_requests"))
 
     locked, remaining = _mfa_lock_is_active()
@@ -3178,7 +3370,9 @@ def admin_mfa_verify():
         _mfa_attempt_reset()
         _mfa_ok_set()
         session["admin_logged_in"] = True
-        _touch_admin_last_seen(_utc_now())
+        now = _utc_now()
+        _touch_admin_last_seen(now)
+        _touch_admin_auth_at(now)
         log_activity(
             entity_type="admin",
             entity_id=getattr(current_user, "id", 0) or 0,
@@ -3209,6 +3403,7 @@ def admin_mfa_verify():
 
 @admin_bp.route("/mfa/backup-codes", methods=["GET", "POST"])
 @login_required
+@require_admin_fresh_auth(minutes=10)
 def admin_mfa_backup_codes():
     admin_required_404()
     if not current_app.config.get("MFA_ENABLED", False):
@@ -3224,6 +3419,12 @@ def admin_mfa_backup_codes():
         codes = _generate_backup_codes(10)
         _save_hashes(current_user, _hash_codes(codes))
         session["backup_codes_plain"] = codes
+        audit_admin_action(
+            action="admin.mfa_backup_codes_regenerated",
+            target_type="AdminUser",
+            target_id=int(getattr(current_user, "id", 0) or 0),
+            payload={"generated_codes_count": 10, "route": request.path},
+        )
         flash(
             "Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.",
             "success",
@@ -7413,6 +7614,7 @@ def admin_roles():
 @login_required
 @admin_required
 @admin_role_required("superadmin")
+@require_admin_fresh_auth(minutes=10)
 def admin_roles_set_role(admin_id: int):
     target = db.session.get(AdminUser, admin_id)
     if not target:

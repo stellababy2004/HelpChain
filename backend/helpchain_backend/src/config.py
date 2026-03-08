@@ -24,6 +24,9 @@ class Config:
         "1",
         "yes",
     )
+    REMEMBER_COOKIE_HTTPONLY = True
+    REMEMBER_COOKIE_SAMESITE = "Lax"
+    REMEMBER_COOKIE_SECURE = SESSION_COOKIE_SECURE
     SESSION_PERMANENT = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=6)
     SESSION_REFRESH_EACH_REQUEST = True
@@ -165,6 +168,7 @@ class Config:
 
 class DevConfig(Config):
     SESSION_COOKIE_SECURE = False
+    REMEMBER_COOKIE_SECURE = False
     # Dev-only volunteer bypass: honor env (default off)
     VOLUNTEER_DEV_BYPASS_ENABLED = os.getenv("VOLUNTEER_DEV_BYPASS_ENABLED", "0") == "1"
     VOLUNTEER_DEV_BYPASS_EMAIL = (
@@ -178,6 +182,7 @@ class DevConfig(Config):
 
 class ProdConfig(Config):
     SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
     # Never allow volunteer dev bypass in production, even if env var is set.
     VOLUNTEER_DEV_BYPASS_ENABLED = False
     VOLUNTEER_DEV_BYPASS_EMAIL = ""
