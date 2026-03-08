@@ -74,3 +74,13 @@ SELECT COUNT(*) FROM admin_users;
 - Daily backups are expected.
 - Target retention: 30 days on S3 lifecycle (`postgres/` prefix).
 - Workflow fallback also keeps the newest 30 backup sets.
+
+## 7) Safe restore validation checklist (non-production)
+
+- Validate backup integrity first (checksum + manifest consistency).
+- Restore only to staging/local validation DB.
+- Verify:
+  - `SELECT COUNT(*) FROM requests;`
+  - `SELECT COUNT(*) FROM admin_users;`
+  - application health endpoint returns `200`
+- If validation fails, stop and investigate backup integrity/migration state before any production action.
