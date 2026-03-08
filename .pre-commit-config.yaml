@@ -1,4 +1,13 @@
 repos:
+  - repo: local
+    hooks:
+      - id: helpchain-secret-guard
+        name: HelpChain Secret Guard (staged)
+        entry: powershell -ExecutionPolicy Bypass -File .\scripts\scan_secrets.ps1 -StagedOnly
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
   - repo: https://github.com/psf/black
     rev: 25.9.0
     hooks:

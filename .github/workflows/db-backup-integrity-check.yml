@@ -1,0 +1,101 @@
+name: DB Backup Integrity Check
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Resolve latest backup set
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${S3_BUCKET:-}" ]]; then
+            echo "backup integrity status: FAILED"
+            echo "reason: missing S3_BUCKET secret"
+            exit 1
+          fi
+
+          latest_key="$(aws s3api list-objects-v2 \
+            --bucket "${S3_BUCKET}" \
+            --prefix "postgres/helpchain_prod_" \
+            --query "reverse(sort_by(Contents,&LastModified))[?ends_with(Key, '.sql.gz')][0].Key" \
+            --output text)"
+
+          if [[ -z "${latest_key:-}" || "${latest_key}" == "None" ]]; then
+            echo "backup integrity status: FAILED"
+            echo "reason: missing backup file under postgres/"
+            exit 1
+          fi
+
+          echo "LATEST_BACKUP_KEY=${latest_key}" >> "$GITHUB_ENV"
+          echo "LATEST_CHECKSUM_KEY=${latest_key}.sha256" >> "$GITHUB_ENV"
+          echo "LATEST_MANIFEST_KEY=${latest_key}.manifest.json" >> "$GITHUB_ENV"
+
+          echo "latest backup set found: ${latest_key}"
+
+      - name: Validate S3 object presence
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          aws s3api head-object --bucket "${S3_BUCKET}" --key "${LATEST_BACKUP_KEY}" >/dev/null
+          echo "backup file present: yes"
+
+          aws s3api head-object --bucket "${S3_BUCKET}" --key "${LATEST_CHECKSUM_KEY}" >/dev/null
+          echo "checksum file present: yes"
+
+          aws s3api head-object --bucket "${S3_BUCKET}" --key "${LATEST_MANIFEST_KEY}" >/dev/null
+          echo "manifest file present: yes"
+
+      - name: Download latest backup set
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p backup_set
+
+          aws s3 cp "s3://${S3_BUCKET}/${LATEST_BACKUP_KEY}" "backup_set/$(basename "${LATEST_BACKUP_KEY}")" --only-show-errors
+          aws s3 cp "s3://${S3_BUCKET}/${LATEST_CHECKSUM_KEY}" "backup_set/$(basename "${LATEST_CHECKSUM_KEY}")" --only-show-errors
+          aws s3 cp "s3://${S3_BUCKET}/${LATEST_MANIFEST_KEY}" "backup_set/$(basename "${LATEST_MANIFEST_KEY}")" --only-show-errors
+
+      - name: Verify checksum and manifest consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          backup_file="backup_set/$(basename "${LATEST_BACKUP_KEY}")"
+          checksum_file="backup_set/$(basename "${LATEST_CHECKSUM_KEY}")"
+          manifest_file="backup_set/$(basename "${LATEST_MANIFEST_KEY}")"
+
+          python scripts/validate_backup_set.py \
+            --backup "${backup_file}" \
+            --checksum "${checksum_file}" \
+            --manifest "${manifest_file}" \
+            --expected-repository "${GITHUB_REPOSITORY}"
+
+      - name: Final status
+        shell: bash
+        run: |
+          echo "backup integrity status: OK"

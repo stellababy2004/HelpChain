@@ -1,0 +1,60 @@
+title = "HelpChain Secret Scan Rules"
+
+[allowlist]
+description = "Allow obvious placeholders in examples/tests"
+regexes = [
+  '''(?i)your_password_here''',
+  '''(?i)changeme''',
+  '''(?i)\bexample\b''',
+  '''(?i)\bdummy\b''',
+  '''(?i)replace_me''',
+]
+
+[[rules]]
+id = "admin-password-assignment"
+description = "ADMIN_PASSWORD assignment"
+regex = '''(?i)\bADMIN_PASSWORD\b\s*[:=]\s*["'][^"'\n]{6,}["']'''
+tags = ["password", "helpchain"]
+
+[[rules]]
+id = "password-assignment"
+description = "PASSWORD assignment"
+regex = '''(?i)\bPASSWORD\b\s*[:=]\s*["'][^"'\n]{6,}["']'''
+tags = ["password"]
+
+[[rules]]
+id = "secret-key-assignment"
+description = "SECRET_KEY assignment"
+regex = '''(?i)\bSECRET_KEY\b\s*[:=]\s*["'][^"'\n]{8,}["']'''
+tags = ["secret-key"]
+
+[[rules]]
+id = "api-key-assignment"
+description = "API key assignment"
+regex = '''(?i)\bAPI_KEY\b\s*[:=]\s*["'][A-Za-z0-9_\-]{12,}["']'''
+tags = ["api-key"]
+
+[[rules]]
+id = "access-key-assignment"
+description = "ACCESS_KEY assignment"
+regex = '''(?i)\bACCESS_KEY\b\s*[:=]\s*["'][A-Za-z0-9_\-]{12,}["']'''
+tags = ["access-key"]
+
+[[rules]]
+id = "aws-secret-access-key"
+description = "AWS secret access key"
+regex = '''(?i)\bAWS_SECRET_ACCESS_KEY\b\s*[:=]\s*["']?[A-Za-z0-9/+=]{30,}["']?'''
+tags = ["aws", "secret"]
+
+[[rules]]
+id = "bearer-token"
+description = "Bearer-like token"
+regex = '''(?i)\bbearer\s+[A-Za-z0-9\-._~+/=]{20,}'''
+tags = ["token", "bearer"]
+
+[[rules]]
+id = "inline-email-password-json"
+description = "Inline email/password JSON pattern"
+regex = '''(?i)"email"\s*:\s*"[^"]+"\s*,\s*"password"\s*:\s*"[^"]{6,}"'''
+tags = ["credentials", "json"]
+path = '''\.(json|ya?ml|py|js|ts)$'''
