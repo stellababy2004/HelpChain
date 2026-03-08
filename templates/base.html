@@ -123,6 +123,255 @@
         background: rgba(255, 255, 255, 0.85);
         color: rgba(20, 40, 80, 0.9);
       }
+
+      .hc-mobile-nav-toggle {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        min-height: 42px;
+        border: 1px solid rgba(20, 40, 80, 0.2);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.92);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        position: relative;
+        z-index: 1110;
+        pointer-events: auto;
+        flex: 0 0 auto;
+      }
+
+      .hc-mobile-nav-toggle__bars {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .hc-mobile-nav-toggle__bars i {
+        display: block;
+        width: 18px;
+        height: 2px;
+        background: rgba(20, 40, 80, 0.9);
+        border-radius: 2px;
+      }
+
+      .hc-mobile-nav {
+        position: fixed;
+        inset: 0;
+        z-index: 1200;
+        pointer-events: none;
+      }
+
+      .hc-mobile-nav.is-open {
+        pointer-events: auto;
+      }
+
+      .hc-mobile-nav__overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.45);
+        opacity: 0;
+        transition: opacity 160ms ease;
+      }
+
+      .hc-mobile-nav__panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: min(86vw, 360px);
+        height: 100%;
+        background: #fff;
+        border-right: 1px solid rgba(20, 40, 80, 0.14);
+        box-shadow: 0 18px 40px rgba(2, 6, 23, 0.18);
+        transform: translateX(-105%);
+        transition: transform 170ms ease;
+        padding: 18px 16px;
+      }
+
+      .hc-mobile-nav.is-open .hc-mobile-nav__overlay {
+        opacity: 1;
+      }
+
+      .hc-mobile-nav.is-open .hc-mobile-nav__panel {
+        transform: translateX(0);
+      }
+
+      .hc-mobile-nav__head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: start;
+        gap: 4px 8px;
+        margin-bottom: 12px;
+      }
+
+      .hc-brand {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+        line-height: 1.2;
+      }
+
+      .hc-brand-title {
+        font-size: 1.02rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: rgba(20, 40, 80, 0.94);
+      }
+
+      .hc-brand-subtitle {
+        margin-top: 2px;
+        font-size: 0.73rem;
+        font-weight: 500;
+        color: rgba(20, 40, 80, 0.64);
+      }
+
+      .hc-mobile-nav__title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: rgba(20, 40, 80, 0.9);
+      }
+
+      .hc-mobile-nav__subtitle {
+        grid-column: 1 / 2;
+        margin: 0;
+        font-size: 0.85rem;
+        line-height: 1.35;
+        color: rgba(20, 40, 80, 0.72);
+      }
+
+      .hc-mobile-nav__section-label {
+        grid-column: 1 / 2;
+        margin: 6px 0 0;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgba(20, 40, 80, 0.62);
+      }
+
+      .hc-mobile-nav__close {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+        width: 34px;
+        height: 34px;
+        border: 1px solid rgba(20, 40, 80, 0.2);
+        border-radius: 8px;
+        background: #fff;
+        color: rgba(20, 40, 80, 0.9);
+      }
+
+      .hc-mobile-nav__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .hc-mobile-nav__item a {
+        display: block;
+        border: 1px solid rgba(20, 40, 80, 0.12);
+        border-radius: 8px;
+        padding: 12px 14px;
+        color: rgba(20, 40, 80, 0.92);
+        text-decoration: none;
+        font-weight: 600;
+        background: #fff;
+      }
+
+      .hc-mobile-nav__item a:hover {
+        background: #f7f9fc;
+        border-color: rgba(20, 40, 80, 0.2);
+      }
+
+      .hc-mobile-nav__item a.is-active {
+        background: #edf3fb;
+        border-color: rgba(20, 40, 80, 0.28);
+        color: #0f2b57;
+      }
+
+      .hc-mobile-nav__item--cta a {
+        background: #0f2b57;
+        border-color: #0f2b57;
+        color: #fff;
+      }
+
+      .hc-mobile-nav__item--cta a:hover {
+        background: #14386f;
+        border-color: #14386f;
+        color: #fff;
+      }
+
+      .hc-mobile-nav__item a:focus-visible,
+      .hc-mobile-nav__close:focus-visible,
+      .hc-mobile-nav-toggle:focus-visible {
+        outline: 2px solid rgba(37, 99, 235, 0.7);
+        outline-offset: 2px;
+      }
+
+      body.hc-mobile-nav-open {
+        overflow: hidden;
+      }
+
+      .hc-public-nav-cta {
+        margin-left: 4px;
+      }
+
+      @media (max-width: 1800px) {
+        .hc-public-nav-cta {
+          display: none !important;
+        }
+      }
+
+      /* Public nav switch breakpoint: keep desktop nav on wide screens,
+         switch to institutional hamburger on tablet/smaller widths. */
+      @media (max-width: 1700px) {
+        .hc-public-nav-root #navbarNav.hc-public-nav-desktop {
+          display: none !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
+        .hc-public-nav-desktop {
+          display: none !important;
+        }
+        .hc-mobile-nav-toggle {
+          display: inline-flex !important;
+        }
+      }
+
+      @media (min-width: 1701px) {
+        .hc-mobile-nav,
+        .hc-mobile-nav-toggle {
+          display: none !important;
+        }
+      }
+
+      .hc-public-nav-root.hc-nav-mobile-mode .hc-public-nav-desktop {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+
+      .hc-public-nav-root.hc-nav-mobile-mode .hc-mobile-nav-toggle {
+        display: inline-flex !important;
+      }
+
+      .hc-public-nav-root.hc-nav-mobile-mode .hc-mobile-nav {
+        display: block !important;
+      }
+
+      .hc-public-nav-root .hc-public-nav-desktop {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hc-public-nav-root .hc-lang-top-trigger {
+        position: relative;
+        z-index: 1105;
+      }
     </style>
     {% block head %}{% endblock %}
   </head>
@@ -171,23 +420,41 @@
       if ((request.endpoint or '') in hc_institutional_public_eps and not is_any_logged_in)
       else hc_languages_all
     ) %}
-    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass">
+    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
-          <span>{{ _('HelpChain.live') }}</span>
+          <span class="hc-brand">
+            <span class="hc-brand-title">HelpChain</span>
+            <span class="hc-brand-subtitle">{{ _('Infrastructure de coordination sociale') }}</span>
+          </span>
         </a>
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="{{ _('Toggle navigation') }}"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
+        {% if not is_any_logged_in and not hide_full_nav %}
+          <button
+            class="hc-mobile-nav-toggle"
+            type="button"
+            id="hcMobileNavToggle"
+            aria-label="{{ _('Ouvrir le menu de navigation') }}"
+            aria-controls="hcMobileNav"
+            aria-expanded="false"
+          >
+            <span class="hc-mobile-nav-toggle__bars" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </span>
+          </button>
+        {% else %}
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="{{ _('Toggle navigation') }}"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        {% endif %}
         <button
           class="btn btn-outline-secondary btn-sm d-lg-none ms-2 hc-lang-top-trigger"
           type="button"
@@ -203,7 +470,7 @@
             <span class="hc-lang-flag" aria-hidden="true">{{ hc_locale_code|upper }}</span>
           {% endfor %}
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="collapse navbar-collapse{% if not is_any_logged_in and not hide_full_nav %} hc-public-nav-desktop{% endif %}" id="navbarNav">
           {% if not hide_full_nav %}
           {% set ep = request.endpoint or '' %}
           <ul class="navbar-nav ms-auto">
@@ -215,18 +482,23 @@
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
-                <i class="fas fa-th-list me-1" aria-hidden="true"></i>{{ _('Fonctionnement') }}
+                <i class="fas fa-compass me-1" aria-hidden="true"></i>{{ _('Orienter une demande') }}
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.submit_request') else '' }}" href="{{ url_for('main.submit_request') }}" {% if ep.startswith('main.submit_request') %}aria-current="page"{% endif %}>
-                <i class="fas fa-inbox me-1" aria-hidden="true"></i>{{ _('Demandes') }}
+              <a class="nav-link nav-link--secondary {{ 'is-active' if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
+                <i class="fas fa-building-columns me-1" aria-hidden="true"></i>
+                <span class="hc-navlabel">{{ _('Accès structures et collectivités') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link nav-link--secondary {{ 'is-active' if ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
-                <i class="fas fa-briefcase me-1" aria-hidden="true"></i>
-                <span class="hc-navlabel">{{ _('Structures') }}</span>
+              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
+                <i class="fas fa-circle-info me-1" aria-hidden="true"></i>{{ _('Comment ça marche') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
+                <i class="fas fa-chart-line me-1" aria-hidden="true"></i>{{ _('Pilotage') }}
               </a>
             </li>
             <li class="nav-item">
@@ -236,10 +508,10 @@
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if ep.startswith('main.contact') %}aria-current="page"{% endif %}>
-                <i class="fas fa-envelope me-1" aria-hidden="true"></i>{{ _('Contact & coopération') }}
+                <i class="fas fa-envelope me-1" aria-hidden="true"></i>{{ _('Contact') }}
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item hc-public-nav-cta">
               <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
                 <span class="hc-navicon" aria-hidden="true"><i class="fas fa-comments" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Demander un échange') }}</span>
@@ -447,6 +719,48 @@
         </div>
       </div>
     </nav>
+
+    {% if not is_any_logged_in and not hide_full_nav %}
+    <!-- HC_NAV_DEBUG: mobile nav block rendered -->
+    <div class="hc-mobile-nav" id="hcMobileNav" aria-hidden="true">
+      {% set mobile_ep = request.endpoint or '' %}
+      <div class="hc-mobile-nav__overlay" data-mobile-nav-close="1"></div>
+      <aside class="hc-mobile-nav__panel" role="dialog" aria-modal="true" aria-label="{{ _('Navigation principale') }}">
+        <div class="hc-mobile-nav__head">
+          <h2 class="hc-mobile-nav__title">HelpChain</h2>
+          <p class="hc-mobile-nav__subtitle">{{ _('Infrastructure de coordination sociale') }}</p>
+          <p class="hc-mobile-nav__section-label">{{ _('Navigation') }}</p>
+          <button type="button" class="hc-mobile-nav__close" data-mobile-nav-close="1" aria-label="{{ _('Fermer le menu') }}">×</button>
+        </div>
+        <ul class="hc-mobile-nav__list">
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep == 'main.index' else '' }}" href="{{ url_for('main.index') }}" {% if mobile_ep == 'main.index' %}aria-current="page"{% endif %}>{{ _('Accueil') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.categories') or mobile_ep.startswith('main.orienter') else '' }}" href="{{ url_for('main.orienter') }}" {% if mobile_ep.startswith('main.categories') or mobile_ep.startswith('main.orienter') %}aria-current="page"{% endif %}>{{ _('Orienter une demande') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.professionnels') or mobile_ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if mobile_ep.startswith('main.professionnels') or mobile_ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>{{ _('Accès structures et collectivités') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if mobile_ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>{{ _('Comment ça marche') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if mobile_ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>{{ _('Pilotage') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.about') else '' }}" href="{{ url_for('main.about') }}" {% if mobile_ep.startswith('main.about') %}aria-current="page"{% endif %}>{{ _('À propos') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if mobile_ep.startswith('main.contact') %}aria-current="page"{% endif %}>{{ _('Contact') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item hc-mobile-nav__item--cta">
+            <a href="{{ url_for('main.contact') }}">{{ _('Demander un échange') }}</a>
+          </li>
+        </ul>
+      </aside>
+    </div>
+    {% endif %}
 
     <div
       class="offcanvas offcanvas-bottom hc-lang-sheet d-lg-none"
@@ -1092,6 +1406,7 @@
     <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/nav-scroll.js') }}" defer></script>
     <script defer src="{{ url_for('static', filename='js/volunteer-actions-ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/public-mobile-nav.js') }}" defer></script>
     <script>
       (function () {
         const el = document.getElementById("hcServerIndicator");
