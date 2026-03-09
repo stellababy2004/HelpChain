@@ -11,6 +11,7 @@ function Show-Help {
     Write-Host "----------------------"
     Write-Host "bootstrap       Setup local DB, schema, admin and doctor checks"
     Write-Host "run             Start local server"
+    Write-Host "run-debug       Start local server in debug mode (auto reload)"
     Write-Host "doctor          Run environment diagnostics"
     Write-Host "smoke           Run smoke tests"
     Write-Host "smoke-verbose   Run smoke tests (verbose)"
@@ -33,6 +34,13 @@ switch ($Command) {
     }
 
     "run" {
+        powershell -ExecutionPolicy Bypass -File .\scripts\run_local.ps1
+    }
+
+    "run-debug" {
+        Write-Host "Starting HelpChain in DEBUG mode..."
+        $env:FLASK_ENV = "development"
+        $env:FLASK_DEBUG = "1"
         powershell -ExecutionPolicy Bypass -File .\scripts\run_local.ps1
     }
 
