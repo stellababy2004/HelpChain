@@ -734,6 +734,27 @@ class Structure(db.Model):
     name = db.Column(db.String(255), nullable=False)
     slug = db.Column(db.String(80), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    services = relationship("StructureService", back_populates="structure", lazy="select")
+
+
+class StructureService(db.Model):
+    __tablename__ = "structure_services"
+
+    id = Column(Integer, primary_key=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    code = Column(String(64), nullable=False)
+    name = Column(String(255), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True, server_default="1")
+    created_at = Column(DateTime, nullable=False, default=utc_now)
+
+    structure = relationship("Structure", back_populates="services", lazy="joined")
+    requests = relationship("Request", back_populates="service", lazy="select")
+
+    __table_args__ = (
+        UniqueConstraint("structure_id", "code", name="uq_structure_services_structure_code"),
+        UniqueConstraint("structure_id", "name", name="uq_structure_services_structure_name"),
+        Index("ix_structure_services_structure_active", "structure_id", "is_active"),
+    )
 
 
 def get_default_structure():
@@ -799,10 +820,12 @@ class Request(db.Model):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True)
+    service_id = Column(Integer, ForeignKey("structure_services.id"), nullable=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     user = relationship("User", back_populates="requests")
     structure = relationship("Structure")
+    service = relationship("StructureService", back_populates="requests", lazy="joined")
     # Relationship to link assigned volunteer (legacy field `assigned_volunteer_id`)
 
     try:
