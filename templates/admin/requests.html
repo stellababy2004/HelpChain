@@ -7,6 +7,11 @@
 
 {% block content %}
 <div class="hc-admin-wrap hc-density-compact">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
+    <a href="{{ safe_url_for('main.index') }}">Accueil</a>
+    <span>/</span>
+    <span>Demandes</span>
+  </nav>
 
   {# Localized export confirmation (stable multiline msgids) #}
   {% set export_confirm = '\n'.join([
@@ -20,7 +25,7 @@
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
-        <div class="hc-muted">{{ _('Structured view by status') }}</div>
+        <div class="hc-muted">Pilotage des situations par priorité, service et responsable</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.index') }}">
         {{ _('Home') }}
@@ -43,19 +48,19 @@
 
     <div class="hc-kpis" id="hcAdminKpis" style="margin-top:12px;">
       <div class="hc-kpi" data-kpi="NEW">
-        <div class="hc-kpi__label">{{ _('New') }}</div>
-        <div class="hc-kpi__value">0</div>
-      </div>
-      <div class="hc-kpi" data-kpi="ASSIGNED">
-        <div class="hc-kpi__label">{{ _('Assigned') }}</div>
+        <div class="hc-kpi__label">Nouvelles</div>
         <div class="hc-kpi__value">0</div>
       </div>
       <div class="hc-kpi" data-kpi="IN_PROGRESS">
-        <div class="hc-kpi__label">{{ _('In progress') }}</div>
+        <div class="hc-kpi__label">En traitement</div>
+        <div class="hc-kpi__value">0</div>
+      </div>
+      <div class="hc-kpi" data-kpi="URGENT">
+        <div class="hc-kpi__label">Urgentes</div>
         <div class="hc-kpi__value">0</div>
       </div>
       <div class="hc-kpi" data-kpi="COMPLETED">
-        <div class="hc-kpi__label">{{ _('Completed') }}</div>
+        <div class="hc-kpi__label">Clôturées</div>
         <div class="hc-kpi__value">0</div>
       </div>
     </div>
@@ -150,7 +155,7 @@
     </div>
   </section>
 
-  <div class="hc-requests-toolbar mb-3" id="hcRequestsToolbar">
+  <div class="hc-requests-toolbar mb-3 hc-admin-stickybar" id="hcRequestsToolbar">
   <div class="hc-risk-overview mb-2">
     <div class="hc-risk-overview__item">
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
@@ -179,7 +184,7 @@
   </div>
 
   <form class="row g-2 align-items-end mb-2" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
-    <div class="col-xl-10 col-lg-9">
+    <div class="col-12 col-xl-5">
       <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
         autofocus
         placeholder="Rechercher par nom, titre, description..." aria-label="Rechercher" />
@@ -195,7 +200,26 @@
       {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
       {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
     </div>
-    <div class="col-xl-2 col-lg-3 d-grid">
+    <div class="col-6 col-md-3 col-xl-2">
+      <select class="form-select" id="hcFilterCity" aria-label="Filtrer par ville">
+        <option value="">Ville</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+      <select class="form-select" id="hcFilterService" aria-label="Filtrer par service">
+        <option value="">Service</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-xl-1">
+      <select class="form-select" id="hcFilterPriority" aria-label="Filtrer par priorité">
+        <option value="">Priorité</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="HIGH">High</option>
+        <option value="MEDIUM">Medium</option>
+        <option value="LOW">Low</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2 d-grid">
       <button class="btn btn-primary" type="submit">Rechercher</button>
     </div>
   </form>
@@ -349,10 +373,13 @@
             <span class="visually-hidden">{{ _('Select') }}</span>
           </th>
           <th style="width:70px;">{{ _('ID') }}</th>
+          <th style="width:120px;">{{ _('Priority') }}</th>
           <th style="width:280px;">{{ _('Title') }}</th>
+          <th style="width:130px;">Ville</th>
+          <th style="width:160px;">Service</th>
+          <th style="width:160px;">Responsable</th>
           <th style="width:180px;">{{ _('Name') }}</th>
           <th style="width:140px;">{{ _('Status') }}</th>
-          <th style="width:120px;">{{ _('Priority') }}</th>
           <th style="width:140px;">{{ _('Risk level') }}</th>
           <th style="width:140px;">{{ _('Category') }}</th>
           <th style="width:120px;">{{ _('Created') }}</th>
@@ -402,6 +429,9 @@
             data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
             data-owner-id="{{ r.owner_id or '' }}"
             data-owner-state="{{ owner_state }}"
+            data-city="{{ (r.city or '')|lower }}"
+            data-service="{{ ((r.service.name if r.service else '') or '')|lower }}"
+            data-priority-label="{{ row_priority }}"
             data-sig-can-help="{{ ch }}"
             data-sig-cant-help="{{ cc }}"
             data-priority="{{ row_priority }}"
@@ -415,7 +445,23 @@
                    data-no-rowclick>
           </td>
           <td class="hc-col-id">{{ r.id }}</td>
+          <td>
+            {% set prio_class = {
+              'CRITICAL': 'hc-prio hc-prio--critical',
+              'HIGH': 'hc-prio hc-prio--high',
+              'MEDIUM': 'hc-prio hc-prio--medium',
+              'LOW': 'hc-prio hc-prio--low'
+            }.get(row_priority, 'hc-prio hc-prio--low') %}
+            <span class="{{ prio_class }}">{{ row_priority|lower }}</span>
+          </td>
           <td class="hc-col-title">{{ r.title }}</td>
+          <td>{{ r.city or "—" }}</td>
+          <td>{{ r.service.name if r.service else "—" }}</td>
+          <td>
+            {% if r.owner %}{{ r.owner.username }}
+            {% elif r.owner_id %}#{{ r.owner_id }}
+            {% else %}<span class="hc-mutedSmall">Sans responsable</span>{% endif %}
+          </td>
           <td>{{ r.name or r.requester_name }}</td>
           <td>
           {% set status_key = (r.status or '')|lower %}
@@ -440,7 +486,6 @@
               <span class="badge text-bg-secondary ms-1">{{ _('Taken') }}</span>
             {% endif %}
           </td>
-          <td>{{ _(r.priority) if r.priority else '' }}</td>
           <td>
             {% set risk_level_key = (r.risk_level or 'standard')|lower %}
             {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
@@ -600,7 +645,15 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="13" class="text-center text-muted py-4">{{ _('No results.') }}</td></tr>
+        <tr>
+          <td colspan="17" class="text-center py-5">
+            <div class="hc-empty-state">
+              <h3>Aucune demande à afficher</h3>
+              <p>Cette file est vide pour les filtres actuels. Réinitialisez les filtres ou créez une nouvelle demande.</p>
+              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">Créer une demande</a>
+            </div>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -650,4 +703,5 @@
 <script src="{{ url_for('static', filename='js/admin-copy-link.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-requests-rowclick.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
 {% endblock %}
