@@ -12,6 +12,7 @@ function Show-Help {
     Write-Host "bootstrap       Setup local DB, schema, admin and doctor checks"
     Write-Host "run             Start local server"
     Write-Host "run-debug       Start local server in debug mode (auto reload)"
+    Write-Host "logs            Stream local server logs (tail)"
     Write-Host "doctor          Run environment diagnostics"
     Write-Host "smoke           Run smoke tests"
     Write-Host "smoke-verbose   Run smoke tests (verbose)"
@@ -42,6 +43,20 @@ switch ($Command) {
         $env:FLASK_ENV = "development"
         $env:FLASK_DEBUG = "1"
         powershell -ExecutionPolicy Bypass -File .\scripts\run_local.ps1
+    }
+
+    "logs" {
+        $logPath = Join-Path (Get-Location) "logs\helpchain-dev.log"
+        if (-not (Test-Path $logPath)) {
+            Write-Host ""
+            Write-Host "No log file found at: $logPath"
+            Write-Host "Start server first with: powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 run-debug"
+            Write-Host ""
+            exit 1
+        }
+
+        Write-Host "Starting HelpChain log stream..."
+        Get-Content -Path $logPath -Wait -Tail 50
     }
 
     "doctor" {

@@ -142,11 +142,13 @@ if ([string]::IsNullOrWhiteSpace($dbUri)) {
     Write-Host "EXPECTED: $expectedDbUri" -ForegroundColor Yellow
 }
 
-$runProc = Start-Process `
-    -FilePath $pythonExe `
-    -ArgumentList @("-m", "flask", "run", "--host", $hostIp, "--port", "$port") `
-    -WorkingDirectory $projectRoot `
-    -NoNewWindow `
-    -Wait `
-    -PassThru
-exit $runProc.ExitCode
+$logDir = Join-Path $projectRoot "logs"
+if (-not (Test-Path $logDir)) {
+    New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+}
+$logFile = Join-Path $logDir "helpchain-dev.log"
+Write-Host "LOG: $logFile"
+
+& $pythonExe -m flask run --host $hostIp --port $port 2>&1 | Tee-Object -FilePath $logFile -Append
+$exitCode = $LASTEXITCODE
+exit $exitCode
