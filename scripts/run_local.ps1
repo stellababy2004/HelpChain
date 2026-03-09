@@ -146,14 +146,32 @@ $logDir = Join-Path $projectRoot "logs"
 if (-not (Test-Path $logDir)) {
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null
 }
-$logFile = Join-Path $logDir "helpchain-dev.log"
-Write-Host "LOG: $logFile"
+$primaryLogFile = Join-Path $logDir "helpchain-dev.log"
+$logFile = $primaryLogFile
+$timestampLogFile = Join-Path $logDir ("helpchain-dev-{0}.log" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
 
 $previousErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "Continue"
 try {
-    & $pythonExe -m flask run --host $hostIp --port $port 2>&1 | Tee-Object -FilePath $logFile -Append
-    $exitCode = $LASTEXITCODE
+    try {
+        Write-Host "LOG: $logFile"
+        & $pythonExe -m flask run --host $hostIp --port $port 2>&1 | Tee-Object -FilePath $logFile -Append -ErrorAction Stop
+        $exitCode = $LASTEXITCODE
+    }
+    catch {
+        Write-Host "WARNING: log file is busy, falling back to session log file." -ForegroundColor Yellow
+        $logFile = $timestampLogFile
+        try {
+            Write-Host "LOG: $logFile"
+            & $pythonExe -m flask run --host $hostIp --port $port 2>&1 | Tee-Object -FilePath $logFile -Append -ErrorAction Stop
+            $exitCode = $LASTEXITCODE
+        }
+        catch {
+            Write-Host "WARNING: log file is busy, falling back to console-only output." -ForegroundColor Yellow
+            & $pythonExe -m flask run --host $hostIp --port $port
+            $exitCode = $LASTEXITCODE
+        }
+    }
 }
 finally {
     $ErrorActionPreference = $previousErrorActionPreference
