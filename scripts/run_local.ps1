@@ -149,6 +149,13 @@ if (-not (Test-Path $logDir)) {
 $logFile = Join-Path $logDir "helpchain-dev.log"
 Write-Host "LOG: $logFile"
 
-& $pythonExe -m flask run --host $hostIp --port $port 2>&1 | Tee-Object -FilePath $logFile -Append
-$exitCode = $LASTEXITCODE
+$previousErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "Continue"
+try {
+    & $pythonExe -m flask run --host $hostIp --port $port 2>&1 | Tee-Object -FilePath $logFile -Append
+    $exitCode = $LASTEXITCODE
+}
+finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
 exit $exitCode
