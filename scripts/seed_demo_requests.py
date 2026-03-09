@@ -1,382 +1,507 @@
+#!/usr/bin/env python
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import sys
-from pathlib import Path
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+# Ensure project root is importable when running from scripts/ directly.
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from backend.appy import app
 from backend.extensions import db
-from backend.local_db_guard import (
-    canonical_confirmation_error,
-    canonical_mismatch_error,
-    is_canonical_db_uri,
-    print_app_db_preflight,
-)
-from backend.models import AdminUser, Request, Structure, User, Volunteer
+from backend.models import AdminUser, Request, User
 
-DEMO_PREFIX = "[DEMO]"
+APP_IMPORT_PATH = "backend.appy:app"
+CANONICAL_DB_URI = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
+MAX_EXISTING_REQUESTS = 50
+
+
+@dataclass(frozen=True)
+class DemoCase:
+    title: str
+    description: str
+    city: str
+    category: str
+    status: str
+    priority: str
+    risk_level: str
+    risk_score: int
+    risk_signals: list[str]
+    created_delta_hours: int
+    assign_owner: bool
+    name: str
+    email: str
+    phone: str
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Seed structured demo requests")
+    parser = argparse.ArgumentParser(
+        description="Seed realistic French social demo requests for local admin testing."
+    )
     parser.add_argument(
         "--confirm-canonical-db",
         action="store_true",
-        help="Required safety flag to allow DB writes",
+        help="Required safety flag. Refuses writes without explicit confirmation.",
     )
     return parser.parse_args()
 
 
-def _preflight_or_fail(*, actual_uri: str, confirmed: bool) -> int:
-    print_app_db_preflight(actual_uri)
-    if not confirmed:
-        print(canonical_confirmation_error())
-        return 2
-    if not is_canonical_db_uri(actual_uri):
-        print(canonical_mismatch_error(actual_uri))
-        return 2
-    return 0
+def _normalize_now() -> datetime:
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
-def _ensure_structure() -> Structure:
-    structure = Structure.query.filter_by(slug="default").first()
-    if structure:
-        return structure
-    structure = Structure(name="Default", slug="default")
-    db.session.add(structure)
-    db.session.flush()
-    return structure
+def _seed_cases() -> list[DemoCase]:
+    return [
+        DemoCase(
+            title="Famille sans hébergement stable à Paris 19e",
+            description="Famille avec deux enfants sans solution d’hébergement stable depuis plusieurs nuits. Besoin d’orientation rapide vers un dispositif d’urgence.",
+            city="Paris",
+            category="logement",
+            status="new",
+            priority="urgent",
+            risk_level="high",
+            risk_score=82,
+            risk_signals=["no_owner", "housing_instability"],
+            created_delta_hours=2,
+            assign_owner=False,
+            name="Samira B.",
+            email="samira.b@example.org",
+            phone="+33 6 10 22 33 44",
+        ),
+        DemoCase(
+            title="Demande d’aide alimentaire - secteur Boulogne",
+            description="Mère isolée en fin de droits avec rupture de ressources. Demande de soutien alimentaire immédiat pour la semaine.",
+            city="Boulogne-Billancourt",
+            category="aide_alimentaire",
+            status="triage",
+            priority="attention",
+            risk_level="medium",
+            risk_score=58,
+            risk_signals=["not_seen_72h"],
+            created_delta_hours=8,
+            assign_owner=True,
+            name="Claire T.",
+            email="claire.t@example.org",
+            phone="+33 6 21 45 87 10",
+        ),
+        DemoCase(
+            title="Signalement de violence intrafamiliale avec mineur",
+            description="Situation signalée de violence au sein du foyer avec présence d’un enfant. Évaluation pluridisciplinaire à enclencher sans délai.",
+            city="Meudon",
+            category="violence_domestique",
+            status="assigned",
+            priority="urgent",
+            risk_level="critical",
+            risk_score=96,
+            risk_signals=["violence", "child_present", "assign_immediately"],
+            created_delta_hours=24,
+            assign_owner=True,
+            name="Anonyme (signalement)",
+            email="signalement.meudon@example.org",
+            phone="+33 6 98 75 42 11",
+        ),
+        DemoCase(
+            title="Personne âgée isolée - suivi quotidien absent",
+            description="Personne âgée vivant seule, difficultés pour faire les courses et préparer les repas. Aucun relais familial de proximité identifié.",
+            city="Issy-les-Moulineaux",
+            category="isolement_personne_agee",
+            status="in_progress",
+            priority="standard",
+            risk_level="low",
+            risk_score=34,
+            risk_signals=["followup_needed"],
+            created_delta_hours=24,
+            assign_owner=True,
+            name="René L.",
+            email="rene.l@example.org",
+            phone="+33 6 44 70 12 03",
+        ),
+        DemoCase(
+            title="Accompagnement démarches CAF et CPAM",
+            description="Demande d’aide administrative pour démarches CAF et sécurité sociale. Personne en difficulté numérique.",
+            city="Paris",
+            category="accompagnement_administratif",
+            status="new",
+            priority="standard",
+            risk_level="low",
+            risk_score=22,
+            risk_signals=[],
+            created_delta_hours=48,
+            assign_owner=False,
+            name="Mireille D.",
+            email="mireille.d@example.org",
+            phone="+33 6 55 88 19 27",
+        ),
+        DemoCase(
+            title="Coordination médicale et soutien psychologique",
+            description="Personne isolée nécessitant accompagnement médical et soutien psychologique après hospitalisation récente.",
+            city="Meudon",
+            category="soutien_psychologique",
+            status="triage",
+            priority="attention",
+            risk_level="medium",
+            risk_score=63,
+            risk_signals=["health_followup"],
+            created_delta_hours=48,
+            assign_owner=True,
+            name="Nadia F.",
+            email="nadia.f@example.org",
+            phone="+33 6 74 11 28 65",
+        ),
+        DemoCase(
+            title="Aide famille monoparentale en rupture de garde",
+            description="Parent isolé avec difficultés de garde et risque de déscolarisation. Demande d’appui social et orientation locale.",
+            city="Boulogne-Billancourt",
+            category="aide_famille",
+            status="assigned",
+            priority="attention",
+            risk_level="high",
+            risk_score=76,
+            risk_signals=["family_instability"],
+            created_delta_hours=72,
+            assign_owner=True,
+            name="Yassine R.",
+            email="yassine.r@example.org",
+            phone="+33 6 15 26 37 48",
+        ),
+        DemoCase(
+            title="Demande de suivi santé mentale en attente",
+            description="Orientation psychologique demandée, sans rendez-vous confirmé à ce stade. Besoin de coordination entre acteurs de secteur.",
+            city="Issy-les-Moulineaux",
+            category="soutien_psychologique",
+            status="in_progress",
+            priority="attention",
+            risk_level="medium",
+            risk_score=55,
+            risk_signals=["not_seen_72h", "manager_review_today"],
+            created_delta_hours=72,
+            assign_owner=False,
+            name="Luc P.",
+            email="luc.p@example.org",
+            phone="+33 6 80 18 44 90",
+        ),
+        DemoCase(
+            title="Situation logement dégradée - risque d’expulsion",
+            description="Ménage menacé d’expulsion, impayés cumulés et absence de solution alternative identifiée.",
+            city="Paris",
+            category="logement",
+            status="new",
+            priority="urgent",
+            risk_level="high",
+            risk_score=88,
+            risk_signals=["no_owner", "housing_critical"],
+            created_delta_hours=96,
+            assign_owner=False,
+            name="Hakim A.",
+            email="hakim.a@example.org",
+            phone="+33 6 61 29 83 14",
+        ),
+        DemoCase(
+            title="Demande alimentaire et santé enfant",
+            description="Famille avec enfant en bas âge, difficultés alimentaires et suivi pédiatrique irrégulier.",
+            city="Meudon",
+            category="aide_alimentaire",
+            status="assigned",
+            priority="urgent",
+            risk_level="high",
+            risk_score=79,
+            risk_signals=["child_vulnerability"],
+            created_delta_hours=96,
+            assign_owner=True,
+            name="Fatou N.",
+            email="fatou.n@example.org",
+            phone="+33 6 42 31 73 00",
+        ),
+        DemoCase(
+            title="Suivi administratif non finalisé",
+            description="Dossier administratif incomplet après plusieurs rendez-vous manqués. Besoin de relance structurée.",
+            city="Boulogne-Billancourt",
+            category="accompagnement_administratif",
+            status="triage",
+            priority="standard",
+            risk_level="low",
+            risk_score=28,
+            risk_signals=["followup_needed"],
+            created_delta_hours=168,
+            assign_owner=False,
+            name="Pierre G.",
+            email="pierre.g@example.org",
+            phone="+33 6 37 92 15 60",
+        ),
+        DemoCase(
+            title="Violence conjugale - mise à l’abri prioritaire",
+            description="Personne victime de violences répétées, demande de mise à l’abri et coordination immédiate avec partenaires locaux.",
+            city="Issy-les-Moulineaux",
+            category="violence_domestique",
+            status="in_progress",
+            priority="urgent",
+            risk_level="critical",
+            risk_score=98,
+            risk_signals=["violence", "assign_immediately", "manager_review_today"],
+            created_delta_hours=8,
+            assign_owner=True,
+            name="Confidentiel",
+            email="confidentiel.issy@example.org",
+            phone="+33 6 90 11 55 33",
+        ),
+        DemoCase(
+            title="Isolement d’une personne âgée - coordination voisinage",
+            description="Alerte de voisinage concernant une personne âgée sans visites régulières. Besoin de vérification sociale.",
+            city="Paris",
+            category="isolement_personne_agee",
+            status="assigned",
+            priority="attention",
+            risk_level="medium",
+            risk_score=49,
+            risk_signals=["not_seen_72h"],
+            created_delta_hours=24,
+            assign_owner=True,
+            name="Georgette M.",
+            email="georgette.m@example.org",
+            phone="+33 6 32 90 41 17",
+        ),
+        DemoCase(
+            title="Demande de soutien familial - conflit parental",
+            description="Conflit parental impactant la stabilité des enfants. Demande d’accompagnement et médiation sociale.",
+            city="Meudon",
+            category="aide_famille",
+            status="new",
+            priority="attention",
+            risk_level="medium",
+            risk_score=61,
+            risk_signals=["family_instability", "no_owner"],
+            created_delta_hours=2,
+            assign_owner=False,
+            name="Élodie C.",
+            email="elodie.c@example.org",
+            phone="+33 6 53 21 18 47",
+        ),
+        DemoCase(
+            title="Clôture accompagnement administratif",
+            description="Demande traitée et clôturée après finalisation des démarches administratives et validation de la situation.",
+            city="Issy-les-Moulineaux",
+            category="accompagnement_administratif",
+            status="done",
+            priority="standard",
+            risk_level="low",
+            risk_score=15,
+            risk_signals=[],
+            created_delta_hours=168,
+            assign_owner=True,
+            name="Laura B.",
+            email="laura.b@example.org",
+            phone="+33 6 11 22 83 90",
+        ),
+        DemoCase(
+            title="Demande rejetée - dossier incomplet",
+            description="Demande rejetée après relances multiples sans pièces minimales nécessaires pour instruction.",
+            city="Boulogne-Billancourt",
+            category="accompagnement_administratif",
+            status="rejected",
+            priority="standard",
+            risk_level="low",
+            risk_score=12,
+            risk_signals=[],
+            created_delta_hours=96,
+            assign_owner=True,
+            name="Antoine V.",
+            email="antoine.v@example.org",
+            phone="+33 6 77 64 90 02",
+        ),
+        DemoCase(
+            title="Suivi santé chronique avec risque d’isolement",
+            description="Personne avec pathologie chronique, absence de suivi régulier et isolement social progressif.",
+            city="Paris",
+            category="sante",
+            status="in_progress",
+            priority="attention",
+            risk_level="high",
+            risk_score=74,
+            risk_signals=["health_followup", "not_seen_72h"],
+            created_delta_hours=72,
+            assign_owner=True,
+            name="Jules K.",
+            email="jules.k@example.org",
+            phone="+33 6 14 88 63 25",
+        ),
+        DemoCase(
+            title="Aide alimentaire ponctuelle - étudiant isolé",
+            description="Étudiant sans ressources immédiates, demande d’aide alimentaire ponctuelle et orientation vers partenaires locaux.",
+            city="Meudon",
+            category="aide_alimentaire",
+            status="triage",
+            priority="standard",
+            risk_level="medium",
+            risk_score=46,
+            risk_signals=["followup_needed"],
+            created_delta_hours=8,
+            assign_owner=False,
+            name="Malo R.",
+            email="malo.r@example.org",
+            phone="+33 6 63 09 55 72",
+        ),
+        DemoCase(
+            title="Logement indigne signalé - enfant concerné",
+            description="Signalement de logement insalubre avec enfant concerné. Intervention coordonnée à programmer avec urgence.",
+            city="Issy-les-Moulineaux",
+            category="logement",
+            status="assigned",
+            priority="urgent",
+            risk_level="critical",
+            risk_score=94,
+            risk_signals=["child_present", "assign_immediately"],
+            created_delta_hours=4 * 24,
+            assign_owner=True,
+            name="Sonia E.",
+            email="sonia.e@example.org",
+            phone="+33 6 25 78 32 10",
+        ),
+        DemoCase(
+            title="Soutien psychologique post-traumatique",
+            description="Demande de soutien psychologique après événement traumatique, besoin d’un relais thérapeutique rapide.",
+            city="Boulogne-Billancourt",
+            category="soutien_psychologique",
+            status="new",
+            priority="attention",
+            risk_level="high",
+            risk_score=72,
+            risk_signals=["no_owner", "manager_review_today"],
+            created_delta_hours=24,
+            assign_owner=False,
+            name="Nora S.",
+            email="nora.s@example.org",
+            phone="+33 6 19 45 88 31",
+        ),
+    ]
 
 
-def _ensure_admin(username: str, email: str, role: str = "ops") -> AdminUser:
-    admin = AdminUser.query.filter_by(username=username).first()
-    if admin:
-        return admin
-    admin = AdminUser(username=username, email=email, role=role, is_active=True)
-    admin.set_password("DemoAdmin123!")
-    db.session.add(admin)
-    db.session.flush()
-    return admin
-
-
-def _ensure_user(username: str, email: str) -> User:
-    user = User.query.filter_by(username=username).first()
+def _resolve_seed_user() -> User:
+    user = User.query.order_by(User.id.asc()).first()
     if user:
         return user
+
     user = User(
-        username=username,
-        email=email,
-        role="requester",
+        username="demo_requester",
+        email="demo.requester@helpchain.local",
+        role="user",
         is_active=True,
-        password_hash="",
     )
+    user.set_password("DemoRequester123!")
     db.session.add(user)
-    db.session.flush()
+    db.session.commit()
     return user
 
 
-def _ensure_volunteer(email: str, name: str, phone: str) -> Volunteer:
-    vol = Volunteer.query.filter_by(email=email).first()
-    if vol:
-        return vol
-    vol = Volunteer(
-        name=name,
-        email=email,
-        phone=phone,
-        location="Paris",
-        availability="weekday-evening",
-        skills="logistics,translation,medical support",
-        is_active=True,
+def _owner_pool() -> list[AdminUser]:
+    return AdminUser.query.filter_by(is_active=True).order_by(AdminUser.id.asc()).all()
+
+
+def _build_request(
+    case: DemoCase, now: datetime, seed_user_id: int, owner_id: int | None
+) -> Request:
+    created_at = now - timedelta(hours=int(case.created_delta_hours))
+    completed_at = None
+    if case.status == "done":
+        completed_at = created_at + timedelta(hours=12)
+
+    req = Request(
+        title=case.title,
+        description=case.description,
+        message=case.description,
+        name=case.name,
+        email=case.email,
+        phone=case.phone,
+        city=case.city,
+        region="Île-de-France",
+        location_text=case.city,
+        status=case.status,
+        priority=case.priority,
+        category=case.category,
+        source_channel="admin_demo_seed",
+        user_id=seed_user_id,
+        created_at=created_at,
+        updated_at=created_at,
+        completed_at=completed_at,
+        owner_id=owner_id,
+        owned_at=(created_at + timedelta(hours=2)) if owner_id else None,
+        risk_level=case.risk_level,
+        risk_score=int(case.risk_score),
+        risk_signals=json.dumps(case.risk_signals, ensure_ascii=False),
     )
-    db.session.add(vol)
-    db.session.flush()
-    return vol
-
-
-def _clear_demo_requests() -> int:
-    to_delete = Request.query.filter(Request.title.like(f"{DEMO_PREFIX}%")).all()
-    count = len(to_delete)
-    for row in to_delete:
-        db.session.delete(row)
-    db.session.flush()
-    return count
+    return req
 
 
 def main() -> int:
     args = _parse_args()
+
+    print(f"APP: {APP_IMPORT_PATH}")
+
     with app.app_context():
-        actual_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
-        guard_rc = _preflight_or_fail(
-            actual_uri=actual_uri,
-            confirmed=bool(args.confirm_canonical_db),
-        )
-        if guard_rc != 0:
-            return guard_rc
+        db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+        print(f"DB: {db_uri}")
 
-        structure = _ensure_structure()
-        admin_main = _ensure_admin("admin", "admin@helpchain.live", role="superadmin")
-        admin_ops = _ensure_admin("ops_demo", "ops.demo@helpchain.live", role="ops")
+        if not args.confirm_canonical_db:
+            print("ERROR: missing required flag --confirm-canonical-db")
+            print("HINT: this write script is manual-only and requires explicit confirmation.")
+            return 1
 
-        vol_anna = _ensure_volunteer("anna.vol@helpchain.live", "Anna Petrova", "+33600000001")
-        vol_ivan = _ensure_volunteer("ivan.vol@helpchain.live", "Ivan Georgiev", "+33600000002")
-        vol_maria = _ensure_volunteer("maria.vol@helpchain.live", "Maria Dimitrova", "+33600000003")
+        if db_uri != CANONICAL_DB_URI:
+            print("ERROR: Refusing to seed non-canonical DB target.")
+            print(f"Expected: {CANONICAL_DB_URI}")
+            print(f"Actual:   {db_uri}")
+            return 1
 
-        req_user_1 = _ensure_user("requester_ana", "ana.requester@helpchain.live")
-        req_user_2 = _ensure_user("requester_boris", "boris.requester@helpchain.live")
-        req_user_3 = _ensure_user("requester_elena", "elena.requester@helpchain.live")
+        existing_count = int(db.session.query(Request.id).count())
+        if existing_count > MAX_EXISTING_REQUESTS:
+            print("Demo seed skipped: database already populated.")
+            print(f"Existing requests: {existing_count}")
+            return 0
 
-        removed = _clear_demo_requests()
-        now = datetime.now(UTC)
+        seed_user = _resolve_seed_user()
+        owners = _owner_pool()
+        now = _normalize_now()
 
-        payloads = [
-            {
-                "title": f"{DEMO_PREFIX} Violence + urgence médicale sans owner",
-                "description": "Contexte: signalement de violence avec risque immédiat. Demande: affectation d’un responsable territorial et contact médical d’urgence.",
-                "status": "new",
-                "priority": "urgent",
-                "category": "emergency",
-                "name": "Sofia T.",
-                "email": "sofia.demo1@client.local",
-                "phone": "+33611110001",
-                "city": "Paris",
-                "user_id": req_user_1.id,
-                "owner_id": None,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(hours=90),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Food + isolement en attente",
-                "description": "Contexte: personne isolée sans ressources alimentaires. Demande: mise en relation rapide avec une aide alimentaire locale.",
-                "status": "pending",
-                "priority": "high",
-                "category": "food",
-                "name": "Luc Martin",
-                "email": "luc.demo2@client.local",
-                "phone": "+33611110002",
-                "city": "Lyon",
-                "user_id": req_user_2.id,
-                "owner_id": None,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(hours=60),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Logement instable avec owner",
-                "description": "Contexte: menace d’expulsion pour une famille monoparentale. Demande: sécuriser une solution d’hébergement et organiser le suivi social.",
-                "status": "in_progress",
-                "priority": "high",
-                "category": "housing",
-                "name": "Claire N.",
-                "email": "claire.demo3@client.local",
-                "phone": "+33611110003",
-                "city": "Marseille",
-                "user_id": req_user_3.id,
-                "owner_id": admin_main.id,
-                "assigned_volunteer_id": vol_anna.id,
-                "created_at": now - timedelta(hours=30),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Assistance standard déjà traitée",
-                "description": "Contexte: besoin d’information administrative. Demande: orientation vers les démarches et clôture après retour à l’usager.",
-                "status": "done",
-                "priority": "medium",
-                "category": "general",
-                "name": "Nina B.",
-                "email": "nina.demo4@client.local",
-                "phone": "+33611110004",
-                "city": "Bordeaux",
-                "user_id": req_user_1.id,
-                "owner_id": admin_ops.id,
-                "assigned_volunteer_id": vol_ivan.id,
-                "created_at": now - timedelta(days=4),
-                "completed_at": now - timedelta(days=2),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Cas rejeté après vérification",
-                "description": "Contexte: demande en doublon déjà traitée. Demande: clôture administrative sans action opérationnelle supplémentaire.",
-                "status": "rejected",
-                "priority": "low",
-                "category": "general",
-                "name": "Petar S.",
-                "email": "petar.demo5@client.local",
-                "phone": "+33611110005",
-                "city": "Lille",
-                "user_id": req_user_2.id,
-                "owner_id": admin_ops.id,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(days=6),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Unassigned urgent santé",
-                "description": "Contexte: besoin de soins sans interlocuteur identifié. Demande: affectation immédiate et coordination avec un acteur de santé.",
-                "status": "unassigned",
-                "priority": "urgent",
-                "category": "health",
-                "name": "Mira V.",
-                "email": "mira.demo6@client.local",
-                "phone": "+33611110006",
-                "city": "Nantes",
-                "user_id": req_user_3.id,
-                "owner_id": None,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(hours=20),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Pending avec owner sans bénévole",
-                "description": "Contexte: famille avec enfant en tension alimentaire. Demande: mobilisation d’un bénévole et planification d’un suivi sous 24 heures.",
-                "status": "pending",
-                "priority": "high",
-                "category": "food",
-                "name": "Olga D.",
-                "email": "olga.demo7@client.local",
-                "phone": "+33611110007",
-                "city": "Toulouse",
-                "user_id": req_user_1.id,
-                "owner_id": admin_main.id,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(hours=52),
-            },
-            {
-                "title": f"{DEMO_PREFIX} In progress avec bénévole mais stale",
-                "description": "Contexte: accompagnement logement engagé mais sans avancée récente. Demande: relance opérationnelle et mise à jour du plan d’action.",
-                "status": "in_progress",
-                "priority": "medium",
-                "category": "housing",
-                "name": "Georgi R.",
-                "email": "georgi.demo8@client.local",
-                "phone": "+33611110008",
-                "city": "Nice",
-                "user_id": req_user_2.id,
-                "owner_id": admin_ops.id,
-                "assigned_volunteer_id": vol_maria.id,
-                "created_at": now - timedelta(hours=80),
-            },
-            {
-                "title": f"{DEMO_PREFIX} New low priority no signal",
-                "description": "Contexte: demande d’information générale. Demande: réponse d’orientation et qualification du besoin.",
-                "status": "new",
-                "priority": "low",
-                "category": "general",
-                "name": "Ivana K.",
-                "email": "ivana.demo9@client.local",
-                "phone": "+33611110009",
-                "city": "Rennes",
-                "user_id": req_user_3.id,
-                "owner_id": None,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(hours=3),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Pending violence owner assigned",
-                "description": "Contexte: situation de violence avec danger signalé. Demande: revue managériale du dossier et coordination de protection.",
-                "status": "pending",
-                "priority": "urgent",
-                "category": "safety",
-                "name": "Milen A.",
-                "email": "milen.demo10@client.local",
-                "phone": "+33611110010",
-                "city": "Strasbourg",
-                "user_id": req_user_1.id,
-                "owner_id": admin_main.id,
-                "assigned_volunteer_id": vol_anna.id,
-                "created_at": now - timedelta(hours=10),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Done after food support",
-                "description": "Contexte: aide alimentaire organisée et délivrée. Demande: validation de la résolution et archivage du suivi.",
-                "status": "done",
-                "priority": "medium",
-                "category": "food",
-                "name": "Teodora P.",
-                "email": "teodora.demo11@client.local",
-                "phone": "+33611110011",
-                "city": "Grenoble",
-                "user_id": req_user_2.id,
-                "owner_id": admin_ops.id,
-                "assigned_volunteer_id": vol_ivan.id,
-                "created_at": now - timedelta(days=3),
-                "completed_at": now - timedelta(days=1),
-            },
-            {
-                "title": f"{DEMO_PREFIX} Pending no owner 72h+",
-                "description": "Contexte: parent isolé sans hébergement stable ni ressources. Demande: prise en charge prioritaire et affectation d’un responsable.",
-                "status": "pending",
-                "priority": "high",
-                "category": "social",
-                "name": "Lora M.",
-                "email": "lora.demo12@client.local",
-                "phone": "+33611110012",
-                "city": "Montpellier",
-                "user_id": req_user_3.id,
-                "owner_id": None,
-                "assigned_volunteer_id": None,
-                "created_at": now - timedelta(hours=110),
-            },
-        ]
+        cases = _seed_cases()
+        created: list[Request] = []
+        owner_idx = 0
+        for case in cases:
+            owner_id = None
+            if case.assign_owner and owners:
+                owner_id = owners[owner_idx % len(owners)].id
+                owner_idx += 1
+            created.append(_build_request(case, now, seed_user.id, owner_id))
 
-        created = 0
-        for payload in payloads:
-            req = Request(
-                title=payload["title"],
-                description=payload["description"],
-                message=payload["description"],
-                status=payload["status"],
-                priority=payload["priority"],
-                category=payload["category"],
-                name=payload["name"],
-                email=payload["email"],
-                phone=payload["phone"],
-                city=payload["city"],
-                user_id=payload["user_id"],
-                structure_id=structure.id,
-                owner_id=payload["owner_id"],
-                assigned_volunteer_id=payload["assigned_volunteer_id"],
-                created_at=payload["created_at"],
-                completed_at=payload.get("completed_at"),
-            )
-            db.session.add(req)
-            created += 1
-
+        db.session.add_all(created)
         db.session.commit()
 
-        total_demo = (
-            Request.query.filter(Request.title.like(f"{DEMO_PREFIX}%")).count()
+        print(f"Seeded demo requests: {len(created)}")
+        print(
+            "Statuses distribution:",
+            {
+                s: sum(1 for r in created if (r.status or "").lower() == s)
+                for s in ("new", "triage", "assigned", "in_progress", "done", "rejected")
+            },
         )
-        by_status = (
-            db.session.query(Request.status, db.func.count(Request.id))
-            .filter(Request.title.like(f"{DEMO_PREFIX}%"))
-            .group_by(Request.status)
-            .all()
+        print(
+            "Cities distribution:",
+            {
+                city: sum(1 for r in created if r.city == city)
+                for city in (
+                    "Paris",
+                    "Issy-les-Moulineaux",
+                    "Boulogne-Billancourt",
+                    "Meudon",
+                )
+            },
         )
-        by_risk = (
-            db.session.query(Request.risk_level, db.func.count(Request.id))
-            .filter(Request.title.like(f"{DEMO_PREFIX}%"))
-            .group_by(Request.risk_level)
-            .all()
-        )
-        with_owner = (
-            Request.query.filter(
-                Request.title.like(f"{DEMO_PREFIX}%"), Request.owner_id.isnot(None)
-            ).count()
-        )
-        without_owner = (
-            Request.query.filter(
-                Request.title.like(f"{DEMO_PREFIX}%"), Request.owner_id.is_(None)
-            ).count()
-        )
-
-        print(f"Removed old demo requests: {removed}")
-        print(f"Created demo requests: {created}")
-        print(f"Total demo requests now: {total_demo}")
-        print("Status breakdown:", {k or "null": v for k, v in by_status})
-        print("Risk breakdown:", {k or "null": v for k, v in by_risk})
-        print(f"Owner assigned: {with_owner} | Owner missing: {without_owner}")
-        print("Demo data prefix:", DEMO_PREFIX)
-        return 0
+    return 0
 
 
 if __name__ == "__main__":
