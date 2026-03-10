@@ -5833,6 +5833,13 @@ def admin_request_new():
             else:
                 if not db.session.get(Structure, structure_id):
                     form_errors["structure_id"] = "Structure invalide."
+        else:
+            try:
+                structure_id = _current_structure_id()
+            except Exception:
+                form_errors["structure_id"] = (
+                    "Impossible de déterminer la structure active."
+                )
 
         owner_id = None
         if form_data["owner_id"]:

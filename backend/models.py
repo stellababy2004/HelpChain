@@ -1083,8 +1083,26 @@ try:
     @event.listens_for(Request, "before_insert")
     def _request_set_structure_id(mapper, connection, target):
         if getattr(target, "structure_id", None) is None:
-            # Sprint 1 safety net: default tenant id (migration guarantees row exists).
-            target.structure_id = 1
+            # Prefer the active tenant in request/app context.
+            try:
+                target.structure_id = int(current_structure().id)
+                return
+            except Exception:
+                pass
+
+            # Fallback to explicit "default" structure slug when context is missing.
+            try:
+                meta = MetaData()
+                structures_tbl = Table("structures", meta, autoload_with=connection)
+                row = connection.execute(
+                    select(structures_tbl.c.id)
+                    .where(structures_tbl.c.slug == "default")
+                    .limit(1)
+                ).first()
+                if row and row[0] is not None:
+                    target.structure_id = int(row[0])
+            except Exception:
+                pass
 
     @event.listens_for(Request, "before_insert")
     def _ensure_request_user(mapper, connection, target):
