@@ -221,3 +221,7 @@ tmp/
 tests/visual/current/
 tests/visual/diff/
 tests/visual/last-compare-report.json
+
+# local import artifacts
+data/
+esante_import_*.json
