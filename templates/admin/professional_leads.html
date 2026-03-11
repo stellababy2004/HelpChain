@@ -1,11 +1,101 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Pros') }} - {{ _('Leads') }} | {{ _('Admin') }}{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block body_class %}hc-admin-proleads-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+  <style>
+    .hc-proleads-col-contact { width: 360px; min-width: 320px; }
+    .hc-proleads-contact { min-width: 320px; max-width: 360px; }
+    .hc-proleads-contact a { word-break: normal; overflow-wrap: normal; }
+    .hc-proleads-identity { min-width: 0; }
+    .hc-proleads-name {
+      display: block;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-proleads-org {
+      display: block;
+      color: rgba(15, 23, 42, .68);
+      font-size: .84rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .hc-proleads-email {
+      display: block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-proleads-email.is-synthetic {
+      color: rgba(15, 23, 42, .62);
+      font-style: italic;
+      text-decoration: none;
+      cursor: help;
+    }
+    .hc-proleads-phone {
+      display: block;
+      color: rgba(15, 23, 42, .66);
+      font-size: .82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .hc-admin-table .hc-td-action,
+    .hc-proleads-col-actions { white-space: nowrap; width: 1%; }
+    .hc-proleads-card + .hc-proleads-card { margin-top: .75rem; }
+    .hc-proleads-card__meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem .75rem; }
+    .hc-proleads-card__label { display: block; font-size: .75rem; color: rgba(15, 23, 42, .6); text-transform: uppercase; letter-spacing: .03em; }
+    .hc-proleads-table th,
+    .hc-proleads-table td { vertical-align: middle; }
+    .hc-proleads-table td { padding-top: .5rem; padding-bottom: .5rem; }
+    .hc-proleads-table th:nth-child(1),
+    .hc-proleads-table td:nth-child(1) { width: 72px; white-space: nowrap; }
+    .hc-proleads-table th:nth-child(5),
+    .hc-proleads-table td:nth-child(5),
+    .hc-proleads-table th:nth-child(6),
+    .hc-proleads-table td:nth-child(6),
+    .hc-proleads-table th:nth-child(7),
+    .hc-proleads-table td:nth-child(7) { white-space: nowrap; }
+    .hc-proleads-table th:last-child,
+    .hc-proleads-table td:last-child { width: 1%; white-space: nowrap; }
+    .hc-proleads-table td:nth-child(3),
+    .hc-proleads-table td:nth-child(4) { min-width: 0; }
+    .hc-proleads-table td:nth-child(3) > div:first-child,
+    .hc-proleads-table td:nth-child(4) > div:first-child {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-proleads-table .badge { vertical-align: middle; }
+    .hc-proleads-col-actions .btn { line-height: 1.1; }
+    .hc-proleads-desktop { display: block; }
+    .hc-proleads-mobile { display: none; }
+    @media (max-width: 767.98px){
+      .hc-proleads-desktop { display: none; }
+      .hc-proleads-mobile { display: block; }
+    }
+    @media (max-width: 575.98px){
+      .hc-proleads-card__meta { grid-template-columns: 1fr; }
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
+{% macro urgency_badge(lead) -%}
+  {% set urgency_text = ((lead.availability or '') ~ ' ' ~ (lead.message or ''))|lower %}
+  {% set is_urgent = 'urgence' in urgency_text or 'urgent' in urgency_text or 'asap' in urgency_text %}
+  <span class="badge {{ 'text-bg-danger' if is_urgent else 'text-bg-light border' }}">{{ _('Urgent') if is_urgent else _('Normal') }}</span>
+{%- endmacro %}
+
 <section class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
   <header class="hc-admin-toolbar">
     <div>
@@ -53,51 +143,130 @@
     </div>
   </form>
 
-  <div class="hc-card hc-admin-table-shell">
+  <div class="hc-card hc-admin-table-shell hc-proleads-desktop">
     <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table mb-0">
-      <thead>
-        <tr>
-          <th>{{ _('ID') }}</th>
-          <th>{{ _('Email') }}</th>
-          <th>{{ _('Profession') }}</th>
-          <th>{{ _('City') }}</th>
-          <th>{{ _('Created') }}</th>
-          <th>{{ _('Status') }}</th>
-          <th>{{ _('Source') }}</th>
-          <th class="text-end">{{ _('Actions') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for l in leads %}
+      <table class="table table-hover align-middle hc-admin-table hc-proleads-table mb-0">
+        <thead>
           <tr>
-            <td class="small text-muted">#{{ l.id }}</td>
-            <td>
-              <a href="mailto:{{ l.email }}">{{ l.email }}</a>
-              {% if l.full_name %}<div class="hc-mutedSmall">{{ l.full_name }}</div>{% endif %}
-              {% if l.phone %}<div class="hc-mutedSmall">{{ l.phone }}</div>{% endif %}
-            </td>
-            <td>{{ l.profession or "—" }}</td>
-            <td>{{ l.city or "—" }}</td>
-            <td class="small text-muted">{{ l.created_at }}</td>
-            <td><span class="badge text-bg-light border">{{ l.status or _("new") }}</span></td>
-            <td>{{ l.source or "—" }}</td>
-            <td class="text-end hc-td-action">
-              <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Mark contacted') }}</button>
-              </form>
-              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
-            </td>
+            <th>{{ _('ID') }}</th>
+            <th class="hc-proleads-col-contact">{{ _('Contact') }}</th>
+            <th>{{ _('Professionnels') }}</th>
+            <th>{{ _('Citoyens') }}</th>
+            <th>{{ _('Créé le') }}</th>
+            <th>{{ _('Statut') }}</th>
+            <th>{{ _('Urgence') }}</th>
+            <th class="text-end hc-proleads-col-actions">{{ _('Actions') }}</th>
           </tr>
-        {% else %}
-          <tr>
-            <td colspan="8" class="text-center text-muted py-4">{{ _('No leads yet.') }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
+        </thead>
+        <tbody>
+          {% for l in leads %}
+            <tr>
+              <td class="small text-muted">#{{ l.id }}</td>
+              <td class="hc-proleads-col-contact">
+                <div class="hc-proleads-contact">
+                  <div class="hc-proleads-identity">
+                    {% if l.full_name %}
+                      <span class="hc-proleads-name" title="{{ l.full_name }}">{{ l.full_name }}</span>
+                    {% endif %}
+                    {% if l.organization %}
+                      <span class="hc-proleads-org" title="{{ l.organization }}">{{ l.organization }}</span>
+                    {% endif %}
+                  </div>
+                  {% set email_lower = (l.email or '')|lower %}
+                  {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
+                  {% if is_synthetic_email %}
+                    <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">{{ _('Email indisponible') }}</span>
+                  {% else %}
+                    <a class="hc-proleads-email" href="mailto:{{ l.email }}" title="{{ l.email }}">{{ l.email }}</a>
+                  {% endif %}
+                  {% if l.phone %}<span class="hc-proleads-phone" title="{{ l.phone }}">{{ l.phone }}</span>{% endif %}
+                </div>
+              </td>
+              <td>
+                <div>{{ l.profession or "—" }}</div>
+                {% if l.source %}<div class="hc-mutedSmall">{{ l.source }}</div>{% endif %}
+              </td>
+              <td>
+                <div>{{ l.city or "—" }}</div>
+                {% if l.locale %}<div class="hc-mutedSmall">{{ l.locale|upper }}</div>{% endif %}
+              </td>
+              <td class="small text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "—" }}</td>
+              <td><span class="badge text-bg-light border">{{ l.status or _("new") }}</span></td>
+              <td>{{ urgency_badge(l) }}</td>
+              <td class="text-end hc-td-action hc-proleads-col-actions">
+                <div class="d-inline-flex flex-wrap justify-content-end gap-1">
+                  <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Contact') }}</button>
+                  </form>
+                  <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">{{ _('No leads yet.') }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
+  </div>
+
+  <div class="hc-proleads-mobile">
+    {% for l in leads %}
+      <article class="hc-card hc-proleads-card">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <div class="small text-muted">#{{ l.id }}</div>
+          <span class="badge text-bg-light border">{{ l.status or _("new") }}</span>
+        </div>
+        <div class="hc-proleads-contact mb-2">
+          <div class="hc-proleads-identity">
+            {% if l.full_name %}
+              <span class="hc-proleads-name" title="{{ l.full_name }}">{{ l.full_name }}</span>
+            {% endif %}
+            {% if l.organization %}
+              <span class="hc-proleads-org" title="{{ l.organization }}">{{ l.organization }}</span>
+            {% endif %}
+          </div>
+          {% set email_lower = (l.email or '')|lower %}
+          {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
+          {% if is_synthetic_email %}
+            <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">{{ _('Email indisponible') }}</span>
+          {% else %}
+            <a class="hc-proleads-email" href="mailto:{{ l.email }}" title="{{ l.email }}">{{ l.email }}</a>
+          {% endif %}
+          {% if l.phone %}<span class="hc-proleads-phone" title="{{ l.phone }}">{{ l.phone }}</span>{% endif %}
+        </div>
+        <div class="hc-proleads-card__meta mb-2">
+          <div>
+            <span class="hc-proleads-card__label">{{ _('Profession / Ville') }}</span>
+            <div>{{ l.profession or "—" }}{% if l.city %} • {{ l.city }}{% endif %}</div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">{{ _('Créé le') }}</span>
+            <div>{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "—" }}</div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">{{ _('Source') }}</span>
+            <div>{{ l.source or "—" }}</div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">{{ _('Urgence') }}</span>
+            <div>{{ urgency_badge(l) }}</div>
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-1">
+          <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Contact') }}</button>
+          </form>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
+        </div>
+      </article>
+    {% else %}
+      <div class="hc-card text-center text-muted py-4">{{ _('No leads yet.') }}</div>
+    {% endfor %}
   </div>
 </section>
 {% endblock %}
