@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Pilotage des risques | {{ _('Admin') }}{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
 
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="hc-admin-requests-page">
+<div class="hc-admin-wrap hc-admin-shell">
   <div class="hc-admin-stickybar">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div>

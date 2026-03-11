@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Pilotage des situations sociales{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="hc-admin-wrap">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+<div class="hc-admin-wrap hc-admin-shell">
+  <div class="d-flex justify-content-between align-items-center mb-3 hc-admin-toolbar">
     <h1 class="h4 mb-0">Pilotage des situations sociales</h1>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
   </div>
@@ -78,7 +79,7 @@
               </td>
               <td>{{ (item.risk_level or 'standard')|capitalize }}</td>
               <td>{{ item.indicator_label }}</td>
-              <td>
+              <td class="hc-td-action">
                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=item.id) }}">Voir les détails</a>
               </td>
             </tr>

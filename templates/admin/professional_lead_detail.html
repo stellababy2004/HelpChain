@@ -1,18 +1,22 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Lead') }} #{{ lead.id }} | {{ _('Admin') }}{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
 
 {% block content %}
-<section class="hc-wrap" style="max-width:900px; margin:0 auto; padding:1.25rem;">
+<section class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
   <div class="hc-card">
-    <h1 style="margin:0;">{{ _('Professional lead') }} #{{ lead.id }}</h1>
-    <p class="hc-muted" style="margin:.35rem 0 0;">
+    <h1 class="hc-admin-title mb-1">{{ _('Professional lead') }} #{{ lead.id }}</h1>
+    <p class="hc-muted mb-0">
       {{ lead.email }} • {{ lead.profession }} • {{ lead.city or "-" }}
     </p>
-    <p class="hc-muted" style="margin:.35rem 0 0;">
+    <p class="hc-muted mt-1 mb-0">
       {{ _('Created:') }} {{ lead.created_at }} | {{ _('Source:') }} {{ lead.source or "-" }}
     </p>
 
-    <form method="POST" style="margin-top:1rem;">
+    <form method="POST" class="mt-3">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       <div class="hc-field">
@@ -24,18 +28,18 @@
         </select>
       </div>
 
-      <div class="hc-field" style="margin-top:.75rem;">
+      <div class="hc-field mt-3">
         <label for="notes">{{ _('Notes') }}</label>
         <textarea id="notes" name="notes" rows="8" class="hc-input" placeholder="{{ _('Internal notes...') }}">{{ lead.notes or "" }}</textarea>
       </div>
 
-      <p class="hc-muted" style="margin-top:.5rem;">
+      <p class="hc-muted mt-2 mb-0">
         {{ _('Contacted at:') }} {{ lead.contacted_at or "-" }}
       </p>
 
-      <div style="display:flex; gap:.75rem; margin-top:1rem;">
-        <button class="hc-btn hc-btn--primary" type="submit">{{ _('Save') }}</button>
-        <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Back to list') }}</a>
+      <div class="d-flex flex-wrap gap-2 mt-3 hc-admin-actions">
+        <button class="btn btn-primary" type="submit">{{ _('Save') }}</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Back to list') }}</a>
       </div>
     </form>
   </div>

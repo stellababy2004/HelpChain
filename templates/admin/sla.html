@@ -1,20 +1,22 @@
 {% extends "base.html" %}
 {% block title %}{{ _('SLA Breakdown') }} | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-  <div class="d-flex align-items-end justify-content-between gap-3 mb-3">
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="d-flex align-items-end justify-content-between gap-3 flex-wrap">
     <div>
-      <div class="text-muted small">{{ _('Operational control') }}</div>
-      <h1 class="h3 mb-0">{{ _('SLA Breakdown') }}</h1>
+      <div class="hc-muted small">{{ _('Operational control') }}</div>
+      <h1 class="hc-admin-title">{{ _('SLA Breakdown') }}</h1>
       <div class="text-muted small mt-1">{{ breach_label }} • {{ _('Window:') }} {{ days }} {{ _('days') }}</div>
       <div class="text-muted small mt-1">{{ _('This page shows only requests with SLA breaches.') }}</div>
     </div>
 
-    <form class="d-flex gap-2" method="get" action="{{ url_for('admin.admin_sla_breakdown') }}">
+    <form class="d-flex gap-2 flex-wrap" method="get" action="{{ url_for('admin.admin_sla_breakdown') }}">
       <input type="hidden" name="limit" value="{{ limit }}">
       <select class="form-select form-select-sm" name="type">
         <option value="all" {% if breach_type == 'all' %}selected{% endif %}>{{ _('All') }}</option>
@@ -33,12 +35,13 @@
       </select>
       <button class="btn btn-primary btn-sm" type="submit">{{ _('Filter') }}</button>
     </form>
+    </div>
   </div>
 
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <a class="text-decoration-none text-reset d-block" href="{{ safe_url_for('admin.admin_requests', queue='sla', sla_kind='resolution_overdue', sla_days=days) }}">
-        <div class="card h-100">
+        <div class="hc-card h-100">
           <div class="card-body">
             <div class="text-muted small">{{ _('SLA resolution overdue') }}</div>
             <div class="display-6 fw-semibold">{{ resolve_count }}</div>
@@ -48,7 +51,7 @@
     </div>
     <div class="col-md-4">
       <a class="text-decoration-none text-reset d-block" href="{{ safe_url_for('admin.admin_requests', queue='sla', sla_kind='owner_assignment_overdue', sla_days=days) }}">
-        <div class="card h-100">
+        <div class="hc-card h-100">
           <div class="card-body">
             <div class="text-muted small">{{ _('SLA owner assignment overdue') }}</div>
             <div class="display-6 fw-semibold">{{ owner_assign_count }}</div>
@@ -58,7 +61,7 @@
     </div>
     <div class="col-md-4">
       <a class="text-decoration-none text-reset d-block" href="{{ safe_url_for('admin.admin_requests', queue='sla', sla_kind='volunteer_assignment_overdue', sla_days=days) }}">
-        <div class="card h-100">
+        <div class="hc-card h-100">
           <div class="card-body">
             <div class="text-muted small">{{ _('Volunteer assignment overdue') }}</div>
             <div class="display-6 fw-semibold">{{ volunteer_assign_count }}</div>
@@ -68,11 +71,11 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="hc-card">
     <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
-          <thead class="table-light">
+      <div class="table-responsive hc-admin-tablewrap">
+        <table class="table table-hover mb-0 align-middle hc-admin-table">
+          <thead>
             <tr>
               <th style="width:80px;">{{ _('ID') }}</th>
               <th>{{ _('Title') }}</th>
@@ -104,7 +107,7 @@
                 <td><span class="badge text-bg-light">{{ r.status or "open" }}</span></td>
                 <td class="text-muted small">{{ r.created_at }}</td>
                 <td><span class="fw-semibold">{{ "%.1f"|format(r.overdue_hours or 0.0) }}h</span></td>
-                <td class="text-end">
+                <td class="text-end hc-td-action">
                   <a class="btn btn-sm btn-outline-primary" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">{{ _('View') }}</a>
                   {% if not r.owner_id %}
                     <form method="post" action="{{ safe_url_for('admin.admin_request_assign', req_id=r.id) }}" class="d-inline">

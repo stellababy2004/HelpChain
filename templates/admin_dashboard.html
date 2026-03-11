@@ -2,9 +2,9 @@
 {% block title %}{{ _('Admin panel') }} | HelpChain{% endblock %}
 {% block head %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}" />
 {% endblock %}
-{% block body_class %}hc-page-admin{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
 
 {% macro status_badge(status) -%}
   {%- set s = (status or '').lower() -%}
@@ -22,22 +22,24 @@
 {%- endmacro %}
 
 {% block content %}
-<div class="container mt-5">
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="mb-0">{{ _('Admin dashboard') }}</h2>
-    <div class="small text-muted">
+<div class="hc-admin-wrap hc-admin-dashboard hc-admin-shell">
+  <div class="hc-card mb-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h1 class="hc-admin-title mb-0">{{ _('Admin dashboard') }}</h1>
+      <div class="small text-muted">
       <i class="fas fa-shield-alt me-1"></i> HelpChain Admin
+      </div>
     </div>
+    <div id="dash-alert" class="alert d-none mt-3 mb-0" role="alert"></div>
   </div>
 
-  <!-- === Dashboard KPIs === -->
-  <div class="container my-4">
+  <div class="mb-4">
     <div class="row g-3">
       <div class="col-12 col-md-4">
         <div class="card shadow-sm">
           <div class="card-body">
             <div class="text-muted small">{{ _('Total requests') }}</div>
-            <div class="fs-2 fw-bold kpi-value" data-kpi="total_requests">0</div>
+            <div class="fs-2 fw-bold kpi-value" id="kpi-total-requests" data-kpi="total_requests">0</div>
           </div>
         </div>
       </div>
@@ -55,7 +57,7 @@
         <div class="card shadow-sm">
           <div class="card-body">
             <div class="text-muted small">{{ _('Total volunteers') }}</div>
-            <div class="fs-2 fw-bold kpi-value" data-kpi="total_volunteers">0</div>
+            <div class="fs-2 fw-bold kpi-value" id="kpi-total-volunteers" data-kpi="total_volunteers">0</div>
           </div>
         </div>
       </div>
@@ -163,12 +165,12 @@
 
 
   <!-- === Status chart === -->
-  <div class="container my-4">
+  <div class="my-4">
     <div class="card shadow-sm">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between">
           <h5 class="mb-0">Заявки по статус</h5>
-          <span id="dash-warning" class="text-warning small hc-hidden">Няма данни</span>
+          <span id="empty-status" class="text-warning small d-none">Няма данни</span>
         </div>
         <div id="chart-status" class="hc-minh-320"></div>
         <div class="text-muted small mt-2" id="dashboard-updated">Последно обновяване: -</div>
@@ -194,12 +196,9 @@
   <div class="card mt-3">
     <div class="card-body">
       <h5 class="card-title mb-2">{{ _('Requests by city (Top 10)') }}</h5>
-      <div id="chart-by-city" class="hc-minh-320"></div>
-      <div id="chart-by-city-empty" class="text-muted small hc-hidden">
+      <div id="chart-city" class="hc-minh-320"></div>
+      <div id="empty-city" class="text-muted small d-none">
         Няма данни.
-      </div>
-      <div id="chart-by-city-error" class="alert alert-warning mt-2 hc-hidden">
-        Неуспешно зареждане на данните (липса на достъп или грешка).
       </div>
     </div>
   </div>
@@ -207,57 +206,18 @@
   <section class="card mt-4">
     <div class="card-body">
       <h3 class="h5 mb-3">{{ _(' Requests trend (last 30 days)') }}</h3>
-      <div id="chart-trend"></div>
-      <div id="chart-trend-empty" class="text-muted mt-2 hc-hidden">
+      <div id="chart-ts"></div>
+      <div id="empty-ts" class="text-muted mt-2 d-none">
         Няма данни за периода.
-      </div>
-      <div id="chart-trend-error" class="alert alert-warning mt-2 hc-hidden">
-        Нямаш достъп или възникна грешка.
       </div>
     </div>
   </section>
 
-  <div class="mb-4">
-    <div class="row g-3">
-      <div class="col-6 col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body py-3 d-flex align-items-center">
-            <i class="fas fa-layer-group me-2"></i> {{ _('Общо заявки') }}
-            <span class="badge bg-primary ms-auto">{{ stats.total_requests|default(0) }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body py-3 d-flex align-items-center">
-            <i class="fas fa-hourglass-half me-2"></i> {{ _('Чакащи') }}
-            <span class="badge bg-secondary ms-auto">{{ stats.pending_requests|default(0) }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body py-3 d-flex align-items-center">
-            <i class="fas fa-tools me-2"></i> {{ _('В процес') }}
-            <span class="badge bg-warning text-dark ms-auto">{{ stats.in_progress|default(0) }}</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card shadow-sm">
-          <div class="card-body py-3 d-flex align-items-center">
-            <i class="fas fa-hands-helping me-2"></i> {{ _('Доброволци') }}
-            <span class="badge bg-success ms-auto">{{ stats.total_volunteers|default(0) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <h3 class="h5 mb-2">{{ _('Заявки') }}</h3>
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle">
-      <thead class="table-light">
+  <div class="hc-card p-0">
+  <div class="table-responsive hc-admin-tablewrap">
+    <table class="table table-hover align-middle hc-admin-table mb-0">
+      <thead>
         <tr>
           <th>ID</th>
           <th>{{ _('Име') }}</th>
@@ -277,7 +237,19 @@
             <td class="text-truncate truncate-desc">{{ req.description or _('Без описание') }}</td>
             <td>
               {% set s = (req.status or '')|lower %}
-              <span class="badge bg-secondary">
+              {% set status_class = {
+                'new': 'text-bg-primary',
+                'pending': 'text-bg-primary',
+                'open': 'text-bg-primary',
+                'in_progress': 'text-bg-warning',
+                'approved': 'text-bg-warning',
+                'done': 'text-bg-success',
+                'completed': 'text-bg-success',
+                'rejected': 'text-bg-secondary',
+                'cancelled': 'text-bg-secondary',
+                'closed': 'text-bg-secondary'
+              }.get(s, 'text-bg-light') %}
+              <span class="badge {{ status_class }}">
                 {{ _(STATUS_LABELS.get(s, 'Unknown')) }}
               </span>
             </td>
@@ -298,7 +270,7 @@
             </td>
             <td class="actions-col">
               <div class="btn-group" role="group" aria-label="{{ _('Actions for request %(id)s', id=req.id) }}">
-                <a class="btn btn-info" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">
                   <i class="fas fa-eye"></i>
                 </a>
               </div>
@@ -313,11 +285,13 @@
       </tbody>
     </table>
   </div>
+  </div>
 
   <h3 class="h5 mt-4 mb-2">{{ _('Доброволци') }}</h3>
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle">
-      <thead class="table-light">
+  <div class="hc-card p-0">
+  <div class="table-responsive hc-admin-tablewrap">
+    <table class="table table-hover align-middle hc-admin-table mb-0">
+      <thead>
         <tr>
           <th>ID</th>
           <th>{{ _('Име') }}</th>
@@ -354,6 +328,7 @@
         {% endif %}
       </tbody>
     </table>
+  </div>
   </div>
 </div>
 {% endblock %}
@@ -506,76 +481,6 @@
 </script>
 
 
-
-<script>
-// Trend chart (timeseries)
-document.addEventListener("DOMContentLoaded", async function renderTrendChart() {
-  const chartEl = document.querySelector("#chart-trend");
-  const emptyEl = document.querySelector("#chart-trend-empty");
-  const errorEl = document.querySelector("#chart-trend-error");
-
-  if (!chartEl) return;
-  if (typeof ApexCharts === "undefined") return;
-
-  try {
-    const res = await fetch("/admin/api/dashboard");
-
-    if (res.status === 401 || res.status === 403) {
-      if (errorEl) errorEl.style.display = "block";
-      return;
-    }
-
-    const data = await res.json();
-    const seriesData = data.timeseries || [];
-
-    if (!seriesData.length) {
-      if (emptyEl) emptyEl.style.display = "block";
-      return;
-    }
-
-    const options = {
-      chart: {
-        type: "area",
-        height: 300,
-        toolbar: { show: false }
-      },
-      series: [{
-        name: "Заявки",
-        data: seriesData.map(p => p.count)
-      }],
-      xaxis: {
-        categories: seriesData.map(p => p.date),
-        labels: { rotate: -45 }
-      },
-      yaxis: {
-        title: { text: "Брой заявки" }
-      },
-      stroke: {
-        curve: "smooth",
-        width: 3
-      },
-      fill: {
-        type: "gradient",
-        gradient: {
-          shadeIntensity: 0.4,
-          opacityFrom: 0.6,
-          opacityTo: 0.05
-        }
-      },
-      tooltip: {
-        x: { format: "yyyy-MM-dd" }
-      },
-      colors: ["#4f46e5"]
-    };
-
-    new ApexCharts(chartEl, options).render();
-
-  } catch (e) {
-    console.error(e);
-    if (errorEl) errorEl.style.display = "block";
-  }
-});
-</script>
 
 <script>
 // New requests (last 14 days) chart

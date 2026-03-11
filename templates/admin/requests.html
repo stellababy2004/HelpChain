@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="hc-admin-wrap hc-density-compact">
+<div class="hc-admin-wrap hc-admin-wrap--requests hc-density-compact">
   <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
     <a href="{{ safe_url_for('main.index') }}">Accueil</a>
     <span>/</span>
@@ -46,7 +46,7 @@
       </button>
     </div>
 
-    <div class="hc-kpis" id="hcAdminKpis" style="margin-top:12px;">
+    <div class="hc-kpis" id="hcAdminKpis">
       <div class="hc-kpi" data-kpi="NEW">
         <div class="hc-kpi__label">Nouvelles</div>
         <div class="hc-kpi__value">0</div>
@@ -369,25 +369,18 @@
     <table class="table table-hover align-middle hc-admin-table">
       <thead>
         <tr>
-          <th style="width:44px;" title="{{ _('Select') }}">
+          <th class="hc-col-select" title="{{ _('Select') }}">
             <span class="visually-hidden">{{ _('Select') }}</span>
           </th>
-          <th style="width:70px;">{{ _('ID') }}</th>
-          <th style="width:120px;">{{ _('Priority') }}</th>
-          <th style="width:280px;">{{ _('Title') }}</th>
-          <th style="width:130px;">Ville</th>
-          <th style="width:160px;">Service</th>
-          <th style="width:160px;">Responsable</th>
-          <th style="width:180px;">{{ _('Name') }}</th>
-          <th style="width:140px;">{{ _('Status') }}</th>
-          <th style="width:140px;">{{ _('Risk level') }}</th>
-          <th style="width:140px;">{{ _('Category') }}</th>
-          <th style="width:120px;">{{ _('Created') }}</th>
-          <th style="width:120px;">{{ _('Closed') }}</th>
-          <th style="width:130px;">{{ _('SLA') }}</th>
-          <th style="width:140px;">{{ _('Signals') }}</th>
-          <th style="width:190px;">Signal bénévole</th>
-          <th style="width:210px;">{{ _('Actions') }}</th>
+          <th class="hc-col-id">{{ _('ID') }}</th>
+          <th class="hc-col-priority">{{ _('Priority') }}</th>
+          <th class="hc-col-title">{{ _('Demande') }}</th>
+          <th class="hc-col-status">{{ _('Status') }}</th>
+          <th class="hc-col-risk">{{ _('Risk level') }}</th>
+          <th class="hc-col-category">{{ _('Category') }}</th>
+          <th class="hc-col-created-context">{{ _('Created') }}</th>
+          <th class="hc-col-signals">{{ _('Signals') }}</th>
+          <th class="hc-col-actions">{{ _('Actions') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -422,6 +415,43 @@
         {% else %}
           {% set owner_state = 'taken' %}
         {% endif %}
+        {% if r.owner %}
+          {% set owner_label = r.owner.username %}
+        {% elif r.owner_id %}
+          {% set owner_label = '#' ~ r.owner_id %}
+        {% else %}
+          {% set owner_label = 'Sans responsable' %}
+        {% endif %}
+        {% set requester_label = r.name or r.requester_name or '—' %}
+        {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
+        {% set category_raw = (r.category or '') %}
+        {% set category_map = {
+          'aide_alimentaire': 'Aide alimentaire',
+          'hebergement_logement': 'Hébergement / logement',
+          'hebergement': 'Hébergement',
+          'logement': 'Logement',
+          'violence_domestique': 'Violence domestique',
+          'violence': 'Violence',
+          'protection_violence': 'Protection / violence',
+          'acces_administratif': 'Accès administratif',
+          'soutien_psychologique': 'Soutien psychologique',
+          'acces_numerique': 'Accès numérique',
+          'aide_technique': 'Aide technique',
+          'aide_medicale': 'Aide médicale',
+          'soutien_social': 'Soutien social',
+          'urgence': 'Urgence',
+          'admin': 'Accès administratif'
+        } %}
+        {% set category_translated = _(category_raw) if category_raw else '' %}
+        {% if not category_raw %}
+          {% set category_label = '—' %}
+        {% elif category_raw in category_map %}
+          {% set category_label = category_map[category_raw] %}
+        {% elif category_translated and category_translated != category_raw %}
+          {% set category_label = category_translated %}
+        {% else %}
+          {% set category_label = category_raw|replace('_', ' ')|replace('-', ' ')|trim|title %}
+        {% endif %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
             data-request-id="{{ r.id }}"
@@ -445,7 +475,7 @@
                    data-no-rowclick>
           </td>
           <td class="hc-col-id">{{ r.id }}</td>
-          <td>
+          <td class="hc-col-priority">
             {% set prio_class = {
               'CRITICAL': 'hc-prio hc-prio--critical',
               'HIGH': 'hc-prio hc-prio--high',
@@ -454,17 +484,36 @@
             }.get(row_priority, 'hc-prio hc-prio--low') %}
             <span class="{{ prio_class }}">{{ row_priority|lower }}</span>
           </td>
-          <td class="hc-col-title">{{ r.title }}</td>
-          <td>{{ r.city or "—" }}</td>
-          <td>{{ r.service.name if r.service else "—" }}</td>
-          <td>
-            {% if r.owner %}{{ r.owner.username }}
-            {% elif r.owner_id %}#{{ r.owner_id }}
-            {% else %}<span class="hc-mutedSmall">Sans responsable</span>{% endif %}
+          <td class="hc-col-title hc-td-request">
+            <div class="hc-req__title" title="{{ r.title }}">{{ r.title }}</div>
+            <div class="hc-req__meta">
+              <span class="hc-metaItem" title="{{ r.city or '—' }}">{{ r.city or "—" }}</span>
+              <span class="hc-dot">•</span>
+              <span class="hc-metaItem" title="{{ r.service.name if r.service else '—' }}">{{ r.service.name if r.service else "—" }}</span>
+              <span class="hc-dot">•</span>
+              <span class="hc-metaItem" title="{{ owner_label }}">{{ owner_label }}</span>
+              <span class="hc-dot">•</span>
+              <span class="hc-metaItem" title="{{ requester_label }}">{{ requester_label }}</span>
+            </div>
           </td>
-          <td>{{ r.name or r.requester_name }}</td>
-          <td>
+          <td class="hc-col-status">
           {% set status_key = (r.status or '')|lower %}
+          {% set status_norm = status_key %}
+          {% if status_norm in ['new', 'pending'] %}
+            {% set status_norm = 'open' %}
+          {% elif status_norm in ['approved'] %}
+            {% set status_norm = 'in_progress' %}
+          {% elif status_norm in ['done', 'completed'] %}
+            {% set status_norm = 'done' %}
+          {% elif status_norm in ['rejected', 'cancelled', 'canceled', 'closed'] %}
+            {% set status_norm = 'cancelled' %}
+          {% endif %}
+          {% set status_inline_label = {
+            'open': _('Open'),
+            'in_progress': _('In progress'),
+            'done': _('Completed'),
+            'cancelled': _('Rejected')
+          }.get(status_norm, _(STATUS_LABELS.get(r.status, r.status))) %}
           {% set status_class = {
               'new':'bg-primary',
               'pending':'bg-primary',
@@ -477,7 +526,22 @@
               'cancelled':'bg-secondary',
               'closed':'bg-secondary'
             }.get(status_key, 'bg-secondary') %}
-            <span class="badge {{ status_class }}">{{ _(STATUS_LABELS.get(r.status, r.status)) }}</span>
+            <div class="hc-statusmenu-wrap" data-no-rowclick>
+              <details class="hc-statusmenu" data-no-rowclick data-request-id="{{ r.id }}" data-csrf="{{ csrf_token() }}">
+                <summary class="badge {{ status_class }} hc-statusmenu__summary" data-no-rowclick>
+                  <span class="hc-statusmenu__label">{{ status_inline_label }}</span>
+                  <span class="hc-statusmenu__chev" aria-hidden="true">▾</span>
+                </summary>
+                <div class="hc-statusmenu__list" data-no-rowclick>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="open" data-status-label="{{ _('New') }}" data-no-rowclick>{{ _('New') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="open" data-status-label="{{ _('Open') }}" data-no-rowclick>{{ _('Open') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="in_progress" data-status-label="{{ _('In progress') }}" data-no-rowclick>{{ _('In progress') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="done" data-status-label="{{ _('Completed') }}" data-no-rowclick>{{ _('Completed') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="cancelled" data-status-label="{{ _('Rejected') }}" data-no-rowclick>{{ _('Rejected') }}</button>
+                </div>
+              </details>
+              <span class="hc-statusmenu__flash small" aria-live="polite"></span>
+            </div>
             {% if not r.owner_id %}
               <span class="badge text-bg-primary ms-1">Sans responsable</span>
             {% elif r.owner_id == current_user.id %}
@@ -486,43 +550,48 @@
               <span class="badge text-bg-secondary ms-1">{{ _('Taken') }}</span>
             {% endif %}
           </td>
-          <td>
+          <td class="hc-col-risk">
             {% set risk_level_key = (r.risk_level or 'standard')|lower %}
             {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
               {% set risk_level_key = 'standard' %}
             {% endif %}
             <div class="hc-risk-cell">
-              <strong>{{ r.risk_score or 0 }}/100</strong><br>
+              <strong>{{ r.risk_score or 0 }}/100</strong>
               <span class="hc-risk-badge hc-risk-badge--{{ risk_level_key }}">
                 {{ risk_level_key|capitalize }}
               </span>
             </div>
           </td>
-          <td>{{ _(r.category) if r.category else '' }}</td>
-          <td>{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '-' }}</td>
-          <td>{{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}</td>
-          <td>
-            {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
-            <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
+          <td class="hc-col-category" title="{{ category_label }}">{{ category_label }}</td>
+          <td class="hc-col-created-context">
+            <div class="hc-created-main">{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '-' }}</div>
+            <div class="hc-created-meta">
+              <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
+              {% if r.closed_at %}
+                <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}">✓ {{ _('Closed') }}</span>
+              {% endif %}
+            </div>
+            <div class="hc-created-flags">
             {% if risk_notseen_tier_hours %}
               {% if risk_notseen_tier_hours >= 72 %}
                 {% set risk_badge_class = 'text-bg-danger' %}
               {% else %}
                 {% set risk_badge_class = 'text-bg-warning' %}
               {% endif %}
-              <span class="badge {{ risk_badge_class }} ms-1" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
+              <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
             {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-warning ms-1" title="Aucun responsable assigné"> Sans responsable</span>
+              <span class="badge text-bg-warning" title="Aucun responsable assigné"> Sans responsable</span>
             {% endif %}
             {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-danger ms-1" title="{{ _('Stale request') }}"> {{ _('Stale') }}</span>
+              <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
             {% endif %}
-            {% if r.completed_at %}
-              <span class="badge text-bg-success ms-1" title="{{ _('Closed') }}">✓ {{ _('Closed') }}</span>
-            {% endif %}
+            </div>
           </td>
-          <td>
+          <td class="hc-col-signals">
+            {% set sig = last_signal_by_req.get(r.id) %}
+            {% set eng = engagement_by_request.get(r.id) %}
+            <div class="hc-signal-counts">
             {% if ch > 0 %}
               <span class="hc-chip hc-chip--pos" title="{{ _('Available volunteers') }}">
                 <span class="hc-chip__dot"></span> +{{ ch }} CAN_HELP
@@ -536,45 +605,26 @@
             {% if ch == 0 and cc == 0 %}
               <span class="hc-muted">—</span>
             {% endif %}
-          </td>
-          <td>
-            {% set sig = last_signal_by_req.get(r.id) %}
-            {% set eng = engagement_by_request.get(r.id) %}
-            {% if sig %}
-              {% if sig.action == "CAN_HELP" %}
-                <span class="badge text-bg-success"> {{ _("Can help") }}</span>
-              {% elif sig.action == "CANT_HELP" %}
-                <span class="badge text-bg-danger"> {{ _("Can't help") }}</span>
+            </div>
+            <div class="text-muted small hc-signal-meta" title="{{ _('Signal summary') }}">
+              {% if sig %}
+                {{ _('Last:') }} {{ sig.action }}
+                {% if (sig.updated_at or sig.created_at) %}
+                  · {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") }}
+                {% endif %}
+                {% if sig.volunteer_id is defined %} · #{{ sig.volunteer_id }}{% endif %}
               {% else %}
-                <span class="badge text-bg-secondary">{{ sig.action }}</span>
+                {{ _('Last:') }} —
               {% endif %}
-              {# --- B3: quick assign from list --- #}
-              {% if sig.action == 'CAN_HELP' and sig.volunteer_id %}
-                {% set already_assigned = r.assigned_volunteer_id and r.assigned_volunteer_id != sig.volunteer_id %}
-                {% set closed_statuses = ['done','closed','cancelled','canceled','rejected'] %}
-                {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
-                <span class="d-inline-block ms-2">
-                  <span class="badge text-bg-light border">#{{ sig.volunteer_id }}</span>
-                </span>
-              {% endif %}
-
-              <div class="text-muted small">
-                {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") if (sig.updated_at or sig.created_at) else "" }}
-                {% if sig.volunteer_id is defined %}<span class="ms-1">#{{ sig.volunteer_id }}</span>{% endif %}
-              </div>
-            {% else %}
-              <span class="text-muted small">—</span>
-            {% endif %}
-            <div class="text-muted small mt-1">
-              {{ _('Engagement:') }}
+              · {{ _('Engagement:') }}
               {% if eng %}
-                {{ eng.label }} (score {{ eng.score }})
+                {{ eng.label }} ({{ eng.score }})
               {% else %}
                 —
               {% endif %}
             </div>
           </td>
-          <td class="text-end hc-td-action">
+          <td class="text-end hc-col-actions hc-td-action">
             {% set nu = (nudge_ui or {}).get(r.id, {}) %}
             {% set is_disabled = nu.get('disabled', False) %}
             {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
@@ -646,7 +696,7 @@
         </tr>
         {% else %}
         <tr>
-          <td colspan="17" class="text-center py-5">
+          <td colspan="10" class="text-center py-5">
             <div class="hc-empty-state">
               <h3>Aucune demande à afficher</h3>
               <p>Cette file est vide pour les filtres actuels. Réinitialisez les filtres ou créez une nouvelle demande.</p>
@@ -704,4 +754,5 @@
 <script src="{{ url_for('static', filename='js/admin-requests-rowclick.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 {% endblock %}

@@ -1,22 +1,27 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Pros') }} - {{ _('Leads') }} | {{ _('Admin') }}{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
 
 {% block content %}
-<section class="hc-wrap" style="max-width:1100px; margin: 0 auto; padding: 1.25rem;">
-  <header style="display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+<section class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
+  <header class="hc-admin-toolbar">
     <div>
-      <h1 style="margin:0;">{{ _('Professional leads') }}</h1>
-      <p class="hc-muted" style="margin:.35rem 0 0;">{{ _('Latest leads captured via /professionnels/pilote.') }}</p>
+      <h1 class="hc-admin-title mb-1">{{ _('Professional leads') }}</h1>
+      <p class="hc-muted mb-0">{{ _('Latest leads captured via /professionnels/pilote.') }}</p>
     </div>
   </header>
 
-  <form method="GET" style="margin-top:1rem; display:flex; gap:.6rem; flex-wrap:wrap; align-items:flex-end;">
-    <div style="flex:1; min-width:220px;">
+  <form method="GET" class="hc-card hc-admin-filterbar">
+    <div class="hc-admin-filtergrid">
+      <div class="hc-admin-filtergrid__item hc-admin-filtergrid__item--grow">
       <label class="hc-muted" for="q">{{ _('Email contains') }}</label>
       <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="{{ _('e.g. orange.fr') }}" />
     </div>
 
-    <div style="min-width:220px;">
+      <div class="hc-admin-filtergrid__item">
       <label class="hc-muted" for="profession">{{ _('Profession') }}</label>
       <select id="profession" name="profession" class="hc-input">
         <option value="">{{ _('All') }}</option>
@@ -26,12 +31,12 @@
       </select>
     </div>
 
-    <div style="min-width:200px;">
+      <div class="hc-admin-filtergrid__item">
       <label class="hc-muted" for="city">{{ _('City') }}</label>
       <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="{{ _('City') }}" />
     </div>
 
-    <div style="min-width:200px;">
+      <div class="hc-admin-filtergrid__item">
       <label class="hc-muted" for="status">{{ _('Status') }}</label>
       <select id="status" name="status" class="hc-input">
         <option value="">{{ _('All') }}</option>
@@ -40,56 +45,59 @@
         {% endfor %}
       </select>
     </div>
+    </div>
 
-    <button class="hc-btn" type="submit">{{ _('Filter') }}</button>
-    <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Reset') }}</a>
+    <div class="hc-admin-actions">
+      <button class="btn btn-primary btn-sm" type="submit">{{ _('Filter') }}</button>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Reset') }}</a>
+    </div>
   </form>
 
-  <div class="hc-card" style="margin-top:1rem; overflow:auto;">
-    <table class="hc-table" style="width:100%; border-collapse:collapse;">
+  <div class="hc-card hc-admin-table-shell">
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
       <thead>
         <tr>
-          <th style="text-align:left; padding:.7rem;">{{ _('ID') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('Email') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('Profession') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('City') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('Created') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('Status') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('Source') }}</th>
-          <th style="text-align:left; padding:.7rem;">{{ _('Actions') }}</th>
+          <th>{{ _('ID') }}</th>
+          <th>{{ _('Email') }}</th>
+          <th>{{ _('Profession') }}</th>
+          <th>{{ _('City') }}</th>
+          <th>{{ _('Created') }}</th>
+          <th>{{ _('Status') }}</th>
+          <th>{{ _('Source') }}</th>
+          <th class="text-end">{{ _('Actions') }}</th>
         </tr>
       </thead>
       <tbody>
         {% for l in leads %}
           <tr>
-            <td style="padding:.7rem; white-space:nowrap;">{{ l.id }}</td>
-            <td style="padding:.7rem;">
+            <td class="small text-muted">#{{ l.id }}</td>
+            <td>
               <a href="mailto:{{ l.email }}">{{ l.email }}</a>
-              {% if l.full_name %}<div class="hc-muted" style="font-size:.9em;">{{ l.full_name }}</div>{% endif %}
-              {% if l.phone %}<div class="hc-muted" style="font-size:.9em;">{{ l.phone }}</div>{% endif %}
+              {% if l.full_name %}<div class="hc-mutedSmall">{{ l.full_name }}</div>{% endif %}
+              {% if l.phone %}<div class="hc-mutedSmall">{{ l.phone }}</div>{% endif %}
             </td>
-            <td style="padding:.7rem;">{{ l.profession }}</td>
-            <td style="padding:.7rem;">{{ l.city or "-" }}</td>
-            <td style="padding:.7rem; white-space:nowrap;">
-              {{ l.created_at }}
-            </td>
-            <td style="padding:.7rem; white-space:nowrap;">{{ l.status or _("new") }}</td>
-            <td style="padding:.7rem;">{{ l.source or "-" }}</td>
-            <td style="padding:.7rem; white-space:nowrap;">
-              <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" style="display:inline;">
+            <td>{{ l.profession or "—" }}</td>
+            <td>{{ l.city or "—" }}</td>
+            <td class="small text-muted">{{ l.created_at }}</td>
+            <td><span class="badge text-bg-light border">{{ l.status or _("new") }}</span></td>
+            <td>{{ l.source or "—" }}</td>
+            <td class="text-end hc-td-action">
+              <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="hc-btn hc-btn--ghost" type="submit">{{ _('Mark contacted') }}</button>
+                <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Mark contacted') }}</button>
               </form>
-              <a class="hc-btn hc-btn--ghost" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
+              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
             </td>
           </tr>
         {% else %}
           <tr>
-            <td colspan="8" class="hc-muted" style="padding:1rem;">{{ _('No leads yet.') }}</td>
+            <td colspan="8" class="text-center text-muted py-4">{{ _('No leads yet.') }}</td>
           </tr>
         {% endfor %}
       </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 </section>
 {% endblock %}
