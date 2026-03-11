@@ -61,6 +61,7 @@ from ..security_logging import log_security_event
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
 from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import mark_seen as match_mark_seen
+from ..services.geocoding import geocode_location_best_effort
 from ..statuses import normalize_request_status
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
@@ -2514,6 +2515,13 @@ def submit_request_confirm():
             category=draft.get("category"),
             structure_id=current_structure().id,
         )
+        lat, lng = geocode_location_best_effort(
+            location_text=draft.get("location_text"),
+            city=draft.get("city"),
+        )
+        if lat is not None and lng is not None:
+            req.latitude = lat
+            req.longitude = lng
         # Legacy fields kept for backwards compatibility with existing /r/<token> links.
         req.requester_token_hash = token_hash
         req.requester_token_created_at = utc_now()

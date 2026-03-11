@@ -38,6 +38,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from backend.audit import log_activity
 from backend.extensions import db, limiter
+from backend.system_sanity import run_system_checks
 from ..models.volunteer_interest import VolunteerInterest
 from ..observability import (
     tenant_leak_get,
@@ -80,6 +81,7 @@ except ImportError:
 
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
+from ..services.geocoding import geocode_location_best_effort
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 
@@ -2577,79 +2579,24 @@ def _is_superadmin_role(role) -> bool:
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_sanity():
     admin_required_404()
-    now = utc_now()
-    app_env = (
-        (current_app.config.get("APP_ENV") or "").strip()
-        or (os.getenv("APP_ENV") or "").strip()
-        or (os.getenv("FLASK_ENV") or "").strip()
-        or "unknown"
-    )
-    version = (
-        os.getenv("APP_VERSION")
-        or os.getenv("GIT_SHA")
-        or os.getenv("HEROKU_SLUG_COMMIT")
-        or "—"
-    )
+    checks = run_system_checks()
+    return render_template("admin/system_sanity.html", checks=checks)
 
-    db_ok = True
-    db_error = ""
-    requests_table_ok = False
-    request_count_total = None
-    queue_visible_count = None
-    try:
-        db.session.execute(select(1))
-        requests_table_ok = _table_exists("requests")
-        if requests_table_ok:
-            request_count_total = db.session.query(func.count(Request.id)).scalar() or 0
-            queue_visible_count = (
-                _scope_requests(Request.query)
-                .filter(Request.deleted_at.is_(None))
-                .count()
-            )
-    except Exception as exc:
-        db_ok = False
-        db_error = str(exc.__class__.__name__)
-        try:
-            db.session.rollback()
-        except Exception:
-            pass
 
-    registered_get_routes = {
-        rule.rule for rule in current_app.url_map.iter_rules() if "GET" in rule.methods
-    }
-    core_route_paths = [
-        "/",
-        "/submit_request",
-        "/faq",
-        "/contact",
-        "/legal",
-        "/privacy",
-        "/terms",
-        "/admin",
-        "/admin/requests",
-    ]
-    core_routes = [
-        {"path": path, "registered": path in registered_get_routes}
-        for path in core_route_paths
-    ]
+@admin_bp.get("/ops")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_ops():
+    admin_required_404()
+    return render_template("admin/ops_dashboard.html")
 
-    sentry_configured = bool(
-        (os.getenv("SENTRY_DSN") or current_app.config.get("SENTRY_DSN") or "").strip()
-    )
 
-    return render_template(
-        "admin/sanity.html",
-        generated_at=now,
-        app_env=app_env,
-        version=version,
-        db_ok=db_ok,
-        db_error=db_error,
-        requests_table_ok=requests_table_ok,
-        request_count_total=request_count_total,
-        queue_visible_count=queue_visible_count,
-        core_routes=core_routes,
-        sentry_configured=sentry_configured,
-    )
+@admin_bp.get("/risk-map")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_risk_map():
+    admin_required_404()
+    return render_template("admin/risk_map.html")
 
 
 def _attempted_action_label() -> str:
@@ -5956,6 +5903,10 @@ def admin_request_new():
                 message=form_data["internal_notes"] or None,
                 user_id=requester_user.id,
             )
+            lat, lng = geocode_location_best_effort(city=form_data["city"])
+            if lat is not None and lng is not None:
+                req.latitude = lat
+                req.longitude = lng
             db.session.add(req)
             db.session.commit()
             flash("Demande créée avec succès.", "success")
@@ -7228,7 +7179,7 @@ def admin_professional_leads():
                 profession="",
                 city="",
                 status="",
-                status_choices=["new", "contacted", "qualified", "rejected"],
+                status_choices=["new", "imported", "contacted", "qualified", "rejected"],
                 professions=[],
             ),
             200,
@@ -7238,7 +7189,7 @@ def admin_professional_leads():
     profession = (request.args.get("profession") or "").strip()
     city = (request.args.get("city") or "").strip()
     status = (request.args.get("status") or "").strip().lower()
-    status_choices = ["new", "contacted", "qualified", "rejected"]
+    status_choices = ["new", "imported", "contacted", "qualified", "rejected"]
 
     query = ProfessionalLead.query
 
@@ -7311,7 +7262,7 @@ def admin_professional_lead_detail(lead_id: int):
         return redirect(url_for("admin.admin_professional_leads"), code=303)
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
-    status_choices = ["new", "contacted", "qualified", "rejected"]
+    status_choices = ["new", "imported", "contacted", "qualified", "rejected"]
 
     if request.method == "POST":
         status = (request.form.get("status") or "").strip().lower()

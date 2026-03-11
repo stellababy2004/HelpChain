@@ -3,7 +3,14 @@
 # scripts or tests from the repository root.
 
 try:
-    from backend.models import AdminUser, HelpRequest, User, Volunteer  # type: ignore # noqa: F403
+    from backend.models import (  # type: ignore # noqa: F403
+        AdminUser,
+        HelpRequest,
+        Request,
+        Structure,
+        User,
+        Volunteer,
+    )
 except Exception:
     # Minimal fallback to avoid hard import failure during early collection.
     pass

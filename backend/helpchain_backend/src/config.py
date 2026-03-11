@@ -118,6 +118,10 @@ class Config:
     ALLOW_DEFAULT_TENANT_FALLBACK = (
         os.getenv("ALLOW_DEFAULT_TENANT_FALLBACK", "0") == "1"
     )
+    # Startup auto-heal guard for default tenant record.
+    HC_AUTO_HEAL_DEFAULT_STRUCTURE = (
+        os.getenv("HC_AUTO_HEAL_DEFAULT_STRUCTURE", "1") == "1"
+    )
 
     # --- MFA ---
     MFA_ENABLED = os.getenv("MFA_ENABLED", "true").lower() in ("true", "1", "yes")

@@ -193,7 +193,18 @@ def add_security_headers(app: Flask):
         plausible_api_host = (app.config.get("PLAUSIBLE_API_HOST") or "").strip()
 
         script_src = ["'self'"]
+        style_src = ["'self'", "'unsafe-inline'"]
         connect_src = ["'self'"]
+        img_src = ["'self'", "data:"]
+        # Allow restrained map assets for admin territorial risk map.
+        map_script_origin = "https://unpkg.com"
+        map_tile_origin = "https://*.tile.openstreetmap.org"
+        if map_script_origin not in script_src:
+            script_src.append(map_script_origin)
+        if map_script_origin not in style_src:
+            style_src.append(map_script_origin)
+        if map_tile_origin not in img_src:
+            img_src.append(map_tile_origin)
         if plausible_enabled:
             script_origin = _origin_from_url(plausible_script_url)
             api_origin = _origin_from_url(plausible_api_host) or script_origin
@@ -206,8 +217,8 @@ def add_security_headers(app: Flask):
         csp_enforce = (
             "default-src 'self'; " + f"script-src {' '.join(script_src)}; "
             "script-src-attr 'none'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data:; "
+            f"style-src {' '.join(style_src)}; "
+            f"img-src {' '.join(img_src)}; "
             "font-src 'self'; " + f"connect-src {' '.join(connect_src)}; "
             "frame-ancestors 'self'; "
             "form-action 'self'; "
@@ -422,6 +433,16 @@ def create_app(config_object=None) -> Flask:
 
     # DB + Migrate
     db.init_app(app)
+    from backend.system_guard import ensure_default_structure
+    from backend.system_checks import check_database_integrity
+
+    with app.app_context():
+        if (
+            not app.config.get("TESTING", False)
+            and app.config.get("HC_AUTO_HEAL_DEFAULT_STRUCTURE", True)
+        ):
+            ensure_default_structure()
+        check_database_integrity()
     # Mail (Flask-Mail): used by backend.tasks.send_email_task via backend.mail_service
     mail.init_app(app)
     if app.debug or app.config.get("DEBUG"):
@@ -589,6 +610,20 @@ def create_app(config_object=None) -> Flask:
         app.register_blueprint(admin_bp)
     except Exception as e:
         app.logger.info("admin blueprint not loaded: %s", e)
+
+    try:
+        from backend.admin.ops_api import ops_api
+
+        app.register_blueprint(ops_api)
+    except Exception as e:
+        app.logger.info("ops_api blueprint not loaded: %s", e)
+
+    try:
+        from backend.admin.risk_api import risk_api
+
+        app.register_blueprint(risk_api)
+    except Exception as e:
+        app.logger.info("risk_api blueprint not loaded: %s", e)
 
     # Legacy but real RBAC admin routes (roles/permissions/users management).
     # Templates already reference endpoints under the `admin_roles` namespace.

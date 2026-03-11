@@ -1,5 +1,3 @@
-import os
-
 from backend.extensions import db  # re-export the bound SQLAlchemy instance
 from backend.helpchain_backend.src.app import create_app
 
@@ -25,17 +23,6 @@ def send_email_2fa_code(code, ip_address=None, user_agent=None):
         subject=subject, body=body, ip_address=ip_address, user_agent=user_agent
     )
     return True if result is None else bool(result)
-
-
-# За Render health: ако искаш бърз sanity
-@app.get("/health")
-def health():
-    return {
-        "ok": True,
-        "git": os.getenv("GIT_SHA", "unknown"),
-        "hc_code_marker": "workspace_v3",
-        "template_folder": app.template_folder,
-    }, 200
 
 
 __all__ = ["app", "db", "mail", "send_email_2fa_code"]
