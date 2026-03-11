@@ -10,11 +10,120 @@
   }
 
   onReady(function () {
-    const firstInvalid = document.querySelector(".is-invalid");
+    const form = document.querySelector(
+      'form[action*="/submit_request"], form[action*="submit_request"]',
+    );
+    if (!form) return;
+
+    const steps = Array.from(form.querySelectorAll(".hc-form-step[data-step]"));
+    const indicators = Array.from(
+      form.querySelectorAll(".hc-step-indicator [data-step-indicator]"),
+    );
+    if (!steps.length) return;
+
+    function getStep(stepNumber) {
+      return steps.find((el) => Number(el.dataset.step) === Number(stepNumber));
+    }
+
+    function updateReview() {
+      const read = (selector) => form.querySelector(selector);
+      const val = (selector) => (read(selector)?.value || "").trim();
+      const categorySelect = read("#srCategory");
+      const categoryText =
+        categorySelect && categorySelect.selectedIndex >= 0
+          ? categorySelect.options[categorySelect.selectedIndex].textContent.trim()
+          : "";
+
+      const model = {
+        name: val("#srName"),
+        email: val("#srEmail"),
+        phone: val("#srPhone"),
+        category: categoryText && categoryText !== "Choisir…" ? categoryText : "",
+        title: val("#srTitle"),
+        description: val("#srDesc"),
+      };
+
+      Object.keys(model).forEach((key) => {
+        const node = form.querySelector(`[data-review="${key}"]`);
+        if (!node) return;
+        node.textContent = model[key] || "—";
+      });
+    }
+
+    function setActiveStep(stepNumber, options) {
+      const opts = options || {};
+      const step = Number(stepNumber);
+      steps.forEach((el) => {
+        const active = Number(el.dataset.step) === step;
+        el.classList.toggle("active", active);
+        el.setAttribute("aria-hidden", active ? "false" : "true");
+      });
+      indicators.forEach((el) => {
+        const active = Number(el.dataset.stepIndicator) === step;
+        el.classList.toggle("is-active", active);
+      });
+      if (step === 3) updateReview();
+      if (opts.focus !== false) {
+        const firstField = getStep(step)?.querySelector(
+          "input:not([type='hidden']), select, textarea, button",
+        );
+        if (firstField && typeof firstField.focus === "function") {
+          firstField.focus({ preventScroll: false });
+        }
+      }
+    }
+
+    function validateStep(stepEl) {
+      const controls = Array.from(
+        stepEl.querySelectorAll("input, select, textarea"),
+      ).filter((el) => {
+        if (!el || el.disabled) return false;
+        const type = (el.getAttribute("type") || "").toLowerCase();
+        return type !== "hidden";
+      });
+
+      for (const control of controls) {
+        if (!control.checkValidity()) {
+          control.reportValidity();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    form.querySelectorAll(".hc-step-next").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const currentStep = btn.closest(".hc-form-step");
+        const nextStep = Number(btn.dataset.nextStep || 0);
+        if (!currentStep || !nextStep) return;
+        if (!validateStep(currentStep)) return;
+        setActiveStep(nextStep);
+      });
+    });
+
+    form.querySelectorAll(".hc-step-back").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const prevStep = Number(btn.dataset.prevStep || 0);
+        if (!prevStep) return;
+        setActiveStep(prevStep);
+      });
+    });
+
+    const firstInvalid = form.querySelector(".is-invalid");
+
     if (firstInvalid) {
+      const invalidStep = firstInvalid.closest(".hc-form-step[data-step]");
+      if (invalidStep) {
+        setActiveStep(Number(invalidStep.dataset.step), { focus: false });
+      } else {
+        setActiveStep(1, { focus: false });
+      }
       firstInvalid.focus({ preventScroll: false });
       return;
     }
+
+    setActiveStep(1, { focus: false });
+
     const summary = document.getElementById("form-error-summary");
     if (summary) summary.focus({ preventScroll: false });
   });
@@ -132,5 +241,100 @@
 
     form.addEventListener("focusin", fire, { once: true });
     form.addEventListener("input", fire, { once: true });
+  });
+
+  // Lightweight category suggestions (frontend-only, backend-compatible).
+  onReady(function () {
+    const form = document.querySelector(
+      'form[action*="/submit_request"], form[action*="submit_request"]',
+    );
+    if (!form) return;
+
+    const categoryField = form.querySelector('[name="category"]');
+    const pills = Array.from(form.querySelectorAll(".hc-suggestion-pill"));
+    if (!categoryField || !pills.length) return;
+
+    const isSelect = categoryField.tagName.toLowerCase() === "select";
+
+    function normalize(value) {
+      return (value || "")
+        .toString()
+        .trim()
+        .toLowerCase();
+    }
+
+    const canonicalLabelByValue = {
+      medical: "aide médicale",
+      social: "soutien social",
+      admin: "accès administratif",
+      tech: "accès numérique",
+    };
+
+    let lastPickedLabel = "";
+    let selectingFromPill = false;
+
+    function syncPillsFromField() {
+      const current = normalize(categoryField.value);
+      let activeLabel = "";
+
+      if (isSelect) {
+        const hasLastPicked =
+          !!lastPickedLabel &&
+          pills.some(
+            (pill) =>
+              normalize(pill.dataset.suggestionLabel || "") === lastPickedLabel &&
+              normalize(pill.dataset.suggestionValue || "") === current,
+          );
+
+        activeLabel = hasLastPicked
+          ? lastPickedLabel
+          : normalize(canonicalLabelByValue[current] || "");
+      } else {
+        activeLabel = normalize(categoryField.value);
+      }
+
+      pills.forEach((pill) => {
+        const label = normalize(pill.dataset.suggestionLabel || "");
+        const active = !!activeLabel && label === activeLabel;
+        pill.classList.toggle("is-active", active);
+        pill.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    }
+
+    pills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const targetValue = (pill.dataset.suggestionValue || "").trim();
+        if (!targetValue) return;
+        lastPickedLabel = normalize(pill.dataset.suggestionLabel || "");
+
+        if (isSelect) {
+          const match = Array.from(categoryField.options).find(
+            (opt) => normalize(opt.value) === normalize(targetValue),
+          );
+          if (match) {
+            selectingFromPill = true;
+            categoryField.value = match.value;
+            categoryField.dispatchEvent(new Event("change", { bubbles: true }));
+            selectingFromPill = false;
+          }
+        } else {
+          categoryField.value = pill.dataset.suggestionLabel || targetValue;
+          categoryField.dispatchEvent(new Event("input", { bubbles: true }));
+        }
+
+        syncPillsFromField();
+        categoryField.focus({ preventScroll: true });
+      });
+    });
+
+    categoryField.addEventListener("change", () => {
+      if (!selectingFromPill) lastPickedLabel = "";
+      syncPillsFromField();
+    });
+    categoryField.addEventListener("input", () => {
+      if (!selectingFromPill) lastPickedLabel = "";
+      syncPillsFromField();
+    });
+    syncPillsFromField();
   });
 })();

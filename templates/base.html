@@ -26,6 +26,9 @@
       'main.partenariats',
       'main.pourquoi_helpchain',
       'main.vision_europeenne',
+      'main.securite',
+      'main.architecture',
+      'main.gouvernance',
       'main.pour_les_structures',
       'main.about',
       'main.professionnels',
@@ -35,6 +38,8 @@
       'main.faq',
       'main.pilot',
       'main.legal',
+      'main.confidentialite',
+      'main.conditions_utilisation',
       'main.privacy',
       'main.terms'
     ] %}
@@ -273,42 +278,43 @@
 
       .hc-mobile-nav__item a {
         display: block;
-        border: 1px solid rgba(20, 40, 80, 0.12);
+        border: 1px solid var(--hc-border-subtle, #e6ecf2);
         border-radius: 8px;
-        padding: 12px 14px;
-        color: rgba(20, 40, 80, 0.92);
+        min-height: 44px;
+        padding: 10px 13px;
+        color: var(--hc-text-primary, #1e2a36);
         text-decoration: none;
         font-weight: 600;
         background: #fff;
       }
 
       .hc-mobile-nav__item a:hover {
-        background: #f7f9fc;
-        border-color: rgba(20, 40, 80, 0.2);
+        background: var(--hc-bg-soft, #f7f9fc);
+        border-color: rgba(36, 62, 99, 0.22);
       }
 
       .hc-mobile-nav__item a.is-active {
-        background: #edf3fb;
-        border-color: rgba(20, 40, 80, 0.28);
-        color: #0f2b57;
+        background: var(--hc-accent-soft, #eef3f8);
+        border-color: rgba(36, 62, 99, 0.32);
+        color: var(--hc-accent, #243e63);
       }
 
       .hc-mobile-nav__item--cta a {
-        background: #0f2b57;
-        border-color: #0f2b57;
+        background: var(--hc-accent, #243e63);
+        border-color: var(--hc-accent, #243e63);
         color: #fff;
       }
 
       .hc-mobile-nav__item--cta a:hover {
-        background: #14386f;
-        border-color: #14386f;
+        background: var(--hc-accent-hover, #1f3452);
+        border-color: var(--hc-accent-hover, #1f3452);
         color: #fff;
       }
 
       .hc-mobile-nav__item a:focus-visible,
       .hc-mobile-nav__close:focus-visible,
       .hc-mobile-nav-toggle:focus-visible {
-        outline: 2px solid rgba(37, 99, 235, 0.7);
+        outline: 2px solid rgba(36, 62, 99, 0.72);
         outline-offset: 2px;
       }
 
@@ -320,7 +326,7 @@
         margin-left: 4px;
       }
 
-      @media (max-width: 1800px) {
+      @media (max-width: 1280px) {
         .hc-public-nav-cta {
           display: none !important;
         }
@@ -328,7 +334,7 @@
 
       /* Public nav switch breakpoint: keep desktop nav on wide screens,
          switch to institutional hamburger on tablet/smaller widths. */
-      @media (max-width: 1700px) {
+      @media (max-width: 1200px) {
         .hc-public-nav-root #navbarNav.hc-public-nav-desktop {
           display: none !important;
           visibility: hidden !important;
@@ -342,7 +348,7 @@
         }
       }
 
-      @media (min-width: 1701px) {
+      @media (min-width: 1201px) {
         .hc-mobile-nav,
         .hc-mobile-nav-toggle {
           display: none !important;
@@ -409,8 +415,13 @@
       'main.faq',
       'main.pourquoi_helpchain',
       'main.vision_europeenne',
+      'main.securite',
+      'main.architecture',
+      'main.gouvernance',
       'main.contact',
-      'main.mentions_legales'
+      'main.mentions_legales',
+      'main.confidentialite',
+      'main.conditions_utilisation'
     ] %}
     {# Public policy (temporary): FR is the only officially published institutional language.
        EN/DE/BG stay enabled technically in Babel/routes but are hidden from the public switcher
@@ -476,44 +487,44 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep == 'main.index' else '' }}" href="{{ safe_url_for('main.index') }}" data-hc-nav="home" {% if ep == 'main.index' %}aria-current="page"{% endif %}>
-                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-home" aria-hidden="true"></i></span>
+                <span class="hc-navicon hc-icon" aria-hidden="true"><i class="fas fa-home hc-icon" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Accueil') }}</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
-                <i class="fas fa-compass me-1" aria-hidden="true"></i>{{ _('Orienter une demande') }}
+                <i class="fas fa-compass me-1 hc-icon" aria-hidden="true"></i>{{ _('Orienter une demande') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link nav-link--secondary {{ 'is-active' if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
-                <i class="fas fa-building-columns me-1" aria-hidden="true"></i>
+                <i class="fas fa-building-columns me-1 hc-icon" aria-hidden="true"></i>
                 <span class="hc-navlabel">{{ _('Accès structures et collectivités') }}</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
-                <i class="fas fa-circle-info me-1" aria-hidden="true"></i>{{ _('Comment ça marche') }}
+                <i class="fas fa-circle-info me-1 hc-icon" aria-hidden="true"></i>{{ _('Fonctionnement') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
-                <i class="fas fa-chart-line me-1" aria-hidden="true"></i>{{ _('Pilotage') }}
+                <i class="fas fa-chart-line me-1 hc-icon" aria-hidden="true"></i>{{ _('Pilotage') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.about') else '' }}" href="{{ safe_url_for('main.about') }}" {% if ep.startswith('main.about') %}aria-current="page"{% endif %}>
-                <i class="fas fa-info-circle me-1" aria-hidden="true"></i>{{ _('À propos') }}
+                <i class="fas fa-info-circle me-1 hc-icon" aria-hidden="true"></i>{{ _('À propos') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if ep.startswith('main.contact') %}aria-current="page"{% endif %}>
-                <i class="fas fa-envelope me-1" aria-hidden="true"></i>{{ _('Contact') }}
+                <i class="fas fa-envelope me-1 hc-icon" aria-hidden="true"></i>{{ _('Contact') }}
               </a>
             </li>
             <li class="nav-item hc-public-nav-cta">
               <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
-                <span class="hc-navicon" aria-hidden="true"><i class="fas fa-comments" aria-hidden="true"></i></span>
+                <span class="hc-navicon hc-icon" aria-hidden="true"><i class="fas fa-comments hc-icon" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Demander un échange') }}</span>
               </a>
             </li>
@@ -521,7 +532,7 @@
               {% if admin_logged_in %}
                 <li class="nav-item">
                   <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_requests') }}">
-                    <i class="fas fa-cog me-1" aria-hidden="true"></i>{{ _('Admin') }}
+                    <i class="fas fa-cog me-1 hc-icon" aria-hidden="true"></i>{{ _('Admin') }}
                   </a>
                 </li>
                 <li class="nav-item">
@@ -558,14 +569,14 @@
                 {% endif %}
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="nav-link btn btn-link p-0">
-                    <i class="fas fa-sign-out-alt me-1" aria-hidden="true"></i>{{ _('Logout') }}
+                    <i class="fas fa-sign-out-alt me-1 hc-icon" aria-hidden="true"></i>{{ _('Logout') }}
                   </button>
                 </form>
               </li>
             {% elif volunteer_logged_in %}
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.volunteer_dashboard') }}">
-                <i class="fas fa-hands-helping me-1" aria-hidden="true"></i>{{ _('Mon espace') }}
+                <i class="fas fa-hands-helping me-1 hc-icon" aria-hidden="true"></i>{{ _('Mon espace') }}
               </a>
             </li>
             <li class="nav-item dropdown">
@@ -576,7 +587,7 @@
                  data-bs-toggle="dropdown"
                  aria-expanded="false"
                 title="{{ _('Notifications') }}">
-                <i class="fas fa-bell" aria-hidden="true"></i>
+                <i class="fas fa-bell hc-icon" aria-hidden="true"></i>
                 {% set unread_count = unread_volunteer_notifs|default(VOLUNTEER_UNREAD_NOTIF_COUNT|default(0)) %}
                 {% if unread_count and unread_count > 0 %}
                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
@@ -585,7 +596,7 @@
                   </span>
                 {% endif %}
               </a>
-              <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="volunteerNotifDropdown" style="min-width: 320px;">
+              <div class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="volunteerNotifDropdown">
                 {% set nav_notifications = volunteer_notif_preview|default([]) %}
                 <div class="hc-dd__head">
                   <div class="hc-dd__title">
@@ -621,14 +632,14 @@
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{{ safe_url_for('main.volunteer_profile') }}">
-                <i class="fas fa-user me-1" aria-hidden="true"></i>{{ _('Profile') }}
+                <i class="fas fa-user me-1 hc-icon" aria-hidden="true"></i>{{ _('Profile') }}
               </a>
             </li>
               <li class="nav-item">
                 <form method="post" action="{{ safe_url_for('main.volunteer_logout') }}" class="d-inline">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="nav-link btn btn-link p-0">
-                    <i class="fas fa-sign-out-alt me-1" aria-hidden="true"></i>{{ _('Logout') }}
+                    <i class="fas fa-sign-out-alt me-1 hc-icon" aria-hidden="true"></i>{{ _('Logout') }}
                   </button>
                 </form>
               </li>
@@ -649,7 +660,7 @@
                 autocomplete="off"
               />
               <button class="hc-nav-search__btn hc-iconbtn" type="submit" aria-label="{{ _('Rechercher') }}">
-                <i class="fas fa-magnifying-glass"></i>
+                <i class="fas fa-magnifying-glass hc-icon"></i>
               </button>
             </div>
           </form>
@@ -704,13 +715,13 @@
             {% endif %}
             <button class="btn btn-link text-secondary nav-utility hc-iconbtn" type="button"
                     aria-label="{{ _('Toggle theme') }}" title="{{ _('Toggle theme') }}">
-              <i class="fas fa-moon" aria-hidden="true"></i>
+              <i class="fas fa-moon hc-icon" aria-hidden="true"></i>
             </button>
 
             {% if not volunteer_logged_in %}
               <a class="btn btn-link text-secondary nav-utility hc-iconbtn" href="{{ url_for('main.volunteer_notifications') }}"
                  aria-label="{{ _('Notifications') }}" title="{{ _('Notifications') }}">
-                <i class="fas fa-bell" aria-hidden="true"></i>
+                <i class="fas fa-bell hc-icon" aria-hidden="true"></i>
               </a>
             {% endif %}
           </div>
@@ -743,7 +754,7 @@
             <a class="{{ 'is-active' if mobile_ep.startswith('main.professionnels') or mobile_ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if mobile_ep.startswith('main.professionnels') or mobile_ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>{{ _('Accès structures et collectivités') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if mobile_ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if mobile_ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>{{ _('Comment ça marche') }}</a>
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if mobile_ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>{{ _('Fonctionnement') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if mobile_ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if mobile_ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>{{ _('Pilotage') }}</a>
@@ -813,7 +824,7 @@
 
     <!-- Main Content -->
 
-    <main id="main-content">{% block content %}{% endblock %}</main>
+    <main id="main-content" class="hc-main-content">{% block content %}{% endblock %}</main>
 
     <button
       type="button"
@@ -1331,47 +1342,61 @@
     <!-- Footer -->
     <footer class="hc-footer hc-footer-institutional mt-auto" role="contentinfo">
       <div class="container">
-        <div class="hc-footer__top">
-          <div class="hc-footer__copyright">&copy; {{ current_year|default(2026) }} HelpChain</div>
-
-          <div class="hc-footer__trust">
-            {{ _('Données hébergées en Europe') }} · {{ _('Conforme RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Conçu et opéré depuis la France') }}
+        <div class="hc-footer__inner">
+          <div class="hc-footer__brand">
+            <div class="hc-footer__copyright">&copy; {{ current_year|default(2026) }} HelpChain — Infrastructure de coordination sociale</div>
+            <p class="hc-footer__trust">
+              {{ _('Données hébergées en Europe') }} · {{ _('Conformité RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Conçu et opéré depuis la France') }}
+            </p>
           </div>
 
-          <nav class="hc-footer__nav" aria-label="{{ _('Footer') }}">
-            <a class="hc-footer__link" href="{{ url_for('main.about') }}">{{ _('À propos') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.comment_ca_marche') }}">{{ _('Comment fonctionne HelpChain') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.collectivites_associations') }}">{{ _('Pour les collectivités et associations') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.cas_usage') }}">{{ _('Cas d’usage') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.pilotage_indicateurs') }}">{{ _('Pilotage & indicateurs') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.partenariats') }}">{{ _('Partenariats & déploiement territorial') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.pourquoi_helpchain') }}">{{ _('Pourquoi HelpChain') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.vision_europeenne') }}">{{ _('Projet & Vision européenne') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.faq') }}">{{ _('Questions fréquentes') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.mentions_legales') }}">{{ _('Mentions légales') }}</a>
-            <span class="hc-footer__dot" aria-hidden="true">·</span>
-            <a class="hc-footer__link" href="{{ url_for('main.contact') }}">{{ _('Contact & coopération') }}</a>
-          </nav>
+          <div class="hc-footer__grid">
+            <nav class="hc-footer__group" aria-label="{{ _('Présentation HelpChain') }}">
+              <h3 class="hc-footer__title">{{ _('Présentation') }}</h3>
+              <a class="hc-footer__link" href="{{ url_for('main.about') }}">{{ _('À propos') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.comment_ca_marche') }}">{{ _('Fonctionnement de la plateforme') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.pourquoi_helpchain') }}">{{ _('Pourquoi HelpChain') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.vision_europeenne') }}">{{ _('Projet & Vision européenne') }}</a>
+            </nav>
 
-          <div class="hc-footer__intervenants">
-            <div class="hc-footer__intervenants-title">{{ _('Accès intervenants') }}</div>
-            <div class="hc-footer__intervenants-links">
-              <a class="hc-footer__link" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
-                {{ _('Connexion intervenant') }}
-              </a>
-              <a class="hc-footer__link" href="{{ safe_url_for('main.become_volunteer') }}">
-                {{ _('Inscription intervenant') }}
-              </a>
+            <nav class="hc-footer__group" aria-label="{{ _('Collectivités et ressources') }}">
+              <h3 class="hc-footer__title">{{ _('Ressources') }}</h3>
+              <a class="hc-footer__link" href="{{ url_for('main.collectivites_associations') }}">{{ _('Pour les collectivités et associations') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.cas_usage') }}">{{ _('Cas d’usage') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.pilotage_indicateurs') }}">{{ _('Pilotage & indicateurs') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.partenariats') }}">{{ _('Partenariats & déploiement territorial') }}</a>
+            </nav>
+
+            <nav class="hc-footer__group" aria-label="{{ _('Cadre et conformité') }}">
+              <h3 class="hc-footer__title">CADRE &amp; CONFORMITÉ</h3>
+              <a class="hc-footer__link" href="{{ url_for('main.faq') }}">{{ _('Questions fréquentes') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.contact') }}">{{ _('Contact & coopération') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.securite') }}">{{ _('Sécurité & conformité') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.architecture') }}">{{ _('Architecture de la plateforme') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.gouvernance') }}">{{ _('Gouvernance de la plateforme') }}</a>
+            </nav>
+
+            <div class="hc-footer__group hc-footer__group--actions">
+              <h3 class="hc-footer__title">{{ _('Accès intervenants') }}</h3>
+              <div class="hc-footer__intervenants-links">
+                <a class="hc-footer__link hc-footer__link--cta" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
+                  {{ _('Connexion intervenant') }}
+                </a>
+                <a class="hc-footer__link hc-footer__link--cta" href="{{ safe_url_for('main.become_volunteer') }}">
+                  {{ _('Inscription intervenant') }}
+                </a>
+              </div>
             </div>
+          </div>
+
+          <div class="hc-footer__meta">
+            <nav class="hc-footer__meta-nav" aria-label="{{ _('Footer') }}">
+              <a class="hc-footer__link" href="{{ url_for('main.mentions_legales') }}">{{ _('Mentions légales') }}</a>
+              <span class="hc-footer__meta-dot" aria-hidden="true">·</span>
+              <a class="hc-footer__link" href="{{ url_for('main.confidentialite') }}">{{ _('Politique de confidentialité') }}</a>
+              <span class="hc-footer__meta-dot" aria-hidden="true">·</span>
+              <a class="hc-footer__link" href="{{ url_for('main.conditions_utilisation') }}">{{ _('Conditions d’utilisation') }}</a>
+            </nav>
           </div>
         </div>
       </div>

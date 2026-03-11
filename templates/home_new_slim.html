@@ -7,460 +7,421 @@
 {% block head %}
   {{ super() }}
   <style>
-    .hc-home__how {
-      padding: 40px 0 56px;
+    body.hc-page-home {
+      --hc-home-section-gap: clamp(2.4rem, 5.2vw, 4.75rem);
+      --hc-home-card-pad: clamp(1.1rem, 2.2vw, 1.52rem);
+      --hc-home-card-radius: 16px;
+      --hc-home-card-border: #d9e3ef;
+      --hc-home-card-shadow: 0 7px 20px rgba(15, 23, 42, 0.05);
     }
 
-    .hc-home__section-head {
-      margin-bottom: 2px;
-    }
-
-    .hc-home__eyebrow {
-      margin: 0 0 10px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: rgba(20, 40, 80, 0.62);
-    }
-
-    .hc-home__section-head p {
-      line-height: 1.62;
-      max-width: 76ch;
-    }
-
-    .hc-home__card {
-      border: 1px solid var(--hc-border);
-      border-radius: 14px;
-      background: var(--hc-surface);
-      padding: 20px;
-      box-shadow: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .hc-home__card h3 {
-      margin: 0 0 10px;
-      font-size: 1.12rem;
-      font-weight: 700;
-      line-height: 1.35;
+    body.hc-page-home .hc-home {
       color: var(--hc-text-main);
     }
 
-    .hc-home__card h3 i:first-child {
-      flex: 0 0 auto;
+    body.hc-page-home .hc-home__hero {
+      padding: clamp(2.8rem, 6.2vw, 4.9rem) 0 clamp(2.2rem, 4.5vw, 3.5rem);
+      border-bottom: 1px solid var(--hc-home-card-border);
+      background: linear-gradient(180deg, rgba(246, 250, 255, 0.92), rgba(255, 255, 255, 0.95));
     }
 
-    .hc-home__card p {
-      margin: 0 0 14px;
-      color: var(--hc-text-muted);
-      line-height: 1.62;
-      max-width: 62ch;
-    }
-
-    .hc-home__card-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: auto;
-      color: var(--hc-primary);
-      font-weight: 600;
-      text-decoration: none;
-    }
-
-    .hc-home__quick-grid {
+    body.hc-page-home .hc-home__hero-inner {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      align-items: start;
+      gap: clamp(1.2rem, 3vw, 2.4rem);
     }
 
-    .hc-home__quick-card {
-      border: 1px solid var(--hc-border);
-      border-radius: 14px;
-      background: var(--hc-surface);
-      box-shadow: none;
-      padding: 20px;
-      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    body.hc-page-home .hc-home__hero-copy {
+      max-width: 68ch;
     }
 
-    .hc-home__quick-card:hover,
-    .hc-home__quick-card:focus-within {
-      transform: translateY(-2px);
-      background: var(--hc-primary-soft);
-      border-color: var(--hc-border);
-    }
-
-    .hc-home__quick-head {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-      min-height: 44px;
-    }
-
-    .hc-home__quick-card h3 {
-      margin: 0;
-      font-size: 1.16rem;
+    body.hc-page-home .hc-home__eyebrow {
+      margin: 0 0 0.72rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      line-height: 1.35;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(20, 40, 80, 0.7);
     }
 
-    .hc-home__card--link {
-      display: block;
-      color: inherit;
-      text-decoration: none;
-      cursor: pointer;
-      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    body.hc-page-home .hc-home__title {
+      margin: 0 0 1rem;
+      font-size: clamp(1.72rem, 2.5vw, 2.5rem);
+      line-height: 1.18;
+      letter-spacing: -0.018em;
+      font-weight: 700;
+      max-width: 20ch;
+      text-wrap: balance;
     }
 
-    .hc-home__card--link:hover,
-    .hc-home__card--link:focus-visible {
-      transform: translateY(-2px);
-      border-color: var(--hc-border-strong, var(--hc-border));
-      background: var(--hc-surface);
-      text-decoration: none;
-      color: inherit;
-      outline: none;
+    body.hc-page-home .hc-home__subtitle {
+      margin: 0 0 1.05rem;
+      max-width: 62ch;
+      font-size: clamp(1.01rem, 1.3vw, 1.14rem);
+      line-height: 1.62;
+      color: #425a79;
     }
 
-    .hc-home__card:not(.hc-home__card--link):hover {
-      transform: none;
-      border-color: var(--hc-border);
-      box-shadow: none;
-      background: var(--hc-surface);
-    }
-
-    .hc-home__card--link h3 {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-height: 44px;
-      margin-bottom: 12px;
-    }
-
-    .hc-home__card--link h3 > span:last-child {
-      line-height: 1.3;
-    }
-
-    .hc-home__card:not(.hc-home__card--link) h3 i:first-child {
-      font-size: var(--hc-icon-inline-size);
-      width: 1.2rem;
-      text-align: center;
-      margin-right: 0.4rem;
-    }
-
-    .hc-home__positioning-copy ul,
-    .hc-home__card ul {
+    body.hc-page-home .hc-home__trust {
       margin: 0;
-      padding-left: 1.15rem;
-      list-style-position: outside;
+      font-size: 0.88rem;
+      line-height: 1.52;
+      color: #4e6381;
+      display: inline-flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
     }
 
-    .hc-home__positioning-copy li,
-    .hc-home__card li {
-      margin-bottom: 0.45rem;
-      line-height: 1.55;
+    body.hc-page-home .hc-home__actions {
+      margin-top: clamp(0.9rem, 2vw, 1.25rem);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.64rem;
     }
 
-    .hc-home__positioning-copy li:last-child,
-    .hc-home__card li:last-child {
-      margin-bottom: 0;
+    body.hc-page-home .hc-home__cta-note {
+      margin: 0.55rem 0 0;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      color: #5a7090;
+      max-width: 66ch;
     }
 
-    .hc-home__positioning-copy li::marker,
-    .hc-home__card li::marker {
-      color: var(--hc-text-muted);
+    body.hc-page-home .hc-home__actions .hc-btn {
+      min-height: 46px;
+      padding: 0.72rem 1.18rem;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: transform 0.16s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
     }
 
-    .hc-home__actions .hc-btn {
-      min-height: 42px;
-      padding: 10px 16px;
-      border-radius: 10px;
-      transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
-    }
-
-    .hc-home__actions .hc-btn:hover,
-    .hc-home__actions .hc-btn:focus-visible {
+    body.hc-page-home .hc-home__actions .hc-btn:hover,
+    body.hc-page-home .hc-home__actions .hc-btn:focus-visible {
       transform: translateY(-1px);
     }
 
-    .hc-home__actions .hc-btn:focus-visible,
-    .hc-home__card--link:focus-visible {
+    body.hc-page-home .hc-home__actions .hc-btn:focus-visible {
       box-shadow: 0 0 0 3px var(--hc-accent-ring);
     }
 
-    .hc-home__how:last-of-type {
-      padding-bottom: 72px;
+    body.hc-page-home .hc-home__snapshot-card {
+      border: 1px solid var(--hc-home-card-border);
+      border-radius: var(--hc-home-card-radius);
+      background: #fff;
+      padding: clamp(1.05rem, 2.1vw, 1.4rem);
+      box-shadow: var(--hc-home-card-shadow);
+      min-height: 100%;
     }
 
-    /* En savoir plus: align title zones for multi-line headings (desktop-first, responsive-safe) */
-    .hc-home__resources-grid .hc-home__card--link h3 {
-      align-items: flex-start;
-      min-height: 78px;
-      margin-bottom: 12px;
+    body.hc-page-home .hc-home__snapshot-title {
+      margin: 0 0 0.75rem;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--hc-text-main);
     }
 
-    .hc-home__resources-grid .hc-home__card--link h3 > span:last-child {
-      display: block;
+    body.hc-page-home .hc-home__snapshot-list {
+      margin: 0;
+      padding-left: 1.15rem;
     }
 
-    @media (max-width: 991.98px) {
-      .hc-home__resources-grid .hc-home__card--link h3 {
-        min-height: 0;
+    body.hc-page-home .hc-home__snapshot-list li {
+      margin-bottom: 0.45rem;
+      color: var(--hc-text-muted);
+      line-height: 1.52;
+    }
+
+    body.hc-page-home .hc-home__snapshot-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    body.hc-page-home .hc-home__snapshot-sub {
+      margin: 0.9rem 0 0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: #5c6f8b;
+    }
+
+    body.hc-page-home .hc-proof {
+      padding: clamp(1.2rem, 2.6vw, 1.9rem) 0 clamp(1.5rem, 3.1vw, 2.3rem);
+      border-bottom: 1px solid var(--hc-home-card-border);
+      background: linear-gradient(180deg, rgba(250, 252, 255, 0.92), rgba(255, 255, 255, 0.98));
+    }
+
+    body.hc-page-home .hc-proof__head {
+      margin-bottom: 0.9rem;
+      max-width: 74ch;
+    }
+
+    body.hc-page-home .hc-proof__kicker {
+      margin: 0;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--hc-accent-color, #243e63);
+    }
+
+    body.hc-page-home .hc-proof__title {
+      margin: 0.36rem 0 0;
+      font-size: clamp(1.1rem, 1.5vw, 1.34rem);
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: #132844;
+    }
+
+    body.hc-page-home .hc-proof__grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    body.hc-page-home .hc-proof__item {
+      border: 1px solid var(--hc-border-subtle, #e6ecf2);
+      border-top: 3px solid var(--hc-accent, #243e63);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0.8rem 0.9rem;
+      box-shadow: none;
+    }
+
+    body.hc-page-home .hc-proof__item h3 {
+      margin: 0 0 0.38rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--hc-text-primary, #1e2a36);
+    }
+
+    body.hc-page-home .hc-proof__item p {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: var(--hc-text-muted, #5e6b78);
+    }
+
+    body.hc-page-home :is(.hc-mission, .hc-acteurs, .hc-how-it-works, .hc-pilotage, .hc-cadre, .hc-deploiement) {
+      padding: var(--hc-home-section-gap) 0;
+    }
+
+    body.hc-page-home .hc-how-it-works,
+    body.hc-page-home .hc-cadre {
+      background: linear-gradient(180deg, rgba(248, 251, 255, 0.6), rgba(255, 255, 255, 0));
+      border-top: 1px solid var(--hc-home-card-border);
+      border-bottom: 1px solid var(--hc-home-card-border);
+    }
+
+    body.hc-page-home .hc-home__section-head {
+      margin-bottom: clamp(1.05rem, 2.1vw, 1.6rem);
+      max-width: 74ch;
+    }
+
+    body.hc-page-home .hc-home__section-head h2 {
+      margin: 0;
+      font-size: clamp(1.34rem, 2vw, 1.78rem);
+      line-height: 1.24;
+      letter-spacing: -0.015em;
+      text-wrap: balance;
+    }
+
+    body.hc-page-home .hc-pilotage-kicker {
+      display: inline-flex;
+      align-items: center;
+      margin: 0 0 0.48rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid #d9e3f0;
+      background: #f8fbff;
+      color: #4a617f;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    body.hc-page-home .hc-home__section-head p {
+      margin: 0.66rem 0 0;
+      color: #465f7f;
+      line-height: 1.6;
+      max-width: 72ch;
+    }
+
+    body.hc-page-home :is(.hc-home__card, .hc-acteurs-card, .hc-how-card, .hc-pilotage-card) {
+      border: 1px solid var(--hc-home-card-border);
+      border-radius: var(--hc-home-card-radius);
+      background: #fff;
+      padding: var(--hc-home-card-pad);
+      box-shadow: var(--hc-home-card-shadow);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      height: 100%;
+    }
+
+    body.hc-page-home :is(.hc-acteurs-card, .hc-how-card, .hc-pilotage-card):hover {
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.075);
+      border-color: #cfd9e8;
+    }
+
+    body.hc-page-home :is(.hc-home__card h3, .hc-acteurs-card h3, .hc-how-card h3, .hc-pilotage-label) {
+      margin: 0 0 0.5rem;
+      font-size: 1.03rem;
+      font-weight: 700;
+      line-height: 1.34;
+      color: var(--hc-text-main);
+    }
+
+    body.hc-page-home :is(.hc-home__card p, .hc-acteurs-card p, .hc-how-card p, .hc-pilotage-card p, .hc-cadre-card li) {
+      margin: 0;
+      color: var(--hc-text-muted);
+      line-height: 1.58;
+    }
+
+    body.hc-page-home .hc-mission-card p {
+      max-width: 84ch;
+    }
+
+    body.hc-page-home .hc-acteurs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: clamp(0.82rem, 1.6vw, 1.1rem);
+    }
+
+    body.hc-page-home .hc-how-grid,
+    body.hc-page-home .hc-pilotage-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(0.82rem, 1.6vw, 1.1rem);
+      align-items: stretch;
+    }
+
+    body.hc-page-home .hc-how-step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid #dce5f1;
+      background: #f8fbff;
+      color: var(--hc-text-main);
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.44rem;
+    }
+
+    body.hc-page-home .hc-pilotage-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.28rem 0.58rem;
+      border-radius: 999px;
+      border: 1px solid #dbe4f0;
+      background: #f9fbff;
+      color: #4f6380;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.52rem;
+    }
+
+    body.hc-page-home .hc-pilotage-value {
+      margin: 0 0 0.48rem;
+      font-size: clamp(2rem, 3.2vw, 2.55rem);
+      font-weight: 800;
+      letter-spacing: -0.015em;
+      line-height: 1.06;
+      color: #153159;
+    }
+
+    body.hc-page-home .hc-pilotage-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.34rem;
+    }
+
+    body.hc-page-home .hc-pilotage-card p:last-child {
+      margin-top: auto;
+    }
+
+    body.hc-page-home .hc-pilotage-hint {
+      margin-top: 0.12rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #5d7390 !important;
+      line-height: 1.35;
+    }
+
+    body.hc-page-home .hc-pilotage-note {
+      margin: 0.72rem 0 0;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #60738e;
+    }
+
+    body.hc-page-home .hc-cadre-card ul {
+      margin: 0;
+      padding-left: 1.15rem;
+    }
+
+    body.hc-page-home .hc-cadre-card li {
+      margin-bottom: 0.45rem;
+    }
+
+    body.hc-page-home .hc-cadre-card li:last-child {
+      margin-bottom: 0;
+    }
+
+    body.hc-page-home .hc-deploiement-card p {
+      max-width: 86ch;
+    }
+
+    @media (max-width: 1199.98px) {
+      body.hc-page-home .hc-home__hero-inner {
+        grid-template-columns: minmax(0, 1fr);
       }
-    }
 
-    @media (max-width: 991.98px) {
-      .hc-home__quick-grid {
+      body.hc-page-home .hc-home__snapshot {
+        max-width: 620px;
+      }
+
+      body.hc-page-home .hc-acteurs-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 575.98px) {
-      .hc-home__quick-grid {
+    @media (max-width: 991.98px) {
+      body.hc-page-home .hc-proof__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      body.hc-page-home .hc-how-grid,
+      body.hc-page-home .hc-pilotage-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    .hc-how-it-works {
-      padding: 10px 0 34px;
-    }
+    @media (max-width: 767.98px) {
+      body.hc-page-home {
+        --hc-home-section-gap: clamp(1.85rem, 8vw, 2.6rem);
+      }
 
-    .hc-how-it-works .hc-home__section-head {
-      margin-bottom: 14px;
-    }
+      body.hc-page-home .hc-home__actions {
+        width: 100%;
+      }
 
-    .hc-how-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
+      body.hc-page-home .hc-home__actions .hc-btn {
+        width: 100%;
+        justify-content: center;
+      }
 
-    .hc-how-card {
-      border: 1px solid var(--hc-border);
-      border-radius: 12px;
-      background: var(--hc-surface);
-      padding: 18px;
-    }
-
-    .hc-how-card h3 {
-      margin: 8px 0 8px;
-      font-size: 1.02rem;
-      font-weight: 700;
-      line-height: 1.35;
-      color: var(--hc-text-main);
-    }
-
-    .hc-how-card p {
-      margin: 0;
-      color: var(--hc-text-muted);
-      line-height: 1.58;
-    }
-
-    .hc-how-step {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      border: 1px solid var(--hc-border);
-      background: #fff;
-      color: var(--hc-text-main);
-      font-size: 0.92rem;
-      font-weight: 700;
-    }
-
-    @media (max-width: 991.98px) {
-      .hc-how-grid {
+      body.hc-page-home .hc-acteurs-grid {
         grid-template-columns: 1fr;
       }
-    }
 
-    .hc-structures {
-      padding: 2px 0 36px;
-    }
-
-    .hc-structures .hc-home__section-head {
-      margin-bottom: 14px;
-    }
-
-    .hc-structures-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .hc-structures-card {
-      border: 1px solid var(--hc-border);
-      border-radius: 12px;
-      background: var(--hc-surface);
-      padding: 18px;
-    }
-
-    .hc-structures-card h3 {
-      margin: 0 0 8px;
-      font-size: 1.02rem;
-      font-weight: 700;
-      line-height: 1.35;
-      color: var(--hc-text-main);
-    }
-
-    .hc-structures-card p {
-      margin: 0;
-      color: var(--hc-text-muted);
-      line-height: 1.58;
-    }
-
-    .hc-structures__actions {
-      display: flex;
-      justify-content: center;
-    }
-
-    @media (max-width: 991.98px) {
-      .hc-structures-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .hc-pilotage {
-      padding: 4px 0 34px;
-    }
-
-    .hc-pilotage .hc-home__section-head {
-      margin-bottom: 14px;
-    }
-
-    .hc-pilotage-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .hc-pilotage-card {
-      border: 1px solid var(--hc-border);
-      border-radius: 12px;
-      background: var(--hc-surface);
-      padding: 18px;
-    }
-
-    .hc-pilotage-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 10px;
-      border: 1px solid var(--hc-border);
-      border-radius: 999px;
-      background: #fff;
-      color: var(--hc-text-muted);
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      margin-bottom: 10px;
-    }
-
-    .hc-pilotage-label {
-      margin: 0 0 8px;
-      font-size: 1.02rem;
-      font-weight: 700;
-      line-height: 1.35;
-      color: var(--hc-text-main);
-    }
-
-    .hc-pilotage-value {
-      margin: 0 0 8px;
-      font-size: 1.9rem;
-      font-weight: 700;
-      line-height: 1.1;
-      color: var(--hc-text-main);
-    }
-
-    .hc-pilotage-card p {
-      margin: 0;
-      color: var(--hc-text-muted);
-      line-height: 1.58;
-    }
-
-    @media (max-width: 991.98px) {
-      .hc-pilotage-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .hc-acteurs {
-      padding: 2px 0 34px;
-    }
-
-    .hc-acteurs .hc-home__section-head {
-      margin-bottom: 14px;
-    }
-
-    .hc-acteurs-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .hc-acteurs-card {
-      border: 1px solid var(--hc-border);
-      border-radius: 12px;
-      background: var(--hc-surface);
-      padding: 18px;
-    }
-
-    .hc-acteurs-card h3 {
-      margin: 0 0 8px;
-      font-size: 1.02rem;
-      font-weight: 700;
-      line-height: 1.35;
-      color: var(--hc-text-main);
-    }
-
-    .hc-acteurs-card p {
-      margin: 0;
-      color: var(--hc-text-muted);
-      line-height: 1.58;
-    }
-
-    .hc-mission {
-      padding: 2px 0 26px;
-    }
-
-    .hc-mission-card p {
-      color: var(--hc-text-muted);
-      line-height: 1.6;
-      max-width: 86ch;
-    }
-
-    .hc-cadre,
-    .hc-deploiement {
-      padding: 2px 0 30px;
-    }
-
-    .hc-cadre-card ul {
-      margin: 0;
-      padding-left: 1.15rem;
-    }
-
-    .hc-cadre-card li {
-      margin-bottom: 0.45rem;
-      line-height: 1.55;
-      color: var(--hc-text-muted);
-    }
-
-    .hc-cadre-card li:last-child {
-      margin-bottom: 0;
-    }
-
-    .hc-deploiement-card p {
-      color: var(--hc-text-muted);
-      line-height: 1.6;
-      max-width: 90ch;
-    }
-
-    @media (max-width: 991.98px) {
-      .hc-acteurs-grid {
+      body.hc-page-home .hc-proof__grid {
         grid-template-columns: 1fr;
       }
     }
@@ -473,11 +434,11 @@
     <div class="hc-container">
       <div class="hc-home__hero-inner">
         <div class="hc-home__hero-copy">
-          <p class="hc-home__eyebrow">Coordination territoriale</p>
-          <h1 class="hc-home__title">HelpChain | Infrastructure numérique de coordination des situations sociales</h1>
+          <p class="hc-home__eyebrow">Cadre opérationnel territorial</p>
+          <h1 class="hc-home__title">Infrastructure de coordination sociale</h1>
 
           <p class="hc-home__subtitle">
-            HelpChain est conçu pour faciliter l’identification, le suivi et la coordination des situations sociales entre les acteurs d’un territoire.
+            HelpChain structure l’orientation des demandes, le suivi des situations et la coordination des interventions entre collectivités, associations, intervenants et structures partenaires.
           </p>
 
           <p class="hc-home__trust">
@@ -488,12 +449,13 @@
             <a class="hc-btn hc-btn--primary" href="{{ url_for('main.orienter') }}" data-hc-event="home_primary_cta">Orienter une demande</a>
             <a class="hc-btn hc-btn-outline" href="{{ url_for('main.professionnels') }}" data-hc-event="home_pro_cta">Accès structures et collectivités</a>
           </div>
+          <p class="hc-home__cta-note">Accès structurés pour la coordination opérationnelle, le pilotage des situations et la traçabilité des actions.</p>
         </div>
 
         <div class="hc-home__snapshot">
           <div class="hc-home__snapshot-card">
             <h2 class="hc-home__snapshot-title">Cadre de coordination</h2>
-            <ul class="mb-0" style="padding-left: 1rem;">
+            <ul class="mb-0 hc-home__snapshot-list">
               <li>Orientation structurée des situations</li>
               <li>Suivi partagé entre acteurs</li>
               <li>Pilotage opérationnel territorial</li>
@@ -501,6 +463,33 @@
             <p class="hc-home__snapshot-sub">Dispositif territorial • Suivi structuré • Coordination renforcée</p>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-proof" aria-label="Référentiel opérationnel">
+    <div class="hc-container">
+      <header class="hc-proof__head">
+        <p class="hc-proof__kicker">Référentiel institutionnel</p>
+        <h2 class="hc-proof__title">Un cadre de coordination structuré pour le pilotage territorial</h2>
+      </header>
+      <div class="hc-proof__grid">
+        <article class="hc-proof__item">
+          <h3>Cadre opérationnel</h3>
+          <p>Organisation structurée des demandes, des accès et du suivi des situations.</p>
+        </article>
+        <article class="hc-proof__item">
+          <h3>Protection des données</h3>
+          <p>Traitement encadré des informations selon les principes du RGPD.</p>
+        </article>
+        <article class="hc-proof__item">
+          <h3>Pilotage des accès</h3>
+          <p>Accès différenciés selon les rôles, les usages et les responsabilités.</p>
+        </article>
+        <article class="hc-proof__item">
+          <h3>Infrastructure européenne</h3>
+          <p>Hébergement et exploitation au sein de l’Union européenne.</p>
+        </article>
       </div>
     </div>
   </section>
@@ -570,29 +559,34 @@
   <section class="hc-pilotage" aria-label="Pilotage des situations sociales">
     <div class="hc-container">
       <header class="hc-home__section-head">
+        <span class="hc-pilotage-kicker">INDICATEURS OPÉRATIONNELS</span>
         <h2>Pilotage des situations sociales</h2>
-        <p>Une vision structurée pour suivre les situations, identifier les priorités et renforcer la coordination entre acteurs.</p>
+        <p>Une vue de suivi opérationnel pour suivre les situations, prioriser les interventions et coordonner les réponses entre acteurs.</p>
       </header>
       <div class="hc-pilotage-grid">
         <article class="hc-pilotage-card">
           <span class="hc-pilotage-chip">Pilotage</span>
           <h3 class="hc-pilotage-label">Situations critiques</h3>
           <p class="hc-pilotage-value">24</p>
+          <p class="hc-pilotage-hint">Priorité opérationnelle</p>
           <p>Situations nécessitant une intervention prioritaire.</p>
         </article>
         <article class="hc-pilotage-card">
           <span class="hc-pilotage-chip">Coordination</span>
           <h3 class="hc-pilotage-label">Situations en cours</h3>
           <p class="hc-pilotage-value">128</p>
+          <p class="hc-pilotage-hint">Coordination active</p>
           <p>Situations actuellement en cours de traitement.</p>
         </article>
         <article class="hc-pilotage-card">
           <span class="hc-pilotage-chip">Suivi</span>
           <h3 class="hc-pilotage-label">Situations suivies</h3>
           <p class="hc-pilotage-value">356</p>
+          <p class="hc-pilotage-hint">Suivi structuré</p>
           <p>Situations traitées ou orientées dans le dispositif.</p>
         </article>
       </div>
+      <p class="hc-pilotage-note">Indicateurs illustratifs — les tableaux de pilotage complets sont accessibles dans l’espace professionnel.</p>
     </div>
   </section>
 

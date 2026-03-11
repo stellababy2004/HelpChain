@@ -1,53 +1,114 @@
-/* Placeholder: design system styles to be added. */
+/* ==========================================================================
+   HelpChain Design System CSS
+   --------------------------------------------------------------------------
+   Maintenance structure (source-of-truth orientation):
+   1) Tokens
+   2) Base Elements
+   3) Layout Primitives
+   4) Buttons
+   5) Cards / Panels
+   6) Forms
+   7) Badges / Status
+   8) Utilities
+   9) Responsive Adjustments
+   --------------------------------------------------------------------------
+   Note: Historical/page-scoped legacy blocks remain later in this file.
+   They are preserved where removal could change public/admin rendering.
+   ========================================================================== */
 
+/* =========================
+   TOKENS
+   ========================= */
 :root {
+  /* Typography */
   --hc-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  /* Neutrals (v1 official) */
+  --hc-font-size-body: 1rem;
+  --hc-line-body: 1.6;
+
+  /* Color system */
   --hc-bg: #f7f9fc;
   --hc-surface: #ffffff;
+  --hc-surface-soft: #f8fbff;
   --hc-border: #e6ebf2;
-  --hc-text: #0f172a;
-  --hc-text-muted: #475569;
-
-  /* Brand (v1 official) */
+  --hc-border-strong: #d7e1ee;
+  --hc-text: #1e2a36;
+  --hc-text-muted: #5e6b78;
+  --hc-text-soft: #94a3b8;
+  --hc-accent: #243e63;
+  --hc-accent-hover: #1f3452;
+  --hc-accent-soft: #eef3f8;
+  --hc-text-primary: #1e2a36;
+  --hc-border-subtle: #e6ecf2;
+  --hc-bg-soft: #f7f9fc;
+  --hc-accent-color: var(--hc-accent);
   --hc-primary: #2f6fed;
   --hc-primary-2: #5a8bff;
   --hc-primary-soft: #eaf1ff;
-
-  /* States (v1 official) */
   --hc-success: #16a34a;
   --hc-warning: #f59e0b;
   --hc-danger: #dc2626;
   --hc-info: #0ea5e9;
+  --hc-focus: var(--hc-accent);
 
-  /* Focus */
-  --hc-focus: #2563eb;
+  /* Spacing, radii, shadows */
+  --hc-space-1: 4px;
+  --hc-space-2: 8px;
+  --hc-space-3: 12px;
+  --hc-space-4: 16px;
+  --hc-space-5: 20px;
+  --hc-space-6: 24px;
+  --hc-space-7: 32px;
+  --hc-space-8: 40px;
+  --hc-space-9: 56px;
+  --hc-radius-sm: 10px;
+  --hc-radius: 16px;
+  --hc-radius-lg: 20px;
+  --hc-shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.05);
+  --hc-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --hc-shadow-lg: 0 14px 34px rgba(15, 23, 42, 0.12);
+
+  /* Motion */
+  --hc-duration-fast: 140ms;
+  --hc-duration-normal: 180ms;
+  --hc-ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   /* Layout */
-  --hc-radius: 16px;
-  --hc-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  --hc-max-content: 1120px;
+  --hc-max-readable: 72ch;
   --hc-icon-inline-size: 16px;
   --hc-icon-card-size: 22px;
   --hc-icon-box-size: 44px;
+  --hc-icon-size-sm: 16px;
+  --hc-icon-size-md: 20px;
+  --hc-icon-size-lg: 24px;
+  --hc-icon-default: var(--hc-text-muted);
+  --hc-icon-accent: var(--hc-accent);
+  --hc-icon-hover: var(--hc-accent-hover);
 
-  /* Aliases (legacy usage) */
+  /* Legacy aliases (compat) */
   --hc-card: var(--hc-surface);
   --hc-text-main: var(--hc-text);
-  --hc-text-soft: #94a3b8;
+  --hc-primary: var(--hc-accent);
+  --hc-primary-2: var(--hc-accent-hover);
+  --hc-primary-soft: var(--hc-accent-soft);
   --bs-body-font-family: var(--hc-font-sans);
 }
 
+/* =========================
+   BASE ELEMENTS
+   ========================= */
 /* Icon system baseline (Type A: boxed / Type B: inline) */
 i.fas,
 i.fab,
 i.bi {
   line-height: 1;
   vertical-align: middle;
+  font-size: inherit;
 }
 
 .hc-icon-inline {
   font-size: var(--hc-icon-inline-size);
-  color: var(--hc-text-muted);
+  color: var(--hc-icon-default);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -72,6 +133,24 @@ i.bi {
   color: inherit;
 }
 
+.hc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  height: 1em;
+  font-size: var(--hc-icon-size-sm);
+  line-height: 1;
+  vertical-align: -0.125em;
+  color: var(--hc-icon-default);
+  transition: color 0.2s ease;
+}
+
+.hc-icon svg,
+svg.hc-icon {
+  fill: currentColor;
+}
+
 html, body {
   font-family: var(--hc-font-sans);
 }
@@ -90,6 +169,69 @@ p, li, span, a, button, input, textarea, select, label, th, td {
   font-family: var(--hc-font-sans);
 }
 
+/* =========================
+   DOCUMENTATION INTRO
+   ========================= */
+.hc-doc-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding-top: 1.25rem;
+  padding-bottom: 1rem;
+}
+
+.hc-doc-intro {
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--hc-border);
+}
+
+.hc-doc-intro__label {
+  margin: 0 0 0.48rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hc-accent);
+}
+
+.hc-doc-intro__title {
+  margin: 0;
+  font-size: clamp(1.42rem, 2vw, 1.86rem);
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  color: var(--hc-text-main);
+}
+
+.hc-doc-intro__lead {
+  margin: 0.6rem 0 0;
+  font-size: 1rem;
+  line-height: 1.62;
+  color: var(--hc-text-muted);
+}
+
+@media (max-width: 767.98px) {
+  .hc-doc-page {
+    padding-top: 1rem;
+  }
+
+  .hc-doc-intro {
+    margin-bottom: 0.95rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .hc-doc-intro__label {
+    font-size: 0.7rem;
+  }
+
+  .hc-doc-intro__lead {
+    font-size: 0.95rem;
+    line-height: 1.58;
+  }
+}
+
+/* =========================
+   CARDS / PANELS (CORE)
+   ========================= */
 .hc-card {
   background: var(--hc-card);
   border: 1px solid var(--hc-border);
@@ -105,6 +247,9 @@ p, li, span, a, button, input, textarea, select, label, th, td {
   color: var(--hc-text-soft);
 }
 
+/* =========================
+   BUTTONS (CORE)
+   ========================= */
 .hc-btn {
   display: inline-flex;
   align-items: center;
@@ -122,9 +267,9 @@ p, li, span, a, button, input, textarea, select, label, th, td {
 }
 
 .hc-btn-primary {
-  background: linear-gradient(135deg, var(--hc-primary), var(--hc-primary-2));
-  box-shadow: 0 12px 26px rgba(47, 111, 237, 0.28);
-  border: 0;
+  background: var(--hc-accent);
+  box-shadow: 0 10px 22px rgba(36, 62, 99, 0.22);
+  border: 1px solid var(--hc-accent);
   border-radius: 999px;
   color: #fff;
   font-size: 16px;
@@ -134,8 +279,10 @@ p, li, span, a, button, input, textarea, select, label, th, td {
 
 .hc-btn-primary:hover {
   transform: translateY(-1.5px);
-  box-shadow: 0 18px 34px rgba(47, 111, 237, 0.34);
-  filter: saturate(1.05);
+  background: var(--hc-accent-hover);
+  border-color: var(--hc-accent-hover);
+  box-shadow: 0 14px 28px rgba(31, 52, 82, 0.26);
+  filter: none;
 }
 
 .hc-btn-outline {
@@ -149,6 +296,66 @@ p, li, span, a, button, input, textarea, select, label, th, td {
   border-color: rgba(47, 111, 237, 0.25);
 }
 
+/* =========================
+   SHARED FORM CONTAINER
+   ========================= */
+.hc-form-container {
+  max-width: 720px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid var(--hc-border-subtle, #e6ecf2);
+  border-radius: 14px;
+  padding: 32px 36px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.hc-form-group {
+  margin-bottom: 18px;
+}
+
+.hc-intake__grid .hc-form-group,
+.row.g-3 > .hc-form-group {
+  margin-bottom: 0;
+}
+
+.hc-form-group > label,
+.hc-form-group .form-label,
+.hc-form-group .hc-intake__label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.hc-form-container :is(input, select, textarea, .form-control, .form-select, .hc-input, .hc-select, .hc-textarea, .hc-intake__input, .hc-intake__select, .hc-intake__textarea) {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e3e8ef;
+  font-size: 15px;
+}
+
+.hc-form-container :is(textarea, .hc-textarea, .hc-intake__textarea) {
+  min-height: 120px;
+}
+
+.hc-form-submit {
+  width: 100%;
+  margin-top: 16px;
+}
+
+@media (max-width: 767px) {
+  .hc-form-container {
+    padding: 22px;
+  }
+
+  .hc-form-container :is(textarea, .hc-textarea, .hc-intake__textarea) {
+    min-height: 110px;
+  }
+}
+
+/* =========================
+   LEGACY / PAGE-SCOPED LAYERS
+   (preserved for compatibility)
+   ========================= */
 /* =========================
    HelpChain Europe v1 (Official)
    Navbar + Hero overrides
@@ -1269,282 +1476,6 @@ nav.main-nav .search-button:hover{
   }
 }
 
-/* === E30.6: Modern NGO Nav polish (real classes) === */
-nav.main-nav{
-  position: sticky;
-  top: 0;
-  z-index: 1100;
-
-  background: rgba(244, 246, 251, 0.92);
-  backdrop-filter: blur(10px);
-
-  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
-  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
-}
-
-nav.main-nav .container{
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-/* Brand */
-nav.main-nav .navbar-brand-light{
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: rgba(15, 23, 42, 0.92);
-  text-decoration: none;
-}
-
-/* Menu layout */
-nav.main-nav .nav-menu{
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-}
-
-/* Links */
-nav.main-nav .nav-link-light{
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 10px;
-  border-radius: 12px;
-
-  color: rgba(15, 23, 42, 0.78);
-  text-decoration: none;
-  font-weight: 600;
-
-  transition: transform .18s ease, background-color .18s ease, box-shadow .18s ease, color .18s ease;
-}
-
-nav.main-nav .nav-link-light:hover{
-  background: rgba(2, 132, 199, 0.08);
-  color: rgba(2, 132, 199, 0.95);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.06);
-}
-
-nav.main-nav .nav-link-light:focus-visible{
-  outline: 3px solid rgba(2, 132, 199, 0.35);
-  outline-offset: 2px;
-}
-
-/* Right-side search: airy pill */
-nav.main-nav .search-container{
-  margin-left: auto;
-}
-
-nav.main-nav .search-input-group{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-
-  background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  border-radius: 999px;
-
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.05);
-}
-
-nav.main-nav .search-input{
-  border: 0;
-  outline: 0;
-  background: transparent;
-  padding: 6px 10px;
-  min-width: 220px;
-  color: rgba(15, 23, 42, 0.85);
-}
-
-nav.main-nav .search-input::placeholder{
-  color: rgba(15, 23, 42, 0.55);
-}
-
-nav.main-nav .search-button{
-  border: 1px solid rgba(2, 132, 199, 0.18);
-  background: rgba(2, 132, 199, 0.10);
-  border-radius: 999px;
-  padding: 8px 12px;
-  cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
-}
-
-nav.main-nav .search-button:hover{
-  transform: translateY(-1px);
-  background: rgba(2, 132, 199, 0.14);
-  box-shadow: 0 12px 26px rgba(2, 6, 23, 0.06);
-}
-
-/* Mobile: give breathing room */
-@media (max-width: 768px){
-  nav.main-nav .container{
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-}
-
-/* === E30.6: Hard-attach nav styling (failsafe) === */
-header, header nav, nav {
-  background: rgba(244, 246, 251, 0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--hc-border);
-}
-
-header nav, nav {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-header nav a, nav a {
-  color: rgba(15, 23, 42, 0.82);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-header nav a:hover, nav a:hover {
-  color: rgba(2, 132, 199, 0.95);
-}
-
-/* === E30: Modern NGO Nav polish === */
-.navbar, .hc-nav, header nav {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.navbar, .hc-nav, header {
-  background: rgba(244, 246, 251, 0.86);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--hc-border);
-}
-
-.navbar a, .hc-nav a, header a {
-  text-decoration: none;
-}
-
-.navbar .nav-link, .hc-nav .nav-link, header nav a {
-  color: rgba(15, 23, 42, 0.82);
-  font-weight: 600;
-}
-
-.navbar .nav-link:hover, .hc-nav .nav-link:hover, header nav a:hover {
-  color: rgba(2, 132, 199, 0.95);
-}
-
-.navbar .nav-link:focus-visible, .hc-nav .nav-link:focus-visible, header nav a:focus-visible {
-  outline: 3px solid rgba(2,132,199,0.25);
-  outline-offset: 2px;
-  border-radius: 10px;
-}
-
-/* === E30.2: Nav spacing + container === */
-.navbar .container, header .container, .hc-nav .container {
-  max-width: 1040px;
-}
-
-.navbar, header, .hc-nav {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-main {
-  padding-top: 8px;
-}
-
-/* === E29: Hero + Impact premium landing (Modern NGO) === */
-
-/* Hero container feels like a “soft card” section */
-.hc-hero{
-  background: radial-gradient(1200px 420px at 50% -120px, rgba(2,132,199,0.10), transparent 60%),
-              linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
-  border-bottom: 1px solid rgba(15,23,42,0.06);
-}
-
-.hc-hero .hero-content{
-  max-width: 860px;
-  margin: 0 auto;
-}
-
-.hc-hero .hero-title{
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-}
-
-.hc-hero .hero-subtitle{
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
-  color: rgba(15,23,42,0.78);
-}
-
-/* Buttons a bit more “NGO premium” */
-.hc-hero .hero-buttons .btn{
-  border-radius: 999px;
-  padding: 12px 18px;
-  box-shadow: 0 10px 24px rgba(2,6,23,0.06);
-}
-.hc-hero .hero-buttons .btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(2,6,23,0.08);
-}
-
-/* Impact: visually closer to hero, centered, premium card */
-#impact{
-  margin-top: -18px;
-  padding-top: 24px;
-}
-#impact .impact-card{
-  border: 1px solid rgba(15,23,42,0.10);
-  box-shadow: 0 18px 44px rgba(2,6,23,0.08);
-}
-
-/* Keep alternating section backgrounds subtle with new tokens */
-.hc-section:nth-of-type(even){
-  background: rgba(2,6,23,0.02);
-}
-
-/* Mobile: avoid negative margin weirdness */
-@media (max-width: 720px){
-  #impact{ margin-top: 0; }
-}
-
-/* === E28: Vertical rhythm + Modern NGO flow (no content cuts) === */
-
-/* Slightly tighter section rhythm */
-.hc-section{
-  padding: 44px 0;
-}
-
-/* Better separation between blocks without heavy lines */
-.hc-section + .hc-section{
-  border-top: 1px solid rgba(15,23,42,0.06);
-}
-
-/* Cards: a bit more breathing room */
-.hc-card{
-  border-radius: 16px;
-}
-
-/* Grids: keep elegant on smaller screens */
-@media (max-width: 920px){
-  .hc-grid-3{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-@media (max-width: 640px){
-  .hc-grid-2, .hc-grid-3{ grid-template-columns: 1fr; }
-}
-
-/* Hero: reduce “too much air” on tall screens (override safely) */
-.hc-hero{
-  min-height: auto;
-  padding: 42px 0 18px;
-}
-
 /* === E27: Why-choose visual hierarchy (Modern NGO) === */
 /* 1) Featured (top 3) */
 .hc-why-card.hc-featured{
@@ -1566,104 +1497,6 @@ main {
 /* 4) More breathing room before footer */
 #why-choose{
   padding-bottom: 72px;
-}
-
-/* === E25: Airy footer (Modern NGO) === */
-.site-footer, footer{
-  background: rgba(255,255,255,0.82);
-  border-top: 1px solid var(--hc-border, rgba(15,23,42,0.14));
-  color: rgba(15,23,42,0.72);
-}
-
-.site-footer a, footer a{
-  color: rgba(15,23,42,0.78);
-  text-decoration: none;
-  border-bottom: 1px dashed rgba(2,132,199,0.35);
-  padding-bottom: 1px;
-}
-
-.site-footer a:hover, footer a:hover{
-  color: rgba(2,132,199,0.95);
-  border-bottom-color: rgba(2,132,199,0.65);
-}
-
-.site-footer .footer-inner,
-footer .footer-inner{
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 22px 16px;
-}
-
-.site-footer .footer-grid,
-footer .footer-grid{
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  gap: 18px;
-  align-items: start;
-}
-
-.site-footer h4, footer h4{
-  margin: 0 0 10px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: rgba(15,23,42,0.88);
-  letter-spacing: -0.01em;
-}
-
-.site-footer p, footer p{
-  margin: 0;
-  line-height: 1.6;
-}
-
-.site-footer .footer-links,
-footer .footer-links{
-  display: grid;
-  gap: 8px;
-}
-
-.site-footer .footer-bottom,
-footer .footer-bottom{
-  border-top: 1px solid rgba(15,23,42,0.10);
-  margin-top: 18px;
-  padding-top: 14px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  font-size: 0.92rem;
-  color: rgba(15,23,42,0.62);
-}
-
-.site-footer .footer-social,
-footer .footer-social{
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.site-footer .footer-social a,
-footer .footer-social a{
-  border: 1px solid rgba(15,23,42,0.12);
-  background: rgba(255,255,255,0.75);
-  border-radius: 999px;
-  padding: 8px 10px;
-  line-height: 1;
-  text-decoration: none;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-
-.site-footer .footer-social a:hover,
-footer .footer-social a:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.08);
-  border-color: rgba(2,132,199,0.25);
-}
-
-@media (max-width: 840px){
-  .site-footer .footer-grid,
-  footer .footer-grid{
-    grid-template-columns: 1fr;
-  }
 }
 
 /* === E25: Airy footer (Modern NGO) === */
@@ -2026,109 +1859,6 @@ footer::before {
   outline-offset: 2px;
 }
 
-/* === E21: Progressive stories (Modern NGO) === */
-.hc-stories[data-collapsed="true"] .hc-story--extra{
-  display: none;
-}
-
-.hc-linkbtn{
-  margin-top: 10px;
-  background: transparent;
-  border: 1px dashed rgba(15,23,42,0.18);
-  color: rgba(15,23,42,0.78);
-  padding: 10px 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-
-.hc-linkbtn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.06);
-  border-color: rgba(2,132,199,0.22);
-}
-
-.hc-linkbtn:focus-visible{
-  outline: 3px solid rgba(2,132,199,0.28);
-  outline-offset: 2px;
-}
-
-/* === Volunteer Accordion (Modern NGO) === */
-.hc-accordion{
-  display: grid;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.hc-acc{
-  border: 1px solid var(--hc-border, rgba(15,23,42,0.14));
-  background: rgba(255,255,255,0.92);
-  border-radius: 16px;
-  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.06);
-  overflow: hidden;
-}
-
-.hc-acc__summary{
-  list-style: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-}
-
-.hc-acc__summary::-webkit-details-marker{ display:none; }
-
-.hc-acc__title{
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: rgba(15,23,42,0.92);
-}
-
-.hc-acc__meta{
-  font-size: 0.9rem;
-  color: rgba(15,23,42,0.65);
-  border: 1px dashed rgba(2,132,199,0.22);
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(2,132,199,0.05);
-  flex: 0 0 auto;
-}
-
-.hc-acc__body{
-  padding: 0 16px 16px;
-  border-top: 1px solid rgba(15,23,42,0.08);
-}
-
-.hc-acc[open]{
-  box-shadow: 0 16px 40px rgba(2, 6, 23, 0.08);
-}
-
-/* === Hero polish (Modern NGO) === */
-.hc-hero .hero-shapes {
-  opacity: 0.35;
-  filter: blur(0.3px);
-}
-
-.hc-hero .hero-shape {
-  opacity: 0.55;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hc-hero .hero-shapes,
-  .hc-hero .hero-shape {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-.hc-hero__hint{
-  margin-top: 24px;
-  font-size: .9rem;
-  opacity: .6;
-}
-
 /* === Hero focus (Modern NGO) === */
 .hc-hero{
   padding: 72px 0 56px;
@@ -2255,22 +1985,6 @@ footer::before {
   margin-top: 10px;
   border-radius: 999px;
   background: rgba(2,132,199,0.45);
-}
-
-/* === Airy chips === */
-.hc-chip,
-.impact-chip,
-.request-chip{
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(15,23,42,0.05);
-  border: 1px solid rgba(15,23,42,0.06);
-  color: rgba(15,23,42,0.78);
-  font-weight: 600;
-  font-size: 13px;
 }
 
 /* === Airy chips === */
@@ -2684,182 +2398,6 @@ footer::before {
     grid-template-columns: 1fr;
   }
 }
-/* Request Preview */
-.hc-request-preview .hc-section-head {
-  max-width: 980px;
-  margin: 0 auto 14px;
-  text-align: center;
-}
-
-.hc-section-title {
-  margin: 0 0 6px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-
-.hc-section-subtitle {
-  margin: 0;
-  color: rgba(20,20,20,0.72);
-}
-
-.hc-preview-grid {
-  max-width: 1100px;
-  margin: 16px auto 0;
-  display: grid;
-  grid-template-columns: 1.4fr 0.9fr;
-  gap: 18px;
-  align-items: start;
-}
-
-.hc-request-card {
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(15, 23, 42, 0.10);
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(6px);
-}
-
-.hc-request-top {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.hc-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(0,0,0,0.02);
-  font-size: 12.5px;
-  color: rgba(20,20,20,0.70);
-}
-
-.hc-chip--urgency {
-  background: rgba(255, 193, 7, 0.10);
-  border-color: rgba(255, 193, 7, 0.18);
-}
-
-.hc-request-title {
-  margin: 0 0 10px;
-  font-weight: 750;
-  letter-spacing: -0.015em;
-}
-
-.hc-request-desc {
-  margin: 0 0 14px;
-  color: rgba(20,20,20,0.74);
-  line-height: 1.65;
-}
-
-.hc-request-meta {
-  border-top: 1px dashed rgba(0,0,0,0.10);
-  padding-top: 14px;
-  display: grid;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.hc-meta-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.hc-meta-label {
-  color: rgba(20,20,20,0.55);
-  font-size: 13px;
-}
-
-.hc-meta-value {
-  font-weight: 600;
-  color: rgba(20,20,20,0.82);
-}
-
-.hc-request-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.hc-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.12);
-  text-decoration: none;
-  font-weight: 700;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.hc-btn:focus-visible {
-  outline: 3px solid rgba(0, 123, 255, 0.35);
-  outline-offset: 2px;
-}
-
-.hc-btn--primary {
-  background: rgba(30, 30, 30, 0.85);
-  color: rgba(255,255,255,0.96);
-  border-color: rgba(0,0,0,0.20);
-}
-
-.hc-btn--ghost {
-  background: rgba(255,255,255,0.85);
-  color: rgba(20,20,20,0.78);
-}
-
-.hc-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(0,0,0,0.08);
-}
-
-.hc-request-note {
-  margin: 12px 0 0;
-  font-size: 12.5px;
-  color: rgba(20,20,20,0.60);
-}
-
-.hc-preview-side {
-  display: grid;
-  gap: 12px;
-}
-
-.hc-mini-card {
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,0.05);
-  background: rgba(255,255,255,0.85);
-  padding: 16px;
-}
-
-.hc-mini-title {
-  margin: 0 0 8px;
-  font-weight: 800;
-}
-
-.hc-mini-list {
-  margin: 0;
-  padding-left: 16px;
-  color: rgba(20,20,20,0.78);
-}
-
-.hc-mini-text {
-  margin: 0;
-  color: rgba(20,20,20,0.78);
-  line-height: 1.55;
-}
-
-@media (max-width: 900px) {
-  .hc-preview-grid {
-    grid-template-columns: 1fr;
-  }
-}
 /* Volunteer roles section */
 .hc-section-title {
   font-size: 34px;
@@ -2914,19 +2452,6 @@ footer::before {
   --hc-gap: 14px;
 }
 
-/* === Airy base === */
-body{
-  color: var(--hc-text);
-  background: var(--hc-bg);
-}
-
-.container{
-  max-width: var(--hc-max);
-}
-
-a{
-  text-underline-offset: 3px;
-}
 
 /* === Airy base === */
 body{
@@ -4276,13 +3801,13 @@ html{
 
 /* === E43.1: Button system unification (Modern NGO) === */
 :root{
-  --hc-btn-radius: 999px;
-  --hc-btn-pad-y: 12px;
-  --hc-btn-pad-x: 18px;
+  --hc-btn-radius: 12px;
+  --hc-btn-pad-y: 10px;
+  --hc-btn-pad-x: 16px;
   --hc-btn-font: 600;
-  --hc-btn-shadow: 0 10px 26px rgba(2,6,23,0.10);
-  --hc-btn-shadow-hover: 0 14px 34px rgba(2,6,23,0.14);
-  --hc-btn-ring: 0 0 0 4px rgba(2,132,199,0.16);
+  --hc-btn-shadow: 0 8px 20px rgba(2,6,23,0.08);
+  --hc-btn-shadow-hover: 0 12px 26px rgba(2,6,23,0.12);
+  --hc-btn-ring: 0 0 0 3px rgba(37,99,235,0.20);
 }
 
 /* Base for all premium buttons */
@@ -4292,7 +3817,7 @@ button.hc-btn{
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   padding: var(--hc-btn-pad-y) var(--hc-btn-pad-x);
   border-radius: var(--hc-btn-radius);
   font-weight: var(--hc-btn-font);
@@ -6577,6 +6102,14 @@ body.hc-page-pro .hc-card.card-institutional {
   border-top: 1px solid rgba(148, 163, 184, 0.22);
 }
 
+.hc-btn:disabled,
+.hc-btn[disabled]{
+  opacity: .55;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
 .hc-footer-institutional a {
   color: #dbeafe;
   text-decoration: none;
@@ -6786,7 +6319,7 @@ body[data-hc-page="/professionnels"] .hc-memo__p{
 
 /* Process diagram (Professionnels) */
 .hc-page-pro{
-  --hc-accent: #1E40AF;
+  --hc-accent: #243e63;
   --hc-text: #0F172A;
   --hc-muted: #475569;
   --hc-border: #E5E7EB;
@@ -8186,4 +7719,62 @@ body.hc-page-home .navbar{
 
 .hc-card p {
   line-height: 1.6;
+}
+
+/* Home trust strip: early institutional credibility signals */
+body.hc-page-home .hc-hero-trust-strip {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+body.hc-page-home .hc-hero-trust-strip .container {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+body.hc-page-home .hc-hero-trust-strip__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+body.hc-page-home .hc-hero-trust-strip__item {
+  position: relative;
+  color: rgba(30, 41, 59, 0.82);
+  font-size: 0.84rem;
+  line-height: 1.35;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.hc-page-home .hc-hero-trust-strip__item:not(:last-child)::after {
+  content: "•";
+  margin-left: 14px;
+  color: rgba(71, 85, 105, 0.55);
+}
+
+@media (max-width: 767.98px) {
+  body.hc-page-home .hc-hero-trust-strip .container {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  body.hc-page-home .hc-hero-trust-strip__list {
+    justify-content: flex-start;
+    gap: 6px 10px;
+  }
+
+  body.hc-page-home .hc-hero-trust-strip__item {
+    font-size: 0.8rem;
+  }
+
+  body.hc-page-home .hc-hero-trust-strip__item:not(:last-child)::after {
+    margin-left: 10px;
+  }
 }

@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Pourquoi HelpChain") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Vision et raison d’être de HelpChain: faciliter la coordination solidaire entre citoyens, bénévoles, associations et collectivités.") }}{% endblock %}
+{% block meta_description %}{{ _("Vision et raison d’être de HelpChain : faciliter la coordination territoriale entre citoyens, intervenants, associations et collectivités.") }}{% endblock %}
 {% block og_title %}{{ _("Pourquoi HelpChain") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Pourquoi HelpChain") }}{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 920px;">
-  <header class="mb-4">
-    <h1 class="h3 mb-2">{{ _("Pourquoi HelpChain") }}</h1>
-    <p class="text-muted mb-0">
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Cadre opérationnel") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Pourquoi HelpChain") }}</h1>
+    <p class="hc-doc-intro__lead">
       {{ _("Dans de nombreuses situations, des personnes rencontrent des difficultés ponctuelles pour lesquelles une aide simple pourrait faire une réelle différence.") }}
     </p>
-    <p class="text-muted mb-0">
-      {{ _("Dans le même temps, de nombreux bénévoles, associations et acteurs locaux souhaitent s’engager et apporter leur soutien.") }}
+    <p class="hc-doc-intro__lead">
+      {{ _("Dans le même temps, de nombreux intervenants, associations et acteurs locaux souhaitent s’engager dans un cadre structuré.") }}
     </p>
-    <p class="text-muted mb-0">
+    <p class="hc-doc-intro__lead">
       {{ _("Cependant, la coordination entre ces différents acteurs peut parfois être complexe.") }}
     </p>
   </header>
@@ -24,7 +25,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("SECTION 1 — Un besoin de coordination") }}</h2>
       <p class="mb-2">
-        {{ _("Les initiatives de solidarité existent déjà dans de nombreux territoires.") }}
+        {{ _("Des dispositifs de coordination existent déjà dans de nombreux territoires.") }}
       </p>
       <p class="mb-2">{{ _("Mais il peut être difficile de :") }}</p>
       <ul class="mb-2">
@@ -33,18 +34,18 @@
         <li>{{ _("suivre certaines situations") }}</li>
       </ul>
       <p class="mb-0">
-        {{ _("HelpChain vise à faciliter cette coordination grâce à un outil numérique simple et accessible.") }}
+        {{ _("HelpChain vise à renforcer cette coordination grâce à une infrastructure numérique accessible et structurée.") }}
       </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 2 — Faciliter la mise en relation") }}</h2>
-      <p class="mb-2">{{ _("La plateforme permet de mettre en relation :") }}</p>
+      <h2 class="h5 mb-3">{{ _("SECTION 2 — Structurer la coordination des acteurs") }}</h2>
+      <p class="mb-2">{{ _("La plateforme permet d’organiser la coordination entre :") }}</p>
       <ul class="mb-2">
         <li>{{ _("des personnes en situation de besoin") }}</li>
-        <li>{{ _("des bénévoles") }}</li>
+        <li>{{ _("des intervenants") }}</li>
         <li>{{ _("des associations") }}</li>
         <li>{{ _("des structures locales") }}</li>
       </ul>
@@ -76,7 +77,7 @@
         <li>{{ _("des principes du RGPD") }}</li>
       </ul>
       <p class="mb-0">
-        {{ _("L’objectif est de proposer une plateforme utile, fiable et respectueuse des utilisateurs.") }}
+        {{ _("L’objectif est de proposer une infrastructure fiable, lisible et respectueuse des utilisateurs.") }}
       </p>
     </div>
   </section>
@@ -85,10 +86,10 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain a pour ambition de faciliter l’entraide et la coopération entre citoyens, bénévoles, associations et structures publiques.") }}
+        {{ _("HelpChain a pour ambition de faciliter la coordination et la coopération entre citoyens, intervenants, associations et structures publiques.") }}
       </p>
       <p class="mb-0">
-        {{ _("La plateforme vise à proposer un outil numérique permettant de mieux organiser certaines actions de solidarité au niveau local.") }}
+        {{ _("La plateforme vise à proposer une infrastructure numérique permettant de mieux organiser l’orientation et le suivi des situations au niveau local.") }}
       </p>
     </div>
   </section>

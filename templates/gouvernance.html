@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Gouvernance de la plateforme") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Présentation du cadre de gouvernance de HelpChain : principes de pilotage, responsabilités, accès structurés et évolution du dispositif.") }}{% endblock %}
+{% block og_title %}{{ _("Gouvernance de la plateforme") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Gouvernance de la plateforme") }}{% endblock %}
+
+{% block content %}
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Gouvernance") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Gouvernance de la plateforme") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("La gouvernance de HelpChain vise à garantir un cadre opérationnel lisible pour les acteurs territoriaux, associatifs et institutionnels impliqués dans la coordination des situations sociales.") }}
+    </p>
+  </header>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Cadre du projet") }}</h2>
+      <p class="mb-0">
+        {{ _("HelpChain a pour mission de fournir une infrastructure numérique de coordination permettant l’orientation, le suivi et le pilotage des situations sociales entre acteurs habilités.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Principes de gouvernance") }}</h2>
+      <p class="mb-2">{{ _("Le dispositif s’appuie sur des principes directeurs structurants :") }}</p>
+      <ul class="mb-0">
+        <li>{{ _("responsabilité dans la conduite des opérations ;") }}</li>
+        <li>{{ _("transparence des règles d’usage et de pilotage ;") }}</li>
+        <li>{{ _("protection des données et maîtrise des accès ;") }}</li>
+        <li>{{ _("coopération avec les acteurs territoriaux.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Accès et responsabilités") }}</h2>
+      <p class="mb-2">
+        {{ _("Les droits d’accès sont structurés selon les responsabilités exercées dans la plateforme.") }}
+      </p>
+      <ul class="mb-0">
+        <li>{{ _("intervenants ;") }}</li>
+        <li>{{ _("administrateurs ;") }}</li>
+        <li>{{ _("structures partenaires.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Évolution du dispositif") }}</h2>
+      <p class="mb-0">
+        {{ _("La plateforme évolue de manière progressive sur la base des retours d’usage, des besoins opérationnels et des échanges avec les partenaires institutionnels.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Contact institutionnel") }}</h2>
+      <p class="mb-0"><a href="mailto:contact@helpchain.live">contact@helpchain.live</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

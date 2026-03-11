@@ -322,6 +322,7 @@ body.hc-page-volunteer-auth {
     border-radius: 50%;
     animation: floatShapes 12s infinite ease-in-out;
   }
+
   .floating-shapes .shape:nth-child(1) { top: 10%; left: -10%; animation-delay: 0s; }
   .floating-shapes .shape:nth-child(2) { bottom: -20%; right: -10%; animation-delay: 4s; }
   .floating-shapes .shape:nth-child(3) { top: 30%; right: -15%; animation-delay: 6s; }
@@ -955,6 +956,86 @@ body.hc-page-volunteer-auth {
           transform: scale(1);
         }
       }
+
+/* Final priority overrides */
+body.hc-page-volunteer-auth {
+  background: linear-gradient(180deg, #edf3fb 0%, #f8fbff 100%);
+  color: #0f172a;
+}
+
+body.hc-page-volunteer-auth .login-card {
+  max-width: 440px;
+  border-radius: 16px;
+  border: 1px solid #d7e1ee;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+}
+
+body.hc-page-volunteer-auth .login-header {
+  background: linear-gradient(180deg, #2f6fed, #1f56c9);
+  padding: 1.7rem;
+}
+
+body.hc-page-volunteer-auth .login-body {
+  padding: 1.5rem;
+}
+
+body.hc-page-volunteer-auth .form-label {
+  margin-bottom: 0.36rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #22334d;
+}
+
+body.hc-page-volunteer-auth .form-control {
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid #cdd9e8;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.96rem;
+  line-height: 1.4;
+  padding: 11px 12px;
+}
+
+body.hc-page-volunteer-auth .form-control::placeholder {
+  color: #7b8ea8;
+  opacity: 1;
+}
+
+body.hc-page-volunteer-auth .form-control:focus {
+  border-color: #3b73d9;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+body.hc-page-volunteer-auth .input-group-text {
+  border-radius: 12px;
+  border: 1px solid #cdd9e8;
+  background: #f8fbff;
+  color: #5f7492;
+}
+
+body.hc-page-volunteer-auth .btn-login {
+  min-height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #2f6fed, #1f56c9);
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+body.hc-page-volunteer-auth .btn-login:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.12);
+}
+
+body.hc-page-volunteer-auth .btn-login:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+}
+
+body.hc-page-volunteer-auth .alert {
+  border-radius: 12px;
+  border: 1px solid #d7e1ee;
+}
 
 
 

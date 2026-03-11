@@ -9,7 +9,7 @@
 
   const closeEls = nav.querySelectorAll("[data-mobile-nav-close='1']");
   const firstLink = nav.querySelector(".hc-mobile-nav__item a");
-  const widthSwitch = 1700;
+  const widthSwitch = 1200;
 
   function isCrowdedDesktop() {
     const navList = desktopNav.querySelector(".navbar-nav");

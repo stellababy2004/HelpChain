@@ -11,7 +11,7 @@
 <section class="hc-wrap">
   <header class="hc-cats-hero">
     <div class="hc-cats-hero__icon" aria-hidden="true">
-      <i class="fas fa-th-large"></i>
+      <i class="fas fa-th-large hc-icon"></i>
     </div>
     <h1>{{ _("Catégories d'aide") }}</h1>
     <p class="hc-muted">{{ _("Dites-nous de quoi vous avez besoin — on s'occupe du reste.") }}</p>
@@ -40,7 +40,7 @@
       <article class="hc-card hc-cat-card">
         <div class="hc-cat-card__inner">
           <div class="hc-cat-card__top text-center">
-            <i class="{{ category.icon }} hc-cat-icon" aria-hidden="true"></i>
+            <i class="{{ category.icon }} hc-cat-icon hc-icon" aria-hidden="true"></i>
             <h4>{{ category.name }}</h4>
             <p class="hc-muted">{{ category.description }}</p>
           </div>
@@ -53,7 +53,7 @@
               data-hc-category="{{ category.slug }}"
               data-hc-cta="request_help"
             >
-              <i class="fas fa-bolt me-2" aria-hidden="true"></i>{{ _("Demander de l’aide") }}
+              <i class="fas fa-bolt me-2 hc-icon" aria-hidden="true"></i>{{ _("Demander de l’aide") }}
             </a>
             <div class="hc-cat-card__microcopy hc-muted">{{ _("Ça prend ~2 minutes") }}</div>
           </div>
@@ -65,7 +65,7 @@
   <div id="hc-cats-cta" class="hc-cats-cta">
     <article class="hc-card hc-cats-ctaCard">
       <div class="hc-cats-ctaCard__inner text-center">
-        <i class="fas fa-plus-circle fa-3x text-primary mb-3" aria-hidden="true"></i>
+        <i class="fas fa-plus-circle mb-3 hc-icon" aria-hidden="true"></i>
         <h5>{{ _('Besoin d’aide ?') }}</h5>
         <p class="hc-muted">{{ _('Déposez une demande — nous trouverons une personne pour vous répondre.') }}</p>
         <a
@@ -74,23 +74,23 @@
           data-hc-event="categories_cta_click"
           data-hc-cta="submit_request"
         >
-          <i class="fas fa-edit me-2" aria-hidden="true"></i>{{ _('Déposer une demande') }}
+          <i class="fas fa-edit me-2 hc-icon" aria-hidden="true"></i>{{ _('Déposer une demande') }}
         </a>
       </div>
     </article>
 
     <article class="hc-card hc-cats-ctaCard">
       <div class="hc-cats-ctaCard__inner text-center">
-        <i class="fas fa-hand-paper fa-3x text-success mb-3" aria-hidden="true"></i>
+        <i class="fas fa-hand-paper mb-3 hc-icon" aria-hidden="true"></i>
         <h5>{{ _('Vous voulez aider ?') }}</h5>
-        <p class="hc-muted">{{ _('Rejoignez notre communauté de bénévoles.') }}</p>
+        <p class="hc-muted">{{ _('Rejoignez notre réseau d’intervenants.') }}</p>
         <a
           href="{{ safe_url_for('volunteer_register') }}"
           class="hc-btn hc-btn--ghost"
           data-hc-event="categories_cta_click"
           data-hc-cta="become_volunteer"
         >
-          <i class="fas fa-user-plus me-2" aria-hidden="true"></i>{{ _('Devenir bénévole') }}
+          <i class="fas fa-user-plus me-2 hc-icon" aria-hidden="true"></i>{{ _('Devenir intervenant') }}
         </a>
       </div>
     </article>
@@ -98,7 +98,7 @@
 
   <div class="hc-center">
     <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary btn-lg">
-      <i class="fas fa-home me-2" aria-hidden="true"></i>{{ _("Retour à l’accueil") }}
+      <i class="fas fa-home me-2 hc-icon" aria-hidden="true"></i>{{ _("Retour à l’accueil") }}
     </a>
   </div>
 </section>

@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (!document.body.classList.contains("hc-page-home")) return;
+  const pagePath = String(document.body?.dataset?.hcPage || "");
+  if (pagePath.startsWith("/admin")) return;
 
   const nav =
     document.querySelector(".hc-navbar") ||
@@ -12,7 +13,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const h = nav.getBoundingClientRect().height;
     const px = `${Math.round(h)}px`;
     document.documentElement.style.setProperty("--hc-nav-h", px);
-    document.body.style.paddingTop = px;
+    const pos = window.getComputedStyle(nav).position;
+    if (pos === "fixed") {
+      document.body.style.paddingTop = px;
+    } else {
+      document.body.style.paddingTop = "";
+    }
   }
 
   function onScroll() {

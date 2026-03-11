@@ -9,7 +9,7 @@
   {{ super() }}
   <style>
     .hc-intake {
-      padding: 28px 0 40px;
+      padding: 30px 0 44px;
     }
 
     .hc-intake__shell {
@@ -18,47 +18,54 @@
     }
 
     .hc-intake__head {
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      max-width: 76ch;
     }
 
     .hc-intake__title {
-      margin: 0 0 8px;
+      margin: 0 0 9px;
       font-size: clamp(1.45rem, 2.1vw, 2rem);
       font-weight: 700;
       color: var(--hc-text-main);
+      letter-spacing: -0.015em;
+      line-height: 1.22;
     }
 
     .hc-intake__subtitle {
-      margin: 0 0 10px;
-      font-size: 1.02rem;
+      margin: 0 0 11px;
+      font-size: 1rem;
       font-weight: 600;
-      color: rgba(20, 40, 80, 0.86);
+      color: rgba(20, 40, 80, 0.82);
     }
 
     .hc-intake__intro {
       margin: 0;
-      color: var(--hc-text-muted);
-      line-height: 1.65;
-      max-width: 86ch;
+      color: #4a607d;
+      line-height: 1.62;
+      max-width: 82ch;
     }
 
     .hc-intake__card {
-      border: 1px solid var(--hc-border);
+      max-width: 720px;
+      margin: 0 auto;
+      border: 1px solid var(--hc-border-subtle, #e6ecf2);
       border-radius: 14px;
-      background: var(--hc-surface);
-      padding: 20px;
+      background: #fff;
+      padding: 32px 36px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
     }
 
     .hc-intake__grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      gap: 15px;
     }
 
     .hc-intake__field {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      margin-bottom: 18px;
     }
 
     .hc-intake__field--full {
@@ -67,9 +74,10 @@
 
     .hc-intake__label {
       margin: 0;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       font-weight: 600;
-      color: rgba(20, 40, 80, 0.9);
+      line-height: 1.3;
+      color: #22334d;
     }
 
     .hc-intake__req {
@@ -81,55 +89,79 @@
     .hc-intake__select,
     .hc-intake__textarea {
       width: 100%;
-      border: 1px solid rgba(20, 40, 80, 0.2);
-      border-radius: 10px;
+      min-height: 46px;
+      border: 1px solid #cdd9e8;
+      border-radius: 12px;
       background: #fff;
-      color: var(--hc-text-main);
-      padding: 10px 12px;
-      font-size: 0.97rem;
+      color: #0f172a;
+      padding: 11px 12px;
+      font-size: 0.96rem;
       line-height: 1.4;
     }
 
     .hc-intake__textarea {
-      min-height: 132px;
+      min-height: 124px;
       resize: vertical;
+    }
+
+    .hc-intake__input::placeholder,
+    .hc-intake__textarea::placeholder {
+      color: #7b8ea8;
+      opacity: 1;
     }
 
     .hc-intake__input:focus,
     .hc-intake__select:focus,
     .hc-intake__textarea:focus {
-      outline: 2px solid rgba(37, 99, 235, 0.32);
-      outline-offset: 1px;
-      border-color: rgba(37, 99, 235, 0.5);
+      outline: none;
+      border-color: #3b73d9;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    }
+
+    .hc-intake__input.is-invalid,
+    .hc-intake__select.is-invalid,
+    .hc-intake__textarea.is-invalid {
+      border-color: #d14343;
+      background: #fff6f5;
     }
 
     .hc-intake__error {
       margin: 0;
       font-size: 0.84rem;
-      color: #a63f3f;
+      font-weight: 500;
+      color: #b42318;
       line-height: 1.35;
     }
 
     .hc-intake__actions {
-      margin-top: 14px;
-      display: flex;
-      justify-content: flex-start;
+      margin-top: 16px;
+      display: block;
     }
 
     .hc-intake__btn {
-      border: 1px solid #0f2b57;
-      border-radius: 10px;
-      background: #0f2b57;
+      min-height: 46px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #2f6fed, #1f56c9);
       color: #fff;
       font-weight: 600;
-      padding: 10px 16px;
+      padding: 0 18px;
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.075);
+      min-width: 0;
+      width: 100%;
+      justify-content: center;
     }
 
     .hc-intake__btn:hover,
     .hc-intake__btn:focus-visible {
-      background: #14386f;
-      border-color: #14386f;
+      background: linear-gradient(180deg, #2f6fed, #1f56c9);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
       color: #fff;
+    }
+
+    .hc-intake__btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
     }
 
     .hc-intake__trust {
@@ -149,15 +181,15 @@
     .hc-intake__confirm-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 14px;
+      gap: 15px;
+      margin-top: 16px;
     }
 
     .hc-intake__confirm-block {
       border: 1px solid var(--hc-border);
       border-radius: 12px;
       background: #fff;
-      padding: 14px;
+      padding: 15px;
     }
 
     .hc-intake__confirm-block h2 {
@@ -196,23 +228,24 @@
     }
 
     .hc-intake__confirm-actions {
-      margin-top: 14px;
+      margin-top: 16px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
     .hc-intake__btn--ghost {
-      border-color: rgba(20, 40, 80, 0.25);
+      border-color: #d7e1ee;
       background: #fff;
-      color: rgba(20, 40, 80, 0.9);
+      color: #0f172a;
+      box-shadow: none;
     }
 
     .hc-intake__btn--ghost:hover,
     .hc-intake__btn--ghost:focus-visible {
-      background: #f7f9fc;
-      border-color: rgba(20, 40, 80, 0.35);
-      color: rgba(20, 40, 80, 0.95);
+      background: #eaf1ff;
+      border-color: rgba(47, 111, 237, 0.34);
+      color: #0f172a;
     }
 
     @media (max-width: 860px) {
@@ -222,6 +255,30 @@
 
       .hc-intake__confirm-grid {
         grid-template-columns: 1fr;
+      }
+
+      .hc-intake__card {
+        padding: 22px;
+      }
+
+      .hc-intake__actions,
+      .hc-intake__confirm-actions {
+        justify-content: stretch;
+      }
+
+      .hc-intake__btn {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .hc-intake__card {
+        padding: 22px;
+      }
+
+      .hc-intake__textarea {
+        min-height: 110px;
       }
     }
   </style>
@@ -275,32 +332,32 @@
         </p>
       </header>
 
-      <article class="hc-intake__card">
-        <form method="post" action="{{ url_for('main.contact') }}" novalidate>
+      <article class="hc-intake__card hc-form-container">
+        <form class="hc-form" method="post" action="{{ url_for('main.contact') }}" novalidate>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
           <div class="hc-intake__grid">
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="full_name">{{ _('Nom et prénom') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input" id="full_name" name="full_name" value="{{ form_data.get('full_name','') }}" autocomplete="name" required>
-              {% if form_errors.get('full_name') %}<p class="hc-intake__error">{{ form_errors.get('full_name') }}</p>{% endif %}
+              <input class="hc-intake__input{% if form_errors.get('full_name') %} is-invalid{% endif %}" id="full_name" name="full_name" value="{{ form_data.get('full_name','') }}" autocomplete="name" required {% if form_errors.get('full_name') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('full_name') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('full_name') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="fonction">{{ _('Fonction') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input" id="fonction" name="fonction" value="{{ form_data.get('fonction','') }}" required>
-              {% if form_errors.get('fonction') %}<p class="hc-intake__error">{{ form_errors.get('fonction') }}</p>{% endif %}
+              <input class="hc-intake__input{% if form_errors.get('fonction') %} is-invalid{% endif %}" id="fonction" name="fonction" value="{{ form_data.get('fonction','') }}" required {% if form_errors.get('fonction') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('fonction') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('fonction') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="structure">{{ _('Structure') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input" id="structure" name="structure" value="{{ form_data.get('structure','') }}" autocomplete="organization" required>
-              {% if form_errors.get('structure') %}<p class="hc-intake__error">{{ form_errors.get('structure') }}</p>{% endif %}
+              <input class="hc-intake__input{% if form_errors.get('structure') %} is-invalid{% endif %}" id="structure" name="structure" value="{{ form_data.get('structure','') }}" autocomplete="organization" required {% if form_errors.get('structure') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('structure') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('structure') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="structure_type">{{ _('Type de structure') }} <span class="hc-intake__req">*</span></label>
-              <select class="hc-intake__select" id="structure_type" name="structure_type" required>
+              <select class="hc-intake__select{% if form_errors.get('structure_type') %} is-invalid{% endif %}" id="structure_type" name="structure_type" required {% if form_errors.get('structure_type') %}aria-invalid="true"{% endif %}>
                 <option value="">{{ _('Sélectionner') }}</option>
                 {% set _st = form_data.get('structure_type','') %}
                 <option value="Collectivité territoriale" {% if _st == 'Collectivité territoriale' %}selected{% endif %}>{{ _('Collectivité territoriale') }}</option>
@@ -310,29 +367,29 @@
                 <option value="Professionnel partenaire" {% if _st == 'Professionnel partenaire' %}selected{% endif %}>{{ _('Professionnel partenaire') }}</option>
                 <option value="Autre structure" {% if _st == 'Autre structure' %}selected{% endif %}>{{ _('Autre structure') }}</option>
               </select>
-              {% if form_errors.get('structure_type') %}<p class="hc-intake__error">{{ form_errors.get('structure_type') }}</p>{% endif %}
+              {% if form_errors.get('structure_type') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('structure_type') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="city">{{ _('Territoire / ville') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input" id="city" name="city" value="{{ form_data.get('city','') }}" autocomplete="address-level2" required>
-              {% if form_errors.get('city') %}<p class="hc-intake__error">{{ form_errors.get('city') }}</p>{% endif %}
+              <input class="hc-intake__input{% if form_errors.get('city') %} is-invalid{% endif %}" id="city" name="city" value="{{ form_data.get('city','') }}" autocomplete="address-level2" required {% if form_errors.get('city') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('city') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('city') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="email">{{ _('Adresse e-mail') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input" id="email" name="email" type="email" value="{{ form_data.get('email','') }}" autocomplete="email" required>
-              {% if form_errors.get('email') %}<p class="hc-intake__error">{{ form_errors.get('email') }}</p>{% endif %}
+              <input class="hc-intake__input{% if form_errors.get('email') %} is-invalid{% endif %}" id="email" name="email" type="email" value="{{ form_data.get('email','') }}" autocomplete="email" required {% if form_errors.get('email') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('email') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('email') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="phone">{{ _('Téléphone') }}</label>
               <input class="hc-intake__input" id="phone" name="phone" value="{{ form_data.get('phone','') }}" autocomplete="tel">
             </div>
 
-            <div class="hc-intake__field">
+            <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="objet_echange">{{ _('Objet de l’échange') }} <span class="hc-intake__req">*</span></label>
-              <select class="hc-intake__select" id="objet_echange" name="objet_echange" required>
+              <select class="hc-intake__select{% if form_errors.get('objet_echange') %} is-invalid{% endif %}" id="objet_echange" name="objet_echange" required {% if form_errors.get('objet_echange') %}aria-invalid="true"{% endif %}>
                 <option value="">{{ _('Sélectionner') }}</option>
                 {% set _obj = form_data.get('objet_echange','') %}
                 <option value="Présentation de HelpChain" {% if _obj == 'Présentation de HelpChain' %}selected{% endif %}>{{ _('Présentation de HelpChain') }}</option>
@@ -342,18 +399,18 @@
                 <option value="Démonstration" {% if _obj == 'Démonstration' %}selected{% endif %}>{{ _('Démonstration') }}</option>
                 <option value="Autre besoin" {% if _obj == 'Autre besoin' %}selected{% endif %}>{{ _('Autre besoin') }}</option>
               </select>
-              {% if form_errors.get('objet_echange') %}<p class="hc-intake__error">{{ form_errors.get('objet_echange') }}</p>{% endif %}
+              {% if form_errors.get('objet_echange') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('objet_echange') }}</p>{% endif %}
             </div>
 
-            <div class="hc-intake__field hc-intake__field--full">
+            <div class="hc-intake__field hc-intake__field--full hc-form-group">
               <label class="hc-intake__label" for="message">{{ _('Message / contexte') }} <span class="hc-intake__req">*</span></label>
-              <textarea class="hc-intake__textarea" id="message" name="message" required>{{ form_data.get('message','') }}</textarea>
-              {% if form_errors.get('message') %}<p class="hc-intake__error">{{ form_errors.get('message') }}</p>{% endif %}
+              <textarea class="hc-intake__textarea{% if form_errors.get('message') %} is-invalid{% endif %}" id="message" name="message" required {% if form_errors.get('message') %}aria-invalid="true"{% endif %}>{{ form_data.get('message','') }}</textarea>
+              {% if form_errors.get('message') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('message') }}</p>{% endif %}
             </div>
           </div>
 
           <div class="hc-intake__actions">
-            <button class="hc-intake__btn" type="submit">{{ _('Envoyer la demande') }}</button>
+            <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Envoyer la demande') }}</button>
           </div>
 
           <p class="hc-intake__trust">
@@ -367,3 +424,4 @@
   </div>
 </section>
 {% endblock %}
+

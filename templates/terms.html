@@ -1,49 +1,89 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Conditions d’utilisation") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Conditions d’utilisation HelpChain : règles d’usage de la plateforme, principes de sécurité, responsabilités et modalités de contact.') }}{% endblock %}
+{% block meta_description %}{{ _('Conditions d’utilisation HelpChain : objet du service, accès, responsabilités, disponibilité, propriété intellectuelle et évolution des conditions.') }}{% endblock %}
 {% block og_title %}{{ _('Conditions d’utilisation | HelpChain') }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-terms-1200x630.jpg') }}{% endblock %}
-{% block og_image_alt %}{{ _("Aperçu visuel de la page des conditions d’utilisation de HelpChain") }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu visuel des conditions d’utilisation HelpChain") }}{% endblock %}
 
 {% block content %}
-<main class="container py-5" role="main">
-  <div class="mx-auto" style="max-width: 860px;">
-    <h1 class="mb-3">{{ _("Conditions d’utilisation") }}</h1>
-
-    <p class="text-muted mb-4">
-      {{ _("Dernière mise à jour :") }} 2026-01-21
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Conditions d’utilisation") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Conditions d’utilisation") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("Les présentes conditions encadrent l’utilisation de la plateforme HelpChain, infrastructure numérique de coordination entre personnes concernées, intervenants et structures professionnelles.") }}
     </p>
+  </header>
 
-    <p class="lead">
-      {{ _("HelpChain facilite la mise en relation entre les personnes ayant besoin d’aide et les bénévoles. En utilisant la plateforme, vous acceptez de respecter les règles ci-dessous afin de garantir un cadre sûr pour tous.") }}
-    </p>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Objet du service") }}</h2>
+      <p class="mb-0">
+        {{ _("HelpChain met à disposition un service numérique permettant l’orientation, la coordination et le suivi de situations sociales. Le service structure la coordination entre acteurs autorisés, sans se substituer aux missions des structures compétentes.") }}
+      </p>
+    </div>
+  </section>
 
-    <hr class="my-4" />
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Accès à la plateforme") }}</h2>
+      <p class="mb-2">
+        {{ _("L’accès à certaines fonctionnalités peut être conditionné à la création d’un compte et à des vérifications adaptées au profil d’usage.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("L’utilisateur est responsable de la confidentialité de ses identifiants et de l’usage fait de son compte.") }}
+      </p>
+    </div>
+  </section>
 
-    <h2 class="h5 mt-4">{{ _("Utilisation de la plateforme") }}</h2>
-    <ul>
-      <li>{{ _("Fournir des informations exactes et utiliser un langage respectueux.") }}</li>
-      <li>{{ _("Ne pas publier de contenu illégal, nuisible ou abusif.") }}</li>
-      <li>{{ _("Ne pas usurper l’identité d’autrui ni présenter de fausses informations.") }}</li>
-    </ul>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Responsabilités de l’utilisateur") }}</h2>
+      <ul class="mb-0">
+        <li>{{ _("Fournir des informations exactes, loyales et à jour.") }}</li>
+        <li>{{ _("Utiliser la plateforme dans le respect du cadre légal et des droits des tiers.") }}</li>
+        <li>{{ _("S’abstenir de tout usage abusif, frauduleux ou portant atteinte à la sécurité du service.") }}</li>
+      </ul>
+    </div>
+  </section>
 
-    <h2 class="h5 mt-4">{{ _("Sécurité") }}</h2>
-    <ul>
-      <li>{{ _("HelpChain est une plateforme de mise en relation, et non un service d’urgence. En cas de danger immédiat, contactez les services d’urgence locaux.") }}</li>
-      <li>{{ _("Nous pouvons limiter ou suspendre des comptes afin de prévenir les abus et protéger la communauté.") }}</li>
-    </ul>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Disponibilité du service") }}</h2>
+      <p class="mb-0">
+        {{ _("HelpChain met en œuvre des moyens raisonnables pour assurer la continuité et la qualité du service. Des interruptions temporaires peuvent toutefois survenir, notamment pour maintenance, évolution technique ou contraintes externes.") }}
+      </p>
+    </div>
+  </section>
 
-    <h2 class="h5 mt-4">{{ _("Responsabilité") }}</h2>
-    <p>
-      {{ _("Les actions de solidarité impliquent des interactions humaines. HelpChain ne peut garantir les résultats et n’est pas responsable des actions réalisées par les utilisateurs. Nous encourageons une communication transparente et prudente, notamment lors du partage d’informations personnelles.") }}
-    </p>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Limitation de responsabilité") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain intervient en qualité d’outil de coordination numérique. La plateforme ne constitue pas un service d’urgence ni un dispositif médical, social ou juridique autonome.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Chaque utilisateur et chaque structure demeure responsable des décisions et actions engagées dans son périmètre d’intervention.") }}
+      </p>
+    </div>
+  </section>
 
-    <h2 class="h5 mt-4">{{ _("Contact") }}</h2>
-    <p>
-      {{ _("Une question sur ces conditions ? Contactez-nous à") }}
-      <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>.
-    </p>
-  </div>
-</main>
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Propriété intellectuelle") }}</h2>
+      <p class="mb-0">
+        {{ _("L’ensemble des éléments composant la plateforme relève de la propriété intellectuelle de HelpChain ou de ses ayants droit. Toute utilisation non autorisée est interdite.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Modification des conditions") }}</h2>
+      <p class="mb-0">
+        {{ _("Les présentes conditions peuvent être modifiées pour refléter les évolutions du service ou du cadre réglementaire. La version applicable est celle en vigueur à la date de consultation de la page.") }}
+      </p>
+    </div>
+  </section>
+</div>
 {% endblock %}
-

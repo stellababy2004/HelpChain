@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Sécurité & conformité") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Présentation institutionnelle du cadre de sécurité et de conformité de HelpChain : hébergement européen, protection des données et sécurité opérationnelle.") }}{% endblock %}
+{% block og_title %}{{ _("Sécurité & conformité") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Sécurité et conformité") }}{% endblock %}
+
+{% block content %}
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Conformité") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Sécurité & conformité") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("HelpChain est conçu comme une infrastructure de coordination des situations sociales, avec un cadre de sécurité et de conformité aligné sur les exigences des usages institutionnels.") }}
+    </p>
+  </header>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
+      <p class="mb-0">
+        {{ _("La plateforme est opérée dans une logique de continuité de service, de traçabilité et de protection des données. HelpChain s’appuie sur des principes compatibles avec le cadre européen de protection des données personnelles.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Hébergement des données") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain s’appuie sur une infrastructure cloud sécurisée localisée dans l’Union européenne.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("L’hébergement européen et l’organisation des environnements techniques visent à répondre aux exigences de protection des données applicables aux acteurs publics, associatifs et professionnels.") }}
+      </p>
+      <ul class="mb-0">
+        <li>{{ _("Hébergement des données dans l’espace européen") }}</li>
+        <li>{{ _("Infrastructures sécurisées et supervisées") }}</li>
+        <li>{{ _("Référentiel de protection aligné sur les exigences européennes") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Protection des données") }}</h2>
+      <p class="mb-2">
+        {{ _("Le traitement des données personnelles est encadré selon les principes du RGPD, avec une attention particulière portée à la proportionnalité et à la finalité des données utilisées dans les parcours de coordination.") }}
+      </p>
+      <ul class="mb-0">
+        <li>{{ _("Minimisation des données traitées") }}</li>
+        <li>{{ _("Accès restreints aux personnes habilitées") }}</li>
+        <li>{{ _("Journalisation des actions sensibles") }}</li>
+        <li>{{ _("Traçabilité des opérations de pilotage") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Sécurité opérationnelle") }}</h2>
+      <p class="mb-2">
+        {{ _("Des mesures techniques et organisationnelles sont mises en œuvre pour soutenir le cadre opérationnel de la plateforme.") }}
+      </p>
+      <ul class="mb-0">
+        <li>{{ _("Confidentialité des informations traitées") }}</li>
+        <li>{{ _("Stabilité du service et continuité d’exploitation") }}</li>
+        <li>{{ _("Surveillance des systèmes et détection d’anomalies") }}</li>
+        <li>{{ _("Sauvegardes régulières des données opérationnelles") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Contact sécurité") }}</h2>
+      <p class="mb-2">
+        {{ _("Pour toute question relative à la sécurité ou à la conformité de la plateforme, vous pouvez contacter l’équipe HelpChain.") }}
+      </p>
+      <p class="mb-0"><a href="mailto:contact@helpchain.live">contact@helpchain.live</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

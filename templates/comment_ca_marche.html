@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Comment fonctionne HelpChain") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Explication claire du fonctionnement de HelpChain pour les personnes en situation de besoin, les bénévoles et les structures partenaires.") }}{% endblock %}
+{% block meta_description %}{{ _("Explication claire du fonctionnement de HelpChain pour les personnes concernées, les intervenants et les structures partenaires.") }}{% endblock %}
 {% block og_title %}{{ _("Comment fonctionne HelpChain") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Comment fonctionne HelpChain") }}{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 920px;">
-  <header class="mb-4">
-    <h1 class="h3 mb-2">{{ _("Comment fonctionne HelpChain") }}</h1>
-    <p class="text-muted mb-0">
-      {{ _("HelpChain est une plateforme numérique destinée à faciliter la coordination entre personnes en situation de besoin, bénévoles et acteurs associatifs.") }}
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Fonctionnement") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Comment fonctionne HelpChain") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("HelpChain est une infrastructure numérique destinée à structurer la coordination entre personnes concernées, intervenants et acteurs associatifs.") }}
     </p>
-    <p class="text-muted mb-0">
-      {{ _("L’objectif de la plateforme est de permettre une organisation plus simple et plus efficace des demandes d’aide et des actions de solidarité.") }}
+    <p class="hc-doc-intro__lead">
+      {{ _("L’objectif de la plateforme est de proposer un cadre opérationnel lisible pour l’orientation des demandes, le suivi des situations et la coordination des interventions.") }}
     </p>
   </header>
 
@@ -36,12 +37,12 @@
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 2 — Mobilisation des bénévoles") }}</h2>
+      <h2 class="h5 mb-3">{{ _("SECTION 2 — Mobilisation des intervenants") }}</h2>
       <p class="mb-2">
-        {{ _("Les bénévoles inscrits sur la plateforme peuvent consulter les demandes et proposer leur aide en fonction de leurs disponibilités et de leurs compétences.") }}
+        {{ _("Les intervenants habilités peuvent consulter les demandes et proposer une intervention en fonction de leurs disponibilités et de leurs compétences.") }}
       </p>
       <p class="mb-0">
-        {{ _("La plateforme facilite ainsi la mise en relation entre les besoins exprimés et les personnes prêtes à apporter leur soutien.") }}
+        {{ _("La plateforme facilite ainsi la coordination entre les besoins exprimés et les acteurs en capacité d’intervenir.") }}
       </p>
     </div>
   </section>
@@ -65,7 +66,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("SECTION 4 — Rôle des associations et structures partenaires") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain peut également être utilisé par des associations ou des structures locales afin de mieux coordonner certaines actions de solidarité.") }}
+        {{ _("HelpChain peut également être utilisé par des associations ou des structures locales afin de mieux coordonner les actions de suivi des situations.") }}
       </p>
       <p class="mb-0">
         {{ _("La plateforme agit comme un outil de soutien à l’organisation et à la coordination des initiatives locales.") }}
@@ -92,10 +93,10 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain vise à faciliter l’entraide et la coordination entre les différents acteurs impliqués dans des actions de solidarité.") }}
+        {{ _("HelpChain vise à renforcer la coordination entre les différents acteurs impliqués dans l’orientation et le suivi des situations sociales.") }}
       </p>
       <p class="mb-0">
-        {{ _("La plateforme constitue un outil numérique au service de l’organisation et de la coopération entre citoyens, bénévoles et structures locales.") }}
+        {{ _("La plateforme constitue une infrastructure numérique au service de l’organisation et de la coopération entre citoyens, intervenants et structures locales.") }}
       </p>
     </div>
   </section>

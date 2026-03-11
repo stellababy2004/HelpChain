@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Architecture de la plateforme") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Présentation institutionnelle de l’architecture de la plateforme HelpChain : organisation des usages, accès structurés et cadre de coordination.") }}{% endblock %}
+{% block og_title %}{{ _("Architecture de la plateforme") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Architecture de la plateforme") }}{% endblock %}
+
+{% block content %}
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Architecture") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Architecture de la plateforme") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("HelpChain repose sur une architecture numérique structurée pour soutenir les flux de coordination, de suivi et de pilotage des situations sociales.") }}
+    </p>
+  </header>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
+      <p class="mb-0">
+        {{ _("La plateforme est organisée pour permettre une circulation maîtrisée de l’information entre les acteurs habilités, tout en conservant un cadre de traçabilité et de continuité opérationnelle.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Une architecture à plusieurs niveaux") }}</h2>
+      <p class="mb-2">{{ _("L’organisation de la plateforme distingue plusieurs niveaux d’usage complémentaires :") }}</p>
+      <ul class="mb-0">
+        <li>{{ _("interface publique d’orientation et de dépôt des demandes ;") }}</li>
+        <li>{{ _("espaces intervenants dédiés à la coordination des actions ;") }}</li>
+        <li>{{ _("outils de pilotage administratif pour le suivi opérationnel ;") }}</li>
+        <li>{{ _("infrastructure applicative assurant la gestion des flux et des accès.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Séparation des usages") }}</h2>
+      <p class="mb-2">{{ _("Le dispositif est structuré pour distinguer les principaux parcours fonctionnels :") }}</p>
+      <ul class="mb-0">
+        <li>{{ _("dépôt des demandes ;") }}</li>
+        <li>{{ _("coordination des actions ;") }}</li>
+        <li>{{ _("suivi des situations ;") }}</li>
+        <li>{{ _("accès professionnels et institutionnels.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Gouvernance des accès") }}</h2>
+      <p class="mb-2">
+        {{ _("Les accès sont organisés selon des profils et des permissions afin de garantir un usage conforme au rôle de chaque acteur dans le cadre opérationnel.") }}
+      </p>
+      <ul class="mb-0">
+        <li>{{ _("profils d’accès différenciés ;") }}</li>
+        <li>{{ _("permissions adaptées aux responsabilités ;") }}</li>
+        <li>{{ _("traçabilité des actions réalisées dans la plateforme.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Infrastructure au service de la coordination sociale") }}</h2>
+      <p class="mb-2">
+        {{ _("L’architecture est conçue pour soutenir la coordination entre associations, collectivités, réseaux professionnels et intervenants dans un cadre commun de suivi.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("HelpChain est conçu comme une infrastructure numérique de coordination et non comme un simple site de mise en relation.") }}
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

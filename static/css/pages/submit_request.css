@@ -33,18 +33,18 @@ body.hc-page-submit-request .hc-sr-card {
 /* ===== Institutional shell ===== */
 .hc-sr{
   min-height: calc(100vh - 72px);
-  padding: 24px 14px 56px;
-  background: #f3f7fc;
+  padding: 28px 14px 58px;
+  background: #f7f9fc;
 }
 
 .hc-sr__shell{
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
-  background: #fff;
-  border: 1px solid rgba(15,23,42,.08);
-  border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(2,6,23,.06);
-  overflow: hidden;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
 }
 
 /* Inner padding rhythm */
@@ -60,25 +60,39 @@ body.hc-page-submit-request .hc-sr-card {
 
 /* ===== Typography ===== */
 .hc-sr h1, .hc-sr .page-title{
-  font-size: 30px;
+  font-size: clamp(1.6rem, 2.3vw, 2rem);
   letter-spacing: -0.02em;
-  line-height: 1.2;
-  color: #0b1220;
+  line-height: 1.17;
+  color: #0c1a31;
 }
 
 .hc-sr .page-subtitle, .hc-sr .text-muted{
-  color: rgba(11,18,32,.70);
+  color: #4b617d !important;
+  line-height: 1.56;
 }
 
-.hc-sr .card{
-  border: 1px solid rgba(15,23,42,.10);
+.hc-sr__topbar{
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  margin-bottom: 14px !important;
+}
+
+.hc-sr .hc-form-container{
+  max-width: 720px;
+  margin: 0 auto;
+  border: 1px solid var(--hc-border-subtle, #e6ecf2);
   border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(2,6,23,.04);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.hc-sr .page-title{
+  max-width: 26ch;
 }
 
 .hc-sr-context{
-  border-left: 3px solid rgba(37,99,235,.35);
-  padding: 6px 0 6px 10px;
+  border-left: 3px solid rgba(37,99,235,.3);
+  padding: 7px 0 7px 10px;
 }
 
 /* ===== Inputs ===== */
@@ -87,27 +101,53 @@ body.hc-page-submit-request .hc-sr-card {
 .hc-sr input[type="tel"],
 .hc-sr select,
 .hc-sr textarea{
-  border-radius: 12px;
-  border: 1px solid rgba(15,23,42,.14);
-  background: rgba(255,255,255,.92);
-  box-shadow: 0 1px 0 rgba(2,6,23,.02);
-  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid #e3e8ef;
+  background: #fff;
+  color: #0f172a;
+  padding: 12px 14px;
+  font-size: 15px;
+  box-shadow: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
 }
 
-.hc-sr textarea{ min-height: 120px; }
+.hc-sr textarea{
+  min-height: 120px;
+  resize: vertical;
+}
 
 .hc-sr input:focus,
 .hc-sr select:focus,
 .hc-sr textarea:focus{
   outline: none;
-  border-color: rgba(37,99,235,.45);
-  box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+  border-color: #3b73d9;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+}
+
+.hc-sr input::placeholder,
+.hc-sr textarea::placeholder{
+  color: #7b8ea8;
+  opacity: 1;
 }
 
 /* Help text tighter */
 .hc-sr .form-text{
-  font-size: 13px;
-  color: rgba(11,18,32,.60);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.hc-sr .invalid-feedback{
+  margin-top: 0.35rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #b42318;
+}
+
+.hc-sr .is-invalid{
+  border-color: #d14343 !important;
+  background: #fff6f5;
 }
 
 /* Section separators */
@@ -119,16 +159,38 @@ body.hc-page-submit-request .hc-sr-card {
 
 /* ===== Sticky action bar ===== */
 .hc-sr__actions{
-  position: sticky;
-  bottom: 0;
-  background: rgba(255,255,255,.96);
-  border-top: 1px solid rgba(15,23,42,.08);
-  padding-top: 12px;
-  padding-bottom: 12px;
+  position: static;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-top: 0;
+  padding-top: 8px;
+  padding-bottom: 0;
+  box-shadow: none;
+  margin-top: 8px;
+  gap: 10px;
 }
 
 .hc-sr__actions .btn{
-  border-radius: 10px;
+  min-height: 44px;
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.hc-sr__actions .hc-form-submit{
+  width: 100%;
+  margin-top: 0;
+}
+
+.hc-sr :is(.btn-outline-secondary, .btn-secondary){
+  border-color: #d1dced;
+  color: #1f3f68;
+}
+
+.hc-sr :is(.btn-outline-secondary, .btn-secondary):hover{
+  border-color: #c1d2ea;
+  background: #eef4ff;
+  color: #1f56c9;
 }
 
 /* Keep CTA clear but avoid marketing-like effects */
@@ -138,16 +200,37 @@ body.hc-page-submit-request .hc-sr-card {
 
 /* Mobile: primary full width, cancel secondary */
 @media (max-width: 575.98px){
+  .hc-sr__topbar{
+    flex-direction: column;
+    align-items: stretch !important;
+    margin-bottom: 10px !important;
+  }
+  .hc-sr__topbar > a.btn{
+    width: 100%;
+  }
   .hc-sr__actions{
-    padding-left: 14px;
-    padding-right: 14px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    z-index: auto;
   }
   .hc-sr__actions .btn{
     width: 100%;
+    min-width: 0;
   }
   .hc-sr__actions .btn + .btn{
-    margin-top: 10px;
+    margin-top: 8px;
     margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 767px){
+  .hc-sr .hc-form-container{
+    padding: 22px;
+  }
+
+  .hc-sr textarea{
+    min-height: 110px;
   }
 }
 
@@ -208,4 +291,183 @@ body.hc-page-submit-request .hc-sr-card {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+/* ===== Step-by-step flow ===== */
+.hc-form-step {
+  display: none;
+}
+
+.hc-form-step.active {
+  display: block;
+}
+
+.hc-step-indicator {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.hc-step-indicator__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  border: 1px solid var(--hc-border-subtle, #e6ecf2);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--hc-text-muted, #5e6b78);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.hc-step-indicator__item .hc-step {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #eef3f8;
+  color: var(--hc-accent, #243e63);
+}
+
+.hc-step-indicator__item.is-active {
+  border-color: rgba(36, 62, 99, 0.35);
+  color: #10233f;
+  background: #f7f9fc;
+}
+
+.hc-step-indicator__item.is-active .hc-step {
+  background: var(--hc-accent, #243e63);
+  color: #fff;
+}
+
+.hc-step-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hc-step-actions .btn {
+  min-height: 44px;
+}
+
+.hc-step-actions .hc-step-next {
+  margin-left: auto;
+}
+
+.hc-sr-review {
+  border: 1px solid var(--hc-border-subtle, #e6ecf2);
+  border-radius: 12px;
+  background: #fff;
+  padding: 14px 14px 12px;
+}
+
+.hc-sr-review__list {
+  display: grid;
+  gap: 10px;
+}
+
+.hc-sr-review__list > div {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.hc-sr-review__list dt {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #31445f;
+}
+
+.hc-sr-review__list dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #0f172a;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.hc-category-suggestions__help {
+  margin: 8px 0 8px;
+  font-size: 0.82rem;
+  color: var(--hc-text-muted, #5e6b78);
+  line-height: 1.45;
+}
+
+.hc-category-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hc-suggestion-pill {
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hc-border-subtle, #e6ecf2);
+  background: #fff;
+  color: var(--hc-text-muted, #5e6b78);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+
+.hc-suggestion-pill:hover {
+  border-color: rgba(36, 62, 99, 0.34);
+  color: var(--hc-accent, #243e63);
+  background: #f7f9fc;
+}
+
+.hc-suggestion-pill.is-active {
+  border-color: rgba(36, 62, 99, 0.38);
+  color: var(--hc-accent, #243e63);
+  background: var(--hc-accent-soft, #eef3f8);
+}
+
+.hc-suggestion-pill:focus-visible {
+  outline: 2px solid rgba(36, 62, 99, 0.72);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .hc-step-indicator {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .hc-step-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hc-step-actions .btn,
+  .hc-step-actions .hc-form-submit {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .hc-sr-review__list > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .hc-category-suggestions {
+    gap: 6px;
+  }
+
+  .hc-suggestion-pill {
+    width: auto;
+    max-width: 100%;
+  }
 }

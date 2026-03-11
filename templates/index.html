@@ -194,6 +194,17 @@
       </div>
     </section>
 
+    <section class="hc-hero-trust-strip" aria-label="{{ _('Trust infrastructure indicators') }}">
+      <div class="container">
+        <ul class="hc-hero-trust-strip__list" role="list">
+          <li class="hc-hero-trust-strip__item">{{ _('Conçu et opéré depuis la France') }}</li>
+          <li class="hc-hero-trust-strip__item">{{ _('Données hébergées en Europe') }}</li>
+          <li class="hc-hero-trust-strip__item">{{ _('Conformité RGPD') }}</li>
+          <li class="hc-hero-trust-strip__item">{{ _('Sécurité renforcée') }}</li>
+        </ul>
+      </div>
+    </section>
+
     <!-- Main Content -->
     <main
       id="main-content"
@@ -368,13 +379,33 @@
                   >
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('main.privacy') }}" class="text-light"
+                  <a href="{{ url_for('main.mentions_legales') }}" class="text-light"
+                    >{{ _('Legal notice') }}</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.confidentialite') }}" class="text-light"
                     >{{ _('Privacy') }}</a
                   >
                 </li>
                 <li>
-                  <a href="{{ safe_url_for('main.terms') }}" class="text-light"
+                  <a href="{{ url_for('main.conditions_utilisation') }}" class="text-light"
                     >{{ _('Terms of use') }}</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.securite') }}" class="text-light"
+                    >{{ _('Sécurité & conformité') }}</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.architecture') }}" class="text-light"
+                    >{{ _('Architecture de la plateforme') }}</a
+                  >
+                </li>
+                <li>
+                  <a href="{{ url_for('main.gouvernance') }}" class="text-light"
+                    >{{ _('Gouvernance de la plateforme') }}</a
                   >
                 </li>
               </ul>

@@ -25,9 +25,9 @@
     <div class="row g-3">
       {% for slug, item in (categories or {}).items() %}
         <div class="col-12 col-md-6 col-lg-4">
-          <a class="card h-100 text-decoration-none" href="{{ url_for('main.request_category', category=slug) }}">
+          <a class="card h-100 text-decoration-none hc-category-card-link" href="{{ url_for('main.request_category', category=slug) }}">
             <div class="card-body">
-              <h2 class="h5 mb-2">{{ item.ui.title if item.ui and item.ui.title else slug }}</h2>
+              <h2 class="h5 mb-2 hc-category-card-title">{{ item.ui.title if item.ui and item.ui.title else slug }}</h2>
               {% if item.ui and item.ui.summary %}
                 <p class="text-muted mb-0">{{ item.ui.summary }}</p>
               {% endif %}
@@ -36,6 +36,17 @@
         </div>
       {% endfor %}
     </div>
+
+    <section class="hc-category-context" aria-label="{{ _('Public professionnel') }}">
+      <p class="hc-category-context__lead">
+        {{ _('HelpChain est conçu pour des acteurs institutionnels et professionnels qui coordonnent des demandes sur le terrain.') }}
+      </p>
+      <ul class="hc-category-context__actors" role="list">
+        <li class="hc-category-context__actor">{{ _('Associations') }}</li>
+        <li class="hc-category-context__actor">{{ _('Collectivités territoriales') }}</li>
+        <li class="hc-category-context__actor">{{ _('Réseaux professionnels') }}</li>
+      </ul>
+    </section>
   {% endif %}
 </section>
 {% endblock %}

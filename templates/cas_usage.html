@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Cas d’usage") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Exemples concrets d’utilisation de HelpChain pour les collectivités, CCAS, associations, structures sociales et bénévoles.") }}{% endblock %}
+{% block meta_description %}{{ _("Exemples concrets d’utilisation de HelpChain pour les collectivités, CCAS, associations, structures sociales et intervenants.") }}{% endblock %}
 {% block og_title %}{{ _("Cas d’usage") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Cas d’usage") }}{% endblock %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 920px;">
-  <header class="mb-4">
-    <h1 class="h3 mb-2">{{ _("Cas d’usage") }}</h1>
-    <p class="text-muted mb-0">
-      {{ _("HelpChain est une plateforme destinée à faciliter la coordination entre personnes en situation de besoin, bénévoles et acteurs associatifs.") }}
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Cas d’usage") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Cas d’usage") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("HelpChain est une infrastructure destinée à faciliter la coordination entre personnes concernées, intervenants et acteurs associatifs.") }}
     </p>
-    <p class="text-muted mb-0">
-      {{ _("Les exemples ci-dessous illustrent différentes situations dans lesquelles la plateforme peut être utilisée afin d'améliorer l’organisation et la coordination des actions de solidarité.") }}
+    <p class="hc-doc-intro__lead">
+        {{ _("Les exemples ci-dessous illustrent différentes situations dans lesquelles la plateforme peut être utilisée afin d'améliorer l’organisation et la coordination des situations sociales.") }}
     </p>
   </header>
 
@@ -24,7 +25,7 @@
         {{ _("Une personne rencontre des difficultés dans certaines démarches administratives.") }}
       </p>
       <p class="mb-2">
-        {{ _("Une demande peut être déposée sur la plateforme afin de trouver un bénévole ou une structure capable d’apporter un accompagnement ponctuel.") }}
+        {{ _("Une demande peut être déposée sur la plateforme afin de mobiliser un intervenant ou une structure capable d’apporter un accompagnement ponctuel.") }}
       </p>
       <p class="mb-0">
         {{ _("La plateforme permet ensuite de suivre la demande et de coordonner les actions nécessaires.") }}
@@ -39,10 +40,10 @@
         {{ _("Certaines situations nécessitent une aide simple et rapide.") }}
       </p>
       <p class="mb-2">
-        {{ _("Un utilisateur peut signaler un besoin spécifique, et un bénévole peut proposer son aide en fonction de sa disponibilité.") }}
+        {{ _("Un utilisateur peut signaler un besoin spécifique, et un intervenant peut proposer une réponse en fonction de sa disponibilité.") }}
       </p>
       <p class="mb-0">
-        {{ _("La plateforme facilite ainsi la mise en relation entre les besoins exprimés et les personnes prêtes à intervenir.") }}
+        {{ _("La plateforme facilite ainsi la coordination entre les besoins exprimés et les intervenants mobilisables.") }}
       </p>
     </div>
   </section>
@@ -66,7 +67,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("CAS 4 — Soutien aux initiatives locales") }}</h2>
       <p class="mb-2">
-        {{ _("Les associations ou structures locales peuvent également utiliser la plateforme pour organiser certaines initiatives d’entraide.") }}
+        {{ _("Les associations ou structures locales peuvent également utiliser la plateforme pour organiser certaines initiatives de coordination territoriale.") }}
       </p>
       <p class="mb-0">
         {{ _("HelpChain agit alors comme un outil de coordination permettant de mieux structurer les actions et de faciliter la communication entre les participants.") }}
@@ -78,10 +79,10 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain vise à soutenir les initiatives de solidarité en facilitant l’organisation et la coordination des actions entre citoyens, bénévoles et structures locales.") }}
+        {{ _("HelpChain vise à soutenir les initiatives territoriales en facilitant l’organisation et la coordination des actions entre citoyens, intervenants et structures locales.") }}
       </p>
       <p class="mb-0">
-        {{ _("La plateforme constitue un outil numérique au service de la coopération et de l’entraide.") }}
+        {{ _("La plateforme constitue une infrastructure numérique au service de la coopération et du suivi structuré.") }}
       </p>
     </div>
   </section>
