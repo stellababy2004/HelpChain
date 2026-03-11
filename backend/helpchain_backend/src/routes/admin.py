@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import os
 import secrets
 import threading
 import time
@@ -2569,6 +2570,86 @@ def admin_role_required(*allowed_roles: str):
 
 def _is_superadmin_role(role) -> bool:
     return _normalize_admin_role_value(role) == "superadmin"
+
+
+@admin_bp.get("/sanity")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_sanity():
+    admin_required_404()
+    now = utc_now()
+    app_env = (
+        (current_app.config.get("APP_ENV") or "").strip()
+        or (os.getenv("APP_ENV") or "").strip()
+        or (os.getenv("FLASK_ENV") or "").strip()
+        or "unknown"
+    )
+    version = (
+        os.getenv("APP_VERSION")
+        or os.getenv("GIT_SHA")
+        or os.getenv("HEROKU_SLUG_COMMIT")
+        or "—"
+    )
+
+    db_ok = True
+    db_error = ""
+    requests_table_ok = False
+    request_count_total = None
+    queue_visible_count = None
+    try:
+        db.session.execute(select(1))
+        requests_table_ok = _table_exists("requests")
+        if requests_table_ok:
+            request_count_total = db.session.query(func.count(Request.id)).scalar() or 0
+            queue_visible_count = (
+                _scope_requests(Request.query)
+                .filter(Request.deleted_at.is_(None))
+                .count()
+            )
+    except Exception as exc:
+        db_ok = False
+        db_error = str(exc.__class__.__name__)
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+    registered_get_routes = {
+        rule.rule for rule in current_app.url_map.iter_rules() if "GET" in rule.methods
+    }
+    core_route_paths = [
+        "/",
+        "/submit_request",
+        "/faq",
+        "/contact",
+        "/legal",
+        "/privacy",
+        "/terms",
+        "/admin",
+        "/admin/requests",
+    ]
+    core_routes = [
+        {"path": path, "registered": path in registered_get_routes}
+        for path in core_route_paths
+    ]
+
+    sentry_configured = bool(
+        (os.getenv("SENTRY_DSN") or current_app.config.get("SENTRY_DSN") or "").strip()
+    )
+
+    return render_template(
+        "admin/sanity.html",
+        generated_at=now,
+        app_env=app_env,
+        version=version,
+        db_ok=db_ok,
+        db_error=db_error,
+        requests_table_ok=requests_table_ok,
+        request_count_total=request_count_total,
+        queue_visible_count=queue_visible_count,
+        core_routes=core_routes,
+        sentry_configured=sentry_configured,
+    )
 
 
 def _attempted_action_label() -> str:

@@ -43,6 +43,64 @@ _L10N_MISSING_SEEN: set[str] = set()
 _L10N_MISSING_LOCK = threading.Lock()
 
 
+def _init_sentry_if_configured(app: Flask, env_name: str) -> None:
+    """
+    Optional Sentry setup. Safe no-op when SENTRY_DSN is absent or SDK is missing.
+    """
+    dsn = (os.getenv("SENTRY_DSN") or app.config.get("SENTRY_DSN") or "").strip()
+    if not dsn:
+        app.logger.info("Sentry disabled (SENTRY_DSN not set)")
+        return
+
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.flask import FlaskIntegration
+    except Exception as exc:
+        app.logger.warning("Sentry requested but sentry_sdk is unavailable: %s", exc)
+        return
+
+    def _before_send(event, hint):
+        # Minimize accidental PII leakage from request payloads.
+        request_data = event.get("request")
+        if isinstance(request_data, dict):
+            request_data.pop("data", None)
+            request_data.pop("cookies", None)
+            headers = request_data.get("headers")
+            if isinstance(headers, dict):
+                for key in list(headers.keys()):
+                    k = str(key).lower()
+                    if k in {"authorization", "cookie", "set-cookie", "x-api-key"}:
+                        headers[key] = "[Filtered]"
+        return event
+
+    environment = (
+        os.getenv("SENTRY_ENVIRONMENT")
+        or app.config.get("SENTRY_ENVIRONMENT")
+        or env_name
+        or "unknown"
+    )
+    release = (os.getenv("SENTRY_RELEASE") or app.config.get("SENTRY_RELEASE") or "").strip() or None
+    try:
+        traces_sample_rate = float(
+            os.getenv("SENTRY_TRACES_SAMPLE_RATE")
+            or app.config.get("SENTRY_TRACES_SAMPLE_RATE")
+            or 0.0
+        )
+    except Exception:
+        traces_sample_rate = 0.0
+
+    sentry_sdk.init(
+        dsn=dsn,
+        integrations=[FlaskIntegration()],
+        environment=environment,
+        release=release,
+        traces_sample_rate=traces_sample_rate,
+        send_default_pii=False,
+        before_send=_before_send,
+    )
+    app.logger.info("Sentry enabled (environment=%s)", environment)
+
+
 def _install_slow_sql_logger(app: Flask) -> None:
     """
     Dev-only: log slow SQL statements to help pinpoint admin disk I/O / N+1 / missing indexes.
@@ -326,6 +384,8 @@ def create_app(config_object=None) -> Flask:
         "JWT_SECRET_KEY", os.getenv("JWT_SECRET_KEY", app.config.get("SECRET_KEY"))
     )
 
+    _init_sentry_if_configured(app, env_name=env_name)
+
     # Trust proxy headers only when explicitly enabled for reverse-proxy deployments.
     if app.config.get("TRUST_PROXY_HEADERS", False):
         app.wsgi_app = ProxyFix(
@@ -575,6 +635,37 @@ def create_app(config_object=None) -> Flask:
     _alias_endpoint(
         app, "volunteer_reports", "main.volunteer_reports", "/volunteer/reports"
     )
+
+    @app.get("/health")
+    def health():
+        from datetime import UTC, datetime
+
+        payload = {
+            "status": "ok",
+            "app": "ok",
+            "db": "ok",
+            "time": datetime.now(UTC).isoformat(),
+            "environment": env_name or "unknown",
+            "version": (
+                os.getenv("APP_VERSION")
+                or os.getenv("GIT_SHA")
+                or os.getenv("HEROKU_SLUG_COMMIT")
+                or ""
+            ),
+        }
+        try:
+            from sqlalchemy import text
+
+            db.session.execute(text("SELECT 1"))
+        except Exception:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            payload["status"] = "error"
+            payload["db"] = "error"
+            return jsonify(payload), 503
+        return jsonify(payload), 200
 
     @app.errorhandler(404)
     def not_found(e):
