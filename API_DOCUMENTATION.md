@@ -27,7 +27,7 @@ http://127.0.0.1:3000/api/
 POST /admin_login
 Content-Type: application/x-www-form-urlencoded
 
-username=admin&password=admin123
+username=<admin_username>&password=<admin_password>
 
 # 2. Въвеждане на 2FA код (изпратен по имейл)
 POST /admin/email_2fa
@@ -349,3 +349,4 @@ socket.emit("join_room", {
 - **Email:** contact@helpchain.live
 - **Документация:** https://helpchain.live/api/docs
 - **GitHub Issues:** https://github.com/stellababy2004/HelpChain.bg/issues
+

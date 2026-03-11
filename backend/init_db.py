@@ -50,7 +50,9 @@ def main():
                 email="admin@helpchain.live",
                 role=RoleEnum.ADMIN.value,
             )
-            admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
+            admin_user.set_password(
+                os.getenv("ADMIN_USER_PASSWORD", "REPLACE_ME_ADMIN_PASSWORD")
+            )
             db.session.add(admin_user)
             db.session.commit()
 
@@ -68,7 +70,7 @@ def main():
             print("✅ Базата данни е успешно инициализирана!")
             print("✅ Администраторски потребител е създаден!")
             print("👤 Потребителско име: admin")
-            print("🔑 Парола: admin123")
+            print("🔑 Парола: REPLACE_ME_ADMIN_PASSWORD")
             print("✅ Тестов доброволец е добавен!")
             print("📧 Email: ivan@example.com")
             print("")
@@ -85,3 +87,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

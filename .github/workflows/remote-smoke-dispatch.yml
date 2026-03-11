@@ -53,6 +53,7 @@ jobs:
           set -euo pipefail
           base='${{ inputs.base_url }}'
           token='${{ inputs.bypass_token }}'
+          admin_password='${{ secrets.ADMIN_SMOKE_PASSWORD }}'
           jar=$(mktemp)
           trap 'rm -f "$jar"' EXIT
           if [ -n "$token" ]; then
@@ -67,7 +68,9 @@ jobs:
           post_code=$(curl -fsSL -b "$jar" -c "$jar" -o /dev/null -w "%{http_code}" \
             -X POST "$base/admin/login" \
             -H "Content-Type: application/x-www-form-urlencoded" \
-            --data "username=admin&password=Admin12345!&csrf_token=$csrf")
+            --data-urlencode "username=admin" \
+            --data-urlencode "password=$admin_password" \
+            --data-urlencode "csrf_token=$csrf")
           echo "Login POST HTTP $post_code"
           if [ "$post_code" = "400" ]; then
             echo "Strict: POST returned 400 (likely CSRF validation failure)" >&2

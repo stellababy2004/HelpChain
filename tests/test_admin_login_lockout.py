@@ -1,4 +1,8 @@
+import os
+
 from backend.models import AdminLoginAttempt, AdminUser
+
+TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
 
 
 def _ensure_admin_user(session, username: str, password: str) -> None:
@@ -18,7 +22,7 @@ def _ensure_admin_user(session, username: str, password: str) -> None:
 def test_admin_login_legacy_lockout_returns_429(client, session):
     client.application.config["EMAIL_2FA_ENABLED"] = False
     username = "lockout_admin_legacy"
-    _ensure_admin_user(session, username, "CorrectPass123")
+    _ensure_admin_user(session, username, TEST_ADMIN_PASSWORD)
 
     session.query(AdminLoginAttempt).delete()
     session.commit()
@@ -42,7 +46,7 @@ def test_admin_login_legacy_lockout_returns_429(client, session):
 
 def test_admin_ops_login_lockout_returns_429(client, session):
     username = "lockout_admin_ops"
-    _ensure_admin_user(session, username, "CorrectPass123")
+    _ensure_admin_user(session, username, TEST_ADMIN_PASSWORD)
 
     session.query(AdminLoginAttempt).delete()
     session.commit()
@@ -62,4 +66,3 @@ def test_admin_ops_login_lockout_returns_429(client, session):
     )
     assert blocked.status_code == 429
     assert blocked.headers.get("Retry-After")
-

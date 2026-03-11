@@ -1,4 +1,8 @@
+import os
+
 from backend.models import AdminAuditEvent, AdminUser
+
+TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
 
 
 def _ensure_admin_user(session, username: str, password: str) -> AdminUser:
@@ -18,13 +22,13 @@ def _ensure_admin_user(session, username: str, password: str) -> AdminUser:
 
 def test_admin_login_success_writes_audit_event(client, session):
     client.application.config["EMAIL_2FA_ENABLED"] = False
-    admin = _ensure_admin_user(session, "audit_login_admin", "CorrectPass123")
+    admin = _ensure_admin_user(session, "audit_login_admin", TEST_ADMIN_PASSWORD)
     session.query(AdminAuditEvent).delete()
     session.commit()
 
     resp = client.post(
         "/admin/login",
-        data={"username": admin.username, "password": "CorrectPass123"},
+        data={"username": admin.username, "password": TEST_ADMIN_PASSWORD},
         follow_redirects=False,
     )
     assert resp.status_code in (302, 303)

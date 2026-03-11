@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+import os
 
 from backend.models import AdminUser, Request, Structure, db
 import pytest
@@ -33,7 +34,8 @@ def _submit_public_request(client, unique_suffix: str) -> str:
 @pytest.fixture
 def admin_ops_client(app, session):
     app.config["EMAIL_2FA_ENABLED"] = False
-    password = "SmokeOps123"
+    # Test-only credential to avoid secret-like hardcoded values in fixtures.
+    password = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
     admin = session.query(AdminUser).filter_by(email="admin.ops@test.local").first()
     if not admin:
         admin = AdminUser(

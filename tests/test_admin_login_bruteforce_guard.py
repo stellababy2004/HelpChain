@@ -1,9 +1,11 @@
 from datetime import timedelta
+import os
 
 from backend.models import AdminLoginAttempt, AdminUser, utc_now
 
 
 GENERIC_FAIL_MSG = "Identifiants invalides ou accès temporairement bloqué."
+TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
 
 
 def _ensure_admin_user(session, username: str, password: str) -> AdminUser:
@@ -27,7 +29,7 @@ def test_admin_login_lockout_uses_generic_message(client, session):
     ip = "203.0.113.10"
     now = utc_now()
 
-    _ensure_admin_user(session, username, "CorrectPass123")
+    _ensure_admin_user(session, username, TEST_ADMIN_PASSWORD)
     session.query(AdminLoginAttempt).delete()
     session.add_all(
         [
@@ -57,7 +59,7 @@ def test_admin_login_lockout_uses_generic_message(client, session):
 def test_admin_login_success_clears_recent_failed_bucket(client, session):
     client.application.config["EMAIL_2FA_ENABLED"] = False
     username = "clear_bucket_admin"
-    password = "CorrectPass123"
+    password = TEST_ADMIN_PASSWORD
     ip = "203.0.113.11"
     now = utc_now()
 
