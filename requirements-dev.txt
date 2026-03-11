@@ -3,3 +3,5 @@ flake8
 black==26.1.0
 mypy
 pytest-flask
+playwright==1.58.0
+Pillow==12.1.0

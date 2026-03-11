@@ -2163,8 +2163,7 @@ def about():
 
 @main_bp.get("/gouvernance")
 def gouvernance():
-    # Temporary alias to avoid 500 if templates or old links reference it.
-    return redirect(url_for("main.about"), code=302)
+    return render_template("gouvernance.html")
 
 
 def normalize_request_form(form):
@@ -3285,14 +3284,26 @@ def contact():
     return redirect(url_for("main.contact", sent="1"), code=303)
 
 
+@main_bp.get("/confidentialite")
+@main_bp.get("/confidentialite/")
+def confidentialite():
+    return render_template("privacy.html")
+
+
 @main_bp.route("/privacy")
 def privacy():
-    return render_template("privacy.html")
+    return confidentialite()
+
+
+@main_bp.get("/conditions-utilisation")
+@main_bp.get("/conditions_utilisation")
+def conditions_utilisation():
+    return render_template("terms.html")
 
 
 @main_bp.route("/terms")
 def terms():
-    return render_template("terms.html")
+    return conditions_utilisation()
 
 
 @main_bp.route("/legal")
@@ -3340,6 +3351,16 @@ def pourquoi_helpchain():
 @main_bp.get("/vision_europeenne")
 def vision_europeenne():
     return render_template("vision_europeenne.html")
+
+
+@main_bp.get("/securite")
+def securite():
+    return render_template("securite.html")
+
+
+@main_bp.get("/architecture")
+def architecture():
+    return render_template("architecture.html")
 
 
 @main_bp.get("/mentions-legales")

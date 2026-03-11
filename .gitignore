@@ -216,3 +216,8 @@ reports/
 
 # temp
 tmp/
+
+# visual regression runtime artifacts (keep baseline versioned)
+tests/visual/current/
+tests/visual/diff/
+tests/visual/last-compare-report.json
