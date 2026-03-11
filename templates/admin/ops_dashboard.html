@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Admin • Operational Dashboard | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card p-3 mb-3">
+    <h1 class="hc-admin-title mb-1">Operational Dashboard</h1>
+    <div class="hc-muted">Live operational metrics for requests triage.</div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="hc-card p-3 h-100">
+        <h3 id="active_requests" class="mb-1">0</h3>
+        <p class="mb-0 hc-muted">Active Requests</p>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="hc-card p-3 h-100">
+        <h3 id="high_risk_cases" class="mb-1">0</h3>
+        <p class="mb-0 hc-muted">High Risk Cases</p>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="hc-card p-3 h-100">
+        <h3 id="unassigned_cases" class="mb-1">0</h3>
+        <p class="mb-0 hc-muted">Unassigned</p>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="hc-card p-3 h-100">
+        <h3 id="resolved_today" class="mb-1">0</h3>
+        <p class="mb-0 hc-muted">Resolved Today</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function loadOps() {
+  try {
+    const res = await fetch("/admin/api/ops-metrics", { credentials: "same-origin" });
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById("active_requests").innerText = data.active_requests ?? 0;
+    document.getElementById("high_risk_cases").innerText = data.high_risk_cases ?? 0;
+    document.getElementById("unassigned_cases").innerText = data.unassigned_cases ?? 0;
+    document.getElementById("resolved_today").innerText = data.resolved_today ?? 0;
+  } catch (_) {
+    // Keep dashboard stable on transient failures.
+  }
+}
+
+loadOps();
+setInterval(loadOps, 10000);
+</script>
+{% endblock %}
+

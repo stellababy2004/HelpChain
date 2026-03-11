@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Admin • Professionals Map | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <style>
+    #professionalsMap {
+      height: 600px;
+      border-radius: 12px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card p-3 mb-3">
+    <h1 class="hc-admin-title mb-1">{{ _('Professionals Map') }}</h1>
+    <div class="hc-muted">{{ _('Visualisation des leads professionnels visibles par ville.') }}</div>
+  </div>
+
+  <div class="hc-card p-3 mb-3">
+    <div class="row g-2 mb-3" aria-label="{{ _('KPIs carte professionnels') }}">
+      <div class="col-6 col-lg-3">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-muted">{{ _('Villes couvertes') }}</div>
+          <div class="fw-semibold" id="proMapCitiesCount">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-muted">{{ _('Professionnels visibles') }}</div>
+          <div class="fw-semibold" id="proMapProfessionalsCount">0</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-muted">{{ _('Ville la plus couverte') }}</div>
+          <div class="fw-semibold text-truncate" id="proMapTopCity">N/A</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="border rounded-3 p-2 h-100">
+          <div class="small text-muted">{{ _('Métier dominant') }}</div>
+          <div class="fw-semibold text-truncate" id="proMapTopProfession">N/A</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-3 mb-3 small">
+      <span><strong>{{ _('Légende:') }}</strong></span>
+      <span><span class="badge text-bg-primary">&nbsp;</span> {{ _('Ville avec présence pro') }}</span>
+      <span><span class="badge text-bg-secondary">&nbsp;</span> {{ _('Taille du cercle = volume') }}</span>
+    </div>
+
+    <div id="professionalsMap" role="region" aria-label="{{ _('Carte des professionnels') }}"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="{{ url_for('static', filename='js/admin-professionals-map.js') }}"></script>
+{% endblock %}
