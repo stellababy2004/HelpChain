@@ -239,6 +239,29 @@
   font-size: 16px;
   line-height: 1.1;
 }
+.hc-risk-overview__item--link{
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.hc-risk-overview__item--link:hover{
+  border-color: rgba(37,99,235,.30);
+  box-shadow: 0 8px 20px rgba(2,6,23,.08);
+}
+.hc-case-detail-card--blockages{
+  border-color: rgba(217, 119, 6, .24);
+  background: linear-gradient(180deg, rgba(255,251,235,.96) 0%, rgba(255,255,255,.94) 100%);
+  box-shadow: 0 10px 24px rgba(217,119,6,.08);
+}
+.hc-case-detail-card--blockages h3{
+  color: rgba(146, 64, 14, .96);
+}
+.hc-case-detail-card--blockages .hc-blockage-list{
+  padding-left: 1.1rem;
+}
+.hc-case-detail-card--blockages .hc-blockage-list li + li{
+  margin-top: 4px;
+}
 .hc-risk-filters{
   display: flex;
   flex-wrap: wrap;
@@ -316,6 +339,14 @@
   margin: 0 0 10px;
   font-size: 14px;
   font-weight: 700;
+}
+.hc-pilotage-card--link{
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.hc-pilotage-card--link:hover{
+  border-color: rgba(37,99,235,.28);
 }
 .hc-pilotage-table th{
   font-size: 12px;
@@ -1588,6 +1619,7 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
 .hc-admin-wrap--request-detail .hc-risk-summary-grid{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 10px;
 }
 .hc-admin-wrap--request-detail .hc-risk-summary-card{
@@ -1595,6 +1627,68 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
   border-radius: 12px;
   padding: 10px 12px;
   background: rgba(255,255,255,.98);
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card h4{
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card p,
+.hc-admin-wrap--request-detail .hc-risk-summary-card li{
+  line-height: 1.45;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card--suggestion{
+  grid-column: span 2;
+  min-width: 0;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card__lead{
+  margin-bottom: 10px;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card__lead strong{
+  display: block;
+  margin-bottom: 2px;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card__value{
+  display: block;
+  font-size: 1.02rem;
+  color: rgba(15,23,42,.82);
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card__signals-label{
+  margin-top: 2px;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card__signals{
+  align-items: flex-start;
+}
+.hc-admin-wrap--request-detail .hc-risk-summary-card__signal{
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+.hc-risk-emergency-alert{
+  border: 1px solid rgba(185,28,28,.20);
+  border-left: 4px solid rgba(185,28,28,.92);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(254,242,242,.96), rgba(255,255,255,.98));
+  padding: 12px 14px;
+}
+.hc-risk-emergency-alert__eyebrow{
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: rgba(153,27,27,.86);
+}
+.hc-risk-emergency-alert__title{
+  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(127,29,29,.96);
+}
+.hc-risk-emergency-alert__hint{
+  color: rgba(127,29,29,.82);
 }
 
 .hc-admin-wrap--request-detail .hc-timeline-track{
@@ -1668,6 +1762,9 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
   }
   .hc-admin-wrap--request-detail .hc-risk-summary-grid{
     grid-template-columns: 1fr;
+  }
+  .hc-admin-wrap--request-detail .hc-risk-summary-card--suggestion{
+    grid-column: auto;
   }
 }
 
@@ -1879,6 +1976,202 @@ body[data-hc-page^="/admin"] .pagination .page-item.active .page-link{
 body[data-hc-page^="/admin"] .hc-admin-wrap--request-detail .hc-case-workspace{
   grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
   gap: 20px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--wide{
+  width: min(1720px, calc(100vw - 28px));
+  max-width: min(1720px, calc(100vw - 28px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body[data-hc-page^="/admin"] .hc-page-hero{
+  padding: 18px 20px;
+}
+
+body[data-hc-page^="/admin"] .hc-requests-toolbar--wide{
+  padding: 14px;
+}
+
+body[data-hc-page^="/admin"] .hc-cases-toolbar-card{
+  padding: 16px 18px;
+}
+
+body[data-hc-page^="/admin"] .hc-cases-table-shell,
+body[data-hc-page^="/admin"] .hc-admin-wrap--requests .hc-admin-table-shell{
+  width: 100%;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-admin-grid{
+  grid-template-columns: minmax(0, 1.95fr) minmax(340px, .95fr);
+  gap: 20px;
+  align-items: start;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-detail-card{
+  border-color: rgba(15, 23, 42, 0.09);
+  box-shadow: var(--hc-admin-shadow-1);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-detail-card--header{
+  background: linear-gradient(180deg, rgba(248,250,252,.98), rgba(255,255,255,.98));
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-overview-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-overview-item{
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-overview-item span{
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-overview-item strong{
+  display: block;
+  font-size: 15px;
+  line-height: 1.25;
+  color: rgba(15, 23, 42, 0.96);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-item{
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(248,250,252,.9);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-item--wide{
+  grid-column: span 2;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-item span{
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: rgba(15, 23, 42, 0.62);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-item strong{
+  display: block;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-description{
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-detail-aside{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-detail-card--assistant{
+  background: linear-gradient(180deg, rgba(239,246,255,.96), rgba(255,255,255,.98));
+  border-color: rgba(37,99,235,.14);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-suggestions-table th{
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-suggestions-table td{
+  padding-top: .65rem;
+  padding-bottom: .65rem;
+}
+
+body[data-hc-page^="/admin"] .hc-elapsed{
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: 6px;
+}
+
+body[data-hc-page^="/admin"] .hc-elapsed--recent{
+  background: rgba(34,197,94,.14);
+  color: rgba(22,101,52,.95);
+}
+
+body[data-hc-page^="/admin"] .hc-elapsed--warn{
+  background: rgba(245,158,11,.14);
+  color: rgba(146,64,14,.95);
+}
+
+body[data-hc-page^="/admin"] .hc-elapsed--stale{
+  background: rgba(239,68,68,.12);
+  color: rgba(153,27,27,.95);
+}
+
+body[data-hc-page^="/admin"] .hc-elapsed--muted{
+  background: rgba(148,163,184,.12);
+  color: rgba(71,85,105,.9);
+}
+
+body[data-hc-page^="/admin"] .hc-sla{
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+body[data-hc-page^="/admin"] .hc-sla--on_time{
+  background: rgba(59,130,246,.12);
+  color: rgba(30,64,175,.95);
+}
+
+body[data-hc-page^="/admin"] .hc-sla--due_soon{
+  background: rgba(245,158,11,.14);
+  color: rgba(146,64,14,.95);
+}
+
+body[data-hc-page^="/admin"] .hc-sla--overdue{
+  background: rgba(239,68,68,.12);
+  color: rgba(153,27,27,.95);
+}
+
+body[data-hc-page^="/admin"] .hc-blockage-list{
+  margin: 0;
+  padding-left: 18px;
+}
+
+body[data-hc-page^="/admin"] .hc-blockage-list li{
+  margin-bottom: 6px;
+  color: rgba(15,23,42,.9);
+}
+
+body[data-hc-page^="/admin"] .hc-blockage-list li:last-child{
+  margin-bottom: 0;
 }
 
 body[data-hc-page^="/admin"] .hc-admin-wrap--request-detail .hc-control-panel{
@@ -2702,5 +2995,220 @@ body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table td.hc-co
 @media (max-width: 1280px){
   body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table{
     min-width: 1120px;
+  }
+}
+
+/* Admin cases table: stable column layout and no broken wrapping */
+.hc-admin-requests-page .hc-cases-table{
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1080px;
+}
+
+.hc-admin-requests-page .hc-cases-table th,
+.hc-admin-requests-page .hc-cases-table td{
+  vertical-align: middle;
+  padding-top: .52rem;
+  padding-bottom: .52rem;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* Keep cases list readable; request queue sticky header is too aggressive here */
+.hc-admin-requests-page .hc-cases-table thead th{
+  position: static;
+  top: auto;
+  box-shadow: inset 0 -1px 0 rgba(15,23,42,.10);
+}
+
+.hc-admin-requests-page .hc-cases-table .badge{
+  white-space: nowrap;
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-risk-badge{
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-risk-badge--critical{
+  color: #fff;
+  background: rgba(185,28,28,.95);
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-risk-badge--high{
+  color: #111827;
+  background: rgba(245,158,11,.78);
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-risk-badge--normal{
+  color: #0f172a;
+  background: rgba(59,130,246,.28);
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-risk-badge--low{
+  color: #052e16;
+  background: rgba(34,197,94,.24);
+}
+
+/* Do not inherit sticky first-columns behavior from generic admin table rules */
+.hc-admin-requests-page .hc-cases-table th:first-child,
+.hc-admin-requests-page .hc-cases-table td:first-child,
+.hc-admin-requests-page .hc-cases-table th:nth-child(2),
+.hc-admin-requests-page .hc-cases-table td:nth-child(2),
+.hc-admin-requests-page .hc-cases-table th:nth-child(3),
+.hc-admin-requests-page .hc-cases-table td:nth-child(3){
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  box-shadow: none !important;
+}
+
+.hc-admin-requests-page .hc-cases-table th.case-col,
+.hc-admin-requests-page .hc-cases-table td.case-col{
+  width: 70px;
+  white-space: nowrap;
+}
+
+.hc-admin-requests-page .hc-cases-table th.status-col,
+.hc-admin-requests-page .hc-cases-table td.status-col{
+  width: 120px;
+  white-space: nowrap;
+}
+
+.hc-admin-requests-page .hc-cases-table th.risk-col,
+.hc-admin-requests-page .hc-cases-table td.risk-col{
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+}
+
+.hc-admin-requests-page .hc-cases-table th.priority-col,
+.hc-admin-requests-page .hc-cases-table td.priority-col{
+  width: 110px;
+  white-space: nowrap;
+}
+
+.hc-admin-requests-page .hc-cases-table th.request-col,
+.hc-admin-requests-page .hc-cases-table td.request-col{
+  width: 340px;
+  white-space: normal;
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-cases-request-sub{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-admin-requests-page .hc-cases-table th.city-col,
+.hc-admin-requests-page .hc-cases-table td.city-col{
+  width: 200px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-admin-requests-page .hc-cases-table th.owner-col,
+.hc-admin-requests-page .hc-cases-table td.owner-col{
+  width: 150px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-admin-requests-page .hc-cases-table th.primary-pro-col,
+.hc-admin-requests-page .hc-cases-table td.primary-pro-col{
+  width: 260px;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-admin-requests-page .hc-cases-table th.activity-col,
+.hc-admin-requests-page .hc-cases-table td.activity-col{
+  width: 170px;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-admin-requests-page .hc-cases-table th.actions-col,
+.hc-admin-requests-page .hc-cases-table td.actions-col{
+  width: 110px;
+  max-width: 110px;
+  white-space: nowrap;
+}
+
+@media (max-width: 1600px){
+  .hc-admin-requests-page .hc-cases-table{
+    min-width: 1020px;
+  }
+  .hc-admin-requests-page .hc-cases-table th.request-col,
+  .hc-admin-requests-page .hc-cases-table td.request-col{
+    width: 260px;
+  }
+  .hc-admin-requests-page .hc-cases-table th.primary-pro-col,
+  .hc-admin-requests-page .hc-cases-table td.primary-pro-col{
+    width: 220px;
+    max-width: 220px;
+  }
+}
+
+@media (max-width: 1200px){
+  body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-admin-grid{
+    grid-template-columns: 1fr;
+  }
+  body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-overview-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px){
+  body[data-hc-page^="/admin"] .hc-admin-wrap--wide{
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+  }
+  body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-overview-grid,
+  body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-grid{
+    grid-template-columns: 1fr;
+  }
+  body[data-hc-page^="/admin"] .hc-admin-wrap--case-detail .hc-case-summary-item--wide{
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 1440px){
+  .hc-admin-requests-page .hc-cases-table{
+    min-width: 980px;
+  }
+  .hc-admin-requests-page .hc-cases-table th.city-col,
+  .hc-admin-requests-page .hc-cases-table td.city-col{
+    width: 190px;
+    max-width: 190px;
+  }
+  .hc-admin-requests-page .hc-cases-table th.owner-col,
+  .hc-admin-requests-page .hc-cases-table td.owner-col{
+    width: 130px;
+    max-width: 130px;
+  }
+}
+
+@media (max-width: 1280px){
+  .hc-admin-requests-page .hc-cases-table{
+    min-width: 940px;
+  }
+  .hc-admin-requests-page .hc-cases-table th.activity-col,
+  .hc-admin-requests-page .hc-cases-table td.activity-col{
+    width: 150px;
+    max-width: 150px;
+  }
+  .hc-admin-requests-page .hc-cases-table th.actions-col,
+  .hc-admin-requests-page .hc-cases-table td.actions-col{
+    width: 98px;
+    max-width: 98px;
   }
 }

@@ -54,6 +54,9 @@ from ..models import (
     AdminAuditEvent,
     AdminLoginAttempt,
     AdminUser,
+    Case,
+    CaseEvent,
+    CaseParticipant,
     Notification,
     ProfessionalLead,
     Request,
@@ -80,6 +83,15 @@ except ImportError:
     ProAccessRequest = None
 
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
+from ..constants.categories import (
+    REQUEST_CATEGORY_CODES,
+    normalize_request_category,
+    request_category_choices,
+    request_category_label,
+)
+from ..services.case_assistant import build_case_assistant_recommendation
+from ..services.case_matching import suggest_professional_leads_for_case
+from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
 from ..services.geocoding import geocode_location_best_effort
 from ..security_logging import log_security_event
@@ -87,6 +99,48 @@ from ..services.recommendation_engine import compute_recommendation
 
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
     "Identifiants invalides ou accès temporairement bloqué."
+)
+CATEGORY_CASE_STATUSES = (
+    "new",
+    "triaged",
+    "assigned",
+    "in_progress",
+    "resolved",
+    "closed",
+    "cancelled",
+)
+CASE_PRIORITIES = ("low", "normal", "high", "critical")
+CASE_PRIORITY_RANK = {
+    "low": 0,
+    "normal": 1,
+    "high": 2,
+    "critical": 3,
+}
+CASE_EVENT_TYPES = (
+    "case_created",
+    "triage_scored",
+    "status_changed",
+    "priority_changed",
+    "owner_assigned",
+    "professional_assigned",
+    "participant_added",
+    "note_added",
+    "case_resolved",
+    "case_closed",
+)
+CASE_PARTICIPANT_TYPES = (
+    "admin_user",
+    "professional_user",
+    "professional_lead",
+    "association",
+    "external_contact",
+)
+CASE_PARTICIPANT_ROLES = (
+    "owner",
+    "primary_professional",
+    "contributor",
+    "observer",
+    "coordinator",
 )
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
@@ -164,6 +218,283 @@ def _table_exists(table_name: str) -> bool:
         exists = False
     _SCHEMA_TABLE_CACHE[table_name] = exists
     return exists
+
+
+def _cases_enabled() -> bool:
+    return (
+        _table_exists("cases")
+        and _table_exists("case_events")
+        and _table_exists("case_participants")
+    )
+
+
+def _safe_json_dict(raw: str | None) -> dict:
+    txt = (raw or "").strip()
+    if not txt:
+        return {}
+    try:
+        val = json.loads(txt)
+        if isinstance(val, dict):
+            return val
+    except Exception:
+        return {}
+    return {}
+
+
+def _as_aware_utc(dt_val: datetime | None) -> datetime | None:
+    if not dt_val:
+        return None
+    if dt_val.tzinfo is None:
+        return dt_val.replace(tzinfo=timezone.utc)
+    return dt_val.astimezone(timezone.utc)
+
+
+def _format_elapsed_compact(dt_val: datetime | None) -> str:
+    dt_aware = _as_aware_utc(dt_val)
+    if not dt_aware:
+        return "—"
+    delta = max(timedelta(0), _now_utc() - dt_aware)
+    total_minutes = int(delta.total_seconds() // 60)
+    if total_minutes < 1:
+        return "0 min"
+    if total_minutes < 60:
+        return f"{total_minutes} min"
+    total_hours = int(delta.total_seconds() // 3600)
+    if total_hours < 24:
+        return f"{total_hours} h"
+    total_days = int(delta.total_seconds() // 86400)
+    return f"{total_days} j"
+
+
+def _elapsed_tone(dt_val: datetime | None) -> str:
+    dt_aware = _as_aware_utc(dt_val)
+    if not dt_aware:
+        return "muted"
+    total_hours = max(0, int((_now_utc() - dt_aware).total_seconds() // 3600))
+    if total_hours < 6:
+        return "recent"
+    if total_hours < 24:
+        return "warn"
+    return "stale"
+
+
+def _format_duration_compact(delta: timedelta | None) -> str:
+    if delta is None:
+        return "—"
+    total_minutes = max(0, int(delta.total_seconds() // 60))
+    if total_minutes < 60:
+        return f"{total_minutes} min"
+    total_hours = max(0, int(delta.total_seconds() // 3600))
+    if total_hours < 24:
+        return f"{total_hours} h"
+    total_days = max(0, int(delta.total_seconds() // 86400))
+    return f"{total_days} j"
+
+
+def _case_sla_snapshot(case_row: Case | None) -> dict:
+    if not case_row:
+        return {
+            "target_label": "—",
+            "deadline": None,
+            "state": "on_time",
+            "state_label": "À temps",
+            "detail": "—",
+        }
+
+    priority = ((getattr(case_row, "priority", None) or "normal").strip().lower())
+    target_map = {
+        "critical": timedelta(hours=4),
+        "high": timedelta(hours=24),
+        "normal": timedelta(hours=72),
+        "low": timedelta(days=5),
+    }
+    target_delta = target_map.get(priority, timedelta(hours=72))
+    opened_ref = _as_aware_utc(getattr(case_row, "opened_at", None) or getattr(case_row, "created_at", None))
+    if not opened_ref:
+        return {
+            "target_label": _format_duration_compact(target_delta),
+            "deadline": None,
+            "state": "on_time",
+            "state_label": "À temps",
+            "detail": "—",
+        }
+
+    deadline = opened_ref + target_delta
+    remaining = deadline - _now_utc()
+    soon_threshold = min(timedelta(hours=4), max(timedelta(hours=1), target_delta / 5))
+    if remaining.total_seconds() < 0:
+        state = "overdue"
+        state_label = "En retard"
+        detail = f"En retard de {_format_duration_compact(abs(remaining))}"
+    elif remaining <= soon_threshold:
+        state = "due_soon"
+        state_label = "Échéance proche"
+        detail = f"Dans {_format_duration_compact(remaining)}"
+    else:
+        state = "on_time"
+        state_label = "À temps"
+        detail = f"Dans {_format_duration_compact(remaining)}"
+
+    return {
+        "target_label": _format_duration_compact(target_delta),
+        "deadline": deadline,
+        "state": state,
+        "state_label": state_label,
+        "detail": detail,
+    }
+
+
+def _build_operational_blockages(
+    req: Request,
+    case_row: Case | None = None,
+) -> dict:
+    blockages: list[str] = []
+    now = _now_utc()
+
+    status_val = ((getattr(case_row, "status", None) if case_row else getattr(req, "status", None)) or "").strip().lower()
+    risk_level = ((getattr(req, "risk_level", None) or "").strip().lower())
+    case_priority = ((getattr(case_row, "priority", None) if case_row else "") or "").strip().lower()
+    high_risk = risk_level in {"critical", "attention"} or case_priority in {"high", "critical"}
+
+    def _case_has_owner(current_case: Case | None) -> bool:
+        if not current_case:
+            return bool(getattr(req, "owner_id", None))
+        if getattr(current_case, "owner_user_id", None):
+            return True
+        participants = getattr(current_case, "participants", None) or []
+        return any(
+            ((getattr(participant, "role", None) or "").strip().lower() == "owner")
+            and bool(getattr(participant, "user_id", None) or getattr(participant, "external_name", None))
+            for participant in participants
+        )
+
+    def _case_has_professional(current_case: Case | None) -> bool:
+        if not current_case:
+            return False
+        if getattr(current_case, "assigned_professional_lead_id", None):
+            return True
+        participants = getattr(current_case, "participants", None) or []
+        return any(
+            bool(getattr(participant, "professional_lead_id", None))
+            and (
+                (getattr(participant, "role", None) or "").strip().lower() == "primary_professional"
+                or (getattr(participant, "participant_type", None) or "").strip().lower() == "professional_lead"
+            )
+            for participant in participants
+        )
+
+    has_owner = _case_has_owner(case_row)
+    has_professional = _case_has_professional(case_row)
+
+    if not has_owner:
+        blockages.append("Aucun responsable assigné")
+
+    if case_row and not has_professional:
+        blockages.append("Aucun professionnel assigné")
+
+    activity_ref = _as_aware_utc(
+        (getattr(case_row, "last_activity_at", None) if case_row else None)
+        or getattr(case_row, "updated_at", None) if case_row else None
+        or getattr(req, "updated_at", None)
+        or getattr(req, "created_at", None)
+    )
+    if activity_ref:
+        inactive_for = now - activity_ref
+        if inactive_for >= timedelta(hours=72):
+            blockages.append(f"Dernière activité il y a {_format_elapsed_compact(activity_ref)}")
+
+    created_ref = _as_aware_utc(getattr(case_row, "created_at", None) if case_row else getattr(req, "created_at", None))
+    if created_ref and status_val in {"new", "open", "pending"} and (now - created_ref) >= timedelta(hours=48):
+        blockages.append("Dossier encore en statut initial depuis trop longtemps")
+
+    if case_row and high_risk and not has_professional:
+        blockages.append("Risque élevé sans suivi professionnel concret")
+
+    return {
+        "count": len(blockages),
+        "items": blockages[:4],
+        "has_blockage": bool(blockages),
+    }
+
+
+def _build_risk_ai_suggestion(req: Request) -> dict:
+    triage = score_request_risk(req)
+    suggested_label = triage.get("suggested_category_label")
+    matched = triage.get("matched_rules") or []
+    return {
+        "risk_score": int(triage.get("risk_score") or triage.get("score") or 0),
+        "risk_label": triage.get("risk_label") or triage.get("label"),
+        "suggested_category_code": triage.get("suggested_category_code"),
+        "suggested_category_label": suggested_label,
+        "matched_rules": matched,
+        "has_suggestion": bool(suggested_label),
+        "emergency_detected": bool(triage.get("emergency_detected")),
+        "emergency_reason_summary": triage.get("emergency_reason_summary"),
+    }
+
+
+def _append_case_event(
+    case_id: int,
+    event_type: str,
+    actor_user_id: int | None = None,
+    message: str | None = None,
+    metadata: dict | None = None,
+    visibility: str = "internal",
+) -> CaseEvent:
+    normalized_event = (event_type or "note_added").strip().lower()
+    if normalized_event not in CASE_EVENT_TYPES:
+        normalized_event = "note_added"
+    evt = CaseEvent(
+        case_id=int(case_id),
+        actor_user_id=actor_user_id,
+        event_type=normalized_event,
+        message=(message or "").strip() or None,
+        metadata_json=json.dumps(metadata or {}, ensure_ascii=False) if metadata else None,
+        visibility=(visibility or "internal").strip().lower() or "internal",
+        created_at=_now_utc(),
+    )
+    db.session.add(evt)
+    return evt
+
+
+def _upsert_case_participant(
+    case_id: int,
+    participant_type: str,
+    role: str,
+    user_id: int | None = None,
+    professional_lead_id: int | None = None,
+    external_name: str | None = None,
+    status: str = "active",
+) -> CaseParticipant:
+    q = CaseParticipant.query.filter(CaseParticipant.case_id == int(case_id))
+    q = q.filter(CaseParticipant.participant_type == participant_type)
+    if user_id is not None:
+        q = q.filter(CaseParticipant.user_id == int(user_id))
+    elif professional_lead_id is not None:
+        q = q.filter(CaseParticipant.professional_lead_id == int(professional_lead_id))
+    else:
+        q = q.filter(CaseParticipant.external_name == (external_name or "").strip())
+
+    row = q.first()
+    if row:
+        row.role = role
+        row.status = status
+        if external_name:
+            row.external_name = external_name.strip()
+        return row
+
+    row = CaseParticipant(
+        case_id=int(case_id),
+        participant_type=participant_type,
+        user_id=user_id,
+        professional_lead_id=professional_lead_id,
+        external_name=(external_name or "").strip() or None,
+        role=role,
+        status=status,
+        added_at=_now_utc(),
+    )
+    db.session.add(row)
+    return row
 
 
 def _send_status_email_async(recipient: str, subject: str, context: dict) -> None:
@@ -1156,6 +1487,17 @@ from ..utils.mfa import (
 admin_bp = Blueprint(
     "admin", __name__, url_prefix="/admin"
 )  # single templates path via app.py
+
+
+@admin_bp.app_context_processor
+def inject_admin_category_helpers():
+    return {
+        "request_category_label": request_category_label,
+        "REQUEST_CATEGORY_CHOICES": request_category_choices(),
+        "format_elapsed_compact": _format_elapsed_compact,
+        "elapsed_tone": _elapsed_tone,
+        "case_sla_snapshot": _case_sla_snapshot,
+    }
 
 
 @admin_bp.before_request
@@ -4707,7 +5049,10 @@ def update_status(req_id):
     if not req:
         return jsonify({"error": "Request not found"}), 404
     if not can_edit_request(req, current_user):
-        abort(403)
+        role = getattr(getattr(current_user, "role", None), "value", getattr(current_user, "role", None))
+        role = (role or "").strip().lower()
+        if role not in {"ops", "admin", "superadmin", "super_admin"}:
+            abort(403)
 
     new_status = (request.form.get("status") or "").strip()
     old_raw_status = req.status
@@ -5795,24 +6140,7 @@ def admin_request_new():
         db.session.flush()
         return user
 
-    category_rows = (
-        db.session.query(Request.category)
-        .filter(Request.category.isnot(None), func.trim(Request.category) != "")
-        .distinct()
-        .order_by(Request.category.asc())
-        .all()
-    )
-    categories = [str(row[0]).strip() for row in category_rows if row and row[0]]
-    if not categories:
-        categories = [
-            "general",
-            "social",
-            "housing",
-            "health",
-            "food",
-            "emergency",
-            "safety",
-        ]
+    categories = [code for code, _label in request_category_choices()]
 
     structures = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
     admins = (
@@ -5828,7 +6156,7 @@ def admin_request_new():
         "email": (request.form.get("email") or "").strip(),
         "phone": (request.form.get("phone") or "").strip(),
         "city": (request.form.get("city") or "").strip(),
-        "category": (request.form.get("category") or "").strip(),
+        "category": normalize_request_category((request.form.get("category") or "").strip()),
         "priority": (request.form.get("priority") or "standard").strip().lower(),
         "structure_id": (request.form.get("structure_id") or "").strip(),
         "owner_id": (request.form.get("owner_id") or "").strip(),
@@ -5847,6 +6175,8 @@ def admin_request_new():
             form_errors["city"] = "Veuillez renseigner la ville ou le territoire."
         if not form_data["category"]:
             form_errors["category"] = "Veuillez sélectionner une catégorie."
+        elif form_data["category"] not in set(REQUEST_CATEGORY_CODES):
+            form_errors["category"] = "Veuillez sélectionner une catégorie valide."
         if form_data["priority"] not in {"standard", "attention", "urgent"}:
             form_errors["priority"] = "Veuillez sélectionner une priorité valide."
         if form_data["email"] and "@" not in form_data["email"]:
@@ -5987,7 +6317,7 @@ def build_requests_query(base_query, request_args):
     base_query = _scope_requests(base_query)
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
-    category = (request_args.get("category") or "").strip()
+    category = normalize_request_category((request_args.get("category") or "").strip())
     risk = (request_args.get("risk") or "").strip().lower()
     risk_level = (request_args.get("risk_level") or "").strip().lower()
     no_owner = (request_args.get("no_owner") or "").strip() == "1"
@@ -6019,7 +6349,11 @@ def build_requests_query(base_query, request_args):
             )
         )
     if category:
-        base_query = base_query.filter(func.lower(Request.category) == category.lower())
+        category_variants = {category}
+        for legacy_code in ("general", "social", "medical", "tech", "admin", "other"):
+            if normalize_request_category(legacy_code) == category:
+                category_variants.add(legacy_code)
+        base_query = base_query.filter(func.lower(Request.category).in_([c.lower() for c in category_variants]))
 
     base_query = apply_risk_filter(base_query, risk, now)
     if risk_level in {"critical", "attention", "standard"}:
@@ -6374,6 +6708,11 @@ def admin_request_details(req_id: int):
             .filter(Request.id == req_id)
             .first_or_404()
         )
+    linked_case = None
+    if _cases_enabled():
+        linked_case = Case.query.filter(Case.request_id == req.id).first()
+    risk_ai_suggestion = _build_risk_ai_suggestion(req)
+    operational_blockages = _build_operational_blockages(req, linked_case)
     volunteer_request_states_supported = _table_exists("volunteer_request_states")
     volunteer_interests_supported = _table_exists("volunteer_interests")
     volunteer_actions_supported = _table_exists("volunteer_actions")
@@ -6515,6 +6854,9 @@ def admin_request_details(req_id: int):
                         req, activities, now
                     ),
                     case_summary=build_case_summary(req, locked_recommendation),
+                    risk_ai_suggestion=risk_ai_suggestion,
+                    operational_blockages=operational_blockages,
+                    linked_case=linked_case,
                     is_locked=True,
                     locked_by=locked_by,
                 ),
@@ -6634,9 +6976,579 @@ def admin_request_details(req_id: int):
             recommendation=recommendation,
             helpchain_recommendation=helpchain_recommendation,
             case_summary=case_summary,
+            risk_ai_suggestion=risk_ai_suggestion,
+            operational_blockages=operational_blockages,
+            linked_case=linked_case,
         ),
         200,
     )
+
+
+def _get_scoped_case_or_404(case_id: int) -> tuple[Case, Request]:
+    case_row = db.session.get(Case, int(case_id))
+    if not case_row:
+        abort(404)
+    req = _scope_requests(Request.query).filter(Request.id == case_row.request_id).first()
+    if not req:
+        abort(404)
+    return case_row, req
+
+
+def _priority_with_manual_guard(current_priority: str | None, derived_priority: str | None) -> str:
+    current_rank = CASE_PRIORITY_RANK.get((current_priority or "").strip().lower(), -1)
+    derived_rank = CASE_PRIORITY_RANK.get((derived_priority or "").strip().lower(), -1)
+    if current_rank > derived_rank:
+        return (current_priority or "").strip().lower() or "normal"
+    return (derived_priority or "").strip().lower() or "normal"
+
+
+def _apply_cases_risk_filter(query, risk_value: str):
+    risk = (risk_value or "").strip().lower()
+    score_col = func.coalesce(Case.risk_score, 0)
+    if risk == "critical":
+        return query.filter(score_col >= 85)
+    if risk == "high":
+        return query.filter(score_col >= 60, score_col <= 84)
+    if risk == "normal":
+        return query.filter(score_col >= 30, score_col <= 59)
+    if risk == "low":
+        return query.filter(score_col <= 29)
+    return query
+
+
+@admin_bp.post("/requests/<int:req_id>/open-case")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_open_case_from_request(req_id: int):
+    admin_required_404()
+    if not _cases_enabled():
+        flash("Case system tables are not available yet. Run migrations first.", "warning")
+        return redirect(url_for("admin.admin_request_details", req_id=req_id), code=303)
+
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
+    existing = Case.query.filter(Case.request_id == req.id).first()
+    if existing:
+        return redirect(url_for("admin.admin_case_detail", case_id=existing.id), code=303)
+
+    now = _now_utc()
+    triage = score_request_risk(req)
+    derived_priority = _priority_with_manual_guard("normal", triage.get("priority"))
+    case_row = Case(
+        request_id=req.id,
+        structure_id=getattr(req, "structure_id", None),
+        owner_user_id=None,
+        assigned_professional_lead_id=None,
+        status="new",
+        priority=derived_priority,
+        risk_score=int(triage.get("score") or 0),
+        opened_at=now,
+        assigned_at=None,
+        resolved_at=None,
+        closed_at=None,
+        last_activity_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    db.session.add(case_row)
+    db.session.flush()
+    _append_case_event(
+        case_id=case_row.id,
+        actor_user_id=getattr(current_user, "id", None),
+        event_type="case_created",
+        message=f"Case created from request #{req.id}",
+        metadata={"request_id": req.id},
+    )
+    _append_case_event(
+        case_id=case_row.id,
+        actor_user_id=getattr(current_user, "id", None),
+        event_type="triage_scored",
+        message=(
+            f"Triage scored at {int(triage.get('score') or 0)}/100 "
+            f"({risk_label_from_score(int(triage.get('score') or 0))})"
+        ),
+        metadata={
+            "risk_score": int(triage.get("score") or 0),
+            "risk_label": risk_label_from_score(int(triage.get("score") or 0)),
+            "derived_priority": derived_priority,
+            "matched_rules": triage.get("matched_rules") or [],
+            "suggested_category_code": triage.get("suggested_category_code"),
+            "suggested_category_label": triage.get("suggested_category_label"),
+        },
+    )
+    db.session.commit()
+    flash(f"Case #{case_row.id} opened.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
+@admin_bp.get("/cases")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_cases_list():
+    admin_required_404()
+    if not _cases_enabled():
+        flash("Case system tables are not available yet. Run migrations first.", "warning")
+        return render_template(
+            "admin/cases.html",
+            cases=[],
+            status="",
+            priority="",
+            owner="",
+            category="",
+            risk="",
+            stale=False,
+            statuses=list(CATEGORY_CASE_STATUSES),
+            priorities=list(CASE_PRIORITIES),
+            owners=[],
+            critical_count=0,
+            attention_count=0,
+            no_owner_count=0,
+            stale_count=0,
+        )
+
+    status = (request.args.get("status") or "").strip().lower()
+    priority = (request.args.get("priority") or "").strip().lower()
+    owner = (request.args.get("owner") or "").strip()
+    category = normalize_request_category((request.args.get("category") or "").strip())
+    risk = (request.args.get("risk") or "").strip().lower()
+    stale = (request.args.get("stale") or "").strip() == "1"
+    owner_id = None
+    owner_none = owner.lower() == "none"
+    if owner:
+        try:
+            owner_id = int(owner)
+        except Exception:
+            owner_id = None
+
+    scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+    query = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
+    activity_expr = func.coalesce(Case.last_activity_at, Case.updated_at, Case.created_at)
+    stale_threshold = _now_utc() - timedelta(hours=72)
+    if status in CATEGORY_CASE_STATUSES:
+        query = query.filter(Case.status == status)
+    if priority in CASE_PRIORITIES:
+        query = query.filter(Case.priority == priority)
+    if category:
+        category_variants = {category}
+        for legacy_code in ("general", "social", "medical", "tech", "admin", "other"):
+            if normalize_request_category(legacy_code) == category:
+                category_variants.add(legacy_code)
+        query = query.filter(func.lower(func.coalesce(Request.category, "")).in_([c.lower() for c in category_variants]))
+    if owner_id:
+        query = query.filter(Case.owner_user_id == owner_id)
+    elif owner_none:
+        query = query.filter(Case.owner_user_id.is_(None))
+    query = _apply_cases_risk_filter(query, risk)
+    if stale:
+        query = query.filter(activity_expr <= stale_threshold)
+
+    case_rows = (
+        query.options(
+            joinedload(Case.request),
+            joinedload(Case.owner_user),
+            joinedload(Case.assigned_professional_lead),
+        )
+        .order_by(
+            case(
+                ((func.coalesce(Case.risk_score, 0) >= 85), 0),
+                ((func.coalesce(Case.risk_score, 0) >= 60), 1),
+                else_=2,
+            ).asc(),
+            case(
+                ((Case.priority == "critical"), 0),
+                ((Case.priority == "high"), 1),
+                ((Case.priority == "normal"), 2),
+                else_=3,
+            ).asc(),
+            case((Case.owner_user_id.is_(None), 0), else_=1).asc(),
+            case((activity_expr <= stale_threshold, 0), else_=1).asc(),
+            activity_expr.desc().nullslast(),
+            Case.id.desc(),
+        )
+        .limit(300)
+        .all()
+    )
+
+    counts_base = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
+    score_col = func.coalesce(Case.risk_score, 0)
+    critical_count = counts_base.filter(score_col >= 85).count()
+    attention_count = counts_base.filter(score_col >= 60, score_col <= 84).count()
+    no_owner_count = counts_base.filter(Case.owner_user_id.is_(None)).count()
+    stale_count = counts_base.filter(activity_expr <= stale_threshold).count()
+
+    owners = (
+        AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
+        .order_by(AdminUser.username.asc())
+        .all()
+    )
+
+    return render_template(
+        "admin/cases.html",
+        cases=case_rows,
+        status=status,
+        priority=priority,
+        owner=owner,
+        category=category,
+        risk=risk,
+        stale=stale,
+        statuses=list(CATEGORY_CASE_STATUSES),
+        priorities=list(CASE_PRIORITIES),
+        owners=owners,
+        critical_count=critical_count,
+        attention_count=attention_count,
+        no_owner_count=no_owner_count,
+        stale_count=stale_count,
+    )
+
+
+@admin_bp.get("/cases/<int:case_id>")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_case_detail(case_id: int):
+    admin_required_404()
+    if not _cases_enabled():
+        flash("Case system tables are not available yet. Run migrations first.", "warning")
+        return redirect(url_for("admin.admin_requests"), code=303)
+
+    case_row, req = _get_scoped_case_or_404(case_id)
+    risk_ai_suggestion = _build_risk_ai_suggestion(req)
+    operational_blockages = _build_operational_blockages(req, case_row)
+    suggested_professionals = suggest_professional_leads_for_case(case_row, req, limit=8)
+    assistant_recommendation = build_case_assistant_recommendation(
+        case_row,
+        req,
+        risk_ai_suggestion,
+        suggested_professionals=suggested_professionals,
+    )
+    events = (
+        CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
+        .order_by(CaseEvent.created_at.desc(), CaseEvent.id.desc())
+        .limit(200)
+        .all()
+    )
+    participants = (
+        CaseParticipant.query.filter(CaseParticipant.case_id == case_row.id)
+        .order_by(CaseParticipant.added_at.desc(), CaseParticipant.id.desc())
+        .all()
+    )
+    owners = (
+        AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
+        .order_by(AdminUser.username.asc())
+        .all()
+    )
+    users = (
+        User.query.with_entities(User.id, User.username, User.email)
+        .order_by(User.username.asc())
+        .limit(300)
+        .all()
+    )
+    professionals = (
+        ProfessionalLead.query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
+        .limit(300)
+        .all()
+    )
+    return render_template(
+        "admin/case_detail.html",
+        case_row=case_row,
+        req=req,
+        events=events,
+        statuses=list(CATEGORY_CASE_STATUSES),
+        priorities=list(CASE_PRIORITIES),
+        participant_types=list(CASE_PARTICIPANT_TYPES),
+        participant_roles=list(CASE_PARTICIPANT_ROLES),
+        owners=owners,
+        users=users,
+        professionals=professionals,
+        participants=participants,
+        risk_ai_suggestion=risk_ai_suggestion,
+        operational_blockages=operational_blockages,
+        suggested_professionals=suggested_professionals,
+        assistant_recommendation=assistant_recommendation,
+    )
+
+
+@admin_bp.post("/cases/<int:case_id>/status")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_set_status(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+    new_status = (request.form.get("status") or "").strip().lower()
+    if new_status not in CATEGORY_CASE_STATUSES:
+        flash("Invalid case status.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    old_status = (case_row.status or "").strip().lower()
+    if old_status != new_status:
+        now = _now_utc()
+        case_row.status = new_status
+        case_row.last_activity_at = now
+        if new_status == "assigned" and not case_row.assigned_at:
+            case_row.assigned_at = now
+        if new_status == "resolved":
+            case_row.resolved_at = now
+            _append_case_event(
+                case_id=case_row.id,
+                actor_user_id=getattr(current_user, "id", None),
+                event_type="case_resolved",
+                message="Case marked as resolved",
+            )
+        if new_status == "closed":
+            case_row.closed_at = now
+            if not case_row.resolved_at:
+                case_row.resolved_at = now
+            _append_case_event(
+                case_id=case_row.id,
+                actor_user_id=getattr(current_user, "id", None),
+                event_type="case_closed",
+                message="Case marked as closed",
+            )
+        if new_status == "cancelled" and not case_row.closed_at:
+            case_row.closed_at = now
+        _append_case_event(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="status_changed",
+            message=f"Status changed: {old_status or '-'} -> {new_status}",
+            metadata={"old_status": old_status, "new_status": new_status},
+        )
+        db.session.commit()
+        flash("Case status updated.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
+@admin_bp.post("/cases/<int:case_id>/priority")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_set_priority(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+    new_priority = (request.form.get("priority") or "").strip().lower()
+    if new_priority not in CASE_PRIORITIES:
+        flash("Invalid case priority.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    old_priority = (case_row.priority or "").strip().lower()
+    if old_priority != new_priority:
+        case_row.priority = new_priority
+        case_row.last_activity_at = _now_utc()
+        _append_case_event(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="priority_changed",
+            message=f"Priority changed: {old_priority or '-'} -> {new_priority}",
+            metadata={"old_priority": old_priority, "new_priority": new_priority},
+        )
+        db.session.commit()
+        flash("Case priority updated.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
+@admin_bp.post("/cases/<int:case_id>/assign-owner")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_assign_owner(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+    owner_raw = (request.form.get("owner_user_id") or "").strip()
+    owner_id = None
+    if owner_raw:
+        try:
+            owner_id = int(owner_raw)
+        except Exception:
+            owner_id = None
+    if owner_id is not None and not db.session.get(AdminUser, owner_id):
+        flash("Selected owner does not exist.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    old_owner_id = case_row.owner_user_id
+    if old_owner_id != owner_id:
+        now = _now_utc()
+        case_row.owner_user_id = owner_id
+        case_row.last_activity_at = now
+        if owner_id and not case_row.assigned_at:
+            case_row.assigned_at = now
+            if case_row.status in {"new", "triaged"}:
+                case_row.status = "assigned"
+            _upsert_case_participant(
+                case_id=case_row.id,
+                participant_type="admin_user",
+                role="owner",
+                user_id=owner_id,
+                status="active",
+            )
+        _append_case_event(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="owner_assigned",
+            message=f"Owner changed: {old_owner_id or '-'} -> {owner_id or '-'}",
+            metadata={"old_owner_user_id": old_owner_id, "new_owner_user_id": owner_id},
+        )
+        db.session.commit()
+        flash("Case owner updated.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
+@admin_bp.post("/cases/<int:case_id>/assign-professional")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_assign_professional(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+    lead_raw = (request.form.get("assigned_professional_lead_id") or request.form.get("primary_professional_lead_id") or "").strip()
+    lead_id = None
+    if lead_raw:
+        try:
+            lead_id = int(lead_raw)
+        except Exception:
+            lead_id = None
+    if lead_id is not None and not db.session.get(ProfessionalLead, lead_id):
+        flash("Selected professional lead does not exist.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    old_lead_id = case_row.assigned_professional_lead_id
+    if old_lead_id != lead_id:
+        now = _now_utc()
+        case_row.assigned_professional_lead_id = lead_id
+        case_row.last_activity_at = now
+        if lead_id and not case_row.assigned_at:
+            case_row.assigned_at = now
+            if case_row.status in {"new", "triaged"}:
+                case_row.status = "assigned"
+        if lead_id:
+            _upsert_case_participant(
+                case_id=case_row.id,
+                participant_type="professional_lead",
+                role="primary_professional",
+                professional_lead_id=lead_id,
+                status="active",
+            )
+        _append_case_event(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="professional_assigned",
+            message=f"Primary professional lead changed: {old_lead_id or '-'} -> {lead_id or '-'}",
+            metadata={
+                "old_professional_lead_id": old_lead_id,
+                "new_professional_lead_id": lead_id,
+            },
+        )
+        db.session.commit()
+        flash("Case professional assignment updated.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
+@admin_bp.post("/cases/<int:case_id>/participants")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_add_participant(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+
+    participant_type = (request.form.get("participant_type") or "").strip().lower()
+    role = (request.form.get("role") or "contributor").strip().lower()
+    participant_status = (request.form.get("status") or "active").strip().lower()
+    user_raw = (request.form.get("user_id") or "").strip()
+    lead_raw = (request.form.get("professional_lead_id") or "").strip()
+    external_name = (request.form.get("external_name") or "").strip()
+
+    if participant_type not in CASE_PARTICIPANT_TYPES:
+        flash("Invalid participant type.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+    if role not in CASE_PARTICIPANT_ROLES:
+        role = "contributor"
+    if participant_status not in {"active", "inactive"}:
+        participant_status = "active"
+
+    user_id = None
+    lead_id = None
+    if user_raw:
+        try:
+            user_id = int(user_raw)
+        except Exception:
+            user_id = None
+    if lead_raw:
+        try:
+            lead_id = int(lead_raw)
+        except Exception:
+            lead_id = None
+
+    if user_id is not None and not db.session.get(User, user_id):
+        flash("Selected user does not exist.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+    if lead_id is not None and not db.session.get(ProfessionalLead, lead_id):
+        flash("Selected professional lead does not exist.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    if participant_type == "professional_lead" and not lead_id:
+        flash("professional_lead participant requires professional_lead_id.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+    if participant_type in {"admin_user", "professional_user"} and not user_id:
+        flash("Selected participant type requires user_id.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+    if participant_type in {"association", "external_contact"} and not external_name:
+        flash("External participant requires external name.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    _upsert_case_participant(
+        case_id=case_row.id,
+        participant_type=participant_type,
+        role=role,
+        user_id=user_id,
+        professional_lead_id=lead_id,
+        external_name=external_name or None,
+        status=participant_status,
+    )
+    case_row.last_activity_at = _now_utc()
+    _append_case_event(
+        case_id=case_row.id,
+        actor_user_id=getattr(current_user, "id", None),
+        event_type="participant_added",
+        message="Participant added/updated",
+        metadata={
+            "participant_type": participant_type,
+            "role": role,
+            "status": participant_status,
+            "user_id": user_id,
+            "professional_lead_id": lead_id,
+            "external_name": external_name or None,
+        },
+    )
+    db.session.commit()
+    flash("Case participant updated.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
+@admin_bp.post("/cases/<int:case_id>/events")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_add_event(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+    event_type = (request.form.get("event_type") or "note_added").strip().lower()
+    message = (request.form.get("message") or "").strip()
+    metadata = _safe_json_dict(request.form.get("metadata_json"))
+    visibility = (request.form.get("visibility") or "internal").strip().lower()
+    if visibility not in {"internal", "public"}:
+        visibility = "internal"
+
+    if not event_type:
+        event_type = "note_added"
+    if not message and not metadata:
+        flash("Event is empty.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    case_row.last_activity_at = _now_utc()
+    _append_case_event(
+        case_id=case_row.id,
+        actor_user_id=getattr(current_user, "id", None),
+        event_type=event_type,
+        message=message,
+        metadata=metadata or None,
+        visibility=visibility,
+    )
+    db.session.commit()
+    flash("Case event added.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
 
 @admin_bp.post("/requests/<int:req_id>/unlock", endpoint="admin_request_unlock")

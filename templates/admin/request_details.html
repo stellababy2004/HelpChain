@@ -58,7 +58,7 @@
             {% else %}
               <span class="badge text-bg-light border">Risque: Standard</span>
             {% endif %}
-            <span class="badge text-bg-light border">{{ req.category }}</span>
+            <span class="badge text-bg-light border">{{ request_category_label(req.category) }}</span>
           </div>
           <div class="hc-case-header__meta mt-3">
             <div class="hc-case-header__meta-item">
@@ -111,6 +111,16 @@
           <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=req.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-success btn-sm" {% if is_locked %}disabled{% endif %}>Affecter un responsable</button>
+          </form>
+        {% endif %}
+        {% if linked_case %}
+          <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_case_detail', case_id=linked_case.id) }}">
+            Voir le case #{{ linked_case.id }}
+          </a>
+        {% else %}
+          <form method="post" action="{{ url_for('admin.admin_open_case_from_request', req_id=req.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-primary btn-sm">Open Case</button>
           </form>
         {% endif %}
       </div>
@@ -170,7 +180,7 @@
             </li>
             <li><strong>Structure:</strong> {{ req.structure.name if req.structure else (req.structure_id or '—') }}</li>
             <li><strong>Service:</strong> {{ req.service.name if req.service else (req.service_id or '—') }}</li>
-            <li><strong>Catégorie:</strong> {{ req.category or '—' }}</li>
+            <li><strong>Catégorie:</strong> {{ request_category_label(req.category) }}</li>
             <li><strong>Ville / territoire:</strong> {{ req.city or req.location_text or '—' }}</li>
             <li><strong>Date de création:</strong> {{ req.created_at or '—' }}</li>
             <li><strong>Dernière activité:</strong> {{ req.updated_at or req.created_at or '—' }}</li>
@@ -189,11 +199,19 @@
       <h3>Moteur de risque social</h3>
       <div class="hc-muted">Lecture opérationnelle prioritaire</div>
     </div>
+    {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
+    <article class="hc-risk-emergency-alert mb-3" aria-label="Alerte prioritaire">
+      <div class="hc-risk-emergency-alert__eyebrow">Alerte prioritaire</div>
+      <div class="hc-risk-emergency-alert__title">Situation critique detectee</div>
+      <p class="mb-1">{{ risk_ai_suggestion.emergency_reason_summary or 'Protection immediate a evaluer.' }}</p>
+      <p class="mb-0 hc-risk-emergency-alert__hint">Evaluation humaine immediate recommandee.</p>
+    </article>
+    {% endif %}
     <div class="hc-risk-summary-grid">
       <article class="hc-risk-summary-card">
         <h4>Évaluation du risque</h4>
-        <p><strong>Score de risque:</strong> {{ req.risk_score or 0 }}/100</p>
-        <p><strong>Niveau de risque:</strong> {{ risk_level_key|capitalize }}</p>
+        <p><strong>Score de risque:</strong> {{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (req.risk_score or 0) }}/100</p>
+        <p><strong>Niveau de risque:</strong> {{ risk_ai_suggestion.risk_label if risk_ai_suggestion else risk_level_key|capitalize }}</p>
         <p class="mb-0"><strong>Dernière mise à jour:</strong> {{ req.risk_last_updated or "—" }}</p>
       </article>
       <article class="hc-risk-summary-card">
@@ -208,6 +226,35 @@
           {% endif %}
         </ul>
       </article>
+      {% if risk_ai_suggestion and risk_ai_suggestion.has_suggestion %}
+      <article class="hc-risk-summary-card hc-risk-summary-card--suggestion">
+        <h4>Suggestion de catégorie</h4>
+        <p class="hc-risk-summary-card__lead">
+          <strong>Catégorie suggérée par analyse:</strong>
+          <span class="hc-risk-summary-card__value">{{ risk_ai_suggestion.suggested_category_label }}</span>
+        </p>
+        {% set matched_count = (risk_ai_suggestion.matched_rules or [])|length %}
+        {% if (risk_ai_suggestion.risk_score or 0) >= 80 and matched_count >= 2 %}
+          {% set confidence_label = 'élevée' %}
+        {% elif matched_count >= 1 %}
+          {% set confidence_label = 'moyenne' %}
+        {% else %}
+          {% set confidence_label = 'faible' %}
+        {% endif %}
+        <p class="mb-2 hc-risk-summary-card__lead">
+          <strong>Confiance (indicative):</strong>
+          <span class="hc-risk-summary-card__value">{{ confidence_label }}</span>
+        </p>
+        {% if risk_ai_suggestion.matched_rules %}
+          <div class="small text-muted mb-1 hc-risk-summary-card__signals-label">Signaux détectés</div>
+          <div class="d-flex flex-wrap gap-1 hc-risk-summary-card__signals">
+            {% for rule in risk_ai_suggestion.matched_rules[:4] %}
+              <span class="badge text-bg-light border hc-risk-summary-card__signal">{{ (rule.label or '')|replace('_', ' ')|replace(':', ' · ') }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </article>
+      {% endif %}
       <article class="hc-risk-summary-card">
         <h4>Synthèse opérationnelle</h4>
         <p>{{ case_summary or 'Résumé non disponible pour cette situation.' }}</p>
@@ -215,6 +262,14 @@
         <p class="mb-1">{{ helpchain_recommendation.action if helpchain_recommendation else 'Maintenir le suivi courant.' }}</p>
         <p class="mb-0"><strong>Raison:</strong> {{ helpchain_recommendation.reason if helpchain_recommendation else 'Aucune alerte spécifique détectée.' }}</p>
       </article>
+      {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
+      <article class="hc-risk-summary-card">
+        <h4>Escalade critique</h4>
+        <p><strong>Statut:</strong> CRITICAL</p>
+        <p><strong>Priorite derivee:</strong> critical</p>
+        <p class="mb-0"><strong>Motif:</strong> {{ risk_ai_suggestion.emergency_reason_summary }}</p>
+      </article>
+      {% endif %}
     </div>
     <p class="hc-muted mt-2 mb-0">
       HelpChain appuie la priorisation opérationnelle et ne remplace pas l’évaluation humaine.
@@ -226,6 +281,24 @@
         <div class="card-body">
           <h3 class="mb-2">Résumé de la situation</h3>
           <p class="mb-0">{{ case_summary or 'Résumé non disponible pour cette situation.' }}</p>
+        </div>
+      </section>
+
+      <section class="card border-0 shadow-sm mb-3 hc-card hc-case-section hc-main-block hc-case-detail-card--blockages">
+        <div class="card-body">
+          <h3 class="mb-2">Blocages opérationnels détectés</h3>
+          {% if operational_blockages and operational_blockages.has_blockage %}
+            {% if operational_blockages.count > 1 %}
+              <div class="small text-muted mb-2">{{ operational_blockages.count }} blocages détectés</div>
+            {% endif %}
+            <ul class="hc-blockage-list mb-0">
+              {% for item in operational_blockages['items'] %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="mb-0 text-muted">Aucun blocage critique détecté.</p>
+          {% endif %}
         </div>
       </section>
 

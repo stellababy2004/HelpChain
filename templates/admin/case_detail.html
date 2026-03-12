@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+{% block title %}Admin - Case #{{ case_row.id }}{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--case-detail">
+  <div class="hc-card mb-3 hc-page-hero hc-case-detail-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div class="hc-case-detail-hero__copy">
+        <h1 class="hc-admin-title">Case #{{ case_row.id }}</h1>
+        <div class="hc-muted">Linked request: <a href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">#{{ req.id }}</a></div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">Back to cases</a>
+    </div>
+  </div>
+
+  <div class="hc-admin-grid">
+    <main>
+      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--header">
+        <h3 class="h6 mb-3">Case Header</h3>
+        <div class="hc-case-overview-grid">
+          <div class="hc-case-overview-item">
+            <span>Status</span>
+            <strong>{{ case_row.status }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>Priority</span>
+            <strong>{{ case_row.priority }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>Risk score</span>
+            <strong>{{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (case_row.risk_score if case_row.risk_score is not none else '—') }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>Opened</span>
+            <strong>{{ case_row.opened_at or case_row.created_at or '—' }}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--summary">
+        <h3 class="h6 mb-3">Request Summary</h3>
+        {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
+          <div class="hc-risk-emergency-alert mb-3" aria-label="Alerte prioritaire">
+            <div class="hc-risk-emergency-alert__eyebrow">Alerte prioritaire</div>
+            <div class="hc-risk-emergency-alert__title">Situation critique detectee</div>
+            <p class="mb-1">{{ risk_ai_suggestion.emergency_reason_summary or 'Protection immediate a evaluer.' }}</p>
+            <p class="mb-0 hc-risk-emergency-alert__hint">Revue operateur immediate recommandee.</p>
+          </div>
+        {% endif %}
+        <div class="hc-case-summary-grid">
+          <div class="hc-case-summary-item hc-case-summary-item--wide">
+            <span>Title</span>
+            <strong>{{ req.title or ('Request #' ~ req.id) }}</strong>
+          </div>
+          <div class="hc-case-summary-item">
+            <span>Category</span>
+            <strong>{{ request_category_label(req.category) }}</strong>
+          </div>
+          <div class="hc-case-summary-item">
+            <span>City / territory</span>
+            <strong>{{ req.city or '—' }}</strong>
+          </div>
+        </div>
+        {% if risk_ai_suggestion and risk_ai_suggestion.has_suggestion %}
+          <p class="mb-1"><strong>Suggestion de catégorie:</strong> {{ risk_ai_suggestion.suggested_category_label }}</p>
+          {% if risk_ai_suggestion.matched_rules %}
+            <div class="small text-muted mb-1">Signaux détectés</div>
+            <div class="d-flex flex-wrap gap-1 mb-1">
+              {% for rule in risk_ai_suggestion.matched_rules[:4] %}
+                <span class="badge text-bg-light border">{{ (rule.label or '')|replace('_', ' ')|replace(':', ' · ') }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+        {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
+          <p class="mb-1"><strong>Escalade critique:</strong> {{ risk_ai_suggestion.emergency_reason_summary }}</p>
+        {% endif %}
+        <div class="hc-case-description mt-3">
+          <div class="small text-muted mb-1">Description</div>
+          <p class="mb-0">{{ req.description or req.message or '—' }}</p>
+        </div>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--assistant">
+        <h3 class="h6 mb-3">Assistant opérationnel</h3>
+        <div class="small text-muted mb-2">Suggestion de prochaine action</div>
+        <p class="mb-1"><strong>Action recommandée:</strong> {{ assistant_recommendation.action_label }}</p>
+        <p class="mb-1"><strong>Priorité d'action:</strong> {{ assistant_recommendation.urgency }}</p>
+        {% if assistant_recommendation.reason_tags %}
+          <div class="small text-muted mb-1">Pourquoi</div>
+          <div class="d-flex flex-wrap gap-1 mb-2">
+            {% for tag in assistant_recommendation.reason_tags %}
+              <span class="badge text-bg-light border">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <p class="mb-0">{{ assistant_recommendation.operator_summary }}</p>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--blockages">
+        <h3 class="h6 mb-2">Blocages opérationnels détectés</h3>
+        {% if operational_blockages and operational_blockages.has_blockage %}
+          {% if operational_blockages.count > 1 %}
+            <div class="small text-muted mb-2">{{ operational_blockages.count }} blocages détectés</div>
+          {% endif %}
+          <ul class="hc-blockage-list mb-0">
+            {% for item in operational_blockages['items'] %}
+              <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="mb-0 text-muted">Aucun blocage critique détecté.</p>
+        {% endif %}
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--matches">
+        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+          <h3 class="h6 mb-0">Professionnels suggérés</h3>
+          <span class="small text-muted">Matching explicable</span>
+        </div>
+        <div class="table-responsive hc-case-suggestions-tablewrap">
+          <table class="table table-sm align-middle mb-0 hc-case-suggestions-table">
+            <thead>
+              <tr>
+                <th>Score</th>
+                <th>Professionnel</th>
+                <th>Ville</th>
+                <th>Profession</th>
+                <th>Contact</th>
+                <th>Motifs</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in suggested_professionals %}
+                {% set lead = item.lead %}
+                <tr>
+                  <td><span class="badge text-bg-light border">{{ item.score }}</span></td>
+                  <td>
+                    <div>{{ lead.full_name or ('Lead #' ~ lead.id) }}</div>
+                    <div class="small text-muted">{{ lead.organization or '—' }}</div>
+                  </td>
+                  <td>{{ lead.city or '—' }}</td>
+                  <td>{{ lead.profession or '—' }}</td>
+                  <td>
+                    {% if lead.phone %}
+                      <div class="small">{{ lead.phone }}</div>
+                    {% endif %}
+                    {% if lead.email and not lead.email.endswith('@esante-fhir.local') %}
+                      <div class="small text-muted" title="{{ lead.email }}">{{ lead.email }}</div>
+                    {% elif lead.phone %}
+                      <div class="small text-muted">Contact telephonique</div>
+                    {% else %}
+                      <div class="small text-muted">Contact limite</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1">
+                      {% for tag in item.reason_tags %}
+                        <span class="badge text-bg-light border">{{ tag }}</span>
+                      {% endfor %}
+                    </div>
+                  </td>
+                  <td class="text-end">
+                    <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="assigned_professional_lead_id" value="{{ lead.id }}">
+                      <button class="btn btn-outline-primary btn-sm" type="submit">Assigner</button>
+                    </form>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="7" class="text-muted">Aucune suggestion exploitable pour ce case.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card">
+        <h3 class="h6 mb-3">Timeline</h3>
+        <div class="list-group list-group-flush">
+          {% for ev in events %}
+            {% set event_title = {
+              'triage_scored': 'Risque evalue',
+              'case_created': 'Dossier cree',
+              'professional_assigned': 'Professionnel assigne',
+              'owner_assigned': 'Responsable assigne',
+              'status_changed': 'Statut mis a jour',
+              'priority_changed': 'Priorite mise a jour',
+              'participant_added': 'Participant ajoute',
+              'note_added': 'Note ajoutee',
+              'case_resolved': 'Dossier resolu',
+              'case_closed': 'Dossier cloture'
+            }.get(ev.event_type, (ev.event_type or 'Activite')|replace('_', ' ')|title) %}
+            {% set event_context = '' %}
+            {% if ev.event_type == 'triage_scored' %}
+              {% set event_context = 'Niveau de risque evalue pour orientation operationnelle.' %}
+            {% elif ev.event_type == 'case_created' %}
+              {% set event_context = 'Dossier cree a partir de la demande #' ~ req.id %}
+            {% elif ev.event_type == 'professional_assigned' %}
+              {% set event_context = 'Un professionnel a ete rattache au dossier.' %}
+            {% elif ev.event_type == 'owner_assigned' %}
+              {% set event_context = 'Le pilotage du dossier a ete attribue.' %}
+            {% elif ev.event_type == 'participant_added' %}
+              {% set event_context = 'Un intervenant supplementaire a ete ajoute au suivi.' %}
+            {% endif %}
+            <div class="list-group-item px-0">
+              <div class="d-flex justify-content-between gap-3">
+                <div class="flex-grow-1">
+                  <div><strong>{{ event_title }}</strong></div>
+                  {% if ev.message and ev.message != event_title %}
+                    <div class="small text-muted mt-1">{{ ev.message }}</div>
+                  {% elif event_context %}
+                    <div class="small text-muted mt-1">{{ event_context }}</div>
+                  {% endif %}
+                </div>
+                <div class="small text-muted text-nowrap">{{ ev.created_at.strftime('%H:%M') if ev.created_at and ev.created_at.strftime else ev.created_at }}</div>
+              </div>
+            </div>
+          {% else %}
+            <div class="text-muted">No events yet.</div>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card">
+        <h3 class="h6 mb-3">Additional Participants</h3>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Participant</th>
+                <th>Added</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in participants %}
+                <tr>
+                  <td>{{ p.participant_type }}</td>
+                  <td>{{ p.role }}</td>
+                  <td>{{ p.status }}</td>
+                  <td>
+                    {% if p.professional_lead %}{{ p.professional_lead.full_name or ('Lead #' ~ p.professional_lead_id) }}
+                    {% elif p.user %}{{ p.user.username or p.user.email or ('User #' ~ p.user_id) }}
+                    {% elif p.external_name %}{{ p.external_name }}
+                    {% else %}—{% endif %}
+                  </td>
+                  <td>{{ p.added_at }}</td>
+                </tr>
+              {% else %}
+                <tr><td colspan="5" class="text-muted">No participants yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <aside class="hc-case-detail-aside">
+      {% set case_sla = case_sla_snapshot(case_row) %}
+      <section class="hc-card mb-3 p-3 hc-case-detail-card">
+        <h3 class="h6 mb-2">Délai cible</h3>
+        <p class="mb-1"><strong>Cible:</strong> {{ case_sla.target_label }}</p>
+        <p class="mb-1"><strong>État:</strong> <span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span></p>
+        <p class="mb-0" title="{{ case_sla.deadline or '—' }}">{{ case_sla.detail }}</p>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card">
+        <h3 class="h6 mb-3">Case Controls</h3>
+        {% set case_activity_ref = case_row.last_activity_at or case_row.updated_at or case_row.created_at %}
+        <div class="small text-muted mb-3">
+          <div><strong>Risk score:</strong> {{ case_row.risk_score if case_row.risk_score is not none else '—' }}</div>
+          <div><strong>Opened:</strong> {{ case_row.opened_at or '—' }}</div>
+          <div><strong>Assigned:</strong> {{ case_row.assigned_at or '—' }}</div>
+          <div><strong>Resolved:</strong> {{ case_row.resolved_at or '—' }}</div>
+          <div><strong>Closed:</strong> {{ case_row.closed_at or '—' }}</div>
+          <div>
+            <strong>Last activity:</strong>
+            <span class="hc-elapsed hc-elapsed--{{ elapsed_tone(case_activity_ref) }}">{{ format_elapsed_compact(case_activity_ref) }}</span>
+            <span title="{{ case_activity_ref or '—' }}">{{ case_activity_ref or '—' }}</span>
+          </div>
+        </div>
+
+        <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}" class="mb-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="form-label">Status</label>
+          <div class="d-flex gap-2">
+            <select name="status" class="form-select form-select-sm">
+              {% for s in statuses %}
+                <option value="{{ s }}" {% if case_row.status == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Update</button>
+          </div>
+        </form>
+
+        <form method="post" action="{{ url_for('admin.admin_case_set_priority', case_id=case_row.id) }}" class="mb-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="form-label">Priority</label>
+          <div class="d-flex gap-2">
+            <select name="priority" class="form-select form-select-sm">
+              {% for p in priorities %}
+                <option value="{{ p }}" {% if case_row.priority == p %}selected{% endif %}>{{ p }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Update</button>
+          </div>
+        </form>
+
+        <form method="post" action="{{ url_for('admin.admin_case_assign_owner', case_id=case_row.id) }}" class="mb-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="form-label">Owner</label>
+          <div class="d-flex gap-2">
+            <select name="owner_user_id" class="form-select form-select-sm">
+              <option value="">Unassigned</option>
+              {% for o in owners %}
+                <option value="{{ o[0] }}" {% if case_row.owner_user_id == o[0] %}selected{% endif %}>{{ o[1] }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Assign</button>
+          </div>
+        </form>
+
+        <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="form-label">Primary professional lead</label>
+          <div class="d-flex gap-2">
+            <select name="assigned_professional_lead_id" class="form-select form-select-sm">
+              <option value="">Unassigned</option>
+              {% for lead in professionals %}
+                <option value="{{ lead.id }}" {% if case_row.assigned_professional_lead_id == lead.id %}selected{% endif %}>
+                  #{{ lead.id }} - {{ lead.full_name or lead.email }}
+                </option>
+              {% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Assign</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="hc-card p-3 mb-3 hc-case-detail-card">
+        <h3 class="h6 mb-3">Quick Actions</h3>
+        <div class="d-flex flex-wrap gap-2">
+          <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="resolved">
+            <button class="btn btn-outline-success btn-sm" type="submit">Resolve case</button>
+          </form>
+          <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="closed">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Close case</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="hc-card p-3 hc-case-detail-card">
+        <h3 class="h6 mb-3">Add Participant</h3>
+        <form method="post" action="{{ url_for('admin.admin_case_add_participant', case_id=case_row.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <label class="form-label">Participant type</label>
+            <select name="participant_type" class="form-select form-select-sm">
+              {% for t in participant_types %}
+                <option value="{{ t }}">{{ t }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Role</label>
+            <select name="role" class="form-select form-select-sm">
+              {% for r in participant_roles %}
+                <option value="{{ r }}">{{ r }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">User (optional)</label>
+            <select name="user_id" class="form-select form-select-sm">
+              <option value="">—</option>
+              {% for u in users %}
+                <option value="{{ u[0] }}">#{{ u[0] }} - {{ u[1] or u[2] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Professional lead (optional)</label>
+            <select name="professional_lead_id" class="form-select form-select-sm">
+              <option value="">—</option>
+              {% for lead in professionals %}
+                <option value="{{ lead.id }}">#{{ lead.id }} - {{ lead.full_name or lead.email }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">External name (optional)</label>
+            <input type="text" name="external_name" class="form-control form-control-sm" placeholder="Association / external contact">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select form-select-sm">
+              <option value="active">active</option>
+              <option value="inactive">inactive</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add participant</button>
+        </form>
+      </section>
+
+      <section class="hc-card p-3">
+        <h3 class="h6 mb-3">Add Event / Note</h3>
+        <form method="post" action="{{ url_for('admin.admin_case_add_event', case_id=case_row.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="mb-2">
+            <label class="form-label">Event type</label>
+            <input type="text" name="event_type" class="form-control form-control-sm" value="note_added">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Message</label>
+            <textarea name="message" rows="3" class="form-control form-control-sm" placeholder="Internal note"></textarea>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Metadata JSON (optional)</label>
+            <textarea name="metadata_json" rows="3" class="form-control form-control-sm" placeholder='{"key":"value"}'></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Visibility</label>
+            <select name="visibility" class="form-select form-select-sm">
+              <option value="internal">internal</option>
+              <option value="public">public</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-sm" type="submit">Add event</button>
+        </form>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}

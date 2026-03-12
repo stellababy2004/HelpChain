@@ -14,7 +14,7 @@
         {% if draft.phone and draft.email %} / {% endif %}
         {{ draft.email or "" }}
       </p>
-      <p><strong>{{ _("Category:") }}</strong> {{ draft.category }}</p>
+      <p><strong>{{ _("Category:") }}</strong> {{ request_category_label(draft.category) }}</p>
       <p><strong>{{ _("Urgency:") }}</strong> {{ draft.urgency }}</p>
       <p><strong>{{ _("Location:") }}</strong> {{ draft.location_text or "-" }}</p>
       <hr>
@@ -35,6 +35,7 @@
       {% endif %}
       <input type="text" name="website" id="hp_website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:1px;width:1px;">
       <input type="hidden" name="started_at" id="started_at" value="{{ draft.started_at or '' }}">
+      <input type="hidden" name="entrypoint" value="{{ entrypoint or draft.entrypoint or 'public' }}">
       <button type="submit" class="btn btn-primary">
         {{ _("Confirm and submit") }}
       </button>

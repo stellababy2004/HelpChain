@@ -1,5 +1,5 @@
 (() => {
-  const rows = Array.from(document.querySelectorAll("[data-request-id]"));
+  const rows = Array.from(document.querySelectorAll("tr[data-request-id]"));
   if (!rows.length) return;
 
   const citySelect = document.getElementById("hcFilterCity");

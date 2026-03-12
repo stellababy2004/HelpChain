@@ -76,6 +76,16 @@
           </ul>
         </div>
 
+        {% if public_intake_mode == 'pilot' %}
+          <div class="alert alert-warning small mb-3" role="status">
+            {{ _("Accès pilote limité. Le dépôt de demandes est ouvert dans le cadre d’un pilote territorial et sera traité selon les capacités locales.") }}
+          </div>
+        {% elif public_intake_mode == 'closed' %}
+          <div class="alert alert-info small mb-3" role="status">
+            {{ _("Les dépôts publics sont temporairement suspendus. Merci de contacter votre structure locale ou de revenir ultérieurement.") }}
+          </div>
+        {% endif %}
+
         {# Honeypot #}
         <div class="hc-sr__honeypot">
           <label>{{ _('Website') }}</label>
@@ -86,6 +96,7 @@
         {% if csrf_token is defined %}
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         {% endif %}
+        <input type="hidden" name="entrypoint" value="{{ entrypoint or 'public' }}">
         <input type="hidden" name="started_at" value="{{ request.form.get('started_at', '') }}">
         <input type="hidden" name="urgency" value="{{ request.form.get('urgency', 'normal') }}">
 
@@ -154,22 +165,21 @@
               <label class="form-label" for="srCategory">{{ _("Catégorie") }}</label>
               <select id="srCategory" name="category" class="form-select" data-hc-event="sr_field_click" data-hc-field="category">
                 <option value="" disabled {% if not request.form.get('category') %}selected{% endif %}>{{ _("Choisir une catégorie") }}</option>
-                <option value="medical" {% if request.form.get('category')=='medical' %}selected{% endif %}>{{ _("Aide médicale") }}</option>
-                <option value="social" {% if request.form.get('category')=='social' %}selected{% endif %}>{{ _("Soutien social") }}</option>
-                <option value="tech" {% if request.form.get('category')=='tech' %}selected{% endif %}>{{ _("Problème technique") }}</option>
-                <option value="admin" {% if request.form.get('category')=='admin' %}selected{% endif %}>{{ _("Aide administrative") }}</option>
-                <option value="other" {% if request.form.get('category')=='other' %}selected{% endif %}>{{ _("Autre") }}</option>
+                {% set selected_category = normalize_request_category(request.form.get('category') or request.args.get('category') or '') %}
+                {% for category_code, category_label in REQUEST_CATEGORY_CHOICES %}
+                  <option value="{{ category_code }}" {% if selected_category == category_code %}selected{% endif %}>{{ category_label }}</option>
+                {% endfor %}
               </select>
               <p class="hc-category-suggestions__help">{{ _("Suggestions de catégories pour orienter votre demande plus rapidement.") }}</p>
               <div class="hc-category-suggestions" role="group" aria-label="{{ _('Suggestions de catégories') }}">
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Urgence" data-suggestion-value="medical">Urgence</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Logement" data-suggestion-value="social">Logement</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Aide médicale" data-suggestion-value="medical">Aide médicale</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Soutien social" data-suggestion-value="social">Soutien social</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Accès administratif" data-suggestion-value="admin">Accès administratif</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Soutien psychologique" data-suggestion-value="social">Soutien psychologique</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Accès numérique" data-suggestion-value="tech">Accès numérique</button>
-                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Aide alimentaire" data-suggestion-value="social">Aide alimentaire</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Urgence sociale" data-suggestion-value="emergency">Urgence sociale</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Logement / hébergement" data-suggestion-value="housing">Logement / hébergement</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Santé / accès aux soins" data-suggestion-value="health">Santé / accès aux soins</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Aide alimentaire" data-suggestion-value="food">Aide alimentaire</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Aide administrative" data-suggestion-value="admin_help">Aide administrative</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Isolement / personne vulnérable" data-suggestion-value="isolation">Isolement / personne vulnérable</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Violence / protection" data-suggestion-value="violence">Violence / protection</button>
+                <button type="button" class="hc-suggestion-pill" data-suggestion-label="Orientation vers service social" data-suggestion-value="orientation">Orientation vers service social</button>
               </div>
             </div>
 
@@ -257,7 +267,15 @@
 
           <div class="hc-step-actions hc-sr__actions">
             <button type="button" class="btn btn-outline-secondary hc-step-back" data-prev-step="2">← {{ _("Retour") }}</button>
-            <button type="submit" class="btn btn-primary hc-form-submit" data-hc-event="sr_submit_click" data-hc-cta="submit_request">{{ _("Envoyer la demande") }}</button>
+            <button
+              type="submit"
+              class="btn btn-primary hc-form-submit"
+              data-hc-event="sr_submit_click"
+              data-hc-cta="submit_request"
+              {% if public_intake_mode == 'closed' %}disabled aria-disabled="true"{% endif %}
+            >
+              {{ _("Envoyer la demande") }}
+            </button>
           </div>
         </div>
       </form>

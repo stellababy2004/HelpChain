@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Admin - Cases{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Cases</h1>
+        <div class="hc-muted">Operational cases linked to requests.</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Back to requests</a>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3 hc-cases-toolbar-card">
+    <div class="hc-risk-overview mb-3">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None) }}">
+        <span class="hc-risk-overview__label">Situations critiques</span>
+        <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
+      </a>
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None) }}">
+        <span class="hc-risk-overview__label">Situations à vérifier</span>
+        <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
+      </a>
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None) }}">
+        <span class="hc-risk-overview__label">Cas sans responsable</span>
+        <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
+      </a>
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale='1') }}">
+        <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
+        <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
+      </a>
+    </div>
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-12 col-md-3">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for s in statuses %}
+            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Priority</label>
+        <select name="priority" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for p in priorities %}
+            <option value="{{ p }}" {% if priority == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Owner</label>
+        <select name="owner" class="form-select form-select-sm">
+          <option value="">All</option>
+          <option value="none" {% if owner == 'none' %}selected{% endif %}>Unassigned</option>
+          {% for o in owners %}
+            <option value="{{ o[0] }}" {% if owner == (o[0]|string) %}selected{% endif %}>{{ o[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-3">
+        <label class="form-label">Catégorie</label>
+        <select name="category" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for code, label in REQUEST_CATEGORY_CHOICES %}
+            <option value="{{ code }}" {% if category == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label">Risk</label>
+        <select name="risk" class="form-select form-select-sm">
+          <option value="">All</option>
+          <option value="critical" {% if risk == 'critical' %}selected{% endif %}>Critical</option>
+          <option value="high" {% if risk == 'high' %}selected{% endif %}>High</option>
+          <option value="normal" {% if risk == 'normal' %}selected{% endif %}>Normal</option>
+          <option value="low" {% if risk == 'low' %}selected{% endif %}>Low</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-12 d-flex gap-2 align-items-center">
+        <label class="form-check mb-0">
+          <input type="checkbox" class="form-check-input" name="stale" value="1" {% if stale %}checked{% endif %}>
+          <span class="form-check-label">Sans action 72h</span>
+        </label>
+        <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">Reset</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell hc-cases-table-shell">
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table hc-cases-table mb-0">
+        <thead>
+          <tr>
+            <th class="case-col">Case</th>
+            <th class="risk-col">Risk</th>
+            <th class="priority-col">Priority</th>
+            <th class="request-col">Request</th>
+            <th class="city-col">City</th>
+            <th class="owner-col">Owner</th>
+            <th class="primary-pro-col">Primary professional</th>
+            <th class="activity-col">Dernière action</th>
+            <th class="actions-col text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cases %}
+            <tr>
+              <td class="case-col">
+                <div>#{{ c.id }}</div>
+                <div class="small mt-1"><span class="badge text-bg-light border">{{ c.status }}</span></div>
+              </td>
+              <td class="risk-col">
+                {% set risk_score = c.risk_score if c.risk_score is not none else 0 %}
+                {% set request_text = ((c.request.title if c.request else '') ~ ' ' ~ (c.request.description if c.request else '') ~ ' ' ~ (c.request.message if c.request else ''))|lower %}
+                {% set emergency_hint = 'suicid' in request_text or 'mourir' in request_text or 'violence' in request_text or 'danger' in request_text or 'enfant en danger' in request_text %}
+                {% if risk_score >= 85 %}
+                  <span class="badge hc-risk-badge hc-risk-badge--critical">{{ risk_score }}/100 CRITICAL</span>
+                  {% if emergency_hint %}
+                    <div class="small mt-1"><span class="badge text-bg-danger">Urgence sociale</span></div>
+                  {% endif %}
+                {% elif risk_score >= 60 %}
+                  <span class="badge hc-risk-badge hc-risk-badge--high">{{ risk_score }}/100 HIGH</span>
+                {% elif risk_score >= 30 %}
+                  <span class="badge hc-risk-badge hc-risk-badge--normal">{{ risk_score }}/100 NORMAL</span>
+                {% else %}
+                  <span class="badge hc-risk-badge hc-risk-badge--low">{{ risk_score }}/100 LOW</span>
+                {% endif %}
+              </td>
+              <td class="priority-col">
+                {% if c.priority == 'critical' %}
+                  <span class="badge text-bg-danger">{{ c.priority }}</span>
+                {% elif c.priority == 'high' %}
+                  <span class="badge text-bg-warning text-dark">{{ c.priority }}</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">{{ c.priority }}</span>
+                {% endif %}
+                {% set case_sla = case_sla_snapshot(c) %}
+                <div class="small mt-1">
+                  <span class="hc-sla hc-sla--{{ case_sla.state }}" title="Délai cible {{ case_sla.target_label }} · {{ case_sla.deadline or '—' }}">
+                    {{ case_sla.state_label }}
+                  </span>
+                </div>
+              </td>
+              <td class="request-col">
+                <div><a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a></div>
+                <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }} · {{ c.request.title if c.request else '—' }}">
+                  {{ request_category_label(c.request.category if c.request else '') }} · {{ c.request.title if c.request else '—' }}
+                </div>
+              </td>
+              <td class="city-col" title="{{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}">
+                {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}
+              </td>
+              <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}">{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}</td>
+              <td class="primary-pro-col" title="{% if c.assigned_professional_lead %}{{ c.assigned_professional_lead.full_name or ('Lead #' ~ c.assigned_professional_lead_id) }}{% elif c.assigned_professional_lead_id %}Lead #{{ c.assigned_professional_lead_id }}{% else %}—{% endif %}">
+                {% if c.assigned_professional_lead %}
+                  {{ c.assigned_professional_lead.full_name or ('Lead #' ~ c.assigned_professional_lead_id) }}
+                {% elif c.assigned_professional_lead_id %}
+                  Lead #{{ c.assigned_professional_lead_id }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
+              <td class="activity-col" title="{{ activity_ref or '—' }}">
+                <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
+                <div class="small text-muted">{{ activity_ref or '—' }}</div>
+              </td>
+              <td class="actions-col text-end">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Open</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="9" class="text-center text-muted py-4">No cases found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

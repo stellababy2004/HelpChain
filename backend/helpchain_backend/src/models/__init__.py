@@ -34,6 +34,9 @@ from .guardrail_counter import GuardrailCounter  # noqa: F401
 from .magic_link_token import MagicLinkToken  # noqa: F401
 from .notification import Notification  # noqa: F401
 from .professional_lead import ProfessionalLead  # noqa: F401
+from .case import Case  # noqa: F401
+from .case_event import CaseEvent  # noqa: F401
+from .case_participant import CaseParticipant  # noqa: F401
 
 # Split models (not present in `backend.models`)
 from .refresh_token import RefreshToken  # noqa: F401
@@ -71,6 +74,9 @@ __all__ = [
     "VolunteerAction",
     "MagicLinkToken",
     "ProfessionalLead",
+    "Case",
+    "CaseEvent",
+    "CaseParticipant",
     "VolunteerRequestState",
     "VolunteerMatchFeedback",
     "EmailSendEvent",

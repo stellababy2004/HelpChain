@@ -36,6 +36,12 @@ from werkzeug.security import check_password_hash
 
 from ..authz import can_view_request
 from backend.core.tenant import current_structure_id
+from ..constants.categories import (
+    REQUEST_CATEGORY_CODES,
+    normalize_request_category,
+    request_category_choices,
+    request_category_label,
+)
 from ..category_data import ALIASES, CATEGORIES, COMMON
 from ..extensions import csrf, limiter
 from ..models import (
@@ -355,6 +361,10 @@ def inject_template_helpers():
         "safe_url_for": safe_url_for,
         "time_ago": time_ago,
         "og_image_url": og_image_url,
+        "normalize_request_category": normalize_request_category,
+        "request_category_label": request_category_label,
+        "REQUEST_CATEGORY_CHOICES": request_category_choices(),
+        "public_intake_mode": _public_intake_mode(),
     }
 
 
@@ -427,6 +437,13 @@ def _emit_event(event: str, props: dict | None = None) -> None:
         current_app.logger.info("[EVENT] %s %s", event, props or {})
     except Exception:
         pass
+
+
+def _public_intake_mode() -> str:
+    mode = (current_app.config.get("HC_PUBLIC_INTAKE_MODE") or "open").strip().lower()
+    if mode not in {"open", "pilot", "closed"}:
+        return "open"
+    return mode
 
 
 @main_bp.post("/csp-report")
@@ -2246,18 +2263,8 @@ def validate_submit_request_form(form):
         errors["phone"] = msg
         errors["email"] = msg
 
-    allowed_categories = {
-        "medical",
-        "social",
-        "tech",
-        "admin",
-        "other",
-        "general",
-        "emergency",
-        "food",
-        "техническа помощ",
-        "",
-    }
+    category = normalize_request_category(category)
+    allowed_categories = set(REQUEST_CATEGORY_CODES) | {""}
     if category not in allowed_categories:
         errors["category"] = _("Please select a valid category.")
 
@@ -2280,7 +2287,7 @@ def validate_submit_request_form(form):
         "name": name,
         "phone": phone,
         "email": email,
-        "category": category or "general",
+        "category": category or "orientation",
         "urgency": urgency or "normal",
         "priority": priority,
         "title": title,
@@ -2301,8 +2308,41 @@ def submit_request():
         ("&#9733;", "fas fa-user-clock", _("Fast matching - no bureaucracy")),
         ("&#9889;", "fas fa-lock", _("We keep your data private")),
     ]
+    intake_mode = _public_intake_mode()
+    entrypoint_raw = (
+        request.args.get("entrypoint")
+        or request.args.get("source")
+        or request.args.get("from")
+        or ""
+    ).strip().lower()
+    allowed_entrypoints = {
+        "public",
+        "homepage",
+        "volunteer",
+        "intervenant",
+        "professional",
+        "admin",
+    }
+    entrypoint = entrypoint_raw if entrypoint_raw in allowed_entrypoints else "public"
+    session["request_entrypoint"] = entrypoint
 
     if request.method == "POST":
+        if intake_mode == "closed":
+            flash(
+                _(
+                    "Les dépôts publics sont temporairement suspendus. "
+                    "Merci de contacter votre structure locale ou de réessayer plus tard."
+                ),
+                "warning",
+            )
+            return (
+                render_template(
+                    "submit_request.html",
+                    trust_items=trust_items,
+                    entrypoint=entrypoint,
+                ),
+                200,
+            )
         current_app.logger.warning("SUBMIT_REQUEST POST hit")
         current_app.logger.warning("Form keys=%s", list(request.form.keys()))
         current_app.logger.warning(
@@ -2353,6 +2393,7 @@ def submit_request():
                     "submit_request.html",
                     trust_items=trust_items,
                     form_errors=errors,
+                    entrypoint=entrypoint,
                 ),
                 status_code,
             )
@@ -2360,7 +2401,7 @@ def submit_request():
         # ✅ title is NOT NULL in DB
         if not cleaned["title"]:
             cleaned["title"] = (
-                _("Request: %(category)s", category=cleaned["category"])
+                _("Request: %(category)s", category=request_category_label(cleaned["category"]))
                 if cleaned["category"]
                 else _("Help request")
             )
@@ -2377,6 +2418,7 @@ def submit_request():
             "location_text": cleaned["location_text"],
             # Frontend anti-bot timing (optional, can be missing)
             "started_at": cleaned["started_at"],
+            "entrypoint": entrypoint,
         }
 
         if current_app.config.get("TESTING", False):
@@ -2453,6 +2495,7 @@ def submit_request():
         return render_template(
             "request_preview.html",
             draft=session["request_draft"],
+            entrypoint=entrypoint,
         )
 
     trust_items = [
@@ -2460,7 +2503,11 @@ def submit_request():
         ("&#9733;", "fas fa-user-clock", _("Fast matching - no bureaucracy")),
         ("&#9889;", "fas fa-lock", _("We keep your data private")),
     ]
-    return render_template("submit_request.html", trust_items=trust_items)
+    return render_template(
+        "submit_request.html",
+        trust_items=trust_items,
+        entrypoint=entrypoint,
+    )
 
 
 @main_bp.post("/submit_request/confirm")
@@ -2468,6 +2515,15 @@ def submit_request_confirm():
     draft = session.get("request_draft")
     if not draft:
         flash(_("Session expired. Please submit the request again."), "error")
+        return redirect(url_for("main.submit_request"))
+    if _public_intake_mode() == "closed":
+        flash(
+            _(
+                "Les dépôts publics sont temporairement suspendus. "
+                "Merci de contacter votre structure locale ou de réessayer plus tard."
+            ),
+            "warning",
+        )
         return redirect(url_for("main.submit_request"))
 
     try:
@@ -2607,6 +2663,13 @@ def submit_request_confirm():
             current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
 
         session.pop("request_draft", None)
+        entrypoint = (
+            (request.form.get("entrypoint") or "").strip().lower()
+            or (draft.get("entrypoint") or "").strip().lower()
+            or (session.get("request_entrypoint") or "").strip().lower()
+            or "public"
+        )
+        session.pop("request_entrypoint", None)
         session["last_request_id"] = req.id
 
         category = draft.get("category")
@@ -2634,7 +2697,11 @@ def submit_request_confirm():
             meta={"request_id": req.id, "category": getattr(req, "category", None)},
         )
 
-        return redirect(url_for("main.profile"))
+        if entrypoint in {"admin"}:
+            return redirect(url_for("admin.admin_requests"))
+        if entrypoint in {"volunteer", "intervenant", "professional"}:
+            return redirect(url_for("main.dashboard"))
+        return redirect(url_for("main.submit_request_check_email"))
 
     except Exception as e:
         current_app.logger.exception("CONFIRM FAILED: %s", e)
@@ -2650,6 +2717,29 @@ def success():
     return (
         render_template("success.html", request_id=request_id, is_admin=is_admin),
         200,
+    )
+
+
+@main_bp.get("/submit_request/check_email")
+def submit_request_check_email():
+    email = (session.get("requester_email") or "").strip().lower()
+    if not email:
+        return redirect(url_for("main.submit_request"))
+    try:
+        local, domain = email.split("@", 1)
+    except ValueError:
+        local, domain = email, ""
+    if local and len(local) > 2:
+        masked_local = f"{local[:2]}***"
+    elif local:
+        masked_local = f"{local[:1]}***"
+    else:
+        masked_local = "***"
+    masked_email = f"{masked_local}@{domain}" if domain else masked_local
+    return render_template(
+        "submit_request_check_email.html",
+        email=email,
+        masked_email=masked_email,
     )
 
 

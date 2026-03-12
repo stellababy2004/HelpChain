@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="hc-admin-wrap hc-admin-wrap--requests hc-density-compact">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact">
   <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
     <a href="{{ safe_url_for('main.index') }}">Accueil</a>
     <span>/</span>
@@ -21,7 +21,7 @@
     _('Are you sure you want to continue?')
   ]) %}
 
-  <div class="hc-card mb-3 hc-admin-headerCard">
+  <div class="hc-card mb-3 hc-admin-headerCard hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
@@ -155,24 +155,24 @@
     </div>
   </section>
 
-  <div class="hc-requests-toolbar mb-3 hc-admin-stickybar" id="hcRequestsToolbar">
+  <div class="hc-requests-toolbar mb-3 hc-admin-stickybar hc-requests-toolbar--wide" id="hcRequestsToolbar">
   <div class="hc-risk-overview mb-2">
-    <div class="hc-risk-overview__item">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical') }}">
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
       <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
-    </div>
-    <div class="hc-risk-overview__item">
+    </a>
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high') }}">
       <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
       <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
-    </div>
-    <div class="hc-risk-overview__item">
+    </a>
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none') }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
       <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
-    </div>
-    <div class="hc-risk-overview__item">
+    </a>
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1') }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
       <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
-    </div>
+    </a>
   </div>
 
   <div class="hc-risk-filters mb-2">
@@ -183,15 +183,15 @@
     <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Réinitialiser les filtres</a>
   </div>
 
+  {% set selected_category = normalize_request_category(request.args.get('category') or '') %}
   <form class="row g-2 align-items-end mb-2" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
-    <div class="col-12 col-xl-5">
+    <div class="col-12 col-xl-4">
       <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
         autofocus
         placeholder="Rechercher par nom, titre, description..." aria-label="Rechercher" />
       {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
       {% if show_deleted %}<input type="hidden" name="deleted" value="1">{% endif %}
       {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
-      {% if request.args.get('category') %}<input type="hidden" name="category" value="{{ request.args.get('category') }}">{% endif %}
       {% if queue %}<input type="hidden" name="queue" value="{{ queue }}">{% endif %}
       {% if sla_kind %}<input type="hidden" name="sla_kind" value="{{ sla_kind }}">{% endif %}
       {% if sla_days %}<input type="hidden" name="sla_days" value="{{ sla_days }}">{% endif %}
@@ -219,7 +219,15 @@
         <option value="LOW">Low</option>
       </select>
     </div>
-    <div class="col-6 col-md-3 col-xl-2 d-grid">
+    <div class="col-6 col-md-3 col-xl-2">
+      <select class="form-select" name="category" id="hcToolbarCategory" aria-label="{{ _('Category') }}">
+        <option value="">{{ _('Category') }}</option>
+        {% for code, label in REQUEST_CATEGORY_CHOICES %}
+          <option value="{{ code }}" {% if selected_category == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-6 col-md-3 col-xl-1 d-grid">
       <button class="btn btn-primary" type="submit">Rechercher</button>
     </div>
   </form>
@@ -293,7 +301,7 @@
         </select>
       </div>
 
-      <div class="col-xl-4 col-lg-4">
+      <div class="col-xl-3 col-lg-3">
         <div class="form-check form-switch pt-2">
           <input
             class="form-check-input"
@@ -307,15 +315,12 @@
         </div>
       </div>
 
-      <div class="col-xl-4 col-lg-3 d-grid">
+      <div class="col-xl-2 col-lg-12 d-grid">
         <button class="btn btn-primary" type="submit">{{ _('Apply filters') }}</button>
       </div>
 
       {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
       {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
-      {% if request.args.get('category') %}
-      <input type="hidden" name="category" value="{{ request.args.get('category') }}">
-      {% endif %}
       {% if queue %}<input type="hidden" name="queue" value="{{ queue }}">{% endif %}
       {% if sla_kind %}<input type="hidden" name="sla_kind" value="{{ sla_kind }}">{% endif %}
       {% if sla_days %}<input type="hidden" name="sla_days" value="{{ sla_days }}">{% endif %}
@@ -329,7 +334,7 @@
   {% if request.args.get('category') %}
   <div class="mt-2">
     <span class="badge text-bg-primary">
-      {{ _('Category') }}: {{ request.args.get('category') }}
+      {{ _('Category') }}: {{ request_category_label(request.args.get('category')) }}
     </span>
     <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days if queue == 'sla' and sla_kind else None) }}">{{ _('Clear') }}</a>
   </div>
@@ -424,34 +429,7 @@
         {% endif %}
         {% set requester_label = r.name or r.requester_name or '—' %}
         {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
-        {% set category_raw = (r.category or '') %}
-        {% set category_map = {
-          'aide_alimentaire': 'Aide alimentaire',
-          'hebergement_logement': 'Hébergement / logement',
-          'hebergement': 'Hébergement',
-          'logement': 'Logement',
-          'violence_domestique': 'Violence domestique',
-          'violence': 'Violence',
-          'protection_violence': 'Protection / violence',
-          'acces_administratif': 'Accès administratif',
-          'soutien_psychologique': 'Soutien psychologique',
-          'acces_numerique': 'Accès numérique',
-          'aide_technique': 'Aide technique',
-          'aide_medicale': 'Aide médicale',
-          'soutien_social': 'Soutien social',
-          'urgence': 'Urgence',
-          'admin': 'Accès administratif'
-        } %}
-        {% set category_translated = _(category_raw) if category_raw else '' %}
-        {% if not category_raw %}
-          {% set category_label = '—' %}
-        {% elif category_raw in category_map %}
-          {% set category_label = category_map[category_raw] %}
-        {% elif category_translated and category_translated != category_raw %}
-          {% set category_label = category_translated %}
-        {% else %}
-          {% set category_label = category_raw|replace('_', ' ')|replace('-', ' ')|trim|title %}
-        {% endif %}
+        {% set category_label = request_category_label(r.category) %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
             data-request-id="{{ r.id }}"
