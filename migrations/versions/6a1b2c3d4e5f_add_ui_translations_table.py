@@ -22,7 +22,7 @@ def upgrade():
         sa.Column("key", sa.String(length=255), nullable=False),
         sa.Column("locale", sa.String(length=16), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.text("1")),
+        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.UniqueConstraint("key", "locale", name="uq_ui_translations_key_locale"),
@@ -39,4 +39,3 @@ def downgrade():
     op.drop_index("ix_ui_translations_locale", table_name="ui_translations")
     op.drop_index("ix_ui_translations_key", table_name="ui_translations")
     op.drop_table("ui_translations")
-

@@ -926,7 +926,7 @@ class UiTranslation(db.Model):
     key = Column(String(255), nullable=False, index=True)
     locale = Column(String(16), nullable=False, index=True)
     text = Column(Text, nullable=False)
-    is_active = Column(Boolean, nullable=False, default=True, server_default=db.text("1"))
+    is_active = Column(Boolean, nullable=False, default=True, server_default=db.true())
     created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
     updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
 
