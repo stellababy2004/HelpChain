@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Detect database file
         id: detect_db
@@ -134,3 +134,4 @@ jobs:
       - name: Skipped (no DB found)
         if: ${{ steps.detect_db.outputs.db_path == '' }}
         run: echo "No database file found; backup job skipped."
+
