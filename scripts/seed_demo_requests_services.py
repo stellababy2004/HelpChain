@@ -366,7 +366,7 @@ def _ensure_seed_user() -> User:
         is_active=True,
     )
     if hasattr(user, "set_password"):
-        user.set_password("DemoRequesterServices123!")
+        user.set_password("Example-Test-Password-123!")
     db.session.add(user)
     db.session.commit()
     return user

@@ -12,10 +12,10 @@ class TestAdminUser:
     def test_set_password_valid(self):
         """Test setting valid password"""
         admin = AdminUser()
-        admin.set_password("ValidPass123")
+        admin.set_password("Example-Test-Password-123!")
 
         assert admin.password_hash is not None
-        assert check_password_hash(admin.password_hash, "ValidPass123")
+        assert check_password_hash(admin.password_hash, "Example-Test-Password-123!")
 
     def test_set_password_too_short(self):
         """Test setting password that's too short"""

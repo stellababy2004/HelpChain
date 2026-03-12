@@ -142,7 +142,7 @@ def admin_user_id(permissions_app):
         user = User(
             username="testadmin",
             email="testadmin@example.com",
-            password_hash=generate_password_hash("password123"),
+            password_hash=generate_password_hash("fixture-password"),
         )
         db.session.add(user)
         db.session.flush()
@@ -158,7 +158,7 @@ def regular_user_id(permissions_app):
         user = User(
             username="regularuser",
             email="regular@example.com",
-            password_hash=generate_password_hash("password123"),
+            password_hash=generate_password_hash("fixture-password"),
         )
         db.session.add(user)
         db.session.commit()

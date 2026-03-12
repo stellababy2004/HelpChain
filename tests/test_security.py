@@ -17,7 +17,7 @@ class TestSecurity:
         admin = AdminUser()
 
         # Валидни пароли
-        assert admin.set_password("ValidPass123") is None  # Няма грешка
+        assert admin.set_password("Example-Test-Password-123!") is None  # Няма грешка
 
         # Невалидни пароли
         with pytest.raises(ValueError, match="Паролата трябва да бъде поне 8 символа"):
@@ -43,11 +43,13 @@ class TestSecurity:
         from backend.models import AdminUser
 
         admin = AdminUser()
-        admin.set_password("TestPassword123")
+        admin.set_password("Example-Test-Password-123!")
 
         assert admin.password_hash is not None
-        assert admin.password_hash != "TestPassword123"  # Трябва да е хеширана
-        assert admin.check_password("TestPassword123") is True
+        assert (
+            admin.password_hash != "Example-Test-Password-123!"
+        )  # Трябва да е хеширана
+        assert admin.check_password("Example-Test-Password-123!") is True
         assert admin.check_password("WrongPassword") is False
 
     def test_csrf_protection_disabled_in_tests(self, app):

@@ -393,7 +393,7 @@ def _resolve_seed_user() -> User:
         role="user",
         is_active=True,
     )
-    user.set_password("DemoRequester123!")
+    user.set_password("Example-Test-Password-123!")
     db.session.add(user)
     db.session.commit()
     return user

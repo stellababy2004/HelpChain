@@ -59,9 +59,9 @@ def standalone_admin_user_id(app_with_defaults):
 
         user = User(username="standalone_admin", email="standalone@example.com")
         try:
-            user.set_password("password123")
+            user.set_password("fixture-password")
         except Exception:
-            user.password_hash = generate_password_hash("password123")
+            user.password_hash = generate_password_hash("fixture-password")
         db.session.add(user)
         db.session.flush()
         db.session.add(UserRole(user_id=user.id, role_id=admin_role.id))
@@ -95,9 +95,9 @@ def test_has_permission_denies_missing_role(app_with_defaults):
     with app_with_defaults.app_context():
         user = User(username="no_role_user", email="norole@example.com")
         try:
-            user.set_password("password123")
+            user.set_password("fixture-password")
         except Exception:
-            user.password_hash = generate_password_hash("password123")
+            user.password_hash = generate_password_hash("fixture-password")
         db.session.add(user)
         db.session.commit()
         user_id = user.id

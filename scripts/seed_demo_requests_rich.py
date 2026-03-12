@@ -227,7 +227,7 @@ def _ensure_seed_user() -> User:
         role="user",
         is_active=True,
     )
-    user.set_password("DemoRequesterRich123!")
+    user.set_password("Example-Test-Password-123!")
     db.session.add(user)
     db.session.commit()
     return user
