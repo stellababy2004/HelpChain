@@ -744,7 +744,7 @@ class StructureService(db.Model):
     structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
     code = Column(String(64), nullable=False)
     name = Column(String(255), nullable=False)
-    is_active = Column(Boolean, nullable=False, default=True, server_default="1")
+    is_active = Column(Boolean, nullable=False, default=True, server_default=db.true())
     created_at = Column(DateTime, nullable=False, default=utc_now)
 
     structure = relationship("Structure", back_populates="services", lazy="joined")
@@ -813,7 +813,7 @@ class Request(db.Model):
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, nullable=True, onupdate=utc_now)
     is_archived = Column(
-        Boolean, nullable=False, default=False, server_default="0", index=True
+        Boolean, nullable=False, default=False, server_default=db.false(), index=True
     )
     archived_at = Column(DateTime, nullable=True)
     deleted_at = Column(DateTime, nullable=True, index=True)
@@ -943,7 +943,7 @@ class UiLocaleLock(db.Model):
 
     id = Column(Integer, primary_key=True)
     locale = Column(String(16), nullable=False, unique=True, index=True)
-    is_locked = Column(Boolean, nullable=False, default=False, server_default=db.text("0"))
+    is_locked = Column(Boolean, nullable=False, default=False, server_default=db.false())
     locked_at = Column(DateTime, nullable=True, index=True)
     locked_by_admin_user_id = Column(
         Integer, ForeignKey("admin_users.id"), nullable=True, index=True
@@ -981,7 +981,7 @@ class UiTranslationFreeze(db.Model):
     __tablename__ = "ui_translation_freeze"
 
     id = Column(Integer, primary_key=True)
-    is_active = Column(Boolean, nullable=False, default=False, server_default=db.text("0"))
+    is_active = Column(Boolean, nullable=False, default=False, server_default=db.false())
     release_tag = Column(String(64), nullable=True)
     note = Column(String(255), nullable=True)
     activated_at = Column(DateTime, nullable=True, index=True)
