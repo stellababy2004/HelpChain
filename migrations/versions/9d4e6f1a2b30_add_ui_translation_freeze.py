@@ -19,7 +19,7 @@ def upgrade():
     op.create_table(
         "ui_translation_freeze",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+        sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("release_tag", sa.String(length=64), nullable=True),
         sa.Column("note", sa.String(length=255), nullable=True),
         sa.Column("activated_at", sa.DateTime(), nullable=True),

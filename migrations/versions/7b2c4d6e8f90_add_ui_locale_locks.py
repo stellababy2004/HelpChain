@@ -20,7 +20,7 @@ def upgrade():
         "ui_locale_locks",
         sa.Column("id", sa.Integer(), primary_key=True),
         sa.Column("locale", sa.String(length=16), nullable=False),
-        sa.Column("is_locked", sa.Boolean(), nullable=False, server_default=sa.text("0")),
+        sa.Column("is_locked", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("locked_at", sa.DateTime(), nullable=True),
         sa.Column("locked_by_admin_user_id", sa.Integer(), nullable=True),
         sa.Column("note", sa.String(length=255), nullable=True),
