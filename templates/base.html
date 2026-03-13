@@ -436,14 +436,6 @@
       else hc_languages_all
     ) %}
     <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
-      <style>
-        .hc-brand-mark{
-          width:24px;
-          height:24px;
-          color:#1f3a5f;
-          margin-top:2px;
-        }
-      </style>
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
@@ -534,13 +526,13 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
-                {{ _('Fonctionnement') }}
+              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
+                {{ _('Professionnels') }}
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
-                {{ _('Professionnels') }}
+              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
+                {{ _('Fonctionnement') }}
               </a>
             </li>
             <li class="nav-item">

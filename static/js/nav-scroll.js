@@ -25,9 +25,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.scrollY > 16) {
       nav.classList.add("is-scrolled");
       document.body.classList.add("hc-nav-scrolled");
+      document.body.classList.add("hc-scrolled");
     } else {
       nav.classList.remove("is-scrolled");
       document.body.classList.remove("hc-nav-scrolled");
+      document.body.classList.remove("hc-scrolled");
     }
   }
 

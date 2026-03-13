@@ -5168,6 +5168,26 @@ body.hc-page-home .hc-hero h1 {
   background: none !important;
 }
 
+/* ===== HelpChain Premium Navbar (public only) ===== */
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]) .hc-navbar {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.75) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.25s ease;
+}
+
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]) .hc-brand-mark {
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+}
+
+body.hc-scrolled:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]) .hc-navbar {
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
 /* HOME: hero veil must sit behind content (fix washed-out headline) */
 body.hc-page-home .hc-hero {
   position: relative;
@@ -5946,23 +5966,23 @@ body:not([data-hc-page^="/admin"]) .hc-public-nav-root.hc-navbar {
   position: sticky;
   top: 0;
   z-index: 1040;
-  min-height: 72px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  background: rgba(248, 251, 255, 0.92) !important;
+  min-height: 62px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  background: rgba(250, 252, 255, 0.78) !important;
   border-bottom: 1px solid rgba(15, 23, 42, 0.1) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   box-shadow: none;
 }
 
 body:not([data-hc-page^="/admin"]) .hc-public-nav-root.hc-navbar.is-scrolled {
-  min-height: 64px;
-  padding-top: 6px;
-  padding-bottom: 6px;
-  background: rgba(255, 255, 255, 0.96) !important;
+  min-height: 56px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  background: rgba(255, 255, 255, 0.92) !important;
   border-bottom-color: rgba(15, 23, 42, 0.12) !important;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 body:not([data-hc-page^="/admin"]) .hc-public-nav-root .container-fluid {
@@ -5996,18 +6016,18 @@ body:not([data-hc-page^="/admin"]) .hc-public-nav-root .hc-brand-subtitle {
 
   body:not([data-hc-page^="/admin"]) .hc-public-nav-root .navbar-nav {
     align-items: center;
-    gap: 4px;
+    gap: 6px;
   }
 }
 
 body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 11px;
+  gap: 4px;
+  padding: 6px 12px;
   border-radius: 10px;
   color: rgba(15, 23, 42, 0.78) !important;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
   line-height: 1.2;
   text-decoration: none;
@@ -6034,18 +6054,30 @@ body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link.is-active {
 }
 
 body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link.hc-nav-cta {
-  margin-left: 2px;
-  padding: 9px 13px;
+  margin-left: 6px;
+  padding: 7px 14px;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.13);
-  border: 1px solid rgba(37, 99, 235, 0.28);
-  color: rgba(29, 78, 216, 0.98) !important;
+  background: linear-gradient(135deg, rgba(29, 78, 216, 0.98), rgba(37, 99, 235, 0.92));
+  border: 1px solid rgba(29, 78, 216, 0.5);
+  color: #ffffff !important;
   font-weight: 700;
+  box-shadow: 0 10px 20px rgba(30, 64, 175, 0.18);
+}
+
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .hc-nav-intervenant-links__item {
+  color: rgba(15, 23, 42, 0.68);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .hc-nav-intervenant-links__item:hover {
+  color: rgba(15, 23, 42, 0.85);
+  border-color: rgba(37, 99, 235, 0.25);
 }
 
 body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link.hc-nav-cta:hover {
-  background: rgba(37, 99, 235, 0.18);
-  border-color: rgba(37, 99, 235, 0.34);
+  background: linear-gradient(135deg, rgba(29, 78, 216, 1), rgba(37, 99, 235, 0.98));
+  border-color: rgba(29, 78, 216, 0.65);
+  box-shadow: 0 12px 24px rgba(30, 64, 175, 0.22);
 }
 
 body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link:focus-visible,
