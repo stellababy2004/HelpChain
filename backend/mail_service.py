@@ -397,7 +397,20 @@ def send_notification_email(
         if not (
             mail_server and mail_port and mail_user and mail_pass and mail_sender
         ) and not resend_enabled:
-            logger.error("SMTP not configured (missing MAIL_* settings).")
+            missing = []
+            if not mail_server:
+                missing.append("MAIL_SERVER")
+            if not mail_port:
+                missing.append("MAIL_PORT")
+            if not mail_user:
+                missing.append("MAIL_USERNAME")
+            if not mail_pass:
+                missing.append("MAIL_PASSWORD")
+            if not mail_sender:
+                missing.append("MAIL_DEFAULT_SENDER")
+            logger.error(
+                "SMTP not configured (missing %s).", ", ".join(missing) or "MAIL_*"
+            )
             _log_email_event(
                 email_h=email_h,
                 purpose=purpose,

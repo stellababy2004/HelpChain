@@ -727,6 +727,33 @@ class NotificationQueue(db.Model):
     error_message = Column(Text, nullable=True)
 
 
+class NotificationJob(db.Model):
+    """Database-backed notification job for resilient delivery."""
+
+    __tablename__ = "notification_jobs"
+
+    id = Column(Integer, primary_key=True)
+    channel = Column(String(32), nullable=False, index=True)
+    event_type = Column(String(64), nullable=False, index=True)
+    recipient = Column(String(255), nullable=False, index=True)
+    subject = Column(String(255), nullable=True)
+    payload_json = Column(Text, nullable=True)
+    status = Column(
+        String(16), nullable=False, default="pending", server_default="pending", index=True
+    )
+    attempts = Column(Integer, nullable=False, default=0, server_default="0")
+    max_attempts = Column(Integer, nullable=False, default=5, server_default="5")
+    next_retry_at = Column(DateTime, nullable=True, index=True)
+    sent_at = Column(DateTime, nullable=True)
+    last_error = Column(Text, nullable=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True, index=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+
+    __table_args__ = (
+        Index("ix_notification_jobs_status_next", "status", "next_retry_at"),
+    )
+
 class Structure(db.Model):
     __tablename__ = "structures"
 

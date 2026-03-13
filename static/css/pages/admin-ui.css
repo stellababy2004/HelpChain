@@ -3025,6 +3025,35 @@ body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table td.hc-co
   white-space: nowrap;
 }
 
+/* Reason chips: severity tiers for operational scanability */
+.hc-admin-requests-page .hc-reason-chip{
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid rgba(15,23,42,.12);
+  background: rgba(248,250,252,.95);
+  color: rgba(15,23,42,.82);
+}
+
+.hc-admin-requests-page .hc-reason-chip--critical{
+  background: rgba(254,242,242,.95);
+  border-color: rgba(220,38,38,.35);
+  color: rgba(153,27,27,.92);
+}
+
+.hc-admin-requests-page .hc-reason-chip--warning{
+  background: rgba(255,251,235,.95);
+  border-color: rgba(245,158,11,.35);
+  color: rgba(146,64,14,.92);
+}
+
+.hc-admin-requests-page .hc-reason-chip--neutral{
+  background: rgba(241,245,249,.95);
+  border-color: rgba(148,163,184,.35);
+  color: rgba(51,65,85,.86);
+}
+
 .hc-admin-requests-page .hc-cases-table .hc-risk-badge{
   font-weight: 700;
   letter-spacing: .01em;

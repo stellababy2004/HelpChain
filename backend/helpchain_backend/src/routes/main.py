@@ -3306,45 +3306,62 @@ def contact():
         .first()
     )
 
-    if existing:
-        existing.full_name = form_data["full_name"]
-        existing.profession = form_data["fonction"]
-        existing.organization = form_data["structure"]
-        existing.city = form_data["city"]
-        existing.phone = form_data["phone"] or existing.phone
-        existing.availability = (
-            f"{form_data['structure_type']} | {form_data['objet_echange']}"
-        )
-        existing.message = lead_message
-        existing.locale = (
-            session.get("lang") or str(babel_get_locale() or "")
-        ).strip() or existing.locale
-        existing.ip = _client_ip() or existing.ip
-        existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
-        existing.source = "contact_echange"
-        db.session.commit()
-        lead = existing
-    else:
-        lead = ProfessionalLead(
-            email=form_data["email"],
-            full_name=form_data["full_name"],
-            phone=form_data["phone"] or None,
-            city=form_data["city"] or None,
-            profession=form_data["fonction"],
-            organization=form_data["structure"] or None,
-            availability=f"{form_data['structure_type']} | {form_data['objet_echange']}",
-            message=lead_message,
-            locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
-            ip=_client_ip(),
-            user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
-            source="contact_echange",
-            created_at=datetime.now(UTC),
-        )
-        db.session.add(lead)
-        db.session.commit()
-
     try:
-        from backend.mail_service import send_notification_email
+        if existing:
+            existing.full_name = form_data["full_name"]
+            existing.profession = form_data["fonction"]
+            existing.organization = form_data["structure"]
+            existing.city = form_data["city"]
+            existing.phone = form_data["phone"] or existing.phone
+            existing.availability = (
+                f"{form_data['structure_type']} | {form_data['objet_echange']}"
+            )
+            existing.message = lead_message
+            existing.locale = (
+                session.get("lang") or str(babel_get_locale() or "")
+            ).strip() or existing.locale
+            existing.ip = _client_ip() or existing.ip
+            existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
+            existing.source = "contact_echange"
+            db.session.commit()
+            lead = existing
+        else:
+            lead = ProfessionalLead(
+                email=form_data["email"],
+                full_name=form_data["full_name"],
+                phone=form_data["phone"] or None,
+                city=form_data["city"] or None,
+                profession=form_data["fonction"],
+                organization=form_data["structure"] or None,
+                availability=f"{form_data['structure_type']} | {form_data['objet_echange']}",
+                message=lead_message,
+                locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
+                ip=_client_ip(),
+                user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+                source="contact_echange",
+                created_at=datetime.now(UTC),
+            )
+            db.session.add(lead)
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("[CONTACT] lead save failed")
+        flash(
+            _("Un problème est survenu lors de l’enregistrement de votre demande. Merci de réessayer."),
+            "danger",
+        )
+        return render_template(
+            "contact.html",
+            submitted=False,
+            form_data=form_data,
+            form_errors={},
+        ), 500
+
+    notify_ok = True
+    try:
+        from backend.helpchain_backend.src.services.notification_jobs import (
+            enqueue_email_notification,
+        )
 
         admin_to = (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
         if not admin_to:
@@ -3368,16 +3385,37 @@ def contact():
             "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
         }
         if admin_to:
-            send_notification_email(
-                admin_to,
-                "[HelpChain] Nouvelle demande d’échange",
-                "emails/professional_lead_notify.html",
-                ctx,
+            _, delivered = enqueue_email_notification(
+                recipient=admin_to,
+                subject="[HelpChain] Nouvelle demande d’échange",
+                template="emails/professional_lead_notify.html",
+                context=ctx,
+                purpose="contact_exchange",
+                structure_id=getattr(lead, "structure_id", None),
+                send_now=True,
             )
+            notify_ok = bool(delivered)
+            if not notify_ok:
+                current_app.logger.error(
+                    "[CONTACT] notify queued (delivery failed) lead_id=%s", lead.id
+                )
         else:
-            current_app.logger.info("[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL")
+            notify_ok = False
+            current_app.logger.error(
+                "[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL"
+            )
     except Exception:
+        notify_ok = False
         current_app.logger.exception("[CONTACT] notify email failed lead_id=%s", lead.id)
+
+    if not notify_ok:
+        flash(
+            _(
+                "Votre demande a été enregistrée, mais l’envoi de notification a échoué. "
+                "Merci de réessayer ou de nous contacter directement si besoin."
+            ),
+            "warning",
+        )
 
     return redirect(url_for("main.contact", sent="1"), code=303)
 

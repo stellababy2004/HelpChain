@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block content %}
+{% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
@@ -19,19 +20,19 @@
 
   <div class="hc-card mb-3 p-3 hc-cases-toolbar-card">
     <div class="hc-risk-overview mb-3">
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None) }}">
         <span class="hc-risk-overview__label">Situations critiques</span>
         <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None) }}">
         <span class="hc-risk-overview__label">Situations à vérifier</span>
         <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None) }}">
         <span class="hc-risk-overview__label">Cas sans responsable</span>
         <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale='1') }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale='1') }}">
         <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
         <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
       </a>
@@ -90,7 +91,7 @@
           <span class="form-check-label">Sans action 72h</span>
         </label>
         <button class="btn btn-primary btn-sm" type="submit">Filter</button>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">Reset</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint) }}">Reset</a>
       </div>
     </form>
   </div>
@@ -101,14 +102,11 @@
         <thead>
           <tr>
             <th class="case-col">Case</th>
-            <th class="risk-col">Risk</th>
-            <th class="priority-col">Priority</th>
-            <th class="request-col">Request</th>
-            <th class="city-col">City</th>
-            <th class="owner-col">Owner</th>
-            <th class="primary-pro-col">Primary professional</th>
+            <th class="request-col">Demande</th>
+            <th class="priority-col">Priorité</th>
+            <th class="owner-col">Responsable</th>
             <th class="activity-col">Dernière action</th>
-            <th class="actions-col text-end">Actions</th>
+            <th class="actions-col text-end">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -118,30 +116,39 @@
                 <div>#{{ c.id }}</div>
                 <div class="small mt-1"><span class="badge text-bg-light border">{{ c.status }}</span></div>
               </td>
-              <td class="risk-col">
-                {% set risk_score = c.risk_score if c.risk_score is not none else 0 %}
-                {% set request_text = ((c.request.title if c.request else '') ~ ' ' ~ (c.request.description if c.request else '') ~ ' ' ~ (c.request.message if c.request else ''))|lower %}
-                {% set emergency_hint = 'suicid' in request_text or 'mourir' in request_text or 'violence' in request_text or 'danger' in request_text or 'enfant en danger' in request_text %}
-                {% if risk_score >= 85 %}
-                  <span class="badge hc-risk-badge hc-risk-badge--critical">{{ risk_score }}/100 CRITICAL</span>
-                  {% if emergency_hint %}
-                    <div class="small mt-1"><span class="badge text-bg-danger">Urgence sociale</span></div>
-                  {% endif %}
-                {% elif risk_score >= 60 %}
-                  <span class="badge hc-risk-badge hc-risk-badge--high">{{ risk_score }}/100 HIGH</span>
-                {% elif risk_score >= 30 %}
-                  <span class="badge hc-risk-badge hc-risk-badge--normal">{{ risk_score }}/100 NORMAL</span>
-                {% else %}
-                  <span class="badge hc-risk-badge hc-risk-badge--low">{{ risk_score }}/100 LOW</span>
+              <td class="request-col">
+                <div class="fw-semibold">
+                  <a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a>
+                  <span class="ms-1">{{ c.request.title if c.request else '—' }}</span>
+                </div>
+                <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }} · {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}">
+                  {{ request_category_label(c.request.category if c.request else '') }} · {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}
+                </div>
+                {% set signals = case_signals.get(c.id, []) %}
+                {% if signals %}
+                  <div class="mt-1 d-flex flex-wrap gap-1">
+                    {% for sig in signals %}
+                      {% set sig_upper = sig|upper %}
+                      {% if sig_upper in ['URGENT', 'CRITIQUE', 'NOTIF. ÉCHEC'] %}
+                        {% set chip_class = 'hc-reason-chip--critical' %}
+                      {% elif sig_upper in ['NON ASSIGNÉ', 'RISQUE ÉLEVÉ', 'À VÉRIFIER'] %}
+                        {% set chip_class = 'hc-reason-chip--warning' %}
+                      {% else %}
+                        {% set chip_class = 'hc-reason-chip--neutral' %}
+                      {% endif %}
+                      <span class="badge hc-reason-chip {{ chip_class }}">{{ sig }}</span>
+                    {% endfor %}
+                  </div>
                 {% endif %}
               </td>
               <td class="priority-col">
-                {% if c.priority == 'critical' %}
-                  <span class="badge text-bg-danger">{{ c.priority }}</span>
-                {% elif c.priority == 'high' %}
-                  <span class="badge text-bg-warning text-dark">{{ c.priority }}</span>
+                {% set ops_level = (ops_priority_levels.get(c.id) or 'normal') %}
+                {% if ops_level == 'critique' %}
+                  <span class="badge text-bg-danger">Critique</span>
+                {% elif ops_level == 'élevé' %}
+                  <span class="badge text-bg-warning text-dark">Élevé</span>
                 {% else %}
-                  <span class="badge text-bg-secondary">{{ c.priority }}</span>
+                  <span class="badge text-bg-secondary">Normal</span>
                 {% endif %}
                 {% set case_sla = case_sla_snapshot(c) %}
                 <div class="small mt-1">
@@ -150,25 +157,7 @@
                   </span>
                 </div>
               </td>
-              <td class="request-col">
-                <div><a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a></div>
-                <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }} · {{ c.request.title if c.request else '—' }}">
-                  {{ request_category_label(c.request.category if c.request else '') }} · {{ c.request.title if c.request else '—' }}
-                </div>
-              </td>
-              <td class="city-col" title="{{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}">
-                {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}
-              </td>
               <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}">{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}</td>
-              <td class="primary-pro-col" title="{% if c.assigned_professional_lead %}{{ c.assigned_professional_lead.full_name or ('Lead #' ~ c.assigned_professional_lead_id) }}{% elif c.assigned_professional_lead_id %}Lead #{{ c.assigned_professional_lead_id }}{% else %}—{% endif %}">
-                {% if c.assigned_professional_lead %}
-                  {{ c.assigned_professional_lead.full_name or ('Lead #' ~ c.assigned_professional_lead_id) }}
-                {% elif c.assigned_professional_lead_id %}
-                  Lead #{{ c.assigned_professional_lead_id }}
-                {% else %}
-                  —
-                {% endif %}
-              </td>
               {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
               <td class="activity-col" title="{{ activity_ref or '—' }}">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
@@ -180,7 +169,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="9" class="text-center text-muted py-4">No cases found.</td>
+              <td colspan="6" class="text-center text-muted py-4">Aucune situation prioritaire pour le moment.</td>
             </tr>
           {% endfor %}
         </tbody>

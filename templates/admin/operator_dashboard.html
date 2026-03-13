@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Centre de commandement risques | Admin{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+  <style>
+    .hc-ops-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .75rem; }
+    .hc-ops-summary__item { padding: .75rem .9rem; border: 1px solid #e6ecf2; border-radius: 12px; background: #fff; }
+    .hc-ops-summary__label { font-size: .75rem; letter-spacing: .02em; text-transform: uppercase; color: rgba(15, 23, 42, .6); }
+    .hc-ops-summary__value { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+    .hc-ops-summary__value.is-alert { color: #b42318; }
+    .hc-ops-queue td { vertical-align: middle; }
+    .hc-ops-queue td { padding-top: .45rem; padding-bottom: .45rem; }
+    .hc-ops-queue .hc-ops-title { display: block; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hc-ops-queue .hc-ops-meta { color: rgba(15, 23, 42, .6); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hc-ops-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .hc-ops-actions .btn { white-space: nowrap; }
+    @media (max-width: 1199.98px) { .hc-ops-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 767.98px) { .hc-ops-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 575.98px) { .hc-ops-summary { grid-template-columns: 1fr; } }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Centre de commandement risques</h1>
+        <div class="hc-muted">Surface opérationnelle — priorités, blocages, relances.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3">
+    <div class="hc-ops-summary mb-3">
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Situations urgentes</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Demandes non assignées</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}"> {{ unassigned_count or 0 }}</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Relances à faire</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Notifications en échec</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if failed_notif_count }}"> {{ failed_notif_count or 0 }}</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Demandes mises à jour aujourd’hui</div>
+        <div class="hc-ops-summary__value"> {{ updated_today_count or 0 }}</div>
+      </div>
+    </div>
+
+    <div class="hc-ops-actions">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', owner='none') }}">Voir non assignés</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', stale='1') }}">Voir cas sans action</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">Notifications en échec</a>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell">
+    <div class="hc-card__header px-3 pt-3">
+      <h2 class="h6 mb-1">À traiter maintenant</h2>
+      <div class="hc-muted">Priorités critiques, non assignées, sans action récente.</div>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table hc-ops-queue mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Demande</th>
+            <th>Ville</th>
+            <th>Priorité</th>
+            <th>Statut</th>
+            <th>Responsable</th>
+            <th>Dernière activité</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in queue_rows %}
+            {% set activity_ref = r.updated_at or r.created_at %}
+            <tr>
+              <td class="text-muted">#{{ r.id }}</td>
+              <td style="min-width: 220px;">
+                <span class="hc-ops-title" title="{{ r.title }}">{{ r.title or '—' }}</span>
+                <span class="hc-ops-meta" title="{{ request_category_label(r.category) }}">{{ request_category_label(r.category) }}</span>
+                {% set reasons = queue_reasons.get(r.id, []) %}
+                {% if reasons %}
+                  <div class="mt-1 d-flex flex-wrap gap-1">
+                    {% for reason in reasons %}
+                      {% set reason_lower = reason|lower %}
+                      {% if 'critique' in reason_lower or 'urgent' in reason_lower or 'échec' in reason_lower %}
+                        {% set chip_class = 'hc-reason-chip--critical' %}
+                      {% elif 'responsable' in reason_lower or 'priorité' in reason_lower or 'vérifier' in reason_lower %}
+                        {% set chip_class = 'hc-reason-chip--warning' %}
+                      {% else %}
+                        {% set chip_class = 'hc-reason-chip--neutral' %}
+                      {% endif %}
+                      <span class="badge hc-reason-chip {{ chip_class }}">{{ reason }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </td>
+              <td class="small text-muted">{{ r.city or '—' }}</td>
+              <td>
+                {% set ops_level = (ops_priority_levels.get(r.id) or 'normal') %}
+                {% if ops_level == 'critique' %}
+                  <span class="badge text-bg-danger">Critique</span>
+                {% elif ops_level == 'élevé' %}
+                  <span class="badge text-bg-warning text-dark">Élevé</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">Normal</span>
+                {% endif %}
+              </td>
+              <td><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
+              <td>{% if r.owner %}{{ r.owner.username }}{% else %}—{% endif %}</td>
+              <td>
+                <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
+                <div class="small text-muted">{{ activity_ref or '—' }}</div>
+              </td>
+              <td class="text-end">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">
+                Aucune situation urgente pour le moment.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if retry_notif_count %}
+    <div class="hc-card mt-3 p-3">
+      <strong>Notifications en attente de retry :</strong> {{ retry_notif_count }}
+      <div class="hc-muted small">Vérifiez SMTP si ce nombre continue à augmenter.</div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

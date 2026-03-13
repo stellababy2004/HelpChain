@@ -58,6 +58,7 @@ from ..models import (
     CaseEvent,
     CaseParticipant,
     Notification,
+    NotificationJob,
     ProfessionalLead,
     Request,
     RequestActivity,
@@ -94,6 +95,7 @@ from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
 from ..services.geocoding import geocode_location_best_effort
+from ..services.ops_priority import compute_ops_priority
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 
@@ -1487,6 +1489,7 @@ from ..utils.mfa import (
 admin_bp = Blueprint(
     "admin", __name__, url_prefix="/admin"
 )  # single templates path via app.py
+ops_bp = Blueprint("ops", __name__, url_prefix="/ops")
 
 
 @admin_bp.app_context_processor
@@ -2931,6 +2934,126 @@ def admin_sanity():
 def admin_ops():
     admin_required_404()
     return render_template("admin/ops_dashboard.html")
+
+
+@admin_bp.get("/operator")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_operator_dashboard():
+    admin_required_404()
+    return _render_operator_dashboard()
+
+
+@ops_bp.get("")
+@ops_bp.get("/")
+@ops_bp.get("/workspace")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def ops_workspace():
+    admin_required_404()
+    return _render_operator_dashboard()
+
+
+def _render_operator_dashboard():
+    base_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
+    try:
+        base_query = base_query.filter(Request.is_archived.is_(False))
+    except Exception:
+        pass
+
+    status_expr = func.lower(func.coalesce(Request.status, ""))
+    actionable_statuses = ("open", "in_progress", "approved", "pending")
+    actionable_filter = status_expr.in_(actionable_statuses)
+    activity_expr = func.coalesce(Request.updated_at, Request.created_at)
+    stale_threshold = _now_utc() - timedelta(hours=72)
+    today_start = _now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
+    urgent_filter = or_(
+        func.lower(func.coalesce(Request.priority, "")).in_(["high", "critical"]),
+        func.coalesce(Request.risk_score, 0) >= 85,
+    )
+    unassigned_filter = Request.owner_id.is_(None)
+
+    urgent_count = base_query.filter(actionable_filter, urgent_filter).count()
+    unassigned_count = base_query.filter(actionable_filter, unassigned_filter).count()
+    followup_count = base_query.filter(
+        actionable_filter, activity_expr <= stale_threshold
+    ).count()
+    updated_today_count = base_query.filter(activity_expr >= today_start).count()
+
+    failed_notif_count = 0
+    retry_notif_count = 0
+    if _table_exists("notification_jobs"):
+        notif_base = NotificationJob.query
+        try:
+            sid = _current_structure_id()
+            notif_base = notif_base.filter(
+                (NotificationJob.structure_id == sid)
+                | (NotificationJob.structure_id.is_(None))
+            )
+        except Exception:
+            pass
+        failed_notif_count = notif_base.filter(NotificationJob.status == "failed").count()
+        retry_notif_count = notif_base.filter(NotificationJob.status == "retry").count()
+
+    queue_query = (
+        base_query.filter(actionable_filter)
+        .filter(or_(urgent_filter, unassigned_filter, activity_expr <= stale_threshold))
+        .options(joinedload(Request.owner))
+    )
+    queue_rows = (
+        queue_query.order_by(
+            case((urgent_filter, 0), else_=1).asc(),
+            case((unassigned_filter, 0), else_=1).asc(),
+            case((activity_expr <= stale_threshold, 0), else_=1).asc(),
+            activity_expr.desc().nullslast(),
+            Request.id.desc(),
+        )
+        .limit(20)
+        .all()
+    )
+
+    queue_reasons = {}
+    now_utc = _now_utc()
+    scored_rows = []
+    for r in queue_rows:
+        result = compute_ops_priority(request_row=r, now=now_utc)
+        scored_rows.append((int(result.get("ops_priority_score") or 0), r, result))
+    scored_rows.sort(key=lambda row: row[0], reverse=True)
+    scored_rows = scored_rows[:10]
+    queue_rows = [row[1] for row in scored_rows]
+    ops_priority_levels = {}
+    for _, row, result in scored_rows:
+        queue_reasons[int(row.id)] = result.get("ops_priority_reasons") or []
+        ops_priority_levels[int(row.id)] = result.get("ops_priority_level") or "normal"
+
+    return render_template(
+        "admin/operator_dashboard.html",
+        urgent_count=urgent_count,
+        unassigned_count=unassigned_count,
+        followup_count=followup_count,
+        updated_today_count=updated_today_count,
+        failed_notif_count=failed_notif_count,
+        retry_notif_count=retry_notif_count,
+        queue_rows=queue_rows,
+        queue_reasons=queue_reasons,
+        ops_priority_levels=ops_priority_levels,
+    )
+
+
+@ops_bp.get("/cases")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def ops_cases_list():
+    admin_required_404()
+    return admin_cases_list()
+
+
+@ops_bp.get("/notifications")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def ops_notifications_list():
+    admin_required_404()
+    return admin_notifications_list()
 
 
 @admin_bp.get("/risk-map")
@@ -7168,6 +7291,14 @@ def admin_cases_list():
         .all()
     )
 
+    case_signals = {}
+    ops_priority_levels = {}
+    now_utc = _now_utc()
+    for c in case_rows:
+        result = compute_ops_priority(case_row=c, request_row=getattr(c, "request", None), now=now_utc)
+        case_signals[int(c.id)] = result.get("ops_priority_reasons") or []
+        ops_priority_levels[int(c.id)] = result.get("ops_priority_level") or "normal"
+
     counts_base = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
     score_col = func.coalesce(Case.risk_score, 0)
     critical_count = counts_base.filter(score_col >= 85).count()
@@ -7197,6 +7328,8 @@ def admin_cases_list():
         attention_count=attention_count,
         no_owner_count=no_owner_count,
         stale_count=stale_count,
+        case_signals=case_signals,
+        ops_priority_levels=ops_priority_levels,
     )
 
 
@@ -7263,6 +7396,104 @@ def admin_case_detail(case_id: int):
         operational_blockages=operational_blockages,
         suggested_professionals=suggested_professionals,
         assistant_recommendation=assistant_recommendation,
+    )
+
+
+@admin_bp.get("/notifications")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_notifications_list():
+    admin_required_404()
+    if not _table_exists("notification_jobs"):
+        flash("Notification jobs table is not available yet. Run migrations first.", "warning")
+        return render_template(
+            "admin/notifications.html",
+            jobs=[],
+            status="",
+            channel="",
+            event_type="",
+            recipient="",
+            summary={"pending": 0, "retry": 0, "failed": 0, "sent": 0},
+            channels=[],
+        )
+
+    status = (request.args.get("status") or "").strip().lower()
+    channel = (request.args.get("channel") or "").strip().lower()
+    event_type = (request.args.get("event_type") or "").strip()
+    recipient = (request.args.get("recipient") or "").strip()
+
+    query = NotificationJob.query
+    try:
+        sid = _current_structure_id()
+        query = query.filter(
+            (NotificationJob.structure_id == sid)
+            | (NotificationJob.structure_id.is_(None))
+        )
+    except Exception:
+        pass
+
+    if status in {"pending", "processing", "sent", "retry", "failed"}:
+        query = query.filter(NotificationJob.status == status)
+    if channel:
+        query = query.filter(NotificationJob.channel == channel)
+    if event_type:
+        query = query.filter(NotificationJob.event_type.ilike(f"%{event_type}%"))
+    if recipient:
+        query = query.filter(NotificationJob.recipient.ilike(f"%{recipient}%"))
+
+    status_rank = case(
+        (NotificationJob.status == "failed", 0),
+        (NotificationJob.status == "retry", 1),
+        (NotificationJob.status == "pending", 2),
+        (NotificationJob.status == "processing", 3),
+        else_=4,
+    )
+
+    jobs = (
+        query.order_by(
+            status_rank.asc(),
+            NotificationJob.created_at.desc().nullslast(),
+            NotificationJob.id.desc(),
+        )
+        .limit(200)
+        .all()
+    )
+
+    counts_base = NotificationJob.query
+    try:
+        sid = _current_structure_id()
+        counts_base = counts_base.filter(
+            (NotificationJob.structure_id == sid)
+            | (NotificationJob.structure_id.is_(None))
+        )
+    except Exception:
+        pass
+
+    summary = {
+        "pending": counts_base.filter(NotificationJob.status == "pending").count(),
+        "retry": counts_base.filter(NotificationJob.status == "retry").count(),
+        "failed": counts_base.filter(NotificationJob.status == "failed").count(),
+        "sent": counts_base.filter(NotificationJob.status == "sent").count(),
+    }
+
+    channels = [
+        c[0]
+        for c in counts_base.with_entities(NotificationJob.channel)
+        .distinct()
+        .order_by(NotificationJob.channel.asc())
+        .all()
+        if c[0]
+    ]
+
+    return render_template(
+        "admin/notifications.html",
+        jobs=jobs,
+        status=status,
+        channel=channel,
+        event_type=event_type,
+        recipient=recipient,
+        summary=summary,
+        channels=channels,
     )
 
 

@@ -605,9 +605,10 @@ def create_app(config_object=None) -> Flask:
         app.logger.info("social_requests blueprint not loaded: %s", e)
 
     try:
-        from .routes.admin import admin_bp
+        from .routes.admin import admin_bp, ops_bp
 
         app.register_blueprint(admin_bp)
+        app.register_blueprint(ops_bp)
     except Exception as e:
         app.logger.info("admin blueprint not loaded: %s", e)
 
@@ -701,6 +702,25 @@ def create_app(config_object=None) -> Flask:
             payload["db"] = "error"
             return jsonify(payload), 503
         return jsonify(payload), 200
+
+    @app.cli.command("notifications.process")
+    def notifications_process():
+        """Process pending notification jobs."""
+        try:
+            from backend.helpchain_backend.src.services.notification_jobs import (
+                process_pending_notifications,
+            )
+        except Exception:
+            from .services.notification_jobs import process_pending_notifications
+
+        stats = process_pending_notifications(limit=int(os.getenv("NOTIFY_BATCH", "50")))
+        app.logger.info(
+            "[NOTIFY] processed scanned=%s sent=%s retried=%s failed=%s",
+            stats.get("scanned"),
+            stats.get("sent"),
+            stats.get("retried"),
+            stats.get("failed"),
+        )
 
     @app.errorhandler(404)
     def not_found(e):
