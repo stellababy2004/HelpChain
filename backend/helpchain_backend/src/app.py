@@ -731,6 +731,11 @@ def create_app(config_object=None) -> Flask:
             path = ""
 
         app.logger.warning("404 Not Found: %s", path)
+        try:
+            from flask import g as _g
+            _g.hc_protected_404 = path.startswith("/ops") or path.startswith("/admin")
+        except Exception:
+            pass
 
         if path.startswith("/api/"):
             resp = make_response(

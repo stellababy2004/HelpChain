@@ -392,10 +392,11 @@
       '/volunteer/profile',
       '/become_volunteer'
     ] %}
-    {% set minimal_page = (request.path in quiet_paths) %}
+    {% set is_protected_404 = getattr(g, 'hc_protected_404', False) %}
+    {% set minimal_page = (request.path in quiet_paths) or is_protected_404 %}
     {% set hide_full_nav = minimal_page %}
-    {% set is_ops_shell = request.path.startswith('/ops') %}
-    {% set is_admin_shell = request.path.startswith('/admin') %}
+    {% set is_ops_shell = request.path.startswith('/ops') and not is_protected_404 %}
+    {% set is_admin_shell = request.path.startswith('/admin') and not is_protected_404 %}
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
     {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
