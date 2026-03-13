@@ -394,6 +394,8 @@
     ] %}
     {% set minimal_page = (request.path in quiet_paths) %}
     {% set hide_full_nav = minimal_page %}
+    {% set is_ops_shell = request.path.startswith('/ops') %}
+    {% set is_admin_shell = request.path.startswith('/admin') %}
     {% set volunteer_logged_in = session.get('volunteer_id') is not none %}
     {% set admin_logged_in = session.get('admin_logged_in') %}
     {% set is_any_logged_in = (current_user.is_authenticated or volunteer_logged_in) %}
@@ -484,53 +486,81 @@
         <div class="collapse navbar-collapse{% if not is_any_logged_in and not hide_full_nav %} hc-public-nav-desktop{% endif %}" id="navbarNav">
           {% if not hide_full_nav %}
           {% set ep = request.endpoint or '' %}
+          {% if is_ops_shell %}
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep == 'ops.ops_workspace' else '' }}" href="{{ url_for('ops.ops_workspace') }}" {% if ep == 'ops.ops_workspace' %}aria-current="page"{% endif %}>
+                {{ _('Workspace') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep == 'ops.ops_cases_list' else '' }}" href="{{ url_for('ops.ops_cases_list') }}" {% if ep == 'ops.ops_cases_list' %}aria-current="page"{% endif %}>
+                {{ _('Cas') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep == 'ops.ops_notifications_list' else '' }}" href="{{ url_for('ops.ops_notifications_list') }}" {% if ep == 'ops.ops_notifications_list' %}aria-current="page"{% endif %}>
+                {{ _('Notifications') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              {% if admin_logged_in %}
+                <a class="nav-link nav-link--secondary" href="{{ url_for('admin.admin_logout') }}">
+                  <i class="fas fa-right-from-bracket me-1" aria-hidden="true"></i>{{ _('Déconnexion') }}
+                </a>
+              {% elif volunteer_logged_in %}
+                <a class="nav-link nav-link--secondary" href="{{ url_for('main.volunteer_logout') }}">{{ _('Déconnexion') }}</a>
+              {% endif %}
+            </li>
+          </ul>
+          {% else %}
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep == 'main.index' else '' }}" href="{{ safe_url_for('main.index') }}" data-hc-nav="home" {% if ep == 'main.index' %}aria-current="page"{% endif %}>
-                <span class="hc-navicon hc-icon" aria-hidden="true"><i class="fas fa-home hc-icon" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Accueil') }}</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
-                <i class="fas fa-compass me-1 hc-icon" aria-hidden="true"></i>{{ _('Orienter une demande') }}
+                {{ _('Orienter une demande') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link nav-link--secondary {{ 'is-active' if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
-                <i class="fas fa-building-columns me-1 hc-icon" aria-hidden="true"></i>
                 <span class="hc-navlabel">{{ _('Accès structures et collectivités') }}</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
-                <i class="fas fa-circle-info me-1 hc-icon" aria-hidden="true"></i>{{ _('Fonctionnement') }}
+                {{ _('Fonctionnement') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
-                <i class="fas fa-chart-line me-1 hc-icon" aria-hidden="true"></i>{{ _('Pilotage') }}
+                {{ _('Pilotage') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.about') else '' }}" href="{{ safe_url_for('main.about') }}" {% if ep.startswith('main.about') %}aria-current="page"{% endif %}>
-                <i class="fas fa-info-circle me-1 hc-icon" aria-hidden="true"></i>{{ _('À propos') }}
+                {{ _('À propos') }}
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if ep.startswith('main.contact') %}aria-current="page"{% endif %}>
-                <i class="fas fa-envelope me-1 hc-icon" aria-hidden="true"></i>{{ _('Contact') }}
+                {{ _('Contact') }}
               </a>
             </li>
             <li class="nav-item hc-public-nav-cta">
               <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
-                <span class="hc-navicon hc-icon" aria-hidden="true"><i class="fas fa-comments hc-icon" aria-hidden="true"></i></span>
                 <span class="hc-navlabel">{{ _('Demander un échange') }}</span>
               </a>
             </li>
             {% if current_user.is_authenticated %}
               {% if admin_logged_in %}
-                {% set admin_ops_active = ep in ['admin.admin_requests', 'admin.admin_dashboard', 'admin.admin_dashboard_redirect', 'admin.admin_risk_map', 'risk_api.professionals_map_page', 'admin.admin_ops', 'admin.admin_risk_panel'] %}
+                {% set admin_role = (current_user.role or '')|lower %}
+                {% set operator_nav_only = admin_role in ['ops', 'readonly'] %}
+                {% set admin_full_nav = admin_role in ['admin', 'superadmin'] %}
+                {% set admin_ops_active = ep in ['admin.admin_operator_dashboard', 'admin.admin_cases_list', 'admin.admin_requests', 'admin.admin_notifications_list', 'admin.admin_dashboard', 'admin.admin_dashboard_redirect', 'admin.admin_ops', 'risk_api.professionals_map_page', 'admin.admin_risk_map', 'admin.admin_risk_panel', 'ops.ops_workspace', 'ops.ops_cases_list', 'ops.ops_notifications_list'] %}
                 {% set admin_governance_active = ep in ['admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_pro_access_list'] or ep.startswith('admin.admin_pro_access_') %}
                 {% set admin_platform_active = ep in ['admin.admin_security', 'admin.admin_translations_list'] or ep.startswith('admin.admin_translations_') %}
                 <li class="nav-item dropdown">
@@ -544,14 +574,25 @@
                     {{ _('Pilotage') }}
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminOpsDropdown">
-                    <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_dashboard', 'admin.admin_dashboard_redirect'] else '' }}" href="{{ url_for('admin.admin_dashboard') }}">{{ _('Tableau de bord') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_map' else '' }}" href="{{ url_for('admin.admin_risk_map') }}">{{ _('Carte des risques') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'risk_api.professionals_map_page' else '' }}" href="{{ url_for('risk_api.professionals_map_page') }}">{{ _('Carte des professionnels') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_ops' else '' }}" href="{{ url_for('admin.admin_ops') }}">{{ _('Indicateurs') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_panel' else '' }}" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Risque') }}</a></li>
+                    {% if operator_nav_only %}
+                      <li><a class="dropdown-item {{ 'active' if ep in ['ops.ops_workspace', 'admin.admin_operator_dashboard'] else '' }}" href="{{ url_for('ops.ops_workspace') }}">{{ _('Tableau opérateur') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep in ['ops.ops_cases_list', 'admin.admin_cases_list'] else '' }}" href="{{ url_for('ops.ops_cases_list') }}">{{ _('Cas') }}</a></li>
+                      <li><a class="dropdown-item hc-nav-notifications {{ 'active' if ep in ['ops.ops_notifications_list', 'admin.admin_notifications_list'] else '' }}" href="{{ url_for('ops.ops_notifications_list') }}">{{ _('Notifications') }}</a></li>
+                    {% else %}
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_operator_dashboard' else '' }}" href="{{ url_for('admin.admin_operator_dashboard') }}">{{ _('Tableau opérateur') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_dashboard', 'admin.admin_dashboard_redirect'] else '' }}" href="{{ url_for('admin.admin_dashboard') }}">{{ _('Tableau de bord') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_cases_list' else '' }}" href="{{ url_for('admin.admin_cases_list') }}">{{ _('Cas') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_ops' else '' }}" href="{{ url_for('admin.admin_ops') }}">{{ _('Indicateurs') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'risk_api.professionals_map_page' else '' }}" href="{{ url_for('risk_api.professionals_map_page') }}">{{ _('Carte des professionnels') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_map' else '' }}" href="{{ url_for('admin.admin_risk_map') }}">{{ _('Carte des risques') }}</a></li>
+                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_panel' else '' }}" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Analyse des risques') }}</a></li>
+                      <li><a class="dropdown-item hc-nav-notifications {{ 'active' if ep == 'admin.admin_notifications_list' else '' }}" href="{{ url_for('admin.admin_notifications_list') }}">{{ _('Notifications') }}</a></li>
+                    {% endif %}
                   </ul>
                 </li>
+                {% if admin_full_nav %}
                 <li class="nav-item dropdown">
                   <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if admin_governance_active else '' }}"
                      href="#"
@@ -571,6 +612,8 @@
                     {% endif %}
                   </ul>
                 </li>
+                {% endif %}
+                {% if admin_full_nav %}
                 <li class="nav-item">
                   <a class="nav-link nav-link--secondary {{ 'active' if ep == 'admin.admin_professional_leads' or ep.startswith('admin.admin_professional_lead') else '' }}"
                      href="{{ url_for('admin.admin_professional_leads') }}"
@@ -585,6 +628,8 @@
                     {{ _('Tarifs') }}
                   </a>
                 </li>
+                {% endif %}
+                {% if admin_full_nav %}
                 <li class="nav-item dropdown">
                   <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if admin_platform_active else '' }}"
                      href="#"
@@ -602,6 +647,7 @@
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_translations_list' or ep.startswith('admin.admin_translations_') else '' }}" href="{{ url_for('admin.admin_translations_list') }}">{{ _('Traductions') }}</a></li>
                   </ul>
                 </li>
+                {% endif %}
               {% endif %}
               <li class="nav-item">
                 {% if admin_logged_in %}
@@ -689,6 +735,7 @@
               {% endif %}
             {% endif %}
           </ul>
+          {% endif %}
           <!-- Search + actions -->
           <form class="hc-nav-search ms-2 hc-topbar-search" action="{{ url_for('main.search') }}" method="get" role="search">
             <div class="hc-nav-search__box">
@@ -734,7 +781,7 @@
             'main.become_volunteer', 'main.volunteer_login', 'main.faq', 'main.contact'
           ] %}
           {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}
-          {% if show_nav_chrome %}
+          {% if show_nav_chrome and config.DEBUG %}
           <div class="d-flex align-items-center ms-2 hc-topbar-actions">
             <span
               id="hcServerIndicator"
