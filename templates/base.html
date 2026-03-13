@@ -392,7 +392,7 @@
       '/volunteer/profile',
       '/become_volunteer'
     ] %}
-    {% set is_protected_404 = getattr(g, 'hc_protected_404', False) %}
+    {% set is_protected_404 = g.get('hc_protected_404', False) %}
     {% set minimal_page = (request.path in quiet_paths) or is_protected_404 %}
     {% set hide_full_nav = minimal_page %}
     {% set is_ops_shell = request.path.startswith('/ops') and not is_protected_404 %}
@@ -605,8 +605,9 @@
                     {{ _('Gouvernance') }}
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminGovernanceDropdown">
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Rôles') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('SLA') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Accès & rôles') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('Suivi SLA') }}</a></li>
+                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_audit' else '' }}" href="{{ url_for('admin.admin_audit') }}">{{ _('Audit') }}</a></li>
                     {% if HC_PRO_ACCESS_AVAILABLE %}
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_pro_access_list' or ep.startswith('admin.admin_pro_access_') else '' }}" href="{{ url_for('admin.admin_pro_access_list') }}">{{ _('Accès Pro') }}</a></li>
