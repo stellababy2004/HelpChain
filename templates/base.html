@@ -68,6 +68,7 @@
     <meta name="twitter:image:alt" content="{% block twitter_image_alt %}{{ self.og_image_alt()|striptags|trim }}{% endblock %}">
 
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/hc-favicon.svg') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/icon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
@@ -435,12 +436,22 @@
       else hc_languages_all
     ) %}
     <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
+      <style>
+        .hc-brand-mark{
+          width:24px;
+          height:24px;
+          color:#1f3a5f;
+          margin-top:2px;
+        }
+      </style>
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
+          {% if not is_any_logged_in and not is_ops_shell and not is_admin_shell %}
+          <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark" alt="" aria-hidden="true">
+          {% endif %}
           <span class="hc-brand">
             <span class="hc-brand-title">HelpChain</span>
-            <span class="hc-brand-subtitle">{{ _('Infrastructure de coordination sociale') }}</span>
           </span>
         </a>
         {% if not is_any_logged_in and not hide_full_nav %}
@@ -515,20 +526,11 @@
             </li>
           </ul>
           {% else %}
-          <ul class="navbar-nav ms-auto">
+          {% if not is_any_logged_in %}
+          <ul class="navbar-nav mx-auto align-items-lg-center hc-public-nav-main">
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep == 'main.index' else '' }}" href="{{ safe_url_for('main.index') }}" data-hc-nav="home" {% if ep == 'main.index' %}aria-current="page"{% endif %}>
                 <span class="hc-navlabel">{{ _('Accueil') }}</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.categories') or ep.startswith('main.orienter') else '' }}" href="{{ safe_url_for('main.orienter') }}" {% if ep.startswith('main.categories') or ep.startswith('main.orienter') %}aria-current="page"{% endif %}>
-                {{ _('Orienter une demande') }}
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link nav-link--secondary {{ 'is-active' if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
-                <span class="hc-navlabel">{{ _('Accès structures et collectivités') }}</span>
               </a>
             </li>
             <li class="nav-item">
@@ -537,23 +539,59 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
+                {{ _('Professionnels') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
+                {{ _('Collectivités') }}
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
                 {{ _('Pilotage') }}
               </a>
             </li>
+          </ul>
+          <div class="hc-public-nav-actions d-flex align-items-center gap-2">
+            <a class="nav-link nav-link--secondary hc-public-nav-login" href="{{ url_for('main.volunteer_login') }}">
+              {{ _('Connexion') }}
+            </a>
+            <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
+              <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
+            </a>
+          </div>
+          {% else %}
+          <ul class="navbar-nav ms-auto">
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.about') else '' }}" href="{{ safe_url_for('main.about') }}" {% if ep.startswith('main.about') %}aria-current="page"{% endif %}>
-                {{ _('À propos') }}
+              <a class="nav-link {{ 'active' if ep == 'main.index' else '' }}" href="{{ safe_url_for('main.index') }}" data-hc-nav="home" {% if ep == 'main.index' %}aria-current="page"{% endif %}>
+                <span class="hc-navlabel">{{ _('Accueil') }}</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if ep.startswith('main.contact') %}aria-current="page"{% endif %}>
-                {{ _('Contact') }}
+              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
+                {{ _('Fonctionnement') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
+                {{ _('Professionnels') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
+                {{ _('Collectivités') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
+                {{ _('Pilotage') }}
               </a>
             </li>
             <li class="nav-item hc-public-nav-cta">
               <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
-                <span class="hc-navlabel">{{ _('Demander un échange') }}</span>
+                <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
               </a>
             </li>
             {% if current_user.is_authenticated %}
@@ -738,6 +776,7 @@
             {% endif %}
           </ul>
           {% endif %}
+          {% endif %}
           <!-- Search + actions -->
           <form class="hc-nav-search ms-2 hc-topbar-search" action="{{ url_for('main.search') }}" method="get" role="search">
             <div class="hc-nav-search__box">
@@ -756,24 +795,6 @@
             </div>
           </form>
           {% if not is_any_logged_in %}
-          <div class="hc-nav-intervenant-links d-none d-lg-flex ms-2 hc-topbar-actions" aria-label="{{ _('Accès intervenants') }}">
-            <a class="hc-nav-intervenant-links__item" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}" aria-label="{{ _('Connexion intervenant') }}">
-              <span class="hc-labelswap">
-                <span class="hc-labelswap__long">{{ _('Connexion intervenant') }}</span>
-                <span class="hc-labelswap__short" aria-hidden="true">
-                  {% if hc_locale_code == 'bg' %}{{ _('Вход') }}{% elif hc_locale_code == 'fr' %}Connexion{% else %}Login{% endif %}
-                </span>
-              </span>
-            </a>
-            <a class="hc-nav-intervenant-links__item hc-nav-intervenant-links__item--accent" href="{{ safe_url_for('main.become_volunteer') }}" aria-label="{{ _('Inscription intervenant') }}">
-              <span class="hc-labelswap">
-                <span class="hc-labelswap__long">{{ _('Inscription intervenant') }}</span>
-                <span class="hc-labelswap__short" aria-hidden="true">
-                  {% if hc_locale_code == 'bg' %}{{ _('Рег.') }}{% elif hc_locale_code == 'fr' %}Inscription{% else %}Sign up{% endif %}
-                </span>
-              </span>
-            </a>
-          </div>
           {% endif %}
 
           {% set ep = request.endpoint or '' %}
@@ -839,25 +860,22 @@
             <a class="{{ 'is-active' if mobile_ep == 'main.index' else '' }}" href="{{ url_for('main.index') }}" {% if mobile_ep == 'main.index' %}aria-current="page"{% endif %}>{{ _('Accueil') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if mobile_ep.startswith('main.categories') or mobile_ep.startswith('main.orienter') else '' }}" href="{{ url_for('main.orienter') }}" {% if mobile_ep.startswith('main.categories') or mobile_ep.startswith('main.orienter') %}aria-current="page"{% endif %}>{{ _('Orienter une demande') }}</a>
-          </li>
-          <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if mobile_ep.startswith('main.professionnels') or mobile_ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.professionnels') }}" {% if mobile_ep.startswith('main.professionnels') or mobile_ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>{{ _('Accès structures et collectivités') }}</a>
-          </li>
-          <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if mobile_ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if mobile_ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>{{ _('Fonctionnement') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if mobile_ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>{{ _('Professionnels') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if mobile_ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>{{ _('Collectivités') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if mobile_ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if mobile_ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>{{ _('Pilotage') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if mobile_ep.startswith('main.about') else '' }}" href="{{ url_for('main.about') }}" {% if mobile_ep.startswith('main.about') %}aria-current="page"{% endif %}>{{ _('À propos') }}</a>
-          </li>
-          <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if mobile_ep.startswith('main.contact') else '' }}" href="{{ url_for('main.contact') }}" {% if mobile_ep.startswith('main.contact') %}aria-current="page"{% endif %}>{{ _('Contact') }}</a>
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.volunteer_login') else '' }}" href="{{ url_for('main.volunteer_login') }}" {% if mobile_ep.startswith('main.volunteer_login') %}aria-current="page"{% endif %}>{{ _('Connexion') }}</a>
           </li>
           <li class="hc-mobile-nav__item hc-mobile-nav__item--cta">
-            <a href="{{ url_for('main.contact') }}">{{ _('Demander un échange') }}</a>
+            <a href="{{ url_for('main.contact') }}">{{ _('Planifier une démo') }}</a>
           </li>
         </ul>
       </aside>
