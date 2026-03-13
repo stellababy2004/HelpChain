@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Admin • Sanity | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Sanity opérationnelle</h1>
+        <div class="hc-muted">Vérification rapide de l'état runtime, base de données et file admin.</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-xl-4">
+      <div class="hc-card p-3 h-100">
+        <div class="hc-muted small mb-1">Application</div>
+        <div><strong>Boot</strong>: OK</div>
+        <div><strong>Environnement</strong>: {{ app_env }}</div>
+        <div><strong>Version</strong>: {{ version }}</div>
+        <div class="small text-muted mt-2">Généré: {{ generated_at }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-4">
+      <div class="hc-card p-3 h-100">
+        <div class="hc-muted small mb-1">Base de données</div>
+        <div>
+          <strong>Connectivité</strong>:
+          {% if db_ok %}<span class="badge text-bg-success">OK</span>{% else %}<span class="badge text-bg-danger">Erreur</span>{% endif %}
+        </div>
+        <div>
+          <strong>Table requests</strong>:
+          {% if requests_table_ok %}<span class="badge text-bg-success">OK</span>{% else %}<span class="badge text-bg-warning">Absente</span>{% endif %}
+        </div>
+        <div><strong>Demandes (total)</strong>: {{ request_count_total if request_count_total is not none else "—" }}</div>
+        {% if not db_ok and db_error %}
+          <div class="small text-danger mt-2">Erreur DB: {{ db_error }}</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-12 col-xl-4">
+      <div class="hc-card p-3 h-100">
+        <div class="hc-muted small mb-1">File admin</div>
+        <div><strong>Portée tenant visible</strong>: {{ queue_visible_count if queue_visible_count is not none else "—" }}</div>
+        <div class="mt-2">
+          <strong>Sentry configuré</strong>:
+          {% if sentry_configured %}<span class="badge text-bg-success">Oui</span>{% else %}<span class="badge text-bg-secondary">Non</span>{% endif %}
+        </div>
+        <div class="small text-muted mt-2">Aucune donnée personnelle n'est affichée sur cette page.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="p-3 border-bottom"><strong>Routes critiques (enregistrement)</strong></div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>État</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in core_routes %}
+          <tr>
+            <td><code>{{ item.path }}</code></td>
+            <td>
+              {% if item.registered %}
+                <span class="badge text-bg-success">OK</span>
+              {% else %}
+                <span class="badge text-bg-danger">Non enregistrée</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

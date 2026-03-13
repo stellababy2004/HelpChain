@@ -11,7 +11,7 @@ After DB restore/reset, if admin account is missing:
 ```powershell
 cd C:\dev\HelpChain.bg
 $env:ADMIN_SEED_USERNAME="admin"
-$env:ADMIN_SEED_PASSWORD="Admin12345!"
+$env:ADMIN_SEED_PASSWORD="test-password"
 $env:ADMIN_SEED_EMAIL="admin@helpchain.live"
 python backend\scripts\ensure_admin.py
 ```
@@ -37,3 +37,4 @@ python backend\scripts\ensure_admin.py
 Audit trail note:
 - `/admin/audit` is admin-only and stores IP + user-agent for traceability.
 - Recommended retention window for audit events: 90 days.
+

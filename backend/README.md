@@ -251,7 +251,7 @@ python app.py
 
 ```dotenv
 HELPCHAIN_SECRET_KEY=CHANGE_ME_STRONG_RANDOM
-ADMIN_USER_PASSWORD=Admin12345!
+ADMIN_USER_PASSWORD=REPLACE_ME_ADMIN_PASSWORD
 MICROSOFT_TENANT_ID=common
 MICROSOFT_CLIENT_ID=CHANGE-ME-CLIENT-ID
 ```
@@ -307,7 +307,7 @@ Headers surfaced when throttled: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `
 Obtain token:
 
 ```pwsh
-$login = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:5000/api/login -Body (@{username='admin';password='Admin12345!'} | ConvertTo-Json) -ContentType 'application/json'
+$login = Invoke-RestMethod -Method Post -Uri http://127.0.0.1:5000/api/login -Body (@{username='admin';password=$env:ADMIN_USER_PASSWORD} | ConvertTo-Json) -ContentType 'application/json'
 $token = $login.access_token
 ```
 
@@ -661,3 +661,4 @@ On change it now:
 3. Opens a PR `chore: dependency lock refresh` referencing the issue (labels: `dependencies`, `automation`, adds `security` if vulns found).
 
 Labels: `dependencies`, `automation`. Close the issue manually if not needed; future runs will append comments instead of opening duplicates.
+
