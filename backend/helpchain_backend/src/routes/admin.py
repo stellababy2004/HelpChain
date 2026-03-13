@@ -2865,6 +2865,28 @@ def admin_required(view_func):
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
             abort(404)
+        role = _admin_role_value()
+        if role in {"ops", "readonly"}:
+            abort(404)
+        return view_func(*args, **kwargs)
+
+    return wrapper
+
+
+def operator_required(view_func):
+    @wraps(view_func)
+    def wrapper(*args, **kwargs):
+        if not (
+            current_user.is_authenticated and getattr(current_user, "is_admin", False)
+        ):
+            abort(404)
+        role = _admin_role_value()
+        if role not in {"ops", "readonly", "admin", "superadmin"} and role is not None:
+            _audit_denied_action(
+                required_roles={"ops", "readonly", "admin", "superadmin"},
+                actor_role=role,
+            )
+            abort(404)
         return view_func(*args, **kwargs)
 
     return wrapper
@@ -2947,10 +2969,8 @@ def admin_operator_dashboard():
 @ops_bp.get("")
 @ops_bp.get("/")
 @ops_bp.get("/workspace")
-@admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@operator_required
 def ops_workspace():
-    admin_required_404()
     return _render_operator_dashboard()
 
 
@@ -3041,18 +3061,14 @@ def _render_operator_dashboard():
 
 
 @ops_bp.get("/cases")
-@admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@operator_required
 def ops_cases_list():
-    admin_required_404()
     return admin_cases_list()
 
 
 @ops_bp.get("/notifications")
-@admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@operator_required
 def ops_notifications_list():
-    admin_required_404()
     return admin_notifications_list()
 
 
