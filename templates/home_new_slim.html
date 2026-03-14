@@ -72,6 +72,11 @@
       gap: 0.45rem;
       flex-wrap: wrap;
       letter-spacing: 0.01em;
+      font-weight: 500;
+      row-gap: 0.25rem;
+    }
+    body.hc-page-home .hc-home__trust span[aria-hidden="true"] {
+      opacity: 0.6;
     }
 
     body.hc-page-home .hc-home__actions {
@@ -145,7 +150,7 @@
         radial-gradient(circle at 52% 22%, rgba(37, 99, 235, 0.5) 0 2px, transparent 3px),
         radial-gradient(circle at 64% 58%, rgba(59, 130, 246, 0.45) 0 2px, transparent 3px),
         radial-gradient(circle at 78% 38%, rgba(14, 116, 144, 0.45) 0 2px, transparent 3px);
-      opacity: 0.5;
+      opacity: 0.25;
       pointer-events: none;
     }
     body.hc-page-home .hc-home__snapshot-card--visual::before {
@@ -164,6 +169,46 @@
       border: 1px dashed rgba(37, 99, 235, 0.22);
       opacity: 0.32;
       pointer-events: none;
+    }
+    body.hc-page-home .hc-home__network {
+      position: absolute;
+      inset: 14% 12% 24% 12%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    body.hc-page-home .hc-home__network svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    body.hc-page-home .hc-home__network .hc-network-line {
+      stroke: rgba(37, 99, 235, 0.28);
+      stroke-width: 1.2;
+    }
+    body.hc-page-home .hc-home__network .hc-network-node {
+      fill: rgba(37, 99, 235, 0.7);
+    }
+    body.hc-page-home .hc-home__network .hc-network-node--soft {
+      fill: rgba(14, 116, 144, 0.62);
+    }
+    body.hc-page-home .hc-home__network .hc-network-node--hub {
+      fill: #1d4ed8;
+      filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.28));
+    }
+    body.hc-page-home .hc-home__network-label {
+      position: absolute;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: rgba(30, 41, 59, 0.7);
+    }
+    body.hc-page-home .hc-home__network-label--structures {
+      top: 6%;
+      left: 8%;
+    }
+    body.hc-page-home .hc-home__network-label--pros {
+      bottom: 8%;
+      right: 10%;
     }
     body.hc-page-home .hc-home__visual-title {
       position: relative;
@@ -186,6 +231,15 @@
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.82);
       border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    @media (min-width: 992px) {
+      body.hc-page-home .hc-home__hero-inner {
+        align-items: center;
+      }
+      body.hc-page-home .hc-home__snapshot {
+        align-self: center;
+      }
     }
 
     body.hc-page-home .hc-home__snapshot-title {
@@ -506,6 +560,7 @@
 
       body.hc-page-home .hc-home__snapshot {
         max-width: 620px;
+        margin-top: clamp(0.6rem, 2.4vw, 1.1rem);
       }
 
       body.hc-page-home .hc-acteurs-grid {
@@ -546,6 +601,11 @@
         grid-template-columns: 1fr;
       }
     }
+    @media (max-width: 479.98px) {
+      body.hc-page-home .hc-home__network-label {
+        display: none;
+      }
+    }
   </style>
 {% endblock %}
 
@@ -559,27 +619,188 @@
           <h1 class="hc-home__title">Infrastructure opérationnelle<br>pour le pilotage des situations sociales</h1>
 
           <p class="hc-home__subtitle">
-            Une plateforme de coordination pour les associations, les collectivités et les professionnels du secteur social.
+            Plateforme permettant d’enregistrer, coordonner et suivre des situations sociales entre acteurs territoriaux.
           </p>
 
-          <p class="hc-home__trust">
-            Conçu et opéré depuis la France <span aria-hidden="true">•</span> Hébergement européen <span aria-hidden="true">•</span> Conformité RGPD
-          </p>
+          <ul class="hc-home__capabilities" aria-label="Capacités opérationnelles">
+            <li>Suivi des situations</li>
+            <li>Coordination des acteurs</li>
+            <li>Orientation vers des professionnels</li>
+          </ul>
 
           <div class="hc-home__actions">
             <a class="hc-btn hc-btn--primary" href="{{ url_for('main.contact') }}" data-hc-event="home_primary_cta">Planifier une démo</a>
-            <a class="hc-btn hc-btn-outline" href="{{ url_for('main.professionnels') }}" data-hc-event="home_pro_cta">Accès structures et collectivités</a>
+            <a class="hc-btn hc-btn-outline" href="{{ url_for('main.professionnels') }}" data-hc-event="home_pro_cta">Demander un accès structure</a>
           </div>
           <p class="hc-home__cta-note">Pilotage, coordination et traçabilité opérationnelle des situations sociales.</p>
+          <p class="hc-home__trust">
+            Conçu et opéré depuis la France <span aria-hidden="true">•</span> Hébergement européen <span aria-hidden="true">•</span> Conformité RGPD
+          </p>
         </div>
 
         <div class="hc-home__snapshot">
           <div class="hc-home__snapshot-card hc-home__snapshot-card--visual" role="img" aria-label="Réseau européen de coordination opérationnelle">
             <div class="hc-home__visual-title">Europe • Réseau opérationnel</div>
+            <div class="hc-home__network" aria-hidden="true">
+              <svg viewBox="0 0 320 220" role="presentation" aria-hidden="true" focusable="false">
+                <line class="hc-network-line" x1="46" y1="64" x2="140" y2="90" />
+                <line class="hc-network-line" x1="140" y1="90" x2="218" y2="56" />
+                <line class="hc-network-line" x1="140" y1="90" x2="188" y2="138" />
+                <line class="hc-network-line" x1="188" y1="138" x2="262" y2="156" />
+                <line class="hc-network-line" x1="140" y1="90" x2="92" y2="154" />
+                <line class="hc-network-line" x1="92" y1="154" x2="40" y2="136" />
+                <circle class="hc-network-node hc-network-node--hub" cx="140" cy="90" r="7" />
+                <circle class="hc-network-node" cx="46" cy="64" r="5" />
+                <circle class="hc-network-node hc-network-node--soft" cx="218" cy="56" r="5" />
+                <circle class="hc-network-node" cx="188" cy="138" r="5" />
+                <circle class="hc-network-node hc-network-node--soft" cx="262" cy="156" r="4.5" />
+                <circle class="hc-network-node" cx="92" cy="154" r="4.5" />
+                <circle class="hc-network-node hc-network-node--soft" cx="40" cy="136" r="4.5" />
+              </svg>
+              <span class="hc-home__network-label hc-home__network-label--structures">Structures</span>
+              <span class="hc-home__network-label hc-home__network-label--pros">Professionnels</span>
+            </div>
             <div class="hc-home__visual-meta">Coordination • Traçabilité • Pilotage</div>
             <span class="hc-home__snapshot-orbit" aria-hidden="true"></span>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__flow" aria-label="Comment une situation est suivie">
+    <div class="hc-container">
+      <header class="hc-home__flow-head">
+        <h2>Comment une situation est suivie</h2>
+        <p>HelpChain transforme une demande d’aide en situation suivie, coordonnée et orientée entre acteurs locaux.</p>
+      </header>
+      <div class="hc-home__flow-grid">
+        <article class="hc-home__flow-card">
+          <span class="hc-home__flow-step" aria-hidden="true">01</span>
+          <h3>Signalement</h3>
+          <p>Une demande d’aide est enregistrée dans la plateforme par une structure, un professionnel ou un acteur local.</p>
+        </article>
+        <article class="hc-home__flow-card">
+          <span class="hc-home__flow-step" aria-hidden="true">02</span>
+          <h3>Qualification</h3>
+          <p>La situation est analysée selon le besoin, le niveau de priorité et les acteurs à mobiliser.</p>
+        </article>
+        <article class="hc-home__flow-card">
+          <span class="hc-home__flow-step" aria-hidden="true">03</span>
+          <h3>Coordination</h3>
+          <p>Bénévoles, professionnels et structures concernées peuvent être mobilisés dans un cadre commun de suivi.</p>
+        </article>
+        <article class="hc-home__flow-card">
+          <span class="hc-home__flow-step" aria-hidden="true">04</span>
+          <h3>Suivi et orientation</h3>
+          <p>La situation reste suivie jusqu’à résolution et peut être orientée vers un professionnel lorsque nécessaire.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-home__cases" aria-label="Situations traitées">
+    <div class="hc-container">
+      <header class="hc-home__cases-head">
+        <h2>Situations traitées</h2>
+        <p>HelpChain permet de suivre différents types de situations sociales dans un cadre commun de coordination, de traçabilité et d’orientation.</p>
+      </header>
+      <div class="hc-home__cases-grid">
+        <article class="hc-home__cases-card">
+          <h3>Aide administrative</h3>
+          <p>Accompagnement pour démarches CAF, logement, accès aux droits, courrier administratif ou formalités en ligne.</p>
+        </article>
+        <article class="hc-home__cases-card">
+          <h3>Personne âgée isolée</h3>
+          <p>Coordination d’un accompagnement de proximité impliquant bénévoles, intervenants et suivi de la situation.</p>
+        </article>
+        <article class="hc-home__cases-card">
+          <h3>Situation familiale fragile</h3>
+          <p>Suivi d’une situation signalée par une structure, une école ou un acteur local avec coordination des actions engagées.</p>
+        </article>
+        <article class="hc-home__cases-card">
+          <h3>Orientation vers un professionnel</h3>
+          <p>Lorsque la situation le nécessite, HelpChain peut faciliter l’orientation vers un psychologue, un juriste, un travailleur social ou un autre professionnel adapté.</p>
+        </article>
+      </div>
+      <p class="hc-home__cases-note">HelpChain peut s’appuyer sur une base de professionnels partenaires afin de mettre en relation une situation avec l’expertise appropriée.</p>
+    </div>
+  </section>
+
+  <section class="hc-home__pilotage" aria-label="Pilotage des situations">
+    <div class="hc-container">
+      <header class="hc-home__pilotage-head">
+        <h2>Pilotage des situations</h2>
+        <p>HelpChain donne aux structures une vision claire de l’activité en cours, des situations suivies et des actions engagées.</p>
+      </header>
+      <div class="hc-home__pilotage-grid">
+        <article class="hc-home__pilotage-card">
+          <h3>Situations actives</h3>
+          <p>Visualiser les situations en cours de traitement dans un espace unique.</p>
+        </article>
+        <article class="hc-home__pilotage-card">
+          <h3>Actions tracées</h3>
+          <p>Conserver une trace claire des interventions, attributions et étapes de suivi.</p>
+        </article>
+        <article class="hc-home__pilotage-card">
+          <h3>Acteurs mobilisés</h3>
+          <p>Identifier les bénévoles, professionnels ou structures impliqués dans chaque situation.</p>
+        </article>
+        <article class="hc-home__pilotage-card">
+          <h3>Suivi opérationnel</h3>
+          <p>Disposer d’une vue simple pour piloter l’activité sociale au quotidien.</p>
+        </article>
+      </div>
+      <p class="hc-home__pilotage-note">Cette logique de pilotage permet de réduire la fragmentation des échanges et de mieux coordonner les interventions.</p>
+    </div>
+  </section>
+
+  <section class="hc-home__trust-block" aria-label="Gouvernance et confiance">
+    <div class="hc-container">
+      <header class="hc-home__trust-head">
+        <h2>Gouvernance et confiance</h2>
+        <p>HelpChain est conçu pour offrir un cadre de coordination professionnel, lisible et structuré pour les acteurs du secteur social.</p>
+      </header>
+      <div class="hc-home__trust-layout">
+        <div class="hc-home__trust-col">
+          <h3>Cadre opérationnel</h3>
+          <ul>
+            <li>Accès organisés selon les rôles</li>
+            <li>Traçabilité des actions et des attributions</li>
+            <li>Suivi structuré des situations</li>
+          </ul>
+        </div>
+        <div class="hc-home__trust-col">
+          <h3>Confiance numérique</h3>
+          <ul>
+            <li>Protection des données et hébergement européen</li>
+            <li>Cadre adapté aux structures et collectivités</li>
+            <li>Vision claire des échanges et des interventions</li>
+          </ul>
+        </div>
+      </div>
+      <p class="hc-home__trust-note">Cette approche permet d’inscrire la coordination sociale dans un environnement plus fiable, plus lisible et plus pilotable.</p>
+    </div>
+  </section>
+
+  <section class="hc-home__pilot-cta" aria-label="Lancer un pilote HelpChain">
+    <div class="hc-container">
+      <div class="hc-home__pilot-cta-inner">
+        <header class="hc-home__pilot-cta-head">
+          <h2>Lancer un pilote HelpChain</h2>
+          <p>Les structures peuvent tester HelpChain dans un cadre pilote afin d’évaluer l’apport de la plateforme pour la coordination des situations sociales.</p>
+        </header>
+        <p class="hc-home__pilot-cta-body">La phase pilote permet de déployer la plateforme dans un cadre réel, avec une mise en place progressive, un usage concret par les équipes et une lecture simple des premiers bénéfices opérationnels.</p>
+        <ul class="hc-home__pilot-cta-points">
+          <li>Mise en place progressive</li>
+          <li>Usage concret par les équipes</li>
+          <li>Lecture claire des premiers résultats</li>
+        </ul>
+        <p class="hc-home__pilot-cta-note">Un nombre limité de structures peut actuellement rejoindre cette phase pilote.</p>
+        <div class="hc-home__pilot-cta-actions">
+          <a class="hc-btn hc-btn--primary" href="{{ url_for('main.contact') }}" data-hc-event="home_pilot_cta">Demander un pilote</a>
+        </div>
+        <p class="hc-home__pilot-cta-support">Conçu pour les structures sociales, associations et collectivités.</p>
       </div>
     </div>
   </section>
@@ -675,7 +896,7 @@
         </div>
         <div class="hc-home__cta-final-actions">
           <a class="hc-btn hc-btn--primary" href="{{ url_for('main.contact') }}">Planifier une démo</a>
-          <a class="hc-btn hc-btn-outline" href="{{ url_for('main.professionnels') }}">Accès structures et collectivités</a>
+          <a class="hc-btn hc-btn-outline" href="{{ url_for('main.professionnels') }}">Demander un accès structure</a>
         </div>
       </div>
     </div>
