@@ -611,7 +611,7 @@
 
 {% block content %}
 <main class="hc-home">
-  <section class="hc-home__hero" aria-label="Positionnement institutionnel">
+  <section class="hc-home__hero hc-hero" aria-label="Positionnement institutionnel">
     <div class="hc-container">
       <div class="hc-home__hero-inner">
         <div class="hc-home__hero-copy">
@@ -629,7 +629,7 @@
           </ul>
 
           <div class="hc-home__actions">
-            <a class="hc-btn hc-btn--primary" href="{{ url_for('main.contact') }}" data-hc-event="home_primary_cta">Planifier une démo</a>
+            <a class="hc-btn hc-btn--primary hc-btn-primary" href="{{ url_for('main.contact') }}" data-hc-event="home_primary_cta">Planifier une démo</a>
             <a class="hc-btn hc-btn-outline" href="{{ url_for('main.professionnels') }}" data-hc-event="home_pro_cta">Demander un accès structure</a>
           </div>
           <p class="hc-home__cta-note">Pilotage, coordination et traçabilité opérationnelle des situations sociales.</p>
@@ -861,21 +861,21 @@
         <p>Une vue de suivi opérationnel pour suivre les situations, prioriser les interventions et coordonner les réponses entre acteurs.</p>
       </header>
       <div class="hc-pilotage-grid">
-        <article class="hc-pilotage-card">
+        <article class="hc-pilotage-card hc-kpi-card">
           <span class="hc-pilotage-chip">Pilotage</span>
           <h3 class="hc-pilotage-label">Situations critiques</h3>
           <p class="hc-pilotage-value">24</p>
           <p class="hc-pilotage-hint">Priorité opérationnelle</p>
           <p>Suivi prioritaire des situations critiques.</p>
         </article>
-        <article class="hc-pilotage-card">
+        <article class="hc-pilotage-card hc-kpi-card">
           <span class="hc-pilotage-chip">Coordination</span>
           <h3 class="hc-pilotage-label">Situations en cours</h3>
           <p class="hc-pilotage-value">128</p>
           <p class="hc-pilotage-hint">Coordination active</p>
           <p>Coordination active des situations en cours.</p>
         </article>
-        <article class="hc-pilotage-card">
+        <article class="hc-pilotage-card hc-kpi-card">
           <span class="hc-pilotage-chip">Suivi</span>
           <h3 class="hc-pilotage-label">Situations suivies</h3>
           <p class="hc-pilotage-value">356</p>

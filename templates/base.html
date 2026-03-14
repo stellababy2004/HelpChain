@@ -440,7 +440,7 @@
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
           {% if not is_any_logged_in and not is_ops_shell and not is_admin_shell %}
-          <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark" alt="" aria-hidden="true">
+          <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark hc-logo" alt="HelpChain">
           {% endif %}
           <span class="hc-brand">
             <span class="hc-brand-title">HelpChain</span>
@@ -526,13 +526,13 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
-                {{ _('Professionnels') }}
+              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
+                {{ _('Fonctionnement') }}
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
-                {{ _('Fonctionnement') }}
+              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
+                {{ _('Professionnels') }}
               </a>
             </li>
             <li class="nav-item">

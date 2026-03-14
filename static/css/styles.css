@@ -5533,12 +5533,28 @@ body.hc-page-home .hc-hero h1 {
 .hc-navbar {
   position: sticky;
   top: 0;
-  z-index: 1030;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  background: rgba(248, 250, 255, 0.72) !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
-  transition: background 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.25s ease;
+}
+
+.hc-navbar:hover {
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+body.hc-page-home main {
+  margin-top: 20px;
+}
+
+.hc-logo {
+  height: 32px;
+}
+
+.hc-navbar.scrolled {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 /* NAVBAR — solid on scroll */
@@ -5559,7 +5575,7 @@ body.hc-page-home .hc-hero h1 {
 body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]) .hc-navbar {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.75) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
   transition: all 0.25s ease;
 }
@@ -7822,4 +7838,46 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) svg.h
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-iconbtn, .hc-nav-search__btn, .nav-utility.hc-iconbtn) .hc-icon {
     font-size: 18px;
   }
+}
+
+/* SaaS homepage polish */
+body.hc-page-home section {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+.hc-hero h1 {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.hc-hero p {
+  font-size: 20px;
+  color: #5f6c7b;
+  margin-top: 16px;
+  max-width: 720px;
+}
+
+.hc-btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
+}
+
+.hc-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.30);
+}
+
+.hc-kpi-card {
+  border-radius: 14px;
+  background: #fff;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
