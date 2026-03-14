@@ -9,6 +9,7 @@ fi
 
 echo "=== RENDER START ==="
 echo "[HC] render_start.sh running"
+echo "[HC] Applying database migrations..."
 "$PY" -m flask --app run:app db upgrade --directory migrations
 
 # Best-effort table bootstrap for production DBs that historically drifted.
@@ -22,4 +23,5 @@ if [ -n "${ADMIN_SEED_USERNAME:-}" ] && [ -n "${ADMIN_SEED_PASSWORD:-}" ]; then
   "$PY" backend/scripts/ensure_admin.py || echo "[HC] ensure_admin.py failed; continuing startup"
 fi
 
-exec gunicorn run:app --bind 0.0.0.0:"$PORT" --workers 2
+echo "[HC] Starting gunicorn on port ${PORT}..."
+exec gunicorn run:app --bind "0.0.0.0:${PORT}" --workers 2 --timeout 120
