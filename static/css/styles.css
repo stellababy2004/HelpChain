@@ -5926,6 +5926,69 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-m
   margin-block: clamp(1rem, 1.8vw, 1.5rem);
 }
 
+/* === Professionnels page QA polish === */
+body.hc-page-pro .hc-grid-3 {
+  align-items: stretch;
+}
+
+body.hc-page-pro :is(.hc-card, .hc-trust-card, .hc-ops-card, .hc-territorial-card) {
+  height: 100%;
+}
+
+body.hc-page-pro :is(.hc-usecases-cta, .hc-trust-callout) {
+  margin-top: clamp(1.1rem, 2vw, 1.6rem);
+  padding: clamp(0.9rem, 1.8vw, 1.2rem);
+  border: 1px solid var(--hc-color-border, #e2e8f0);
+  border-radius: 14px;
+  background: #f8fbff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+body.hc-page-pro :is(.hc-usecases-cta__text, .hc-trust-callout__text) {
+  max-width: 62ch;
+}
+
+body.hc-page-pro .hc-trust-callout__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* Professionnels – objective highlight */
+body.hc-page-pro .hc-objective-highlight {
+  margin-top: clamp(1.4rem, 2.4vw, 2rem);
+  padding: clamp(1rem, 2vw, 1.3rem);
+  border-left: 4px solid var(--hc-accent, #2563eb);
+  background: #f8fbff;
+  border-radius: 10px;
+  max-width: 70ch;
+}
+
+body.hc-page-pro .hc-objective-highlight strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+body.hc-page-pro .hc-objective-highlight p {
+  margin: 0;
+  color: var(--hc-text-muted, #475569);
+}
+
+/* Professionnels page spacing polish */
+body.hc-page-pro .hc-section {
+  padding-block: clamp(3rem, 5vw, 4.5rem);
+}
+
+body.hc-page-pro .hc-section-head {
+  margin-bottom: clamp(1.8rem, 3vw, 2.4rem);
+}
+
 @media (max-width: 991.98px) {
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-main-content > .hc-container,
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-main-content > .container,
