@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 
 from flask import current_app, g, has_app_context
+from flask_login import current_user
 from sqlalchemy.exc import OperationalError, ProgrammingError
 
 from backend.extensions import db
@@ -75,6 +76,13 @@ def current_structure_id() -> int:
         return _load_default_structure_id()
 
     if hasattr(g, "structure_id"):
+        return int(g.structure_id)
+
+    if (
+        getattr(current_user, "is_authenticated", False)
+        and getattr(current_user, "structure_id", None)
+    ):
+        g.structure_id = int(current_user.structure_id)
         return int(g.structure_id)
 
     if hasattr(g, "user") and getattr(g.user, "structure_id", None):

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • Nouvelle structure | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Créer une structure</h1>
+        <div class="hc-muted">Nom + slug (unique)</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_structures') }}">Retour</a>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <form method="POST" action="{{ url_for('admin.admin_structure_create') }}" class="p-3" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="mb-3">
+        <label class="form-label" for="name">Nom</label>
+        <input type="text"
+               class="form-control {% if form_errors and form_errors.get('name') %}is-invalid{% endif %}"
+               id="name"
+               name="name"
+               placeholder="Ex. Maison des Solidarités"
+               value="{{ form_data.name if form_data else '' }}"
+               required>
+        {% if form_errors and form_errors.get('name') %}
+          <div class="invalid-feedback">{{ form_errors.get('name') }}</div>
+        {% endif %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="slug">Slug</label>
+        <input type="text"
+               class="form-control {% if form_errors and form_errors.get('slug') %}is-invalid{% endif %}"
+               id="slug"
+               name="slug"
+               placeholder="ex-maison-solidarites"
+               value="{{ form_data.slug if form_data else '' }}"
+               required>
+        <div class="form-text text-muted">Identifiant court et unique, utilisé pour les URLs internes.</div>
+        {% if form_errors and form_errors.get('slug') %}
+          <div class="invalid-feedback">{{ form_errors.get('slug') }}</div>
+        {% endif %}
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm">Créer</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_structures') }}">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

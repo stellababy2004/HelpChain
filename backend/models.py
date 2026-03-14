@@ -62,6 +62,9 @@ class AdminUser(db.Model, UserMixin):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(32), default="admin")
     is_active = db.Column(db.Boolean, default=True)
+    structure_id = db.Column(
+        db.Integer, db.ForeignKey("structures.id"), nullable=True, index=True
+    )
     totp_secret = db.Column(db.String(32), nullable=True)
     mfa_enabled = db.Column(db.Boolean, default=False)
     mfa_enrolled_at = db.Column(db.DateTime, nullable=True)
@@ -163,6 +166,9 @@ class AdminUser(db.Model, UserMixin):
         except Exception:
             username = getattr(self, "username", None) or "admin"
             return f"otpauth://totp/HelpChain:{username}?secret={self.twofa_secret}&issuer=HelpChain"
+
+    # Tenant structure (Phase 1 scoping)
+    structure = relationship("Structure", lazy="joined")
 
 
 class AdminLoginAttempt(db.Model):

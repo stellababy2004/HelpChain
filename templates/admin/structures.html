@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • Structures | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Structures</h1>
+        <div class="hc-muted">Gestion des structures (Phase 1)</div>
+      </div>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_structure_new') }}">Créer</a>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Slug</th>
+            <th>ID</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for st in structures %}
+          <tr>
+            <td class="small">{{ st.name }}</td>
+            <td class="small text-muted">{{ st.slug }}</td>
+            <td class="small text-muted">{{ st.id }}</td>
+            <td>
+              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_structure_detail', structure_id=st.id) }}">Voir</a>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if structures|length == 0 %}
+          <tr><td colspan="4" class="text-center text-muted py-4">Aucune structure.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

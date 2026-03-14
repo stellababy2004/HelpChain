@@ -1109,12 +1109,36 @@ def audit_admin_action(
 
 
 def _current_structure_id() -> int:
-    return int(current_structure().id)
+    try:
+        from backend.core.tenant import current_structure_id
+    except ModuleNotFoundError:
+        from core.tenant import current_structure_id
+    return int(current_structure_id())
+
+
+def _is_global_admin() -> bool:
+    role = _admin_role_value()
+    if role not in {"superadmin"}:
+        return False
+    return getattr(current_user, "structure_id", None) is None
+
+
+def _structure_scope_filter():
+    if _is_global_admin():
+        return None
+    return Request.structure_id == _current_structure_id()
+
+
+def _apply_tenant_filter(query, tenant_filter):
+    if tenant_filter is None:
+        return query
+    return query.filter(tenant_filter)
 
 
 def _scope_requests(query):
     """Sprint-1 tenant guard for request queries."""
-    return query.filter(Request.structure_id == _current_structure_id())
+    tenant_filter = _structure_scope_filter()
+    return _apply_tenant_filter(query, tenant_filter)
 
 
 def _engagement_label(score: int) -> str:
@@ -1308,6 +1332,37 @@ def _sla_overdue_hours_by_kind(req, *, now: datetime) -> dict[str, float]:
     ):
         out["volunteer_assignment_overdue"] = age_hours - volunteer_assign_sla_hours
     return out
+
+
+def _sla_prediction_state(req, *, sla_kind: str, now: datetime) -> dict:
+    created_at = _to_utc_naive(getattr(req, "created_at", None))
+    if not created_at:
+        return {"state": "unknown", "remaining_hours": None, "label": "—"}
+
+    if sla_kind == "resolution_overdue":
+        if getattr(req, "completed_at", None) is not None:
+            return {"state": "ok", "remaining_hours": None, "label": "—"}
+        sla_hours = float(RESOLVE_SLA_DAYS * 24)
+    elif sla_kind == "owner_assignment_overdue":
+        if getattr(req, "owner_id", None) is not None:
+            return {"state": "ok", "remaining_hours": None, "label": "—"}
+        sla_hours = float(ASSIGN_SLA_HOURS)
+    elif sla_kind == "volunteer_assignment_overdue":
+        if getattr(req, "assigned_volunteer_id", None) is not None:
+            return {"state": "ok", "remaining_hours": None, "label": "—"}
+        sla_hours = float(VOLUNTEER_ASSIGN_SLA_HOURS)
+    else:
+        return {"state": "unknown", "remaining_hours": None, "label": "—"}
+
+    age_hours = max(0.0, (now - created_at).total_seconds() / 3600.0)
+    remaining_hours = sla_hours - age_hours
+    warn_threshold = min(4.0, max(1.0, sla_hours / 5.0))
+
+    if remaining_hours < 0:
+        return {"state": "breached", "remaining_hours": remaining_hours, "label": "Dépassement"}
+    if remaining_hours <= warn_threshold:
+        return {"state": "due_soon", "remaining_hours": remaining_hours, "label": "Échéance proche"}
+    return {"state": "ok", "remaining_hours": remaining_hours, "label": "À temps"}
 
 
 def _delta_seconds(start: datetime | None, end: datetime | None) -> int | None:
@@ -2866,7 +2921,7 @@ def admin_required(view_func):
         ):
             abort(404)
         role = _admin_role_value()
-        if role in {"ops", "readonly"}:
+        if role is None or role in {"ops", "readonly"}:
             abort(404)
         return view_func(*args, **kwargs)
 
@@ -2881,7 +2936,7 @@ def operator_required(view_func):
         ):
             abort(404)
         role = _admin_role_value()
-        if role not in {"ops", "readonly", "admin", "superadmin"} and role is not None:
+        if role is None or role not in {"ops", "readonly", "admin", "superadmin"}:
             _audit_denied_action(
                 required_roles={"ops", "readonly", "admin", "superadmin"},
                 actor_role=role,
@@ -3005,11 +3060,12 @@ def _render_operator_dashboard():
     if _table_exists("notification_jobs"):
         notif_base = NotificationJob.query
         try:
-            sid = _current_structure_id()
-            notif_base = notif_base.filter(
-                (NotificationJob.structure_id == sid)
-                | (NotificationJob.structure_id.is_(None))
-            )
+            if not _is_global_admin():
+                sid = _current_structure_id()
+                notif_base = notif_base.filter(
+                    (NotificationJob.structure_id == sid)
+                    | (NotificationJob.structure_id.is_(None))
+                )
         except Exception:
             pass
         failed_notif_count = notif_base.filter(NotificationJob.status == "failed").count()
@@ -4255,7 +4311,8 @@ def _sla_kpis(
     ).join(Request, Request.id == VolunteerRequestState.request_id).filter(
         VolunteerRequestState.notified_at.isnot(None)
     )
-    base_states_q = base_states_q.filter(Request.structure_id == _current_structure_id())
+    tenant_filter = _structure_scope_filter()
+    base_states_q = _apply_tenant_filter(base_states_q, tenant_filter)
     if scope == "assigned_only":
         base_states_q = base_states_q.filter(
             Request.assigned_volunteer_id == VolunteerRequestState.volunteer_id
@@ -4390,22 +4447,20 @@ def admin_risk_kpis():
     unassigned_cutoff = now - timedelta(days=unassigned_days)
     window_cutoff = now - timedelta(days=window_days)
     has_vrs_notified_at = _table_has_column("volunteer_request_states", "notified_at")
-    tenant_filter = Request.structure_id == _current_structure_id()
+    tenant_filter = _structure_scope_filter()
     open_filter = or_(
         Request.status.is_(None), ~Request.status.in_(list(CLOSED_STATUSES))
     )
 
     stale_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at < stale_cutoff)
         .filter(open_filter)
         .scalar()
     )
 
     unassigned_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at < unassigned_cutoff)
         .filter(Request.assigned_volunteer_id.is_(None))
         .filter(open_filter)
@@ -4416,23 +4471,25 @@ def admin_risk_kpis():
         cutoff = now - timedelta(hours=hours)
         if has_vrs_notified_at:
             cnt = (
-                db.session.query(func.count(VolunteerRequestState.id))
+                _apply_tenant_filter(
+                    db.session.query(func.count(VolunteerRequestState.id)), tenant_filter
+                )
                 .join(Request, Request.id == VolunteerRequestState.request_id)
                 .filter(VolunteerRequestState.notified_at.isnot(None))
                 .filter(VolunteerRequestState.notified_at < cutoff)
                 .filter(VolunteerRequestState.seen_at.is_(None))
-                .filter(tenant_filter)
                 .filter(open_filter)
                 .scalar()
             )
             source = "notified_at"
         else:
             cnt = (
-                db.session.query(func.count(Notification.id))
+                _apply_tenant_filter(
+                    db.session.query(func.count(Notification.id)), tenant_filter
+                )
                 .join(Request, Request.id == Notification.request_id)
                 .filter(Notification.type == "new_match")
                 .filter(Notification.created_at < cutoff)
-                .filter(tenant_filter)
                 .filter(open_filter)
                 .scalar()
             )
@@ -4452,8 +4509,7 @@ def admin_risk_kpis():
     )
 
     assigned_7d = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.assigned_volunteer_id.isnot(None))
         .filter(Request.created_at >= window_cutoff)
         .scalar()
@@ -4468,15 +4524,17 @@ def admin_risk_kpis():
         if has_vrs_notified_at:
             cutoff = now - timedelta(hours=24)
             not_seen_rows = (
-                db.session.query(
-                    VolunteerRequestState.request_id,
-                    func.count(VolunteerRequestState.id),
+                _apply_tenant_filter(
+                    db.session.query(
+                        VolunteerRequestState.request_id,
+                        func.count(VolunteerRequestState.id),
+                    ),
+                    tenant_filter,
                 )
                 .join(Request, Request.id == VolunteerRequestState.request_id)
                 .filter(VolunteerRequestState.notified_at.isnot(None))
                 .filter(VolunteerRequestState.notified_at < cutoff)
                 .filter(VolunteerRequestState.seen_at.is_(None))
-                .filter(tenant_filter)
                 .filter(open_filter)
                 .group_by(VolunteerRequestState.request_id)
                 .all()
@@ -4484,11 +4542,13 @@ def admin_risk_kpis():
         else:
             cutoff = now - timedelta(hours=24)
             not_seen_rows = (
-                db.session.query(Notification.request_id, func.count(Notification.id))
+                _apply_tenant_filter(
+                    db.session.query(Notification.request_id, func.count(Notification.id)),
+                    tenant_filter,
+                )
                 .join(Request, Request.id == Notification.request_id)
                 .filter(Notification.type == "new_match")
                 .filter(Notification.created_at < cutoff)
-                .filter(tenant_filter)
                 .filter(open_filter)
                 .group_by(Notification.request_id)
                 .all()
@@ -4593,19 +4653,17 @@ def admin_ops_kpis():
     now = datetime.now(UTC).replace(tzinfo=None)
     since = now - timedelta(days=days)
     stale_since = now - timedelta(days=7)
-    tenant_filter = Request.structure_id == _current_structure_id()
+    tenant_filter = _structure_scope_filter()
 
     new_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at >= since)
         .scalar()
         or 0
     )
 
     resolved_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.completed_at.isnot(None))
         .filter(Request.completed_at >= since)
         .scalar()
@@ -4613,26 +4671,29 @@ def admin_ops_kpis():
     )
 
     avg_to_owner_assign_sec = (
-        db.session.query(func.avg(_seconds_diff(Request.owned_at, Request.created_at)))
-        .filter(tenant_filter)
+        _apply_tenant_filter(
+            db.session.query(func.avg(_seconds_diff(Request.owned_at, Request.created_at))),
+            tenant_filter,
+        )
         .filter(Request.owned_at.isnot(None))
         .scalar()
     )
     avg_owner_assign_hours = round(float(avg_to_owner_assign_sec or 0) / 3600.0, 2)
 
     avg_to_resolve_sec = (
-        db.session.query(
-            func.avg(_seconds_diff(Request.completed_at, Request.created_at))
+        _apply_tenant_filter(
+            db.session.query(
+                func.avg(_seconds_diff(Request.completed_at, Request.created_at))
+            ),
+            tenant_filter,
         )
-        .filter(tenant_filter)
         .filter(Request.completed_at.isnot(None))
         .scalar()
     )
     avg_resolve_hours = round(float(avg_to_resolve_sec or 0) / 3600.0, 2)
 
     stale_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at < stale_since)
         .filter(Request.completed_at.is_(None))
         .scalar()
@@ -4640,8 +4701,9 @@ def admin_ops_kpis():
     )
 
     by_category_rows = (
-        db.session.query(Request.category, func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(
+            db.session.query(Request.category, func.count(Request.id)), tenant_filter
+        )
         .filter(Request.created_at >= since)
         .group_by(Request.category)
         .all()
@@ -4652,8 +4714,9 @@ def admin_ops_kpis():
     ]
 
     by_status_rows = (
-        db.session.query(Request.status, func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(
+            db.session.query(Request.status, func.count(Request.id)), tenant_filter
+        )
         .filter(Request.completed_at.is_(None))
         .group_by(Request.status)
         .all()
@@ -4671,8 +4734,7 @@ def admin_ops_kpis():
     )
 
     assign_breach_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < assign_deadline)
         .filter(Request.owned_at.is_(None))
@@ -4682,8 +4744,7 @@ def admin_ops_kpis():
     )
 
     resolve_breach_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < resolve_deadline)
         .filter(Request.completed_at.is_(None))
@@ -4694,8 +4755,7 @@ def admin_ops_kpis():
 
     volunteer_assign_deadline = now - timedelta(hours=VOLUNTEER_ASSIGN_SLA_HOURS)
     volunteer_assign_breach_count = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter)
+        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < volunteer_assign_deadline)
         .filter(Request.assigned_volunteer_id.is_(None))
@@ -5617,10 +5677,20 @@ def admin_sla_breakdown():
     )
 
     requests = q.all()
+    prediction_counts = {
+        "resolution_overdue": 0,
+        "owner_assignment_overdue": 0,
+        "volunteer_assignment_overdue": 0,
+    }
 
     rows: list[dict] = []
 
     for req in requests:
+        for kind in prediction_counts.keys():
+            pred = _sla_prediction_state(req, sla_kind=kind, now=now)
+            if pred.get("state") == "due_soon":
+                prediction_counts[kind] += 1
+
         overdue_by_kind = _sla_overdue_hours_by_kind(req, now=now)
         candidates = [
             (SLA_KIND_TO_BREAKDOWN_TYPE[kind], overdue)
@@ -5675,6 +5745,7 @@ def admin_sla_breakdown():
         resolve_count=int(resolve_count),
         owner_assign_count=int(owner_assign_count),
         volunteer_assign_count=int(volunteer_assign_count),
+        prediction_counts=prediction_counts,
         rows=rows,
     )
 
@@ -7440,11 +7511,12 @@ def admin_notifications_list():
 
     query = NotificationJob.query
     try:
-        sid = _current_structure_id()
-        query = query.filter(
-            (NotificationJob.structure_id == sid)
-            | (NotificationJob.structure_id.is_(None))
-        )
+        if not _is_global_admin():
+            sid = _current_structure_id()
+            query = query.filter(
+                (NotificationJob.structure_id == sid)
+                | (NotificationJob.structure_id.is_(None))
+            )
     except Exception:
         pass
 
@@ -7477,11 +7549,12 @@ def admin_notifications_list():
 
     counts_base = NotificationJob.query
     try:
-        sid = _current_structure_id()
-        counts_base = counts_base.filter(
-            (NotificationJob.structure_id == sid)
-            | (NotificationJob.structure_id.is_(None))
-        )
+        if not _is_global_admin():
+            sid = _current_structure_id()
+            counts_base = counts_base.filter(
+                (NotificationJob.structure_id == sid)
+                | (NotificationJob.structure_id.is_(None))
+            )
     except Exception:
         pass
 
@@ -8899,6 +8972,123 @@ def admin_roles_set_role(admin_id: int):
     )
     flash("Role updated.", "success")
     return redirect(url_for("admin.admin_roles"), code=303)
+
+
+@admin_bp.get("/structures")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structures():
+    rows = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
+    return (
+        render_template(
+            "admin/structures.html",
+            structures=rows,
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/structures/new")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structure_new():
+    return (
+        render_template(
+            "admin/structure_new.html",
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/structures/new")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structure_create():
+    name = (request.form.get("name") or "").strip()
+    slug = (request.form.get("slug") or "").strip()
+
+    errors = {}
+    if not name:
+        errors["name"] = "Le nom est requis."
+    if not slug:
+        errors["slug"] = "Le slug est requis."
+
+    if slug:
+        existing = Structure.query.filter(Structure.slug == slug).first()
+        if existing:
+            errors["slug"] = "Ce slug est déjà utilisé."
+
+    if errors:
+        for msg in errors.values():
+            flash(msg, "danger")
+        return (
+            render_template(
+                "admin/structure_new.html",
+                form_data={"name": name, "slug": slug},
+                form_errors=errors,
+            ),
+            400,
+        )
+
+    row = Structure(
+        name=name,
+        slug=slug,
+        created_at=datetime.utcnow(),
+    )
+    db.session.add(row)
+    db.session.commit()
+    flash("Structure créée.", "success")
+    return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
+
+
+@admin_bp.get("/structures/<int:structure_id>")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structure_detail(structure_id: int):
+    row = Structure.query.get_or_404(structure_id)
+    admins = (
+        AdminUser.query.filter(AdminUser.structure_id == row.id)
+        .order_by(AdminUser.username.asc(), AdminUser.id.asc())
+        .all()
+    )
+    available_admins = (
+        AdminUser.query.order_by(AdminUser.username.asc(), AdminUser.id.asc()).all()
+    )
+    return (
+        render_template(
+            "admin/structure_detail.html",
+            structure=row,
+            admins=admins,
+            available_admins=available_admins,
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/structures/<int:structure_id>/assign-admin")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structure_assign_admin(structure_id: int):
+    row = Structure.query.get_or_404(structure_id)
+    admin_id_raw = (request.form.get("admin_id") or "").strip()
+    if not admin_id_raw:
+        flash("Veuillez sélectionner un administrateur.", "danger")
+        return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
+    try:
+        admin_id = int(admin_id_raw)
+    except Exception:
+        flash("Administrateur invalide.", "danger")
+        return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
+
+    admin_user = db.session.get(AdminUser, admin_id)
+    if not admin_user:
+        flash("Administrateur introuvable.", "danger")
+        return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
+
+    admin_user.structure_id = row.id
+    db.session.commit()
+    flash("Administrateur assigné à la structure.", "success")
+    return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
 
 
 @admin_bp.get("/pro-access/<int:pro_id>")

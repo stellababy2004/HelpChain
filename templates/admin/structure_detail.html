@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Admin') }} • Structure | HelpChain{% endblock %}
+{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-admin-wrap">
+  <div class="hc-card mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ structure.name }}</h1>
+        <div class="hc-muted">Slug: {{ structure.slug }} • ID: {{ structure.id }}</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_structures') }}">Retour</a>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3">
+    <div class="p-3 border-bottom">
+      <strong>Administrateurs assignés</strong>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Rôle</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in admins %}
+          <tr>
+            <td class="small">{{ u.username }}</td>
+            <td class="small text-muted">{{ u.email }}</td>
+            <td class="small text-muted">{{ u.role }}</td>
+          </tr>
+          {% endfor %}
+          {% if admins|length == 0 %}
+          <tr><td colspan="3" class="text-center text-muted py-4">Aucun administrateur assigné.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="p-3 border-bottom">
+      <strong>Assigner un administrateur</strong>
+    </div>
+    <form method="POST" action="{{ url_for('admin.admin_structure_assign_admin', structure_id=structure.id) }}" class="p-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-7">
+        <label class="form-label" for="admin_id">Administrateur</label>
+        <select class="form-select form-select-sm" id="admin_id" name="admin_id" required>
+          <option value="">Sélectionner…</option>
+          {% for u in available_admins %}
+            <option value="{{ u.id }}">{{ u.username }} ({{ u.email }})</option>
+          {% endfor %}
+        </select>
+        <div class="form-text text-muted">L’administrateur conserve son rôle actuel.</div>
+      </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary btn-sm">Assigner</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
