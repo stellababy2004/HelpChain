@@ -16,29 +16,33 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "admin_users",
-        sa.Column("structure_id", sa.Integer(), nullable=True),
-    )
-    op.create_foreign_key(
-        "fk_admin_users_structure_id",
-        "admin_users",
-        "structures",
-        ["structure_id"],
-        ["id"],
-    )
-    op.create_index(
-        "ix_admin_users_structure_id",
-        "admin_users",
-        ["structure_id"],
-    )
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    if "admin_users" not in insp.get_table_names():
+        return
+    existing_cols = {c["name"] for c in insp.get_columns("admin_users")}
+    with op.batch_alter_table("admin_users") as batch_op:
+        if "structure_id" not in existing_cols:
+            batch_op.add_column(sa.Column("structure_id", sa.Integer(), nullable=True))
+        # FK/index are safe to attempt in batch mode for SQLite.
+        batch_op.create_foreign_key(
+            "fk_admin_users_structure_id",
+            "structures",
+            ["structure_id"],
+            ["id"],
+        )
+        batch_op.create_index("ix_admin_users_structure_id", ["structure_id"])
 
 
 def downgrade() -> None:
-    op.drop_index("ix_admin_users_structure_id", table_name="admin_users")
-    op.drop_constraint(
-        "fk_admin_users_structure_id",
-        "admin_users",
-        type_="foreignkey",
-    )
-    op.drop_column("admin_users", "structure_id")
+    bind = op.get_bind()
+    insp = sa.inspect(bind)
+    if "admin_users" not in insp.get_table_names():
+        return
+    with op.batch_alter_table("admin_users") as batch_op:
+        batch_op.drop_index("ix_admin_users_structure_id")
+        batch_op.drop_constraint(
+            "fk_admin_users_structure_id",
+            type_="foreignkey",
+        )
+        batch_op.drop_column("structure_id")

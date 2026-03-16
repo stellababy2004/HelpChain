@@ -1,4 +1,4 @@
-def test_social_requests_pages(client, init_test_data, db_session):
+def test_social_requests_pages(client, authenticated_admin_client, init_test_data, db_session):
     from backend.models import SocialRequest, SocialRequestEvent, User
 
     structure = init_test_data["structure"]
@@ -21,7 +21,7 @@ def test_social_requests_pages(client, init_test_data, db_session):
     location = resp.headers.get("Location", "")
     assert "/requests/" in location
 
-    r2 = client.get("/requests")
+    r2 = authenticated_admin_client.get("/requests")
     assert r2.status_code == 200
 
     detail_path = location
@@ -98,17 +98,17 @@ def test_social_requests_pages(client, init_test_data, db_session):
     assert len(status_events) >= 1
 
 
-def test_dashboard(client):
-    r = client.get("/requests/dashboard")
+def test_dashboard(authenticated_admin_client):
+    r = authenticated_admin_client.get("/requests/dashboard")
     assert r.status_code == 200
 
 
-def test_operations(client):
-    r = client.get("/requests/operations")
+def test_operations(authenticated_admin_client):
+    r = authenticated_admin_client.get("/requests/operations")
     assert r.status_code == 200
 
 
-def test_multi_structure_filtering(client, db_session, init_test_data):
+def test_multi_structure_filtering(authenticated_admin_client, db_session, init_test_data):
     from backend.models import SocialRequest, Structure
 
     structure_a = init_test_data["structure"]
@@ -138,20 +138,20 @@ def test_multi_structure_filtering(client, db_session, init_test_data):
     db_session.add(req_b)
     db_session.commit()
 
-    r_all = client.get("/requests")
+    r_all = authenticated_admin_client.get("/requests")
     assert r_all.status_code == 200
     body_all = r_all.get_data(as_text=True)
     assert "aide_alimentaire" in body_all
     assert "urgence_sociale" in body_all
 
-    r_scoped = client.get(f"/requests?structure_id={structure_a.id}")
+    r_scoped = authenticated_admin_client.get(f"/requests?structure_id={structure_a.id}")
     assert r_scoped.status_code == 200
     body_scoped = r_scoped.get_data(as_text=True)
     assert "aide_alimentaire" in body_scoped
     assert "urgence_sociale" not in body_scoped
 
-    r_dash_scoped = client.get(f"/requests/dashboard?structure_id={structure_b.id}")
+    r_dash_scoped = authenticated_admin_client.get(f"/requests/dashboard?structure_id={structure_b.id}")
     assert r_dash_scoped.status_code == 200
 
-    r_ops_scoped = client.get(f"/requests/operations?structure_id={structure_b.id}")
+    r_ops_scoped = authenticated_admin_client.get(f"/requests/operations?structure_id={structure_b.id}")
     assert r_ops_scoped.status_code == 200

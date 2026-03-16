@@ -91,8 +91,7 @@ def test_request_details_handles_null_signals(authenticated_admin_client, sessio
     resp = authenticated_admin_client.get(f"/admin/requests/{req.id}")
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "AI Social Risk Engine" in html
-    assert "Signals:" in html
+    assert "Risque:" in html
     assert "traceback" not in html.lower()
 
 

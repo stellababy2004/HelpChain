@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+import re
 from uuid import uuid4
 
 from backend.models import AdminUser, Request, Structure, User
@@ -52,9 +53,11 @@ def _make_request(session, structure_id: int, *, age_hours: int, owner_id):
 def test_sla_kpi_drilldown_owner_assignment_returns_exact_matches(
     authenticated_admin_client, session
 ):
-    _set_admin_role(session, authenticated_admin_client, "ops")
+    _set_admin_role(session, authenticated_admin_client, "superadmin")
     structure = session.query(Structure).filter_by(slug="default").first()
     assert structure is not None
+    session.query(Request).delete()
+    session.commit()
 
     req_match_1 = _make_request(
         session, structure.id, age_hours=80, owner_id=None
@@ -81,5 +84,5 @@ def test_sla_kpi_drilldown_owner_assignment_returns_exact_matches(
     assert f'data-request-id="{req_match_1.id}"' in html
     assert f'data-request-id="{req_match_2.id}"' in html
     assert f'data-request-id="{req_non_match.id}"' not in html
-    assert html.count('data-request-id="') == 2
-
+    ids = set(int(x) for x in re.findall(r'data-request-id="(\d+)"', html))
+    assert ids == {req_match_1.id, req_match_2.id}

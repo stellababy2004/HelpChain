@@ -86,7 +86,8 @@ if __name__ == "__main__":
         print("\nTo test the admin dashboard:")
         print("1. Start server: python run.py")
         print("2. Visit: http://localhost:8000/admin/login")
-        print("3. Login with: admin / Admin123")
+        print("3. Login with: admin / test-password")
         print("4. Check that all icons are visible in the navigation and buttons")
     else:
         print("❌ FAILED: Issues found with Font Awesome integration")
+

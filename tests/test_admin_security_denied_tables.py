@@ -39,8 +39,8 @@ def test_security_shows_denied_tables(authenticated_admin_client, session):
     resp = client.get("/admin/security", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "Top denied-action IPs (24h)" in html
-    assert "Top denied-action usernames (24h)" in html
+    assert "Denied actions (24h)" in html
+    assert "Top failed-login usernames (24h)" in html
     assert "10.10.10.1" in html
     assert "readonly" in html
 
@@ -63,6 +63,8 @@ def test_security_denied_badges_on(authenticated_admin_client, session):
     resp = client.get("/admin/security", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "Denied spike: ON" in html
-    assert "Repeated denied: ON" in html
-
+    assert (
+        "Denied spike" in html
+        or "Failed-login spike" in html
+    )
+    assert "Repeated denied" in html

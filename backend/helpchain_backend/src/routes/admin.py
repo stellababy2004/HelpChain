@@ -60,6 +60,7 @@ from ..models import (
     Notification,
     NotificationJob,
     ProfessionalLead,
+    Intervenant,
     Request,
     RequestActivity,
     RequestLog,
@@ -1087,6 +1088,8 @@ def audit_admin_action(
         try:
             if getattr(current_user, "is_authenticated", False):
                 admin_username = getattr(current_user, "username", None)
+                if not admin_user_id:
+                    admin_user_id = getattr(current_user, "id", None)
         except Exception:
             admin_username = None
 
@@ -1123,6 +1126,31 @@ def _is_global_admin() -> bool:
     return getattr(current_user, "structure_id", None) is None
 
 
+def _is_structure_admin() -> bool:
+    role = _admin_role_value()
+    if role not in {"superadmin"}:
+        return False
+    return getattr(current_user, "structure_id", None) is not None
+
+
+def _require_global_admin() -> None:
+    if not _is_global_admin():
+        _audit_denied_action(
+            required_roles={"global_admin"},
+            actor_role=_admin_role_value(),
+        )
+        abort(403)
+
+
+def _require_structure_admin_or_global() -> None:
+    if not (_is_structure_admin() or _is_global_admin()):
+        _audit_denied_action(
+            required_roles={"structure_admin", "global_admin"},
+            actor_role=_admin_role_value(),
+        )
+        abort(403)
+
+
 def _structure_scope_filter():
     if _is_global_admin():
         return None
@@ -1147,6 +1175,84 @@ def _engagement_label(score: int) -> str:
     if score >= 1:
         return "Medium"
     return "At risk"
+
+
+def compute_structure_health(structure_id: int) -> int:
+    score = 100
+    now = datetime.utcnow()
+
+    # Requests without assigned operator/owner
+    unassigned = (
+        Request.query.filter(Request.structure_id == structure_id)
+        .filter(Request.owner_id.is_(None))
+        .count()
+    )
+    if unassigned > 0:
+        score -= 30
+
+    # Requests inactive for more than 48h (no update, or old update)
+    stale_cutoff = now - timedelta(hours=48)
+    stale = (
+        Request.query.filter(Request.structure_id == structure_id)
+        .filter(
+            or_(
+                Request.updated_at < stale_cutoff,
+                and_(Request.updated_at.is_(None), Request.created_at < stale_cutoff),
+            )
+        )
+        .count()
+    )
+    if stale > 0:
+        score -= 20
+
+    # Active requests older than 3 days (treat non-closed as active)
+    overdue_cutoff = now - timedelta(days=3)
+    overdue = (
+        Request.query.filter(Request.structure_id == structure_id)
+        .filter(Request.created_at < overdue_cutoff)
+        .filter(or_(Request.status.is_(None), ~Request.status.in_(list(CLOSED_STATUSES))))
+        .count()
+    )
+    if overdue > 0:
+        score -= 20
+
+    return max(score, 0)
+
+
+def compute_structure_alerts(structure_id: int) -> dict[str, int]:
+    now = datetime.utcnow()
+    base = Request.query.filter(Request.structure_id == structure_id)
+
+    unassigned_count = base.filter(Request.owner_id.is_(None)).count()
+
+    urgent_priorities = {"high", "critical", "urgent"}
+    urgent_unassigned_count = (
+        base.filter(Request.owner_id.is_(None))
+        .filter(func.lower(func.coalesce(Request.priority, "")) .in_(urgent_priorities))
+        .count()
+    )
+
+    stale_cutoff = now - timedelta(hours=72)
+    stale_count = base.filter(
+        (Request.updated_at < stale_cutoff)
+        | (Request.updated_at.is_(None) & (Request.created_at < stale_cutoff))
+    ).count()
+
+    overdue_cutoff = now - timedelta(days=3)
+    active_filter = or_(
+        Request.status.is_(None),
+        ~func.lower(func.coalesce(Request.status, "")).in_(list(CLOSED_STATUSES)),
+    )
+    overdue_count = (
+        base.filter(active_filter).filter(Request.created_at < overdue_cutoff).count()
+    )
+
+    return {
+        "unassigned_count": int(unassigned_count or 0),
+        "urgent_unassigned_count": int(urgent_unassigned_count or 0),
+        "stale_count": int(stale_count or 0),
+        "overdue_count": int(overdue_count or 0),
+    }
 
 
 def get_volunteer_engagement_score(
@@ -2920,9 +3026,6 @@ def admin_required(view_func):
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
             abort(404)
-        role = _admin_role_value()
-        if role is None or role in {"ops", "readonly"}:
-            abort(404)
         return view_func(*args, **kwargs)
 
     return wrapper
@@ -2934,6 +3037,10 @@ def operator_required(view_func):
         if not (
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
+            session_role = (session.get("role") or "").strip().lower()
+            if session.get("is_admin") or session.get("admin_logged_in"):
+                if session_role in {"ops", "readonly", "admin", "superadmin"}:
+                    return view_func(*args, **kwargs)
             abort(404)
         role = _admin_role_value()
         if role is None or role not in {"ops", "readonly", "admin", "superadmin"}:
@@ -3119,13 +3226,13 @@ def _render_operator_dashboard():
 @ops_bp.get("/cases")
 @operator_required
 def ops_cases_list():
-    return admin_cases_list()
+    return _render_cases_list()
 
 
 @ops_bp.get("/notifications")
 @operator_required
 def ops_notifications_list():
-    return admin_notifications_list()
+    return _render_notifications_list()
 
 
 @admin_bp.get("/risk-map")
@@ -4803,6 +4910,95 @@ def admin_ops_kpis():
     )
 
 
+@admin_bp.get("/api/territorial-kpis")
+@admin_required
+def admin_territorial_kpis():
+    admin_required_404()
+    try:
+        now = datetime.now(UTC).replace(tzinfo=None)
+        since = now - timedelta(days=7)
+
+        case_filter = None
+        if not _is_global_admin():
+            case_filter = Case.structure_id == _current_structure_id()
+
+        base_cases = db.session.query(Case)
+        if case_filter is not None:
+            base_cases = base_cases.filter(case_filter)
+
+        active_cases = (
+            base_cases.filter(func.lower(Case.status) != "closed").count()
+        )
+        new_cases_week = base_cases.filter(Case.created_at >= since).count()
+        resolved_cases = base_cases.filter(func.lower(Case.status) == "closed").count()
+
+        status_rows = (
+            base_cases.with_entities(Case.status, func.count(Case.id))
+            .group_by(Case.status)
+            .all()
+        )
+        status_map = {str(status or "").lower(): int(count) for status, count in status_rows}
+        cases_by_status = {
+            "new": status_map.get("new", 0),
+            "in_progress": status_map.get("in_progress", 0),
+            "closed": status_map.get("closed", 0),
+        }
+
+        first_event_subq = (
+            db.session.query(
+                CaseEvent.case_id.label("case_id"),
+                func.min(CaseEvent.created_at).label("first_event_at"),
+            )
+            .group_by(CaseEvent.case_id)
+            .subquery()
+        )
+
+        avg_response_query = (
+            db.session.query(
+                func.avg(
+                    _seconds_diff(first_event_subq.c.first_event_at, Case.created_at)
+                )
+            )
+            .join(first_event_subq, Case.id == first_event_subq.c.case_id)
+        )
+        if case_filter is not None:
+            avg_response_query = avg_response_query.filter(case_filter)
+        avg_response_sec = avg_response_query.scalar()
+        avg_response_hours = round(float(avg_response_sec or 0) / 3600.0, 2)
+
+        open_filter = func.lower(Case.status) != "closed"
+        oldest_open_query = db.session.query(
+            func.max((func.julianday(now) - func.julianday(Case.created_at)) * 86400.0)
+        ).filter(open_filter)
+        if case_filter is not None:
+            oldest_open_query = oldest_open_query.filter(case_filter)
+        oldest_open_sec = oldest_open_query.scalar()
+        oldest_open_case_days = int(float(oldest_open_sec or 0) / 86400.0)
+
+        return jsonify(
+            {
+                "active_cases": int(active_cases or 0),
+                "new_cases_week": int(new_cases_week or 0),
+                "resolved_cases": int(resolved_cases or 0),
+                "avg_response_hours": float(avg_response_hours or 0),
+                "cases_by_status": cases_by_status,
+                "oldest_open_case_days": int(oldest_open_case_days or 0),
+            }
+        )
+    except Exception:
+        current_app.logger.exception("territorial kpis failed")
+        return jsonify(
+            {
+                "active_cases": 0,
+                "new_cases_week": 0,
+                "resolved_cases": 0,
+                "avg_response_hours": 0.0,
+                "cases_by_status": {"new": 0, "in_progress": 0, "closed": 0},
+                "oldest_open_case_days": 0,
+            }
+        )
+
+
 @admin_bp.route("/")
 @admin_required
 def admin_dashboard():
@@ -5046,11 +5242,11 @@ def admin_dashboard():
     )
 
 
-@admin_bp.route("/volunteers", methods=["GET"])
+@admin_bp.route("/intervenants", methods=["GET"])
 @admin_required
-def admin_volunteers():
+def admin_intervenants():
     admin_required_404()
-    """Управление на доброволци"""
+    """Управление на интервенанти (canonical data)"""
 
     import logging
 
@@ -5068,32 +5264,32 @@ def admin_volunteers():
     page = max(int(request.args.get("page") or 1), 1)
     per_page = max(min(int(request.args.get("per_page") or 25), 100), 10)
 
-    query = Volunteer.query
+    query = Intervenant.query
+    if not _is_global_admin():
+        query = query.filter(Intervenant.structure_id == _current_structure_id())
     if search:
         q = f"%{search}%"
         query = query.filter(
             or_(
-                Volunteer.name.ilike(q),
-                Volunteer.email.ilike(q),
-                Volunteer.phone.ilike(q),
-                Volunteer.skills.ilike(q),
+                Intervenant.name.ilike(q),
+                Intervenant.email.ilike(q),
+                Intervenant.phone.ilike(q),
             )
         )
     if location_filter:
-        query = query.filter(Volunteer.location.ilike(f"%{location_filter}%"))
+        query = query.filter(Intervenant.location.ilike(f"%{location_filter}%"))
 
     sort_map = {
-        "name": Volunteer.name,
-        "email": Volunteer.email,
-        "location": Volunteer.location,
-        "created_at": Volunteer.created_at,
-        "last_activity": Volunteer.last_activity,
+        "name": Intervenant.name,
+        "email": Intervenant.email,
+        "location": Intervenant.location,
+        "created_at": Intervenant.created_at,
     }
-    sort_col = sort_map.get(sort_by, Volunteer.created_at)
+    sort_col = sort_map.get(sort_by, Intervenant.created_at)
     if sort_order == "asc":
-        query = query.order_by(sort_col.asc(), Volunteer.id.asc())
+        query = query.order_by(sort_col.asc(), Intervenant.id.asc())
     else:
-        query = query.order_by(sort_col.desc(), Volunteer.id.desc())
+        query = query.order_by(sort_col.desc(), Intervenant.id.desc())
 
     total_volunteers = query.count()
     total_pages = max(1, int(math.ceil(total_volunteers / float(per_page)))) if total_volunteers else 1
@@ -5114,6 +5310,12 @@ def admin_volunteers():
         sort_order=sort_order,
     )
 
+
+@admin_bp.route("/volunteers", methods=["GET"])
+@admin_required
+def admin_volunteers():
+    admin_required_404()
+    return redirect(url_for("admin.admin_intervenants"), code=302)
 
 @admin_bp.route("/admin_volunteers", methods=["GET"])
 @admin_required
@@ -5407,7 +5609,7 @@ def update_status(req_id):
 
     db.session.commit()
     audit_admin_action(
-        action="request.status_change",
+        action="STATUS_CHANGE",
         target_type="Request",
         target_id=req.id,
         payload={"old": {"status": old_status}, "new": {"status": new_status}},
@@ -5628,6 +5830,7 @@ def admin_risk_panel():
 @admin_required
 def admin_sla_breakdown():
     admin_required_404()
+    _require_global_admin()
 
     breach_type = (request.args.get("type") or "owner_assign").strip().lower()
     if breach_type not in {"all", "resolve", "owner_assign", "volunteer_assign"}:
@@ -6072,9 +6275,12 @@ def admin_pilotage():
 @admin_bp.get("/requests")
 @login_required
 @admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@admin_role_required("superadmin")
 def admin_requests():
     admin_required_404()
+    if _admin_role_value() != "superadmin":
+        _audit_denied_action(required_roles={"superadmin"}, actor_role=_admin_role_value())
+        abort(403)
     STATUS_LABELS_BG = {
         "new": "Нови",
         "pending": "Чакащи",
@@ -6127,6 +6333,30 @@ def admin_requests():
                 func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
             ).count()
         )
+    age_days_by_id = {}
+    for r in requests:
+        created_at = getattr(r, "created_at", None)
+        if created_at is None:
+            age_days_by_id[int(r.id)] = 0
+            continue
+        try:
+            if getattr(created_at, "tzinfo", None) is not None:
+                created_at = created_at.replace(tzinfo=None)
+            age_days_by_id[int(r.id)] = max((now_naive - created_at).days, 0)
+        except Exception:
+            age_days_by_id[int(r.id)] = 0
+
+    scope_label = "Vue globale"
+    if not _is_global_admin():
+        try:
+            sid = _current_structure_id()
+            active_structure = db.session.get(Structure, sid)
+            if active_structure and active_structure.name:
+                scope_label = f"Structure active : {active_structure.name}"
+            else:
+                scope_label = f"Structure active : #{sid}"
+        except Exception:
+            scope_label = "Structure active : —"
 
     # Volunteer signals counts per request
     action_counts = {}
@@ -6291,6 +6521,8 @@ def admin_requests():
         STATUS_LABELS_BG=STATUS_LABELS_BG,
         STATUS_LABELS=STATUS_LABELS,
         requests=requests,
+        age_days_by_id=age_days_by_id,
+        scope_label=scope_label,
         status=status,
         q=q,
         risk=risk,
@@ -6322,9 +6554,12 @@ def admin_requests():
 
 @admin_bp.route("/requests/new", methods=["GET", "POST"])
 @admin_required
-@admin_role_required("ops", "superadmin", "admin")
+@admin_role_required("superadmin")
 def admin_request_new():
     admin_required_404()
+    if _admin_role_value() != "superadmin":
+        _audit_denied_action(required_roles={"superadmin"}, actor_role=_admin_role_value())
+        abort(403)
 
     def _ensure_internal_requester_user() -> User:
         email = "agent.intake@helpchain.local"
@@ -6393,7 +6628,14 @@ def admin_request_new():
             form_errors["email"] = "Veuillez renseigner une adresse e-mail valide."
 
         structure_id = None
-        if form_data["structure_id"]:
+        if not _is_global_admin():
+            try:
+                structure_id = _current_structure_id()
+            except Exception:
+                form_errors["structure_id"] = (
+                    "Impossible de déterminer la structure active."
+                )
+        elif form_data["structure_id"]:
             try:
                 structure_id = int(form_data["structure_id"])
             except Exception:
@@ -6449,6 +6691,18 @@ def admin_request_new():
                 req.longitude = lng
             db.session.add(req)
             db.session.commit()
+            audit_admin_action(
+                action="CREATE_REQUEST",
+                target_type="Request",
+                target_id=req.id,
+                payload={
+                    "structure_id": req.structure_id,
+                    "owner_id": req.owner_id,
+                    "status": req.status,
+                    "priority": req.priority,
+                    "category": req.category,
+                },
+            )
             flash("Demande créée avec succès.", "success")
             return redirect(url_for("admin.admin_request_details", req_id=req.id), code=303)
 
@@ -6459,6 +6713,7 @@ def admin_request_new():
         categories=categories,
         structures=structures,
         admins=admins,
+        current_structure_id=_current_structure_id(),
     )
 
 
@@ -6523,7 +6778,7 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
     return base_query
 
 
-def build_requests_query(base_query, request_args):
+def build_requests_query(base_query, request_args, legacy: bool = False):
     base_query = _scope_requests(base_query)
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
@@ -6599,7 +6854,10 @@ def build_requests_query(base_query, request_args):
             created_sort_col.desc(),
             Request.id.desc(),
         )
-    return base_query, status, q, risk, risk_level, no_owner, not_seen_72h, sort
+    result = (base_query, status, q, risk, risk_level, no_owner, not_seen_72h, sort)
+    if legacy:
+        return result[:4]
+    return result
 
 
 @admin_bp.get("/requests/export.csv")
@@ -6886,7 +7144,7 @@ def admin_requests_export_xlsx_anonymized():
 
 @admin_bp.get("/requests/<int:req_id>")
 @admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@admin_role_required("superadmin")
 def admin_request_details(req_id: int):
     admin_required_404()
     activities_supported = _table_has_column("request_activities", "volunteer_id")
@@ -7290,11 +7548,7 @@ def admin_open_case_from_request(req_id: int):
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
 
-@admin_bp.get("/cases")
-@admin_required
-@admin_role_required("readonly", "ops", "superadmin")
-def admin_cases_list():
-    admin_required_404()
+def _render_cases_list():
     if not _cases_enabled():
         flash("Case system tables are not available yet. Run migrations first.", "warning")
         return render_template(
@@ -7420,6 +7674,14 @@ def admin_cases_list():
     )
 
 
+@admin_bp.get("/cases")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_cases_list():
+    admin_required_404()
+    return _render_cases_list()
+
+
 @admin_bp.get("/cases/<int:case_id>")
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin")
@@ -7486,11 +7748,7 @@ def admin_case_detail(case_id: int):
     )
 
 
-@admin_bp.get("/notifications")
-@admin_required
-@admin_role_required("readonly", "ops", "superadmin")
-def admin_notifications_list():
-    admin_required_404()
+def _render_notifications_list():
     if not _table_exists("notification_jobs"):
         flash("Notification jobs table is not available yet. Run migrations first.", "warning")
         return render_template(
@@ -7584,6 +7842,14 @@ def admin_notifications_list():
         summary=summary,
         channels=channels,
     )
+
+
+@admin_bp.get("/notifications")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_notifications_list():
+    admin_required_404()
+    return _render_notifications_list()
 
 
 @admin_bp.post("/cases/<int:case_id>/status")
@@ -8145,7 +8411,7 @@ def admin_request_assign(req_id: int):
     )
     db.session.commit()
     audit_admin_action(
-        action="request.assign_owner",
+        action="ASSIGN_OPERATOR",
         target_type="Request",
         target_id=req.id,
         payload={
@@ -8578,6 +8844,7 @@ def admin_pro_access_list():
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_audit():
+    _require_global_admin()
     if not _table_exists("admin_audit_events"):
         return (
             render_template(
@@ -8607,6 +8874,7 @@ def admin_audit():
 
     action = (request.args.get("action") or "").strip()
     admin_username = (request.args.get("admin") or "").strip()
+    target_type_raw = (request.args.get("target_type") or "").strip()
     target_id_raw = (request.args.get("target_id") or "").strip()
     days_raw = (request.args.get("days") or "7").strip()
     page_raw = (request.args.get("page") or "1").strip()
@@ -8636,6 +8904,8 @@ def admin_audit():
         query = query.filter(AdminAuditEvent.action == action)
     if admin_username:
         query = query.filter(AdminAuditEvent.admin_username == admin_username)
+    if target_type_raw:
+        query = query.filter(AdminAuditEvent.target_type == target_type_raw)
     if target_id is not None:
         query = query.filter(
             AdminAuditEvent.target_type == "Request",
@@ -8651,6 +8921,13 @@ def admin_audit():
         .all()
     )
     actions = [row[0] for row in actions if row and row[0]]
+    target_types = (
+        AdminAuditEvent.query.with_entities(AdminAuditEvent.target_type)
+        .distinct()
+        .order_by(AdminAuditEvent.target_type.asc())
+        .all()
+    )
+    target_types = [row[0] for row in target_types if row and row[0]]
 
     return (
         render_template(
@@ -8660,10 +8937,12 @@ def admin_audit():
             filters={
                 "action": action,
                 "admin": admin_username,
+                "target_type": target_type_raw,
                 "target_id": target_id_raw,
                 "days": str(days),
             },
             actions=actions,
+            target_types=target_types,
         ),
         200,
     )
@@ -8674,6 +8953,7 @@ def admin_audit():
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_security():
+    _require_global_admin()
     now = datetime.now(timezone.utc)
     since_24h = now - timedelta(hours=24)
     since_1h = now - timedelta(hours=1)
@@ -8692,6 +8972,28 @@ def admin_security():
         .filter(
             AdminLoginAttempt.created_at >= since_24h,
             AdminLoginAttempt.success.is_(False),
+        )
+        .scalar()
+        or 0
+    )
+    distinct_failed_ips_24h = (
+        db.session.query(func.count(func.distinct(AdminLoginAttempt.ip)))
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(False),
+            AdminLoginAttempt.ip.isnot(None),
+            AdminLoginAttempt.ip != "",
+        )
+        .scalar()
+        or 0
+    )
+    distinct_failed_usernames_24h = (
+        db.session.query(func.count(func.distinct(AdminLoginAttempt.username)))
+        .filter(
+            AdminLoginAttempt.created_at >= since_24h,
+            AdminLoginAttempt.success.is_(False),
+            AdminLoginAttempt.username.isnot(None),
+            AdminLoginAttempt.username != "",
         )
         .scalar()
         or 0
@@ -8796,6 +9098,26 @@ def admin_security():
         .limit(50)
         .all()
     )
+    recent_denied = (
+        AdminAuditEvent.query.filter(AdminAuditEvent.action == "security.denied_action")
+        .order_by(AdminAuditEvent.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    sensitive_actions = {
+        "ROLE_CHANGE",
+        "STRUCTURE_CREATED",
+        "STRUCTURE_ADMIN_ASSIGNED",
+        "STATUS_CHANGE",
+        "ASSIGN_OPERATOR",
+        "CREATE_REQUEST",
+    }
+    recent_sensitive = (
+        AdminAuditEvent.query.filter(AdminAuditEvent.action.in_(sensitive_actions))
+        .order_by(AdminAuditEvent.created_at.desc())
+        .limit(50)
+        .all()
+    )
 
     top_ips = (
         db.session.query(
@@ -8868,12 +9190,16 @@ def admin_security():
             kpis={
                 "success_24h": int(success_24h),
                 "failed_24h": int(failed_24h),
+                "distinct_failed_ips_24h": int(distinct_failed_ips_24h),
+                "distinct_failed_usernames_24h": int(distinct_failed_usernames_24h),
                 "lockout_buckets_24h": int(lockout_buckets_24h),
                 "risky_actions_24h": int(risky_actions_24h),
                 "denied_24h": int(denied_24h),
             },
             recent_logins=recent_logins,
             recent_risky=recent_risky,
+            recent_denied=recent_denied,
+            recent_sensitive=recent_sensitive,
             top_ips=top_ips,
             top_usernames=top_usernames,
             top_denied_ips=top_denied_ips,
@@ -8890,6 +9216,7 @@ def admin_security():
 @admin_required
 @admin_role_required("superadmin")
 def admin_roles():
+    _require_global_admin()
     admins = AdminUser.query.order_by(AdminUser.username.asc(), AdminUser.id.asc()).all()
     superadmin_ids = [u.id for u in admins if _is_superadmin_role(getattr(u, "role", None))]
     last_superadmin_id = superadmin_ids[0] if len(superadmin_ids) == 1 else None
@@ -8916,6 +9243,7 @@ def admin_roles():
 @admin_role_required("superadmin")
 @require_admin_fresh_auth(minutes=10)
 def admin_roles_set_role(admin_id: int):
+    _require_global_admin()
     target = db.session.get(AdminUser, admin_id)
     if not target:
         abort(404)
@@ -8956,7 +9284,7 @@ def admin_roles_set_role(admin_id: int):
     db.session.commit()
 
     audit_admin_action(
-        action="admin.role_change",
+        action="ROLE_CHANGE",
         target_type="AdminUser",
         target_id=target.id,
         payload={
@@ -8978,6 +9306,7 @@ def admin_roles_set_role(admin_id: int):
 @admin_required
 @admin_role_required("superadmin")
 def admin_structures():
+    _require_global_admin()
     rows = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
     return (
         render_template(
@@ -8992,6 +9321,7 @@ def admin_structures():
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_new():
+    _require_global_admin()
     return (
         render_template(
             "admin/structure_new.html",
@@ -9004,6 +9334,7 @@ def admin_structure_new():
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_create():
+    _require_global_admin()
     name = (request.form.get("name") or "").strip()
     slug = (request.form.get("slug") or "").strip()
 
@@ -9037,6 +9368,18 @@ def admin_structure_create():
     )
     db.session.add(row)
     db.session.commit()
+    audit_admin_action(
+        action="STRUCTURE_CREATED",
+        target_type="Structure",
+        target_id=row.id,
+        payload={
+            "structure": {"id": row.id, "name": row.name, "slug": row.slug},
+            "actor": {
+                "admin_user_id": getattr(current_user, "id", None),
+                "username": getattr(current_user, "username", None),
+            },
+        },
+    )
     flash("Structure créée.", "success")
     return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
 
@@ -9045,21 +9388,46 @@ def admin_structure_create():
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_detail(structure_id: int):
-    row = Structure.query.get_or_404(structure_id)
-    admins = (
-        AdminUser.query.filter(AdminUser.structure_id == row.id)
-        .order_by(AdminUser.username.asc(), AdminUser.id.asc())
+    _require_structure_admin_or_global()
+    if _is_structure_admin() and int(getattr(current_user, "structure_id") or 0) != int(
+        structure_id
+    ):
+        abort(403)
+    structure = Structure.query.get_or_404(structure_id)
+    users_count = AdminUser.query.filter(
+        AdminUser.structure_id == structure_id
+    ).count()
+    open_filter = or_(
+        Request.status.is_(None), ~func.lower(Request.status).in_(list(CLOSED_STATUSES))
+    )
+    active_requests = (
+        Request.query.filter(Request.structure_id == structure_id)
+        .filter(open_filter)
+        .count()
+    )
+    done_requests = (
+        Request.query.filter(Request.structure_id == structure_id)
+        .filter(func.lower(Request.status) == "done")
+        .count()
+    )
+    recent_requests = (
+        Request.query.filter_by(structure_id=structure_id)
+        .order_by(Request.created_at.desc())
+        .limit(10)
         .all()
     )
-    available_admins = (
-        AdminUser.query.order_by(AdminUser.username.asc(), AdminUser.id.asc()).all()
-    )
+    health_score = compute_structure_health(structure_id)
+    alerts = compute_structure_alerts(structure_id)
     return (
         render_template(
-            "admin/structure_detail.html",
-            structure=row,
-            admins=admins,
-            available_admins=available_admins,
+            "admin/structure_dashboard.html",
+            structure=structure,
+            users_count=users_count,
+            active_requests=active_requests,
+            done_requests=done_requests,
+            recent_requests=recent_requests,
+            health_score=health_score,
+            alerts=alerts,
         ),
         200,
     )
@@ -9069,6 +9437,7 @@ def admin_structure_detail(structure_id: int):
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_assign_admin(structure_id: int):
+    _require_global_admin()
     row = Structure.query.get_or_404(structure_id)
     admin_id_raw = (request.form.get("admin_id") or "").strip()
     if not admin_id_raw:
@@ -9087,6 +9456,20 @@ def admin_structure_assign_admin(structure_id: int):
 
     admin_user.structure_id = row.id
     db.session.commit()
+    audit_admin_action(
+        action="STRUCTURE_ADMIN_ASSIGNED",
+        target_type="AdminUser",
+        target_id=admin_user.id,
+        payload={
+            "structure": {"id": row.id, "name": row.name, "slug": row.slug},
+            "admin_user_id": admin_user.id,
+            "admin_username": getattr(admin_user, "username", None),
+            "actor": {
+                "admin_user_id": getattr(current_user, "id", None),
+                "username": getattr(current_user, "username", None),
+            },
+        },
+    )
     flash("Administrateur assigné à la structure.", "success")
     return redirect(url_for("admin.admin_structure_detail", structure_id=row.id), code=303)
 

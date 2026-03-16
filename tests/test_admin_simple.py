@@ -4,7 +4,7 @@ import requests
 
 # Test admin login on port 8000
 url = "http://localhost:8000/admin/login"
-data = {"username": "admin", "password": os.getenv("ADMIN_PASSWORD", "Admin123")}
+data = {"username": "admin", "password": os.getenv("ADMIN_PASSWORD", "test-password")}
 
 print("Testing admin login...")
 try:
@@ -44,3 +44,4 @@ try:
         print(f"Content: {response.text[:200]}...")
 except Exception as e:
     print(f"Error: {e}")
+

@@ -1,541 +1,393 @@
-<!doctype html>
-<html lang="bg">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Управление на доброволци - HelpChain</title>
+{% extends "layouts/admin_workspace.html" %}
 
-    <!-- Bootstrap CSS -->
-    <link
-      href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
-      rel="stylesheet"
-    />
+{% block title %}{{ _('Admin') }} • {{ _('Intervenants') }} | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-intervenants{% endblock %}
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}">
+{% endblock %}
 
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
-    />
+{% block admin_content %}
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner"></div>
+  </div>
 
-    <!-- Google Fonts -->
-    <link
-      href="{{ url_for('static', filename='vendor/fonts/inter.css') }}"
-      rel="stylesheet"
-    />
-
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}" />
-    </head>
-
-  <body class="hc-page-admin" data-theme="light">
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loadingSpinner">
-      <div class="spinner"></div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-modern fixed-top">
-      <div class="container-fluid">
-        <a class="navbar-brand navbar-brand-modern" href="/">
-          <i class="fas fa-hand-holding-heart me-2"></i>HelpChain Admin
-        </a>
-
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="{{ safe_url_for('admin.admin_dashboard') }}">
-                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-              </a>
-            </li>
-            <li class="nav-item">
-                <a
-                class="nav-link active"
-                href="{{ safe_url_for('admin.admin_volunteers') }}"
-              >
-                <i class="fas fa-users me-1"></i>Доброволци
-              </a>
-            </li>
-            <li class="nav-item">
-                <a
-                class="nav-link"
-                href="{{ safe_url_for('admin.admin_dashboard') }}"
-              >
-                <i class="fas fa-users-cog me-1"></i>Роли и права
-              </a>
-            </li>
-            <li class="nav-item">
-                <a
-                class="nav-link"
-                href="{{ safe_url_for('analytics.analytics_page') }}"
-              >
-                <i class="fas fa-chart-line me-1"></i>Аналитика
-              </a>
-            </li>
-            <li class="nav-item">
-                <a
-                class="nav-link"
-                href="{{ safe_url_for('main.volunteer_notifications') }}"
-              >
-                <i class="fas fa-bell me-1"></i>Нотификации
-              </a>
-            </li>
-          </ul>
-
-          <ul class="navbar-nav">
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="navbarDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-              >
-                <i class="fas fa-user-circle me-1"></i>Админ
-              </a>
-              <ul class="dropdown-menu">
-                <li>
-                  <a class="dropdown-item" href="{{ safe_url_for('main.profile') }}">
-                    <i class="fas fa-user me-2"></i>Профил
-                  </a>
-                </li>
-                <li>
-                  <a
-                    class="dropdown-item"
-                    href="{{ safe_url_for('admin.admin_dashboard') }}"
-                  >
-                    <i class="fas fa-cog me-2"></i>Настройки
-                  </a>
-                </li>
-                <li>
-                  <hr class="dropdown-divider" />
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" data-action="logout">
-                    <i class="fas fa-sign-out-alt me-2"></i>Изход
-                  </a>
-                </li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <button
-                class="theme-toggle"
-                id="themeToggle"
-                title="Превключи тема"
-              >
-                <i class="fas fa-moon"></i>
-              </button>
-            </li>
-          </ul>
+  <div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="h2 mb-1">
+              <i class="fas fa-users text-success me-2"></i>Intervenants
+            </h1>
+            <p class="text-muted mb-0">
+              Gestion des intervenants de la structure
+            </p>
+            <div class="small text-muted">
+              Vue actuelle des intervenants (migration en cours).
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <a
+              href="{{ safe_url_for('admin.admin_intervenants') }}"
+              class="btn btn-success-modern btn-modern"
+            >
+              <i class="fas fa-plus me-1"></i>Ajouter un intervenant
+            </a>
+            <button
+              class="btn btn-info-modern btn-modern"
+              data-action="exportVolunteers"
+            >
+              <i class="fas fa-download me-1"></i>Exporter
+            </button>
+          </div>
         </div>
       </div>
-    </nav>
+    </div>
 
-    <!-- Spacer for fixed navbar -->
-    <div class="hc-spacer-80"></div>
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card fade-in">
+          <div class="stats-icon hc-bg-success-gradient">
+            <i class="fas fa-users text-white"></i>
+          </div>
+          <div class="stats-value">{{ total_volunteers }}</div>
+          <p class="stats-label">Intervenants au total</p>
+        </div>
+      </div>
 
-    <div class="container-fluid">
-      <!-- Header -->
-      <div class="row mb-4">
-        <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h1 class="h2 mb-1">
-                <i class="fas fa-users text-success me-2"></i>Управление на
-                доброволци
-              </h1>
-              <p class="text-muted mb-0">
-                Добавяне, редактиране и управление на доброволци в системата
-              </p>
-            </div>
-            <div class="d-flex gap-2">
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card fade-in">
+          <div class="stats-icon hc-bg-primary-gradient">
+            <i class="fas fa-user-check text-white"></i>
+          </div>
+          <div class="stats-value">{{ total_volunteers }}</div>
+          <p class="stats-label">Intervenants actifs</p>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card fade-in">
+          <div class="stats-icon hc-bg-info-gradient">
+            <i class="fas fa-map-marker-alt text-white"></i>
+          </div>
+          <div class="stats-value">{{ total_volunteers }}</div>
+          <p class="stats-label">Localisations couvertes</p>
+        </div>
+      </div>
+
+      <div class="col-xl-3 col-md-6">
+        <div class="stats-card fade-in">
+          <div class="stats-icon hc-bg-warning-gradient">
+            <i class="fas fa-clock text-white"></i>
+          </div>
+          <div class="stats-value">{{ total_volunteers }}</div>
+          <p class="stats-label">Nouveaux cette semaine</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="filters-section fade-in">
+      <form method="GET" class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="search" class="form-label">
+            <i class="fas fa-search me-1"></i>Recherche
+          </label>
+          <input
+            type="text"
+            class="form-control search-input"
+            id="search"
+            name="search"
+            value="{{ search }}"
+            placeholder="Nom, email ou téléphone..."
+          />
+        </div>
+
+        <div class="col-md-3">
+          <label for="location" class="form-label">
+            <i class="fas fa-map-marker-alt me-1"></i>Localisation
+          </label>
+          <input
+            type="text"
+            class="form-control search-input"
+            id="location"
+            name="location"
+            value="{{ location_filter }}"
+            placeholder="Ville ou territoire..."
+          />
+        </div>
+
+        <div class="col-md-2">
+          <label for="sort" class="form-label">
+            <i class="fas fa-sort me-1"></i>Trier
+          </label>
+          <select class="form-select" id="sort" name="sort">
+            <option value="name" {% if sort_by == "name" %}selected{% endif %}>Nom</option>
+            <option value="location" {% if sort_by == "location" %}selected{% endif %}>Localisation</option>
+            <option value="created_at" {% if sort_by == "created_at" %}selected{% endif %}>Date</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary-modern btn-modern">
+              <i class="fas fa-filter me-1"></i>Filtrer
+            </button>
               <a
-                href="{{ safe_url_for('admin.admin_volunteers') }}"
+                href="{{ safe_url_for('admin.admin_intervenants') }}"
+                class="btn btn-secondary btn-modern"
+              >
+              <i class="fas fa-times me-1"></i>Réinitialiser
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Intervenants Table -->
+    <div class="table-responsive fade-in">
+      <table class="table table-modern">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Type</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Ville</th>
+            <th>Créé le</th>
+            <th>Statut</th>
+            <th>{{ _('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if volunteers %}
+          {% for volunteer in volunteers %}
+          <tr>
+            <td>{{ volunteer.legacy_volunteer_id or '—' }}</td>
+            <td>
+              <strong>{{ volunteer.name }}</strong>
+            </td>
+            <td>
+              <span class="status-badge status-active">
+                {{ (volunteer.actor_type or 'volunteer')|replace('_',' ')|title }}
+              </span>
+            </td>
+            <td>{{ volunteer.email }}</td>
+            <td>{{ volunteer.phone or '—' }}</td>
+            <td>{{ volunteer.location or '—' }}</td>
+            <td>
+              {% if volunteer.created_at %}{{ volunteer.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+            </td>
+            <td>
+              <span class="status-badge status-active">Actif</span>
+            </td>
+            <td>
+              <div class="btn-group" role="group">
+                <button
+                  class="btn btn-info-modern btn-modern btn-sm"
+                  data-action="viewVolunteer"
+                  data-id="{{ volunteer.legacy_volunteer_id or '' }}"
+                  title="Voir les détails"
+                  {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  class="btn btn-warning-modern btn-modern btn-sm"
+                  data-action="editVolunteer"
+                  data-id="{{ volunteer.legacy_volunteer_id or '' }}"
+                  title="Modifier"
+                  {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button
+                  class="btn btn-danger-modern btn-modern btn-sm"
+                  data-action="deleteVolunteer"
+                  data-id="{{ volunteer.legacy_volunteer_id or '' }}"
+                  data-name="{{ volunteer.name }}"
+                  title="Supprimer"
+                  {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr>
+            <td colspan="9" class="text-center py-5">
+              <i class="fas fa-users fa-3x text-muted mb-3"></i>
+              <h4 class="text-muted">Aucun intervenant trouvé</h4>
+              <p class="text-muted">
+                {% if search or location_filter %} Aucun intervenant ne
+                correspond aux critères de recherche. {% else %} Aucun
+                intervenant n'est encore enregistré dans le système. {% endif %}
+              </p>
+              <a
+                href="{{ safe_url_for('admin.admin_intervenants') }}"
                 class="btn btn-success-modern btn-modern"
               >
-                <i class="fas fa-plus me-1"></i>Добави доброволец
+                <i class="fas fa-plus me-1"></i>Ajouter le premier intervenant
               </a>
-              <button
-                class="btn btn-info-modern btn-modern"
-                data-action="exportVolunteers"
-              >
-                <i class="fas fa-download me-1"></i>Експорт
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Stats Overview -->
-      <div class="row mb-4">
-        <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
-            <div class="stats-icon hc-bg-success-gradient">
-              <i class="fas fa-users text-white"></i>
-            </div>
-            <div class="stats-value">{{ total_volunteers }}</div>
-            <p class="stats-label">Общо доброволци</p>
-          </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
-            <div class="stats-icon hc-bg-primary-gradient">
-              <i class="fas fa-user-check text-white"></i>
-            </div>
-            <div class="stats-value">{{ total_volunteers }}</div>
-            <p class="stats-label">Активни доброволци</p>
-          </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
-            <div class="stats-icon hc-bg-info-gradient">
-              <i class="fas fa-map-marker-alt text-white"></i>
-            </div>
-            <div class="stats-value">{{ total_volunteers }}</div>
-            <p class="stats-label">Различни локации</p>
-          </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6">
-          <div class="stats-card fade-in">
-            <div class="stats-icon hc-bg-warning-gradient">
-              <i class="fas fa-clock text-white"></i>
-            </div>
-            <div class="stats-value">{{ total_volunteers }}</div>
-            <p class="stats-label">Нови тази седмица</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Search and Filters -->
-      <div class="filters-section fade-in">
-        <form method="GET" class="row g-3 align-items-end">
-          <div class="col-md-4">
-            <label for="search" class="form-label">
-              <i class="fas fa-search me-1"></i>Търсене
-            </label>
-            <input
-              type="text"
-              class="form-control search-input"
-              id="search"
-              name="search"
-              value="{{ search }}"
-              placeholder="Име, имейл или телефон..."
-            />
-          </div>
-
-          <div class="col-md-3">
-            <label for="location" class="form-label">
-              <i class="fas fa-map-marker-alt me-1"></i>Локация
-            </label>
-            <input
-              type="text"
-              class="form-control search-input"
-              id="location"
-              name="location"
-              value="{{ location_filter }}"
-              placeholder="Град или район..."
-            />
-          </div>
-
-          <div class="col-md-2">
-            <label for="sort" class="form-label">
-              <i class="fas fa-sort me-1"></i>Сортиране
-            </label>
-            <select class="form-select" id="sort" name="sort">
-              <option value="name" {% if sort_by == "name" %}selected{% endif %}>Име</option>
-              <option value="location" {% if sort_by == "location" %}selected{% endif %}>Локация</option>
-              <option value="created_at" {% if sort_by == "created_at" %}selected{% endif %}>Дата</option>
-            </select>
-          </div>
-
-          <div class="col-md-3">
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary-modern btn-modern">
-                <i class="fas fa-filter me-1"></i>Филтрирай
-              </button>
-                <a
-                  href="{{ safe_url_for('admin.admin_volunteers') }}"
-                  class="btn btn-secondary btn-modern"
-                >
-                <i class="fas fa-times me-1"></i>Изчисти
-              </a>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Volunteers Table -->
-      <div class="table-responsive fade-in">
-        <table class="table table-modern">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Име</th>
-              <th>Имейл</th>
-              <th>Телефон</th>
-              <th>Локация</th>
-              <th>Регистриран</th>
-              <th>Статус</th>
-              <th>{{ _('Actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% if volunteers %}
-            {% for volunteer in volunteers %}
-            <tr>
-              <td>{{ volunteer.id }}</td>
-              <td>
-                <strong>{{ volunteer.name }}</strong>
-              </td>
-              <td>{{ volunteer.email }}</td>
-              <td>{{ volunteer.phone or 'Няма' }}</td>
-              <td>{{ volunteer.location or 'Няма' }}</td>
-              <td>
-                {% if volunteer.created_at %}{{ volunteer.created_at.strftime('%d.%m.%Y') }}{% else %}Няма дата{% endif %}
-              </td>
-              <td>
-                <span class="status-badge status-active">Активен</span>
-              </td>
-              <td>
-                <div class="btn-group" role="group">
-                  <button
-                    class="btn btn-info-modern btn-modern btn-sm"
-                    data-action="viewVolunteer"
-                    data-id="{{ volunteer.id }}"
-                    title="Виж детайли"
-                  >
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button
-                    class="btn btn-warning-modern btn-modern btn-sm"
-                    data-action="editVolunteer"
-                    data-id="{{ volunteer.id }}"
-                    title="Редактирай"
-                  >
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button
-                    class="btn btn-danger-modern btn-modern btn-sm"
-                    data-action="deleteVolunteer"
-                    data-id="{{ volunteer.id }}"
-                    data-name="{{ volunteer.name }}"
-                    title="Изтрий"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            {% endfor %} {% else %}
-            <tr>
-              <td colspan="8" class="text-center py-5">
-                <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">Няма намерени доброволци</h4>
-                <p class="text-muted">
-                  {% if search or location_filter %} Няма доброволци, отговарящи
-                  на зададените критерии за търсене. {% else %} Все още няма
-                  регистрирани доброволци в системата. {% endif %}
-                </p>
-                <a
-                  href="{{ safe_url_for('admin.admin_volunteers') }}"
-                  class="btn btn-success-modern btn-modern"
-                >
-                  <i class="fas fa-plus me-1"></i>Добави първия доброволец
-                </a>
-              </td>
-            </tr>
-            {% endif %}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      {% if total_pages > 1 %}
-      <div class="pagination-modern">
-        {% set start_page = page - 2 %}
-        {% if start_page < 1 %}
-          {% set start_page = 1 %}
-        {% endif %}
-        {% set end_page = page + 2 %}
-        {% if end_page > total_pages %}
-          {% set end_page = total_pages %}
-        {% endif %}
-        {% if page > 1 %}
-        <a
-          href="{{ safe_url_for('admin.admin_volunteers', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
-          class="page-link"
-        >
-          <i class="fas fa-chevron-left"></i>
-        </a>
-        {% endif %} {% for page_num in range(start_page, end_page + 1) %}
-        <a
-          href="{{ safe_url_for('admin.admin_volunteers', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
-          class="page-link {% if page_num == page %}active{% endif %}"
-        >
-          {{ page_num }}
-        </a>
-        {% endfor %} {% if page < total_pages %}
-        <a
-          href="{{ safe_url_for('admin.admin_volunteers', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
-          class="page-link"
-        >
-          <i class="fas fa-chevron-right"></i>
-        </a>
-        {% endif %}
-      </div>
-      {% endif %}
-
-      <!-- Results Info -->
-      <div class="text-center text-muted mt-3">
-        {% if volunteers %} Показани са {{ volunteers|length }} от общо {{
-        total_volunteers }} доброволци {% if search or location_filter %}
-        (филтрирани резултати) {% endif %} {% endif %}
-      </div>
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div class="pagination-modern">
+      {% set start_page = page - 2 %}
+      {% if start_page < 1 %}
+        {% set start_page = 1 %}
+      {% endif %}
+      {% set end_page = page + 2 %}
+      {% if end_page > total_pages %}
+        {% set end_page = total_pages %}
+      {% endif %}
+      {% if page > 1 %}
+      <a
+        href="{{ safe_url_for('admin.admin_intervenants', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+        class="page-link"
+      >
+        <i class="fas fa-chevron-left"></i>
+      </a>
+      {% endif %} {% for page_num in range(start_page, end_page + 1) %}
+      <a
+        href="{{ safe_url_for('admin.admin_intervenants', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+        class="page-link {% if page_num == page %}active{% endif %}"
+      >
+        {{ page_num }}
+      </a>
+      {% endfor %} {% if page < total_pages %}
+      <a
+        href="{{ safe_url_for('admin.admin_intervenants', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+        class="page-link"
+      >
+        <i class="fas fa-chevron-right"></i>
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
 
-    <!-- Custom JavaScript -->
-    <script>
-      // Theme Toggle Functionality
-      const themeToggle = document.getElementById("themeToggle");
-      const html = document.documentElement;
-      const themeIcon = themeToggle.querySelector("i");
+    <!-- Results Info -->
+    <div class="text-center text-muted mt-3">
+      {% if volunteers %} Affichage de {{ volunteers|length }} sur {{
+      total_volunteers }} intervenants {% if search or location_filter %}
+      (résultats filtrés) {% endif %} {% endif %}
+    </div>
+  </div>
+{% endblock %}
 
-      // Load saved theme
-      const savedTheme = localStorage.getItem("theme") || "light";
-      html.setAttribute("data-theme", savedTheme);
-      updateThemeIcon(savedTheme);
+{% block scripts %}
+  <script>
+    // Intervenant Actions
+    function viewVolunteer(elOrId) {
+      const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+      if (!id) return;
+      window.location.href = `/admin/volunteer/${id}`;
+    }
 
-      themeToggle.addEventListener("click", () => {
-        const currentTheme = html.getAttribute("data-theme");
-        const newTheme = currentTheme === "light" ? "dark" : "light";
+    function editVolunteer(elOrId) {
+      const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+      if (!id) return;
+      window.location.href = `/admin/volunteer/${id}/edit`;
+    }
 
-        html.setAttribute("data-theme", newTheme);
-        localStorage.setItem("theme", newTheme);
-        updateThemeIcon(newTheme);
-      });
-
-      function updateThemeIcon(theme) {
-        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
-      }
-
-      // Volunteer Actions
-      function viewVolunteer(elOrId) {
-        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
-        if (!id) return;
-        window.location.href = `/admin/volunteer/${id}`;
-      }
-
-      function editVolunteer(elOrId) {
-        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
-        if (!id) return;
-        window.location.href = `/admin/volunteer/${id}/edit`;
-      }
-
-      function deleteVolunteer(elOrId, maybeName) {
-        const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
-        if (!id) return;
-        const name =
-          typeof maybeName === "string"
-            ? maybeName
-            : (elOrId?.getAttribute("data-name") || "");
-        if (
-          confirm(
-            `Сигурни ли сте, че искате да изтриете доброволеца "${name}"? Това действие е необратимо.`,
-          )
-        ) {
-          fetch(`/admin/volunteer/${id}/delete`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+    function deleteVolunteer(elOrId, maybeName) {
+      const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
+      if (!id) return;
+      const name =
+        typeof maybeName === "string"
+          ? maybeName
+          : (elOrId?.getAttribute("data-name") || "");
+      if (
+        confirm(
+          `Voulez-vous supprimer l'intervenant "${name}" ? Cette action est irréversible.`,
+        )
+      ) {
+        fetch(`/admin/volunteer/${id}/delete`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              location.reload();
+            } else {
+              alert("Erreur lors de la suppression : " + data.message);
+            }
           })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                location.reload();
-              } else {
-                alert("Грешка при изтриване: " + data.message);
-              }
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("Възникна грешка при изтриване на доброволеца");
-            });
-        }
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Une erreur est survenue lors de la suppression.");
+          });
+      }
+    }
+
+    function exportVolunteers() {
+      const format = prompt(
+        "Choisissez le format d'export (csv/json/pdf) :",
+        "csv",
+      );
+      if (format) {
+        window.location.href = `/export_volunteers?format=${format}`;
+      }
+    }
+
+    // Logout function
+    function logout() {
+      if (
+        confirm(
+          "Voulez-vous vraiment quitter le panneau d'administration ?",
+        )
+      ) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/admin_logout";
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+
+    // Delegated actions (CSP-ready pattern)
+    (function () {
+      function safeCall(fnName, el) {
+        try {
+          const fn = window[fnName];
+          if (typeof fn === "function") return fn(el);
+        } catch (_) {}
+        return undefined;
       }
 
-      function exportVolunteers() {
-        const format = prompt(
-          "Изберете формат за експорт (csv/json/pdf):",
-          "csv",
-        );
-        if (format) {
-          window.location.href = `/export_volunteers?format=${format}`;
-        }
-      }
-
-      // Logout function
-      function logout() {
-        if (
-          confirm(
-            "Сигурни ли сте, че искате да излезете от администраторския панел?",
-          )
-        ) {
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = "/admin_logout";
-          document.body.appendChild(form);
-          form.submit();
-        }
-      }
-
-      // Delegated actions (CSP-ready pattern)
-      (function () {
-        function safeCall(fnName, el) {
-          try {
-            const fn = window[fnName];
-            if (typeof fn === "function") return fn(el);
-          } catch (_) {}
-          return undefined;
-        }
-
-        document.addEventListener("click", function (e) {
-          const el = e.target.closest("[data-action]");
-          if (!el) return;
-          const action = el.getAttribute("data-action");
-          if (!action) return;
-          if (el.tagName === "A") e.preventDefault();
-          safeCall(action, el);
-        });
-      })();
-
-      // Initialize animations
-      document.addEventListener("DOMContentLoaded", function () {
-        const cards = document.querySelectorAll(
-          ".stats-card, .filters-section, .table-modern",
-        );
-        cards.forEach((card, index) => {
-          card.style.animationDelay = `${index * 0.1}s`;
-        });
+      document.addEventListener("click", function (e) {
+        const el = e.target.closest("[data-action]");
+        if (!el) return;
+        const action = el.getAttribute("data-action");
+        if (!action) return;
+        if (el.tagName === "A") e.preventDefault();
+        safeCall(action, el);
       });
-    </script>
-  </body>
-</html>
+    })();
 
-
-
-
-
+    // Initialize animations
+    document.addEventListener("DOMContentLoaded", function () {
+      const cards = document.querySelectorAll(
+        ".stats-card, .filters-section, .table-modern",
+      );
+      cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+      });
+    });
+  </script>
+{% endblock %}

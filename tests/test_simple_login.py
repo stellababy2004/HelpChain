@@ -8,7 +8,7 @@ with app.test_client() as client:
         "/admin/login",
         data={
             "username": "admin",
-            "password": os.getenv("ADMIN_USER_PASSWORD", "admin123"),
+            "password": os.getenv("ADMIN_USER_PASSWORD", "test-password"),
         },
         follow_redirects=True,
     )
@@ -24,3 +24,4 @@ with app.test_client() as client:
         "Response contains login form:",
         "admin_login" in response.get_data(as_text=True),
     )
+

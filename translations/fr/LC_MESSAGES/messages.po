@@ -1163,9 +1163,8 @@ msgid "Accueil"
 msgstr "Accueil"
 
 #: templates/base.html:218 templates/partials/navbar_public.html:3
-#, fuzzy
 msgid "Fonctionnement"
-msgstr "Professionnels"
+msgstr "Fonctionnement"
 
 #: templates/base.html:223 templates/partials/navbar_public.html:4
 msgid "Demandes"
@@ -9186,4 +9185,3 @@ msgstr ""
 
 #~ msgid "Ouvrir"
 #~ msgstr "Ouvrir"
-

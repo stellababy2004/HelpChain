@@ -122,7 +122,7 @@ def initialize_default_admin():
             username="admin",
             email="admin@helpchain.live",
         )
-        admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "admin123"))
+        admin_user.set_password(os.getenv("ADMIN_USER_PASSWORD", "test-password"))
         db.session.add(admin_user)
         db.session.commit()
         logger.info("Default admin user created successfully")
@@ -522,7 +522,7 @@ def initialize_default_admin():
         admin_user = AdminUser.query.filter_by(username="admin").first()
         if not admin_user:
             admin_user = AdminUser(username="admin", email="admin@helpchain.live")
-            admin_user.set_password("admin123")
+            admin_user.set_password("test-password")
             db.session.add(admin_user)
             db.session.commit()
             app.logger.info("Default admin user created")
@@ -3842,3 +3842,4 @@ if __name__ == "__main__":
 
 # За да спреш mock-а в production, добави:
 # mock_mail_send.stop()  # Премахни за реални имейли
+

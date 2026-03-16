@@ -25,7 +25,7 @@ with app.app_context():
         if admin_user:
             print(f"Username: {admin_user.username}")
             print(f"Password hash: {admin_user.password_hash[:20]}...")
-            print(f"Check password: {admin_user.check_password('Admin123')}")
+            print(f"Check password: {admin_user.check_password('test-password')}")
         else:
             print("No admin user found")
 
@@ -41,3 +41,4 @@ with app.app_context():
         import traceback
 
         traceback.print_exc()
+

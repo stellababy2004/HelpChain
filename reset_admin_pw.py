@@ -11,10 +11,11 @@ from backend.models import AdminUser
 with app.app_context():
     admin = AdminUser.query.filter_by(username="admin").first()
     if admin:
-        admin.set_password("Admin123")
+        admin.set_password("test-password")
         from backend.extensions import db
 
         db.session.commit()
-        print("Admin password reset to Admin123")
+        print("Admin password reset to test-password")
     else:
         print("Admin user not found")
+

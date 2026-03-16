@@ -1,39 +1,79 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Volunteer details') }}{% endblock %}
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Détails intervenant') }} | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-intervenant-detail{% endblock %}
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin.css') }}">
+{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h4 mb-0">{{ _('Volunteer details') }}</h1>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_volunteers') }}">
-      {{ _('Retour aux bénévoles') }}
+{% block admin_content %}
+<div class="container py-4 mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <h1 class="h4 mb-0">{{ _('Détails intervenant') }}</h1>
+      <div class="text-muted">Gestion et suivi de l’intervenant</div>
+      <div class="small text-muted">Profil intervenant (données bénévoles en phase transitoire).</div>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_intervenants') }}">
+      {{ _('Retour aux intervenants') }}
     </a>
   </div>
 
-  <div class="card shadow-sm border-0">
-    <div class="card-body">
-      <dl class="row mb-0">
-        <dt class="col-sm-3">{{ _('ID') }}</dt>
-        <dd class="col-sm-9">{{ volunteer.id }}</dd>
+  <div class="row g-3">
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Informations générales</h2>
+          <dl class="row mb-0">
+            <dt class="col-sm-4">{{ _('ID') }}</dt>
+            <dd class="col-sm-8">{{ volunteer.id }}</dd>
 
-        <dt class="col-sm-3">{{ _('Name') }}</dt>
-        <dd class="col-sm-9">{{ volunteer.name or '—' }}</dd>
+            <dt class="col-sm-4">{{ _('Nom') }}</dt>
+            <dd class="col-sm-8">{{ volunteer.name or '—' }}</dd>
 
-        <dt class="col-sm-3">{{ _('Email') }}</dt>
-        <dd class="col-sm-9">{{ volunteer.email or '—' }}</dd>
+            <dt class="col-sm-4">Type</dt>
+            <dd class="col-sm-8">Bénévole (legacy)</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
 
-        <dt class="col-sm-3">{{ _('Phone') }}</dt>
-        <dd class="col-sm-9">{{ volunteer.phone or '—' }}</dd>
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Coordonnées</h2>
+          <dl class="row mb-0">
+            <dt class="col-sm-4">{{ _('Email') }}</dt>
+            <dd class="col-sm-8">{{ volunteer.email or '—' }}</dd>
 
-        <dt class="col-sm-3">{{ _('Location') }}</dt>
-        <dd class="col-sm-9">{{ volunteer.location or '—' }}</dd>
+            <dt class="col-sm-4">{{ _('Téléphone') }}</dt>
+            <dd class="col-sm-8">{{ volunteer.phone or '—' }}</dd>
 
-        <dt class="col-sm-3">{{ _('Skills') }}</dt>
-        <dd class="col-sm-9">{{ volunteer.skills or '—' }}</dd>
+            <dt class="col-sm-4">{{ _('Ville') }}</dt>
+            <dd class="col-sm-8">{{ volunteer.location or '—' }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
 
-        <dt class="col-sm-3">{{ _('Active') }}</dt>
-        <dd class="col-sm-9">{{ _('Yes') if volunteer.is_active else _('No') }}</dd>
-      </dl>
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Statut</h2>
+          <dl class="row mb-0">
+            <dt class="col-sm-4">{{ _('Statut') }}</dt>
+            <dd class="col-sm-8">{{ _('Actif') if volunteer.is_active else _('Inactif') }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase text-muted mb-3">Compétences / notes</h2>
+          <div class="text-muted">{{ volunteer.skills or '—' }}</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

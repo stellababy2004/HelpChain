@@ -1,0 +1,97 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}{{ _('Admin') }} • Structure | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+
+{% block admin_content %}
+<div class="container mt-4">
+  <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-4">
+    <div>
+      <div class="text-muted small">Structure</div>
+      <h2 class="mb-1">{{ structure.name }}</h2>
+      <div class="text-muted">Slug: {{ structure.slug }}</div>
+    </div>
+    <span class="badge bg-success">Actif</span>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-3">
+        <h6 class="mb-1">Utilisateurs</h6>
+        <h3 class="mb-0">{{ users_count }}</h3>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-3">
+        <h6 class="mb-1">Demandes actives</h6>
+        <h3 class="mb-0">{{ active_requests }}</h3>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-3">
+        <h6 class="mb-1">Demandes terminées</h6>
+        <h3 class="mb-0">{{ done_requests }}</h3>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-3">
+        <h6 class="mb-1">Structure Health</h6>
+        <h2 class="mb-1">{{ health_score }}</h2>
+        {% if health_score >= 80 %}
+        <span class="badge bg-success">Healthy</span>
+        {% elif health_score >= 50 %}
+        <span class="badge bg-warning">Warning</span>
+        {% else %}
+        <span class="badge bg-danger">At risk</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-3 mb-4">
+    <h5 class="mb-3">Alertes opérationnelles</h5>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        Demandes sans responsable
+        <span class="badge bg-secondary">{{ alerts.unassigned_count }}</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        Demandes urgentes non assignées
+        <span class="badge bg-warning text-dark">{{ alerts.urgent_unassigned_count }}</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        Demandes sans action &gt; 72h
+        <span class="badge bg-secondary">{{ alerts.stale_count }}</span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        Demandes actives en retard
+        <span class="badge bg-secondary">{{ alerts.overdue_count }}</span>
+      </li>
+    </ul>
+  </div>
+
+  <h5 class="mt-4">Activité récente</h5>
+  <div class="table-responsive">
+    <table class="table table-hover mt-3">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Statut</th>
+          <th>Créée</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recent_requests %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.status or '—' }}</td>
+          <td>{{ r.created_at }}</td>
+        </tr>
+        {% endfor %}
+        {% if recent_requests|length == 0 %}
+        <tr><td colspan="3" class="text-center text-muted py-4">Aucune activité récente.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -6,7 +6,7 @@
   <a href="{{ url_for('admin.admin_requests') }}">&larr; {{ _('Back') }}</a>
 
   <h2 class="mt-3">{{ _('Request') }} #{{ req.id }} - {{ req.title }}</h2>
-  <p><b>{{ _('Status:') }}</b> {{ req.status }} | <b>{{ _('Priority:') }}</b> {{ req.priority }} | <b>{{ _('Category:') }}</b> {{ req.category }}</p>
+  <p><b>{{ _('Status:') }}</b> {{ req.status }} | <b>{{ _('Priority:') }}</b> {{ req.priority }} | <b>{{ _('Category:') }}</b> {{ request_category_label(req.category) }}</p>
 
   <div class="card p-3 mb-3">
     <p><b>{{ _('Name:') }}</b> {{ req.name }}</p>

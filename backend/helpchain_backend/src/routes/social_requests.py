@@ -6,6 +6,7 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from flask_babel import gettext as _
 from sqlalchemy import func
 
+from backend.helpchain_backend.src.routes.admin import operator_required
 from backend.models import (
     AdminAuditEvent,
     AdminUser,
@@ -48,6 +49,37 @@ def _utcnow():
 
 def _structure_scope():
     return _safe_int(request.args.get("structure_id"))
+
+
+def compute_structure_health(structure_id: int | None) -> int:
+    score = 100
+    now = datetime.utcnow()
+
+    base = SocialRequest.query
+    if structure_id:
+        base = base.filter(SocialRequest.structure_id == structure_id)
+
+    unassigned = base.filter(SocialRequest.assigned_to_user_id.is_(None)).count()
+    if unassigned > 0:
+        score -= 30
+
+    stale_cutoff = now - timedelta(hours=48)
+    stale = base.filter(
+        (SocialRequest.updated_at < stale_cutoff)
+        | (SocialRequest.updated_at.is_(None) & (SocialRequest.created_at < stale_cutoff))
+    ).count()
+    if stale > 0:
+        score -= 20
+
+    overdue_cutoff = now - timedelta(days=3)
+    overdue = base.filter(
+        SocialRequest.status.in_(["new", "in_progress"]),
+        SocialRequest.created_at < overdue_cutoff,
+    ).count()
+    if overdue > 0:
+        score -= 20
+
+    return max(score, 0)
 
 
 def _current_actor_user_id() -> int | None:
@@ -98,6 +130,7 @@ def _audit_admin_event(action: str, request_id: int, payload: dict | None = None
 
 
 @bp.get("")
+@operator_required
 def list_requests():
     sid = _structure_scope()
     q = SocialRequest.query
@@ -117,6 +150,7 @@ def list_requests():
 
 
 @bp.get("/dashboard")
+@operator_required
 def dashboard():
     sid = _structure_scope()
     structures = Structure.query.order_by(Structure.name.asc()).all()
@@ -156,6 +190,7 @@ def dashboard():
 
 
 @bp.get("/operations")
+@operator_required
 def operations():
     sid = _structure_scope()
     structures = Structure.query.order_by(Structure.name.asc()).all()
@@ -207,6 +242,7 @@ def operations():
             SocialRequest, SocialRequest.id == SocialRequestEvent.request_id
         ).filter(SocialRequest.structure_id == sid)
     recent_events = recent_events_q.limit(30).all()
+    health_score = compute_structure_health(sid)
 
     return render_template(
         "requests/operations.html",
@@ -217,6 +253,7 @@ def operations():
         recent_events=recent_events,
         structures=structures,
         selected_structure_id=sid,
+        health_score=health_score,
     )
 
 

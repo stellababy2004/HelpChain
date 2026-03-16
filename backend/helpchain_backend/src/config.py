@@ -101,6 +101,9 @@ class Config:
     ]
     PUBLIC_BASE_URL = (os.getenv("PUBLIC_BASE_URL", "") or "").strip()
     METRICS_TOKEN = (os.getenv("METRICS_TOKEN", "") or "").strip()
+    HC_PUBLIC_INTAKE_MODE = (
+        (os.getenv("HC_PUBLIC_INTAKE_MODE", "open") or "open").strip().lower()
+    )
     HC_ENABLE_LEAK_TEST = os.getenv("HC_ENABLE_LEAK_TEST", "0") == "1"
     HC_LEAK_TEST_ALLOWLIST = {
         ip.strip()

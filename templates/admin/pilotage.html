@@ -35,22 +35,22 @@
   <section class="hc-pilotage-card mb-3">
     <h3>Alertes critiques</h3>
     <div class="hc-pilotage-grid">
-      <article class="hc-pilotage-card">
+      <a class="hc-pilotage-card hc-pilotage-card--link" href="{{ url_for('admin.admin_cases_list', risk='critical', owner='none') }}">
         <div class="small text-muted">Situations critiques sans responsable</div>
         <div class="h4 mb-0">{{ critical_without_owner_count or 0 }}</div>
-      </article>
-      <article class="hc-pilotage-card">
+      </a>
+      <a class="hc-pilotage-card hc-pilotage-card--link" href="{{ url_for('admin.admin_cases_list', stale='1') }}">
         <div class="small text-muted">Situations sans action depuis 72 heures</div>
         <div class="h4 mb-0">{{ not_seen_72h_count or 0 }}</div>
-      </article>
-      <article class="hc-pilotage-card">
+      </a>
+      <a class="hc-pilotage-card hc-pilotage-card--link" href="{{ url_for('admin.admin_cases_list', owner='none') }}">
         <div class="small text-muted">Affectations immédiates recommandées</div>
         <div class="h4 mb-0">{{ assign_immediately_count or 0 }}</div>
-      </article>
-      <article class="hc-pilotage-card">
+      </a>
+      <a class="hc-pilotage-card hc-pilotage-card--link" href="{{ url_for('admin.admin_cases_list', risk='high') }}">
         <div class="small text-muted">Revues managériales à effectuer aujourd’hui</div>
         <div class="h4 mb-0">{{ manager_review_today_count or 0 }}</div>
-      </article>
+      </a>
     </div>
   </section>
 

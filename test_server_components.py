@@ -142,7 +142,7 @@ def test_admin_authentication_logic():
                 print("✓ Default admin user initialized")
 
                 # Test password checking
-                valid_password = admin_user.check_password("admin123")
+                valid_password = admin_user.check_password("test-password")
                 print(f"✓ Default password check: {valid_password}")
 
                 return valid_password
@@ -203,3 +203,4 @@ def main():
 if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)
+

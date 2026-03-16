@@ -1,0 +1,60 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Cases map') }} | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-cases-map{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
+    <a href="{{ url_for('admin.admin_cases_list') }}">{{ _('Cases') }}</a>
+    <span>/</span>
+    <span>{{ _('Map') }}</span>
+  </nav>
+
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">{{ _('Cases map') }}</h1>
+        <div class="hc-muted">{{ _('Geographic overview of social cases.') }}</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">
+        {{ _('Back to cases') }}
+      </a>
+    </div>
+  </div>
+
+  <div id="cases-map" style="height:600px;"></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  function riskColor(level) {
+    if (level === "high") return "red";
+    if (level === "medium") return "orange";
+    return "green";
+  }
+
+  const map = L.map("cases-map").setView([48.8566, 2.3522], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "&copy; OpenStreetMap contributors"
+  }).addTo(map);
+
+  fetch("/admin/api/cases/map")
+    .then((resp) => resp.json())
+    .then((data) => {
+      const cases = data.cases || [];
+      cases.forEach(function (c) {
+        const marker = L.circleMarker([c.lat, c.lng], {
+          radius: 8,
+          color: riskColor(c.risk_level)
+        });
+        marker.bindPopup(
+          "Case #" + c.id +
+          "<br>Status: " + c.status +
+          "<br>Risk: " + c.risk_level
+        );
+        marker.addTo(map);
+      });
+    });
+</script>
+{% endblock %}

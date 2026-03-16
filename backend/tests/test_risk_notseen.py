@@ -36,7 +36,9 @@ def test_risk_notseen_only_notified_not_seen_older_than_24h(app, session):
     session.add(s1)
     session.commit()
 
-    query, _status, _q, _risk = build_requests_query(Request.query, {"risk": "notseen"})
+    query, _status, _q, _risk = build_requests_query(
+        Request.query, {"risk": "notseen"}, legacy=True
+    )
     ids = [r.id for r in query.all()]
 
     assert r1.id in ids
@@ -103,26 +105,32 @@ def test_risk_notseen_tiers_24_48_72(app, session):
     )
     session.commit()
 
-    q24, _status, _q, _risk = build_requests_query(Request.query, {"risk": "notseen24"})
+    q24, _status, _q, _risk = build_requests_query(
+        Request.query, {"risk": "notseen24"}, legacy=True
+    )
     ids24 = {r.id for r in q24.all()}
     assert r24.id in ids24
     assert r48.id in ids24
     assert r72.id in ids24
 
-    q48, _status, _q, _risk = build_requests_query(Request.query, {"risk": "notseen48"})
+    q48, _status, _q, _risk = build_requests_query(
+        Request.query, {"risk": "notseen48"}, legacy=True
+    )
     ids48 = {r.id for r in q48.all()}
     assert r24.id not in ids48
     assert r48.id in ids48
     assert r72.id in ids48
 
-    q72, _status, _q, _risk = build_requests_query(Request.query, {"risk": "notseen72"})
+    q72, _status, _q, _risk = build_requests_query(
+        Request.query, {"risk": "notseen72"}, legacy=True
+    )
     ids72 = {r.id for r in q72.all()}
     assert r24.id not in ids72
     assert r48.id not in ids72
     assert r72.id in ids72
 
     q_alias, _status, _q, _risk = build_requests_query(
-        Request.query, {"risk": "notseen"}
+        Request.query, {"risk": "notseen"}, legacy=True
     )
     ids_alias = {r.id for r in q_alias.all()}
     assert ids_alias == ids24

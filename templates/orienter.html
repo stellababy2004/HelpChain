@@ -14,6 +14,15 @@
       <p class="hc-orienter__subtitle">
         {{ _('Sélectionnez le domaine principal afin de structurer la prise en charge et d’assurer une coordination adaptée.') }}
       </p>
+      {% if public_intake_mode == 'pilot' %}
+        <div class="alert alert-warning small mt-3" role="status">
+          {{ _("Accès pilote limité. Le dépôt de demandes est ouvert dans un cadre territorial restreint.") }}
+        </div>
+      {% elif public_intake_mode == 'closed' %}
+        <div class="alert alert-info small mt-3" role="status">
+          {{ _("Les dépôts publics sont temporairement suspendus. Merci de contacter votre structure locale.") }}
+        </div>
+      {% endif %}
     </div>
   </section>
 
@@ -51,13 +60,15 @@
       </div>
 
       <div class="hc-orienter__cta">
-        <a
-          class="hc-btn hc-btn--primary"
-          href="{{ url_for('main.submit_request') }}"
-          data-hc-event="orienter_primary_cta"
-        >
-          {{ _('Déposer une demande') }}
-        </a>
+        {% if public_intake_mode != 'closed' %}
+          <a
+            class="hc-btn hc-btn--primary"
+            href="{{ url_for('main.submit_request') }}"
+            data-hc-event="orienter_primary_cta"
+          >
+            {{ _('Déposer une demande') }}
+          </a>
+        {% endif %}
         <p class="hc-orienter__cta-sub">{{ _('Formulaire guidé – moins de 3 minutes.') }}</p>
       </div>
 

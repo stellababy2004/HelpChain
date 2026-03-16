@@ -1,8 +1,7 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Notifications{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+{% block admin_workspace_css %}
   <style>
     .hc-notify-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
     .hc-notify-summary__item { padding: .75rem .9rem; border: 1px solid #e6ecf2; border-radius: 12px; background: #fff; }
@@ -21,7 +20,7 @@
   </style>
 {% endblock %}
 
-{% block content %}
+{% block admin_content %}
 {% set notifications_endpoint = 'ops.ops_notifications_list' if request.path.startswith('/ops') else 'admin.admin_notifications_list' %}
 <div class="hc-admin-wrap hc-admin-wrap--wide">
   <div class="hc-card mb-3 hc-page-hero">

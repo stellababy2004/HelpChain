@@ -151,7 +151,7 @@ def test_admin_login():
 
         # Тестваме login с правилни credentials
         print_info("Тест на login с правилни данни...")
-        login_data = {"username": "admin", "password": "Admin123"}
+        login_data = {"username": "admin", "password": "test-password"}
         response = session.post(
             "http://localhost:8000/admin/login",
             data=login_data,
@@ -296,3 +296,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

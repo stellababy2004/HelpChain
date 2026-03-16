@@ -73,7 +73,7 @@ def test_change_role_logs_audit_event(authenticated_admin_client, session):
 
     event = (
         session.query(AdminAuditEvent)
-        .filter_by(action="admin.role_change", target_type="AdminUser", target_id=target.id)
+        .filter_by(action="ROLE_CHANGE", target_type="AdminUser", target_id=target.id)
         .order_by(AdminAuditEvent.id.desc())
         .first()
     )
@@ -111,7 +111,7 @@ def test_cannot_downgrade_last_superadmin(authenticated_admin_client, session):
 
     event = (
         session.query(AdminAuditEvent)
-        .filter_by(action="admin.role_change", target_type="AdminUser", target_id=actor.id)
+        .filter_by(action="ROLE_CHANGE", target_type="AdminUser", target_id=actor.id)
         .order_by(AdminAuditEvent.id.desc())
         .first()
     )

@@ -15,7 +15,7 @@ def test_admin_login():
 
     # Prepare login data
     login_data = urllib.parse.urlencode(
-        {"username": "admin", "password": "Admin123"}  # pragma: allowlist secret
+        {"username": "admin", "password": "test-password"}  # pragma: allowlist secret
     ).encode("utf-8")
 
     try:
@@ -54,3 +54,4 @@ def test_admin_login():
 
 if __name__ == "__main__":
     test_admin_login()
+

@@ -72,7 +72,7 @@
             <option value="">Sélectionner</option>
             {% set c = form_data.get('category','') %}
             {% for cat in categories %}
-              <option value="{{ cat }}" {% if c == cat %}selected{% endif %}>{{ cat }}</option>
+              <option value="{{ cat }}" {% if c == cat %}selected{% endif %}>{{ request_category_label(cat) }}</option>
             {% endfor %}
           </select>
           {% if form_errors.get('category') %}<div class="invalid-feedback">{{ form_errors.get('category') }}</div>{% endif %}
@@ -80,6 +80,12 @@
 
         <div class="col-md-4">
           <label class="form-label" for="structure_id">Structure</label>
+          {% if current_user.is_authenticated and current_user.is_admin and current_user.structure_id %}
+          {% set selected_structure = (structures | selectattr('id', 'equalto', current_user.structure_id) | list | first) %}
+          <input type="text" class="form-control" value="{{ selected_structure.name if selected_structure else 'Structure active' }}" disabled>
+          <input type="hidden" name="structure_id" value="{{ current_user.structure_id }}">
+          <div class="form-text text-muted">Structure imposée par votre accès.</div>
+          {% else %}
           <select class="form-select {% if form_errors.get('structure_id') %}is-invalid{% endif %}" id="structure_id" name="structure_id">
             <option value="">Aucune</option>
             {% set s = form_data.get('structure_id','') %}
@@ -88,6 +94,7 @@
             {% endfor %}
           </select>
           {% if form_errors.get('structure_id') %}<div class="invalid-feedback">{{ form_errors.get('structure_id') }}</div>{% endif %}
+          {% endif %}
         </div>
 
         <div class="col-md-4">

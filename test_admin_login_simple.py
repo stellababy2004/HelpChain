@@ -20,7 +20,7 @@ def test_admin_login():
             return False
 
         # Test POST request with correct credentials
-        data = {"username": "admin", "password": "admin123"}
+        data = {"username": "admin", "password": "test-password"}
         response = requests.post(
             "http://127.0.0.1:8000/admin_login", data=data, allow_redirects=False
         )
@@ -45,3 +45,4 @@ def test_admin_login():
 if __name__ == "__main__":
     success = test_admin_login()
     sys.exit(0 if success else 1)
+

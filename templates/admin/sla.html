@@ -1,11 +1,8 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('SLA Breakdown') }} | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="hc-admin-wrap">
   <div class="hc-card mb-3">
     <div class="d-flex align-items-end justify-content-between gap-3 flex-wrap">
@@ -14,6 +11,7 @@
       <h1 class="hc-admin-title">{{ _('SLA Breakdown') }}</h1>
       <div class="text-muted small mt-1">{{ breach_label }} • {{ _('Window:') }} {{ days }} {{ _('days') }}</div>
       <div class="text-muted small mt-1">{{ _('This page shows only requests with SLA breaches.') }}</div>
+      <div class="text-muted small mt-1">{{ _('Alerte préventive SLA') }} • {{ _('Risque de dépassement SLA') }}</div>
     </div>
 
     <form class="d-flex gap-2 flex-wrap" method="get" action="{{ url_for('admin.admin_sla_breakdown') }}">
@@ -45,6 +43,7 @@
           <div class="card-body">
             <div class="text-muted small">{{ _('SLA resolution overdue') }}</div>
             <div class="display-6 fw-semibold">{{ resolve_count }}</div>
+            <div class="text-muted small mt-1">{{ _('Échéance proche') }}: {{ prediction_counts.resolution_overdue }}</div>
           </div>
         </div>
       </a>
@@ -55,6 +54,7 @@
           <div class="card-body">
             <div class="text-muted small">{{ _('SLA owner assignment overdue') }}</div>
             <div class="display-6 fw-semibold">{{ owner_assign_count }}</div>
+            <div class="text-muted small mt-1">{{ _('Échéance proche') }}: {{ prediction_counts.owner_assignment_overdue }}</div>
           </div>
         </div>
       </a>
@@ -65,6 +65,7 @@
           <div class="card-body">
             <div class="text-muted small">{{ _('Volunteer assignment overdue') }}</div>
             <div class="display-6 fw-semibold">{{ volunteer_assign_count }}</div>
+            <div class="text-muted small mt-1">{{ _('Échéance proche') }}: {{ prediction_counts.volunteer_assignment_overdue }}</div>
           </div>
         </div>
       </a>
@@ -103,7 +104,7 @@
                     <span class="badge text-bg-light">—</span>
                   {% endif %}
                 </td>
-                <td><span class="badge text-bg-light">{{ r.category or "—" }}</span></td>
+                <td><span class="badge text-bg-light">{{ request_category_label(r.category) }}</span></td>
                 <td><span class="badge text-bg-light">{{ r.status or "open" }}</span></td>
                 <td class="text-muted small">{{ r.created_at }}</td>
                 <td><span class="fw-semibold">{{ "%.1f"|format(r.overdue_hours or 0.0) }}h</span></td>

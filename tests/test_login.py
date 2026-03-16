@@ -2,7 +2,7 @@ import requests
 
 # Test admin login
 url = "http://127.0.0.1:5000/admin/login"
-data = {"username": "admin", "password": "admin123"}
+data = {"username": "admin", "password": "test-password"}
 
 try:
     response = requests.post(url, data=data, allow_redirects=False, timeout=5)
@@ -11,3 +11,4 @@ try:
     print(f"Headers: {response.headers}")
 except requests.exceptions.RequestException as e:
     print(f"Request failed: {e}")
+

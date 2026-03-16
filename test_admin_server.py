@@ -27,7 +27,7 @@ try:
     # Test admin login
     response = requests.post(
         "http://127.0.0.1:8000/admin_login",
-        data={"username": "admin", "password": "admin123"},
+        data={"username": "admin", "password": "test-password"},
         allow_redirects=False,
     )
 
@@ -41,3 +41,4 @@ try:
 
 except Exception as e:
     print(f"Error testing admin login: {e}")
+

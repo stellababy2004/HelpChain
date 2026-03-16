@@ -44,6 +44,5 @@ def test_request_details_workspace_renders_sections(authenticated_admin_client, 
     html = resp.get_data(as_text=True)
     assert "Résumé de la situation" in html
     assert "Informations opérationnelles" in html
-    assert "Actions rapides" in html
+    assert "Actions bénévoles" in html
     assert "Historique de la situation" in html
-

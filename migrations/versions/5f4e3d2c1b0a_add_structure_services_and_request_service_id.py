@@ -55,7 +55,7 @@ def upgrade():
             sa.Column("structure_id", sa.Integer(), nullable=False),
             sa.Column("code", sa.String(length=64), nullable=False),
             sa.Column("name", sa.String(length=255), nullable=False),
-            sa.Column("is_active", sa.Boolean(), nullable=False, server_default="1"),
+            sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.true()),
             sa.Column("created_at", sa.DateTime(), nullable=False),
             sa.ForeignKeyConstraint(["structure_id"], ["structures.id"]),
             sa.UniqueConstraint(

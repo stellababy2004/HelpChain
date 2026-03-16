@@ -32,9 +32,11 @@ with app.app_context():
         if admin.password_hash:
             print(f"Password hash: {admin.password_hash[:20]}...")
         print(
-            f"Password check {os.getenv('ADMIN_PASSWORD', 'Admin123')}: {admin.check_password(os.getenv('ADMIN_PASSWORD', 'Admin123'))}"
+            f"Password check {os.getenv('ADMIN_PASSWORD', 'test-password')}: {admin.check_password(os.getenv('ADMIN_PASSWORD', 'test-password'))}"
         )
-        print(f"Password check admin123: {admin.check_password('admin123')}")
+        print(f"Password check test-password: {admin.check_password('test-password')}")
         print(f"Password check Admin: {admin.check_password('Admin')}")
     else:
         print("Admin not found")
+
+

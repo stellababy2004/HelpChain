@@ -31,10 +31,7 @@ class TestRoutes:
         response = client.get("/admin/login")
 
         assert response.status_code == 200
-        assert (
-            b"\xd0\x92\xd1\x85\xd0\xbe\xd0\xb4 \xd0\xb7\xd0\xb0 \xd0\xb0\xd0\xb4\xd0\xbc\xd0\xb8\xd0\xbd\xd0\xb8\xd1\x81\xd1\x82\xd1\x80\xd0\xb0\xd1\x82\xd0\xbe\xd1\x80"
-            in response.data
-        )  # Bulgarian for "Admin Login"
+        assert b"Admin login" in response.data
 
     def test_admin_login_post_invalid_credentials(self, client):
         """Тест за admin login с невалидни данни"""
@@ -46,7 +43,7 @@ class TestRoutes:
 
         assert response.status_code == 200
         page = response.get_data(as_text=True)
-        assert "Грешно потребителско име или парола" in page
+        assert "Identifiants invalides ou accès temporairement bloqué." in page
 
     def test_admin_email_2fa_page_contains_verification_field(self, client):
         """Email 2FA страницата показва поле за код на български."""
@@ -59,7 +56,7 @@ class TestRoutes:
 
         assert response.status_code == 200
         html = response.get_data(as_text=True)
-        assert "Код за верификация" in html
+        assert "Verification code" in html
         assert 'name="code"' in html
 
     def test_volunteer_register_get(self, client):
@@ -245,7 +242,7 @@ class TestProtectedRoutes:
 
         assert response.status_code == 200
         html = response.get_data(as_text=True)
-        assert "Моля, влезте като администратор." in html
+        assert "Please log in as an administrator." in html
 
     def test_admin_dashboard_authenticated(self, authenticated_admin_client):
         """Тест за admin dashboard като логнат admin"""
@@ -308,7 +305,7 @@ class TestErrorHandlers:
 
         assert response.status_code == 404
         assert b"404" in response.data
-        assert "не е намерена".encode() in response.data
+        assert (b"Page not found." in response.data) or (b"No results found." in response.data)
 
     def test_404_error_handler_json(self, client):
         """Тест за 404 error handler - JSON response"""

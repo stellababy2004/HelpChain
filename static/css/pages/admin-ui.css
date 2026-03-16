@@ -1,4 +1,18 @@
 /* Admin UI – clean SaaS cards */
+.hc-admin-workspace__content{
+  padding: 24px 24px 48px;
+}
+@media (max-width: 992px){
+  .hc-admin-workspace__content{
+    padding: 20px 16px 40px;
+  }
+}
+@media (max-width: 576px){
+  .hc-admin-workspace__content{
+    padding: 16px 12px 32px;
+  }
+}
+
 .hc-admin-wrapper{ padding-left:24px; padding-right:24px; }
 .hc-admin-requests-page #main-content{ overflow: visible !important; }
 .hc-admin-requests-page .container,
@@ -3240,4 +3254,58 @@ body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table td.hc-co
     width: 98px;
     max-width: 98px;
   }
+}
+.hc-admin-wrap--request-detail .hc-case-secondary .hc-card{
+  border:1px solid rgba(22,31,48,.08);
+}
+
+/* Protected navbar + dropdown polish (admin/ops only) */
+body[data-hc-page^="/admin"] .hc-public-nav-root,
+body[data-hc-page^="/ops"] .hc-public-nav-root{
+  background:#fff;
+  border-bottom:1px solid rgba(15,23,42,.08);
+  box-shadow:0 6px 18px rgba(15,23,42,.08);
+}
+
+body[data-hc-page^="/admin"] .hc-public-nav-root .nav-link,
+body[data-hc-page^="/ops"] .hc-public-nav-root .nav-link{
+  color:#1f2937;
+}
+
+body[data-hc-page^="/admin"] .hc-public-nav-root .nav-link.active,
+body[data-hc-page^="/admin"] .hc-public-nav-root .nav-link[aria-current="page"],
+body[data-hc-page^="/ops"] .hc-public-nav-root .nav-link.active,
+body[data-hc-page^="/ops"] .hc-public-nav-root .nav-link[aria-current="page"]{
+  color:#0f172a;
+  font-weight:600;
+}
+
+body[data-hc-page^="/admin"] .hc-public-nav-root .dropdown-menu,
+body[data-hc-page^="/ops"] .hc-public-nav-root .dropdown-menu{
+  border:1px solid rgba(15,23,42,.12);
+  box-shadow:0 14px 28px rgba(15,23,42,.12);
+  border-radius:12px;
+  padding:6px;
+}
+
+body[data-hc-page^="/admin"] .hc-public-nav-root .dropdown-item,
+body[data-hc-page^="/ops"] .hc-public-nav-root .dropdown-item{
+  border-radius:8px;
+  padding:.45rem .75rem;
+  color:#111827;
+}
+
+body[data-hc-page^="/admin"] .hc-public-nav-root .dropdown-item:hover,
+body[data-hc-page^="/admin"] .hc-public-nav-root .dropdown-item:focus,
+body[data-hc-page^="/ops"] .hc-public-nav-root .dropdown-item:hover,
+body[data-hc-page^="/ops"] .hc-public-nav-root .dropdown-item:focus{
+  background:#f1f5f9;
+  color:#0f172a;
+}
+
+body[data-hc-page^="/admin"] .hc-public-nav-root .dropdown-item.active,
+body[data-hc-page^="/ops"] .hc-public-nav-root .dropdown-item.active{
+  background:#e7eefc;
+  color:#0f172a;
+  font-weight:600;
 }

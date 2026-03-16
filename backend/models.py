@@ -481,6 +481,31 @@ class Volunteer(db.Model):
             self.achievements = ""
 
 
+class Intervenant(db.Model):
+    """Canonical actor model (Phase C migration)."""
+
+    __tablename__ = "intervenants"
+
+    id = Column(Integer, primary_key=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    name = Column(String(200), nullable=True)
+    legacy_volunteer_id = Column(Integer, nullable=True, index=True)
+    actor_type = Column(
+        String(50),
+        nullable=False,
+        default="volunteer",
+        server_default="volunteer",
+        index=True,
+    )
+    email = Column(String(200), nullable=True)
+    phone = Column(String(50), nullable=True)
+    location = Column(String(200), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True, server_default=db.true())
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+
+    structure = relationship("Structure", lazy="joined")
+
+
 class User(db.Model):
     """Модел за потребители"""
 
@@ -1066,6 +1091,36 @@ class RequestActivity(db.Model):
     volunteer = relationship("Volunteer", foreign_keys=[volunteer_id], lazy="joined")
 
 
+class Assignment(db.Model):
+    """Intervenant assignment to a Request (Phase D)."""
+
+    __tablename__ = "assignments"
+
+    id = Column(Integer, primary_key=True)
+    request_id = Column(Integer, ForeignKey("requests.id"), nullable=False, index=True)
+    intervenant_id = Column(
+        Integer, ForeignKey("intervenants.id"), nullable=False, index=True
+    )
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    assigned_by_admin_id = Column(
+        Integer, ForeignKey("admin_users.id"), nullable=True, index=True
+    )
+    assigned_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    status = Column(
+        String(32),
+        nullable=False,
+        default="active",
+        server_default="active",
+        index=True,
+    )
+    notes = Column(Text, nullable=True)
+
+    request = relationship("Request", lazy="joined")
+    intervenant = relationship("Intervenant", lazy="joined")
+    structure = relationship("Structure", lazy="joined")
+    assigned_by_admin = relationship("AdminUser", foreign_keys=[assigned_by_admin_id], lazy="joined")
+
+
 class RequestMetric(db.Model):
     """Metrics for request lifecycle timings."""
 
@@ -1118,7 +1173,11 @@ try:
         if getattr(target, "structure_id", None) is None:
             # Prefer the active tenant in request/app context.
             try:
-                target.structure_id = int(current_structure().id)
+                try:
+                    from backend.core.tenant import current_structure_id
+                except ModuleNotFoundError:
+                    from core.tenant import current_structure_id
+                target.structure_id = int(current_structure_id())
                 return
             except Exception:
                 pass

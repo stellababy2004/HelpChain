@@ -28,7 +28,7 @@ def main():
     parser.add_argument(
         "--email", default=os.getenv("ADMIN_EMAIL", "admin@helpchain.live")
     )
-    parser.add_argument("--password", default=os.getenv("ADMIN_PASSWORD", "Admin1234"))
+    parser.add_argument("--password", default=os.getenv("ADMIN_PASSWORD", "test-password"))
     args = parser.parse_args()
 
     app = _get_app()
@@ -90,3 +90,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

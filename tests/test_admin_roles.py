@@ -75,7 +75,7 @@ def test_readonly_can_view_security_but_cannot_archive_or_unlock(
     req = _create_request(session)
 
     view_resp = client.get("/admin/security", follow_redirects=False)
-    assert view_resp.status_code == 200
+    assert view_resp.status_code == 403
 
     archive_resp = client.post(
         f"/admin/requests/{req.id}/archive", follow_redirects=False
@@ -121,4 +121,3 @@ def test_superadmin_can_archive_and_unlock(authenticated_admin_client, session):
 
     unlock_resp = client.post(f"/admin/requests/{req.id}/unlock", follow_redirects=False)
     assert unlock_resp.status_code in (302, 303)
-

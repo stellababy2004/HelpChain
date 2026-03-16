@@ -23,7 +23,7 @@ def test_admin_analytics_http():
         print("\n1. Testing admin login...")
         login_data = {
             "username": "admin",
-            "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
+            "password": os.getenv("ADMIN_PASSWORD", "test-password"),
         }
 
         response = session.post(
@@ -125,3 +125,4 @@ def test_admin_analytics_http():
 
 if __name__ == "__main__":
     test_admin_analytics_http()
+

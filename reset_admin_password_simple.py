@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Reset admin password to Admin123
+Reset admin password to test-password
 """
 
 import os
@@ -23,8 +23,8 @@ def reset_admin_password():
         print(f"Admin user found: {admin_user.username}")
         print(f"Current password hash: {admin_user.password_hash}")
 
-        # Reset password to Admin123
-        admin_user.set_password("Admin123")
+        # Reset password to test-password
+        admin_user.set_password("test-password")
         db.session.commit()
 
         print("Password reset successful")
@@ -33,9 +33,10 @@ def reset_admin_password():
         # Verify it works
         from werkzeug.security import check_password_hash
 
-        result = check_password_hash(admin_user.password_hash, "Admin123")
+        result = check_password_hash(admin_user.password_hash, "test-password")
         print(f"Password verification: {result}")
 
 
 if __name__ == "__main__":
     reset_admin_password()
+

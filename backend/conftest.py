@@ -99,7 +99,7 @@ def prepare_database():
             with _db.session.begin():
                 if not _db.session.query(AdminUser).filter_by(username="admin").first():
                     admin = AdminUser(username="admin", email="admin@helpchain.live")
-                    admin.set_password(os.getenv("ADMIN_USER_PASSWORD", "Admin123"))
+                    admin.set_password(os.getenv("ADMIN_USER_PASSWORD", "test-password"))
                     _db.session.add(admin)
                     if not _db.session.query(User).filter_by(username="admin").first():
                         user = User(
@@ -264,3 +264,4 @@ def prepare_database():
         except Exception:
             # If patching fails, allow tests to run and surface connection errors
             yield
+

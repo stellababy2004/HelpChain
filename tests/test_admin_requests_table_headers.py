@@ -5,12 +5,11 @@ def test_requests_table_headers(authenticated_admin_client):
 
     for header in [
         "ID",
-        "Title",
-        "Name",
-        "Status",
-        "Priority",
-        "Category",
-        "Created",
-        "Closed",
+        "Priorité",
+        "Demande",
+        "Statut",
+        "Risk level",
+        "Catégorie",
+        "Créé le",
     ]:
         assert header in html

@@ -11,6 +11,7 @@ from appy import app
 if __name__ == "__main__":
     print("🚀 HelpChain server starting with Waitress...")
     print("📍 http://127.0.0.1:5000")
-    print("👤 Admin: admin / Admin123")
+    print("👤 Admin: admin / test-password")
     print("Press Ctrl+C to stop")
     serve(app, host="127.0.0.1", port=5000)
+

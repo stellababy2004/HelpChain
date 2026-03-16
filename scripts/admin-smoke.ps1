@@ -116,7 +116,7 @@ if (-not $csrf) {
 $passwordsToTry = @()
 if ($Pass) { $passwordsToTry += $Pass }
 elseif ($env:ADMIN_USER_PASSWORD) { $passwordsToTry += $env:ADMIN_USER_PASSWORD }
-else { $passwordsToTry += @("Admin12345!", "Admin123") }
+else { $passwordsToTry += @("test-password", "test-password") }
 
 function Invoke-Login {
   param([hashtable]$PostBody)
@@ -201,3 +201,5 @@ if (-not $success) {
 }
 
 exit 0
+
+

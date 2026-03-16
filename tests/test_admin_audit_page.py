@@ -9,7 +9,7 @@ def test_admin_audit_page_renders_events(authenticated_admin_client, session):
         AdminAuditEvent(
             admin_user_id=1,
             admin_username="admin",
-            action="request.status_change",
+            action="STATUS_CHANGE",
             target_type="Request",
             target_id=123,
             ip="127.0.0.1",
@@ -21,7 +21,7 @@ def test_admin_audit_page_renders_events(authenticated_admin_client, session):
     resp = client.get("/admin/audit", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "request.status_change" in html
+    assert "STATUS_CHANGE" in html
     assert "Request #123" in html
 
 
@@ -33,7 +33,7 @@ def test_admin_audit_page_filter_by_action(authenticated_admin_client, session):
         AdminAuditEvent(
             admin_user_id=1,
             admin_username="admin",
-            action="request.status_change",
+            action="STATUS_CHANGE",
             target_type="Request",
             target_id=1,
         )

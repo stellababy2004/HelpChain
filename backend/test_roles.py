@@ -6,7 +6,7 @@ def test_admin_roles_dashboard():
     session = requests.Session()
     response = session.post(
         "http://127.0.0.1:3000/admin_login",
-        data={"username": "admin", "password": "admin123"},
+        data={"username": "admin", "password": "test-password"},
     )
     assert response.status_code == 302, f"Админ логин неуспешен: {response.status_code}"
 
@@ -18,3 +18,4 @@ def test_admin_roles_dashboard():
     assert (
         "Роли" in content and "Права" in content
     ), "Съдържанието не съдържа роли и права"
+

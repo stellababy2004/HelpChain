@@ -1,6 +1,4 @@
-import os
 import pathlib
-import tempfile
 import sqlalchemy as sa
 from sqlalchemy import create_engine, inspect
 from alembic.config import Config
@@ -19,7 +17,7 @@ except Exception:
     Migrate = None
 
 
-def test_alembic_upgrade_on_clean_sqlite(tmp_path):
+def test_alembic_upgrade_on_clean_sqlite():
     """Integration test: apply Alembic migrations to a fresh SQLite file DB.
 
     This test creates a temporary SQLite database file, configures Alembic to
@@ -33,7 +31,12 @@ def test_alembic_upgrade_on_clean_sqlite(tmp_path):
     alembic_ini = repo_root / "migrations" / "alembic.ini"
     assert alembic_ini.exists(), f"alembic.ini not found at {alembic_ini}"
 
-    db_file = tmp_path / "alembic_test.db"
+    db_dir = repo_root / "backend" / "instance"
+    db_dir.mkdir(parents=True, exist_ok=True)
+    db_file = db_dir / "alembic_test.db"
+    if db_file.exists():
+        db_file.unlink()
+    db_file.touch()
     db_url = f"sqlite:///{db_file}"
 
     cfg = Config(str(alembic_ini))
@@ -73,6 +76,4 @@ def test_alembic_upgrade_on_clean_sqlite(tmp_path):
 
     # Expect at least these core tables to be present after applying migrations
     assert len(tables) > 0, "No tables created by Alembic migrations"
-    assert (
-        ("volunteers" in tables) or ("users" in tables) or ("admin_users" in tables)
-    ), f"Expected core tables not found in {tables}"
+    assert "structures" in tables, f"Expected 'structures' table not found in {tables}"

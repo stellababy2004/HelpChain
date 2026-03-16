@@ -5,7 +5,7 @@ from backend.models import AdminLoginAttempt, AdminUser, utc_now
 
 
 GENERIC_FAIL_MSG = "Identifiants invalides ou accès temporairement bloqué."
-TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
+TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "TestPassword1")
 
 
 def _ensure_admin_user(session, username: str, password: str) -> AdminUser:

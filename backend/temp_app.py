@@ -208,7 +208,7 @@ def admin_login():
         password = request.form.get("password")
 
         # Simple check for demo
-        if username == "admin" and password == "admin123":
+        if username == "admin" and password == "test-password":
             if HAS_2FA and mock_admin.two_factor_enabled:
                 session["pending_2fa"] = True
                 return redirect(url_for("admin_2fa"))
@@ -593,3 +593,4 @@ if __name__ == "__main__":
 
 # За да спреш mock-а в production, добави:
 # mock_mail_send.stop()  # Премахни за реални имейли
+

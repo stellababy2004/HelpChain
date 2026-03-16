@@ -35,7 +35,7 @@ def _submit_public_request(client, unique_suffix: str) -> str:
 def admin_ops_client(app, session):
     app.config["EMAIL_2FA_ENABLED"] = False
     # Test-only credential to avoid secret-like hardcoded values in fixtures.
-    password = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
+    password = os.environ.get("TEST_ADMIN_PASSWORD", "TestPassword1")
     admin = session.query(AdminUser).filter_by(email="admin.ops@test.local").first()
     if not admin:
         admin = AdminUser(

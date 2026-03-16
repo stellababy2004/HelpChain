@@ -10,6 +10,9 @@ vercel.cookies
 # Python
 __pycache__/
 *.pyc
+__pycache__/
+.pytest_tmp/
+.tmp/
 *.pyo
 *.pyd
 

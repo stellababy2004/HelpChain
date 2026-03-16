@@ -48,7 +48,7 @@ with app.test_client() as client:
     # Attempt POST to /admin/login with common default credentials
     resp = client.post(
         "/admin/login",
-        data={"username": "admin", "password": "Admin123"},
+        data={"username": "admin", "password": "test-password"},
         follow_redirects=False,
     )
     print("\nPOST /admin/login status:", resp.status_code)
@@ -83,3 +83,4 @@ with app.test_client() as client:
         pass
 
 print("\nDone")
+

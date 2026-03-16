@@ -29,7 +29,9 @@ def upgrade():
             sa.Column("created_at", sa.DateTime(), nullable=False),
             sa.PrimaryKeyConstraint("id"),
         )
-        op.create_unique_constraint("uq_structures_slug", "structures", ["slug"])
+        op.create_index(
+            "uq_structures_slug", "structures", ["slug"], unique=True
+        )
 
     # SQLite-safe fixed timestamp
     row = bind.execute(sa.text("SELECT id FROM structures WHERE slug = 'default' LIMIT 1")).fetchone()

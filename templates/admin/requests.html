@@ -1,11 +1,8 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Requests') }} | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact">
   <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
     <a href="{{ safe_url_for('main.index') }}">Accueil</a>
@@ -26,6 +23,9 @@
       <div>
         <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
         <div class="hc-muted">Pilotage des situations par priorité, service et responsable</div>
+        {% if scope_label %}
+        <div class="text-muted small">{{ scope_label }}</div>
+        {% endif %}
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.index') }}">
         {{ _('Home') }}
@@ -428,7 +428,7 @@
           {% set owner_label = 'Sans responsable' %}
         {% endif %}
         {% set requester_label = r.name or r.requester_name or '—' %}
-        {% set age_days = ((now_naive - r.created_at).days) if r.created_at else 0 %}
+            {% set age_days = age_days_by_id.get(r.id, 0) %}
         {% set category_label = request_category_label(r.category) %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"

@@ -19,7 +19,7 @@ Write-Host ""
 Write-Host "STEP 3 — Creating / resetting admin"
 
 if (-not $env:ADMIN_PASSWORD) {
-    $env:ADMIN_PASSWORD = "Admin123!ChangeMe"
+    $env:ADMIN_PASSWORD = "test-password"
 }
 
 & $PY .\scripts\reset_admin_local.py --confirm-canonical-db
@@ -33,3 +33,4 @@ Write-Host "========================================="
 Write-Host "Bootstrap complete"
 Write-Host "========================================="
 Write-Host ""
+

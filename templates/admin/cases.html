@@ -1,11 +1,8 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Cases{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block content %}
+{% block admin_content %}
 {% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
   <div class="hc-card mb-3 hc-page-hero">

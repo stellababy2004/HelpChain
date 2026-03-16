@@ -56,7 +56,7 @@ def main():
             print("Admin user not found")
             return
 
-        pw = "Admin12345!"
+        pw = "test-password"
         try:
             ok = admin.check_password(pw)
         except Exception as exc:
@@ -66,8 +66,9 @@ def main():
         print("admin.id=", getattr(admin, "id", None))
         print("admin.username=", getattr(admin, "username", None))
         print("admin.password_hash=", getattr(admin, "password_hash", None))
-        print("check_password(Admin12345!) ->", ok)
+        print("check_password(test-password) ->", ok)
 
 
 if __name__ == "__main__":
     main()
+

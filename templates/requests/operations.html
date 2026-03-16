@@ -52,6 +52,19 @@
         </div>
       </div>
     </div>
+    <div class="col-md-3">
+      <div class="card shadow-sm p-3 text-center h-100">
+        <h6 class="mb-1">{{ _("Structure health") }}</h6>
+        <h2 class="mb-1">{{ health_score }}</h2>
+        {% if health_score >= 80 %}
+        <span class="badge bg-success">{{ _("Healthy") }}</span>
+        {% elif health_score >= 50 %}
+        <span class="badge bg-warning">{{ _("Warning") }}</span>
+        {% else %}
+        <span class="badge bg-danger">{{ _("At risk") }}</span>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
   <div class="card">

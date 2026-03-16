@@ -1,30 +1,62 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • Structures | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="hc-admin-wrap">
   <div class="hc-card mb-3">
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">Structures</h1>
-        <div class="hc-muted">Gestion des structures (Phase 1)</div>
+        <div class="hc-muted">Organisations utilisant la plateforme</div>
       </div>
       <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_structure_new') }}">Créer</a>
     </div>
   </div>
 
-  <div class="hc-card">
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-4">
+        <div class="text-muted small">Structures</div>
+        <div class="h4 mb-0">{{ structures|length }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-4">
+        <div class="text-muted small">Utilisateurs</div>
+        <div class="h4 mb-0">—</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-4">
+        <div class="text-muted small">Demandes</div>
+        <div class="h4 mb-0">—</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-3">
+      <div class="card shadow-sm p-4">
+        <div class="text-muted small">Dernière activité</div>
+        <div class="h4 mb-0">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card shadow-sm p-4">
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+      <div class="input-group" style="max-width: 320px;">
+        <span class="input-group-text">🔎</span>
+        <input type="text" class="form-control" placeholder="Rechercher une structure..." aria-label="Rechercher une structure">
+      </div>
+    </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table mb-0">
         <thead>
           <tr>
-            <th>Nom</th>
+            <th>Structure</th>
             <th>Slug</th>
-            <th>ID</th>
+            <th>Users</th>
+            <th>Requests</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -33,14 +65,18 @@
           <tr>
             <td class="small">{{ st.name }}</td>
             <td class="small text-muted">{{ st.slug }}</td>
-            <td class="small text-muted">{{ st.id }}</td>
+            <td class="small text-muted">—</td>
+            <td class="small text-muted">—</td>
+            <td>
+              <span class="badge bg-success">Actif</span>
+            </td>
             <td>
               <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_structure_detail', structure_id=st.id) }}">Voir</a>
             </td>
           </tr>
           {% endfor %}
           {% if structures|length == 0 %}
-          <tr><td colspan="4" class="text-center text-muted py-4">Aucune structure.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-4">Aucune structure.</td></tr>
           {% endif %}
         </tbody>
       </table>

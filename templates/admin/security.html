@@ -1,11 +1,8 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Security overview') }} | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div class="hc-admin-wrap">
   <div class="hc-card mb-3">
     <div class="hc-row hc-admin-headerTop">
@@ -35,8 +32,20 @@
     </div>
     <div class="col-12 col-md-6 col-xl-3">
       <div class="hc-card p-3">
-        <div class="hc-muted small">{{ _('Lockout buckets (24h)') }}</div>
-        <div class="h3 mb-0">{{ kpis.lockout_buckets_24h }}</div>
+        <div class="hc-muted small">{{ _('Suspicious IPs (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.distinct_failed_ips_24h }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="hc-card p-3">
+        <div class="hc-muted small">{{ _('Suspicious usernames (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.distinct_failed_usernames_24h }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6 col-xl-3">
+      <div class="hc-card p-3">
+        <div class="hc-muted small">{{ _('Denied actions (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.denied_24h }}</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
@@ -47,8 +56,8 @@
     </div>
     <div class="col-12 col-md-6 col-xl-3">
       <div class="hc-card p-3">
-        <div class="hc-muted small">{{ _('Denied actions (24h)') }}</div>
-        <div class="h3 mb-0">{{ kpis.denied_24h }}</div>
+        <div class="hc-muted small">{{ _('Lockout buckets (24h)') }}</div>
+        <div class="h3 mb-0">{{ kpis.lockout_buckets_24h }}</div>
       </div>
     </div>
   </div>
@@ -247,6 +256,74 @@
                 </tr>
               {% endfor %}
               {% if recent_risky|length == 0 %}
+                <tr><td colspan="4" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-xl-6">
+      <div class="hc-card">
+        <div class="p-3 border-bottom"><strong>{{ _('Recent denied actions') }}</strong></div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr>
+                <th>{{ _('Time') }}</th>
+                <th>{{ _('Admin') }}</th>
+                <th>{{ _('Action') }}</th>
+                <th>{{ _('Target') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in recent_denied %}
+                <tr>
+                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small">{{ row.admin_username or ("#" ~ row.admin_user_id) }}</td>
+                  <td><span class="badge text-bg-secondary">{{ row.action }}</span></td>
+                  <td class="small">{{ row.target_type }} #{{ row.target_id }}</td>
+                </tr>
+              {% endfor %}
+              {% if recent_denied|length == 0 %}
+                <tr><td colspan="4" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-6">
+      <div class="hc-card">
+        <div class="p-3 border-bottom"><strong>{{ _('Recent sensitive admin events') }}</strong></div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr>
+                <th>{{ _('Time') }}</th>
+                <th>{{ _('Admin') }}</th>
+                <th>{{ _('Action') }}</th>
+                <th>{{ _('Target') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in recent_sensitive %}
+                <tr>
+                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small">{{ row.admin_username or ("#" ~ row.admin_user_id) }}</td>
+                  <td><span class="badge text-bg-secondary">{{ row.action }}</span></td>
+                  <td class="small">
+                    {{ row.target_type }} #{{ row.target_id }}
+                    {% if row.target_type == "Request" %}
+                      <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=row.target_id) }}">{{ _('view') }}</a>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              {% if recent_sensitive|length == 0 %}
                 <tr><td colspan="4" class="text-muted text-center py-3">{{ _('No data') }}</td></tr>
               {% endif %}
             </tbody>

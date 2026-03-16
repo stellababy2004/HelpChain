@@ -589,94 +589,83 @@
             {% if current_user.is_authenticated %}
               {% if admin_logged_in %}
                 {% set admin_role = (current_user.role or '')|lower %}
-                {% set operator_nav_only = admin_role in ['ops', 'readonly'] %}
-                {% set admin_full_nav = admin_role in ['admin', 'superadmin'] %}
-                {% set admin_ops_active = ep in ['admin.admin_operator_dashboard', 'admin.admin_cases_list', 'admin.admin_requests', 'admin.admin_notifications_list', 'admin.admin_dashboard', 'admin.admin_dashboard_redirect', 'admin.admin_ops', 'risk_api.professionals_map_page', 'admin.admin_risk_map', 'admin.admin_risk_panel', 'ops.ops_workspace', 'ops.ops_cases_list', 'ops.ops_notifications_list'] %}
-                {% set admin_governance_active = ep in ['admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_pro_access_list'] or ep.startswith('admin.admin_pro_access_') %}
-                {% set admin_platform_active = ep in ['admin.admin_security', 'admin.admin_translations_list'] or ep.startswith('admin.admin_translations_') %}
+                {% set is_admin_role = admin_role in ['admin', 'superadmin'] %}
+                {% set is_operator_role = admin_role in ['ops', 'readonly'] %}
+                {% set is_structure_admin = is_admin_role and current_user.structure_id %}
+                {% set is_global_admin = is_admin_role and not current_user.structure_id %}
+                {% set show_platform_admin = is_global_admin %}
+                {% set show_structure_admin = is_structure_admin %}
+                {% set show_ops_console = is_operator_role or is_structure_admin or is_global_admin %}
+                {% set ops_active = ep in ['ops.ops_workspace', 'ops.ops_cases_list', 'ops.ops_notifications_list', 'risk_api.professionals_map_page', 'admin.admin_risk_map'] or ep.startswith('social_requests.') %}
+                {% set platform_admin_active = ep in ['admin.admin_structures', 'admin.admin_volunteers', 'admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_security'] %}
+                {% set structure_admin_active = ep in ['admin.admin_requests', 'admin.admin_ops', 'admin.admin_risk_panel'] or ep.startswith('admin.admin_structure_') %}
+
+                {% if show_platform_admin %}
                 <li class="nav-item dropdown">
-                  <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if admin_ops_active else '' }}"
+                  <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if platform_admin_active else '' }}"
                      href="#"
-                     id="adminOpsDropdown"
+                     id="adminConsoleDropdown"
                      role="button"
                      data-bs-toggle="dropdown"
                      aria-expanded="false"
-                     {% if admin_ops_active %}aria-current="page"{% endif %}>
-                    {{ _('Pilotage') }}
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminOpsDropdown">
-                    {% if operator_nav_only %}
-                      <li><a class="dropdown-item {{ 'active' if ep in ['ops.ops_workspace', 'admin.admin_operator_dashboard'] else '' }}" href="{{ url_for('ops.ops_workspace') }}">{{ _('Tableau opérateur') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep in ['ops.ops_cases_list', 'admin.admin_cases_list'] else '' }}" href="{{ url_for('ops.ops_cases_list') }}">{{ _('Cas') }}</a></li>
-                      <li><a class="dropdown-item hc-nav-notifications {{ 'active' if ep in ['ops.ops_notifications_list', 'admin.admin_notifications_list'] else '' }}" href="{{ url_for('ops.ops_notifications_list') }}">{{ _('Notifications') }}</a></li>
-                    {% else %}
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_operator_dashboard' else '' }}" href="{{ url_for('admin.admin_operator_dashboard') }}">{{ _('Tableau opérateur') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_dashboard', 'admin.admin_dashboard_redirect'] else '' }}" href="{{ url_for('admin.admin_dashboard') }}">{{ _('Tableau de bord') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_cases_list' else '' }}" href="{{ url_for('admin.admin_cases_list') }}">{{ _('Cas') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_ops' else '' }}" href="{{ url_for('admin.admin_ops') }}">{{ _('Indicateurs') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'risk_api.professionals_map_page' else '' }}" href="{{ url_for('risk_api.professionals_map_page') }}">{{ _('Carte des professionnels') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_map' else '' }}" href="{{ url_for('admin.admin_risk_map') }}">{{ _('Carte des risques') }}</a></li>
-                      <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_panel' else '' }}" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Analyse des risques') }}</a></li>
-                      <li><a class="dropdown-item hc-nav-notifications {{ 'active' if ep == 'admin.admin_notifications_list' else '' }}" href="{{ url_for('admin.admin_notifications_list') }}">{{ _('Notifications') }}</a></li>
-                    {% endif %}
-                  </ul>
-                </li>
-                {% if admin_full_nav %}
-                <li class="nav-item dropdown">
-                  <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if admin_governance_active else '' }}"
-                     href="#"
-                     id="adminGovernanceDropdown"
-                     role="button"
-                     data-bs-toggle="dropdown"
-                     aria-expanded="false"
-                     {% if admin_governance_active %}aria-current="page"{% endif %}>
-                    {{ _('Gouvernance') }}
-                  </a>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminGovernanceDropdown">
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Accès & rôles') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('Suivi SLA') }}</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_audit' else '' }}" href="{{ url_for('admin.admin_audit') }}">{{ _('Audit') }}</a></li>
-                    {% if HC_PRO_ACCESS_AVAILABLE %}
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_pro_access_list' or ep.startswith('admin.admin_pro_access_') else '' }}" href="{{ url_for('admin.admin_pro_access_list') }}">{{ _('Accès Pro') }}</a></li>
-                    {% endif %}
-                  </ul>
-                </li>
-                {% endif %}
-                {% if admin_full_nav %}
-                <li class="nav-item">
-                  <a class="nav-link nav-link--secondary {{ 'active' if ep == 'admin.admin_professional_leads' or ep.startswith('admin.admin_professional_lead') else '' }}"
-                     href="{{ url_for('admin.admin_professional_leads') }}"
-                     {% if ep == 'admin.admin_professional_leads' or ep.startswith('admin.admin_professional_lead') %}aria-current="page"{% endif %}>
-                    Leads Pro
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link nav-link--secondary {{ 'active' if ep == 'social_requests.operations' else '' }}"
-                     href="{{ url_for('social_requests.operations') }}"
-                     {% if ep == 'social_requests.operations' %}aria-current="page"{% endif %}>
-                    {{ _('Tarifs') }}
-                  </a>
-                </li>
-                {% endif %}
-                {% if admin_full_nav %}
-                <li class="nav-item dropdown">
-                  <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if admin_platform_active else '' }}"
-                     href="#"
-                     id="adminPlatformDropdown"
-                     role="button"
-                     data-bs-toggle="dropdown"
-                     aria-expanded="false"
-                     {% if admin_platform_active %}aria-current="page"{% endif %}>
+                     {% if platform_admin_active %}aria-current="page"{% endif %}>
                     {{ _('Plateforme') }}
                   </a>
-                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminPlatformDropdown">
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_security' else '' }}" href="{{ url_for('admin.admin_security') }}">{{ _('Administration') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_security' else '' }}" href="{{ url_for('admin.admin_security') }}#sending">{{ _('Envois') }}</a></li>
-                    <li><button type="button" class="dropdown-item" id="hcAdminAudioNavTrigger" data-hc-a11y-open-audio="true">{{ _('Audio') }}</button></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_translations_list' or ep.startswith('admin.admin_translations_') else '' }}" href="{{ url_for('admin.admin_translations_list') }}">{{ _('Traductions') }}</a></li>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminConsoleDropdown">
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_structures' or ep.startswith('admin.admin_structure_') else '' }}" href="{{ url_for('admin.admin_structures') }}">{{ _('Structures') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_intervenants', 'admin.admin_volunteers'] else '' }}" href="{{ url_for('admin.admin_intervenants') }}">{{ _('Intervenants') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Roles') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('SLA') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_audit' else '' }}" href="{{ url_for('admin.admin_audit') }}">{{ _('Audit') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_security' else '' }}" href="{{ url_for('admin.admin_security') }}">{{ _('Paramètres') }}</a></li>
+                  </ul>
+                </li>
+                {% endif %}
+
+                {% if show_structure_admin %}
+                <li class="nav-item dropdown">
+                  <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if structure_admin_active else '' }}"
+                     href="#"
+                     id="structureAdminDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false"
+                     {% if structure_admin_active %}aria-current="page"{% endif %}>
+                    {{ _('Structure') }}
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="structureAdminDropdown">
+                    <li>
+                      <a class="dropdown-item {{ 'active' if ep.startswith('admin.admin_structure_') else '' }}"
+                         href="{{ url_for('admin.admin_structure_detail', structure_id=current_user.structure_id) }}">
+                        {{ _('Tableau structure') }}
+                      </a>
+                    </li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_ops' else '' }}" href="{{ url_for('admin.admin_ops') }}">{{ _('Santé') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_panel' else '' }}" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Alertes') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_intervenants', 'admin.admin_volunteers'] else '' }}" href="{{ url_for('admin.admin_intervenants') }}">{{ _('Intervenants') }}</a></li>
+                  </ul>
+                </li>
+                {% endif %}
+
+                {% if show_ops_console %}
+                <li class="nav-item dropdown">
+                  <a class="nav-link nav-link--secondary dropdown-toggle {{ 'active' if ops_active else '' }}"
+                     href="#"
+                     id="opsConsoleDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false"
+                     {% if ops_active %}aria-current="page"{% endif %}>
+                    {{ _('Operations') }}
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="opsConsoleDropdown">
+                    <li><a class="dropdown-item {{ 'active' if ep == 'ops.ops_workspace' else '' }}" href="{{ url_for('ops.ops_workspace') }}">{{ _('Tableau opérateur') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep in ['social_requests.list_requests', 'social_requests.dashboard'] else '' }}" href="{{ url_for('social_requests.list_requests') }}">{{ _('Demandes') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'ops.ops_cases_list' else '' }}" href="{{ url_for('ops.ops_cases_list') }}">{{ _('Cas') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'risk_api.professionals_map_page' else '' }}" href="{{ url_for('risk_api.professionals_map_page') }}">{{ _('Carte des professionnels') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_map' else '' }}" href="{{ url_for('admin.admin_risk_map') }}">{{ _('Carte des risques') }}</a></li>
+                    <li><a class="dropdown-item hc-nav-notifications {{ 'active' if ep == 'ops.ops_notifications_list' else '' }}" href="{{ url_for('ops.ops_notifications_list') }}">{{ _('Notifications') }}</a></li>
                   </ul>
                 </li>
                 {% endif %}
@@ -770,6 +759,7 @@
           {% endif %}
           {% endif %}
           <!-- Search + actions -->
+          {% if not hide_topbar_search %}
           <form class="hc-nav-search ms-2 hc-topbar-search" action="{{ url_for('main.search') }}" method="get" role="search">
             <div class="hc-nav-search__box">
               <input
@@ -786,6 +776,7 @@
               </button>
             </div>
           </form>
+          {% endif %}
           {% if not is_any_logged_in %}
           {% endif %}
 
@@ -796,7 +787,7 @@
             'main.become_volunteer', 'main.volunteer_login', 'main.faq', 'main.contact'
           ] %}
           {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}
-          {% if show_nav_chrome and config.DEBUG %}
+          {% if show_nav_chrome and config.DEBUG and not disable_nav_chrome %}
           <div class="d-flex align-items-center ms-2 hc-topbar-actions">
             <span
               id="hcServerIndicator"
@@ -927,6 +918,7 @@
 
     <main id="main-content" class="hc-main-content">{% block content %}{% endblock %}</main>
 
+    {% if not disable_a11y %}
     <button
       type="button"
       id="hcA11yBtn"
@@ -1439,6 +1431,7 @@
         </div>
       </div>
     </div>
+    {% endif %}
 
     <!-- Footer -->
     <footer class="hc-footer hc-footer-institutional mt-auto" role="contentinfo">
@@ -1503,6 +1496,7 @@
       </div>
     </footer>
     <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
+    {% if not disable_a11y %}
     <div
       id="hcA11ySelectionAudioToolbar"
       class="hc-a11y-selection-audio"
@@ -1517,6 +1511,7 @@
         {{ _('Stop') }}
       </button>
     </div>
+    {% endif %}
 
     <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>

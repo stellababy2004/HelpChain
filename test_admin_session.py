@@ -10,7 +10,7 @@ def test_admin_session_persistence():
     """Test that session persists between login and dashboard access"""
     with app.test_client() as client:
         # Test login with correct credentials
-        expected_password = os.getenv("ADMIN_PASSWORD", "Admin123")
+        expected_password = os.getenv("ADMIN_PASSWORD", "test-password")
         print(f"Using password: {expected_password}")
 
         # First ensure admin exists
@@ -74,3 +74,4 @@ if __name__ == "__main__":
         print("\n🎉 Session persistence is working correctly!")
     else:
         print("\n❌ Session persistence test failed")
+

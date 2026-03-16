@@ -28,15 +28,16 @@ def test_bulk_actions_dropdown_has_expected_options(admin_login):
     options = [o.strip() for o in _extract_bulk_actions(html) if o.strip()]
 
     expected = [
-        "Bulk action",
+        "Action groupée",
+        "Claim ownership (me)",
         "Open selected",
-        "Copy IDs",
-        "Copy links",
-        "Nudge selected volunteers",
-        "Set status: Pending",
-        "Set status: In progress",
-        "Set status: Done",
-        "Set status: Rejected",
+        "Copier les identifiants",
+        "Copier les liens",
+        "Nudge selected bénévoles",
+        "Set statut : Pending",
+        "Set statut : In progress",
+        "Set statut : Done",
+        "Set statut : Rejected",
     ]
 
     for label in expected:

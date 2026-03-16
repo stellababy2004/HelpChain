@@ -26,7 +26,7 @@ def test_analytics_access():
     session = requests.Session()
 
     # For now, assume no CSRF - try direct login
-    login_data = {"username": "admin", "password": "Admin123"}
+    login_data = {"username": "admin", "password": "test-password"}
 
     login_response = session.post(
         f"{base_url}/admin/login", data=login_data, allow_redirects=False
@@ -79,3 +79,4 @@ def test_analytics_access():
 
 if __name__ == "__main__":
     test_analytics_access()
+

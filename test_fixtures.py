@@ -3,9 +3,20 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _set_test_env(monkeypatch):
+    import os
+
     monkeypatch.setenv("HC_ENV", "test")
     monkeypatch.setenv("HELPCHAIN_TESTING", "1")
     monkeypatch.setenv("HC_DEFAULT_STRUCTURE_SLUG", "default")
+    # Ensure admin test passwords satisfy policy (upper/lower/digit).
+    monkeypatch.setenv("TEST_ADMIN_PASSWORD", "TestPassword1")
+    monkeypatch.setenv("ADMIN_PASSWORD", "TestPassword1")
+    monkeypatch.setenv("ADMIN_USER_PASSWORD", "TestPassword1")
+    tmp_root = os.path.join(os.getcwd(), ".tmp")
+    os.makedirs(tmp_root, exist_ok=True)
+    monkeypatch.setenv("TMPDIR", tmp_root)
+    monkeypatch.setenv("TEMP", tmp_root)
+    monkeypatch.setenv("TMP", tmp_root)
 
 
 @pytest.fixture
@@ -187,6 +198,10 @@ def authenticated_admin_client(app, session, init_test_data, db_schema):
             )
             session.add(admin)
             session.commit()
+        else:
+            admin.role = "admin"
+            admin.is_active = True
+            session.commit()
         admin_id = getattr(admin, "id", None)
     except Exception:
         admin_id = 1
@@ -220,12 +235,16 @@ def mock_ai_service(monkeypatch):
 
 
 @pytest.fixture
-def mock_smtp(mocker):
+def mock_smtp(monkeypatch):
     """Legacy fixture expected by route tests."""
+    from unittest.mock import MagicMock
+
     try:
-        return mocker.patch("backend.appy.mail.send")
+        mock_send = MagicMock()
+        monkeypatch.setattr("backend.appy.mail.send", mock_send)
+        return mock_send
     except Exception:
-        return mocker.MagicMock()
+        return MagicMock()
 
 
 @pytest.fixture

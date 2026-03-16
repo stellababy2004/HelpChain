@@ -7,7 +7,7 @@ class TestErrorHandling:
 
         assert response.status_code == 404
         assert b"404" in response.data
-        assert "Страницата не е намерена".encode() in response.data
+        assert (b"Page not found." in response.data) or (b"No results found." in response.data)
 
     def test_404_error_json_response(self, client):
         """Тест за 404 грешка с JSON отговор за API"""
@@ -96,17 +96,17 @@ class TestErrorHandling:
 
             assert templates_exist, "Error templates трябва да съществуват"
 
-    def test_error_pages_have_bulgarian_content(self, app):
-        """Тест че error страниците съдържат български текст"""
+    def test_error_pages_have_expected_content(self, app):
+        """Тест че error страниците съдържат очаквания текст"""
         with app.test_request_context():
             from flask import render_template
 
             template_404 = render_template("errors/404.html")
             template_500 = render_template("errors/500.html")
 
-            # Проверяваме за български текст
-            assert "Страницата не е намерена" in template_404 or "404" in template_404
-            assert "Вътрешна грешка" in template_500 or "500" in template_500
+            # Проверяваме за основен текст (френски/английски)
+            assert ("Page not found." in template_404) or ("No results found." in template_404) or ("404" in template_404)
+            assert ("Internal Server Error" in template_500) or ("Erreur interne" in template_500) or ("500" in template_500)
 
     def test_error_handlers_dont_break_normal_routes(self, client):
         """Тест че error handlers не пречат на нормалните routes"""

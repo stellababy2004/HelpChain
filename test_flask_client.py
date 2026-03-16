@@ -22,7 +22,7 @@ def test_admin_login():
             "/admin/login",
             data={
                 "username": "admin",
-                "password": "Admin123",  # pragma: allowlist secret
+                "password": "test-password",  # pragma: allowlist secret
             },  # pragma: allowlist secret
             follow_redirects=True,
         )
@@ -49,3 +49,4 @@ def test_admin_login():
 
 if __name__ == "__main__":
     test_admin_login()
+

@@ -67,7 +67,7 @@ def test_risk_decays_after_notification_open(app, session):
     session.commit()
 
     query_before, _status, _q, _risk = build_requests_query(
-        Request.query, {"risk": "notseen"}
+        Request.query, {"risk": "notseen"}, legacy=True
     )
     ids_before = [r.id for r in query_before.all()]
     assert req.id in ids_before
@@ -90,7 +90,7 @@ def test_risk_decays_after_notification_open(app, session):
     assert s2.seen_at is not None
 
     query_after, _status, _q, _risk = build_requests_query(
-        Request.query, {"risk": "notseen"}
+        Request.query, {"risk": "notseen"}, legacy=True
     )
     ids_after = [r.id for r in query_after.all()]
     assert req.id not in ids_after

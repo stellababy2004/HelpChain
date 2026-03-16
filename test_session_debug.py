@@ -34,7 +34,7 @@ def test_admin_login_session():
 
     # Step 2: Attempt login
     print("\n2. Attempting admin login...")
-    login_data = {"username": "admin", "password": "Admin123"}
+    login_data = {"username": "admin", "password": "test-password"}
 
     try:
         response = session.post(
@@ -132,3 +132,4 @@ if __name__ == "__main__":
         print("\n✅ Session persistence test PASSED")
     else:
         print("\n❌ Session persistence test FAILED")
+

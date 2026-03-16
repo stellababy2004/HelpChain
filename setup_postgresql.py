@@ -168,11 +168,11 @@ with app.app_context():
         admin = AdminUser.query.filter_by(username='admin').first()
         if not admin:
             admin = AdminUser(username='admin')
-            admin.set_password('Admin123')
+            admin.set_password('test-password')
             from backend.extensions import db
             db.session.add(admin)
             db.session.commit()
-            print("✅ Default admin user created (admin/Admin123)")
+            print("✅ Default admin user created (admin/test-password)")
         else:
             print("✅ Default admin user already exists")
 
@@ -226,3 +226,4 @@ with app.app_context():
 if __name__ == "__main__":
     success = setup_postgresql_deployment()
     sys.exit(0 if success else 1)
+

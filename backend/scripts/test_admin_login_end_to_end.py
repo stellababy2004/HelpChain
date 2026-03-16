@@ -52,7 +52,7 @@ def main():
 
     data = {
         "username": "admin",
-        "password": "Admin12345!",
+        "password": "test-password",
     }
     if csrf:
         data["csrf_token"] = csrf
@@ -98,3 +98,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

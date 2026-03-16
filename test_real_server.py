@@ -15,7 +15,7 @@ def test_real_server():
 
         # Test login
         print("Testing login...")
-        login_data = {"username": "admin", "password": "Admin123"}
+        login_data = {"username": "admin", "password": "test-password"}
         response = session.post(
             "http://localhost:8000/admin/login", data=login_data, allow_redirects=False
         )
@@ -53,3 +53,4 @@ def test_real_server():
 
 if __name__ == "__main__":
     test_real_server()
+

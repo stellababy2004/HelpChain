@@ -2,7 +2,7 @@ import os
 
 from backend.models import AdminAuditEvent, AdminUser
 
-TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "test-password")
+TEST_ADMIN_PASSWORD = os.environ.get("TEST_ADMIN_PASSWORD", "TestPassword1")
 
 
 def _ensure_admin_user(session, username: str, password: str) -> AdminUser:

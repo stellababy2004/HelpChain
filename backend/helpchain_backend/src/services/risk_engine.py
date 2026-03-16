@@ -1,160 +1,71 @@
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
 
-from sqlalchemy import event
-
-from ..models import Request
-
-RISK_STANDARD = "standard"
-RISK_ATTENTION = "attention"
-RISK_CRITICAL = "critical"
-
-_RISK_HOOKS_INSTALLED = False
+from backend.extensions import db
+from backend.helpchain_backend.src.models import Case, CaseEvent
+from backend.models import Assignment
 
 
-def _add_signal(signals: list[str], signal: str) -> None:
-    if signal and signal not in signals:
-        signals.append(signal)
+def _as_naive_utc(dt):
+    if dt is None:
+        return None
+    if getattr(dt, "tzinfo", None) is not None:
+        return dt.replace(tzinfo=None)
+    return dt
 
 
-def _contains_any(text: str, keywords: list[str]) -> bool:
-    if not text:
-        return False
-    haystack = text.lower()
-    return any(keyword.lower() in haystack for keyword in keywords)
+def _risk_level(score: float) -> str:
+    if score >= 15:
+        return "high"
+    if score >= 5:
+        return "medium"
+    return "low"
 
 
-def compute_request_risk(request_obj) -> dict:
-    """
-    Rule-based AI Social Risk Engine v1.
-    AI-assisted, not AI-decided.
-    """
-    score = 0
-    signals: list[str] = []
+def compute_case_risk(case_id: int) -> dict | None:
+    case = db.session.get(Case, int(case_id))
+    if not case:
+        return None
 
-    description = " ".join(
-        [
-            getattr(request_obj, "title", "") or "",
-            getattr(request_obj, "description", "") or "",
-            getattr(request_obj, "category", "") or "",
-            getattr(request_obj, "subcategory", "") or "",
-        ]
-    ).strip()
+    created_at = _as_naive_utc(getattr(case, "created_at", None))
+    now = datetime.now(UTC).replace(tzinfo=None)
+    days_open = int(max((now - created_at).days, 0)) if created_at else 0
 
-    if _contains_any(
-        description,
-        ["sante", "santé", "health", "medical", "médical", "traitement", "urgence medicale", "urgence médicale"],
-    ):
-        score += 25
-        _add_signal(signals, "sante")
-
-    if _contains_any(
-        description,
-        ["violence", "danger", "agression", "abuse", "maltraitance", "unsafe"],
-    ):
-        score += 35
-        _add_signal(signals, "violence")
-
-    if _contains_any(
-        description,
-        ["logement", "sans abri", "hebergement", "hébergement", "expulsion", "homeless", "shelter"],
-    ):
-        score += 25
-        _add_signal(signals, "logement")
-
-    if _contains_any(
-        description,
-        ["alimentaire", "nourriture", "faim", "food", "hungry"],
-    ):
-        score += 20
-        _add_signal(signals, "alimentation")
-
-    if _contains_any(
-        description,
-        ["isole", "isolé", "isolement", "sans reseau", "sans réseau", "alone", "isolated"],
-    ):
-        score += 20
-        _add_signal(signals, "isolement")
-
-    if _contains_any(
-        description,
-        ["enfant", "children", "famille monoparentale", "single mother", "single parent"],
-    ):
-        score += 20
-        _add_signal(signals, "famille_vulnerable")
-
-    if _contains_any(
-        description,
-        ["urgent", "urgence", "immediat", "immédiat", "immediate", "asap"],
-    ):
-        score += 20
-        _add_signal(signals, "urgence")
-
-    assigned_volunteer_id = getattr(request_obj, "assigned_volunteer_id", None)
-    owner_id = getattr(request_obj, "owner_id", None) or getattr(
-        request_obj, "assigned_to_user_id", None
+    events_count = (
+        db.session.query(CaseEvent)
+        .filter(CaseEvent.case_id == case.id)
+        .count()
     )
-    if not assigned_volunteer_id and not owner_id:
-        score += 15
-        _add_signal(signals, "no_owner")
 
-    updated_at = getattr(request_obj, "updated_at", None)
-    created_at = getattr(request_obj, "created_at", None)
-    reference_dt = updated_at or created_at
-    if isinstance(reference_dt, datetime):
-        now = datetime.now(UTC)
-        if reference_dt.tzinfo is None:
-            reference_dt = reference_dt.replace(tzinfo=UTC)
-        hours_since_update = (now - reference_dt).total_seconds() / 3600
-        if hours_since_update >= 72:
-            score += 20
-            _add_signal(signals, "not_seen_72h")
-        elif hours_since_update >= 48:
-            score += 15
-            _add_signal(signals, "stale_48h")
+    has_assignment = (
+        db.session.query(Assignment.id)
+        .filter(Assignment.request_id == case.request_id)
+        .first()
+        is not None
+    )
+    no_assignment = not has_assignment
 
-    status = (getattr(request_obj, "status", "") or "").lower()
-    if status in {"new", "pending", "unassigned"}:
-        score += 10
-        _add_signal(signals, f"status_{status}")
-
-    score = min(score, 100)
-    if score >= 70:
-        level = RISK_CRITICAL
-    elif score >= 40:
-        level = RISK_ATTENTION
+    if str(getattr(case, "status", "")).lower() == "closed":
+        score = 0.0
     else:
-        level = RISK_STANDARD
+        score = (days_open * 0.5) + (events_count * 0.3) + (10 if no_assignment else 0)
 
     return {
-        "risk_score": score,
-        "risk_level": level,
-        "risk_signals": signals,
-        "risk_last_updated": datetime.now(UTC),
+        "case_id": case.id,
+        "risk_score": float(round(score, 2)),
+        "risk_level": _risk_level(score),
+        "factors": {
+            "case_age_days": int(days_open),
+            "events_count": int(events_count),
+            "no_assignment": bool(no_assignment),
+        },
     }
 
 
-def apply_request_risk(request_obj) -> None:
-    result = compute_request_risk(request_obj)
-    request_obj.risk_score = result["risk_score"]
-    request_obj.risk_level = result["risk_level"]
-    request_obj.risk_signals = json.dumps(result["risk_signals"], ensure_ascii=False)
-    request_obj.risk_last_updated = result["risk_last_updated"]
-
-
-def register_request_risk_hooks() -> None:
-    global _RISK_HOOKS_INSTALLED
-    if _RISK_HOOKS_INSTALLED:
-        return
-
-    @event.listens_for(Request, "before_insert")
-    def _request_before_insert(mapper, connection, target) -> None:
-        apply_request_risk(target)
-
-    @event.listens_for(Request, "before_update")
-    def _request_before_update(mapper, connection, target) -> None:
-        apply_request_risk(target)
-
-    _RISK_HOOKS_INSTALLED = True
+def register_request_risk_hooks():
+    """
+    Placeholder for future risk hooks.
+    Keeps app factory import stable.
+    """
+    return None

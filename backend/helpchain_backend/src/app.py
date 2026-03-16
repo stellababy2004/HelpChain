@@ -12,6 +12,7 @@ from flask_babel import gettext as babel_gettext
 from flask_login import LoginManager
 from flask_wtf.csrf import generate_csrf
 from werkzeug.middleware.proxy_fix import ProxyFix
+from sqlalchemy.exc import OperationalError, ProgrammingError
 
 try:
     from backend.extensions import babel, csrf, db, mail, migrate
@@ -566,7 +567,17 @@ def create_app(config_object=None) -> Flask:
 
     @app.before_request
     def inject_structure_context():
-        current_structure_id()
+        try:
+            current_structure_id()
+        except (OperationalError, ProgrammingError):
+            # DB not ready yet (e.g., fresh instance without migrations).
+            # Allow request handling to proceed; routes will handle DB errors.
+            try:
+                app.logger.warning(
+                    "[TENANT] structure resolution skipped: DB schema unavailable."
+                )
+            except Exception:
+                pass
 
     # Blueprints
     try:
@@ -611,6 +622,20 @@ def create_app(config_object=None) -> Flask:
         app.register_blueprint(ops_bp)
     except Exception as e:
         app.logger.info("admin blueprint not loaded: %s", e)
+
+    try:
+        from .routes.admin_risk import admin_risk_bp
+
+        app.register_blueprint(admin_risk_bp)
+    except Exception as e:
+        app.logger.info("admin_risk blueprint not loaded: %s", e)
+
+    try:
+        from .routes.admin_map import admin_map_bp
+
+        app.register_blueprint(admin_map_bp)
+    except Exception as e:
+        app.logger.info("admin_map blueprint not loaded: %s", e)
 
     try:
         from backend.admin.ops_api import ops_api

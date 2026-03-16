@@ -7,7 +7,7 @@ def _create_event(session) -> AdminAuditEvent:
     event = AdminAuditEvent(
         admin_user_id=1,
         admin_username="admin",
-        action="request.status_change",
+        action="STATUS_CHANGE",
         target_type="Request",
         target_id=1001,
         ip="127.0.0.1",

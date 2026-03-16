@@ -52,7 +52,7 @@ def test_admin_audit_status_change(authenticated_admin_client, session):
 
     event = (
         session.query(AdminAuditEvent)
-        .filter_by(action="request.status_change", target_type="Request", target_id=req.id)
+        .filter_by(action="STATUS_CHANGE", target_type="Request", target_id=req.id)
         .order_by(AdminAuditEvent.id.desc())
         .first()
     )
@@ -80,7 +80,7 @@ def test_admin_audit_assign_unassign_owner(authenticated_admin_client, session):
 
     assign_event = (
         session.query(AdminAuditEvent)
-        .filter_by(action="request.assign_owner", target_type="Request", target_id=req.id)
+        .filter_by(action="ASSIGN_OPERATOR", target_type="Request", target_id=req.id)
         .order_by(AdminAuditEvent.id.desc())
         .first()
     )

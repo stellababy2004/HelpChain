@@ -97,8 +97,8 @@ class HelpChainTester:
                 self.log_test("Admin authentication", False, "Cannot access login page")
                 return False
 
-            # Try to login with default credentials (admin/admin123)
-            login_data = {"username": "admin", "password": "admin123"}
+            # Try to login with default credentials (admin/test-password)
+            login_data = {"username": "admin", "password": "test-password"}
 
             response = session.post(
                 f"{self.base_url}/admin/login",
@@ -126,7 +126,7 @@ class HelpChainTester:
             session = requests.Session()
 
             # Login
-            login_data = {"username": "admin", "password": "admin123"}
+            login_data = {"username": "admin", "password": "test-password"}
 
             login_response = session.post(
                 f"{self.base_url}/admin/login",
@@ -259,3 +259,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

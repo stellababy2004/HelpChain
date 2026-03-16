@@ -38,7 +38,7 @@ def test_admin_functionality():
         print("2. Testing admin login...")
         login_data = {
             "username": "admin",
-            "password": os.getenv("ADMIN_PASSWORD", "Admin123"),
+            "password": os.getenv("ADMIN_PASSWORD", "test-password"),
         }
         response = session.post(
             f"{base_url}/admin/login", data=login_data, allow_redirects=False
@@ -127,3 +127,4 @@ def test_admin_functionality():
 if __name__ == "__main__":
     success = test_admin_functionality()
     sys.exit(0 if success else 1)
+
