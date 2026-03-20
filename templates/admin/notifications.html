@@ -1,24 +1,6 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Notifications{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page{% endblock %}
-{% block admin_workspace_css %}
-  <style>
-    .hc-notify-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
-    .hc-notify-summary__item { padding: .75rem .9rem; border: 1px solid #e6ecf2; border-radius: 12px; background: #fff; }
-    .hc-notify-summary__label { font-size: .75rem; letter-spacing: .02em; text-transform: uppercase; color: rgba(15, 23, 42, .6); }
-    .hc-notify-summary__value { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-    .hc-notify-table th, .hc-notify-table td { vertical-align: middle; }
-    .hc-notify-table td { padding-top: .45rem; padding-bottom: .45rem; }
-    .hc-notify-col-recipient { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hc-notify-col-error { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    @media (max-width: 991.98px) {
-      .hc-notify-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 575.98px) {
-      .hc-notify-summary { grid-template-columns: 1fr; }
-    }
-  </style>
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
 {% block admin_content %}
 {% set notifications_endpoint = 'ops.ops_notifications_list' if request.path.startswith('/ops') else 'admin.admin_notifications_list' %}
@@ -32,7 +14,7 @@
     </div>
   </div>
 
-  <div class="hc-card mb-3 p-3">
+  <div class="hc-card mb-3 p-3 hc-ops-toolbar-card">
     <div class="hc-notify-summary mb-3">
       <div class="hc-notify-summary__item">
         <div class="hc-notify-summary__label">Pending</div>
@@ -52,8 +34,8 @@
       </div>
     </div>
 
-    <form method="get" class="row g-2 align-items-end">
-      <div class="col-12 col-md-3">
+    <form method="get" class="row g-2 align-items-end hc-ops-filters">
+      <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Status</label>
         <select name="status" class="form-select form-select-sm">
           <option value="">All</option>
@@ -62,7 +44,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Channel</label>
         <select name="channel" class="form-select form-select-sm">
           <option value="">All</option>
@@ -71,24 +53,40 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6 col-xl-3">
         <label class="form-label">Event type</label>
         <input name="event_type" value="{{ event_type }}" class="form-control form-control-sm" placeholder="contact_exchange">
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6 col-xl-3">
         <label class="form-label">Recipient</label>
         <input name="recipient" value="{{ recipient }}" class="form-control form-control-sm" placeholder="email contains">
       </div>
-      <div class="col-12 d-flex gap-2 align-items-center">
+      <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 align-items-center hc-ops-filters__actions">
         <button class="btn btn-primary btn-sm" type="submit">Filter</button>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(notifications_endpoint) }}">Reset</a>
       </div>
     </form>
   </div>
 
-  <div class="hc-card hc-admin-table-shell">
+  <div class="hc-card hc-admin-table-shell hc-ops-table-shell">
+    <div class="hc-card__header">
+      <h2 class="h6 mb-1">Flux de notification</h2>
+      <div class="hc-muted">Suivi des jobs de diffusion avec statut, tentatives et erreurs récentes.</div>
+    </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-notify-table mb-0">
+        <colgroup>
+          <col class="hc-notify-col-id">
+          <col class="hc-notify-col-created">
+          <col class="hc-notify-col-channel">
+          <col class="hc-notify-col-event">
+          <col class="hc-notify-col-recipient-col">
+          <col class="hc-notify-col-status">
+          <col class="hc-notify-col-attempts">
+          <col class="hc-notify-col-next-retry">
+          <col class="hc-notify-col-sent-at">
+          <col class="hc-notify-col-error-col">
+        </colgroup>
         <thead>
           <tr>
             <th>ID</th>
@@ -131,12 +129,23 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="10" class="text-center text-muted py-4">
-                {% if status or channel or event_type or recipient %}
-                  No notification jobs match current filters.
-                {% else %}
-                  No notification jobs found.
-                {% endif %}
+              <td colspan="10" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">
+                    {% if status or channel or event_type or recipient %}
+                      Aucun job ne correspond aux filtres actifs
+                    {% else %}
+                      Aucun job de notification
+                    {% endif %}
+                  </div>
+                  <div class="hc-empty-state__text">
+                    {% if status or channel or event_type or recipient %}
+                      Ajustez ou réinitialisez les filtres pour réafficher le flux opérationnel.
+                    {% else %}
+                      Aucun envoi n’est actuellement en file d’attente, en reprise ou en erreur sur cette instance.
+                    {% endif %}
+                  </div>
+                </div>
               </td>
             </tr>
           {% endfor %}

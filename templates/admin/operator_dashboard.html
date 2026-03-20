@@ -1,12 +1,9 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Centre de commandement risques | Admin{% endblock %}
-{% block body_class %}hc-admin-requests-page hc-ops-workspace-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page hc-ops-workspace-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
-{% block content %}
-<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases hc-ops-console-shell">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
@@ -16,7 +13,7 @@
     </div>
   </div>
 
-  <div class="hc-card mb-3 p-3">
+  <div class="hc-card mb-3 p-3 hc-ops-toolbar-card">
     <div class="hc-ops-summary mb-3">
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Situations urgentes</div>
@@ -48,8 +45,8 @@
     </div>
   </div>
 
-  <div class="hc-card hc-admin-table-shell">
-    <div class="hc-card__header px-3 pt-3">
+  <div class="hc-card hc-admin-table-shell hc-ops-table-shell">
+    <div class="hc-card__header">
       <h2 class="h6 mb-1">À traiter maintenant</h2>
       <div class="hc-muted">Priorités critiques, non assignées, sans action récente.</div>
     </div>
@@ -139,7 +136,7 @@
   </div>
 
   {% if retry_notif_count %}
-    <div class="hc-card mt-3 p-3">
+    <div class="hc-card mt-3 p-3 hc-ops-callout">
       <strong>Notifications en attente de retry :</strong> {{ retry_notif_count }}
       <div class="hc-muted small">Vérifiez SMTP si ce nombre continue à augmenter.</div>
     </div>

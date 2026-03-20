@@ -16,3 +16,9 @@
     {% block admin_content %}{% endblock %}
   </div>
 {% endblock %}
+
+{% block footer %}
+  {% if not request.path.startswith('/ops') %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}

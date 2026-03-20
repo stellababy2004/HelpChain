@@ -1435,6 +1435,7 @@
     </div>
     {% endif %}
 
+    {% block footer %}
     <!-- Footer -->
     <footer class="hc-footer hc-footer-institutional mt-auto" role="contentinfo">
       <div class="container">
@@ -1497,6 +1498,7 @@
         </div>
       </div>
     </footer>
+    {% endblock %}
     <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
     {% if not disable_a11y %}
     <div

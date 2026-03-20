@@ -1,6 +1,6 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Cases{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
 {% block admin_content %}
 {% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <div class="hc-card mb-3 p-3 hc-cases-toolbar-card">
+  <div class="hc-card mb-3 p-3 hc-cases-toolbar-card hc-ops-toolbar-card">
     <div class="hc-risk-overview mb-3">
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None) }}">
         <span class="hc-risk-overview__label">Situations critiques</span>
@@ -34,8 +34,8 @@
         <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
       </a>
     </div>
-    <form method="get" class="row g-2 align-items-end">
-      <div class="col-12 col-md-3">
+    <form method="get" class="row g-2 align-items-end hc-ops-filters">
+      <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Status</label>
         <select name="status" class="form-select form-select-sm">
           <option value="">All</option>
@@ -44,7 +44,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Priority</label>
         <select name="priority" class="form-select form-select-sm">
           <option value="">All</option>
@@ -53,7 +53,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-6 col-xl-3">
         <label class="form-label">Owner</label>
         <select name="owner" class="form-select form-select-sm">
           <option value="">All</option>
@@ -63,7 +63,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Catégorie</label>
         <select name="category" class="form-select form-select-sm">
           <option value="">All</option>
@@ -72,7 +72,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-12 col-md-2">
+      <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Risk</label>
         <select name="risk" class="form-select form-select-sm">
           <option value="">All</option>
@@ -82,8 +82,8 @@
           <option value="low" {% if risk == 'low' %}selected{% endif %}>Low</option>
         </select>
       </div>
-      <div class="col-12 col-md-12 d-flex gap-2 align-items-center">
-        <label class="form-check mb-0">
+      <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 align-items-center hc-ops-filters__actions">
+        <label class="form-check mb-0 hc-ops-filters__toggle">
           <input type="checkbox" class="form-check-input" name="stale" value="1" {% if stale %}checked{% endif %}>
           <span class="form-check-label">Sans action 72h</span>
         </label>
@@ -93,7 +93,11 @@
     </form>
   </div>
 
-  <div class="hc-card hc-admin-table-shell hc-cases-table-shell">
+  <div class="hc-card hc-admin-table-shell hc-cases-table-shell hc-ops-table-shell">
+    <div class="hc-card__header">
+      <h2 class="h6 mb-1">Suivi des cas</h2>
+      <div class="hc-muted">Vue filtrée des situations actives, avec priorité, responsable et dernière action.</div>
+    </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-cases-table mb-0">
         <thead>
@@ -166,7 +170,12 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="6" class="text-center text-muted py-4">Aucune situation prioritaire pour le moment.</td>
+              <td colspan="6" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun cas à afficher</div>
+                  <div class="hc-empty-state__text">Aucune situation ne correspond actuellement aux filtres actifs dans la console opérateur.</div>
+                </div>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

@@ -4113,3 +4113,454 @@ body[data-hc-page^="/ops"] .hc-public-nav-root .dropdown-item.active{
   color:#0f172a;
   font-weight:600;
 }
+
+/* Operator console density pass */
+body.hc-ops-console-page .hc-admin-workspace__content{
+  padding: 18px 18px 30px;
+}
+
+body.hc-ops-console-page .hc-admin-wrap{
+  width: min(1660px, calc(100vw - 22px));
+  max-width: min(1660px, calc(100vw - 22px));
+  margin-left: auto;
+  margin-right: auto;
+  padding: 4px 0 18px;
+}
+
+body.hc-ops-console-page .hc-card{
+  border-radius: 14px;
+}
+
+body.hc-ops-console-page .hc-page-hero{
+  padding: 14px 16px;
+}
+
+body.hc-ops-console-page .hc-admin-headerTop{
+  margin-bottom: 0;
+  align-items: flex-end;
+  gap: 10px 14px;
+}
+
+body.hc-ops-console-page .hc-admin-title{
+  font-size: clamp(1.2rem, 1.05vw + .94rem, 1.42rem);
+  line-height: 1.08;
+}
+
+body.hc-ops-console-page .hc-page-hero .hc-muted{
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+body.hc-ops-console-page .hc-ops-toolbar-card{
+  padding: 14px 16px;
+}
+
+body.hc-ops-console-page .hc-card__header{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  background: linear-gradient(180deg, rgba(248,250,252,.96), rgba(255,255,255,.96));
+}
+
+body.hc-ops-console-page .hc-card__header .h6{
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(15,23,42,.72);
+}
+
+body.hc-ops-console-page .hc-card__header .hc-muted{
+  font-size: 12px;
+}
+
+body.hc-ops-console-page :is(.hc-ops-summary, .hc-notify-summary){
+  display: grid;
+  gap: 8px;
+}
+
+body.hc-ops-console-page .hc-ops-summary{
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+body.hc-ops-console-page .hc-notify-summary{
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.hc-ops-console-page :is(.hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item){
+  min-height: 70px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(15,23,42,.09);
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.92));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+body.hc-ops-console-page :is(.hc-ops-summary__label, .hc-notify-summary__label, .hc-risk-overview__label){
+  display: block;
+  margin-bottom: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(15,23,42,.56);
+}
+
+body.hc-ops-console-page :is(.hc-ops-summary__value, .hc-notify-summary__value, .hc-risk-overview__value){
+  font-size: 1.05rem;
+  line-height: 1.05;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -.02em;
+}
+
+body.hc-ops-console-page .hc-ops-summary__value.is-alert{
+  color: #b42318;
+}
+
+body.hc-ops-console-page .hc-risk-overview{
+  gap: 8px;
+}
+
+body.hc-ops-console-page .hc-risk-overview__item--link:hover{
+  border-color: rgba(37,99,235,.26);
+  box-shadow: 0 10px 18px rgba(15,23,42,.06);
+}
+
+body.hc-ops-console-page .hc-ops-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+body.hc-ops-console-page .hc-ops-actions .btn{
+  min-height: 30px;
+  padding: .3rem .7rem;
+}
+
+body.hc-ops-console-page .hc-ops-filters{
+  --bs-gutter-x: .7rem;
+  --bs-gutter-y: .55rem;
+}
+
+body.hc-ops-console-page .hc-ops-filters .form-label{
+  margin-bottom: .24rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(15,23,42,.58);
+}
+
+body.hc-ops-console-page .hc-ops-filters :is(.form-control, .form-select){
+  min-height: 34px;
+  padding-top: .32rem;
+  padding-bottom: .32rem;
+  font-size: .875rem;
+  border-radius: 10px;
+}
+
+body.hc-ops-console-page .hc-ops-filters__actions{
+  padding-top: 2px;
+  flex-wrap: wrap;
+}
+
+body.hc-ops-console-page .hc-ops-filters__toggle{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 6px;
+}
+
+body.hc-ops-console-page .hc-ops-filters__toggle .form-check-label{
+  font-size: 12px;
+  color: rgba(15,23,42,.72);
+}
+
+body.hc-ops-console-page .hc-admin-table-shell{
+  padding: 0;
+  overflow: hidden;
+}
+
+body.hc-ops-console-page .hc-admin-tablewrap{
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-gutter: stable both-edges;
+}
+
+body.hc-ops-console-page .hc-admin-table{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.hc-ops-console-page .hc-admin-table thead th{
+  position: static;
+  top: auto;
+  padding: .62rem .78rem;
+  font-size: 10.5px;
+  letter-spacing: .07em;
+  background: rgba(248,250,252,.98);
+  box-shadow: inset 0 -1px 0 rgba(15,23,42,.10);
+  white-space: nowrap;
+}
+
+body.hc-ops-console-page .hc-admin-table tbody td{
+  padding: .52rem .78rem;
+  font-size: .875rem;
+  line-height: 1.28;
+  vertical-align: middle;
+}
+
+body.hc-ops-console-page .hc-admin-table tbody tr:nth-child(even) td{
+  background: rgba(248,250,252,.52);
+}
+
+body.hc-ops-console-page .hc-admin-table tbody tr:hover td{
+  background: rgba(239,246,255,.76);
+}
+
+body.hc-ops-console-page .hc-admin-table .badge{
+  font-size: 10.5px;
+  padding: .32em .58em;
+}
+
+body.hc-ops-console-page .hc-admin-table :is(.btn, .btn-sm){
+  min-height: 30px;
+}
+
+body.hc-ops-console-page .hc-empty-state{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 14px;
+  text-align: center;
+}
+
+body.hc-ops-console-page .hc-empty-state__title{
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+body.hc-ops-console-page .hc-empty-state__text{
+  max-width: 52ch;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(15,23,42,.68);
+}
+
+body.hc-ops-console-page .hc-ops-callout{
+  padding: 11px 14px;
+}
+
+body.hc-ops-console-page .hc-ops-queue{
+  min-width: 1060px;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-id{
+  width: 72px;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-request{
+  width: 33%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-city{
+  width: 11%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-priority{
+  width: 11%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-status{
+  width: 10%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-owner{
+  width: 12%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-activity{
+  width: 14%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-col-action{
+  width: 9%;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-title{
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-meta{
+  margin-top: 2px;
+  font-size: 12px;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-cell-priority .badge,
+body.hc-ops-console-page .hc-ops-queue .hc-ops-cell-status .badge{
+  min-width: 74px;
+  text-align: center;
+  justify-content: center;
+}
+
+body.hc-ops-console-page .hc-ops-queue .hc-ops-cell-action .btn{
+  min-width: 82px;
+}
+
+body.hc-ops-console-page .hc-cases-table{
+  min-width: 980px;
+}
+
+body.hc-ops-console-page .hc-cases-table th.case-col,
+body.hc-ops-console-page .hc-cases-table td.case-col{
+  width: 68px;
+}
+
+body.hc-ops-console-page .hc-cases-table th.request-col,
+body.hc-ops-console-page .hc-cases-table td.request-col{
+  width: 34%;
+}
+
+body.hc-ops-console-page .hc-cases-table th.priority-col,
+body.hc-ops-console-page .hc-cases-table td.priority-col{
+  width: 112px;
+}
+
+body.hc-ops-console-page .hc-cases-table th.owner-col,
+body.hc-ops-console-page .hc-cases-table td.owner-col{
+  width: 144px;
+  max-width: 144px;
+}
+
+body.hc-ops-console-page .hc-cases-table th.activity-col,
+body.hc-ops-console-page .hc-cases-table td.activity-col{
+  width: 148px;
+  max-width: 148px;
+}
+
+body.hc-ops-console-page .hc-cases-table th.actions-col,
+body.hc-ops-console-page .hc-cases-table td.actions-col{
+  width: 96px;
+  max-width: 96px;
+}
+
+body.hc-ops-console-page .hc-cases-table .hc-cases-request-sub{
+  font-size: 12px;
+}
+
+body.hc-ops-console-page .hc-cases-table .actions-col .btn{
+  min-width: 72px;
+}
+
+body.hc-ops-console-page .hc-notify-table{
+  min-width: 1120px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-id{
+  width: 66px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-created{
+  width: 118px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-channel{
+  width: 92px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-event{
+  width: 134px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-recipient-col{
+  width: 210px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-status{
+  width: 104px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-attempts{
+  width: 86px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-next-retry{
+  width: 126px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-sent-at{
+  width: 120px;
+}
+
+body.hc-ops-console-page .hc-notify-table .hc-notify-col-error-col{
+  width: 230px;
+}
+
+body.hc-ops-console-page .hc-notify-table :is(.hc-notify-col-recipient, .hc-notify-col-error){
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1280px){
+  body.hc-ops-console-page .hc-ops-summary{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.hc-ops-console-page .hc-notify-summary{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px){
+  body.hc-ops-console-page .hc-ops-filters__actions{
+    justify-content: flex-end;
+    align-self: flex-end;
+    min-height: 34px;
+  }
+}
+
+@media (max-width: 992px){
+  body.hc-ops-console-page .hc-admin-workspace__content{
+    padding: 16px 12px 24px;
+  }
+
+  body.hc-ops-console-page .hc-admin-wrap{
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+  }
+
+  body.hc-ops-console-page .hc-admin-headerTop{
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-ops-console-page .hc-ops-summary,
+  body.hc-ops-console-page .hc-notify-summary,
+  body.hc-ops-console-page .hc-risk-overview{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px){
+  body.hc-ops-console-page .hc-ops-summary,
+  body.hc-ops-console-page .hc-notify-summary,
+  body.hc-ops-console-page .hc-risk-overview{
+    grid-template-columns: 1fr;
+  }
+}
