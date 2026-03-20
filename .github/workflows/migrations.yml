@@ -1,0 +1,26 @@
+name: Migration Safety
+
+on: [push, pull_request]
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install deps
+        run: |
+          pip install -r requirements.txt
+
+      - name: Migration Linter
+        run: |
+          python scripts/migration_linter.py
+
+      - name: Migration Doctor
+        run: |
+          python scripts/migration_doctor.py
+
+      - name: Runtime Estimator
+        run: |
+          python scripts/migration_estimator.py

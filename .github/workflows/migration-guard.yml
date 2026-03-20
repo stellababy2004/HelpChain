@@ -1,0 +1,27 @@
+name: Migration Guard
+
+on:
+  push:
+    paths:
+      - "migrations/**"
+      - "scripts/migration_guard.py"
+
+jobs:
+  migration-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install flask alembic sqlalchemy
+
+      - name: Run Migration Guard
+        run: |
+          python scripts/migration_guard.py
