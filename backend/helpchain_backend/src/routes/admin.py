@@ -5,7 +5,6 @@ import json
 import math
 import os
 import secrets
-import socket
 import threading
 import time
 import re
@@ -205,6 +204,7 @@ _HF_TRANSLATOR_FAILED: set[str] = set()
 _HF_TRANSLATOR_LOCK = threading.Lock()
 _SYSTEM_HEALTH_CACHE = {"expires_at": None, "payload": None}
 _SYSTEM_HEALTH_CACHE_LOCK = threading.Lock()
+_SYSTEM_HEALTH_CACHE_TTL_SECONDS = 2
 
 
 def _table_has_column(table_name: str, column_name: str) -> bool:
@@ -234,16 +234,6 @@ def _table_exists(table_name: str) -> bool:
         exists = False
     _SCHEMA_TABLE_CACHE[table_name] = exists
     return exists
-
-
-def _is_local_tcp_service_available(
-    host: str = "127.0.0.1", port: int = 5000, timeout: float = 0.5
-) -> bool:
-    try:
-        with socket.create_connection((host, port), timeout=timeout):
-            return True
-    except OSError:
-        return False
 
 
 def _collect_db_latency_ms() -> int | None:
@@ -577,36 +567,106 @@ def suggest_best_professional(request_row) -> dict[str, object] | None:
 
 
 def _build_system_health_snapshot() -> dict[str, object]:
-    if psutil is None:
-        raise RuntimeError("psutil_unavailable")
-
     now = datetime.now(UTC).replace(tzinfo=None)
-    memory = psutil.virtual_memory()
-    disk_usage = psutil.disk_usage(current_app.root_path)
-    python_procs = 0
-    flask_running = False
+    queue: dict[str, int | None] = {
+        "pending": 0,
+        "failed_15m": 0,
+        "oldest_pending_min": None,
+    }
+    impacted_cases: list[dict[str, object]] = []
+    errors: dict[str, str] = {}
+    cpu_percent: float | None = None
+    db_latency_ms: int | None = None
 
-    for proc in psutil.process_iter(["name", "cmdline"]):
+    snapshot: dict[str, object] = {
+        "status": "ok",
+        "cpu": None,
+        "ram_used": None,
+        "ram_total": None,
+        "disk": None,
+        "python_procs": None,
+        "flask_running": True,
+        "flask_status": "running",
+        "api_ok": True,
+        "api_status": "online",
+        "db_latency_ms": None,
+        "queue": queue,
+        "system_risk": "unknown",
+        "impacted_cases": impacted_cases,
+        "last_updated_at": now.isoformat(timespec="seconds"),
+        "errors": errors,
+    }
+
+    if psutil is None:
+        errors.update(
+            {
+                "cpu": "psutil_unavailable",
+                "ram": "psutil_unavailable",
+                "disk": "psutil_unavailable",
+                "python_procs": "psutil_unavailable",
+            }
+        )
+    else:
         try:
-            name = (proc.info.get("name") or "").lower()
-            cmdline_parts = proc.info.get("cmdline") or []
-            cmdline = " ".join(cmdline_parts).lower()
-        except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProcess):
-            continue
+            cpu_percent = round(float(psutil.cpu_percent(interval=0.1)), 1)
+            snapshot["cpu"] = cpu_percent
+        except Exception:
+            errors["cpu"] = "cpu_probe_failed"
 
-        if "python" in name or "python" in cmdline:
-            python_procs += 1
+        try:
+            memory = psutil.virtual_memory()
+            snapshot["ram_used"] = int(memory.used / (1024 * 1024))
+            snapshot["ram_total"] = int(memory.total / (1024 * 1024))
+        except Exception:
+            errors["ram"] = "ram_probe_failed"
 
-        if "flask" in cmdline or "gunicorn" in cmdline:
-            flask_running = True
+        try:
+            disk_usage = psutil.disk_usage(current_app.root_path)
+            snapshot["disk"] = int(round(float(disk_usage.percent)))
+        except Exception:
+            errors["disk"] = "disk_probe_failed"
 
-    cpu_percent = round(float(psutil.cpu_percent(interval=0.1)), 1)
-    api_ok = _is_local_tcp_service_available()
+        try:
+            python_procs = 0
+            for proc in psutil.process_iter(["name", "cmdline"]):
+                try:
+                    name = (proc.info.get("name") or "").lower()
+                    cmdline_parts = proc.info.get("cmdline") or []
+                    cmdline = " ".join(cmdline_parts).lower()
+                except (
+                    psutil.AccessDenied,
+                    psutil.NoSuchProcess,
+                    psutil.ZombieProcess,
+                ):
+                    continue
+
+                if "python" in name or "python" in cmdline:
+                    python_procs += 1
+            snapshot["python_procs"] = python_procs
+        except Exception:
+            errors["python_procs"] = "process_probe_failed"
+
     db_latency_ms = _collect_db_latency_ms()
-    queue = _collect_notification_queue_snapshot(now)
+    snapshot["db_latency_ms"] = db_latency_ms
+    if db_latency_ms is None:
+        snapshot["api_ok"] = False
+        snapshot["api_status"] = "degraded"
+        errors["api"] = "db_health_check_failed"
+
+    try:
+        queue = _collect_notification_queue_snapshot(now)
+        snapshot["queue"] = queue
+    except Exception:
+        errors["queue"] = "queue_snapshot_failed"
+
+    try:
+        impacted_cases = _collect_system_health_impacted_cases()
+        snapshot["impacted_cases"] = impacted_cases
+    except Exception:
+        errors["impacted_cases"] = "impacted_cases_unavailable"
 
     score = 0
-    if not api_ok:
+    if not bool(snapshot.get("api_ok")):
         score += 50
 
     if db_latency_ms is None or db_latency_ms > 800:
@@ -621,9 +681,9 @@ def _build_system_health_snapshot() -> dict[str, object]:
     if (queue.get("oldest_pending_min") or 0) > 10:
         score += 20
 
-    if cpu_percent > 85:
+    if cpu_percent is not None and cpu_percent > 85:
         score += 20
-    elif cpu_percent > 70:
+    elif cpu_percent is not None and cpu_percent > 70:
         score += 10
 
     if score >= 50:
@@ -633,20 +693,34 @@ def _build_system_health_snapshot() -> dict[str, object]:
     else:
         system_risk = "low"
 
+    snapshot["status"] = "degraded" if errors else "ok"
+    snapshot["system_risk"] = system_risk
+    return snapshot
+
+
+def _build_system_health_error_snapshot(reason: str) -> dict[str, object]:
+    now = datetime.now(UTC).replace(tzinfo=None)
     return {
-        "status": "ok",
-        "cpu": cpu_percent,
-        "ram_used": int(memory.used / (1024 * 1024)),
-        "ram_total": int(memory.total / (1024 * 1024)),
-        "disk": int(round(float(disk_usage.percent))),
-        "python_procs": python_procs,
-        "flask_running": flask_running,
-        "api_ok": api_ok,
-        "db_latency_ms": db_latency_ms,
-        "queue": queue,
-        "system_risk": system_risk,
-        "impacted_cases": _collect_system_health_impacted_cases(),
+        "status": "error",
+        "cpu": None,
+        "ram_used": None,
+        "ram_total": None,
+        "disk": None,
+        "python_procs": None,
+        "flask_running": True,
+        "flask_status": "running",
+        "api_ok": False,
+        "api_status": "error",
+        "db_latency_ms": None,
+        "queue": {
+            "pending": 0,
+            "failed_15m": 0,
+            "oldest_pending_min": None,
+        },
+        "system_risk": "unknown",
+        "impacted_cases": [],
         "last_updated_at": now.isoformat(timespec="seconds"),
+        "errors": {"snapshot": reason},
     }
 
 

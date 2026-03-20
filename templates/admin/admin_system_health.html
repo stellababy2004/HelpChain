@@ -3,7 +3,12 @@
 {% block admin_body_class %} hc-admin-system-page{% endblock %}
 
 {% block admin_content %}
-<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+<div
+  class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact"
+  data-system-health-root
+  data-endpoint="{{ url_for('admin.admin_system_health_api') }}"
+  data-refresh-ms="2000"
+>
   <div class="hc-card hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
@@ -56,64 +61,9 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
-<script>
-const healthState = document.getElementById("hc-health-state");
-const healthUpdated = document.getElementById("hc-health-updated");
-const cpuEl = document.getElementById("cpu");
-const ramEl = document.getElementById("ram");
-const diskEl = document.getElementById("disk");
-const pythonEl = document.getElementById("python");
-const flaskEl = document.getElementById("flask");
-const apiEl = document.getElementById("api");
-
-function setBadge(el, text, tone) {
-  el.className = `badge ${tone} hc-system-health-badge`;
-  el.innerText = text;
-}
-
-function setHealthFallback() {
-  setBadge(healthState, "Unavailable", "text-bg-warning text-dark");
-  cpuEl.innerText = "N/A";
-  ramEl.innerText = "N/A";
-  diskEl.innerText = "N/A";
-  pythonEl.innerText = "N/A";
-  setBadge(flaskEl, "OFF", "text-bg-danger");
-  setBadge(apiEl, "OFFLINE", "text-bg-danger");
-  healthUpdated.innerText = "unavailable";
-}
-
-async function loadHealth() {
-  try {
-    const response = await fetch("{{ url_for('admin.admin_system_health_api') }}", {
-      credentials: "same-origin",
-      cache: "no-store"
-    });
-    if (!response.ok) {
-      setHealthFallback();
-      return;
-    }
-
-    const data = await response.json();
-    if (data.status !== "ok") {
-      setHealthFallback();
-      return;
-    }
-
-    setBadge(healthState, data.system_risk === "high" ? "High risk" : (data.system_risk === "medium" ? "Watch" : "Healthy"), data.system_risk === "high" ? "text-bg-danger" : (data.system_risk === "medium" ? "text-bg-warning text-dark" : "text-bg-success"));
-    cpuEl.innerText = `${data.cpu ?? 0}%`;
-    ramEl.innerText = `${data.ram_used ?? 0} / ${data.ram_total ?? 0} MB`;
-    diskEl.innerText = `${data.disk ?? 0}%`;
-    pythonEl.innerText = `${data.python_procs ?? 0}`;
-    setBadge(flaskEl, data.flask_running ? "ON" : "OFF", data.flask_running ? "text-bg-success" : "text-bg-danger");
-    setBadge(apiEl, data.api_ok ? "ONLINE" : "OFFLINE", data.api_ok ? "text-bg-success" : "text-bg-danger");
-    healthUpdated.innerText = data.last_updated_at || "just now";
-  } catch (_) {
-    setHealthFallback();
-  }
-}
-
-loadHealth();
-setInterval(loadHealth, 2000);
-</script>
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-system-health.js') }}"></script>
 {% endblock %}
