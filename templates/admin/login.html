@@ -8,94 +8,334 @@
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(207, 222, 240, 0.48), transparent 34%),
+          radial-gradient(circle at top right, rgba(221, 232, 243, 0.42), transparent 30%),
+          linear-gradient(180deg, #f3f7fb 0%, #f7f9fc 52%, #f5f8fb 100%);
+        color: #18324f;
+      }
+
+      .hc-auth-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(1.4rem, 4vw, 2.8rem);
+      }
+
+      .hc-auth-layout {
+        width: min(100%, 1020px);
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 420px);
+        gap: clamp(1.4rem, 3vw, 2.8rem);
+        align-items: center;
+      }
+
+      .hc-auth-intro {
+        max-width: 34rem;
+      }
+
+      .hc-auth-brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        margin-bottom: 1rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #506887;
+      }
+
+      .hc-auth-brand::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(180deg, rgba(63, 108, 170, 0.94), rgba(92, 144, 160, 0.9));
+        box-shadow: 0 0 0 6px rgba(211, 223, 239, 0.64);
+      }
+
+      .hc-auth-title {
+        margin: 0 0 0.9rem;
+        font-size: clamp(2rem, 3vw, 2.8rem);
+        line-height: 1.08;
+        letter-spacing: -0.025em;
+        color: #122a44;
+      }
+
+      .hc-auth-subtitle {
+        margin: 0 0 1.1rem;
+        max-width: 32rem;
+        font-size: 1.02rem;
+        line-height: 1.62;
+        color: #566d89;
+      }
+
+      .hc-auth-trust {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .hc-auth-trust li {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.38rem 0.72rem;
+        border-radius: 999px;
+        border: 1px solid rgba(188, 203, 221, 0.78);
+        background: rgba(255, 255, 255, 0.78);
+        box-shadow:
+          0 8px 18px rgba(15, 23, 42, 0.06),
+          inset 0 1px 0 rgba(255, 255, 255, 0.88);
+        font-size: 0.82rem;
+        color: #3f5877;
+      }
+
+      .hc-auth-panel {
+        border: 1px solid rgba(189, 203, 221, 0.76);
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 252, 0.96));
+        box-shadow:
+          0 18px 40px rgba(15, 23, 42, 0.1),
+          0 6px 14px rgba(148, 163, 184, 0.14);
+        overflow: hidden;
+      }
+
+      .hc-auth-panel__header {
+        padding: 1.4rem 1.5rem 0;
+      }
+
+      .hc-auth-panel__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin: 0 0 0.65rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #60758f;
+      }
+
+      .hc-auth-panel__eyebrow::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(45, 86, 141, 0.84);
+      }
+
+      .hc-auth-panel__title {
+        margin: 0;
+        font-size: 1.5rem;
+        line-height: 1.2;
+        color: #142a43;
+      }
+
+      .hc-auth-panel__copy {
+        margin: 0.5rem 0 0;
+        font-size: 0.94rem;
+        line-height: 1.58;
+        color: #5d728d;
+      }
+
+      .hc-auth-panel__body {
+        padding: 1.35rem 1.5rem 1.5rem;
+      }
+
+      .hc-auth-alerts {
+        margin-bottom: 1rem;
+      }
+
+      .hc-auth-alerts .alert {
+        border-radius: 14px;
+        border-color: rgba(188, 203, 221, 0.8);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      }
+
+      .hc-auth-form .form-label {
+        margin-bottom: 0.45rem;
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #314b69;
+      }
+
+      .hc-auth-form .form-control {
+        min-height: 48px;
+        border-radius: 14px;
+        border-color: #d5dfeb;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+      }
+
+      .hc-auth-form .form-control:focus {
+        border-color: #85a7d4;
+        box-shadow:
+          0 0 0 3px rgba(76, 127, 196, 0.16),
+          inset 0 1px 2px rgba(15, 23, 42, 0.03);
+      }
+
+      .hc-auth-submit {
+        min-height: 50px;
+        border: 1px solid rgba(39, 78, 129, 0.92);
+        border-radius: 14px;
+        background: linear-gradient(180deg, #2e558d 0%, #26466f 100%);
+        box-shadow:
+          0 14px 28px rgba(38, 70, 111, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        font-weight: 700;
+      }
+
+      .hc-auth-submit:hover,
+      .hc-auth-submit:focus-visible {
+        background: linear-gradient(180deg, #2a4d80 0%, #223d61 100%);
+      }
+
+      .hc-auth-back {
+        margin-top: 0.95rem;
+        font-size: 0.88rem;
+        color: #4b6484;
+      }
+
+      .hc-auth-back a {
+        color: #315784;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .hc-auth-back a:hover,
+      .hc-auth-back a:focus-visible {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 991.98px) {
+        .hc-auth-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .hc-auth-intro {
+          max-width: none;
+        }
+      }
+
+      @media (max-width: 575.98px) {
+        .hc-auth-shell {
+          padding: 1rem;
+        }
+
+        .hc-auth-panel__header,
+        .hc-auth-panel__body {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
+        .hc-auth-title {
+          font-size: 1.8rem;
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="card">
-            <div class="card-header bg-danger text-white">
-              <h3 class="text-center">{{ _('Admin login') }}</h3>
-            </div>
-            <div class="card-body">
-              <form method="post" action="{{ url_for('admin.ops_login') }}">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <input type="hidden" name="next" value="{{ next or '' }}">
+    <main class="hc-auth-shell">
+      <div class="hc-auth-layout">
+        <section class="hc-auth-intro" aria-label="HelpChain">
+          <div class="hc-auth-brand">HelpChain</div>
+          <h1 class="hc-auth-title">{{ _('Admin login') }}</h1>
+          <p class="hc-auth-subtitle">
+            Accès sécurisé à l’espace de coordination et de pilotage. Réservé aux équipes autorisées.
+          </p>
+          <ul class="hc-auth-trust" aria-label="Cadre d’accès">
+            <li>Accès structuré</li>
+            <li>Traçabilité</li>
+            <li>Données protégées</li>
+          </ul>
+        </section>
 
-  <!-- Hidden fields to confuse browser autocomplete -->
-  <input type="text" class="d-none" autocomplete="username" aria-hidden="true" />
-  <input type="password" class="d-none" autocomplete="current-password" aria-hidden="true" />
+        <section class="hc-auth-panel" aria-label="{{ _('Admin login') }}">
+          <header class="hc-auth-panel__header">
+            <p class="hc-auth-panel__eyebrow">Espace administration</p>
+            <h2 class="hc-auth-panel__title">{{ _('Admin login') }}</h2>
+            <p class="hc-auth-panel__copy">
+              Utilisez vos identifiants d’administration pour accéder au suivi opérationnel.
+            </p>
+          </header>
 
-  <div class="mb-3">
-    <label for="username" class="form-label">
-      {{ _('Username') }}
-    </label>
-    <input
-      type="text"
-      class="form-control"
-      id="username"
-      name="username"
-      required
-      autocomplete="off"
-      aria-label="{{ _('Username') }}"
-      placeholder="{{ _('Username') }}"
-    />
-  </div>
+          <div class="hc-auth-panel__body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="hc-auth-alerts" aria-live="polite">
+                  {% for category, msg in messages %}
+                    <div class="alert alert-{{ category if category else 'info' }}">{{ msg }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
 
-  <div class="mb-3">
-    <label for="password" class="form-label">
-      {{ _('Password') }}
-    </label>
-    <input
-      type="password"
-      class="form-control"
-      id="password"
-      name="password"
-      required
-      autocomplete="off"
-      aria-label="{{ _('Password') }}"
-      placeholder="{{ _('Password') }}"
-    />
-  </div>
+            <form method="post" action="{{ url_for('admin.ops_login') }}" class="hc-auth-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ next or '' }}">
 
-  <button type="submit" class="btn btn-danger w-100">
-    {{ _('Sign in as admin') }}
-  </button>
-</form>
-              <div class="text-center mt-3">
-                <a href="/">{{ _('Back to site') }}</a>
+              <input type="text" class="d-none" autocomplete="username" aria-hidden="true" />
+              <input type="password" class="d-none" autocomplete="current-password" aria-hidden="true" />
+
+              <div class="mb-3">
+                <label for="username" class="form-label">
+                  {{ _('Username') }}
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  name="username"
+                  required
+                  autocomplete="off"
+                  aria-label="{{ _('Username') }}"
+                  placeholder="{{ _('Username') }}"
+                />
               </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">
+                  {{ _('Password') }}
+                </label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  required
+                  autocomplete="off"
+                  aria-label="{{ _('Password') }}"
+                  placeholder="{{ _('Password') }}"
+                />
+              </div>
+
+              <button type="submit" class="btn hc-auth-submit w-100">
+                {{ _('Sign in as admin') }}
+              </button>
+            </form>
+
+            <div class="hc-auth-back text-center">
+              <a href="{{ url_for('main.index') }}">{{ _('Back to site') }}</a>
             </div>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
-    <script>
-      window.addEventListener("pageshow", function (event) {
-        if (event.persisted) {
-          // Page was restored from bfcache
-          // Re-establish the connection to the extension here
-          console.log(
-            "Page restored from bfcache, re-establishing extension connection.",
-          );
-          // Example: chrome.runtime.connect(...) or chrome.runtime.sendMessage(...)
-        }
-      });
-
-      // Also, handle the initial connection when the page loads normally
-      // ... establish initial extension connection ...
-    </script>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="mt-2">
-          {% for category, msg in messages %}
-            <div class="alert alert-{{ category if category else 'info' }}">{{ msg }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
   </body>
 </html>
 

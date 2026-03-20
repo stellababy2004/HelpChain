@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Sécurité & conformité") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Présentation institutionnelle du cadre de sécurité et de conformité de HelpChain : hébergement européen, protection des données et sécurité opérationnelle.") }}{% endblock %}
+{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : hébergement dans l’Union européenne, protection maîtrisée des données, contrôle des accès et supervision opérationnelle.") }}{% endblock %}
 {% block og_title %}{{ _("Sécurité & conformité") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Sécurité et conformité") }}{% endblock %}
@@ -11,7 +11,7 @@
     <p class="hc-doc-intro__label">{{ _("Conformité") }}</p>
     <h1 class="hc-doc-intro__title">{{ _("Sécurité & conformité") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("HelpChain est conçu comme une infrastructure de coordination des situations sociales, avec un cadre de sécurité et de conformité aligné sur les exigences des usages institutionnels.") }}
+      {{ _("HelpChain est opéré comme une infrastructure de coordination de situations sociales sensibles, avec un cadre de sécurité et de conformité conçu pour des usages institutionnels, associatifs et professionnels.") }}
     </p>
   </header>
 
@@ -19,7 +19,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
       <p class="mb-0">
-        {{ _("La plateforme est opérée dans une logique de continuité de service, de traçabilité et de protection des données. HelpChain s’appuie sur des principes compatibles avec le cadre européen de protection des données personnelles.") }}
+        {{ _("La plateforme est exploitée avec des exigences de continuité, de traçabilité et de maîtrise des accès. Les choix d’architecture et d’exploitation visent à protéger les données personnelles et à maintenir un service stable dans un cadre compatible avec les attentes européennes en matière de conformité.") }}
       </p>
     </div>
   </section>
@@ -28,15 +28,15 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Hébergement des données") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain s’appuie sur une infrastructure cloud sécurisée localisée dans l’Union européenne.") }}
+        {{ _("Les données HelpChain sont hébergées au sein de l’Union européenne, dans des environnements techniques adaptés à un usage professionnel.") }}
       </p>
       <p class="mb-2">
-        {{ _("L’hébergement européen et l’organisation des environnements techniques visent à répondre aux exigences de protection des données applicables aux acteurs publics, associatifs et professionnels.") }}
+        {{ _("L’organisation des environnements, leur supervision et leur séparation répondent à une logique de maîtrise opérationnelle attendue par les acteurs publics, associatifs et professionnels.") }}
       </p>
       <ul class="mb-0">
-        <li>{{ _("Hébergement des données dans l’espace européen") }}</li>
-        <li>{{ _("Infrastructures sécurisées et supervisées") }}</li>
-        <li>{{ _("Référentiel de protection aligné sur les exigences européennes") }}</li>
+        <li>{{ _("Hébergement des données dans l’Union européenne") }}</li>
+        <li>{{ _("Environnements techniques supervisés et administrés") }}</li>
+        <li>{{ _("Cadre d’exploitation aligné sur les exigences européennes de protection") }}</li>
       </ul>
     </div>
   </section>
@@ -45,13 +45,13 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Protection des données") }}</h2>
       <p class="mb-2">
-        {{ _("Le traitement des données personnelles est encadré selon les principes du RGPD, avec une attention particulière portée à la proportionnalité et à la finalité des données utilisées dans les parcours de coordination.") }}
+        {{ _("Le traitement des données personnelles est encadré selon des principes de nécessité, de finalité et de proportionnalité. HelpChain cherche à limiter les données mobilisées à ce qui est utile au traitement et au suivi des situations.") }}
       </p>
       <ul class="mb-0">
-        <li>{{ _("Minimisation des données traitées") }}</li>
-        <li>{{ _("Accès restreints aux personnes habilitées") }}</li>
-        <li>{{ _("Journalisation des actions sensibles") }}</li>
-        <li>{{ _("Traçabilité des opérations de pilotage") }}</li>
+        <li>{{ _("Collecte limitée aux informations nécessaires au service") }}</li>
+        <li>{{ _("Accès réservés aux personnes autorisées selon leur rôle") }}</li>
+        <li>{{ _("Journalisation des actions sensibles et des consultations critiques") }}</li>
+        <li>{{ _("Traçabilité des opérations de pilotage et d’administration") }}</li>
       </ul>
     </div>
   </section>
@@ -60,13 +60,13 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Sécurité opérationnelle") }}</h2>
       <p class="mb-2">
-        {{ _("Des mesures techniques et organisationnelles sont mises en œuvre pour soutenir le cadre opérationnel de la plateforme.") }}
+        {{ _("La sécurité opérationnelle repose sur des mesures techniques et organisationnelles destinées à préserver la confidentialité des informations, à détecter les anomalies et à soutenir la continuité du service.") }}
       </p>
       <ul class="mb-0">
-        <li>{{ _("Confidentialité des informations traitées") }}</li>
+        <li>{{ _("Protection des accès et confidentialité des informations traitées") }}</li>
         <li>{{ _("Stabilité du service et continuité d’exploitation") }}</li>
-        <li>{{ _("Surveillance des systèmes et détection d’anomalies") }}</li>
-        <li>{{ _("Sauvegardes régulières des données opérationnelles") }}</li>
+        <li>{{ _("Supervision technique et détection d’anomalies") }}</li>
+        <li>{{ _("Sauvegardes régulières avec logique de restauration") }}</li>
       </ul>
     </div>
   </section>
@@ -75,7 +75,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Contact sécurité") }}</h2>
       <p class="mb-2">
-        {{ _("Pour toute question relative à la sécurité ou à la conformité de la plateforme, vous pouvez contacter l’équipe HelpChain.") }}
+        {{ _("Toute question relative à la sécurité, à la protection des données ou au cadre de conformité de la plateforme peut être adressée à l’équipe HelpChain via le point de contact dédié.") }}
       </p>
       <p class="mb-0"><a href="mailto:contact@helpchain.live">contact@helpchain.live</a></p>
     </div>

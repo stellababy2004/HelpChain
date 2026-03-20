@@ -15,25 +15,180 @@
       --hc-home-card-shadow: 0 7px 20px rgba(15, 23, 42, 0.05);
     }
 
+    body.hc-page-home .hc-container {
+      width: min(100% - 2rem, 1260px);
+      max-width: 1260px;
+      margin-inline: auto;
+    }
+
+    @media (min-width: 1080px) {
+      body.hc-page-home .hc-public-nav-root.hc-navbar {
+        min-height: 54px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+      }
+
+      body.hc-page-home .hc-public-nav-root .container-fluid {
+        width: min(100% - 1.2rem, 1380px);
+        gap: clamp(0.45rem, 0.85vw, 0.82rem);
+        flex-wrap: nowrap;
+      }
+
+      body.hc-page-home .hc-public-nav-root .navbar-brand {
+        gap: 0.5rem;
+        margin-right: 0.25rem;
+        flex: 0 0 auto;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-brand-mark {
+        width: 26px;
+        height: 26px;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-brand-title {
+        font-size: 0.98rem;
+        line-height: 1;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-desktop,
+      body.hc-page-home .hc-public-nav-root .navbar-collapse {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      body.hc-page-home .hc-public-nav-root .navbar-collapse {
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: clamp(0.4rem, 0.8vw, 0.72rem);
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        gap: clamp(0.08rem, 0.35vw, 0.24rem);
+        flex-wrap: nowrap;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-actions {
+        flex: 0 0 auto;
+        gap: 0.42rem;
+        margin-left: 0.4rem;
+        padding-left: 0.55rem;
+        flex-wrap: nowrap;
+      }
+
+      body.hc-page-home .hc-public-nav-root .nav-link:not(.hc-nav-cta) {
+        min-height: 33px;
+        padding: 0.35rem 0.62rem;
+        font-size: 0.86rem;
+        line-height: 1.05;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-login {
+        padding-inline: 0.6rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .nav-link.hc-nav-cta {
+        min-height: 35px;
+        margin-left: 0;
+        padding: 0.4rem 0.78rem;
+        font-size: 0.82rem;
+        box-shadow: 0 6px 14px rgba(30, 64, 175, 0.12);
+      }
+
+      body.hc-page-home .hc-home__hero-inner {
+        grid-template-columns: minmax(0, 1.03fr) minmax(400px, 0.97fr);
+        align-items: center;
+        gap: clamp(2rem, 4vw, 3.4rem);
+      }
+
+      body.hc-page-home .hc-home__hero-copy {
+        max-width: 60ch;
+      }
+
+      body.hc-page-home .hc-home__snapshot {
+        width: min(100%, 560px);
+        justify-self: end;
+        align-self: center;
+      }
+
+      body.hc-page-home .hc-home__snapshot-card--visual {
+        min-height: clamp(350px, 31vw, 430px);
+      }
+    }
+
+    @media (min-width: 1080px) and (max-width: 1199.98px) {
+      body.hc-page-home .hc-public-nav-root .container-fluid {
+        width: min(100% - 0.9rem, 1180px);
+        gap: 0.3rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .navbar-brand {
+        gap: 0.38rem;
+        margin-right: 0.08rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-brand-mark {
+        width: 24px;
+        height: 24px;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-brand-title {
+        font-size: 0.92rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .navbar-collapse {
+        gap: 0.28rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-main {
+        gap: 0.02rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-actions {
+        gap: 0.24rem;
+        margin-left: 0.22rem;
+        padding-left: 0.32rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .nav-link:not(.hc-nav-cta) {
+        min-height: 31px;
+        padding: 0.28rem 0.46rem;
+        font-size: 0.8rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .hc-public-nav-login {
+        padding-inline: 0.46rem;
+      }
+
+      body.hc-page-home .hc-public-nav-root .nav-link.hc-nav-cta {
+        min-height: 32px;
+        padding: 0.34rem 0.6rem;
+        font-size: 0.75rem;
+        box-shadow: none;
+      }
+    }
+
     body.hc-page-home .hc-home {
       color: var(--hc-text-main);
     }
 
     body.hc-page-home .hc-home__hero {
-      padding: clamp(2.7rem, 6vw, 4.6rem) 0 clamp(1.8rem, 3.6vw, 2.8rem);
+      padding: clamp(2.2rem, 4.8vw, 3.85rem) 0 clamp(1.8rem, 3.6vw, 2.8rem);
       border-bottom: 1px solid var(--hc-home-card-border);
       background: linear-gradient(180deg, rgba(246, 250, 255, 0.92), rgba(255, 255, 255, 0.95));
     }
 
     body.hc-page-home .hc-home__hero-inner {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
-      align-items: start;
-      gap: clamp(1.2rem, 3vw, 2.4rem);
+      grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+      align-items: center;
+      gap: clamp(1.5rem, 3.4vw, 2.9rem);
     }
 
     body.hc-page-home .hc-home__hero-copy {
-      max-width: 68ch;
+      max-width: 62ch;
     }
 
     body.hc-page-home .hc-home__eyebrow {
@@ -122,57 +277,68 @@
     body.hc-page-home .hc-home__snapshot-card {
       border: 1px solid var(--hc-home-card-border);
       border-radius: var(--hc-home-card-radius);
-      background: #fff;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(245, 249, 253, 0.95));
       padding: clamp(1.05rem, 2.1vw, 1.4rem);
-      box-shadow: var(--hc-home-card-shadow);
+      box-shadow:
+        0 10px 24px rgba(15, 23, 42, 0.08),
+        0 28px 48px rgba(148, 163, 184, 0.14);
       min-height: 100%;
     }
     body.hc-page-home .hc-home__snapshot-card--visual {
       position: relative;
-      padding: clamp(1.6rem, 3vw, 2.1rem);
-      min-height: clamp(260px, 36vw, 360px);
+      isolation: isolate;
+      padding: clamp(1rem, 2vw, 1.3rem);
+      min-height: clamp(300px, 37vw, 390px);
       overflow: hidden;
-      border: 1px solid rgba(15, 23, 42, 0.08);
+      border: 1px solid rgba(175, 192, 212, 0.66);
       background:
-        radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.18), transparent 45%),
-        radial-gradient(circle at 70% 30%, rgba(59, 130, 246, 0.14), transparent 45%),
-        radial-gradient(circle at 50% 70%, rgba(14, 116, 144, 0.12), transparent 45%),
-        linear-gradient(135deg, #f8fbff 0%, #eef4fb 60%, #f7f9fc 100%);
-      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+        radial-gradient(circle at 18% 18%, rgba(125, 170, 221, 0.22), transparent 40%),
+        radial-gradient(circle at 78% 22%, rgba(107, 178, 187, 0.16), transparent 35%),
+        radial-gradient(circle at 52% 82%, rgba(198, 214, 233, 0.34), transparent 42%),
+        linear-gradient(160deg, rgba(252, 254, 255, 0.98) 0%, rgba(240, 246, 252, 0.96) 58%, rgba(247, 250, 253, 0.94) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 24px 42px rgba(15, 23, 42, 0.12),
+        0 6px 14px rgba(148, 163, 184, 0.16);
     }
     body.hc-page-home .hc-home__snapshot-card--visual::after {
       content: "";
       position: absolute;
       inset: 0;
       background-image:
-        radial-gradient(circle at 18% 32%, rgba(37, 99, 235, 0.55) 0 2px, transparent 3px),
-        radial-gradient(circle at 36% 48%, rgba(14, 116, 144, 0.5) 0 2px, transparent 3px),
-        radial-gradient(circle at 52% 22%, rgba(37, 99, 235, 0.5) 0 2px, transparent 3px),
-        radial-gradient(circle at 64% 58%, rgba(59, 130, 246, 0.45) 0 2px, transparent 3px),
-        radial-gradient(circle at 78% 38%, rgba(14, 116, 144, 0.45) 0 2px, transparent 3px);
-      opacity: 0.25;
+        radial-gradient(circle at 12% 24%, rgba(74, 127, 192, 0.25) 0 1.5px, transparent 2.5px),
+        radial-gradient(circle at 22% 70%, rgba(94, 141, 187, 0.18) 0 1.5px, transparent 2.5px),
+        radial-gradient(circle at 80% 20%, rgba(86, 152, 167, 0.18) 0 1.5px, transparent 2.5px),
+        radial-gradient(circle at 88% 60%, rgba(86, 152, 167, 0.16) 0 1.5px, transparent 2.5px);
+      opacity: 0.42;
       pointer-events: none;
+      z-index: 0;
     }
     body.hc-page-home .hc-home__snapshot-card--visual::before {
       content: "";
       position: absolute;
-      inset: 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      opacity: 0.55;
+      inset: 10px;
+      border-radius: calc(var(--hc-home-card-radius) - 2px);
+      border: 1px solid rgba(255, 255, 255, 0.74);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.68),
+        inset 0 -1px 0 rgba(184, 199, 218, 0.28);
+      opacity: 0.92;
       pointer-events: none;
+      z-index: 0;
     }
     body.hc-page-home .hc-home__snapshot-orbit {
       position: absolute;
-      inset: 12%;
+      inset: 12.5% 13% 18%;
       border-radius: 50%;
-      border: 1px dashed rgba(37, 99, 235, 0.22);
-      opacity: 0.32;
+      border: 1px solid rgba(142, 170, 205, 0.2);
+      opacity: 0.38;
       pointer-events: none;
+      z-index: 0;
     }
     body.hc-page-home .hc-home__network {
       position: absolute;
-      inset: 14% 12% 24% 12%;
+      inset: 15% 8% 18% 8%;
       z-index: 1;
       pointer-events: none;
     }
@@ -182,55 +348,230 @@
       display: block;
     }
     body.hc-page-home .hc-home__network .hc-network-line {
-      stroke: rgba(37, 99, 235, 0.28);
-      stroke-width: 1.2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    body.hc-page-home .hc-home__network .hc-network-line--primary {
+      stroke: rgba(67, 108, 168, 0.48);
+      stroke-width: 2.2;
+    }
+    body.hc-page-home .hc-home__network .hc-network-line--secondary {
+      stroke: rgba(84, 132, 186, 0.3);
+      stroke-width: 1.35;
+    }
+    body.hc-page-home .hc-home__network .hc-network-line--dotted {
+      stroke: rgba(88, 138, 178, 0.34);
+      stroke-width: 1.55;
+      stroke-dasharray: 2.2 7.8;
+    }
+    body.hc-page-home .hc-home__network .hc-network-line--signal {
+      stroke: rgba(86, 158, 165, 0.32);
+      stroke-width: 1.1;
+      stroke-dasharray: 1.4 5.6;
     }
     body.hc-page-home .hc-home__network .hc-network-node {
-      fill: rgba(37, 99, 235, 0.7);
+      fill: #6c8fc0;
+      stroke: rgba(255, 255, 255, 0.92);
+      stroke-width: 2.6;
     }
     body.hc-page-home .hc-home__network .hc-network-node--soft {
-      fill: rgba(14, 116, 144, 0.62);
+      fill: #7aa8a4;
     }
     body.hc-page-home .hc-home__network .hc-network-node--hub {
-      fill: #1d4ed8;
-      filter: drop-shadow(0 0 5px rgba(37, 99, 235, 0.28));
+      fill: #2b4f83;
+      stroke: rgba(248, 252, 255, 0.96);
+      stroke-width: 4;
+      filter: drop-shadow(0 8px 18px rgba(41, 77, 130, 0.22));
+    }
+    body.hc-page-home .hc-home__network .hc-network-node--accent {
+      fill: #4b7b75;
+    }
+    body.hc-page-home .hc-home__network .hc-network-halo {
+      fill: rgba(75, 114, 170, 0.08);
+      stroke: rgba(86, 126, 180, 0.18);
+      stroke-width: 1.2;
+    }
+    body.hc-page-home .hc-home__network .hc-network-hub-ring {
+      fill: none;
+      stroke: rgba(76, 115, 173, 0.16);
+      stroke-width: 1.3;
+    }
+    body.hc-page-home .hc-home__network .hc-network-micro {
+      fill: rgba(145, 167, 196, 0.5);
+    }
+    body.hc-page-home .hc-home__network .hc-network-status {
+      stroke: rgba(255, 255, 255, 0.95);
+      stroke-width: 2.2;
+    }
+    body.hc-page-home .hc-home__network .hc-network-status--ok {
+      fill: #6e968b;
+    }
+    body.hc-page-home .hc-home__network .hc-network-status--alert {
+      fill: #d88d6f;
+    }
+    body.hc-page-home .hc-home__network .hc-network-status-mark {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.96);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     body.hc-page-home .hc-home__network-label {
       position: absolute;
-      font-size: 0.72rem;
-      letter-spacing: 0.04em;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.38rem;
+      padding: 0.34rem 0.64rem;
+      border-radius: 999px;
+      border: 1px solid rgba(180, 197, 218, 0.62);
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow:
+        0 8px 20px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: rgba(30, 41, 59, 0.7);
+      color: rgba(28, 50, 79, 0.76);
+      white-space: nowrap;
+    }
+    body.hc-page-home .hc-home__network-label::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(69, 110, 170, 0.58);
+      box-shadow: 0 0 0 3px rgba(211, 223, 239, 0.7);
     }
     body.hc-page-home .hc-home__network-label--structures {
-      top: 6%;
-      left: 8%;
+      top: 15%;
+      left: 3%;
     }
     body.hc-page-home .hc-home__network-label--pros {
-      bottom: 8%;
-      right: 10%;
+      top: 18%;
+      right: 4%;
+    }
+    body.hc-page-home .hc-home__network-label--benevoles {
+      bottom: 22%;
+      left: 2%;
+    }
+    body.hc-page-home .hc-home__network-label--local {
+      bottom: 18%;
+      right: 3%;
     }
     body.hc-page-home .hc-home__visual-title {
       position: relative;
-      z-index: 1;
-      font-size: 0.8rem;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.72rem;
+      border-radius: 999px;
+      border: 1px solid rgba(177, 194, 216, 0.62);
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow:
+        0 12px 24px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      font-size: 0.72rem;
+      font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #4b5563;
+      color: #3c5577;
+    }
+    body.hc-page-home .hc-home__visual-title::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(76, 115, 173, 0.9), rgba(94, 155, 161, 0.88));
+      box-shadow: 0 0 0 4px rgba(214, 225, 240, 0.72);
     }
     body.hc-page-home .hc-home__visual-meta {
       position: absolute;
-      bottom: 18px;
-      left: 18px;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
       display: inline-flex;
       gap: 0.6rem;
+      justify-content: center;
       align-items: center;
-      font-size: 0.85rem;
-      color: #1f2937;
-      padding: 0.35rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: #233d62;
+      padding: 0.56rem 0.82rem;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(245, 248, 252, 0.88));
+      border: 1px solid rgba(177, 194, 216, 0.62);
+      box-shadow:
+        0 10px 22px rgba(15, 23, 42, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92);
+      z-index: 2;
+    }
+    body.hc-page-home .hc-home__visual-meta span[aria-hidden="true"] {
+      color: rgba(69, 90, 119, 0.46);
+    }
+    body.hc-page-home .hc-home__status-chip {
+      position: absolute;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+    }
+    body.hc-page-home .hc-home__status-chip--ok {
+      background: linear-gradient(180deg, rgba(118, 154, 145, 0.96), rgba(101, 138, 129, 0.96));
+      color: #fff;
+    }
+    body.hc-page-home .hc-home__status-chip--alert {
+      background: linear-gradient(180deg, rgba(224, 152, 120, 0.95), rgba(205, 128, 94, 0.95));
+      color: #fffaf4;
+    }
+    body.hc-page-home .hc-home__status-chip--ok-a {
+      top: 31%;
+      right: 21%;
+    }
+    body.hc-page-home .hc-home__status-chip--ok-b {
+      bottom: 28%;
+      left: 18%;
+    }
+    body.hc-page-home .hc-home__status-chip--alert-a {
+      top: 44%;
+      left: 23%;
+    }
+    body.hc-page-home .hc-home__signal-node {
+      position: absolute;
+      z-index: 2;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.96);
+      background: rgba(90, 141, 187, 0.82);
+      box-shadow: 0 0 0 6px rgba(206, 219, 238, 0.35);
+    }
+    body.hc-page-home .hc-home__signal-node--a {
+      top: 26%;
+      left: 31%;
+    }
+    body.hc-page-home .hc-home__signal-node--b {
+      bottom: 30%;
+      right: 31%;
+      background: rgba(102, 157, 151, 0.82);
+    }
+    body.hc-page-home .hc-home__signal-node--c {
+      top: 54%;
+      right: 16%;
+      width: 8px;
+      height: 8px;
     }
 
     @media (min-width: 992px) {
@@ -553,7 +894,7 @@
       max-width: 86ch;
     }
 
-    @media (max-width: 1199.98px) {
+    @media (max-width: 1079.98px) {
       body.hc-page-home .hc-home__hero-inner {
         grid-template-columns: minmax(0, 1fr);
       }
@@ -584,6 +925,10 @@
         --hc-home-section-gap: clamp(1.85rem, 8vw, 2.6rem);
       }
 
+      body.hc-page-home .hc-container {
+        width: min(100% - 1rem, 1260px);
+      }
+
       body.hc-page-home .hc-home__actions {
         width: 100%;
       }
@@ -603,7 +948,23 @@
     }
     @media (max-width: 479.98px) {
       body.hc-page-home .hc-home__network-label {
-        display: none;
+        font-size: 0.61rem;
+        padding: 0.28rem 0.52rem;
+      }
+      body.hc-page-home .hc-home__network-label--structures,
+      body.hc-page-home .hc-home__network-label--pros {
+        top: auto;
+        bottom: 28%;
+      }
+      body.hc-page-home .hc-home__network-label--structures {
+        left: 4%;
+      }
+      body.hc-page-home .hc-home__network-label--pros {
+        right: 4%;
+      }
+      body.hc-page-home .hc-home__network-label--benevoles,
+      body.hc-page-home .hc-home__network-label--local {
+        bottom: 18%;
       }
     }
   </style>
@@ -639,168 +1000,68 @@
         </div>
 
         <div class="hc-home__snapshot">
-          <div class="hc-home__snapshot-card hc-home__snapshot-card--visual" role="img" aria-label="Réseau européen de coordination opérationnelle">
-            <div class="hc-home__visual-title">Europe • Réseau opérationnel</div>
+          <div class="hc-home__snapshot-card hc-home__snapshot-card--visual" role="img" aria-label="Carte opérationnelle d’un réseau européen de coordination entre structures, professionnels, bénévoles et acteurs locaux">
+            <div class="hc-home__visual-title">EUROPE • RÉSEAU OPÉRATIONNEL</div>
             <div class="hc-home__network" aria-hidden="true">
-              <svg viewBox="0 0 320 220" role="presentation" aria-hidden="true" focusable="false">
-                <line class="hc-network-line" x1="46" y1="64" x2="140" y2="90" />
-                <line class="hc-network-line" x1="140" y1="90" x2="218" y2="56" />
-                <line class="hc-network-line" x1="140" y1="90" x2="188" y2="138" />
-                <line class="hc-network-line" x1="188" y1="138" x2="262" y2="156" />
-                <line class="hc-network-line" x1="140" y1="90" x2="92" y2="154" />
-                <line class="hc-network-line" x1="92" y1="154" x2="40" y2="136" />
-                <circle class="hc-network-node hc-network-node--hub" cx="140" cy="90" r="7" />
-                <circle class="hc-network-node" cx="46" cy="64" r="5" />
-                <circle class="hc-network-node hc-network-node--soft" cx="218" cy="56" r="5" />
-                <circle class="hc-network-node" cx="188" cy="138" r="5" />
-                <circle class="hc-network-node hc-network-node--soft" cx="262" cy="156" r="4.5" />
-                <circle class="hc-network-node" cx="92" cy="154" r="4.5" />
-                <circle class="hc-network-node hc-network-node--soft" cx="40" cy="136" r="4.5" />
+              <svg viewBox="0 0 360 246" role="presentation" aria-hidden="true" focusable="false">
+                <ellipse class="hc-network-halo" cx="184" cy="122" rx="104" ry="72" />
+                <ellipse class="hc-network-hub-ring" cx="184" cy="122" rx="82" ry="56" />
+                <ellipse class="hc-network-hub-ring" cx="184" cy="122" rx="132" ry="92" />
+
+                <path class="hc-network-line hc-network-line--signal" d="M82 76 C118 78, 138 94, 166 110" />
+                <path class="hc-network-line hc-network-line--signal" d="M197 133 C226 143, 250 161, 284 177" />
+                <path class="hc-network-line hc-network-line--signal" d="M188 108 C220 90, 250 78, 292 78" />
+                <path class="hc-network-line hc-network-line--signal" d="M168 134 C138 150, 116 168, 84 182" />
+
+                <path class="hc-network-line hc-network-line--primary" d="M92 84 C126 87, 152 99, 176 115" />
+                <path class="hc-network-line hc-network-line--primary" d="M192 113 C221 97, 251 88, 286 85" />
+                <path class="hc-network-line hc-network-line--primary" d="M191 132 C219 145, 245 162, 278 174" />
+                <path class="hc-network-line hc-network-line--secondary" d="M170 131 C146 149, 118 166, 88 182" />
+                <path class="hc-network-line hc-network-line--secondary" d="M98 86 C127 115, 120 149, 96 178" />
+                <path class="hc-network-line hc-network-line--dotted" d="M286 85 C295 112, 292 144, 278 174" />
+                <path class="hc-network-line hc-network-line--dotted" d="M88 182 C136 198, 214 196, 278 174" />
+
+                <circle class="hc-network-micro" cx="126" cy="64" r="3.2" />
+                <circle class="hc-network-micro" cx="235" cy="54" r="3.2" />
+                <circle class="hc-network-micro" cx="304" cy="129" r="3.2" />
+                <circle class="hc-network-micro" cx="64" cy="147" r="3.2" />
+
+                <circle class="hc-network-node hc-network-node--soft" cx="92" cy="84" r="11.5" />
+                <circle class="hc-network-node hc-network-node--accent" cx="286" cy="85" r="11" />
+                <circle class="hc-network-node" cx="278" cy="174" r="10.5" />
+                <circle class="hc-network-node hc-network-node--soft" cx="88" cy="182" r="10.5" />
+                <circle class="hc-network-node" cx="132" cy="150" r="7.2" />
+                <circle class="hc-network-node hc-network-node--accent" cx="238" cy="151" r="7.2" />
+
+                <circle class="hc-network-node hc-network-node--hub" cx="184" cy="122" r="17" />
+                <circle class="hc-network-status hc-network-status--ok" cx="304" cy="70" r="7.2" />
+                <path class="hc-network-status-mark" d="M301 70.4 l2.3 2.5 l4.2 -5.4" />
+                <circle class="hc-network-status hc-network-status--ok" cx="71" cy="193" r="7.2" />
+                <path class="hc-network-status-mark" d="M68 193.4 l2.3 2.5 l4.2 -5.4" />
+                <circle class="hc-network-status hc-network-status--alert" cx="72" cy="79" r="7.4" />
+                <path class="hc-network-status-mark" d="M72 75.5 v4.4 M72 83.5 v0.1" />
               </svg>
               <span class="hc-home__network-label hc-home__network-label--structures">Structures</span>
               <span class="hc-home__network-label hc-home__network-label--pros">Professionnels</span>
+              <span class="hc-home__network-label hc-home__network-label--benevoles">Bénévoles</span>
+              <span class="hc-home__network-label hc-home__network-label--local">Acteurs locaux</span>
             </div>
-            <div class="hc-home__visual-meta">Coordination • Traçabilité • Pilotage</div>
+            <span class="hc-home__status-chip hc-home__status-chip--ok hc-home__status-chip--ok-a" aria-hidden="true">✓</span>
+            <span class="hc-home__status-chip hc-home__status-chip--ok hc-home__status-chip--ok-b" aria-hidden="true">✓</span>
+            <span class="hc-home__status-chip hc-home__status-chip--alert hc-home__status-chip--alert-a" aria-hidden="true">!</span>
+            <span class="hc-home__signal-node hc-home__signal-node--a" aria-hidden="true"></span>
+            <span class="hc-home__signal-node hc-home__signal-node--b" aria-hidden="true"></span>
+            <span class="hc-home__signal-node hc-home__signal-node--c" aria-hidden="true"></span>
+            <div class="hc-home__visual-meta">
+              <span>Coordination</span>
+              <span aria-hidden="true">•</span>
+              <span>Traçabilité</span>
+              <span aria-hidden="true">•</span>
+              <span>Pilotage</span>
+            </div>
             <span class="hc-home__snapshot-orbit" aria-hidden="true"></span>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="hc-home__flow" aria-label="Comment une situation est suivie">
-    <div class="hc-container">
-      <header class="hc-home__flow-head">
-        <h2>Comment une situation est suivie</h2>
-        <p>HelpChain transforme une demande d’aide en situation suivie, coordonnée et orientée entre acteurs locaux.</p>
-      </header>
-      <div class="hc-home__flow-grid">
-        <article class="hc-home__flow-card">
-          <span class="hc-home__flow-step" aria-hidden="true">01</span>
-          <h3>Signalement</h3>
-          <p>Une demande d’aide est enregistrée dans la plateforme par une structure, un professionnel ou un acteur local.</p>
-        </article>
-        <article class="hc-home__flow-card">
-          <span class="hc-home__flow-step" aria-hidden="true">02</span>
-          <h3>Qualification</h3>
-          <p>La situation est analysée selon le besoin, le niveau de priorité et les acteurs à mobiliser.</p>
-        </article>
-        <article class="hc-home__flow-card">
-          <span class="hc-home__flow-step" aria-hidden="true">03</span>
-          <h3>Coordination</h3>
-          <p>Bénévoles, professionnels et structures concernées peuvent être mobilisés dans un cadre commun de suivi.</p>
-        </article>
-        <article class="hc-home__flow-card">
-          <span class="hc-home__flow-step" aria-hidden="true">04</span>
-          <h3>Suivi et orientation</h3>
-          <p>La situation reste suivie jusqu’à résolution et peut être orientée vers un professionnel lorsque nécessaire.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="hc-home__cases" aria-label="Situations traitées">
-    <div class="hc-container">
-      <header class="hc-home__cases-head">
-        <h2>Situations traitées</h2>
-        <p>HelpChain permet de suivre différents types de situations sociales dans un cadre commun de coordination, de traçabilité et d’orientation.</p>
-      </header>
-      <div class="hc-home__cases-grid">
-        <article class="hc-home__cases-card">
-          <h3>Aide administrative</h3>
-          <p>Accompagnement pour démarches CAF, logement, accès aux droits, courrier administratif ou formalités en ligne.</p>
-        </article>
-        <article class="hc-home__cases-card">
-          <h3>Personne âgée isolée</h3>
-          <p>Coordination d’un accompagnement de proximité impliquant bénévoles, intervenants et suivi de la situation.</p>
-        </article>
-        <article class="hc-home__cases-card">
-          <h3>Situation familiale fragile</h3>
-          <p>Suivi d’une situation signalée par une structure, une école ou un acteur local avec coordination des actions engagées.</p>
-        </article>
-        <article class="hc-home__cases-card">
-          <h3>Orientation vers un professionnel</h3>
-          <p>Lorsque la situation le nécessite, HelpChain peut faciliter l’orientation vers un psychologue, un juriste, un travailleur social ou un autre professionnel adapté.</p>
-        </article>
-      </div>
-      <p class="hc-home__cases-note">HelpChain peut s’appuyer sur une base de professionnels partenaires afin de mettre en relation une situation avec l’expertise appropriée.</p>
-    </div>
-  </section>
-
-  <section class="hc-home__pilotage" aria-label="Pilotage des situations">
-    <div class="hc-container">
-      <header class="hc-home__pilotage-head">
-        <h2>Pilotage des situations</h2>
-        <p>HelpChain donne aux structures une vision claire de l’activité en cours, des situations suivies et des actions engagées.</p>
-      </header>
-      <div class="hc-home__pilotage-grid">
-        <article class="hc-home__pilotage-card">
-          <h3>Situations actives</h3>
-          <p>Visualiser les situations en cours de traitement dans un espace unique.</p>
-        </article>
-        <article class="hc-home__pilotage-card">
-          <h3>Actions tracées</h3>
-          <p>Conserver une trace claire des interventions, attributions et étapes de suivi.</p>
-        </article>
-        <article class="hc-home__pilotage-card">
-          <h3>Acteurs mobilisés</h3>
-          <p>Identifier les bénévoles, professionnels ou structures impliqués dans chaque situation.</p>
-        </article>
-        <article class="hc-home__pilotage-card">
-          <h3>Suivi opérationnel</h3>
-          <p>Disposer d’une vue simple pour piloter l’activité sociale au quotidien.</p>
-        </article>
-      </div>
-      <p class="hc-home__pilotage-note">Cette logique de pilotage permet de réduire la fragmentation des échanges et de mieux coordonner les interventions.</p>
-    </div>
-  </section>
-
-  <section class="hc-home__trust-block" aria-label="Gouvernance et confiance">
-    <div class="hc-container">
-      <header class="hc-home__trust-head">
-        <h2>Gouvernance et confiance</h2>
-        <p>HelpChain est conçu pour offrir un cadre de coordination professionnel, lisible et structuré pour les acteurs du secteur social.</p>
-      </header>
-      <div class="hc-home__trust-layout">
-        <div class="hc-home__trust-col">
-          <h3>Cadre opérationnel</h3>
-          <ul>
-            <li>Accès organisés selon les rôles</li>
-            <li>Traçabilité des actions et des attributions</li>
-            <li>Suivi structuré des situations</li>
-          </ul>
-        </div>
-        <div class="hc-home__trust-col">
-          <h3>Confiance numérique</h3>
-          <ul>
-            <li>Protection des données et hébergement européen</li>
-            <li>Cadre adapté aux structures et collectivités</li>
-            <li>Vision claire des échanges et des interventions</li>
-          </ul>
-        </div>
-      </div>
-      <p class="hc-home__trust-note">Cette approche permet d’inscrire la coordination sociale dans un environnement plus fiable, plus lisible et plus pilotable.</p>
-    </div>
-  </section>
-
-  <section class="hc-home__pilot-cta" aria-label="Lancer un pilote HelpChain">
-    <div class="hc-container">
-      <div class="hc-home__pilot-cta-inner">
-        <header class="hc-home__pilot-cta-head">
-          <h2>Lancer un pilote HelpChain</h2>
-          <p>Les structures peuvent tester HelpChain dans un cadre pilote afin d’évaluer l’apport de la plateforme pour la coordination des situations sociales.</p>
-        </header>
-        <p class="hc-home__pilot-cta-body">La phase pilote permet de déployer la plateforme dans un cadre réel, avec une mise en place progressive, un usage concret par les équipes et une lecture simple des premiers bénéfices opérationnels.</p>
-        <ul class="hc-home__pilot-cta-points">
-          <li>Mise en place progressive</li>
-          <li>Usage concret par les équipes</li>
-          <li>Lecture claire des premiers résultats</li>
-        </ul>
-        <p class="hc-home__pilot-cta-note">Un nombre limité de structures peut actuellement rejoindre cette phase pilote.</p>
-        <div class="hc-home__pilot-cta-actions">
-          <a class="hc-btn hc-btn--primary" href="{{ url_for('main.contact') }}" data-hc-event="home_pilot_cta">Demander un pilote</a>
-        </div>
-        <p class="hc-home__pilot-cta-support">Conçu pour les structures sociales, associations et collectivités.</p>
       </div>
     </div>
   </section>
@@ -828,62 +1089,42 @@
     </div>
   </section>
 
-  <section class="hc-how-it-works" aria-label="Fonctionnement">
+  <section class="hc-home__trust-block" aria-label="Cadre institutionnel">
     <div class="hc-container">
-      <header class="hc-home__section-head">
-        <h2>Fonctionnement</h2>
+      <header class="hc-home__trust-head">
+        <h2>Cadre institutionnel clair et maîtrisé</h2>
+        <p>HelpChain s’inscrit dans un cadre de coordination lisible pour les structures, avec gouvernance explicite, données protégées et déploiement progressif.</p>
       </header>
-      <div class="hc-how-grid">
-        <article class="hc-how-card">
-          <span class="hc-how-step" aria-hidden="true">1</span>
-          <h3>Signalement structuré</h3>
-          <p>La situation est signalée dans un cadre structuré.</p>
-        </article>
-        <article class="hc-how-card">
-          <span class="hc-how-step" aria-hidden="true">2</span>
-          <h3>Analyse et priorisation</h3>
-          <p>La demande est analysée selon les priorités opérationnelles.</p>
-        </article>
-        <article class="hc-how-card">
-          <span class="hc-how-step" aria-hidden="true">3</span>
-          <h3>Coordination et suivi</h3>
-          <p>Les acteurs coordonnent les interventions et le suivi.</p>
-        </article>
+      <div class="hc-home__trust-layout">
+        <div class="hc-home__trust-col">
+          <h3>Gouvernance opérationnelle</h3>
+          <ul>
+            <li>Accès structurés selon les rôles et responsabilités</li>
+            <li>Traçabilité des actions et continuité de suivi</li>
+          </ul>
+          <p><a href="{{ url_for('main.gouvernance') }}">Consulter la gouvernance</a></p>
+        </div>
+        <div class="hc-home__trust-col">
+          <h3>Confiance numérique</h3>
+          <ul>
+            <li>Hébergement européen et cadre RGPD</li>
+            <li>Déploiement progressif pour structures et collectivités</li>
+          </ul>
+          <p>
+            <a href="{{ url_for('main.securite') }}">Sécurité & conformité</a>
+            <span aria-hidden="true">•</span>
+            <a href="{{ url_for('main.pour_les_structures') }}">Espace structures</a>
+          </p>
+        </div>
       </div>
-    </div>
-  </section>
-
-  <section class="hc-pilotage" aria-label="Pilotage des situations sociales">
-    <div class="hc-container">
-      <header class="hc-home__section-head">
-        <span class="hc-pilotage-kicker">INDICATEURS OPÉRATIONNELS</span>
-        <h2>Pilotage des situations sociales</h2>
-        <p>Une vue de suivi opérationnel pour suivre les situations, prioriser les interventions et coordonner les réponses entre acteurs.</p>
-      </header>
-      <div class="hc-pilotage-grid">
-        <article class="hc-pilotage-card hc-kpi-card">
-          <span class="hc-pilotage-chip">Pilotage</span>
-          <h3 class="hc-pilotage-label">Situations critiques</h3>
-          <p class="hc-pilotage-value">24</p>
-          <p class="hc-pilotage-hint">Priorité opérationnelle</p>
-          <p>Suivi prioritaire des situations critiques.</p>
-        </article>
-        <article class="hc-pilotage-card hc-kpi-card">
-          <span class="hc-pilotage-chip">Coordination</span>
-          <h3 class="hc-pilotage-label">Situations en cours</h3>
-          <p class="hc-pilotage-value">128</p>
-          <p class="hc-pilotage-hint">Coordination active</p>
-          <p>Coordination active des situations en cours.</p>
-        </article>
-        <article class="hc-pilotage-card hc-kpi-card">
-          <span class="hc-pilotage-chip">Suivi</span>
-          <h3 class="hc-pilotage-label">Situations suivies</h3>
-          <p class="hc-pilotage-value">356</p>
-          <p class="hc-pilotage-hint">Suivi structuré</p>
-          <p>Traçabilité des situations suivies.</p>
-        </article>
-      </div>
-      <p class="hc-pilotage-note">Indicateurs illustratifs — les tableaux de pilotage complets sont accessibles dans l’espace professionnel.</p>
+      <p class="hc-home__trust-note">
+        Approfondir :
+        <a href="{{ url_for('main.comment_ca_marche') }}">fonctionnement</a>,
+        <a href="{{ url_for('main.cas_usage') }}">cas d’usage</a>,
+        <a href="{{ url_for('main.pilotage_indicateurs') }}">pilotage</a>
+        et
+        <a href="{{ url_for('main.partenariats') }}">déploiement territorial</a>.
+      </p>
     </div>
   </section>
 

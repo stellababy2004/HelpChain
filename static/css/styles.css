@@ -642,6 +642,27 @@ body.hc-page-home .hc-home__trust-col li:last-child {
   margin-bottom: 0;
 }
 
+body.hc-page-home .hc-home__trust-col p {
+  margin: 0.7rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #4a617f;
+}
+
+body.hc-page-home .hc-home__trust-col a,
+body.hc-page-home .hc-home__trust-note a {
+  color: #1f4e8c;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+body.hc-page-home .hc-home__trust-col a:hover,
+body.hc-page-home .hc-home__trust-col a:focus-visible,
+body.hc-page-home .hc-home__trust-note a:hover,
+body.hc-page-home .hc-home__trust-note a:focus-visible {
+  text-decoration: underline;
+}
+
 body.hc-page-home .hc-home__trust-note {
   margin: clamp(0.9rem, 1.7vw, 1.3rem) 0 0;
   font-size: 0.92rem;
@@ -7900,4 +7921,131 @@ body.hc-page-home section {
   background: #fff;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+/* Public navbar compact refinement (2026-03-20) */
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar {
+  min-height: 56px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar.is-scrolled {
+  min-height: 54px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .navbar-brand {
+  gap: 0.55rem;
+  margin-right: 0.35rem;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-brand-mark {
+  width: 26px;
+  height: 26px;
+  margin-right: 0;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-brand-title {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link {
+  padding: 0.38rem 0.68rem;
+  font-size: 0.88rem;
+  line-height: 1.05;
+  border-radius: 9px;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link:not(.hc-nav-cta) {
+  min-height: 34px;
+  border-bottom-width: 1px;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link:hover {
+  background: rgba(15, 23, 42, 0.04);
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link.active,
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link[aria-current="page"],
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link.is-active {
+  background: rgba(37, 99, 235, 0.06);
+  box-shadow: none;
+  border-bottom-color: rgba(37, 99, 235, 0.34);
+  font-weight: 600;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-login {
+  padding-inline: 0.64rem;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-actions {
+  gap: 0.45rem;
+  padding-left: 0.72rem;
+  margin-left: 0.45rem;
+  border-left-color: rgba(15, 23, 42, 0.08);
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link.hc-nav-cta {
+  min-height: 36px;
+  margin-left: 0;
+  padding: 0.42rem 0.82rem;
+  font-size: 0.84rem;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.12);
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link.hc-nav-cta:hover {
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.14);
+}
+
+@media (min-width: 1080px) {
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .container-fluid {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.45rem, 0.85vw, 0.82rem);
+    flex-wrap: nowrap;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .navbar-collapse {
+    display: flex !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: center;
+    gap: clamp(0.4rem, 0.8vw, 0.72rem);
+    flex-wrap: nowrap;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    gap: clamp(0.08rem, 0.35vw, 0.24rem);
+    flex-wrap: nowrap;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-main .nav-item {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-actions {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 1079.98px) {
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar {
+    min-height: 60px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .container-fluid {
+    gap: 8px;
+  }
 }

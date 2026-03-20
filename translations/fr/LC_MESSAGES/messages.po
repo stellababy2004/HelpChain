@@ -5286,9 +5286,8 @@ msgid "Annuler"
 msgstr "Annuler"
 
 #: templates/submit_request.html:219
-#, fuzzy
 msgid "Envoyer la demande"
-msgstr "Orienter une demande"
+msgstr "Envoyer la demande"
 
 #: templates/submit_request_check_email.html:3 templates/submit_request_check_email.html:9
 msgid "Проверете имейла си"
@@ -6688,7 +6687,7 @@ msgstr "Next"
 
 #: templates/admin/login.html:6 templates/admin/login.html:19
 msgid "Admin login"
-msgstr "Admin login"
+msgstr "Connexion administration"
 
 #: templates/admin/login.html:48 templates/admin/login.html:57 templates/admin/login.html:58
 msgid "Password"
@@ -6696,12 +6695,11 @@ msgstr "Mot de passe"
 
 #: templates/admin/login.html:63
 msgid "Sign in as admin"
-msgstr "Sign in as admin"
+msgstr "Se connecter"
 
 #: templates/admin/login.html:67
-#, fuzzy
 msgid "Back to site"
-msgstr "Back to security"
+msgstr "Retour au site"
 
 #: templates/admin/mfa_backup_codes.html:4
 msgid "MFA backup codes"
@@ -8301,9 +8299,8 @@ msgid "Télécharger le dossier institutionnel"
 msgstr "Télécharger le dossier institutionnel"
 
 #: templates/public/pour_les_structures.html:34
-#, fuzzy
 msgid "Cadre opérationnel"
-msgstr "Professionnels"
+msgstr "Cadre opérationnel"
 
 #: templates/public/pour_les_structures.html:36
 msgid ""
