@@ -1,3 +1,4 @@
+print("API.PY LOADED")
 import asyncio
 import json
 import os
@@ -12,7 +13,18 @@ from backend.ai_service import ai_service
 
 from ..controllers.helpchain_controller import HelpChainController
 from ..extensions import csrf
-from ..models import NotificationSubscription, Request, RequestLog, RequestMetric, db
+from ..models import (
+    Case,
+    CaseCollaborator,
+    CaseEvent,
+    NotificationSubscription,
+    Request,
+    RequestLog,
+    RequestMetric,
+    Structure,
+    db,
+)
+from .admin import admin_required, admin_required_404, admin_role_required, _current_structure_id, _is_global_admin
 from ..security.api_authz import require_api_auth, require_roles
 
 api_bp = Blueprint("api", __name__)
@@ -217,6 +229,63 @@ def notification_test():
             db.session.delete(sub)
             db.session.commit()
         return jsonify({"ok": False, "error": str(e), "status": status}), 500
+
+
+@api_bp.post("/cases/<int:case_id>/invite-structure")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def invite_structure_to_case(case_id: int):
+    admin_required_404()
+    payload = request.get_json(silent=True) or {}
+    structure_id_raw = payload.get("structure_id")
+    role_raw = (payload.get("role") or "viewer").strip().lower()
+
+    try:
+        structure_id = int(structure_id_raw)
+    except Exception:
+        return jsonify({"error": "structure_id is required"}), 400
+
+    case_row = db.session.get(Case, int(case_id))
+    if not case_row:
+        return jsonify({"error": "case not found"}), 404
+
+    sid = _current_structure_id()
+    if not _is_global_admin() and sid and case_row.structure_id != sid:
+        return jsonify({"error": "forbidden"}), 403
+
+    if structure_id == case_row.structure_id:
+        return jsonify({"error": "structure already owns case"}), 400
+
+    structure = db.session.get(Structure, structure_id)
+    if not structure:
+        return jsonify({"error": "structure not found"}), 404
+
+    existing = (
+        CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
+        .filter(CaseCollaborator.structure_id == structure_id)
+        .first()
+    )
+    if existing:
+        existing.role = role_raw or existing.role
+    else:
+        db.session.add(
+            CaseCollaborator(
+                case_id=case_row.id,
+                structure_id=structure_id,
+                role=role_raw or "viewer",
+            )
+        )
+        db.session.add(
+            CaseEvent(
+                case_id=case_row.id,
+                actor_user_id=getattr(current_user, "id", None),
+                event_type="structure_invited",
+                message=f"Structure invited: {structure.name}",
+                visibility="internal",
+            )
+        )
+    db.session.commit()
+    return jsonify({"ok": True}), 200
 
 
 @api_bp.route("/some_endpoint", methods=["GET"])
@@ -715,3 +784,17 @@ def public_impact():
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+@bp.route("/ai", methods=["POST"])
+def ai_endpoint():
+    from flask import request, jsonify
+
+    payload = request.get_json(silent=True) or {}
+    message = payload.get("message")
+
+    if not message:
+        return jsonify({"error": "message is required"}), 400
+
+    return jsonify({
+        "response": f"Получих: {message}",
+        "status": "ok"
+    }), 200

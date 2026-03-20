@@ -1,0 +1,115 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Municipal Command Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 mb-0">Municipal Command Dashboard</h1>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted">Active Cases</div>
+          <div class="display-6" id="kpi-active">{{ kpis.active_cases }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted">Critical Cases</div>
+          <div class="display-6" id="kpi-critical">{{ kpis.critical_cases }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted">Early Warnings</div>
+          <div class="display-6" id="kpi-warnings">{{ kpis.early_warnings }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="text-muted">Average Risk</div>
+          <div class="display-6" id="kpi-avg">{{ kpis.avg_risk }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8">
+      <div class="card h-100">
+        <div class="card-header">
+          Risk Map
+        </div>
+        <div class="card-body p-0">
+          <iframe src="/admin/risk-map" style="width:100%; height:520px; border:0;"></iframe>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card mb-3">
+        <div class="card-header">Critical Cases (Top 10)</div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for case in critical_cases %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div>Case #{{ case.id }}</div>
+                  <small class="text-muted">Status: {{ case.status }}</small>
+                </div>
+                <span class="badge bg-danger">{{ case.risk_score or 0 }}</span>
+              </li>
+            {% else %}
+              <li class="list-group-item text-muted">No critical cases.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">Early Warnings</div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for alert in early_warnings %}
+              <li class="list-group-item">
+                <div class="fw-semibold">{{ alert.district }}</div>
+                <div>Level: {{ alert.alert_level }}</div>
+                <div>Reason: {{ alert.reason }}</div>
+              </li>
+            {% else %}
+              <li class="list-group-item text-muted">No early warnings.</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+  <script>
+    async function refreshKpis() {
+      const resp = await fetch("/admin/api/command-kpis");
+      if (!resp.ok) return;
+      const data = await resp.json();
+      const active = document.getElementById("kpi-active");
+      const critical = document.getElementById("kpi-critical");
+      const warnings = document.getElementById("kpi-warnings");
+      const avg = document.getElementById("kpi-avg");
+      if (active) active.textContent = data.active_cases ?? 0;
+      if (critical) critical.textContent = data.critical_cases ?? 0;
+      if (warnings) warnings.textContent = data.early_warnings ?? 0;
+      if (avg) avg.textContent = data.avg_risk ?? 0;
+    }
+
+    setInterval(refreshKpis, 30000);
+  </script>
+{% endblock %}

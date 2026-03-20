@@ -54,13 +54,16 @@ def admin_cases_map_api():
     payload = []
     for row in rows:
         risk = compute_case_risk(int(row.id)) or {}
+        risk_level = risk.get("risk_level", "low")
+        if risk_level == "critical":
+            risk_level = "high"
         payload.append(
             {
                 "id": int(row.id),
                 "lat": float(row.latitude),
                 "lng": float(row.longitude),
                 "status": str(row.status or "open"),
-                "risk_level": risk.get("risk_level", "low"),
+                "risk_level": risk_level,
                 "created_at": _safe_iso(row.created_at),
             }
         )

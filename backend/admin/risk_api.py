@@ -1,6 +1,6 @@
 from collections import Counter
 
-from flask import Blueprint, jsonify, render_template
+from flask import Blueprint, jsonify, redirect, render_template, url_for
 from flask_login import current_user
 from sqlalchemy import func
 
@@ -63,7 +63,7 @@ def professionals_map_page():
         return jsonify({"error": "authentication_required"}), 401
     if not getattr(current_user, "is_admin", False):
         return jsonify({"error": "forbidden"}), 403
-    return render_template("admin/professionals_map.html")
+    return redirect(url_for("admin.admin_professionals_map"), code=302)
 
 
 @risk_api.route("/admin/api/risk-map")
@@ -112,76 +112,4 @@ def professionals_map():
         return jsonify({"error": "authentication_required"}), 401
     if not getattr(current_user, "is_admin", False):
         return jsonify({"error": "forbidden"}), 403
-
-    has_lat = hasattr(ProfessionalLead, "latitude")
-    has_lng = hasattr(ProfessionalLead, "longitude")
-    cols = [
-        ProfessionalLead.city,
-        ProfessionalLead.profession,
-        ProfessionalLead.status,
-    ]
-    if has_lat and has_lng:
-        cols.extend([ProfessionalLead.latitude, ProfessionalLead.longitude])
-
-    rows = (
-        db.session.query(*cols)
-        .filter(ProfessionalLead.city.isnot(None))
-        .filter(func.trim(ProfessionalLead.city) != "")
-        .all()
-    )
-
-    grouped: dict[str, dict] = {}
-    for row in rows:
-        city = row[0]
-        profession = row[1]
-        status = row[2]
-        lat = row[3] if has_lat and has_lng else None
-        lng = row[4] if has_lat and has_lng else None
-        st = (status or "").strip().lower()
-        if st not in VISIBLE_PRO_STATUSES:
-            continue
-
-        key = _norm_city(city)
-        if not key:
-            continue
-        bucket = grouped.setdefault(
-            key,
-            {
-                "city": (city or "").strip(),
-                "count": 0,
-                "lat_values": [],
-                "lng_values": [],
-                "profession_counts": Counter(),
-            },
-        )
-
-        bucket["count"] += 1
-        if profession:
-            bucket["profession_counts"][profession.strip()] += 1
-        if lat is not None and lng is not None:
-            try:
-                bucket["lat_values"].append(float(lat))
-                bucket["lng_values"].append(float(lng))
-            except Exception:
-                pass
-
-    result = []
-    for data in grouped.values():
-        top_professions = [
-            name for name, _cnt in data["profession_counts"].most_common(3)
-        ]
-        lat, lng = _resolve_pro_coordinates(
-            data["city"], data["lat_values"], data["lng_values"]
-        )
-        result.append(
-            {
-                "city": data["city"] or "Paris",
-                "count": int(data["count"]),
-                "lat": float(lat),
-                "lng": float(lng),
-                "top_professions": top_professions,
-            }
-        )
-
-    result.sort(key=lambda item: (-item["count"], item["city"].lower()))
-    return jsonify(result)
+    return redirect(url_for("admin.admin_api_professionals"), code=302)

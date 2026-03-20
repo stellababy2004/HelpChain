@@ -5,6 +5,7 @@ import json
 import math
 import os
 import secrets
+import socket
 import threading
 import time
 import re
@@ -36,6 +37,11 @@ from flask_babel import force_locale, gettext as _
 from babel.support import Translations
 from werkzeug.security import check_password_hash, generate_password_hash
 
+try:
+    import psutil
+except Exception:  # pragma: no cover - keep admin routes import-safe
+    psutil = None
+
 from backend.audit import log_activity
 from backend.extensions import db, limiter
 from backend.system_sanity import run_system_checks
@@ -54,9 +60,11 @@ from ..models import (
     AdminAuditEvent,
     AdminLoginAttempt,
     AdminUser,
+    Assignment,
     Case,
     CaseEvent,
     CaseParticipant,
+    CaseCollaborator,
     Notification,
     NotificationJob,
     ProfessionalLead,
@@ -99,6 +107,9 @@ from ..services.geocoding import geocode_location_best_effort
 from ..services.ops_priority import compute_ops_priority
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
+from ..services.risk_alerts import evaluate_case_alerts
+from ..services.risk_engine import update_case_risk
+from ..services.structure_service import create_structure_with_admin
 
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
     "Identifiants invalides ou accès temporairement bloqué."
@@ -192,6 +203,8 @@ _HF_MODEL_MAP = {
 _HF_TRANSLATORS: dict[str, tuple[object, object]] = {}
 _HF_TRANSLATOR_FAILED: set[str] = set()
 _HF_TRANSLATOR_LOCK = threading.Lock()
+_SYSTEM_HEALTH_CACHE = {"expires_at": None, "payload": None}
+_SYSTEM_HEALTH_CACHE_LOCK = threading.Lock()
 
 
 def _table_has_column(table_name: str, column_name: str) -> bool:
@@ -221,6 +234,534 @@ def _table_exists(table_name: str) -> bool:
         exists = False
     _SCHEMA_TABLE_CACHE[table_name] = exists
     return exists
+
+
+def _is_local_tcp_service_available(
+    host: str = "127.0.0.1", port: int = 5000, timeout: float = 0.5
+) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _collect_db_latency_ms() -> int | None:
+    started = time.perf_counter()
+    try:
+        db.session.execute(text("SELECT 1"))
+        return int(round((time.perf_counter() - started) * 1000))
+    except Exception:
+        db.session.rollback()
+        return None
+
+
+def _collect_notification_queue_snapshot(now: datetime) -> dict[str, int | None]:
+    out: dict[str, int | None] = {
+        "pending": 0,
+        "failed_15m": 0,
+        "oldest_pending_min": None,
+    }
+    if not _table_exists("notification_jobs"):
+        return out
+
+    queue_query = NotificationJob.query
+    try:
+        if not _is_global_admin():
+            sid = _current_structure_id()
+            queue_query = queue_query.filter(
+                (NotificationJob.structure_id == sid)
+                | (NotificationJob.structure_id.is_(None))
+            )
+    except Exception:
+        pass
+
+    pending_filter = func.lower(NotificationJob.status).in_(("pending", "retry"))
+    failed_cutoff = now - timedelta(minutes=15)
+
+    out["pending"] = int(queue_query.filter(pending_filter).count() or 0)
+    out["failed_15m"] = int(
+        queue_query.filter(
+            func.lower(NotificationJob.status) == "failed",
+            NotificationJob.updated_at >= failed_cutoff,
+        ).count()
+        or 0
+    )
+
+    oldest_pending = (
+        queue_query.with_entities(NotificationJob.created_at)
+        .filter(pending_filter)
+        .order_by(NotificationJob.created_at.asc())
+        .first()
+    )
+    if oldest_pending and oldest_pending[0]:
+        created_at = _to_utc_naive(oldest_pending[0])
+        if created_at:
+            out["oldest_pending_min"] = max(
+                0, int((now - created_at).total_seconds() // 60)
+            )
+
+    return out
+
+
+def _normalize_smart_assign_text(value: str | None) -> str:
+    txt = (value or "").strip().lower().replace("-", " ").replace("_", " ")
+    return re.sub(r"\s+", " ", txt).strip()
+
+
+def _smart_assign_profession_score(
+    category_code: str | None, profession_value: str | None
+) -> int:
+    profession_map = {
+        "medical": ("doctor", "nurse", "medecin", "docteur", "infirm"),
+        "psychological": ("psychologist", "psychologue"),
+        "admin": (
+            "social worker",
+            "social_worker",
+            "assistant social",
+            "travailleur social",
+            "lawyer",
+            "avocat",
+            "juriste",
+        ),
+        "elderly support": (
+            "social worker",
+            "social_worker",
+            "assistant social",
+            "travailleur social",
+        ),
+        "housing": (
+            "social worker",
+            "social_worker",
+            "assistant social",
+            "travailleur social",
+        ),
+    }
+    wanted_tokens = profession_map.get(_normalize_smart_assign_text(category_code), ())
+    profession_text = _normalize_smart_assign_text(profession_value)
+    if not wanted_tokens or not profession_text:
+        return 0
+    return 30 if any(token in profession_text for token in wanted_tokens) else 0
+
+
+def _smart_assign_is_strong_match(
+    category_code: str | None, profession_value: str | None
+) -> bool:
+    return _smart_assign_profession_score(category_code, profession_value) >= 30
+
+
+INTERVENANT_CITY_COORDS = {
+    "paris": (48.8566, 2.3522),
+    "boulogne billancourt": (48.8397, 2.2399),
+    "issy les moulineaux": (48.8230, 2.2770),
+    "suresnes": (48.8714, 2.2293),
+    "neuilly sur seine": (48.8841, 2.2683),
+}
+INTERVENANT_DEFAULT_COORDS = INTERVENANT_CITY_COORDS["paris"]
+ACTIVE_ASSIGNMENT_STATUSES = {"active", "pending", "accepted", "in_progress"}
+
+
+def _normalize_intervenant_city_key(value: str | None) -> str:
+    txt = _normalize_smart_assign_text(value)
+    return txt.replace("–", "-").replace("-", " ").strip()
+
+
+def _split_intervenant_location(value: str | None) -> tuple[str, str]:
+    raw = (value or "").strip()
+    if not raw:
+        return "", ""
+    if "||" in raw:
+        city, address = raw.split("||", 1)
+        return city.strip(), address.strip()
+    return raw, ""
+
+
+def _join_intervenant_location(city: str | None, address: str | None) -> str:
+    city_val = (city or "").strip()
+    address_val = (address or "").strip()
+    if city_val and address_val:
+        return f"{city_val} || {address_val}"
+    return city_val or address_val
+
+
+def _intervenant_city(intervenant: Intervenant) -> str:
+    city, _address = _split_intervenant_location(getattr(intervenant, "location", None))
+    return city
+
+
+def _intervenant_address(intervenant: Intervenant) -> str:
+    _city, address = _split_intervenant_location(getattr(intervenant, "location", None))
+    return address
+
+
+def _intervenant_profession(intervenant: Intervenant) -> str:
+    return (getattr(intervenant, "actor_type", None) or "professional").strip()
+
+
+def _intervenant_availability(intervenant: Intervenant) -> str:
+    return "available" if bool(getattr(intervenant, "is_active", False)) else "unavailable"
+
+
+def _intervenant_display_name(intervenant: Intervenant) -> str:
+    return (getattr(intervenant, "name", None) or "").strip() or f"Intervenant #{intervenant.id}"
+
+
+def _assignment_workload_subquery():
+    return (
+        db.session.query(
+            Assignment.intervenant_id.label("intervenant_id"),
+            func.count(Assignment.id).label("workload"),
+        )
+        .filter(
+            func.lower(func.coalesce(Assignment.status, "active")).in_(
+                tuple(ACTIVE_ASSIGNMENT_STATUSES)
+            )
+        )
+        .group_by(Assignment.intervenant_id)
+        .subquery()
+    )
+
+
+def _resolve_intervenant_coordinates(intervenant: Intervenant) -> tuple[float, float, bool]:
+    lat = getattr(intervenant, "latitude", None) if hasattr(intervenant, "latitude") else None
+    lng = getattr(intervenant, "longitude", None) if hasattr(intervenant, "longitude") else None
+    if lat is not None and lng is not None:
+        try:
+            return float(lat), float(lng), True
+        except Exception:
+            pass
+
+    coords = INTERVENANT_CITY_COORDS.get(
+        _normalize_intervenant_city_key(_intervenant_city(intervenant)),
+        INTERVENANT_DEFAULT_COORDS,
+    )
+    return float(coords[0]), float(coords[1]), False
+
+
+def suggest_best_professional(request_row) -> dict[str, object] | None:
+    if not request_row or not _table_exists("intervenants"):
+        return None
+
+    request_structure_id = getattr(request_row, "structure_id", None)
+    request_city = _normalize_smart_assign_text(getattr(request_row, "city", None))
+    category_code = getattr(request_row, "category", None)
+    priority_flag = (
+        (getattr(request_row, "risk_level", None) or "").strip().lower() == "high"
+    )
+    now = datetime.now(UTC).replace(tzinfo=None)
+
+    professionals_query = Intervenant.query.filter(Intervenant.is_active.is_(True))
+    if request_structure_id is not None:
+        professionals_query = professionals_query.filter(
+            Intervenant.structure_id == int(request_structure_id)
+        )
+
+    professionals = (
+        professionals_query.order_by(Intervenant.created_at.desc(), Intervenant.id.desc())
+        .limit(200)
+        .all()
+    )
+    if not professionals:
+        return None
+
+    candidate_ids = [
+        int(pro.id) for pro in professionals if getattr(pro, "id", None) is not None
+    ]
+    workload_by_professional: dict[int, int] = {}
+    if candidate_ids:
+        workload_rows = (
+            db.session.query(Assignment.intervenant_id, func.count(Assignment.id))
+            .filter(Assignment.intervenant_id.in_(candidate_ids))
+            .filter(
+                func.lower(func.coalesce(Assignment.status, "active")).in_(
+                    tuple(ACTIVE_ASSIGNMENT_STATUSES)
+                )
+            )
+            .group_by(Assignment.intervenant_id)
+            .all()
+        )
+        workload_by_professional = {
+            int(intervenant_id): int(active_count or 0)
+            for intervenant_id, active_count in workload_rows
+            if intervenant_id is not None
+        }
+
+    scored: list[dict[str, object]] = []
+    for pro in professionals:
+        score = 0
+        pro_city = _normalize_smart_assign_text(_intervenant_city(pro))
+        same_city = bool(request_city and pro_city and request_city == pro_city)
+        city_match = "same" if same_city else "near"
+        if same_city:
+            score += 40
+        else:
+            score += 10
+            score -= 5
+
+        score += _smart_assign_profession_score(
+            category_code, _intervenant_profession(pro)
+        )
+        strong_match = _smart_assign_is_strong_match(
+            category_code, _intervenant_profession(pro)
+        )
+        if strong_match:
+            score += 10
+
+        active_count = int(workload_by_professional.get(int(pro.id), 0))
+        capacity_score = 0
+        if active_count == 0:
+            capacity_score += 15
+        elif active_count < 3:
+            capacity_score += 10
+        elif active_count > 8:
+            capacity_score -= 15
+        score += capacity_score
+
+        if request_structure_id is not None and getattr(pro, "structure_id", None) == request_structure_id:
+            score += 10
+
+        if priority_flag:
+            score += 15
+
+        recent_activity = getattr(pro, "updated_at", None) or getattr(
+            pro, "created_at", None
+        )
+        recent_activity_naive = _to_utc_naive(recent_activity)
+
+        responsiveness = "medium"
+        if recent_activity_naive and recent_activity_naive >= (
+            now - timedelta(hours=24)
+        ):
+            responsiveness = "high"
+            score += 15
+        elif recent_activity_naive and recent_activity_naive >= (
+            now - timedelta(days=7)
+        ):
+            responsiveness = "medium"
+        else:
+            responsiveness = "low"
+            score -= 10
+
+        scored.append(
+            {
+                "id": int(pro.id),
+                "name": _intervenant_display_name(pro),
+                "profession": _intervenant_profession(pro),
+                "score": int(score),
+                "city_match": city_match,
+                "workload": active_count,
+                "capacity": int(capacity_score),
+                "responsiveness": responsiveness,
+                "priority": priority_flag,
+                "is_priority": priority_flag,
+                "_strong_match": strong_match,
+                "_same_city": same_city,
+            }
+        )
+
+    scored.sort(
+        key=lambda item: (
+            -int(item["score"]),
+            0 if item["_same_city"] else 1,
+            str(item["name"]).lower(),
+            int(item["id"]),
+        )
+    )
+    if not scored:
+        return None
+
+    best = dict(scored[0])
+    best.pop("_same_city", None)
+    best.pop("_strong_match", None)
+    return best
+
+
+def _build_system_health_snapshot() -> dict[str, object]:
+    if psutil is None:
+        raise RuntimeError("psutil_unavailable")
+
+    now = datetime.now(UTC).replace(tzinfo=None)
+    memory = psutil.virtual_memory()
+    disk_usage = psutil.disk_usage(current_app.root_path)
+    python_procs = 0
+    flask_running = False
+
+    for proc in psutil.process_iter(["name", "cmdline"]):
+        try:
+            name = (proc.info.get("name") or "").lower()
+            cmdline_parts = proc.info.get("cmdline") or []
+            cmdline = " ".join(cmdline_parts).lower()
+        except (psutil.AccessDenied, psutil.NoSuchProcess, psutil.ZombieProcess):
+            continue
+
+        if "python" in name or "python" in cmdline:
+            python_procs += 1
+
+        if "flask" in cmdline or "gunicorn" in cmdline:
+            flask_running = True
+
+    cpu_percent = round(float(psutil.cpu_percent(interval=0.1)), 1)
+    api_ok = _is_local_tcp_service_available()
+    db_latency_ms = _collect_db_latency_ms()
+    queue = _collect_notification_queue_snapshot(now)
+
+    score = 0
+    if not api_ok:
+        score += 50
+
+    if db_latency_ms is None or db_latency_ms > 800:
+        score += 40
+    elif db_latency_ms > 300:
+        score += 25
+
+    if int(queue.get("pending") or 0) > 50:
+        score += 15
+    if int(queue.get("failed_15m") or 0) > 10:
+        score += 20
+    if (queue.get("oldest_pending_min") or 0) > 10:
+        score += 20
+
+    if cpu_percent > 85:
+        score += 20
+    elif cpu_percent > 70:
+        score += 10
+
+    if score >= 50:
+        system_risk = "high"
+    elif score >= 20:
+        system_risk = "medium"
+    else:
+        system_risk = "low"
+
+    return {
+        "status": "ok",
+        "cpu": cpu_percent,
+        "ram_used": int(memory.used / (1024 * 1024)),
+        "ram_total": int(memory.total / (1024 * 1024)),
+        "disk": int(round(float(disk_usage.percent))),
+        "python_procs": python_procs,
+        "flask_running": flask_running,
+        "api_ok": api_ok,
+        "db_latency_ms": db_latency_ms,
+        "queue": queue,
+        "system_risk": system_risk,
+        "impacted_cases": _collect_system_health_impacted_cases(),
+        "last_updated_at": now.isoformat(timespec="seconds"),
+    }
+
+
+def get_system_health_snapshot_cached() -> dict[str, object]:
+    now = datetime.now(UTC)
+    with _SYSTEM_HEALTH_CACHE_LOCK:
+        expires_at = _SYSTEM_HEALTH_CACHE.get("expires_at")
+        payload = _SYSTEM_HEALTH_CACHE.get("payload")
+        if expires_at and payload and expires_at > now:
+            return payload
+
+    payload = _build_system_health_snapshot()
+
+    with _SYSTEM_HEALTH_CACHE_LOCK:
+        _SYSTEM_HEALTH_CACHE["payload"] = payload
+        _SYSTEM_HEALTH_CACHE["expires_at"] = now + timedelta(seconds=15)
+
+    return payload
+
+
+def _collect_system_health_impacted_cases(limit: int = 5) -> list[dict[str, object]]:
+    now = datetime.now(UTC).replace(tzinfo=None)
+    open_filter = or_(
+        Request.status.is_(None), ~func.lower(Request.status).in_(CLOSED_STATUSES)
+    )
+    stale_cutoff = now - timedelta(hours=24)
+    candidates_query = (
+        _scope_requests(Request.query)
+        .filter(Request.deleted_at.is_(None))
+        .filter(open_filter)
+        .order_by(Request.created_at.asc())
+    )
+    if not _is_global_admin():
+        current_sid = _current_structure_id()
+        if current_sid:
+            candidates_query = candidates_query.filter(Request.structure_id == current_sid)
+
+    candidates = candidates_query.limit(200).all()
+
+    impacted_cases: list[dict[str, object]] = []
+    for row in candidates:
+        reason = None
+        priority = 0
+        last_activity = getattr(row, "updated_at", None) or getattr(row, "created_at", None)
+        last_activity_naive = _to_utc_naive(last_activity)
+
+        if getattr(row, "owner_id", None) is None:
+            reason = "no_owner"
+            priority = 1
+        elif last_activity_naive and last_activity_naive < stale_cutoff:
+            reason = "no_action_24h"
+            priority = 2
+        else:
+            owner_sla = _sla_prediction_state(
+                row, sla_kind="owner_assignment_overdue", now=now
+            )
+            resolve_sla = _sla_prediction_state(
+                row, sla_kind="resolution_overdue", now=now
+            )
+            if owner_sla.get("state") in {"due_soon", "breached"} or resolve_sla.get(
+                "state"
+            ) in {"due_soon", "breached"}:
+                reason = "sla_risk"
+                priority = 3
+
+        if not reason:
+            continue
+
+        actions: list[dict[str, str]] = []
+        suggested_assignee = None
+        if reason == "no_owner":
+            suggested_assignee = suggest_best_professional(row)
+            actions.append(
+                {
+                    "type": "assign",
+                    "label": "Assign automatically",
+                    "url": f"/admin/requests/{int(row.id)}/assign-suggested",
+                }
+            )
+        elif reason == "no_action_24h":
+            actions.append(
+                {
+                    "type": "notify",
+                    "label": "Send reminder",
+                    "url": f"/admin/requests/{int(row.id)}/notify-owner",
+                }
+            )
+        elif reason == "sla_risk":
+            actions.append(
+                {
+                    "type": "escalate",
+                    "label": "Escalate case",
+                    "url": f"/admin/requests/{int(row.id)}/escalate",
+                }
+            )
+
+        title = (
+            (getattr(row, "title", None) or "").strip()
+            or (getattr(row, "category", None) or "").replace("_", " ").strip().title()
+            or f"Request #{row.id}"
+        )
+        impacted_cases.append(
+            {
+                "id": int(row.id),
+                "reason": reason,
+                "priority": int(priority),
+                "title": title,
+                "url": url_for("admin.admin_request_details", req_id=row.id),
+                "suggested_assignee": suggested_assignee,
+                "actions": actions,
+            }
+        )
+
+    impacted_cases.sort(key=lambda item: (-int(item["priority"]), int(item["id"])))
+    return impacted_cases[:limit]
 
 
 def _cases_enabled() -> bool:
@@ -1636,7 +2177,7 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import case, func, or_, select
+from sqlalchemy import case, func, or_, select, text
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import joinedload
 
@@ -3120,6 +3661,13 @@ def admin_ops():
     return render_template("admin/ops_dashboard.html")
 
 
+@admin_bp.get("/system-health")
+@admin_required
+def admin_system_health():
+    admin_required_404()
+    return render_template("admin/admin_system_health.html")
+
+
 @admin_bp.get("/operator")
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin")
@@ -3144,8 +3692,10 @@ def _render_operator_dashboard():
         pass
 
     status_expr = func.lower(func.coalesce(Request.status, ""))
-    actionable_statuses = ("open", "in_progress", "approved", "pending")
-    actionable_filter = status_expr.in_(actionable_statuses)
+    actionable_statuses = ("new", "open", "in_progress", "approved", "pending")
+    # Treat unset/legacy "new" requests as operator-actionable so local/demo
+    # imports do not disappear from the ops queue while still staying scoped.
+    actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
     activity_expr = func.coalesce(Request.updated_at, Request.created_at)
     stale_threshold = _now_utc() - timedelta(hours=72)
     today_start = _now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -3735,6 +4285,9 @@ def admin_ops_login():
     next_url = next_candidate if is_safe_url(next_candidate) else ""
 
     if request.method == "POST":
+        if not _table_exists("admin_users"):
+            flash("Database not initialized. Run dev_bootstrap.py", "danger")
+            return redirect(url_for("admin.ops_login", next=next_url))
         username = request.form.get("username", "").strip()
         username_norm = _norm_username(username)
         ip = _client_ip()
@@ -3800,6 +4353,9 @@ def admin_login_legacy():
     next_url = next_candidate if is_safe_url(next_candidate) else ""
 
     if request.method == "POST":
+        if not _table_exists("admin_users"):
+            flash("Database not initialized. Run dev_bootstrap.py", "danger")
+            return redirect(url_for("admin.admin_login_legacy", next=next_url))
         username = request.form.get("username", "").strip()
         username_norm = _norm_username(username)
         ip = _client_ip()
@@ -4910,6 +5466,34 @@ def admin_ops_kpis():
     )
 
 
+@admin_bp.get("/api/system-health")
+@admin_required
+def admin_system_health_api():
+    admin_required_404()
+    try:
+        return jsonify(get_system_health_snapshot_cached())
+    except Exception:
+        current_app.logger.exception("admin_system_health_api_failed")
+        return jsonify({"status": "error"}), 500
+
+
+@admin_bp.get("/api/suggest-assignee/<int:req_id>")
+@admin_required
+def admin_suggest_assignee_api(req_id: int):
+    admin_required_404()
+    req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
+    try:
+        return jsonify(
+            {
+                "status": "ok",
+                "suggestion": suggest_best_professional(req),
+            }
+        )
+    except Exception:
+        current_app.logger.exception("admin_suggest_assignee_api_failed")
+        return jsonify({"status": "error", "suggestion": None}), 500
+
+
 @admin_bp.get("/api/territorial-kpis")
 @admin_required
 def admin_territorial_kpis():
@@ -4997,6 +5581,42 @@ def admin_territorial_kpis():
                 "oldest_open_case_days": 0,
             }
         )
+
+
+@admin_bp.post("/create-structure")
+@admin_required
+@admin_role_required("superadmin")
+def admin_create_structure():
+    admin_required_404()
+    if _admin_role_value() != "superadmin":
+        _audit_denied_action(required_roles={"superadmin"}, actor_role=_admin_role_value())
+        abort(403)
+
+    payload = request.get_json(silent=True) or {}
+    name = (payload.get("name") or "").strip()
+    admin_email = (payload.get("admin_email") or "").strip()
+    password = payload.get("password") or ""
+
+    if not name or not admin_email or not password:
+        return jsonify({"error": "missing_fields"}), 400
+
+    try:
+        structure_id, admin_id = create_structure_with_admin(
+            name=name, admin_email=admin_email, password=password
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        if msg in {"structure_name_exists", "admin_email_exists"}:
+            return jsonify({"error": msg}), 400
+        raise
+
+    return jsonify(
+        {
+            "structure_id": structure_id,
+            "admin_id": admin_id,
+            "message": "Structure created",
+        }
+    )
 
 
 @admin_bp.route("/")
@@ -5246,13 +5866,6 @@ def admin_dashboard():
 @admin_required
 def admin_intervenants():
     admin_required_404()
-    """Управление на интервенанти (canonical data)"""
-
-    import logging
-
-    logging.warning(
-        f"[DEBUG] admin_volunteers: is_authenticated={getattr(current_user, 'is_authenticated', None)}, is_admin={getattr(current_user, 'is_admin', None)}, id={getattr(current_user, 'id', None)}, username={getattr(current_user, 'username', None)}"
-    )
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -5264,7 +5877,14 @@ def admin_intervenants():
     page = max(int(request.args.get("page") or 1), 1)
     per_page = max(min(int(request.args.get("per_page") or 25), 100), 10)
 
-    query = Intervenant.query
+    workload_sq = _assignment_workload_subquery()
+    query = (
+        db.session.query(
+            Intervenant,
+            func.coalesce(workload_sq.c.workload, 0).label("workload"),
+        )
+        .outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
+    )
     if not _is_global_admin():
         query = query.filter(Intervenant.structure_id == _current_structure_id())
     if search:
@@ -5291,16 +5911,38 @@ def admin_intervenants():
     else:
         query = query.order_by(sort_col.desc(), Intervenant.id.desc())
 
-    total_volunteers = query.count()
-    total_pages = max(1, int(math.ceil(total_volunteers / float(per_page)))) if total_volunteers else 1
+    total_intervenants = query.count()
+    total_pages = max(1, int(math.ceil(total_intervenants / float(per_page)))) if total_intervenants else 1
     if page > total_pages:
         page = total_pages
 
-    volunteers = query.offset((page - 1) * per_page).limit(per_page).all()
+    rows = query.offset((page - 1) * per_page).limit(per_page).all()
+    intervenants = []
+    for intervenant, workload in rows:
+        city = _intervenant_city(intervenant)
+        address = _intervenant_address(intervenant)
+        intervenants.append(
+            SimpleNamespace(
+                id=intervenant.id,
+                legacy_volunteer_id=intervenant.legacy_volunteer_id,
+                full_name=_intervenant_display_name(intervenant),
+                profession=_intervenant_profession(intervenant),
+                email=intervenant.email,
+                phone=intervenant.phone,
+                city=city or "—",
+                address=address or "—",
+                location=intervenant.location or "",
+                availability=_intervenant_availability(intervenant),
+                is_active=bool(getattr(intervenant, "is_active", False)),
+                created_at=intervenant.created_at,
+                current_workload=int(workload or 0),
+            )
+        )
+
     return render_template(
-        "admin_volunteers.html",
-        volunteers=volunteers,
-        total_volunteers=total_volunteers,
+        "admin/intervenants_list.html",
+        intervenants=intervenants,
+        total_intervenants=total_intervenants,
         page=page,
         per_page=per_page,
         total_pages=total_pages,
@@ -5309,6 +5951,159 @@ def admin_intervenants():
         sort_by=sort_by,
         sort_order=sort_order,
     )
+
+
+@admin_bp.route("/intervenants/new", methods=["GET", "POST"])
+@admin_required
+def admin_intervenants_new():
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("Access denied."), "error")
+        return redirect(url_for("main.index"))
+
+    structures = []
+    selected_structure_id = getattr(current_user, "structure_id", None)
+    if _is_global_admin():
+        structures = (
+            Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).limit(500).all()
+        )
+        raw_structure_id = (request.form.get("structure_id") or request.args.get("structure_id") or "").strip()
+        if raw_structure_id:
+            try:
+                selected_structure_id = int(raw_structure_id)
+            except Exception:
+                selected_structure_id = None
+    else:
+        try:
+            selected_structure_id = _current_structure_id()
+        except Exception:
+            selected_structure_id = getattr(current_user, "structure_id", None)
+
+    if request.method == "POST":
+        full_name = (request.form.get("full_name") or "").strip()
+        email = (request.form.get("email") or "").strip() or None
+        profession = _normalize_smart_assign_text(request.form.get("profession") or "").replace(" ", "_")
+        city = (request.form.get("city") or "").strip()
+        address = (request.form.get("address") or "").strip()
+        availability = (request.form.get("availability") or "available").strip().lower()
+
+        errors: list[str] = []
+        if not selected_structure_id:
+            errors.append("Structure is required.")
+        if not full_name:
+            errors.append("Nom complet requis.")
+        if not profession:
+            errors.append("Profession requise.")
+        if not city:
+            errors.append("Ville requise.")
+
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return render_template(
+                "admin/intervenant_form.html",
+                structures=structures,
+                selected_structure_id=selected_structure_id,
+                form_data=request.form,
+            )
+
+        intervenant = Intervenant(
+            structure_id=int(selected_structure_id),
+            name=full_name,
+            actor_type=profession,
+            email=email,
+            phone=(request.form.get("phone") or "").strip() or None,
+            location=_join_intervenant_location(city, address),
+            is_active=availability == "available",
+        )
+
+        if hasattr(intervenant, "latitude") and _table_has_column("intervenants", "latitude"):
+            lat_raw = (request.form.get("latitude") or "").strip()
+            if lat_raw:
+                try:
+                    intervenant.latitude = float(lat_raw)
+                except Exception:
+                    flash("Latitude ignorée: valeur invalide.", "warning")
+        if hasattr(intervenant, "longitude") and _table_has_column("intervenants", "longitude"):
+            lng_raw = (request.form.get("longitude") or "").strip()
+            if lng_raw:
+                try:
+                    intervenant.longitude = float(lng_raw)
+                except Exception:
+                    flash("Longitude ignorée: valeur invalide.", "warning")
+
+        db.session.add(intervenant)
+        db.session.commit()
+        current_app.logger.info(
+            "admin_intervenants_new created intervenant_id=%s structure_id=%s",
+            intervenant.id,
+            intervenant.structure_id,
+        )
+        flash("Intervenant créé.", "success")
+        return redirect(url_for("admin.admin_intervenants"))
+
+    return render_template(
+        "admin/intervenant_form.html",
+        structures=structures,
+        selected_structure_id=selected_structure_id,
+        form_data={},
+    )
+
+
+@admin_bp.get("/professionals-map")
+@admin_required
+def admin_professionals_map():
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("Access denied."), "error")
+        return redirect(url_for("main.index"))
+    return render_template("admin/professionals_map.html")
+
+
+@admin_bp.get("/api/professionals")
+@admin_required
+def admin_api_professionals():
+    admin_required_404()
+    if not current_user.is_admin:
+        return jsonify({"status": "error", "message": "forbidden"}), 403
+
+    workload_sq = _assignment_workload_subquery()
+    query = (
+        db.session.query(
+            Intervenant,
+            func.coalesce(workload_sq.c.workload, 0).label("workload"),
+        )
+        .outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
+        .filter(Intervenant.is_active.is_(True))
+    )
+    if not _is_global_admin():
+        query = query.filter(Intervenant.structure_id == _current_structure_id())
+
+    rows = query.order_by(Intervenant.name.asc(), Intervenant.id.asc()).all()
+    professionals = []
+    for intervenant, workload in rows:
+        lat, lng, has_exact_coordinates = _resolve_intervenant_coordinates(intervenant)
+        professionals.append(
+            {
+                "id": int(intervenant.id),
+                "full_name": _intervenant_display_name(intervenant),
+                "email": intervenant.email,
+                "profession": _intervenant_profession(intervenant),
+                "city": _intervenant_city(intervenant) or "Paris",
+                "address": _intervenant_address(intervenant),
+                "latitude": lat,
+                "longitude": lng,
+                "availability": _intervenant_availability(intervenant),
+                "workload": int(workload or 0),
+                "has_exact_coordinates": has_exact_coordinates,
+            }
+        )
+
+    current_app.logger.info(
+        "admin_api_professionals returning count=%s",
+        len(professionals),
+    )
+    return jsonify({"status": "ok", "professionals": professionals})
 
 
 @admin_bp.route("/volunteers", methods=["GET"])
@@ -7456,7 +8251,18 @@ def _get_scoped_case_or_404(case_id: int) -> tuple[Case, Request]:
     case_row = db.session.get(Case, int(case_id))
     if not case_row:
         abort(404)
-    req = _scope_requests(Request.query).filter(Request.id == case_row.request_id).first()
+    sid = _current_structure_id()
+    if sid and case_row.structure_id != sid and not _is_global_admin():
+        collaborator = (
+            CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
+            .filter(CaseCollaborator.structure_id == sid)
+            .first()
+        )
+        if not collaborator:
+            abort(404)
+        req = db.session.get(Request, case_row.request_id)
+    else:
+        req = _scope_requests(Request.query).filter(Request.id == case_row.request_id).first()
     if not req:
         abort(404)
     return case_row, req
@@ -7543,6 +8349,8 @@ def admin_open_case_from_request(req_id: int):
             "suggested_category_label": triage.get("suggested_category_label"),
         },
     )
+    update_case_risk(case_row)
+    evaluate_case_alerts(case_row)
     db.session.commit()
     flash(f"Case #{case_row.id} opened.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
@@ -7583,8 +8391,31 @@ def _render_cases_list():
         except Exception:
             owner_id = None
 
-    scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
-    query = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
+    sid = _current_structure_id()
+    if sid:
+        collab_case_ids = (
+            CaseCollaborator.query.with_entities(CaseCollaborator.case_id)
+            .filter(CaseCollaborator.structure_id == sid)
+            .subquery()
+        )
+        query = (
+            Case.query.join(Request, Case.request_id == Request.id)
+            .filter(
+                (Request.structure_id == sid)
+                | (Case.id.in_(collab_case_ids))
+            )
+        )
+        counts_base = (
+            Case.query.join(Request, Case.request_id == Request.id)
+            .filter(
+                (Request.structure_id == sid)
+                | (Case.id.in_(collab_case_ids))
+            )
+        )
+    else:
+        scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+        query = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
+        counts_base = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
     activity_expr = func.coalesce(Case.last_activity_at, Case.updated_at, Case.created_at)
     stale_threshold = _now_utc() - timedelta(hours=72)
     if status in CATEGORY_CASE_STATUSES:
@@ -7640,7 +8471,7 @@ def _render_cases_list():
         case_signals[int(c.id)] = result.get("ops_priority_reasons") or []
         ops_priority_levels[int(c.id)] = result.get("ops_priority_level") or "normal"
 
-    counts_base = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
+    # counts_base prepared above to include collaborators when applicable
     score_col = func.coalesce(Case.risk_score, 0)
     critical_count = counts_base.filter(score_col >= 85).count()
     attention_count = counts_base.filter(score_col >= 60, score_col <= 84).count()
@@ -7712,6 +8543,13 @@ def admin_case_detail(case_id: int):
         .order_by(CaseParticipant.added_at.desc(), CaseParticipant.id.desc())
         .all()
     )
+    collaborators = (
+        CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
+        .join(Structure, CaseCollaborator.structure_id == Structure.id)
+        .with_entities(Structure.name, CaseCollaborator.role)
+        .order_by(Structure.name.asc())
+        .all()
+    )
     owners = (
         AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
         .order_by(AdminUser.username.asc())
@@ -7741,6 +8579,7 @@ def admin_case_detail(case_id: int):
         users=users,
         professionals=professionals,
         participants=participants,
+        collaborators=collaborators,
         risk_ai_suggestion=risk_ai_suggestion,
         operational_blockages=operational_blockages,
         suggested_professionals=suggested_professionals,
@@ -7897,6 +8736,8 @@ def admin_case_set_status(case_id: int):
             message=f"Status changed: {old_status or '-'} -> {new_status}",
             metadata={"old_status": old_status, "new_status": new_status},
         )
+        update_case_risk(case_row)
+        evaluate_case_alerts(case_row)
         db.session.commit()
         flash("Case status updated.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
@@ -7924,6 +8765,8 @@ def admin_case_set_priority(case_id: int):
             message=f"Priority changed: {old_priority or '-'} -> {new_priority}",
             metadata={"old_priority": old_priority, "new_priority": new_priority},
         )
+        update_case_risk(case_row)
+        evaluate_case_alerts(case_row)
         db.session.commit()
         flash("Case priority updated.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
@@ -7969,6 +8812,8 @@ def admin_case_assign_owner(case_id: int):
             message=f"Owner changed: {old_owner_id or '-'} -> {owner_id or '-'}",
             metadata={"old_owner_user_id": old_owner_id, "new_owner_user_id": owner_id},
         )
+        update_case_risk(case_row)
+        evaluate_case_alerts(case_row)
         db.session.commit()
         flash("Case owner updated.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
@@ -8018,6 +8863,8 @@ def admin_case_assign_professional(case_id: int):
                 "new_professional_lead_id": lead_id,
             },
         )
+        update_case_risk(case_row)
+        evaluate_case_alerts(case_row)
         db.session.commit()
         flash("Case professional assignment updated.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
@@ -8099,6 +8946,8 @@ def admin_case_add_participant(case_id: int):
             "external_name": external_name or None,
         },
     )
+    update_case_risk(case_row)
+    evaluate_case_alerts(case_row)
     db.session.commit()
     flash("Case participant updated.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
@@ -8132,6 +8981,8 @@ def admin_case_add_event(case_id: int):
         metadata=metadata or None,
         visibility=visibility,
     )
+    update_case_risk(case_row)
+    evaluate_case_alerts(case_row)
     db.session.commit()
     flash("Case event added.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
