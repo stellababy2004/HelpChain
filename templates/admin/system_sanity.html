@@ -1,82 +1,63 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin • System Sanity | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block content %}
-<div class="hc-admin-wrap">
-  <div class="hc-card p-3 mb-3">
-    <h1 class="hc-admin-title mb-1">System Sanity</h1>
-    <div class="hc-muted mb-1">Operational sanity checks for runtime integrity.</div>
-    <div class="small hc-muted">Last check: {{ checks.timestamp }}</div>
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+  <div class="hc-card hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">System Sanity</h1>
+        <div class="hc-muted mb-1">Operational sanity checks for runtime integrity.</div>
+        <div class="small hc-muted">Last check: {{ checks.timestamp }}</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+    </div>
   </div>
 
-  <div class="hc-card p-3 mb-3">
-    <h3 class="h6 mb-3">Application</h3>
-    <h3 class="h6 mb-3">Base de données</h3>
-    <h3 class="h6 mb-3">File admin</h3>
-    <h3 class="h6 mb-3">Admin queue sanity</h3>
-    <h3 class="h6 mb-3">Error capture</h3>
-    <div class="small hc-muted mb-3">Sentry configuré: vérification par variable d'environnement.</div>
-
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-striped table-hover align-middle hc-admin-table mb-0">
-        <thead>
-          <tr>
-            <th>Component</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Database</td>
-            <td>
-              {% if checks.database == "ok" %}
-                <span class="badge bg-success">OK</span>
-              {% else %}
-                <span class="badge bg-danger">ERROR</span>
-              {% endif %}
-            </td>
-          </tr>
-          <tr>
-            <td>Alembic</td>
-            <td>
-              {% if checks.alembic == "ok" %}
-                <span class="badge bg-success">OK</span>
-              {% elif checks.alembic == "warning" %}
-                <span class="badge bg-warning text-dark">WARNING</span>
-              {% else %}
-                <span class="badge bg-danger">ERROR</span>
-              {% endif %}
-            </td>
-          </tr>
-          <tr>
-            <td>Structures table</td>
-            <td>
-              {% if checks.structures_table == "ok" %}
-                <span class="badge bg-success">OK</span>
-              {% else %}
-                <span class="badge bg-danger">ERROR</span>
-              {% endif %}
-            </td>
-          </tr>
-          <tr>
-            <td>Default tenant</td>
-            <td>
-              {% if checks.default_structure == "ok" %}
-                <span class="badge bg-success">OK</span>
-              {% elif checks.default_structure == "warning" %}
-                <span class="badge bg-warning text-dark">MISSING</span>
-              {% else %}
-                <span class="badge bg-danger">ERROR</span>
-              {% endif %}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="hc-card">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Application checks</strong>
     </div>
+    <div class="hc-admin-statusgrid">
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Database</span>
+        {% if checks.database == "ok" %}
+          <span class="badge text-bg-success">OK</span>
+        {% else %}
+          <span class="badge text-bg-danger">ERROR</span>
+        {% endif %}
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Alembic</span>
+        {% if checks.alembic == "ok" %}
+          <span class="badge text-bg-success">OK</span>
+        {% elif checks.alembic == "warning" %}
+          <span class="badge text-bg-warning text-dark">WARNING</span>
+        {% else %}
+          <span class="badge text-bg-danger">ERROR</span>
+        {% endif %}
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Structures table</span>
+        {% if checks.structures_table == "ok" %}
+          <span class="badge text-bg-success">OK</span>
+        {% else %}
+          <span class="badge text-bg-danger">ERROR</span>
+        {% endif %}
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Default tenant</span>
+        {% if checks.default_structure == "ok" %}
+          <span class="badge text-bg-success">OK</span>
+        {% elif checks.default_structure == "warning" %}
+          <span class="badge text-bg-warning text-dark">MISSING</span>
+        {% else %}
+          <span class="badge text-bg-danger">ERROR</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="small hc-muted mt-3">Sentry configuré: vérification par variable d'environnement.</div>
   </div>
 </div>
 {% endblock %}

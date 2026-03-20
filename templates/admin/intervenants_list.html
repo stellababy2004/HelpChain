@@ -1,0 +1,170 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}{{ _('Admin') }} • {{ _('Intervenants') }} | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-intervenants{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
+  <div class="hc-card hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Intervenants</h1>
+        <div class="hc-muted">Gestion des intervenants de la structure</div>
+        <div class="small text-muted mt-1">
+          {{ total_intervenants }} intervenant{% if total_intervenants != 1 %}s{% endif %}
+          {% if total_pages > 1 %} • page {{ page }} / {{ total_pages }}{% endif %}
+        </div>
+      </div>
+
+      <div class="hc-admin-actions">
+        <a href="{{ url_for('admin.admin_intervenants_new') }}" class="btn btn-primary btn-sm">
+          Ajouter
+        </a>
+        <a href="{{ url_for('admin.admin_professionals_map') }}" class="btn btn-outline-secondary btn-sm">
+          Carte
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-filterbar">
+    <form method="get" class="hc-admin-filters">
+      <input
+        type="text"
+        class="form-control hc-admin-filters__search"
+        name="search"
+        value="{{ search }}"
+        placeholder="Nom, email ou téléphone..."
+      />
+      <input
+        type="text"
+        class="form-control hc-admin-filters__location"
+        name="location"
+        value="{{ location_filter }}"
+        placeholder="Ville ou territoire..."
+      />
+      <select class="form-select hc-admin-filters__sort" name="sort">
+        <option value="created_at" {% if sort_by == "created_at" %}selected{% endif %}>Date</option>
+        <option value="name" {% if sort_by == "name" %}selected{% endif %}>Nom</option>
+        <option value="location" {% if sort_by == "location" %}selected{% endif %}>Ville</option>
+        <option value="email" {% if sort_by == "email" %}selected{% endif %}>Email</option>
+      </select>
+      <input type="hidden" name="order" value="{{ sort_order }}">
+      <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+      <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Réinitialiser</a>
+    </form>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell">
+    <div class="hc-card__section hc-card__section--header hc-intervenants-tableHeader">
+      <strong>Liste des intervenants</strong>
+      <span class="hc-muted small">
+        {% if intervenants %}
+          Affichage de {{ intervenants|length }} sur {{ total_intervenants }} intervenants
+        {% else %}
+          Résultats de recherche et disponibilité
+        {% endif %}
+      </span>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0 hc-intervenants-table">
+        <colgroup>
+          <col class="hc-col-id">
+          <col class="hc-col-name">
+          <col class="hc-col-profession">
+          <col class="hc-col-email">
+          <col class="hc-col-phone">
+          <col class="hc-col-city">
+          <col class="hc-col-address">
+          <col class="hc-col-availability">
+          <col class="hc-col-workload">
+          <col class="hc-col-created">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="hc-col-id">ID</th>
+            <th class="hc-col-name">Nom</th>
+            <th class="hc-col-profession">Profession</th>
+            <th class="hc-col-email">Email</th>
+            <th class="hc-col-phone">Téléphone</th>
+            <th class="hc-col-city">Ville</th>
+            <th class="hc-col-address">Adresse</th>
+            <th class="hc-col-availability">Disponibilité</th>
+            <th class="hc-col-workload">Charge</th>
+            <th class="hc-col-created">Créé le</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if intervenants %}
+            {% for intervenant in intervenants %}
+            <tr>
+              <td class="small text-muted">{{ intervenant.id }}</td>
+              <td class="hc-intervenants-name"><strong>{{ intervenant.full_name }}</strong></td>
+              <td class="text-muted">{{ intervenant.profession|replace('_', ' ')|title }}</td>
+              <td class="hc-intervenants-email">{{ intervenant.email or '—' }}</td>
+              <td class="hc-intervenants-phone">{{ intervenant.phone or '—' }}</td>
+              <td>{{ intervenant.city or '—' }}</td>
+              <td class="hc-intervenants-address">{{ intervenant.address or '—' }}</td>
+              <td>
+                <span class="badge hc-intervenants-badge {% if intervenant.availability == 'available' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
+                  {{ 'Disponible' if intervenant.availability == 'available' else 'Indisponible' }}
+                </span>
+              </td>
+              <td class="text-muted hc-intervenants-workload">{{ intervenant.current_workload }}</td>
+              <td class="text-muted">{% if intervenant.created_at %}{{ intervenant.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="10" class="text-center py-5 hc-intervenants-emptyCell">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun intervenant trouvé</div>
+                  <div class="hc-empty-state__text">
+                  {% if search or location_filter %}
+                    Aucun intervenant ne correspond aux critères de recherche.
+                  {% else %}
+                    Aucun intervenant n'est encore enregistré.
+                  {% endif %}
+                  </div>
+                  <a href="{{ url_for('admin.admin_intervenants_new') }}" class="btn btn-primary btn-sm">Ajouter</a>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="hc-admin-actions mt-3 hc-intervenants-pagination">
+      {% set start_page = page - 2 %}
+      {% if start_page < 1 %}{% set start_page = 1 %}{% endif %}
+      {% set end_page = page + 2 %}
+      {% if end_page > total_pages %}{% set end_page = total_pages %}{% endif %}
+
+      {% if page > 1 %}
+      <a href="{{ url_for('admin.admin_intervenants', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}" class="btn btn-outline-secondary btn-sm">‹</a>
+      {% endif %}
+
+      {% for page_num in range(start_page, end_page + 1) %}
+      <a
+        href="{{ url_for('admin.admin_intervenants', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+        class="btn btn-sm {% if page_num == page %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+      >
+        {{ page_num }}
+      </a>
+      {% endfor %}
+
+      {% if page < total_pages %}
+      <a href="{{ url_for('admin.admin_intervenants', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}" class="btn btn-outline-secondary btn-sm">›</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="hc-muted text-center mt-3 hc-intervenants-footnote">
+      {% if intervenants %}
+        Affichage de {{ intervenants|length }} sur {{ total_intervenants }} intervenants
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -276,6 +276,20 @@
       </section>
 
       <section class="hc-card mb-3 p-3 hc-case-detail-card">
+        <h3 class="h6 mb-3">Collaborating structures</h3>
+        <ul class="list-unstyled mb-0">
+          {% for name, role in collaborators %}
+            <li class="d-flex justify-content-between">
+              <span>{{ name }}</span>
+              <span class="text-muted">{{ role }}</span>
+            </li>
+          {% else %}
+            <li class="text-muted">No collaborating structures.</li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="hc-card mb-3 p-3 hc-case-detail-card">
         <h3 class="h6 mb-3">Case Controls</h3>
         {% set case_activity_ref = case_row.last_activity_at or case_row.updated_at or case_row.created_at %}
         <div class="small text-muted mb-3">

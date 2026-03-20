@@ -1,24 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Centre de commandement risques | Admin{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block body_class %}hc-admin-requests-page hc-ops-workspace-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-  <style>
-    .hc-ops-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .75rem; }
-    .hc-ops-summary__item { padding: .75rem .9rem; border: 1px solid #e6ecf2; border-radius: 12px; background: #fff; }
-    .hc-ops-summary__label { font-size: .75rem; letter-spacing: .02em; text-transform: uppercase; color: rgba(15, 23, 42, .6); }
-    .hc-ops-summary__value { font-size: 1.1rem; font-weight: 700; color: #0f172a; }
-    .hc-ops-summary__value.is-alert { color: #b42318; }
-    .hc-ops-queue td { vertical-align: middle; }
-    .hc-ops-queue td { padding-top: .45rem; padding-bottom: .45rem; }
-    .hc-ops-queue .hc-ops-title { display: block; font-weight: 600; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hc-ops-queue .hc-ops-meta { color: rgba(15, 23, 42, .6); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .hc-ops-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-    .hc-ops-actions .btn { white-space: nowrap; }
-    @media (max-width: 1199.98px) { .hc-ops-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 767.98px) { .hc-ops-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 575.98px) { .hc-ops-summary { grid-template-columns: 1fr; } }
-  </style>
 {% endblock %}
 
 {% block content %}
@@ -71,6 +55,16 @@
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-ops-queue mb-0">
+        <colgroup>
+          <col class="hc-ops-col-id">
+          <col class="hc-ops-col-request">
+          <col class="hc-ops-col-city">
+          <col class="hc-ops-col-priority">
+          <col class="hc-ops-col-status">
+          <col class="hc-ops-col-owner">
+          <col class="hc-ops-col-activity">
+          <col class="hc-ops-col-action">
+        </colgroup>
         <thead>
           <tr>
             <th>ID</th>
@@ -87,13 +81,13 @@
           {% for r in queue_rows %}
             {% set activity_ref = r.updated_at or r.created_at %}
             <tr>
-              <td class="text-muted">#{{ r.id }}</td>
-              <td style="min-width: 220px;">
+              <td class="text-muted hc-ops-cell-id">#{{ r.id }}</td>
+              <td class="hc-ops-cell-request">
                 <span class="hc-ops-title" title="{{ r.title }}">{{ r.title or '—' }}</span>
                 <span class="hc-ops-meta" title="{{ request_category_label(r.category) }}">{{ request_category_label(r.category) }}</span>
                 {% set reasons = queue_reasons.get(r.id, []) %}
                 {% if reasons %}
-                  <div class="mt-1 d-flex flex-wrap gap-1">
+                  <div class="mt-1 d-flex flex-wrap gap-1 hc-ops-reasons">
                     {% for reason in reasons %}
                       {% set reason_lower = reason|lower %}
                       {% if 'critique' in reason_lower or 'urgent' in reason_lower or 'échec' in reason_lower %}
@@ -108,8 +102,8 @@
                   </div>
                 {% endif %}
               </td>
-              <td class="small text-muted">{{ r.city or '—' }}</td>
-              <td>
+              <td class="small text-muted hc-ops-cell-city">{{ r.city or '—' }}</td>
+              <td class="hc-ops-cell-priority">
                 {% set ops_level = (ops_priority_levels.get(r.id) or 'normal') %}
                 {% if ops_level == 'critique' %}
                   <span class="badge text-bg-danger">Critique</span>
@@ -119,20 +113,23 @@
                   <span class="badge text-bg-secondary">Normal</span>
                 {% endif %}
               </td>
-              <td><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
-              <td>{% if r.owner %}{{ r.owner.username }}{% else %}—{% endif %}</td>
-              <td>
+              <td class="hc-ops-cell-status"><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
+              <td class="hc-ops-cell-owner">{% if r.owner %}{{ r.owner.username }}{% else %}—{% endif %}</td>
+              <td class="hc-ops-cell-activity">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
-                <div class="small text-muted">{{ activity_ref or '—' }}</div>
+                <div class="small text-muted hc-ops-activity-meta">{{ activity_ref or '—' }}</div>
               </td>
-              <td class="text-end">
+              <td class="text-end hc-ops-cell-action">
                 <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
               </td>
             </tr>
           {% else %}
             <tr>
-              <td colspan="8" class="text-center text-muted py-4">
-                Aucune situation urgente pour le moment.
+              <td colspan="8" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucune situation urgente</div>
+                  <div class="hc-empty-state__text">La file opérateur ne contient actuellement aucune demande prioritaire, non assignée ou sans action récente.</div>
+                </div>
               </td>
             </tr>
           {% endfor %}

@@ -1,0 +1,222 @@
+.hc-admin-structures-page .hc-admin-wrap{
+  width: min(1720px, calc(100vw - 28px));
+  max-width: min(1720px, calc(100vw - 28px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hc-admin-structures-page .hc-admin-headerCard{
+  padding: 16px 18px;
+}
+
+.hc-admin-structures-page .hc-admin-headerTop{
+  margin-bottom: 0;
+  padding-bottom: 2px;
+}
+
+.hc-admin-structures-page .hc-admin-table-shell{
+  padding: 0;
+  overflow: hidden;
+}
+
+.hc-admin-structures-page .hc-structures-tableHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hc-admin-structures-page .hc-structures-search{
+  flex: 1 1 320px;
+  max-width: 360px;
+  min-width: 240px;
+}
+
+.hc-admin-structures-page .hc-card.hc-admin-table-shell > .d-flex{
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,250,251,.94));
+}
+
+.hc-admin-structures-page .hc-admin-tablewrap{
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-gutter: stable both-edges;
+}
+
+.hc-admin-structures-page .hc-admin-table{
+  table-layout: fixed;
+  width: 100%;
+  min-width: 920px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.hc-admin-structures-page .hc-admin-table col.hc-col-structure{
+  width: 38%;
+}
+
+.hc-admin-structures-page .hc-admin-table col.hc-col-slug{
+  width: 24%;
+}
+
+.hc-admin-structures-page .hc-admin-table col.hc-col-users{
+  width: 10%;
+}
+
+.hc-admin-structures-page .hc-admin-table col.hc-col-requests{
+  width: 10%;
+}
+
+.hc-admin-structures-page .hc-admin-table col.hc-col-status{
+  width: 12%;
+}
+
+.hc-admin-structures-page .hc-admin-table col.hc-col-actions{
+  width: 6%;
+}
+
+.hc-admin-structures-page .hc-admin-table thead th,
+.hc-admin-structures-page .hc-admin-table tbody td{
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.hc-admin-structures-page .hc-admin-table thead th{
+  position: static;
+  top: auto;
+  z-index: auto;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+  color: rgba(15, 23, 42, 0.66);
+  background: rgba(248, 250, 252, 0.96);
+  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+  padding-top: 0.82rem;
+  padding-bottom: 0.72rem;
+}
+
+.hc-admin-structures-page .hc-admin-table tbody td{
+  padding-top: 0.64rem;
+  padding-bottom: 0.64rem;
+  line-height: 1.25;
+  color: rgba(15, 23, 42, 0.92);
+}
+
+.hc-admin-structures-page .hc-admin-table tbody tr:nth-child(even) td{
+  background: rgba(248, 250, 252, 0.72);
+}
+
+.hc-admin-structures-page .hc-admin-table tbody tr:hover td{
+  background: rgba(239, 246, 255, 0.78);
+}
+
+.hc-admin-structures-page .hc-admin-table th:first-child,
+.hc-admin-structures-page .hc-admin-table td:first-child,
+.hc-admin-structures-page .hc-admin-table th:nth-child(2),
+.hc-admin-structures-page .hc-admin-table td:nth-child(2),
+.hc-admin-structures-page .hc-admin-table th:nth-child(3),
+.hc-admin-structures-page .hc-admin-table td:nth-child(3){
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  background: inherit;
+  box-shadow: none !important;
+}
+
+.hc-admin-structures-page .hc-admin-table td.hc-structure-name{
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.96);
+}
+
+.hc-admin-structures-page .hc-admin-table td.hc-structure-slug{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  color: rgba(71, 85, 105, 0.78);
+}
+
+.hc-admin-structures-page .hc-admin-table td.text-center{
+  text-align: center;
+  color: rgba(71, 85, 105, 0.78);
+}
+
+.hc-admin-structures-page .hc-admin-table td.text-end{
+  text-align: right;
+}
+
+.hc-admin-structures-page .hc-admin-table td:last-child{
+  padding-right: 0.75rem;
+}
+
+.hc-admin-structures-page .hc-structure-status{
+  white-space: nowrap;
+  min-width: 72px;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: .38rem .62rem;
+}
+
+.hc-admin-structures-page .hc-admin-table td:last-child .btn{
+  min-width: 84px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: .9rem;
+}
+
+.hc-admin-structures-page .hc-empty-row td{
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: rgba(255,255,255,.96) !important;
+}
+
+.hc-admin-structures-page .row.g-3.mb-3 > .col-12 > .card{
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 22px rgba(2, 6, 23, 0.05);
+  background: rgba(255,255,255,.94);
+}
+
+.hc-admin-structures-page .hc-structure-metric{
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 16px;
+}
+
+.hc-admin-structures-page .hc-structure-metric .small{
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: rgba(71, 85, 105, 0.84);
+}
+
+.hc-admin-structures-page .row.g-3.mb-3 > .col-12 > .card .h4{
+  letter-spacing: -0.02em;
+  color: rgba(15, 23, 42, 0.96);
+}
+
+@media (max-width: 992px){
+  .hc-admin-structures-page .hc-admin-wrap{
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+  }
+
+  .hc-admin-structures-page .hc-admin-headerCard{
+    padding: 14px 16px;
+  }
+
+  .hc-admin-structures-page .hc-admin-table{
+    min-width: 860px;
+  }
+}

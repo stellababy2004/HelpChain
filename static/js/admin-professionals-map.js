@@ -15,40 +15,41 @@
   }
 
   function updateKpis(rows) {
-    var cities = Array.isArray(rows) ? rows.length : 0;
-    var totalPros = 0;
+    var list = Array.isArray(rows) ? rows : [];
+    var cityCounts = Object.create(null);
+    var professionCounts = Object.create(null);
     var topCity = "N/A";
     var topCityCount = -1;
-    var professionScores = Object.create(null);
-
-    (rows || []).forEach(function (item) {
-      var count = Number(item && item.count);
-      var safeCount = Number.isFinite(count) ? count : 0;
-      totalPros += safeCount;
-
-      if (safeCount > topCityCount) {
-        topCityCount = safeCount;
-        topCity = (item && item.city) || "N/A";
-      }
-
-      var topProf = Array.isArray(item && item.top_professions) ? item.top_professions[0] : "";
-      if (topProf) {
-        professionScores[topProf] = (professionScores[topProf] || 0) + safeCount;
-      }
-    });
-
     var dominantProfession = "N/A";
-    var dominantScore = -1;
-    Object.keys(professionScores).forEach(function (name) {
-      if (professionScores[name] > dominantScore) {
-        dominantScore = professionScores[name];
-        dominantProfession = name;
+    var dominantProfessionCount = -1;
+
+    list.forEach(function (item) {
+      var city = (item && item.city) || "N/A";
+      var profession = (item && item.profession) || "N/A";
+      cityCounts[city] = (cityCounts[city] || 0) + 1;
+      professionCounts[profession] = (professionCounts[profession] || 0) + 1;
+    });
+
+    Object.keys(cityCounts).forEach(function (city) {
+      if (cityCounts[city] > topCityCount) {
+        topCityCount = cityCounts[city];
+        topCity = city;
       }
     });
 
-    setText("proMapCitiesCount", String(cities));
-    setText("proMapProfessionalsCount", String(totalPros));
-    setText("proMapTopCity", topCityCount > 0 ? (topCity + " (" + topCityCount + ")") : "N/A");
+    Object.keys(professionCounts).forEach(function (profession) {
+      if (professionCounts[profession] > dominantProfessionCount) {
+        dominantProfessionCount = professionCounts[profession];
+        dominantProfession = profession;
+      }
+    });
+
+    setText("proMapCitiesCount", String(Object.keys(cityCounts).length));
+    setText("proMapProfessionalsCount", String(list.length));
+    setText(
+      "proMapTopCity",
+      topCityCount > 0 ? topCity + " (" + topCityCount + ")" : "N/A"
+    );
     setText("proMapTopProfession", dominantProfession);
   }
 
@@ -71,39 +72,46 @@
     }, 0);
 
     try {
-      var res = await fetch("/admin/api/professionals-map", { credentials: "same-origin" });
+      var res = await fetch("/admin/api/professionals", {
+        credentials: "same-origin",
+        cache: "no-store",
+      });
       if (!res.ok) return;
-      var rows = await res.json();
-      var data = Array.isArray(rows) ? rows : [];
 
+      var payload = await res.json();
+      if (!payload || payload.status !== "ok" || !Array.isArray(payload.professionals)) {
+        return;
+      }
+
+      var data = payload.professionals;
       updateKpis(data);
       layer.clearLayers();
       bounds.length = 0;
 
       data.forEach(function (item) {
-        var lat = Number(item && item.lat);
-        var lng = Number(item && item.lng);
-        var count = Number(item && item.count);
+        var lat = Number(item && item.latitude);
+        var lng = Number(item && item.longitude);
         if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-        var safeCount = Number.isFinite(count) ? count : 0;
-        var radius = 220 + Math.min(safeCount, 120) * 14;
-        var professions = Array.isArray(item && item.top_professions) ? item.top_professions : [];
-        var topProfessions = professions.length ? professions.map(esc).join(", ") : "N/A";
+        var name = esc((item && item.full_name) || "Intervenant");
+        var profession = esc((item && item.profession) || "professional");
         var city = esc((item && item.city) || "N/A");
+        var availability = esc((item && item.availability) || "unknown");
+        var workload = Number(item && item.workload);
+        var safeWorkload = Number.isFinite(workload) ? workload : 0;
+        var address = esc((item && item.address) || "");
+        var coordsLabel = item && item.has_exact_coordinates ? "coordonnées exactes" : "coordonnées ville";
 
-        L.circle([lat, lng], {
-          radius: radius,
-          color: "#1d4ed8",
-          weight: 2,
-          fillColor: "#60a5fa",
-          fillOpacity: 0.26,
-        })
+        L.marker([lat, lng])
           .addTo(layer)
           .bindPopup(
-            "<strong>" + city + "</strong><br>" +
-              "Professionnels: " + String(safeCount) + "<br>" +
-              "Top métiers: " + topProfessions
+            "<strong>" + name + "</strong><br>" +
+              profession + "<br>" +
+              city + "<br>" +
+              (address ? address + "<br>" : "") +
+              "Disponibilité: " + availability + "<br>" +
+              "Charge: " + String(safeWorkload) + "<br>" +
+              "Source carte: " + coordsLabel
           );
 
         bounds.push([lat, lng]);

@@ -7,289 +7,220 @@
 {% endblock %}
 
 {% block admin_content %}
-  <!-- Loading Spinner -->
   <div class="loading-spinner" id="loadingSpinner">
     <div class="spinner"></div>
   </div>
 
-  <div class="container-fluid mt-4">
-    <!-- Header -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h1 class="h2 mb-1">
-              <i class="fas fa-users text-success me-2"></i>Intervenants
-            </h1>
-            <p class="text-muted mb-0">
-              Gestion des intervenants de la structure
-            </p>
-            <div class="small text-muted">
-              Vue actuelle des intervenants (migration en cours).
-            </div>
-          </div>
-          <div class="d-flex gap-2">
-            <a
-              href="{{ safe_url_for('admin.admin_intervenants') }}"
-              class="btn btn-success-modern btn-modern"
-            >
-              <i class="fas fa-plus me-1"></i>Ajouter un intervenant
-            </a>
-            <button
-              class="btn btn-info-modern btn-modern"
-              data-action="exportVolunteers"
-            >
-              <i class="fas fa-download me-1"></i>Exporter
-            </button>
-          </div>
-        </div>
+  <div class="hc-page hc-admin-wrap hc-admin-wrap--wide">
+    <div class="hc-page-header hc-card p-3 mb-3">
+      <div>
+        <h1 class="hc-title">Intervenants</h1>
+        <p class="hc-subtitle">Gestion des intervenants de la structure</p>
+      </div>
+
+      <div class="hc-actions mt-2">
+        <a href="/admin/intervenants/new" class="hc-btn hc-btn-primary hc-btn--primary">
+          + Ajouter
+        </a>
+        <button
+          type="button"
+          class="hc-btn hc-btn-ghost hc-btn--ghost"
+          data-action="exportVolunteers"
+        >
+          Exporter
+        </button>
       </div>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="row mb-4">
-      <div class="col-xl-3 col-md-6">
-        <div class="stats-card fade-in">
-          <div class="stats-icon hc-bg-success-gradient">
-            <i class="fas fa-users text-white"></i>
-          </div>
-          <div class="stats-value">{{ total_volunteers }}</div>
-          <p class="stats-label">Intervenants au total</p>
-        </div>
-      </div>
+    <div class="hc-card p-3 mb-3">
+      <form method="GET" class="hc-filter-bar">
+        <input
+          type="text"
+          class="hc-input"
+          id="search"
+          name="search"
+          value="{{ search }}"
+          placeholder="Nom, email ou téléphone..."
+        />
 
-      <div class="col-xl-3 col-md-6">
-        <div class="stats-card fade-in">
-          <div class="stats-icon hc-bg-primary-gradient">
-            <i class="fas fa-user-check text-white"></i>
-          </div>
-          <div class="stats-value">{{ total_volunteers }}</div>
-          <p class="stats-label">Intervenants actifs</p>
-        </div>
-      </div>
+        <input
+          type="text"
+          class="hc-input"
+          id="location"
+          name="location"
+          value="{{ location_filter }}"
+          placeholder="Ville ou territoire..."
+        />
 
-      <div class="col-xl-3 col-md-6">
-        <div class="stats-card fade-in">
-          <div class="stats-icon hc-bg-info-gradient">
-            <i class="fas fa-map-marker-alt text-white"></i>
-          </div>
-          <div class="stats-value">{{ total_volunteers }}</div>
-          <p class="stats-label">Localisations couvertes</p>
-        </div>
-      </div>
+        <select class="hc-select" id="sort" name="sort">
+          <option value="created_at" {% if sort_by == "created_at" %}selected{% endif %}>Date</option>
+          <option value="name" {% if sort_by == "name" %}selected{% endif %}>Nom</option>
+          <option value="location" {% if sort_by == "location" %}selected{% endif %}>Ville</option>
+        </select>
 
-      <div class="col-xl-3 col-md-6">
-        <div class="stats-card fade-in">
-          <div class="stats-icon hc-bg-warning-gradient">
-            <i class="fas fa-clock text-white"></i>
-          </div>
-          <div class="stats-value">{{ total_volunteers }}</div>
-          <p class="stats-label">Nouveaux cette semaine</p>
-        </div>
-      </div>
-    </div>
+        <input type="hidden" name="order" value="{{ sort_order }}">
 
-    <!-- Search and Filters -->
-    <div class="filters-section fade-in">
-      <form method="GET" class="row g-3 align-items-end">
-        <div class="col-md-4">
-          <label for="search" class="form-label">
-            <i class="fas fa-search me-1"></i>Recherche
-          </label>
-          <input
-            type="text"
-            class="form-control search-input"
-            id="search"
-            name="search"
-            value="{{ search }}"
-            placeholder="Nom, email ou téléphone..."
-          />
-        </div>
-
-        <div class="col-md-3">
-          <label for="location" class="form-label">
-            <i class="fas fa-map-marker-alt me-1"></i>Localisation
-          </label>
-          <input
-            type="text"
-            class="form-control search-input"
-            id="location"
-            name="location"
-            value="{{ location_filter }}"
-            placeholder="Ville ou territoire..."
-          />
-        </div>
-
-        <div class="col-md-2">
-          <label for="sort" class="form-label">
-            <i class="fas fa-sort me-1"></i>Trier
-          </label>
-          <select class="form-select" id="sort" name="sort">
-            <option value="name" {% if sort_by == "name" %}selected{% endif %}>Nom</option>
-            <option value="location" {% if sort_by == "location" %}selected{% endif %}>Localisation</option>
-            <option value="created_at" {% if sort_by == "created_at" %}selected{% endif %}>Date</option>
-          </select>
-        </div>
-
-        <div class="col-md-3">
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary-modern btn-modern">
-              <i class="fas fa-filter me-1"></i>Filtrer
-            </button>
-              <a
-                href="{{ safe_url_for('admin.admin_intervenants') }}"
-                class="btn btn-secondary btn-modern"
-              >
-              <i class="fas fa-times me-1"></i>Réinitialiser
-            </a>
-          </div>
-        </div>
+        <button type="submit" class="hc-btn hc-btn-primary hc-btn--primary">
+          Filtrer
+        </button>
+        <a
+          href="{{ safe_url_for('admin.admin_intervenants') }}"
+          class="hc-btn hc-btn-ghost hc-btn--ghost"
+        >
+          Réinitialiser
+        </a>
       </form>
     </div>
 
-    <!-- Intervenants Table -->
-    <div class="table-responsive fade-in">
-      <table class="table table-modern">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nom</th>
-            <th>Type</th>
-            <th>Email</th>
-            <th>Téléphone</th>
-            <th>Ville</th>
-            <th>Créé le</th>
-            <th>Statut</th>
-            <th>{{ _('Actions') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if volunteers %}
-          {% for volunteer in volunteers %}
-          <tr>
-            <td>{{ volunteer.legacy_volunteer_id or '—' }}</td>
-            <td>
-              <strong>{{ volunteer.name }}</strong>
-            </td>
-            <td>
-              <span class="status-badge status-active">
-                {{ (volunteer.actor_type or 'volunteer')|replace('_',' ')|title }}
-              </span>
-            </td>
-            <td>{{ volunteer.email }}</td>
-            <td>{{ volunteer.phone or '—' }}</td>
-            <td>{{ volunteer.location or '—' }}</td>
-            <td>
-              {% if volunteer.created_at %}{{ volunteer.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
-            </td>
-            <td>
-              <span class="status-badge status-active">Actif</span>
-            </td>
-            <td>
-              <div class="btn-group" role="group">
-                <button
-                  class="btn btn-info-modern btn-modern btn-sm"
-                  data-action="viewVolunteer"
-                  data-id="{{ volunteer.legacy_volunteer_id or '' }}"
-                  title="Voir les détails"
-                  {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
-                >
-                  <i class="fas fa-eye"></i>
-                </button>
-                <button
-                  class="btn btn-warning-modern btn-modern btn-sm"
-                  data-action="editVolunteer"
-                  data-id="{{ volunteer.legacy_volunteer_id or '' }}"
-                  title="Modifier"
-                  {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
-                >
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button
-                  class="btn btn-danger-modern btn-modern btn-sm"
-                  data-action="deleteVolunteer"
-                  data-id="{{ volunteer.legacy_volunteer_id or '' }}"
-                  data-name="{{ volunteer.name }}"
-                  title="Supprimer"
-                  {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
-                >
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-          {% else %}
-          <tr>
-            <td colspan="9" class="text-center py-5">
-              <i class="fas fa-users fa-3x text-muted mb-3"></i>
-              <h4 class="text-muted">Aucun intervenant trouvé</h4>
-              <p class="text-muted">
-                {% if search or location_filter %} Aucun intervenant ne
-                correspond aux critères de recherche. {% else %} Aucun
-                intervenant n'est encore enregistré dans le système. {% endif %}
-              </p>
-              <a
-                href="{{ safe_url_for('admin.admin_intervenants') }}"
-                class="btn btn-success-modern btn-modern"
-              >
-                <i class="fas fa-plus me-1"></i>Ajouter le premier intervenant
-              </a>
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div>
+    <div class="hc-card p-3">
+      <div class="table-responsive">
+        <table class="hc-table">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">NOM</th>
+              <th scope="col">TYPE</th>
+              <th scope="col">EMAIL</th>
+              <th scope="col">TÉLÉPHONE</th>
+              <th scope="col">VILLE</th>
+              <th scope="col">CRÉÉ LE</th>
+              <th scope="col">STATUT</th>
+              <th scope="col">{{ _('Actions')|upper }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if volunteers %}
+              {% for volunteer in volunteers %}
+              <tr>
+                <td>{{ volunteer.legacy_volunteer_id or '—' }}</td>
+                <td><strong>{{ volunteer.name }}</strong></td>
+                <td>
+                  <span class="hc-muted">
+                    {{ (volunteer.actor_type or 'volunteer')|replace('_',' ')|title }}
+                  </span>
+                </td>
+                <td>{{ volunteer.email }}</td>
+                <td>{{ volunteer.phone or '—' }}</td>
+                <td>{{ volunteer.location or '—' }}</td>
+                <td>
+                  {% if volunteer.created_at %}{{ volunteer.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+                </td>
+                <td>
+                  <span class="hc-muted">Actif</span>
+                </td>
+                <td>
+                  <div class="hc-actions">
+                    <button
+                      type="button"
+                      class="hc-btn hc-btn-ghost hc-btn--ghost"
+                      data-action="viewVolunteer"
+                      data-id="{{ volunteer.legacy_volunteer_id or '' }}"
+                      title="Voir les détails"
+                      {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
+                    >
+                      Voir
+                    </button>
+                    <button
+                      type="button"
+                      class="hc-btn hc-btn-ghost hc-btn--ghost"
+                      data-action="editVolunteer"
+                      data-id="{{ volunteer.legacy_volunteer_id or '' }}"
+                      title="Modifier"
+                      {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      type="button"
+                      class="hc-btn hc-btn-danger"
+                      data-action="deleteVolunteer"
+                      data-id="{{ volunteer.legacy_volunteer_id or '' }}"
+                      data-name="{{ volunteer.name }}"
+                      title="Supprimer"
+                      {% if not volunteer.legacy_volunteer_id %}disabled aria-disabled="true"{% endif %}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="9" class="text-center py-5">
+                  <div class="hc-muted mb-2">Aucun intervenant trouvé</div>
+                  <p class="hc-muted mb-2">
+                    {% if search or location_filter %}
+                      Aucun intervenant ne correspond aux critères de recherche.
+                    {% else %}
+                      Aucun intervenant n'est encore enregistré dans le système.
+                    {% endif %}
+                  </p>
+                  <a
+                    href="/admin/intervenants/new"
+                    class="hc-btn hc-btn-primary hc-btn--primary"
+                  >
+                    + Ajouter
+                  </a>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
 
-    <!-- Pagination -->
-    {% if total_pages > 1 %}
-    <div class="pagination-modern">
-      {% set start_page = page - 2 %}
-      {% if start_page < 1 %}
-        {% set start_page = 1 %}
-      {% endif %}
-      {% set end_page = page + 2 %}
-      {% if end_page > total_pages %}
-        {% set end_page = total_pages %}
-      {% endif %}
-      {% if page > 1 %}
-      <a
-        href="{{ safe_url_for('admin.admin_intervenants', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
-        class="page-link"
-      >
-        <i class="fas fa-chevron-left"></i>
-      </a>
-      {% endif %} {% for page_num in range(start_page, end_page + 1) %}
-      <a
-        href="{{ safe_url_for('admin.admin_intervenants', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
-        class="page-link {% if page_num == page %}active{% endif %}"
-      >
-        {{ page_num }}
-      </a>
-      {% endfor %} {% if page < total_pages %}
-      <a
-        href="{{ safe_url_for('admin.admin_intervenants', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
-        class="page-link"
-      >
-        <i class="fas fa-chevron-right"></i>
-      </a>
-      {% endif %}
-    </div>
-    {% endif %}
+      {% if total_pages > 1 %}
+      <div class="hc-actions mt-3">
+        {% set start_page = page - 2 %}
+        {% if start_page < 1 %}
+          {% set start_page = 1 %}
+        {% endif %}
+        {% set end_page = page + 2 %}
+        {% if end_page > total_pages %}
+          {% set end_page = total_pages %}
+        {% endif %}
 
-    <!-- Results Info -->
-    <div class="text-center text-muted mt-3">
-      {% if volunteers %} Affichage de {{ volunteers|length }} sur {{
-      total_volunteers }} intervenants {% if search or location_filter %}
-      (résultats filtrés) {% endif %} {% endif %}
+        {% if page > 1 %}
+        <a
+          href="{{ safe_url_for('admin.admin_intervenants', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          class="hc-btn hc-btn-ghost hc-btn--ghost"
+        >
+          ‹
+        </a>
+        {% endif %}
+
+        {% for page_num in range(start_page, end_page + 1) %}
+        <a
+          href="{{ safe_url_for('admin.admin_intervenants', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          class="hc-btn {% if page_num == page %}hc-btn-primary hc-btn--primary{% else %}hc-btn-ghost hc-btn--ghost{% endif %}"
+        >
+          {{ page_num }}
+        </a>
+        {% endfor %}
+
+        {% if page < total_pages %}
+        <a
+          href="{{ safe_url_for('admin.admin_intervenants', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+          class="hc-btn hc-btn-ghost hc-btn--ghost"
+        >
+          ›
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="hc-muted text-center mt-3">
+        {% if volunteers %}
+          Affichage de {{ volunteers|length }} sur {{ total_volunteers }} intervenants
+          {% if search or location_filter %}(résultats filtrés){% endif %}
+        {% endif %}
+      </div>
     </div>
   </div>
 {% endblock %}
 
 {% block scripts %}
   <script>
-    // Intervenant Actions
     function viewVolunteer(elOrId) {
       const id = typeof elOrId === "number" ? elOrId : Number(elOrId?.getAttribute("data-id"));
       if (!id) return;
@@ -345,7 +276,6 @@
       }
     }
 
-    // Logout function
     function logout() {
       if (
         confirm(
@@ -360,7 +290,6 @@
       }
     }
 
-    // Delegated actions (CSP-ready pattern)
     (function () {
       function safeCall(fnName, el) {
         try {
@@ -379,15 +308,5 @@
         safeCall(action, el);
       });
     })();
-
-    // Initialize animations
-    document.addEventListener("DOMContentLoaded", function () {
-      const cards = document.querySelectorAll(
-        ".stats-card, .filters-section, .table-modern",
-      );
-      cards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-      });
-    });
   </script>
 {% endblock %}

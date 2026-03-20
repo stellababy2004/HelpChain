@@ -156,7 +156,7 @@
   </section>
 
   <div class="hc-requests-toolbar mb-3 hc-admin-stickybar hc-requests-toolbar--wide" id="hcRequestsToolbar">
-  <div class="hc-risk-overview mb-2">
+  <div class="hc-risk-overview mb-2 hc-requests-toolbar__overview">
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical') }}">
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
       <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
@@ -175,7 +175,7 @@
     </a>
   </div>
 
-  <div class="hc-risk-filters mb-2">
+  <div class="hc-risk-filters mb-2 hc-requests-toolbar__shortcuts">
     <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical') }}">{{ _('Critique') }}</a>
     <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention') }}">{{ _('Attention') }}</a>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1') }}">{{ _('Sans responsable') }}</a>
@@ -184,7 +184,7 @@
   </div>
 
   {% set selected_category = normalize_request_category(request.args.get('category') or '') %}
-  <form class="row g-2 align-items-end mb-2" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
+  <form class="row g-2 align-items-end mb-2 hc-requests-toolbar__search" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
     <div class="col-12 col-xl-4">
       <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
         autofocus
@@ -232,7 +232,7 @@
     </div>
   </form>
 
-  <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+  <div class="d-flex flex-wrap gap-2 align-items-center mb-2 hc-requests-toolbar__actions">
     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#hcFiltersPanel" aria-expanded="false" aria-controls="hcFiltersPanel">
       Filtres
     </button>
@@ -288,8 +288,8 @@
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Réinitialiser</a>
   </div>
 
-  <div class="collapse {% if status or show_deleted or risk or request.args.get('category') %}show {% endif %}mb-2" id="hcFiltersPanel">
-    <form class="row g-2 align-items-end" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminFilterForm">
+  <div class="collapse {% if status or show_deleted or risk or request.args.get('category') %}show {% endif %}mb-2 hc-requests-toolbar__advanced" id="hcFiltersPanel">
+    <form class="row g-2 align-items-end hc-requests-toolbar__advancedForm" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminFilterForm">
       <div class="col-xl-4 col-lg-5">
         <select class="form-select" name="status" id="hcAdminFilterStatus" aria-label="{{ _('Status') }}">
           <option value="">{{ _('All statuses') }}</option>
@@ -340,7 +340,7 @@
   </div>
   {% endif %}
 
-  <div class="hc-bulkbar mt-2" id="hcBulkBar" data-csrf="{{ csrf_token() }}">
+  <div class="hc-bulkbar mt-2 hc-requests-toolbar__bulk" id="hcBulkBar" data-csrf="{{ csrf_token() }}">
     <label class="form-check m-0">
       <input class="form-check-input" type="checkbox" id="hcSelectAllVisible">
       <span class="form-check-label ms-1">{{ _('Select visible') }}</span>
@@ -362,7 +362,7 @@
     <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">Effacer la sélection</button>
     <span class="hc-bulkbar__hint">{{ _('/ search · j/k move · Enter open') }}</span>
   </div>
-  <div class="hc-quickchips mt-2" id="hcQuickChips">
+  <div class="hc-quickchips mt-2 hc-requests-toolbar__quickchips" id="hcQuickChips">
     <button type="button" class="hc-quickchip" data-quick-filter="no_owner">Sans responsable</button>
     <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Stale') }}</button>
     <button type="button" class="hc-quickchip" data-quick-filter="urgent">{{ _('Urgent') }}</button>

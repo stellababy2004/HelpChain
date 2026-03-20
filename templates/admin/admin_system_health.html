@@ -1,0 +1,119 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Admin • System Health | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-system-page{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+  <div class="hc-card hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">System Health</h1>
+        <div class="hc-muted">Live infrastructure status for the admin console.</div>
+        <div class="small text-muted mt-1">
+          Auto-refreshes every 2 seconds.
+          Last updated: <span id="hc-health-updated">pending</span>
+        </div>
+      </div>
+      <div class="hc-admin-actions">
+        <span class="badge text-bg-secondary hc-system-health-badge" id="hc-health-state">Syncing</span>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Runtime snapshot</strong>
+    </div>
+    <div class="hc-admin-statusgrid hc-system-health-grid">
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">CPU</span>
+        <span class="hc-system-health-value" id="cpu">Loading</span>
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">RAM</span>
+        <span class="hc-system-health-value" id="ram">Loading</span>
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Disk</span>
+        <span class="hc-system-health-value" id="disk">Loading</span>
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Python processes</span>
+        <span class="hc-system-health-value" id="python">Loading</span>
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">Flask status</span>
+        <span class="badge text-bg-secondary hc-system-health-badge" id="flask">Syncing</span>
+      </div>
+      <div class="hc-admin-statusitem">
+        <span class="hc-admin-statusitem__label">API status</span>
+        <span class="badge text-bg-secondary hc-system-health-badge" id="api">Syncing</span>
+      </div>
+    </div>
+    <div class="hc-card__section hc-system-health-note">
+      <div class="small hc-muted mb-0">When the runtime check cannot load, the page degrades to explicit unavailable states instead of placeholder dashes.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const healthState = document.getElementById("hc-health-state");
+const healthUpdated = document.getElementById("hc-health-updated");
+const cpuEl = document.getElementById("cpu");
+const ramEl = document.getElementById("ram");
+const diskEl = document.getElementById("disk");
+const pythonEl = document.getElementById("python");
+const flaskEl = document.getElementById("flask");
+const apiEl = document.getElementById("api");
+
+function setBadge(el, text, tone) {
+  el.className = `badge ${tone} hc-system-health-badge`;
+  el.innerText = text;
+}
+
+function setHealthFallback() {
+  setBadge(healthState, "Unavailable", "text-bg-warning text-dark");
+  cpuEl.innerText = "N/A";
+  ramEl.innerText = "N/A";
+  diskEl.innerText = "N/A";
+  pythonEl.innerText = "N/A";
+  setBadge(flaskEl, "OFF", "text-bg-danger");
+  setBadge(apiEl, "OFFLINE", "text-bg-danger");
+  healthUpdated.innerText = "unavailable";
+}
+
+async function loadHealth() {
+  try {
+    const response = await fetch("{{ url_for('admin.admin_system_health_api') }}", {
+      credentials: "same-origin",
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      setHealthFallback();
+      return;
+    }
+
+    const data = await response.json();
+    if (data.status !== "ok") {
+      setHealthFallback();
+      return;
+    }
+
+    setBadge(healthState, data.system_risk === "high" ? "High risk" : (data.system_risk === "medium" ? "Watch" : "Healthy"), data.system_risk === "high" ? "text-bg-danger" : (data.system_risk === "medium" ? "text-bg-warning text-dark" : "text-bg-success"));
+    cpuEl.innerText = `${data.cpu ?? 0}%`;
+    ramEl.innerText = `${data.ram_used ?? 0} / ${data.ram_total ?? 0} MB`;
+    diskEl.innerText = `${data.disk ?? 0}%`;
+    pythonEl.innerText = `${data.python_procs ?? 0}`;
+    setBadge(flaskEl, data.flask_running ? "ON" : "OFF", data.flask_running ? "text-bg-success" : "text-bg-danger");
+    setBadge(apiEl, data.api_ok ? "ONLINE" : "OFFLINE", data.api_ok ? "text-bg-success" : "text-bg-danger");
+    healthUpdated.innerText = data.last_updated_at || "just now";
+  } catch (_) {
+    setHealthFallback();
+  }
+}
+
+loadHealth();
+setInterval(loadHealth, 2000);
+</script>
+{% endblock %}

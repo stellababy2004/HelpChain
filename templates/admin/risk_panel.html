@@ -20,6 +20,21 @@
     </div>
   </div>
 
+  <div class="hc-card p-3 mb-3" id="hc-system-status-card">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h2 class="mb-1">System Status</h2>
+        <div id="hc-system-status-text" class="hc-muted">
+          Checking system...
+        </div>
+      </div>
+      <div id="hc-system-status-indicator" style="font-size: 28px;">
+        ⚪
+      </div>
+    </div>
+    <div id="hc-impacted-cases" class="mt-2"></div>
+  </div>
+
   <div class="row g-3 mt-2">
     <div class="col-12 col-md-6 col-xl-3">
       <a class="hc-riskcard hc-riskcard--red hc-riskcard--link" id="cardStale" href="{{ url_for('admin.admin_requests', risk='stale') }}">
@@ -137,5 +152,221 @@
 {% endblock %}
 
 {% block scripts %}
+  <script>
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatReason(reason) {
+      if (reason === "no_action_24h") return "no activity (24h+)";
+      if (reason === "no_owner") return "no assigned owner";
+      if (reason === "sla_risk") return "SLA risk";
+      return reason;
+    }
+
+    function formatPriority(priority) {
+      if (priority === 3) return "🔴";
+      if (priority === 2) return "🟡";
+      return "⚪";
+    }
+
+    function reasonPriority(reason) {
+      if (reason === "sla_risk") return 3;
+      if (reason === "no_action_24h") return 2;
+      if (reason === "no_owner") return 1;
+      return 0;
+    }
+
+    function formatProfessionLabel(profession) {
+      if (profession === "doctor") return "Doctor";
+      if (profession === "nurse") return "Nurse";
+      if (profession === "psychologist") return "Psychologist";
+      if (profession === "social_worker") return "Social Worker";
+      if (profession === "lawyer") return "Lawyer";
+      return profession || "Professional";
+    }
+
+    function formatResponsivenessLabel(level) {
+      if (level === "high") return "élevée";
+      if (level === "low") return "faible";
+      return "moyenne";
+    }
+
+    function formatCapacityLabel(capacity) {
+      const value = Number(capacity || 0);
+      if (value > 0) return "favorable";
+      if (value < 0) return "limitée";
+      return "standard";
+    }
+
+    async function loadSystemHealthForRisk() {
+      const textEl = document.getElementById("hc-system-status-text");
+      const indicatorEl = document.getElementById("hc-system-status-indicator");
+      const casesEl = document.getElementById("hc-impacted-cases");
+      if (!textEl || !indicatorEl || !casesEl) return;
+
+      let impactEl = document.getElementById("hc-system-status-impact");
+      if (!impactEl) {
+        impactEl = document.createElement("div");
+        impactEl.id = "hc-system-status-impact";
+        impactEl.className = "hc-muted mt-1";
+        textEl.insertAdjacentElement("afterend", impactEl);
+      }
+
+      let updatedEl = document.getElementById("hc-system-status-updated");
+      if (!updatedEl) {
+        updatedEl = document.createElement("div");
+        updatedEl.id = "hc-system-status-updated";
+        updatedEl.className = "hc-muted mt-1";
+        impactEl.insertAdjacentElement("afterend", updatedEl);
+      }
+
+      const formatUpdatedTime = (isoValue) => {
+        if (!isoValue) return "--";
+        const value = new Date(isoValue);
+        if (Number.isNaN(value.getTime())) return "--";
+        return value.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+      };
+
+      const renderRiskState = (riskLevel) => {
+        let icon = "🟢";
+        let text = "No system risk detected";
+        let impact = "";
+
+        if (riskLevel === "medium") {
+          icon = "🟡";
+          text = "Possible delays detected";
+        } else if (riskLevel === "high") {
+          icon = "🔴";
+          text = "System may impact active cases";
+          impact = "Ongoing requests may be delayed due to system load";
+        }
+
+        indicatorEl.textContent = icon;
+        textEl.textContent = text;
+        impactEl.textContent = impact;
+        impactEl.hidden = !impact;
+        casesEl.innerHTML = "";
+      };
+
+      try {
+        const res = await fetch("/admin/api/system-health", {
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+        if (!res.ok) {
+          renderRiskState("high");
+          return;
+        }
+
+        const data = await res.json();
+        if (data.status !== "ok") {
+          renderRiskState("high");
+          return;
+        }
+
+        renderRiskState(data.system_risk || "low");
+        updatedEl.textContent = `Last updated: ${formatUpdatedTime(data.last_updated_at)}`;
+
+        if (data.system_risk === "high" && Array.isArray(data.impacted_cases)) {
+          const cases = data.impacted_cases.slice(0, 5);
+          if (cases.length === 0) {
+            casesEl.innerHTML = "<div class='hc-muted mt-2'>No specific cases identified yet</div>";
+            return;
+          }
+
+          const grouped = {};
+
+          cases.forEach((c) => {
+            grouped[c.reason] = (grouped[c.reason] || 0) + 1;
+          });
+
+          const orderedGroups = Object.entries(grouped).sort((a, b) => {
+            return reasonPriority(b[0]) - reasonPriority(a[0]);
+          });
+
+        let html = `<div class='hc-muted mt-2'><strong>${cases.length} active case${cases.length > 1 ? "s" : ""} may be impacted</strong></div><ul class='hc-muted mb-2'>`;
+        orderedGroups.forEach(([reason, count]) => {
+          html += `<li>${count} case${count > 1 ? "s" : ""}: ${formatReason(reason)}</li>`;
+        });
+        html += "</ul>";
+        html += "<details class='mt-2'><summary>View affected cases</summary><ul class='mt-2 mb-0'>";
+        cases.forEach((c) => {
+          const caseTitle = escapeHtml(c.title || `Case #${c.id}`);
+          const caseUrl = escapeHtml(c.url || "#");
+          html += `<li class="mb-2">${formatPriority(c.priority)} <a href="${caseUrl}" class="hc-link-primary fw-semibold" title="${caseTitle}">Case #${c.id}</a> — ${formatReason(c.reason)}`;
+          if (c.reason === "no_owner" && c.suggested_assignee) {
+            const suggestion = c.suggested_assignee;
+            const suggestionName = escapeHtml(suggestion.name || `Professional #${suggestion.id}`);
+            const suggestionProfession = escapeHtml(formatProfessionLabel(suggestion.profession));
+            const suggestionScore = Number(suggestion.score || 0);
+            const suggestionCityMatch = escapeHtml(suggestion.city_match === "same" ? "same" : "nearby");
+            const suggestionWorkload = Number(suggestion.workload || 0);
+            const suggestionCapacity = Number(suggestion.capacity || 0);
+            const suggestionResponsiveness = escapeHtml(formatResponsivenessLabel(suggestion.responsiveness || "medium"));
+            const priorityHint = (suggestion.priority || suggestion.is_priority)
+              ? "<div class=\"hc-muted mt-1\">🚨 Situation prioritaire</div>"
+              : "";
+            html += `<div class="hc-muted mt-1">👤 Suggested:<br>${suggestionName} — ${suggestionProfession} (Score: ${suggestionScore})</div>`;
+            html += `<div class="hc-muted mt-1">⚖️ Charge actuelle: ${suggestionWorkload} cas</div>`;
+            html += `<div class="hc-muted mt-1">🌍 Ville: ${suggestionCityMatch === "same" ? "identique" : "proche"}</div>`;
+            html += `<div class="hc-muted mt-1">⚡ Activité: ${suggestionResponsiveness}</div>`;
+            html += `<div class="hc-muted mt-1">📊 Capacité estimée: ${escapeHtml(formatCapacityLabel(suggestionCapacity))}</div>`;
+            html += priorityHint;
+            html += `<a href="/admin/requests/${c.id}/assign?user_id=${encodeURIComponent(suggestion.id)}" class="btn btn-sm btn-primary mt-1">Assign to ${suggestionName}</a>`;
+          }
+          const caseActions = Array.isArray(c.actions)
+            ? c.actions.filter((action) => !(c.suggested_assignee && action.type === "assign"))
+            : [];
+          if (caseActions.length > 0) {
+            html += "<div class='d-flex flex-column align-items-start gap-1 mt-1'>";
+            caseActions.forEach((action) => {
+              html += `<a href="${escapeHtml(action.url || "#")}" class="btn btn-sm btn-primary mt-1">${escapeHtml(action.label || "Open")}</a>`;
+            });
+            html += "</div>";
+          }
+          html += "</li>";
+        });
+        html += "</ul></details>";
+        casesEl.innerHTML = html;
+      }
+      } catch (_) {
+        renderRiskState("high");
+      }
+    }
+
+    let systemHealthTimer = null;
+
+    function startSystemHealthPolling() {
+      if (systemHealthTimer) return;
+      loadSystemHealthForRisk();
+      systemHealthTimer = setInterval(loadSystemHealthForRisk, 10000);
+    }
+
+    function stopSystemHealthPolling() {
+      if (!systemHealthTimer) return;
+      clearInterval(systemHealthTimer);
+      systemHealthTimer = null;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stopSystemHealthPolling();
+      } else {
+        startSystemHealthPolling();
+      }
+    });
+
+    startSystemHealthPolling();
+  </script>
   <script src="{{ url_for('static', filename='js/admin-risk-panel.js') }}"></script>
 {% endblock %}

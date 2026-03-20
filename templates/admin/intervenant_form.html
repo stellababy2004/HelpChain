@@ -1,0 +1,186 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Nouvel intervenant | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-intervenants{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+  <div class="hc-card hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Nouvel intervenant</h1>
+        <div class="hc-muted">Créer un intervenant visible dans la liste, la carte et l’affectation.</div>
+        <div class="small text-muted mt-1">Les champs principaux sont regroupés pour une saisie rapide, puis les détails de localisation.</div>
+      </div>
+
+      <div class="hc-admin-actions">
+        <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Retour</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-form-shell">
+    <div class="hc-card__section hc-card__section--header hc-intervenants-formHeader">
+      <strong>Informations de l’intervenant</strong>
+      <span class="hc-muted small">Identité, contact, profession et zone d’intervention.</span>
+    </div>
+
+    <form method="post" class="row g-3 hc-intervenants-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if structures %}
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+          <label class="form-label" for="structure_id">Structure</label>
+          <select class="form-select" id="structure_id" name="structure_id" required>
+            <option value="">Choisir une structure</option>
+            {% for structure in structures %}
+            <option value="{{ structure.id }}" {% if selected_structure_id == structure.id %}selected{% endif %}>
+              {{ structure.name }}
+            </option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Structure de rattachement pour la liste et l’affectation.</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="full_name">Nom complet</label>
+        <input
+          class="form-control"
+          id="full_name"
+          name="full_name"
+          value="{{ form_data.get('full_name', '') }}"
+          required
+        >
+        <div class="form-text">Nom affiché dans la liste des intervenants.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="email">Email</label>
+        <input
+          class="form-control"
+          id="email"
+          name="email"
+          type="email"
+          value="{{ form_data.get('email', '') }}"
+        >
+        <div class="form-text">Utilisé pour les coordonnées et le suivi.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="phone">Téléphone</label>
+        <input
+          class="form-control"
+          id="phone"
+          name="phone"
+          value="{{ form_data.get('phone', '') }}"
+        >
+        <div class="form-text">Numéro visible dans la fiche et les vues de contact.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="profession">Profession</label>
+        <select class="form-select" id="profession" name="profession" required>
+          {% set profession_value = form_data.get('profession', 'social_worker') %}
+          <option value="social_worker" {% if profession_value == 'social_worker' %}selected{% endif %}>Social worker</option>
+          <option value="doctor" {% if profession_value == 'doctor' %}selected{% endif %}>Doctor</option>
+          <option value="nurse" {% if profession_value == 'nurse' %}selected{% endif %}>Nurse</option>
+          <option value="psychologist" {% if profession_value == 'psychologist' %}selected{% endif %}>Psychologist</option>
+          <option value="lawyer" {% if profession_value == 'lawyer' %}selected{% endif %}>Lawyer</option>
+        </select>
+        <div class="form-text">Catégorie utilisée dans les vues admin et la carte.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="city">Ville</label>
+        <input
+          class="form-control"
+          id="city"
+          name="city"
+          value="{{ form_data.get('city', '') }}"
+          required
+        >
+        <div class="form-text">Ville principale d’intervention.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="address">Adresse</label>
+        <input
+          class="form-control"
+          id="address"
+          name="address"
+          value="{{ form_data.get('address', '') }}"
+        >
+        <div class="form-text">Adresse ou point de repère si disponible.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+        <label class="form-label" for="availability">Disponibilité</label>
+        {% set availability_value = form_data.get('availability', 'available') %}
+        <select class="form-select" id="availability" name="availability">
+          <option value="available" {% if availability_value == 'available' %}selected{% endif %}>Disponible</option>
+          <option value="unavailable" {% if availability_value == 'unavailable' %}selected{% endif %}>Indisponible</option>
+        </select>
+        <div class="form-text">État affiché dans la liste et les vues d’affectation.</div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="hc-card hc-intervenants-geoCard">
+          <div class="hc-card__section hc-card__section--header hc-intervenants-geoHeader">
+            <strong>Coordonnées</strong>
+            <span class="hc-muted small">Champs secondaires pour le positionnement sur la carte.</span>
+          </div>
+          <div class="row g-3 hc-intervenants-geoRow">
+      <div class="col-12 col-md-6">
+        <div class="hc-field">
+        <label class="form-label" for="latitude">Latitude</label>
+        <input
+          class="form-control"
+          id="latitude"
+          name="latitude"
+          value="{{ form_data.get('latitude', '') }}"
+        >
+        <div class="form-text">Optionnel. Exemple: `42.6977`.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="hc-field">
+        <label class="form-label" for="longitude">Longitude</label>
+        <input
+          class="form-control"
+          id="longitude"
+          name="longitude"
+          value="{{ form_data.get('longitude', '') }}"
+        >
+        <div class="form-text">Optionnel. Exemple: `23.3219`.</div>
+        </div>
+      </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="hc-admin-actions mt-2 hc-intervenants-formActions">
+          <button type="submit" class="btn btn-primary btn-sm">Créer</button>
+          <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Annuler</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1514,6 +1514,126 @@ tr.hc-row-actionable[data-priority="URGENT"] td:first-child::before{
   word-break: break-word;
 }
 
+body[data-hc-page^="/admin/audit"] .hc-admin-headerCard{
+  margin-bottom: 1.1rem;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-filters{
+  margin-top: 1rem;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-admin-table-shell{
+  overflow: hidden;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-tableHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table{
+  table-layout: fixed;
+  min-width: 1120px;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table th,
+body[data-hc-page^="/admin/audit"] .hc-audit-table td{
+  vertical-align: top;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-time{
+  width: 170px;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-action{
+  width: 190px;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-admin{
+  width: 150px;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-target{
+  width: 180px;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-ip{
+  width: 140px;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-time{
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-actionCell .badge{
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.38rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-admin,
+body[data-hc-page^="/admin/audit"] .hc-audit-target,
+body[data-hc-page^="/admin/audit"] .hc-audit-ip{
+  line-height: 1.45;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-targetMain{
+  font-weight: 600;
+  color: var(--hc-ink, #24324b);
+  margin-bottom: 0.18rem;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-target a{
+  margin-left: 0;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-change{
+  color: #44506a;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-change code{
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.12rem 0.38rem;
+  border-radius: 0.45rem;
+  background: #f5f7fb;
+  color: #c2418f;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+body[data-hc-page^="/admin/audit"] .audit-diff{
+  display: grid;
+  gap: 0.35rem;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-pagination{
+  padding: 0 1.1rem 1rem;
+}
+
+@media (max-width: 991.98px){
+  body[data-hc-page^="/admin/audit"] .hc-audit-tableHeader{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 /* Request detail layout */
 .hc-admin-wrap--request-detail{
   max-width: 1440px;
@@ -2361,6 +2481,117 @@ body[data-hc-page^="/admin"] .hc-admin-actions .btn{
   min-width: 104px;
 }
 
+body[data-hc-page^="/admin"] .hc-card__section{
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  font-weight: 700;
+  color: var(--hc-admin-text);
+}
+
+body[data-hc-page^="/admin"] .hc-card__section--header{
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255,255,255,0.96));
+}
+
+body[data-hc-page^="/admin"] .hc-empty-state{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px;
+  text-align: center;
+}
+
+body[data-hc-page^="/admin"] .hc-empty-state__title{
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hc-admin-text);
+}
+
+body[data-hc-page^="/admin"] .hc-empty-state__text{
+  max-width: 54ch;
+  color: var(--hc-admin-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-statusgrid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-statusitem{
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.9);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-statusitem__label{
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.82);
+}
+
+body[data-hc-page^="/admin"] .hc-system-health-grid{
+  align-items: stretch;
+}
+
+body[data-hc-page^="/admin"] .hc-system-health-value{
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--hc-admin-text);
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-hc-page^="/admin"] .hc-system-health-value:empty{
+  color: var(--hc-admin-muted);
+}
+
+body[data-hc-page^="/admin"] .hc-system-health-badge{
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-system-health-note{
+  padding: 0 16px 16px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-form-shell{
+  padding: 16px 18px 18px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-filters{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-filters > *{
+  min-width: 0;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-filters .hc-admin-filters__search{
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-filters .hc-admin-filters__location{
+  flex: 1 1 240px;
+  min-width: 200px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-filters .hc-admin-filters__sort{
+  width: 180px;
+  max-width: 100%;
+}
+
 body[data-hc-page^="/admin"] #hcAdminKpis{
   margin-top: 12px;
 }
@@ -2387,6 +2618,287 @@ body[data-hc-page^="/admin"] .hc-kpi__label{
 body[data-hc-page^="/admin"] .hc-kpi__value{
   letter-spacing: -0.015em;
   line-height: 1.1;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table{
+  table-layout: fixed;
+  min-width: 1240px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table th,
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table td{
+  vertical-align: middle;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-id{ width: 64px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-name{ width: 190px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-profession{ width: 150px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-email{ width: 180px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-phone{ width: 150px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-city{ width: 130px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-address{ width: 220px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-availability{ width: 140px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-workload{ width: 100px; }
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table .hc-col-created{ width: 110px; }
+
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table td.hc-intervenants-name{
+  font-weight: 700;
+  color: var(--hc-admin-text);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.hc-intervenants-table td.hc-intervenants-address{
+  color: var(--hc-admin-muted);
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-headerCard{
+  padding: 16px 18px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-headerCard .hc-admin-headerTop{
+  margin-bottom: 0;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-filterbar{
+  padding: 14px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-filters{
+  gap: 12px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-filters :is(.form-control, .form-select){
+  min-height: 40px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table-shell{
+  overflow: hidden;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-tableHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table{
+  min-width: 1280px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table th{
+  padding-top: 0.72rem;
+  padding-bottom: 0.72rem;
+  vertical-align: middle;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table td{
+  padding-top: 0.74rem;
+  padding-bottom: 0.74rem;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-id{
+  width: 68px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-name{
+  width: 210px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-profession{
+  width: 160px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-email{
+  width: 210px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-phone{
+  width: 158px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-city{
+  width: 140px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-address{
+  width: 240px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-availability{
+  width: 148px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-workload{
+  width: 108px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table.hc-intervenants-table .hc-col-created{
+  width: 118px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-name{
+  letter-spacing: -0.01em;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-email,
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-phone,
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-address{
+  overflow-wrap: anywhere;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-workload{
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-badge{
+  min-width: 104px;
+  text-align: center;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-emptyCell{
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-empty-state{
+  padding: 22px 16px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-empty-state .btn{
+  margin-top: 4px;
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-pagination{
+  justify-content: center;
+  padding: 14px 16px 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+body[data-hc-page^="/admin/intervenants"] .hc-intervenants-footnote{
+  padding: 0 16px 16px;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-admin-headerCard{
+  padding: 16px 18px;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-admin-headerCard .hc-admin-headerTop{
+  margin-bottom: 0;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-admin-form-shell{
+  padding: 0;
+  overflow: hidden;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-formHeader{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-form{
+  padding: 18px;
+  --bs-gutter-x: 14px;
+  --bs-gutter-y: 14px;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-form :is(.form-control, .form-select){
+  min-height: 42px;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-form .form-text{
+  margin-top: 1px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(15, 23, 42, 0.56);
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-geoCard{
+  padding: 0;
+  border-style: dashed;
+  border-color: rgba(15, 23, 42, 0.14);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(255, 255, 255, 0.96));
+  box-shadow: none;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-geoHeader{
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-geoRow{
+  padding: 16px 16px 18px;
+}
+
+body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-formActions{
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 992px){
+  body[data-hc-page^="/admin/intervenants"] .hc-admin-headerCard{
+    padding: 14px 16px;
+  }
+  body[data-hc-page^="/admin/intervenants"] .hc-admin-filterbar{
+    padding: 12px;
+  }
+  body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-form{
+    padding: 16px;
+  }
+  body[data-hc-page^="/admin/intervenants/new"] .hc-intervenants-geoRow{
+    padding: 14px 14px 16px;
+  }
+}
+
+body[data-hc-page^="/admin/structures/"] .hc-admin-headerCard,
+body[data-hc-page^="/admin/system-health"] .hc-admin-headerCard,
+body[data-hc-page^="/admin/intervenants"] .hc-admin-headerCard{
+  padding: 16px 18px;
+}
+
+body[data-hc-page^="/admin/structures/"] .hc-card__section--header,
+body[data-hc-page^="/admin/system-health"] .hc-card__section--header,
+body[data-hc-page^="/admin/intervenants"] .hc-card__section--header{
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+
+body[data-hc-page^="/admin/structures/"] .hc-admin-shell,
+body[data-hc-page^="/admin/system-health"] .hc-admin-shell,
+body[data-hc-page^="/admin/intervenants"] .hc-admin-shell,
+body[data-hc-page^="/admin/requests"] .hc-admin-wrap.hc-admin-wrap--requests{
+  gap: 16px;
+}
+
+body[data-hc-page^="/admin/structures/"] .hc-admin-actions .btn,
+body[data-hc-page^="/admin/system-health"] .hc-admin-actions .btn,
+body[data-hc-page^="/admin/intervenants"] .hc-admin-actions .btn,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__actions .btn{
+  min-height: 34px;
+}
+
+body[data-hc-page^="/admin/structures/"] .badge,
+body[data-hc-page^="/admin/system-health"] .badge,
+body[data-hc-page^="/admin/intervenants"] .badge,
+body[data-hc-page^="/admin/requests"] .badge{
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin/system-health"] .hc-admin-statusitem,
+body[data-hc-page^="/admin/intervenants"] .hc-admin-table-shell,
+body[data-hc-page^="/admin/structures/"] .hc-card{
+  box-shadow: var(--hc-admin-shadow-1);
+}
+
+@media (max-width: 992px){
+  body[data-hc-page^="/admin/structures/"] .hc-admin-headerCard,
+  body[data-hc-page^="/admin/system-health"] .hc-admin-headerCard,
+  body[data-hc-page^="/admin/intervenants"] .hc-admin-headerCard{
+    padding: 14px 16px;
+  }
 }
 
 body[data-hc-page^="/admin"] .hc-risk-overview__item{
@@ -2470,6 +2982,183 @@ body[data-hc-page^="/admin"] .hc-admin-wrap--request-detail #owner-actions{
 
 body[data-hc-page^="/admin"] .hc-admin-wrap--request-detail #cloturer-situation{
   border-left-color: rgba(245, 158, 11, 0.62);
+}
+
+.hc-ops-workspace-page .hc-ops-summary{
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.hc-ops-workspace-page .hc-ops-summary__item{
+  padding: 0.8rem 0.95rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.hc-ops-workspace-page .hc-ops-summary__label{
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.hc-ops-workspace-page .hc-ops-summary__value{
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.hc-ops-workspace-page .hc-ops-summary__value.is-alert{
+  color: #b42318;
+}
+
+.hc-ops-workspace-page .hc-ops-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hc-ops-workspace-page .hc-ops-actions .btn{
+  white-space: nowrap;
+}
+
+.hc-ops-workspace-page .hc-admin-table-shell{
+  overflow: hidden;
+}
+
+.hc-ops-workspace-page .hc-ops-queue{
+  table-layout: fixed;
+  min-width: 1180px;
+}
+
+.hc-ops-workspace-page .hc-ops-queue th,
+.hc-ops-workspace-page .hc-ops-queue td{
+  vertical-align: middle;
+}
+
+.hc-ops-workspace-page .hc-ops-queue thead th{
+  padding-top: 0.72rem;
+  padding-bottom: 0.72rem;
+  white-space: nowrap;
+}
+
+.hc-ops-workspace-page .hc-ops-queue tbody td{
+  padding-top: 0.66rem;
+  padding-bottom: 0.66rem;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-id{
+  width: 76px;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-request{
+  width: 34%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-city{
+  width: 12%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-priority{
+  width: 11%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-status{
+  width: 10%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-owner{
+  width: 12%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-activity{
+  width: 13%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-col-action{
+  width: 8%;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-title{
+  display: block;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-ops-workspace-page .hc-ops-queue .hc-ops-meta{
+  display: block;
+  color: rgba(15, 23, 42, 0.6);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-ops-workspace-page .hc-ops-reasons{
+  max-width: 100%;
+}
+
+.hc-ops-workspace-page .hc-ops-cell-id,
+.hc-ops-workspace-page .hc-ops-cell-city,
+.hc-ops-workspace-page .hc-ops-cell-owner{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-ops-workspace-page .hc-ops-cell-priority .badge,
+.hc-ops-workspace-page .hc-ops-cell-status .badge{
+  min-width: 78px;
+  text-align: center;
+  justify-content: center;
+}
+
+.hc-ops-workspace-page .hc-ops-cell-status .badge{
+  min-width: 86px;
+}
+
+.hc-ops-workspace-page .hc-ops-cell-activity{
+  white-space: nowrap;
+}
+
+.hc-ops-workspace-page .hc-ops-activity-meta{
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hc-ops-workspace-page .hc-ops-cell-action{
+  white-space: nowrap;
+}
+
+.hc-ops-workspace-page .hc-ops-cell-action .btn{
+  min-width: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 1199.98px){
+  .hc-ops-workspace-page .hc-ops-summary{
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px){
+  .hc-ops-workspace-page .hc-ops-summary{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px){
+  .hc-ops-workspace-page .hc-ops-summary{
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 992px){
@@ -2948,6 +3637,111 @@ body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table{
   min-width: 1230px;
 }
 
+body[data-hc-page^="/admin/requests"] .hc-page-hero{
+  padding: 18px 20px 16px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-page-hero .hc-admin-headerTop{
+  margin-bottom: 12px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-page-hero .hc-tabs{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+body[data-hc-page^="/admin/requests"] .hc-page-hero #hcAdminKpis{
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+}
+
+body[data-hc-page^="/admin/requests"] .hc-insights{
+  padding: 14px 16px;
+}
+
+body[data-hc-page^="/admin/requests"] #hcRequestsToolbar{
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__overview,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__shortcuts,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__search,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__actions,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__advanced,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__bulk,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__quickchips{
+  margin: 0;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__overview{
+  padding-bottom: 2px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__shortcuts{
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__search{
+  --bs-gutter-x: 10px;
+  --bs-gutter-y: 10px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__search .form-control,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__search .form-select,
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__advancedForm .form-select{
+  min-height: 40px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__actions{
+  padding-top: 2px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__advanced{
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.72);
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__advancedForm{
+  --bs-gutter-x: 10px;
+  --bs-gutter-y: 10px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__bulk{
+  padding-top: 12px;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar__quickchips{
+  padding-top: 10px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-list{
+  border-radius: var(--hc-admin-radius);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: var(--hc-admin-shadow-1);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table thead th{
+  vertical-align: middle;
+  padding-top: 0.72rem;
+  padding-bottom: 0.72rem;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table tbody td{
+  vertical-align: middle;
+  padding-top: 0.68rem;
+  padding-bottom: 0.68rem;
+}
+
 body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table th.hc-col-title,
 body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table td.hc-col-title{
   width: clamp(240px, 26vw, 500px);
@@ -3009,6 +3803,16 @@ body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table td.hc-co
 @media (max-width: 1280px){
   body[data-hc-page^="/admin/requests"] .hc-requests-list .hc-admin-table{
     min-width: 1120px;
+  }
+}
+
+@media (max-width: 992px){
+  body[data-hc-page^="/admin/requests"] #hcRequestsToolbar{
+    padding: 14px;
+    gap: 10px;
+  }
+  body[data-hc-page^="/admin/requests"] .hc-page-hero{
+    padding: 16px;
   }
 }
 

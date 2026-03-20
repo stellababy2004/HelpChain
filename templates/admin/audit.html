@@ -1,10 +1,10 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Audit trail') }} | HelpChain{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+{% block admin_body_class %} hc-admin-audit-page{% endblock %}
 
 {% block admin_content %}
-<div class="hc-admin-wrap">
-  <div class="hc-card mb-3">
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+  <div class="hc-card mb-3 hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">{{ _('Audit trail') }}</h1>
@@ -13,7 +13,7 @@
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
 
-    <form class="row g-2 align-items-end" method="GET" action="{{ url_for('admin.admin_audit') }}">
+    <form class="row g-2 align-items-end hc-admin-toolbar hc-audit-filters" method="GET" action="{{ url_for('admin.admin_audit') }}">
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">{{ _('Action') }}</label>
         <select class="form-select" name="action">
@@ -53,32 +53,36 @@
     </form>
   </div>
 
-  <div class="hc-card">
+  <div class="hc-card hc-admin-table-shell">
+    <div class="hc-card__section hc-card__section--header hc-audit-tableHeader">
+      <strong>{{ _('Recent events') }}</strong>
+      <span class="hc-muted small">{{ _('Traceability log for admin actions, targets and payload changes.') }}</span>
+    </div>
     <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table">
+      <table class="table table-hover align-middle hc-admin-table hc-audit-table mb-0">
         <thead>
           <tr>
-            <th style="width: 170px;">{{ _('Time') }}</th>
-            <th style="width: 220px;">{{ _('Action') }}</th>
-            <th style="width: 140px;">{{ _('Admin') }}</th>
-            <th style="width: 140px;">{{ _('Target') }}</th>
-            <th>{{ _('Change') }}</th>
-            <th style="width: 130px;">{{ _('IP') }}</th>
+            <th class="hc-col-time">{{ _('Time') }}</th>
+            <th class="hc-col-action">{{ _('Action') }}</th>
+            <th class="hc-col-admin">{{ _('Admin') }}</th>
+            <th class="hc-col-target">{{ _('Target') }}</th>
+            <th class="hc-col-change">{{ _('Change') }}</th>
+            <th class="hc-col-ip">{{ _('IP') }}</th>
           </tr>
         </thead>
         <tbody>
           {% for e in events %}
           <tr>
-            <td class="small text-muted">{{ e.created_at }}</td>
-            <td><span class="badge text-bg-secondary">{{ e.action }}</span></td>
-            <td class="small">{{ e.admin_username or ("#" ~ e.admin_user_id) }}</td>
-            <td class="small">
-              {{ e.target_type }} #{{ e.target_id }}
+            <td class="small text-muted hc-audit-time">{{ e.created_at }}</td>
+            <td class="hc-audit-actionCell"><span class="badge text-bg-secondary">{{ e.action }}</span></td>
+            <td class="small hc-audit-admin">{{ e.admin_username or ("#" ~ e.admin_user_id) }}</td>
+            <td class="small hc-audit-target">
+              <div class="hc-audit-targetMain">{{ e.target_type }} #{{ e.target_id }}</div>
               {% if e.target_type == "Request" and e.action != "security.denied_action" %}
                 <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ _('view') }}</a>
               {% endif %}
             </td>
-            <td class="small">
+            <td class="small hc-audit-change">
               {% if e.payload and e.payload.old and e.payload.new %}
                 <div class="audit-diff">
                   <div><span class="text-muted">{{ _('old:') }}</span> <code>{{ e.payload.old }}</code></div>
@@ -90,13 +94,16 @@
                 <span class="text-muted">—</span>
               {% endif %}
             </td>
-            <td class="small text-muted">{{ e.ip or "—" }}</td>
+            <td class="small text-muted hc-audit-ip">{{ e.ip or "—" }}</td>
           </tr>
           {% endfor %}
           {% if events|length == 0 %}
           <tr>
-            <td colspan="6" class="text-center text-muted py-4">
-              {{ _('No audit events for selected filters.') }}
+            <td colspan="6" class="py-0">
+              <div class="hc-empty-state">
+                <div class="hc-empty-state__title">{{ _('No audit events') }}</div>
+                <div class="hc-empty-state__text">{{ _('No audit events for selected filters.') }}</div>
+              </div>
             </td>
           </tr>
           {% endif %}
@@ -104,7 +111,7 @@
       </table>
     </div>
 
-    <div class="hc-row mt-2">
+    <div class="hc-row mt-2 hc-audit-pagination">
       <div class="hc-muted small">
         {{ _('Page') }} {{ pagination.page }} / {{ pagination.pages or 1 }} · {{ pagination.total }} {{ _('events') }}
       </div>
