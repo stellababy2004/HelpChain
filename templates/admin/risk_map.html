@@ -2,238 +2,41 @@
 
 {% block title %}Territorial Risk Map{% endblock %}
 
-{% block head_extra %}
+{% block extra_css %}
+  {{ super() }}
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
-    crossorigin=""
-  />
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-3">
+<div
+  class="container-fluid py-3"
+  data-risk-map-root
+  data-endpoint="{{ url_for('admin_map_api.admin_risk_map_api') }}"
+  data-default-lat="46.603354"
+  data-default-lng="1.888334"
+  data-default-zoom="6"
+>
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h1 class="h4 mb-0">Territorial Risk Map</h1>
   </div>
-  <div id="cases-map" style="height:600px;"></div>
+  <div class="alert alert-secondary mb-3" id="riskMapStateBar" role="status">
+    Loading territorial risk data...
+  </div>
+  <div id="riskMapCanvas" style="height:600px; min-height:480px;"></div>
 </div>
 {% endblock %}
 
-{% block scripts_extra %}
+{% block scripts %}
+  {{ super() }}
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
-  <script
-    src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
-    crossorigin=""
-  ></script>
-  <script
-    src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"
-    crossorigin=""
-  ></script>
-  <script>
-    const structureId = "{{ structure_id }}";
-    const map = L.map("cases-map").setView([48.8566, 2.3522], 12);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
-
-    function riskColor(score) {
-      if (score >= 80) return "red";
-      if (score >= 60) return "orange";
-      if (score >= 30) return "yellow";
-      return "green";
-    }
-
-    function predictedColor(score) {
-      if (score > 80) return "red";
-      if (score >= 60) return "orange";
-      if (score >= 40) return "yellow";
-      return "green";
-    }
-
-    function ewsColor(level) {
-      if (level === "emergency") return "red";
-      if (level === "high") return "orange";
-      return "yellow";
-    }
-
-    let clusterGroup = L.markerClusterGroup();
-    map.addLayer(clusterGroup);
-    let heatLayer = null;
-    let predictedGroup = L.layerGroup();
-    let ewsGroup = L.layerGroup();
-
-    let layersControl = null;
-
-    function resetLayersControl(heatEnabled) {
-      const predictedOn = map.hasLayer(predictedGroup);
-      const markersOn = map.hasLayer(clusterGroup);
-      const heatOn = heatLayer ? map.hasLayer(heatLayer) : false;
-
-      if (layersControl) {
-        map.removeControl(layersControl);
-      }
-      const overlays = {
-        "Risk markers": clusterGroup,
-        "Predicted Risk (30 days)": predictedGroup,
-        "Early Warning Zones": ewsGroup
-      };
-      if (heatEnabled && heatLayer) {
-        overlays["Risk heatmap"] = heatLayer;
-      }
-      layersControl = L.control.layers(null, overlays).addTo(map);
-
-      if (markersOn || !map.hasLayer(clusterGroup)) {
-        map.addLayer(clusterGroup);
-      }
-      if (predictedOn) {
-        map.addLayer(predictedGroup);
-      }
-      if (map.hasLayer(ewsGroup)) {
-        map.addLayer(ewsGroup);
-      }
-      if (heatEnabled && heatLayer && heatOn) {
-        map.addLayer(heatLayer);
-      }
-    }
-    resetLayersControl(false);
-
-    function getBboxParam() {
-      const bounds = map.getBounds();
-      const sw = bounds.getSouthWest();
-      const ne = bounds.getNorthEast();
-      return `${sw.lat},${sw.lng},${ne.lat},${ne.lng}`;
-    }
-
-    async function loadCases() {
-      if (!structureId) {
-        return;
-      }
-      const zoom = map.getZoom();
-      const bbox = getBboxParam();
-      const useGrid = zoom < 11;
-      const url = useGrid
-        ? `/api/cases/grid?structure_id=${encodeURIComponent(structureId)}&bbox=${encodeURIComponent(bbox)}&zoom=${zoom}`
-        : `/api/cases/map?structure_id=${encodeURIComponent(structureId)}&bbox=${encodeURIComponent(bbox)}`;
-
-      const resp = await fetch(url);
-      if (!resp.ok) {
-        return;
-      }
-      const data = await resp.json();
-      clusterGroup.clearLayers();
-      predictedGroup.clearLayers();
-      ewsGroup.clearLayers();
-      if (heatLayer) {
-        map.removeLayer(heatLayer);
-        heatLayer = null;
-      }
-      if (useGrid) {
-        const cells = (data && data.cells) ? data.cells : [];
-        cells.forEach((cell) => {
-          const avgRisk = parseInt(cell.avg_risk || 0, 10);
-          const count = parseInt(cell.count || 0, 10);
-          const marker = L.circleMarker([cell.lat, cell.lon], {
-            radius: 6 + count * 2,
-            color: riskColor(avgRisk),
-            fillOpacity: 0.7,
-            weight: 2
-          });
-          marker.bindPopup(
-            `Cases: ${count}<br>Average risk: ${avgRisk}<br>Max risk: ${cell.max_risk || 0}`
-          );
-          marker.addTo(clusterGroup);
-        });
-        resetLayersControl(false);
-      } else {
-        const features = (data && data.features) ? data.features : [];
-        const heatData = [];
-
-        features.forEach((feature) => {
-          const coords = feature.geometry && feature.geometry.coordinates;
-          if (!coords || coords.length < 2) return;
-          const props = feature.properties || {};
-          const riskScore = parseInt(props.risk_score || 0, 10);
-          const marker = L.circleMarker([coords[1], coords[0]], {
-            radius: 6 + riskScore / 20,
-            color: riskColor(riskScore),
-            fillOpacity: 0.7,
-            weight: 2
-          });
-          marker.bindPopup(
-            `Case #${props.case_id || "?"}<br>Risk: ${riskScore}<br>Status: ${props.status || ""}`
-          );
-          marker.addTo(clusterGroup);
-          heatData.push([coords[1], coords[0], Math.max(0, Math.min(1, riskScore / 100))]);
-        });
-
-        if (heatData.length >= 5) {
-          heatLayer = L.heatLayer(heatData, {
-            radius: 25,
-            blur: 20,
-            maxZoom: 17
-          });
-          resetLayersControl(true);
-        } else {
-          resetLayersControl(false);
-        }
-      }
-
-      const predictUrl = `/api/cases/predict?structure_id=${encodeURIComponent(structureId)}&bbox=${encodeURIComponent(bbox)}&zoom=${zoom}`;
-      const predictResp = await fetch(predictUrl);
-      if (predictResp.ok) {
-        const predictData = await predictResp.json();
-        const predictCells = (predictData && predictData.cells) ? predictData.cells : [];
-        predictCells.forEach((cell) => {
-          const predicted = parseInt(cell.predicted_risk || 0, 10);
-          const marker = L.circleMarker([cell.lat, cell.lon], {
-            radius: 6 + predicted / 20,
-            color: predictedColor(predicted),
-            fillOpacity: 0.6,
-            weight: 2
-          });
-          marker.bindPopup(
-            `Predicted risk: ${predicted}<br>Trend: ${cell.trend || "stable"}<br>Current avg risk: ${cell.avg_risk || 0}`
-          );
-          marker.addTo(predictedGroup);
-        });
-      }
-
-      const ewsUrl = `/api/cases/ews?structure_id=${encodeURIComponent(structureId)}&bbox=${encodeURIComponent(bbox)}`;
-      const ewsResp = await fetch(ewsUrl);
-      if (ewsResp.ok) {
-        const ewsData = await ewsResp.json();
-        const alerts = (ewsData && ewsData.alerts) ? ewsData.alerts : [];
-        alerts.forEach((alert) => {
-          const marker = L.circleMarker([alert.lat, alert.lon], {
-            radius: 10,
-            color: ewsColor(alert.level),
-            fillOpacity: 0.7,
-            weight: 2
-          });
-          marker.bindPopup(
-            `Alert level: ${alert.level}<br>Case growth: ${alert.growth_ratio}<br>Average risk: ${alert.avg_risk}<br>Critical cases: ${alert.critical_cases}`
-          );
-          marker.addTo(ewsGroup);
-        });
-      }
-    }
-
-    loadCases();
-    setInterval(loadCases, 30000);
-    map.on("moveend zoomend", () => {
-      loadCases();
-    });
-  </script>
+  <script src="{{ url_for('static', filename='js/admin-risk-map.js') }}"></script>
 {% endblock %}
