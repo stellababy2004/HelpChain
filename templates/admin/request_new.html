@@ -49,10 +49,28 @@
           {% if form_errors.get('person_name') %}<div class="invalid-feedback">{{ form_errors.get('person_name') }}</div>{% endif %}
         </div>
 
-        <div class="col-md-6">
+        <div class="col-12">
+          <label class="form-label" for="address_line">Adresse</label>
+          <input class="form-control {% if form_errors.get('address_line') %}is-invalid{% endif %}" id="address_line" name="address_line" value="{{ form_data.get('address_line','') }}">
+          {% if form_errors.get('address_line') %}<div class="invalid-feedback">{{ form_errors.get('address_line') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label" for="postcode">Code postal</label>
+          <input class="form-control {% if form_errors.get('postcode') %}is-invalid{% endif %}" id="postcode" name="postcode" value="{{ form_data.get('postcode','') }}">
+          {% if form_errors.get('postcode') %}<div class="invalid-feedback">{{ form_errors.get('postcode') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-5">
           <label class="form-label" for="city">Ville / territoire</label>
           <input class="form-control {% if form_errors.get('city') %}is-invalid{% endif %}" id="city" name="city" value="{{ form_data.get('city','') }}" required>
           {% if form_errors.get('city') %}<div class="invalid-feedback">{{ form_errors.get('city') }}</div>{% endif %}
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label" for="country">Pays</label>
+          <input class="form-control {% if form_errors.get('country') %}is-invalid{% endif %}" id="country" name="country" value="{{ form_data.get('country','France') }}">
+          {% if form_errors.get('country') %}<div class="invalid-feedback">{{ form_errors.get('country') }}</div>{% endif %}
         </div>
 
         <div class="col-md-6">

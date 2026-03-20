@@ -67,7 +67,7 @@ from ..security_logging import log_security_event
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
 from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import mark_seen as match_mark_seen
-from ..services.geocoding import geocode_location_best_effort
+from ..services.geocoding import request_address_display_text
 from ..statuses import normalize_request_status
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
@@ -2201,6 +2201,35 @@ def normalize_request_form(form):
     return category, urgency, description
 
 
+def _extract_request_address_values(form) -> dict[str, str]:
+    legacy_location_text = (form.get("location_text") or form.get("location") or "").strip()
+    address_line = (form.get("address_line") or "").strip()
+    postcode = (form.get("postcode") or "").strip()
+    city = (form.get("city") or "").strip()
+    country_raw = (form.get("country") or "").strip()
+
+    has_meaningful_location = any((legacy_location_text, address_line, postcode, city))
+    country = country_raw if has_meaningful_location else ""
+    location_text = (
+        request_address_display_text(
+            address_line=address_line or None,
+            postcode=postcode or None,
+            city=city or None,
+            country=country or None,
+            fallback_text=legacy_location_text or None,
+        )
+        or ""
+    )
+    return {
+        "address_line": address_line,
+        "postcode": postcode,
+        "city": city,
+        "country": country,
+        "location_text": location_text,
+        "legacy_location_text": legacy_location_text,
+    }
+
+
 def validate_submit_request_form(form):
     """Manual submit_request validator returning (errors, cleaned_values)."""
     errors: dict[str, str] = {}
@@ -2209,14 +2238,24 @@ def validate_submit_request_form(form):
     name = (form.get("name") or "").strip()
     phone = (form.get("phone") or "").strip()
     email = (form.get("email") or "").strip()
-    location_text = (form.get("location_text") or form.get("location") or "").strip()
     title = (form.get("title") or "").strip()
     consent = (form.get("privacy_consent") or "").strip()
+    address_values = _extract_request_address_values(form)
+    address_line = address_values["address_line"]
+    postcode = address_values["postcode"]
+    city = address_values["city"]
+    country = address_values["country"]
+    location_text = address_values["location_text"]
+    legacy_location_text = address_values["legacy_location_text"]
 
     MAX_NAME_LEN = 80
     MAX_TITLE_LEN = 120
     MAX_DESC_LEN = 2000
-    MAX_LOCATION_LEN = 120
+    MAX_ADDRESS_LINE_LEN = 255
+    MAX_POSTCODE_LEN = 32
+    MAX_CITY_LEN = 200
+    MAX_COUNTRY_LEN = 120
+    MAX_LOCATION_LEN = 500
     MAX_PHONE_LEN = 32
     MAX_EMAIL_LEN = 254
 
@@ -2229,7 +2268,11 @@ def validate_submit_request_form(form):
         ("name", name, MAX_NAME_LEN),
         ("title", title, MAX_TITLE_LEN),
         ("description", description, MAX_DESC_LEN),
-        ("location_text", location_text, MAX_LOCATION_LEN),
+        ("address_line", address_line, MAX_ADDRESS_LINE_LEN),
+        ("postcode", postcode, MAX_POSTCODE_LEN),
+        ("city", city, MAX_CITY_LEN),
+        ("country", country, MAX_COUNTRY_LEN),
+        ("location_text", legacy_location_text, MAX_LOCATION_LEN),
         ("phone", phone, MAX_PHONE_LEN),
         ("email", email, MAX_EMAIL_LEN),
     ):
@@ -2243,7 +2286,11 @@ def validate_submit_request_form(form):
         ("name", name),
         ("title", title),
         ("description", description),
-        ("location_text", location_text),
+        ("address_line", address_line),
+        ("postcode", postcode),
+        ("city", city),
+        ("country", country),
+        ("location_text", legacy_location_text),
     ):
         if has_control_chars(value):
             errors[label] = _("Invalid characters detected.")
@@ -2292,6 +2339,10 @@ def validate_submit_request_form(form):
         "priority": priority,
         "title": title,
         "description": description,
+        "address_line": address_line,
+        "postcode": postcode,
+        "city": city,
+        "country": country,
         "location_text": location_text,
         "started_at": (form.get("started_at") or "").strip(),
     }
@@ -2415,6 +2466,10 @@ def submit_request():
             "priority": cleaned["priority"],
             "title": cleaned["title"],
             "description": cleaned["description"],
+            "address_line": cleaned["address_line"],
+            "postcode": cleaned["postcode"],
+            "city": cleaned["city"],
+            "country": cleaned["country"],
             "location_text": cleaned["location_text"],
             # Frontend anti-bot timing (optional, can be missing)
             "started_at": cleaned["started_at"],
@@ -2447,6 +2502,10 @@ def submit_request():
                     category=cleaned["category"],
                     priority=cleaned["priority"],
                     message=cleaned["description"],
+                    address_line=cleaned["address_line"] or None,
+                    postcode=cleaned["postcode"] or None,
+                    city=cleaned["city"] or None,
+                    country=cleaned["country"] or None,
                     location_text=cleaned["location_text"],
                     user_id=user.id,
                 )
@@ -2565,25 +2624,30 @@ def submit_request_confirm():
             name=draft.get("name"),
             phone=(draft.get("phone") or None),
             email=(draft.get("email") or None),
+            address_line=(draft.get("address_line") or None),
+            postcode=(draft.get("postcode") or None),
+            city=(draft.get("city") or None),
+            country=(draft.get("country") or None),
             location_text=(draft.get("location_text") or None),
             status="pending",
             priority=draft.get("priority"),
             category=draft.get("category"),
             structure_id=current_structure().id,
         )
-        lat, lng = geocode_location_best_effort(
-            location_text=draft.get("location_text"),
-            city=draft.get("city"),
-        )
-        if lat is not None and lng is not None:
-            req.latitude = lat
-            req.longitude = lng
         # Legacy fields kept for backwards compatibility with existing /r/<token> links.
         req.requester_token_hash = token_hash
         req.requester_token_created_at = utc_now()
 
         db.session.add(req)
         db.session.commit()
+        current_app.logger.info(
+            "[REQUEST GEO] request_id=%s status=%s normalized_address=%r lat=%r lng=%r",
+            req.id,
+            getattr(req, "geocoding_status", None),
+            getattr(req, "normalized_address", None),
+            getattr(req, "latitude", None),
+            getattr(req, "longitude", None),
+        )
 
         # Remember requester email in session for profile view
         try:

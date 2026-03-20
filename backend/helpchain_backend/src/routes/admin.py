@@ -102,7 +102,7 @@ from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
-from ..services.geocoding import geocode_location_best_effort
+from ..services.geocoding import request_address_display_text
 from ..services.ops_priority import compute_ops_priority
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
@@ -7481,7 +7481,10 @@ def admin_request_new():
         "person_name": (request.form.get("person_name") or "").strip(),
         "email": (request.form.get("email") or "").strip(),
         "phone": (request.form.get("phone") or "").strip(),
+        "address_line": (request.form.get("address_line") or "").strip(),
+        "postcode": (request.form.get("postcode") or "").strip(),
         "city": (request.form.get("city") or "").strip(),
+        "country": (request.form.get("country") or "France").strip(),
         "category": normalize_request_category((request.form.get("category") or "").strip()),
         "priority": (request.form.get("priority") or "standard").strip().lower(),
         "structure_id": (request.form.get("structure_id") or "").strip(),
@@ -7491,6 +7494,14 @@ def admin_request_new():
     form_errors: dict[str, str] = {}
 
     if request.method == "POST":
+        for field_name, max_len in (
+            ("address_line", 255),
+            ("postcode", 32),
+            ("city", 200),
+            ("country", 120),
+        ):
+            if len(form_data[field_name]) > max_len:
+                form_errors[field_name] = "Valeur trop longue."
         if not form_data["title"]:
             form_errors["title"] = "Veuillez renseigner le titre."
         if not form_data["description"]:
@@ -7557,7 +7568,16 @@ def admin_request_new():
                 name=form_data["person_name"],
                 email=form_data["email"] or None,
                 phone=form_data["phone"] or None,
+                address_line=form_data["address_line"] or None,
+                postcode=form_data["postcode"] or None,
                 city=form_data["city"],
+                country=form_data["country"] or None,
+                location_text=request_address_display_text(
+                    address_line=form_data["address_line"] or None,
+                    postcode=form_data["postcode"] or None,
+                    city=form_data["city"] or None,
+                    country=form_data["country"] or None,
+                ),
                 category=form_data["category"],
                 priority=priority_map.get(form_data["priority"], "medium"),
                 status="pending",
@@ -7566,10 +7586,6 @@ def admin_request_new():
                 message=form_data["internal_notes"] or None,
                 user_id=requester_user.id,
             )
-            lat, lng = geocode_location_best_effort(city=form_data["city"])
-            if lat is not None and lng is not None:
-                req.latitude = lat
-                req.longitude = lng
             db.session.add(req)
             db.session.commit()
             audit_admin_action(
@@ -8398,6 +8414,8 @@ def admin_open_case_from_request(req_id: int):
         structure_id=getattr(req, "structure_id", None),
         owner_user_id=None,
         assigned_professional_lead_id=None,
+        latitude=getattr(req, "latitude", None),
+        longitude=getattr(req, "longitude", None),
         status="new",
         priority=derived_priority,
         risk_score=int(triage.get("score") or 0),

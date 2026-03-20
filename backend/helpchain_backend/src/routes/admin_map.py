@@ -4,15 +4,17 @@ from datetime import UTC, datetime
 
 from flask import Blueprint, current_app, jsonify, render_template
 from flask_login import current_user
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
 from backend.extensions import db
-from backend.helpchain_backend.src.models import Case
+from backend.helpchain_backend.src.models import Case, Request
+from backend.helpchain_backend.src.services.case_risk import score_request_risk
 from backend.helpchain_backend.src.services.risk_engine import compute_case_risk
 from .admin import (
     _current_structure_id,
     _is_global_admin,
+    _scope_requests,
     admin_required,
     admin_required_404,
     admin_role_required,
@@ -63,15 +65,23 @@ def _scope_case_query(query):
 def _serialize_risk_map_item(case: Case) -> dict[str, object]:
     request_row = getattr(case, "request", None)
     coords = _valid_coordinates(
+        getattr(request_row, "latitude", None),
+        getattr(request_row, "longitude", None),
+    ) or _valid_coordinates(
         getattr(case, "latitude", None),
         getattr(case, "longitude", None),
     )
     if coords is None:
         return {}
 
-    risk_score = int(getattr(case, "risk_score", None) or 0)
+    risk_score = int(
+        getattr(case, "risk_score", None)
+        or getattr(request_row, "risk_score", None)
+        or 0
+    )
     title = (
         getattr(request_row, "title", None)
+        or getattr(request_row, "normalized_address", None)
         or getattr(request_row, "city", None)
         or f"Case #{case.id}"
     )
@@ -91,6 +101,61 @@ def _serialize_risk_map_item(case: Case) -> dict[str, object]:
         "source_type": "case",
         "request_id": int(getattr(case, "request_id", 0) or 0),
     }
+
+
+def _serialize_request_risk_map_item(req: Request) -> dict[str, object]:
+    coords = _valid_coordinates(
+        getattr(req, "latitude", None),
+        getattr(req, "longitude", None),
+    )
+    if coords is None:
+        return {}
+
+    triage = score_request_risk(req)
+    risk_score = int(
+        getattr(req, "risk_score", None) or triage.get("score") or 0
+    )
+    title = (
+        getattr(req, "title", None)
+        or getattr(req, "normalized_address", None)
+        or getattr(req, "city", None)
+        or f"Request #{req.id}"
+    )
+    return {
+        "id": int(req.id),
+        "title": str(title),
+        "latitude": coords[0],
+        "longitude": coords[1],
+        "risk_level": _risk_level_from_score(risk_score),
+        "risk_score": risk_score,
+        "category": str(getattr(req, "category", None) or ""),
+        "status": str(getattr(req, "status", None) or ""),
+        "updated_at": _safe_iso(
+            getattr(req, "updated_at", None) or getattr(req, "created_at", None)
+        ),
+        "city": str(getattr(req, "city", None) or ""),
+        "source_type": "request",
+        "request_id": int(req.id),
+    }
+
+
+def _load_request_only_risk_items(limit: int = 1000) -> list[dict[str, object]]:
+    query = (
+        _scope_requests(
+            Request.query.outerjoin(Case, Case.request_id == Request.id)
+            .filter(Case.id.is_(None))
+            .filter(Request.latitude.isnot(None), Request.longitude.isnot(None))
+            .filter(Request.latitude.between(-90, 90))
+            .filter(Request.longitude.between(-180, 180))
+            .order_by(Request.updated_at.desc(), Request.id.desc())
+        )
+        .options(joinedload(Request.structure))
+    )
+    return [
+        item
+        for item in (_serialize_request_risk_map_item(req) for req in query.limit(limit).all())
+        if item
+    ]
 
 
 def _load_cases_with_geo():
@@ -127,15 +192,39 @@ def admin_risk_map_api():
     try:
         query = (
             Case.query.options(joinedload(Case.request))
-            .filter(Case.latitude.isnot(None), Case.longitude.isnot(None))
-            .filter(Case.latitude.between(-90, 90))
-            .filter(Case.longitude.between(-180, 180))
+            .join(Request, Case.request_id == Request.id)
+            .filter(
+                or_(
+                    (
+                        Case.latitude.isnot(None)
+                        & Case.longitude.isnot(None)
+                        & Case.latitude.between(-90, 90)
+                        & Case.longitude.between(-180, 180)
+                    ),
+                    (
+                        Request.latitude.isnot(None)
+                        & Request.longitude.isnot(None)
+                        & Request.latitude.between(-90, 90)
+                        & Request.longitude.between(-180, 180)
+                    ),
+                )
+            )
             .order_by(Case.risk_score.desc(), Case.updated_at.desc(), Case.id.desc())
         )
         cases = _scope_case_query(query).limit(1000).all()
-        items = [
+        case_items = [
             item for item in (_serialize_risk_map_item(case) for case in cases) if item
         ]
+        request_items = _load_request_only_risk_items(limit=1000)
+        items = sorted(
+            case_items + request_items,
+            key=lambda item: (
+                int(item.get("risk_score") or 0),
+                str(item.get("updated_at") or ""),
+                int(item.get("request_id") or 0),
+            ),
+            reverse=True,
+        )
         return jsonify(
             {
                 "status": "ok",

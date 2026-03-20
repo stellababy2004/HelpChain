@@ -6,6 +6,10 @@ from flask import current_app, g, has_app_context
 from flask_login import UserMixin
 
 from backend.extensions import db
+from backend.helpchain_backend.src.services.geocoding import (
+    GEOCODING_STATUS_INCOMPLETE,
+    resolve_request_geolocation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -872,6 +876,16 @@ class Request(db.Model):
     city = Column(String(200), nullable=True)
     region = Column(String(200), nullable=True)
     location_text = Column(String(500), nullable=True)
+    address_line = Column(String(255), nullable=True)
+    postcode = Column(String(32), nullable=True)
+    country = Column(String(120), nullable=True)
+    normalized_address = Column(String(500), nullable=True)
+    geocoding_status = Column(
+        String(32),
+        nullable=True,
+        default=GEOCODING_STATUS_INCOMPLETE,
+        server_default=GEOCODING_STATUS_INCOMPLETE,
+    )
     message = Column(Text, nullable=True)
     status = Column(String(50), nullable=True)
     priority = Column(String(50), nullable=True)
@@ -1173,11 +1187,71 @@ class SecurityEvent(db.Model):
     )
 
 
+_REQUEST_GEO_SOURCE_FIELDS = (
+    "address_line",
+    "postcode",
+    "city",
+    "country",
+    "location_text",
+)
+
+
+def _apply_request_geolocation(target) -> None:
+    try:
+        geo = resolve_request_geolocation(
+            address_line=getattr(target, "address_line", None),
+            postcode=getattr(target, "postcode", None),
+            city=getattr(target, "city", None),
+            country=getattr(target, "country", None),
+            location_text=getattr(target, "location_text", None),
+        )
+        target.address_line = geo.get("address_line")
+        target.postcode = geo.get("postcode")
+        target.city = geo.get("city")
+        target.country = geo.get("country")
+        target.normalized_address = geo.get("normalized_address")
+        target.location_text = geo.get("location_text")
+        target.latitude = geo.get("latitude")
+        target.longitude = geo.get("longitude")
+        target.geocoding_status = (
+            geo.get("geocoding_status") or GEOCODING_STATUS_INCOMPLETE
+        )
+    except Exception:
+        try:
+            target.latitude = None
+            target.longitude = None
+            target.geocoding_status = GEOCODING_STATUS_INCOMPLETE
+        except Exception:
+            pass
+
+
 # Ensure requests created without an explicit `user_id` get a minimal
 # placeholder user so older tests that create HelpRequest objects without
 # a user won't fail due to NOT NULL constraints on existing DB schemas.
 try:
-    from sqlalchemy import MetaData, Table, event, insert, select
+    from sqlalchemy import MetaData, Table, event, insert, inspect as sa_inspect, select
+
+    def _request_geocoding_fields_changed(target) -> bool:
+        try:
+            state = sa_inspect(target)
+        except Exception:
+            return True
+        for field_name in _REQUEST_GEO_SOURCE_FIELDS:
+            try:
+                if state.attrs[field_name].history.has_changes():
+                    return True
+            except Exception:
+                continue
+        return False
+
+    @event.listens_for(Request, "before_insert")
+    def _request_prepare_geolocation(mapper, connection, target):
+        _apply_request_geolocation(target)
+
+    @event.listens_for(Request, "before_update")
+    def _request_refresh_geolocation(mapper, connection, target):
+        if _request_geocoding_fields_changed(target):
+            _apply_request_geolocation(target)
 
     @event.listens_for(Request, "before_insert")
     def _request_set_structure_id(mapper, connection, target):

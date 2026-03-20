@@ -200,16 +200,58 @@
             </div>
 
             <div class="col-12 hc-form-group">
-              <label class="form-label" for="srLocation">{{ _("Localisation / adresse") }}</label>
+              <label class="form-label" for="srAddressLine">{{ _("Adresse") }}</label>
               <input
-                id="srLocation"
+                id="srAddressLine"
                 type="text"
-                name="location_text"
+                name="address_line"
                 class="form-control"
                 data-hc-event="sr_field_click"
-                data-hc-field="location_text"
-                value="{{ request.form.get('location_text','') }}"
-                placeholder="{{ _('Ville ou commune') }}"
+                data-hc-field="address_line"
+                value="{{ request.form.get('address_line','') }}"
+                placeholder="{{ _('Ex : 12 rue des Fleurs') }}"
+              >
+            </div>
+
+            <div class="col-12 col-md-4 hc-form-group">
+              <label class="form-label" for="srPostcode">{{ _("Code postal") }}</label>
+              <input
+                id="srPostcode"
+                type="text"
+                name="postcode"
+                class="form-control"
+                data-hc-event="sr_field_click"
+                data-hc-field="postcode"
+                value="{{ request.form.get('postcode','') }}"
+                placeholder="{{ _('75001') }}"
+              >
+            </div>
+
+            <div class="col-12 col-md-5 hc-form-group">
+              <label class="form-label" for="srCity">{{ _("Ville") }}</label>
+              <input
+                id="srCity"
+                type="text"
+                name="city"
+                class="form-control"
+                data-hc-event="sr_field_click"
+                data-hc-field="city"
+                value="{{ request.form.get('city','') }}"
+                placeholder="{{ _('Paris') }}"
+              >
+            </div>
+
+            <div class="col-12 col-md-3 hc-form-group">
+              <label class="form-label" for="srCountry">{{ _("Pays") }}</label>
+              <input
+                id="srCountry"
+                type="text"
+                name="country"
+                class="form-control"
+                data-hc-event="sr_field_click"
+                data-hc-field="country"
+                value="{{ request.form.get('country','France') }}"
+                placeholder="{{ _('France') }}"
               >
             </div>
 
