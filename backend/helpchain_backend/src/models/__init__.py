@@ -40,6 +40,7 @@ from .professional_lead import ProfessionalLead  # noqa: F401
 from .case import Case  # noqa: F401
 from .case_event import CaseEvent  # noqa: F401
 from .case_participant import CaseParticipant  # noqa: F401
+from .case_collaborator import CaseCollaborator  # noqa: F401
 
 # Split models (not present in `backend.models`)
 from .refresh_token import RefreshToken  # noqa: F401
@@ -83,6 +84,7 @@ __all__ = [
     "Case",
     "CaseEvent",
     "CaseParticipant",
+    "CaseCollaborator",
     "VolunteerRequestState",
     "VolunteerMatchFeedback",
     "EmailSendEvent",

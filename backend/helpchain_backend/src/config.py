@@ -3,11 +3,12 @@ from datetime import timedelta
 
 from dotenv import load_dotenv
 
-# === Project base (root of HelpChain.bg) ===
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+# === Paths ===
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", ".."))
 
 # Load .env ONCE, from project root
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 
 class Config:
@@ -43,9 +44,9 @@ class Config:
     ADMIN_NOTIFY_EMAIL = os.getenv("ADMIN_NOTIFY_EMAIL", "")
 
     # ✅ Database
-    # Prefer explicit env; else Render/Heroku DATABASE_URL; else project instance/app.db (absolute to avoid CWD drift)
-    INSTANCE_PATH = os.path.join(BASE_DIR, "instance")
-    DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "app.db")
+    # Prefer explicit env; else fallback to the single local runtime DB.
+    INSTANCE_PATH = os.path.join(PROJECT_ROOT, "instance")
+    DEFAULT_SQLITE_PATH = os.path.join(INSTANCE_PATH, "hc_local_dev.db")
     _db_path_env = os.getenv("HC_DB_PATH")
     db_url = os.getenv("DATABASE_URL") or os.getenv("SQLALCHEMY_DATABASE_URI") or ""
     _db_url_env = db_url

@@ -70,6 +70,8 @@ def get_metadata():
         if current_dir not in sys.path:
             sys.path.insert(0, current_dir)
 
+        # Ensure all ORM models are imported so metadata is complete.
+        from backend.helpchain_backend.src import models  # noqa: F401
         from backend.models import db
 
         return db.metadata
@@ -88,7 +90,14 @@ def run_migrations_offline():
 
     """
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=get_metadata(), literal_binds=True)
+    context.configure(
+        url=url,
+        target_metadata=get_metadata(),
+        literal_binds=True,
+        render_as_batch=True,
+        compare_type=True,
+        compare_server_default=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -131,8 +140,16 @@ def run_migrations_online():
         connectable = create_engine(database_url)
 
     with connectable.connect() as connection:
+        if "render_as_batch" not in conf_args:
+            conf_args["render_as_batch"] = True
+        if "compare_type" not in conf_args:
+            conf_args["compare_type"] = True
+        if "compare_server_default" not in conf_args:
+            conf_args["compare_server_default"] = True
         context.configure(
-            connection=connection, target_metadata=get_metadata(), **conf_args
+            connection=connection,
+            target_metadata=get_metadata(),
+            **conf_args,
         )
 
         with context.begin_transaction():

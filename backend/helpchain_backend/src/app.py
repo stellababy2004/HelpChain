@@ -330,45 +330,6 @@ def create_app(config_object=None) -> Flask:
         app.config["SESSION_COOKIE_SECURE"] = False
 
     app.config["PROPAGATE_EXCEPTIONS"] = True
-    instance_db_path = os.path.join(
-        os.path.abspath(os.path.join(base_dir, "..", "..", "..")), "instance", "app.db"
-    )
-    app.config.setdefault(
-        "SQLALCHEMY_DATABASE_URI",
-        os.getenv("SQLALCHEMY_DATABASE_URI")
-        or os.getenv("DATABASE_URL")
-        or f"sqlite:///{instance_db_path}",
-    )
-    # Local-dev DB consistency guard:
-    # keep one canonical SQLite source-of-truth unless explicitly opting out.
-    if env_name not in ("prod", "production") and not app.config.get("TESTING", False):
-        local_db_mode = (os.getenv("HC_LOCAL_DB_MODE") or "canonical").strip().lower()
-        if local_db_mode != "env":
-            canonical_local_db_path = os.path.join(
-                os.path.abspath(os.path.join(base_dir, "..", "..", "..")),
-                "backend",
-                "instance",
-                "app_clean.db",
-            )
-            canonical_local_db_uri = (
-                f"sqlite:///{canonical_local_db_path.replace(os.sep, '/')}"
-            )
-            # In canonical local mode, ignore legacy HC_DB_PATH drift and only honor
-            # explicit DB routing env vars.
-            explicit_override = (
-                os.getenv("DATABASE_URL") or os.getenv("HC_LOCAL_DEV_DB_URI")
-            )
-            configured_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "").strip()
-            if not explicit_override and configured_uri != canonical_local_db_uri:
-                app.logger.warning(
-                    "[DB] Local canonical override enabled: %s -> %s",
-                    configured_uri,
-                    canonical_local_db_uri,
-                )
-                app.config["SQLALCHEMY_DATABASE_URI"] = canonical_local_db_uri
-    # Serverless / preview safety: never leave URI empty
-    if not app.config.get("SQLALCHEMY_DATABASE_URI"):
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)
     app.config.setdefault("SUPPORTED_LOCALES", list(SUPPORTED_LOCALES))
@@ -631,11 +592,32 @@ def create_app(config_object=None) -> Flask:
         app.logger.info("admin_risk blueprint not loaded: %s", e)
 
     try:
+        from .routes.organization import org_bp
+
+        app.register_blueprint(org_bp)
+    except Exception as e:
+        app.logger.info("organization blueprint not loaded: %s", e)
+
+    try:
         from .routes.admin_map import admin_map_bp
 
         app.register_blueprint(admin_map_bp)
     except Exception as e:
         app.logger.info("admin_map blueprint not loaded: %s", e)
+
+    try:
+        from .routes.admin_command import admin_command_bp
+
+        app.register_blueprint(admin_command_bp)
+    except Exception as e:
+        app.logger.info("admin_command blueprint not loaded: %s", e)
+
+    try:
+        from .routes.risk_map import risk_map_bp
+
+        app.register_blueprint(risk_map_bp)
+    except Exception as e:
+        app.logger.info("risk_map blueprint not loaded: %s", e)
 
     try:
         from backend.admin.ops_api import ops_api

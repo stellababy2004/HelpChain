@@ -517,8 +517,12 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     role = db.Column(db.String(50), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
+    structure_id = db.Column(
+        db.Integer, db.ForeignKey("structures.id"), nullable=True, index=True
+    )
 
     requests = db.relationship("Request", back_populates="user", lazy="selectin")
+    structure = relationship("Structure", lazy="joined")
     user_roles = db.relationship(
         "UserRole",
         back_populates="user",
@@ -791,6 +795,13 @@ class Structure(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     slug = db.Column(db.String(80), unique=True, nullable=False)
+    status = db.Column(
+        db.String(16),
+        nullable=False,
+        default="pending",
+        server_default="pending",
+        index=True,
+    )
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     services = relationship("StructureService", back_populates="structure", lazy="select")
 
