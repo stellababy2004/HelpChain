@@ -14,4 +14,4 @@ if __name__ == "__main__":
     print("🤖 Chatbot at: http://localhost:5000/chatbot")
     print("Press Ctrl+C to stop")
 
-    socketio.run(app, debug=True, host="127.0.0.1", port=5000)
+    socketio.run(app, debug=False, use_reloader=False, host="127.0.0.1", port=5000)

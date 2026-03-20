@@ -13,11 +13,55 @@ $PidFile = Join-Path $TmpDir "helpchain_server.pid"
 $OutLog = Join-Path $TmpDir "server.out.log"
 $ErrLog = Join-Path $TmpDir "server.err.log"
 $Port = 5000
+$PreferredDb = Join-Path $Root "instance\hc_local_dev.db"
+$FallbackDb = Join-Path $Root "backend\instance\app_clean.db"
 
 function Ensure-TmpDir {
     if (!(Test-Path $TmpDir)) {
         New-Item -ItemType Directory -Path $TmpDir | Out-Null
     }
+}
+
+function Test-HealthyDb([string]$DbPath) {
+    if (!(Test-Path $DbPath)) {
+        return $false
+    }
+
+    $script = @'
+import sqlite3
+import sys
+
+path = sys.argv[1]
+try:
+    con = sqlite3.connect(path)
+    tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
+    print("OK" if {"admin_users", "structures"}.issubset(tables) else "BROKEN")
+except Exception:
+    print("BROKEN")
+'@
+
+    $result = & $Python -c $script $DbPath 2>$null
+    return (($result | Select-Object -Last 1).Trim() -eq "OK")
+}
+
+function Set-HealthyDbEnv {
+    $selectedDb = $null
+
+    if (Test-HealthyDb $PreferredDb) {
+        $selectedDb = $PreferredDb
+    }
+    elseif (Test-HealthyDb $FallbackDb) {
+        $selectedDb = $FallbackDb
+        Write-Output "Primary local DB is not initialized. Falling back to app_clean.db."
+    }
+    else {
+        throw "No healthy local database found. Run: .\.venv\Scripts\python.exe scripts\db_guard.py migrate"
+    }
+
+    $dbPosix = $selectedDb.Replace("\", "/")
+    $env:HC_DB_PATH = $dbPosix
+    $env:SQLALCHEMY_DATABASE_URI = "sqlite:///$dbPosix"
+    $env:DATABASE_URL = $env:SQLALCHEMY_DATABASE_URI
 }
 
 function Get-PortPids {
@@ -68,6 +112,8 @@ function Start-Server {
         throw "run.py not found: $RunFile"
     }
 
+    Set-HealthyDbEnv
+
     $proc = Start-Process -FilePath $Python `
         -ArgumentList $RunFile `
         -WorkingDirectory $Root `
@@ -92,6 +138,7 @@ function Start-Server {
 function Serve-Foreground {
     Ensure-TmpDir
     Stop-Server
+    Set-HealthyDbEnv
     Write-Output "Starting foreground server on http://127.0.0.1:$Port"
     Set-Location $Root
     & $Python $RunFile
