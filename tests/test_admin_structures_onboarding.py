@@ -227,4 +227,4 @@ def test_ops_readonly_cannot_access_structure_routes(client, session, role):
     )
     _login_admin(client, admin)
     resp = client.get("/admin/structures", follow_redirects=False)
-    assert resp.status_code == 404
+    assert resp.status_code == 403

@@ -107,19 +107,20 @@ def test_public_routes_accessible_anonymous(client, path):
 @pytest.mark.parametrize("path", PLATFORM_ADMIN_ROUTES)
 def test_platform_admin_routes_block_anonymous(client, path):
     resp = client.get(path, follow_redirects=False)
-    assert resp.status_code in (302, 303, 403, 404)
+    assert resp.status_code == 303
+    assert "/admin/login" in (resp.headers.get("Location") or "")
 
 
 @pytest.mark.parametrize("path", PLATFORM_ADMIN_ROUTES)
 def test_platform_admin_routes_block_operator(operator_user, path):
     resp = operator_user.get(path, follow_redirects=False)
-    assert resp.status_code in (403, 404)
+    assert resp.status_code == 403
 
 
 @pytest.mark.parametrize("path", PLATFORM_ADMIN_ROUTES)
 def test_platform_admin_routes_block_structure_admin(structure_admin, path):
     resp = structure_admin.get(path, follow_redirects=False)
-    assert resp.status_code in (403, 404)
+    assert resp.status_code == 403
 
 
 @pytest.mark.parametrize("path", PLATFORM_ADMIN_ROUTES)
@@ -143,7 +144,7 @@ def test_structure_admin_routes_allow_global_admin(global_admin, path):
 @pytest.mark.parametrize("path", STRUCTURE_ADMIN_ROUTES)
 def test_structure_admin_routes_block_operator(operator_user, path):
     resp = operator_user.get(path, follow_redirects=False)
-    assert resp.status_code in (403, 404)
+    assert resp.status_code == 403
 
 
 @pytest.mark.parametrize("path", OPS_ROUTES)
@@ -167,7 +168,8 @@ def test_ops_routes_allow_global_admin(global_admin, path):
 @pytest.mark.parametrize("path", OPS_ROUTES)
 def test_ops_routes_block_anonymous(client, path):
     resp = client.get(path, follow_redirects=False)
-    assert resp.status_code in (302, 303, 403, 404)
+    assert resp.status_code == 303
+    assert "/admin/ops/login" in (resp.headers.get("Location") or "")
 
 
 def test_structure_admin_structure_scoping(structure_admin, session):
@@ -178,4 +180,4 @@ def test_structure_admin_structure_scoping(structure_admin, session):
     assert resp_ok.status_code == 200
 
     resp_forbidden = structure_admin.get("/admin/structures/3", follow_redirects=False)
-    assert resp_forbidden.status_code in (403, 404)
+    assert resp_forbidden.status_code == 403

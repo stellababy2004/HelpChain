@@ -67,12 +67,13 @@ def operator_client(app, db_session):
 def test_operator_cannot_access_superadmin_pages(operator_client):
     for path in ("/admin/requests", "/admin/requests/new"):
         resp = operator_client.get(path, follow_redirects=False)
-        assert resp.status_code in (403, 404)
+        assert resp.status_code == 403
 
 
 def test_volunteer_cannot_access_admin_pages(authenticated_volunteer_client):
     resp = authenticated_volunteer_client.get("/admin/requests", follow_redirects=False)
-    assert resp.status_code in (302, 403, 404)
+    assert resp.status_code == 303
+    assert "/admin/login" in (resp.headers.get("Location", "") or "")
 
 
 def test_admin_invalid_request_id_returns_404(admin_login):

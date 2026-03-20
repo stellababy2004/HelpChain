@@ -39,16 +39,14 @@ def admin_login(authenticated_admin_client, db_session):
 
 def test_unauthorized_access_to_admin_routes_redirects(client):
     resp = client.get("/admin/requests", follow_redirects=False)
-    assert resp.status_code in (302, 404)
-    if resp.status_code == 302:
-        assert "/admin/ops/login" in (resp.headers.get("Location", "") or "")
+    assert resp.status_code == 303
+    assert "/admin/login" in (resp.headers.get("Location", "") or "")
 
 
 def test_login_required_redirects_for_admin_new(client):
     resp = client.get("/admin/requests/new", follow_redirects=False)
-    assert resp.status_code in (302, 404)
-    if resp.status_code == 302:
-        assert "/admin/ops/login" in (resp.headers.get("Location", "") or "")
+    assert resp.status_code == 303
+    assert "/admin/login" in (resp.headers.get("Location", "") or "")
 
 
 def test_session_expired_admin_redirects(admin_login):
@@ -65,4 +63,5 @@ def test_session_expired_admin_redirects(admin_login):
         ):
             sess.pop(key, None)
     resp = admin_login.get("/admin/requests", follow_redirects=False)
-    assert resp.status_code in (302, 404)
+    assert resp.status_code == 303
+    assert "/admin/login" in (resp.headers.get("Location", "") or "")

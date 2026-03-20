@@ -3559,6 +3559,11 @@ def is_safe_url(target: str) -> bool:
     )
 
 
+def _redirect_protected_login(endpoint: str):
+    nxt = request.full_path if request.query_string else request.path
+    return redirect(url_for(endpoint, next=nxt), code=303)
+
+
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
@@ -3575,6 +3580,9 @@ def admin_required(view_func):
 def operator_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return _redirect_protected_login("admin.ops_login")
+
         if not (
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
@@ -3582,14 +3590,18 @@ def operator_required(view_func):
             if session.get("is_admin") or session.get("admin_logged_in"):
                 if session_role in {"ops", "readonly", "admin", "superadmin"}:
                     return view_func(*args, **kwargs)
-            abort(404)
+            _audit_denied_action(
+                required_roles={"ops", "readonly", "admin", "superadmin"},
+                actor_role=session_role or None,
+            )
+            abort(403)
         role = _admin_role_value()
         if role is None or role not in {"ops", "readonly", "admin", "superadmin"}:
             _audit_denied_action(
                 required_roles={"ops", "readonly", "admin", "superadmin"},
                 actor_role=role,
             )
-            abort(404)
+            abort(403)
         return view_func(*args, **kwargs)
 
     return wrapper
