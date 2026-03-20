@@ -3,7 +3,14 @@ import sqlite3
 import requests
 from pathlib import Path
 
-DB_PATH = Path("backend/instance/app_clean.db")
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from backend.local_db_guard import APP_IMPORT_PATH, select_local_runtime_db
+
+SELECTION = select_local_runtime_db()
+DB_PATH = SELECTION.selected_path
 
 checks = []
 
@@ -17,11 +24,15 @@ def check(name, fn):
 
 
 def check_db_exists():
+    if DB_PATH is None:
+        raise RuntimeError("no supported sqlite runtime DB selected")
     if not DB_PATH.exists():
-        raise RuntimeError("canonical DB missing")
+        raise RuntimeError(f"runtime DB missing: {DB_PATH}")
 
 
 def check_tables():
+    if DB_PATH is None:
+        raise RuntimeError("no supported sqlite runtime DB selected")
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
@@ -45,6 +56,8 @@ def check_tables():
 
 
 def check_admin():
+    if DB_PATH is None:
+        raise RuntimeError("no supported sqlite runtime DB selected")
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
@@ -57,15 +70,24 @@ def check_admin():
 
 
 def check_health():
-    try:
-        r = requests.get("http://127.0.0.1:5005/health", timeout=2)
-        if r.status_code != 200:
-            raise RuntimeError(f"health returned {r.status_code}")
-    except Exception:
-        raise RuntimeError("server not running or health endpoint unreachable")
+    urls = (
+        "http://127.0.0.1:5000/health",
+        "http://127.0.0.1:5005/health",
+    )
+    for url in urls:
+        try:
+            r = requests.get(url, timeout=2)
+            if r.status_code == 200:
+                return
+        except Exception:
+            continue
+    raise RuntimeError("server not running or health endpoint unreachable")
 
 
 def main():
+    print(f"APP: {APP_IMPORT_PATH}")
+    print(f"DB selected: {SELECTION.selected_uri}")
+    print(f"DB selector: {SELECTION.reason}")
     check("DB file exists", check_db_exists)
     check("Core tables", check_tables)
     check("Admin user", check_admin)

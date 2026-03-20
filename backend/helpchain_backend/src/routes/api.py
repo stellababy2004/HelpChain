@@ -1,4 +1,3 @@
-print("API.PY LOADED")
 import asyncio
 import json
 import os
@@ -784,7 +783,7 @@ def public_impact():
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-@bp.route("/ai", methods=["POST"])
+@api_bp.route("/ai", methods=["POST"])
 def ai_endpoint():
     from flask import request, jsonify
 

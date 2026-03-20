@@ -1,6 +1,36 @@
+import os
+import sys
+
+from backend.local_db_guard import apply_local_runtime_db_contract, normalize_uri
+
+_runtime_db = apply_local_runtime_db_contract()
+if _runtime_db.apply_contract and _runtime_db.selected_uri:
+    configured_uri = _runtime_db.configured_uri or ""
+    if configured_uri and normalize_uri(configured_uri) != normalize_uri(_runtime_db.selected_uri):
+        print(
+            "[LOCAL DB] configured runtime DB differs from the effective local DB.\n"
+            f"configured={configured_uri}\n"
+            f"effective={_runtime_db.selected_uri}\n"
+            f"reason={_runtime_db.reason}",
+            file=sys.stderr,
+        )
+    elif _runtime_db.selected_label == "fallback":
+        print(
+            "[LOCAL DB] using fallback local DB.\n"
+            f"effective={_runtime_db.selected_uri}\n"
+            f"reason={_runtime_db.reason}",
+            file=sys.stderr,
+        )
+    elif not (_runtime_db.selected_health and _runtime_db.selected_health.healthy):
+        print(
+            "[LOCAL DB] no healthy local DB found.\n"
+            f"effective={_runtime_db.selected_uri}\n"
+            f"reason={_runtime_db.reason}",
+            file=sys.stderr,
+        )
+
 from backend.extensions import db  # bound SQLAlchemy instance
 from backend.helpchain_backend.src.app import create_app
-import os
 
 # --------------------------------------------------
 # Create Flask app

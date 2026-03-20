@@ -550,10 +550,15 @@ def create_app(config_object=None) -> Flask:
 
     try:
         from .routes.api import api_bp
+    except Exception:
+        app.logger.exception("Failed to import api blueprint")
+        raise
 
+    try:
         app.register_blueprint(api_bp, url_prefix="/api")
-    except Exception as e:
-        app.logger.info("api blueprint not loaded: %s", e)
+    except Exception:
+        app.logger.exception("Failed to register api blueprint")
+        raise
 
     try:
         from .routes.analytics import analytics_bp

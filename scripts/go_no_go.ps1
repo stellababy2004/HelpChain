@@ -20,12 +20,11 @@ Set-Location $projectRoot
 $startedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $warnings = 0
 $appEntrypoint = "backend.appy:app"
-$canonicalDb = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
 
 Write-Host "HELPCHAIN GO / NO-GO CHECK" -ForegroundColor Cyan
 Write-Host "Started: $startedAt"
 Write-Host "APP: $appEntrypoint"
-Write-Host "CANONICAL DB: $canonicalDb"
+Write-Host "LOCAL DB CONTRACT: primary=instance/hc_local_dev.db fallback=backend/instance/app_clean.db"
 Write-Host ""
 
 Write-Host "Step 1/3 - Dev doctor" -ForegroundColor Cyan

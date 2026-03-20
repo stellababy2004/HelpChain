@@ -28,6 +28,13 @@ def test_public_routes_health(client):
         assert resp.status_code != 500, f"{path} returned 500"
 
 
+def test_api_blueprint_routes_registered(app):
+    rules = {rule.rule for rule in app.url_map.iter_rules()}
+    assert "/api/ai/status" in rules
+    assert "/api/chatbot/message" in rules
+    assert any(rule.endpoint.startswith("api.") for rule in app.url_map.iter_rules())
+
+
 def test_admin_routes_health(client):
     # Admin may require auth; we only assert no server crash.
     for path in ("/admin", "/admin/requests"):

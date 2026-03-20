@@ -36,11 +36,13 @@ def _env_truthy(value: str | None) -> bool:
 
 def main() -> int:
     _prepare_import_path()
-    parser = argparse.ArgumentParser(description="Ensure admin user (canonical DB only)")
+    parser = argparse.ArgumentParser(
+        description="Ensure admin user on the effective local runtime DB"
+    )
     parser.add_argument(
         "--confirm-canonical-db",
         action="store_true",
-        help="Required safety flag to allow DB write",
+        help="Required safety flag to allow DB write to the effective local runtime DB",
     )
     args = parser.parse_args()
 
@@ -66,23 +68,29 @@ def main() -> int:
 
     from backend.extensions import db
     from backend.local_db_guard import (
-        canonical_confirmation_error,
-        canonical_mismatch_error,
-        is_canonical_db_uri,
+        runtime_confirmation_error,
+        runtime_mismatch_error,
+        select_local_runtime_db,
         print_app_db_preflight,
+        normalize_uri,
     )
     from backend.models import AdminUser
 
     from backend.appy import app
 
+    selection = select_local_runtime_db()
     with app.app_context():
         runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
         print_app_db_preflight(runtime_uri)
+        print(f"EFFECTIVE LOCAL DB: {selection.selected_uri}")
         if not args.confirm_canonical_db:
-            print(canonical_confirmation_error())
+            print(runtime_confirmation_error())
             return 2
-        if not is_canonical_db_uri(runtime_uri):
-            print(canonical_mismatch_error(runtime_uri))
+        if not selection.selected_uri:
+            print("ENSURE_ADMIN: error (local runtime DB selection unavailable)")
+            return 2
+        if normalize_uri(runtime_uri) != normalize_uri(selection.selected_uri):
+            print(runtime_mismatch_error(runtime_uri, selection.selected_uri))
             return 2
 
         existing = db.session.query(AdminUser).filter_by(username=username).first()

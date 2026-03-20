@@ -31,7 +31,6 @@ Set-Location $projectRoot
 
 $pythonExe = Join-Path $projectRoot ".venv\Scripts\python.exe"
 $appEntrypoint = "backend.appy:app"
-$expectedDbUri = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
 $startedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
 Write-Host "HELPCHAIN DEV DOCTOR" -ForegroundColor Cyan
@@ -108,11 +107,20 @@ result = {
         "head_revision": None,
         "status": "UNKNOWN",
     },
+    "local_db": {
+        "selected_uri": None,
+        "selected_label": None,
+        "selected_healthy": None,
+        "reason": None,
+        "primary_uri": None,
+        "fallback_uri": None,
+    },
     "errors": [],
 }
 
 try:
     from backend.appy import app
+    from backend.local_db_guard import select_local_runtime_db
     from backend.models import db
 except Exception as exc:
     print(json.dumps({
@@ -125,6 +133,17 @@ except Exception as exc:
 result["app_import_ok"] = True
 
 try:
+    selection = select_local_runtime_db()
+    result["local_db"]["selected_uri"] = selection.selected_uri
+    result["local_db"]["selected_label"] = selection.selected_label
+    result["local_db"]["reason"] = selection.reason
+    result["local_db"]["primary_uri"] = selection.primary.uri
+    result["local_db"]["fallback_uri"] = selection.fallback.uri
+    selected_health = selection.selected_health
+    result["local_db"]["selected_healthy"] = bool(
+        selected_health and selected_health.healthy
+    )
+
     with app.app_context():
         result["sqlalchemy_database_uri"] = app.config.get("SQLALCHEMY_DATABASE_URI")
         result["instance_path"] = getattr(app, "instance_path", None)
@@ -277,17 +296,20 @@ Write-Host ""
 Write-Host "Runtime"
 Write-Host "APP: $($payload.app_entrypoint)"
 Write-Host "DB: $($payload.sqlalchemy_database_uri)"
-Write-Host "CANONICAL_DB: $expectedDbUri"
+Write-Host "PRIMARY_LOCAL_DB: $($payload.local_db.primary_uri)"
+Write-Host "FALLBACK_LOCAL_DB: $($payload.local_db.fallback_uri)"
+Write-Host "SELECTED_LOCAL_DB: $($payload.local_db.selected_uri)"
+Write-Host "DB_SELECTOR_REASON: $($payload.local_db.reason)"
 Write-Host "INSTANCE: $($payload.instance_path)"
 Write-Host "ENV: $($payload.env_mode)"
 Write-Host ""
 
 $dbUri = [string]($payload.sqlalchemy_database_uri)
-if ($dbUri -ne $expectedDbUri) {
-    Write-Warn "Runtime DB differs from canonical local DB target."
+if ($payload.local_db.selected_uri -and $dbUri -ne [string]$payload.local_db.selected_uri) {
+    Write-Warn "Runtime DB differs from the selected effective local DB."
 }
-if ($dbUri -match "hc_local_dev\.db|volunteers\.db|instance/app\.db|hc_run\.db") {
-    Write-Warn "Runtime DB matches a known legacy/non-canonical sqlite path."
+if ($payload.local_db.selected_healthy -eq $false) {
+    Write-Warn "Selected local DB is not healthy."
 }
 
 if ($payload.tables.requests_exists) { Write-Pass "requests table: yes" } else { Write-Warn "requests table: no" }

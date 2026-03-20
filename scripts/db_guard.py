@@ -1,50 +1,38 @@
 from __future__ import annotations
 
-import os
-import re
 import shutil
-import sqlite3
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from backend.local_db_guard import (
+    APP_IMPORT_PATH,
+    apply_local_runtime_db_contract,
+    inspect_runtime_db,
+)
+
+RUNTIME_SELECTION = apply_local_runtime_db_contract()
 
 
 def _print(msg: str) -> None:
     print(msg)
 
 
-def _read_env_file() -> dict[str, str]:
-    env_path = ROOT / ".env"
-    if not env_path.exists():
-        return {}
-    data: dict[str, str] = {}
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, v = line.split("=", 1)
-        data[k.strip()] = v.strip().strip('"')
-    return data
-
-
 def _resolve_db_path() -> Path | None:
-    env = dict(os.environ)
-    if not env.get("SQLALCHEMY_DATABASE_URI") or not env.get("DATABASE_URL"):
-        env.update(_read_env_file())
-    uri = env.get("SQLALCHEMY_DATABASE_URI") or env.get("DATABASE_URL") or ""
-    if not uri:
-        uri = f"sqlite:///{(ROOT / 'backend' / 'instance' / 'app.db').as_posix()}"
-    if not uri.startswith("sqlite:"):
+    uri = RUNTIME_SELECTION.selected_uri or RUNTIME_SELECTION.configured_uri or ""
+    path = RUNTIME_SELECTION.selected_path
+    if not path:
         _print(f"UNSUPPORTED DATABASE URL: {uri}")
         return None
-    path = uri.replace("sqlite:///", "", 1).replace("sqlite://", "", 1)
-    path = path.replace("\\", "/")
-    if re.match(r"^[A-Za-z]:/", path):
-        return Path(path)
-    return (ROOT / path).resolve()
+    _print(f"APP: {APP_IMPORT_PATH}")
+    _print(f"DB: {uri}")
+    _print(f"DB SELECTOR: {RUNTIME_SELECTION.reason}")
+    return Path(path).resolve()
 
 
 def _backup(db_path: Path) -> Path:
@@ -78,7 +66,7 @@ def _restore(db_path: Path) -> bool:
 
 
 def _run_flask_cmd(args: list[str]) -> int:
-    cmd = [sys.executable, "-m", "flask", "--app", "backend.appy:app"] + args
+    cmd = [sys.executable, "-m", "flask", "--app", APP_IMPORT_PATH] + args
     return subprocess.call(cmd, cwd=str(ROOT))
 
 
@@ -101,25 +89,19 @@ def _upgrade() -> bool:
 
 
 def _schema_check(db_path: Path) -> bool:
-    required = {"latitude", "longitude", "status", "priority"}
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cases'")
-    if not cur.fetchone():
-        con.close()
-        _print("SCHEMA VALIDATION FAILED")
-        return False
-    cur.execute("PRAGMA table_info(cases)")
-    cols = {r[1] for r in cur.fetchall()}
-    con.close()
-    missing = sorted(required - cols)
-    if missing:
-        _print("SCHEMA VALIDATION FAILED")
-        for col in missing:
-            _print(f"MISSING COLUMN: cases.{col}")
-        return False
-    _print("SCHEMA VALID")
-    return True
+    health = inspect_runtime_db(db_path)
+    if health.healthy:
+        _print("SCHEMA VALID")
+        return True
+
+    _print("SCHEMA VALIDATION FAILED")
+    for table in health.missing_tables:
+        _print(f"MISSING TABLE: {table}")
+    for col in health.missing_case_columns:
+        _print(f"MISSING COLUMN: cases.{col}")
+    if health.error:
+        _print(f"ERROR: {health.error}")
+    return False
 
 
 def cmd_backup(db_path: Path) -> int:
