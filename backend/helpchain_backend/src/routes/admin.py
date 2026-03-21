@@ -6556,14 +6556,6 @@ def _render_notifications_list():
     )
 
 
-@admin_bp.get("/notifications")
-@admin_required
-@admin_role_required("readonly", "ops", "superadmin")
-def admin_notifications_list():
-    admin_required_404()
-    return _render_notifications_list()
-
-
 @admin_bp.get("/professional-leads")
 @login_required
 @admin_required
@@ -7470,6 +7462,7 @@ def admin_pro_access_reject(pro_id: int):
 from . import admin_requests as _admin_requests  # noqa: F401
 from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
 from . import admin_cases as _admin_cases  # noqa: F401
+from . import admin_notifications as _admin_notifications  # noqa: F401
 
 build_requests_query = _admin_requests.build_requests_query
 get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
