@@ -7925,38 +7925,39 @@ body.hc-page-home section {
 
 /* Public navbar compact refinement (2026-03-20) */
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar {
+  min-height: 58px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar.is-scrolled {
   min-height: 56px;
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar.is-scrolled {
-  min-height: 54px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-}
-
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .navbar-brand {
-  gap: 0.55rem;
-  margin-right: 0.35rem;
+  gap: 0.68rem;
+  margin-right: clamp(0.85rem, 1.35vw, 1.3rem);
+  flex: 0 0 auto;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-brand-mark {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   margin-right: 0;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-brand-title {
-  font-size: 1rem;
+  font-size: 1.02rem;
   line-height: 1;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link {
-  padding: 0.38rem 0.68rem;
-  font-size: 0.88rem;
-  line-height: 1.05;
-  border-radius: 9px;
+  padding: 0.46rem 0.82rem;
+  font-size: 0.9rem;
+  line-height: 1.12;
+  border-radius: 10px;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link:not(.hc-nav-cta) {
@@ -7978,21 +7979,21 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-p
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-login {
-  padding-inline: 0.64rem;
+  padding-inline: 0.78rem;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-actions {
-  gap: 0.45rem;
-  padding-left: 0.72rem;
-  margin-left: 0.45rem;
+  gap: 0.72rem;
+  padding-left: 0.95rem;
+  margin-left: clamp(0.9rem, 1.4vw, 1.3rem);
   border-left-color: rgba(15, 23, 42, 0.08);
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link.hc-nav-cta {
-  min-height: 36px;
+  min-height: 38px;
   margin-left: 0;
-  padding: 0.42rem 0.82rem;
-  font-size: 0.84rem;
+  padding: 0.48rem 1rem;
+  font-size: 0.86rem;
   font-weight: 650;
   letter-spacing: -0.005em;
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.12);
@@ -8006,7 +8007,8 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-p
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .container-fluid {
     display: flex;
     align-items: center;
-    gap: clamp(0.45rem, 0.85vw, 0.82rem);
+    width: min(100% - 1.35rem, 1320px);
+    gap: clamp(0.8rem, 1.15vw, 1.2rem);
     flex-wrap: nowrap;
   }
 
@@ -8015,7 +8017,7 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-p
     flex: 1 1 auto;
     min-width: 0;
     align-items: center;
-    gap: clamp(0.4rem, 0.8vw, 0.72rem);
+    gap: clamp(0.75rem, 1.1vw, 1.05rem);
     flex-wrap: nowrap;
   }
 
@@ -8023,18 +8025,42 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-p
     flex: 1 1 auto;
     min-width: 0;
     justify-content: center;
-    gap: clamp(0.08rem, 0.35vw, 0.24rem);
+    margin-right: 0;
+    gap: clamp(0.3rem, 0.5vw, 0.5rem);
     flex-wrap: nowrap;
   }
 
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-main .nav-item {
-    flex: 0 1 auto;
-    min-width: 0;
+    flex: 0 0 auto;
   }
 
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-actions {
+    margin-left: auto;
     flex: 0 0 auto;
     flex-wrap: nowrap;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-topbar-search {
+    display: none !important;
+    flex: 0 0 13.5rem;
+    min-width: 13.5rem;
+    max-width: 13.5rem;
+    margin-left: 0.7rem;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-search__box {
+    width: 100%;
+  }
+
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-search__input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1400px) {
+  body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-topbar-search {
+    display: flex !important;
   }
 }
 
