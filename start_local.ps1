@@ -35,8 +35,22 @@ function Test-HealthyDb([string]$dbPath) {
   if (-not (Test-Path $dbPath)) {
     return $false
   }
-  $result = & $python -c $dbCheck $dbPath 2>$null
-  return (($result | Select-Object -Last 1).Trim() -eq "OK")
+  $result = @($dbCheck | & $python - $dbPath 2>$null)
+  if ($LASTEXITCODE -ne 0 -or $null -eq $result -or $result.Count -eq 0) {
+    return $false
+  }
+
+  $lastLine = $result | Select-Object -Last 1
+  if ($null -eq $lastLine) {
+    return $false
+  }
+
+  $status = "$lastLine".Trim()
+  if (-not $status) {
+    return $false
+  }
+
+  return ($status -eq "OK")
 }
 
 $selectedDb = $null
@@ -44,7 +58,7 @@ if (Test-HealthyDb $preferredDb) {
   $selectedDb = $preferredDb
 } elseif (Test-HealthyDb $fallbackDb) {
   $selectedDb = $fallbackDb
-  Write-Host "Primary local DB is not initialized. Falling back to app_clean.db." -ForegroundColor Yellow
+  Write-Host "Primary local DB is unhealthy or not initialized. Falling back to backend/instance/app_clean.db." -ForegroundColor Yellow
 } else {
   Write-Host "No healthy local database found." -ForegroundColor Red
   Write-Host "Run: .\.venv\Scripts\python.exe scripts\db_guard.py migrate" -ForegroundColor Yellow
@@ -77,7 +91,7 @@ with app.app_context():
 '@
 
 Write-Host "Preparing HelpChain local server..." -ForegroundColor Cyan
-& $python -c $diag
+$diag | & $python -
 
 Write-Host ("Starting Flask on http://{0}:{1}" -f $bindHost, $port) -ForegroundColor Green
 & $python -X utf8 run.py
