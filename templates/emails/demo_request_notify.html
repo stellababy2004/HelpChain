@@ -1,0 +1,22 @@
+<h2>Nouvelle demande de démonstration</h2>
+
+<ul>
+  <li><strong>Type de structure :</strong> {{ type_structure or "Non renseigné" }}</li>
+  <li><strong>Taille :</strong> {{ organization_size or "Non renseigné" }}</li>
+  <li><strong>Rôle :</strong> {{ role_name or "Non renseigné" }}</li>
+  <li><strong>Nom :</strong> {{ full_name or "Non renseigné" }}</li>
+  <li><strong>Email professionnel :</strong> {{ email or "Non renseigné" }}</li>
+  <li><strong>Organisation :</strong> {{ organization or "Non renseigné" }}</li>
+  <li><strong>Téléphone :</strong> {{ phone or "Non renseigné" }}</li>
+  <li><strong>Source :</strong> {{ source or "Non renseigné" }}</li>
+</ul>
+
+<p><strong>Contexte :</strong><br />{{ message or "Non renseigné" }}</p>
+
+{% if admin_url %}
+<p><a href="{{ admin_url }}">Ouvrir la liste admin des leads</a></p>
+{% endif %}
+
+<p style="color:#666; font-size:12px">
+  Created at: {{ created_at }}
+</p>
