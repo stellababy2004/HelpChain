@@ -4,6 +4,7 @@
 {% block og_title %}{{ _('Demande d’échange') }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _('Aperçu de la page Demande d’échange') }}{% endblock %}
+{% block body_class %}{% if is_demo %}hc-page-demo{% endif %}{% endblock %}
 
 {% block extra_css %}
   {{ super() }}
@@ -16,10 +17,43 @@
       max-width: 920px;
       margin: 0 auto;
     }
+    .hc-intake__shell--demo {
+      max-width: 480px;
+    }
+    .hc-intake__shell--demo-success {
+      max-width: 760px;
+    }
 
     .hc-intake__head {
       margin-bottom: 18px;
       max-width: 76ch;
+    }
+    .hc-intake__head--demo {
+      margin-bottom: 1rem;
+    }
+    .hc-intake__progress-indicator {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+    .hc-intake__progress-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d0d5dd;
+    }
+    .hc-intake__progress-dot.is-active {
+      background: #2f5bff;
+    }
+    .hc-intake__progress-label {
+      margin: 0 0 0.7rem;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #6b7280;
+      text-align: center;
     }
 
     .hc-intake__title {
@@ -53,6 +87,10 @@
       background: #fff;
       padding: 32px 36px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
+    .hc-intake__card--success {
+      padding: 38px 42px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
     }
 
     .hc-intake__grid {
@@ -233,6 +271,25 @@
       gap: 10px;
       flex-wrap: wrap;
     }
+    .hc-intake__confirm-actions--demo {
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    .hc-intake__success-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      margin: 0 auto 0.9rem;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.12);
+      color: #15803d;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.16);
+    }
 
     .hc-intake__btn--ghost {
       border-color: #d7e1ee;
@@ -247,6 +304,111 @@
       border-color: rgba(47, 111, 237, 0.34);
       color: #0f172a;
     }
+    .hc-intake__section {
+      margin-bottom: 1.5rem;
+    }
+    .hc-intake__section:last-of-type {
+      margin-bottom: 0;
+    }
+    .hc-intake__section-title {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      line-height: 1.3;
+      font-weight: 700;
+      color: rgba(20, 40, 80, 0.88);
+    }
+    .hc-intake__section-title--light {
+      font-size: 1rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+    .hc-intake__section--light {
+      opacity: 0.85;
+    }
+    .hc-intake__section-title--primary {
+      font-size: 1.1rem;
+      color: #111827;
+      font-weight: 700;
+      margin-top: 0.2rem;
+    }
+    .hc-intake__demo-actions {
+      margin-top: 1.35rem;
+    }
+    .hc-intake__cta-wrap {
+      margin-top: 16px;
+    }
+    .hc-intake__urgency {
+      font-size: 0.8125rem;
+      color: #2f5bff;
+      font-weight: 500;
+      margin: 0 0 0.5rem;
+    }
+    .hc-intake__progress {
+      margin: 0 0 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(20, 40, 80, 0.66);
+    }
+    .hc-intake__value {
+      max-width: 480px;
+      margin: 0 auto 1rem;
+      border: 1px solid var(--hc-border-subtle, #e6ecf2);
+      border-radius: 14px;
+      background: #fff;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    }
+    .hc-intake__value h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--hc-text-main);
+    }
+    .hc-intake__value-list {
+      margin: 0;
+      padding-left: 1rem;
+      line-height: 1.55;
+      color: var(--hc-text-muted);
+    }
+    .hc-intake__value-list li {
+      margin-bottom: 0.35rem;
+    }
+    .hc-intake__value-list li:last-child {
+      margin-bottom: 0;
+    }
+    .hc-intake__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 0.9rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .hc-intake__meta li {
+      padding: 0.42rem 0.68rem;
+      border: 1px solid #d7e1ee;
+      border-radius: 999px;
+      background: #f8fbff;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #29415f;
+      line-height: 1.25;
+    }
+    .hc-intake__demo-points {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: var(--hc-text-muted);
+      line-height: 1.55;
+    }
+    .hc-intake__demo-points li {
+      margin-bottom: 0.4rem;
+    }
+    .hc-intake__demo-points li:last-child {
+      margin-bottom: 0;
+    }
 
     @media (max-width: 860px) {
       .hc-intake__grid {
@@ -259,6 +421,12 @@
 
       .hc-intake__card {
         padding: 22px;
+      }
+      .hc-intake__card--success {
+        padding: 26px 24px;
+      }
+      .hc-intake__value {
+        padding: 0.95rem 1rem;
       }
 
       .hc-intake__actions,
@@ -281,58 +449,207 @@
         min-height: 110px;
       }
     }
+    .hc-page-demo .hc-footer {
+      opacity: 0.6;
+      font-size: 12px;
+    }
   </style>
 {% endblock %}
 
 {% block content %}
 <section class="hc-intake">
-  <div class="hc-intake__shell">
+  <div class="hc-intake__shell{% if is_demo and submitted %} hc-intake__shell--demo-success{% elif is_demo %} hc-intake__shell--demo{% endif %}">
     {% if submitted %}
-      <article class="hc-intake__card" aria-live="polite">
-        <h1 class="hc-intake__title">{{ _('Demande envoyée') }}</h1>
-        <p class="hc-intake__confirm-sub">{{ _('Votre demande d’échange a bien été transmise.') }}</p>
-        <p class="hc-intake__intro">
-          {{ _('Merci. L’équipe HelpChain analysera votre demande et vous recontactera dans les meilleurs délais pour un échange adapté à votre structure et à votre contexte territorial.') }}
-        </p>
+      <article class="hc-intake__card{% if is_demo %} hc-intake__card--success{% endif %}" aria-live="polite">
+        {% if is_demo %}
+          <div class="hc-intake__success-mark" aria-hidden="true">✓</div>
+          <h1 class="hc-intake__title">{{ _('Demande reçue') }}</h1>
+          <p class="hc-intake__confirm-sub">
+            {{ _('Nous vous recontactons sous 24h pour organiser une démonstration adaptée à votre structure.') }}
+          </p>
+          <ul class="hc-intake__demo-points" style="margin-top:1rem;">
+            <li>{{ _('→ Présentation du cadre de coordination') }}</li>
+            <li>{{ _('→ Cas d’usage concrets') }}</li>
+            <li>{{ _('→ Possibilité de pilote sur votre périmètre') }}</li>
+          </ul>
+          <div class="hc-intake__confirm-actions hc-intake__confirm-actions--demo">
+            <a class="hc-intake__btn hc-intake__btn--ghost" href="{{ url_for('main.index') }}">{{ _('Retour à l’accueil') }}</a>
+            <a class="hc-intake__btn" href="{{ url_for('main.professionnels') }}">{{ _('Découvrir l’espace structures et collectivités') }}</a>
+          </div>
+        {% else %}
+          <h1 class="hc-intake__title">{{ _('Demande envoyée') }}</h1>
+          <p class="hc-intake__confirm-sub">
+            {{ _('Votre demande d’échange a bien été transmise.') }}
+          </p>
+          <p class="hc-intake__intro">
+            {{ _('Merci. L’équipe HelpChain analysera votre demande et vous recontactera dans les meilleurs délais pour un échange adapté à votre structure et à votre contexte territorial.') }}
+          </p>
+          <div class="hc-intake__confirm-grid">
+            <section class="hc-intake__confirm-block" aria-label="{{ _('Étapes suivantes') }}">
+              <h2>{{ _('Étapes suivantes') }}</h2>
+              <ul class="hc-intake__steps">
+                <li>{{ _('Analyse de votre demande') }}</li>
+                <li>{{ _('Prise de contact par l’équipe HelpChain') }}</li>
+                <li>{{ _('Proposition d’un échange de cadrage si le besoin correspond au cadre d’intervention') }}</li>
+              </ul>
+            </section>
 
-        <div class="hc-intake__confirm-grid">
-          <section class="hc-intake__confirm-block" aria-label="{{ _('Étapes suivantes') }}">
-            <h2>{{ _('Étapes suivantes') }}</h2>
-            <ul class="hc-intake__steps">
-              <li>{{ _('Analyse de votre demande') }}</li>
-              <li>{{ _('Prise de contact par l’équipe HelpChain') }}</li>
-              <li>{{ _('Proposition d’un échange de cadrage si le besoin correspond au cadre d’intervention') }}</li>
-            </ul>
-          </section>
+            <section class="hc-intake__confirm-block" aria-label="{{ _('Cadre de fonctionnement') }}">
+              <h2>{{ _('Cadre de fonctionnement') }}</h2>
+              <p class="hc-intake__confirm-text">
+                {{ _('HelpChain s’inscrit dans une logique de coordination, de traçabilité et de conformité adaptée aux acteurs territoriaux.') }}
+              </p>
+              <p class="hc-intake__confirm-trust">
+                {{ _('Conçu et opéré depuis la France') }} <span aria-hidden="true">•</span>
+                {{ _('Hébergement européen') }} <span aria-hidden="true">•</span>
+                {{ _('Conformité RGPD') }}
+              </p>
+            </section>
+          </div>
 
-          <section class="hc-intake__confirm-block" aria-label="{{ _('Cadre de fonctionnement') }}">
-            <h2>{{ _('Cadre de fonctionnement') }}</h2>
-            <p class="hc-intake__confirm-text">
-              {{ _('HelpChain s’inscrit dans une logique de coordination, de traçabilité et de conformité adaptée aux acteurs territoriaux.') }}
-            </p>
-            <p class="hc-intake__confirm-trust">
-              {{ _('Conçu et opéré depuis la France') }} <span aria-hidden="true">•</span>
-              {{ _('Hébergement européen') }} <span aria-hidden="true">•</span>
-              {{ _('Conformité RGPD') }}
-            </p>
-          </section>
-        </div>
-
-        <div class="hc-intake__confirm-actions">
-          <a class="hc-intake__btn hc-intake__btn--ghost" href="{{ url_for('main.index') }}">{{ _('Retour à l’accueil') }}</a>
-          <a class="hc-intake__btn hc-intake__btn--ghost" href="{{ url_for('main.professionnels') }}">{{ _('Découvrir l’espace structures et collectivités') }}</a>
-        </div>
+          <div class="hc-intake__confirm-actions">
+            <a class="hc-intake__btn hc-intake__btn--ghost" href="{{ url_for('main.index') }}">{{ _('Retour à l’accueil') }}</a>
+            <a class="hc-intake__btn hc-intake__btn--ghost" href="{{ url_for('main.professionnels') }}">{{ _('Découvrir l’espace structures et collectivités') }}</a>
+          </div>
+        {% endif %}
       </article>
     {% else %}
       <header class="hc-intake__head">
-        <h1 class="hc-intake__title">{{ _('Demande d’échange') }}</h1>
-        <p class="hc-intake__subtitle">{{ _('Échange de cadrage pour collectivités, associations et partenaires') }}</p>
-        <p class="hc-intake__intro">
-          {{ _('Vous souhaitez échanger avec l’équipe HelpChain au sujet d’un besoin de coordination, d’un cadre pilote ou d’un usage territorial ? Déposez votre demande. Nous vous recontacterons pour un échange de cadrage adapté à votre structure.') }}
-        </p>
+        {% if is_demo %}
+          <div class="hc-intake__head--demo">
+            <div class="hc-intake__progress-indicator" aria-hidden="true">
+              <span class="hc-intake__progress-dot is-active"></span>
+              <span class="hc-intake__progress-dot"></span>
+              <span class="hc-intake__progress-dot"></span>
+            </div>
+            <p class="hc-intake__progress-label">{{ _('Étape 1 sur 3') }}</p>
+          </div>
+          <h1 class="hc-intake__title">{{ _('Planifier une démonstration') }}</h1>
+          <p class="hc-intake__subtitle">{{ _('Démonstration institutionnelle pour collectivités, associations et réseaux professionnels') }}</p>
+          <p class="hc-intake__intro">
+            {{ _('Renseignez les éléments utiles à l’organisation d’une démonstration adaptée à votre structure et à votre contexte de coordination.') }}
+          </p>
+        {% else %}
+          <h1 class="hc-intake__title">{{ _('Demande d’échange') }}</h1>
+          <p class="hc-intake__subtitle">{{ _('Échange de cadrage pour collectivités, associations et partenaires') }}</p>
+          <p class="hc-intake__intro">
+            {{ _('Vous souhaitez échanger avec l’équipe HelpChain au sujet d’un besoin de coordination, d’un cadre pilote ou d’un usage territorial ? Déposez votre demande. Nous vous recontacterons pour un échange de cadrage adapté à votre structure.') }}
+          </p>
+        {% endif %}
       </header>
 
+      {% if is_demo %}
+      <section class="hc-intake__value" aria-label="{{ _('Ce que comprend la démonstration') }}">
+        <h2>{{ _('Ce que comprend la démonstration') }}</h2>
+        <ul class="hc-intake__value-list">
+          <li>{{ _('Présentation du cadre de coordination') }}</li>
+          <li>{{ _('Cas d’usage concrets') }}</li>
+          <li>{{ _('Échanges sur un pilote possible') }}</li>
+        </ul>
+        <ul class="hc-intake__meta" aria-label="{{ _('Repères de démonstration') }}">
+          <li>{{ _('Durée : 30 minutes') }}</li>
+          <li>{{ _('Réponse sous 24h') }}</li>
+          <li>{{ _('Sans engagement') }}</li>
+        </ul>
+      </section>
+      {% endif %}
+
       <article class="hc-intake__card hc-form-container">
+        {% if is_demo %}
+        <form class="hc-form" method="post" action="/demo" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="form_type" value="demo">
+          <input type="hidden" name="source" value="demo_page">
+
+          <section class="hc-intake__section hc-intake__section--light" aria-labelledby="demo-section-1">
+            <h2 id="demo-section-1" class="hc-intake__section-title hc-intake__section-title--light">{{ _('Votre structure') }}</h2>
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="structure_type">{{ _('Type de structure') }}</label>
+              <select class="hc-intake__select{% if form_errors.get('structure_type') %} is-invalid{% endif %}" id="structure_type" name="structure_type" {% if form_errors.get('structure_type') %}aria-invalid="true"{% endif %}>
+                <option value="">{{ _('Sélectionner') }}</option>
+                {% set _dst = form_data.get('structure_type','') %}
+                <option value="Collectivité territoriale" {% if _dst == 'Collectivité territoriale' %}selected{% endif %}>{{ _('Collectivité territoriale') }}</option>
+                <option value="CCAS / CIAS" {% if _dst == 'CCAS / CIAS' %}selected{% endif %}>{{ _('CCAS / CIAS') }}</option>
+                <option value="Association" {% if _dst == 'Association' %}selected{% endif %}>{{ _('Association') }}</option>
+                <option value="Réseau professionnel" {% if _dst == 'Réseau professionnel' %}selected{% endif %}>{{ _('Réseau professionnel') }}</option>
+                <option value="Autre structure" {% if _dst == 'Autre structure' %}selected{% endif %}>{{ _('Autre structure') }}</option>
+              </select>
+              {% if form_errors.get('structure_type') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('structure_type') }}</p>{% endif %}
+            </div>
+
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="organization_size">{{ _('Taille') }}</label>
+              <select class="hc-intake__select{% if form_errors.get('organization_size') %} is-invalid{% endif %}" id="organization_size" name="organization_size" {% if form_errors.get('organization_size') %}aria-invalid="true"{% endif %}>
+                <option value="">{{ _('Sélectionner') }}</option>
+                {% set _size = form_data.get('organization_size','') %}
+                <option value="1 à 10 personnes" {% if _size == '1 à 10 personnes' %}selected{% endif %}>{{ _('1 à 10 personnes') }}</option>
+                <option value="11 à 50 personnes" {% if _size == '11 à 50 personnes' %}selected{% endif %}>{{ _('11 à 50 personnes') }}</option>
+                <option value="51 à 250 personnes" {% if _size == '51 à 250 personnes' %}selected{% endif %}>{{ _('51 à 250 personnes') }}</option>
+                <option value="Plus de 250 personnes" {% if _size == 'Plus de 250 personnes' %}selected{% endif %}>{{ _('Plus de 250 personnes') }}</option>
+              </select>
+              {% if form_errors.get('organization_size') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('organization_size') }}</p>{% endif %}
+            </div>
+
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="fonction">{{ _('Rôle') }}</label>
+              <select class="hc-intake__select{% if form_errors.get('fonction') %} is-invalid{% endif %}" id="fonction" name="fonction" {% if form_errors.get('fonction') %}aria-invalid="true"{% endif %}>
+                <option value="">{{ _('Sélectionner') }}</option>
+                {% set _role = form_data.get('fonction','') %}
+                <option value="Direction" {% if _role == 'Direction' %}selected{% endif %}>{{ _('Direction') }}</option>
+                <option value="Responsable de service" {% if _role == 'Responsable de service' %}selected{% endif %}>{{ _('Responsable de service') }}</option>
+                <option value="Coordination opérationnelle" {% if _role == 'Coordination opérationnelle' %}selected{% endif %}>{{ _('Coordination opérationnelle') }}</option>
+                <option value="Professionnel de terrain" {% if _role == 'Professionnel de terrain' %}selected{% endif %}>{{ _('Professionnel de terrain') }}</option>
+                <option value="Autre rôle" {% if _role == 'Autre rôle' %}selected{% endif %}>{{ _('Autre rôle') }}</option>
+              </select>
+              {% if form_errors.get('fonction') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('fonction') }}</p>{% endif %}
+            </div>
+          </section>
+
+          <section class="hc-intake__section" aria-labelledby="demo-section-2">
+            <h2 id="demo-section-2" class="hc-intake__section-title hc-intake__section-title--primary">{{ _('Coordonnées') }}</h2>
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="full_name">{{ _('Nom') }}</label>
+              <input class="hc-intake__input{% if form_errors.get('full_name') %} is-invalid{% endif %}" id="full_name" name="full_name" value="{{ form_data.get('full_name','') }}" autocomplete="name" {% if form_errors.get('full_name') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('full_name') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('full_name') }}</p>{% endif %}
+            </div>
+
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="email">{{ _('Email professionnel (réponse sous 24h)') }} <span class="hc-intake__req">*</span></label>
+              <input class="hc-intake__input{% if form_errors.get('email') %} is-invalid{% endif %}" id="email" name="email" type="email" value="{{ form_data.get('email','') }}" autocomplete="email" autofocus required {% if form_errors.get('email') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('email') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('email') }}</p>{% endif %}
+            </div>
+
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="organisation">{{ _('Organisation') }} <span class="hc-intake__req">*</span></label>
+              <input class="hc-intake__input{% if form_errors.get('organisation') %} is-invalid{% endif %}" id="organisation" name="organisation" value="{{ form_data.get('organisation','') }}" autocomplete="organization" required {% if form_errors.get('organisation') %}aria-invalid="true"{% endif %}>
+              {% if form_errors.get('organisation') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('organisation') }}</p>{% endif %}
+            </div>
+
+            <div class="hc-intake__field hc-form-group">
+              <label class="hc-intake__label" for="phone">{{ _('Téléphone') }}</label>
+              <input class="hc-intake__input" id="phone" name="phone" value="{{ form_data.get('phone','') }}" autocomplete="tel">
+            </div>
+          </section>
+
+          <section class="hc-intake__section" aria-labelledby="demo-section-3">
+            <h2 id="demo-section-3" class="hc-intake__section-title">{{ _('Votre contexte') }}</h2>
+            <div class="hc-intake__field hc-form-group" style="margin-bottom:0;">
+              <label class="hc-intake__label" for="message">{{ _('Contexte') }}</label>
+              <textarea class="hc-intake__textarea{% if form_errors.get('message') %} is-invalid{% endif %}" id="message" name="message" placeholder="{{ _('Ex : suivi des demandes, coordination entre services, pilotage territorial…') }}" {% if form_errors.get('message') %}aria-invalid="true"{% endif %}>{{ form_data.get('message','') }}</textarea>
+              {% if form_errors.get('message') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('message') }}</p>{% endif %}
+            </div>
+          </section>
+
+          <div class="hc-intake__actions hc-intake__demo-actions">
+            <p class="hc-intake__urgency">{{ _('Créneaux disponibles cette semaine') }}</p>
+            <div class="hc-intake__cta-wrap">
+              <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Planifier ma démonstration') }}</button>
+            </div>
+          </div>
+
+          <p class="hc-intake__trust">{{ _('Aucun engagement') }} <span aria-hidden="true">•</span> {{ _('Réponse sous 24h') }}</p>
+        </form>
+        {% else %}
         <form class="hc-form" method="post" action="{{ url_for('main.contact') }}" novalidate>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -419,6 +736,7 @@
             {{ _('Conformité RGPD') }}
           </p>
         </form>
+        {% endif %}
       </article>
     {% endif %}
   </div>
