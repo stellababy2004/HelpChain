@@ -1121,6 +1121,15 @@ def _verify_admin_password(user: AdminUser | None, password: str) -> bool:
         return False
 
 
+def _default_admin_landing_url(user: AdminUser | None = None) -> str:
+    role = _normalize_admin_role_value(
+        getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
+    )
+    if role in {"ops", "readonly"}:
+        return url_for("admin.admin_operator_dashboard")
+    return url_for("admin.admin_requests")
+
+
 def _admin_login_is_locked(
     ip: str, username: str | None, now: datetime
 ) -> tuple[bool, int]:
@@ -1269,11 +1278,11 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
         return redirect(
             url_for(
                 "admin.admin_mfa_verify",
-                next=next_url or url_for("admin.admin_requests"),
+                next=next_url or _default_admin_landing_url(user),
             )
         )
     _mfa_ok_set()
-    return redirect(next_url or url_for("admin.admin_requests"), code=303)
+    return redirect(next_url or _default_admin_landing_url(user), code=303)
 
 
 def audit_admin_action(
@@ -1901,14 +1910,14 @@ def metrics_tenant_leak_test():
 
 @admin_bp.get("/")
 def admin_index():
-    """Redirect bare /admin to the main requests list."""
-    return redirect(url_for("admin.admin_requests"))
+    """Redirect bare /admin to the role-appropriate admin home."""
+    return redirect(_default_admin_landing_url())
 
 
 @admin_bp.get("/dashboard")
 def admin_dashboard_redirect():
-    """Alias for /admin/requests to avoid 404s from legacy /admin/dashboard links."""
-    return redirect(url_for("admin.admin_requests"))
+    """Alias for the role-appropriate admin landing page."""
+    return redirect(_default_admin_landing_url())
 
 
 @admin_bp.get("/translations")
@@ -4121,7 +4130,7 @@ def admin_mfa_verify():
         now = _utc_now()
         _touch_admin_last_seen(now)
         _touch_admin_auth_at(now)
-        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
+        return redirect(request.args.get("next") or _default_admin_landing_url())
 
     locked, remaining = _mfa_lock_is_active()
     if request.method == "GET":
@@ -4175,7 +4184,7 @@ def admin_mfa_verify():
         nxt = request.args.get("next")
         if nxt and nxt.startswith("/"):
             return redirect(nxt)
-        return redirect(url_for("admin.admin_requests"))
+        return redirect(_default_admin_landing_url())
 
     _mfa_attempt_fail()
     locked, remaining = _mfa_lock_is_active()
