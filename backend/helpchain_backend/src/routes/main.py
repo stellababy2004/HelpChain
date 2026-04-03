@@ -3442,6 +3442,7 @@ def contact():
             existing.ip = _client_ip() or existing.ip
             existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
             existing.source = "demo_page" if is_demo else "contact_echange"
+            existing.status = ((existing.status or "").strip() or "new")
             db.session.commit()
             lead = existing
         else:
@@ -3466,6 +3467,7 @@ def contact():
                 ip=_client_ip(),
                 user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
                 source="demo_page" if is_demo else "contact_echange",
+                status="new",
                 created_at=datetime.now(UTC),
             )
             db.session.add(lead)
@@ -3490,6 +3492,27 @@ def contact():
     notify_ok = True
     try:
         if is_demo:
+            def _send_demo_email(*, recipient, subject, body, html=None):
+                msg = Message(
+                    subject=subject,
+                    sender="contact@helpchain.live",
+                    recipients=[recipient],
+                )
+                msg.body = body
+                if html:
+                    msg.html = html
+                current_app.logger.info(
+                    "Demo SMTP pre-send | MAIL_SERVER=%r | MAIL_PORT=%r | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%r | MAIL_PASSWORD_SET=%s | MAIL_DEFAULT_SENDER=%r",
+                    current_app.config.get("MAIL_SERVER"),
+                    current_app.config.get("MAIL_PORT"),
+                    current_app.config.get("MAIL_USE_SSL"),
+                    current_app.config.get("MAIL_USE_TLS"),
+                    current_app.config.get("MAIL_USERNAME"),
+                    bool(current_app.config.get("MAIL_PASSWORD")),
+                    current_app.config.get("MAIL_DEFAULT_SENDER"),
+                )
+                mail.send(msg)
+
             def enqueue_email_notification(
                 *,
                 recipient,
@@ -3650,6 +3673,56 @@ def contact():
                 current_app.logger.error(
                     "[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL"
                 )
+
+        if is_demo:
+            current_app.logger.info("Demo auto-reply attempt started")
+            try:
+                _send_demo_email(
+                    recipient=(form_data.get("email") or "").strip(),
+                    subject="Votre demande de démonstration HelpChain a bien été reçue",
+                    body=(
+                        "Bonjour,\n\n"
+                        "Votre demande de démonstration a bien été reçue.\n\n"
+                        "Nous vous recontacterons sous 24h afin d’organiser une présentation adaptée à votre structure.\n\n"
+                        "Cette démonstration pourra inclure :\n"
+                        "- une présentation du cadre de coordination\n"
+                        "- des cas d’usage concrets\n"
+                        "- une discussion autour d’un pilote possible\n\n"
+                        "Cordialement,\n"
+                        "L’équipe HelpChain\n"
+                    ),
+                    html=(
+                        "<!doctype html>"
+                        "<html>"
+                        "<body style=\"margin:0;padding:24px;background-color:#ffffff;font-family:Arial,sans-serif;color:#1f2937;\">"
+                        "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-collapse:collapse;background-color:#ffffff;\">"
+                        "<tr><td align=\"center\">"
+                        "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-collapse:collapse;max-width:600px;background-color:#ffffff;\">"
+                        "<tr><td style=\"padding:12px 0 28px 0;font-size:26px;line-height:1.2;font-weight:700;color:#16324f;letter-spacing:0.01em;\">HelpChain</td></tr>"
+                        "<tr><td style=\"padding:0 0 18px 0;font-size:28px;line-height:1.25;font-weight:700;color:#111827;\">Votre demande a bien été reçue</td></tr>"
+                        "<tr><td style=\"padding:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;\">Bonjour,</td></tr>"
+                        "<tr><td style=\"padding:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;\">Votre demande de démonstration a bien été reçue.</td></tr>"
+                        "<tr><td style=\"padding:0 0 20px 0;font-size:16px;line-height:1.7;color:#374151;\">Nous vous recontacterons sous 24h afin d’organiser une présentation adaptée à votre structure.</td></tr>"
+                        "<tr><td style=\"padding:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;\">Cette démonstration pourra inclure :</td></tr>"
+                        "<tr><td style=\"padding:0 0 24px 0;\">"
+                        "<ul style=\"margin:0;padding-left:22px;color:#374151;font-size:16px;line-height:1.8;\">"
+                        "<li>une présentation du cadre de coordination</li>"
+                        "<li>des cas d’usage concrets</li>"
+                        "<li>une discussion autour d’un pilote possible</li>"
+                        "</ul>"
+                        "</td></tr>"
+                        "<tr><td style=\"padding:0 0 28px 0;font-size:16px;line-height:1.7;color:#374151;\">Cordialement,<br>L’équipe HelpChain</td></tr>"
+                        "<tr><td style=\"padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;line-height:1.6;color:#9ca3af;\">contact@helpchain.live</td></tr>"
+                        "</table>"
+                        "</td></tr>"
+                        "</table>"
+                        "</body>"
+                        "</html>"
+                    ),
+                )
+                current_app.logger.info("Demo auto-reply sent successfully")
+            except Exception:
+                current_app.logger.exception("Demo auto-reply failed")
     except Exception as exc:
         notify_ok = False
         if is_demo:
