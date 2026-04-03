@@ -28,7 +28,24 @@ try:
 except ModuleNotFoundError:
     from models import AdminUser
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", ".."))
+_DOTENV_CANDIDATES = (
+    os.path.join(PROJECT_ROOT, ".env"),
+    os.path.join(PROJECT_ROOT, "backend", ".env"),
+)
+
+
+def _load_runtime_dotenv(*, override: bool = False) -> list[str]:
+    loaded_paths: list[str] = []
+    for candidate in _DOTENV_CANDIDATES:
+        if os.path.exists(candidate):
+            load_dotenv(candidate, override=override)
+            loaded_paths.append(candidate)
+    return loaded_paths
+
+
+_load_runtime_dotenv()
 
 SUPPORTED_LOCALES = (
     "fr",
@@ -258,7 +275,7 @@ def create_app(config_object=None) -> Flask:
     Single source of truth for app factory.
     Uses root-level /templates and /static as the template/static folders.
     """
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = BASE_DIR
     root_templates = os.path.abspath(
         os.path.join(base_dir, "..", "..", "..", "templates")
     )
@@ -279,6 +296,7 @@ def create_app(config_object=None) -> Flask:
         from core.tenant import current_structure_id
 
     # Config: caller overrides, then Config class, then env defaults
+    loaded_dotenv_paths = _load_runtime_dotenv()
     if isinstance(config_object, dict):
         app.config.update(config_object)
     try:
@@ -345,7 +363,7 @@ def create_app(config_object=None) -> Flask:
     if not app.config.get("SECRET_KEY"):
         secret = os.environ.get("SECRET_KEY")
         if not secret:
-            load_dotenv()
+            _load_runtime_dotenv(override=False)
             secret = os.environ.get("SECRET_KEY")
         if not secret:
             secret = "dev-only-change-me"
@@ -391,6 +409,66 @@ def create_app(config_object=None) -> Flask:
     app.config.setdefault("VAPID_PRIVATE_KEY", os.getenv("VAPID_PRIVATE_KEY"))
     app.config.setdefault(
         "VAPID_SUBJECT", os.getenv("VAPID_SUBJECT", "mailto:admin@example.com")
+    )
+
+    def _env_bool(name: str, default: bool) -> bool:
+        raw = os.getenv(name)
+        if raw is None:
+            return default
+        return str(raw).strip().lower() in ("true", "1", "yes", "on")
+
+    def _env_str(name: str) -> str:
+        return (os.getenv(name) or "").strip()
+
+    # Re-sync MAIL_* from the resolved runtime environment so Flask-Mail gets the
+    # same values regardless of where create_app() was launched from.
+    # Important for local demo flow: do not silently fall back to Mailtrap.
+    mail_server_raw = _env_str("MAIL_SERVER")
+    mail_port_raw = _env_str("MAIL_PORT")
+    mail_username_raw = _env_str("MAIL_USERNAME")
+    mail_password_raw = _env_str("MAIL_PASSWORD")
+    mail_default_sender_raw = _env_str("MAIL_DEFAULT_SENDER")
+
+    app.config["MAIL_SERVER"] = mail_server_raw or None
+    try:
+        app.config["MAIL_PORT"] = int(mail_port_raw) if mail_port_raw else None
+    except Exception:
+        app.config["MAIL_PORT"] = None
+    app.config["MAIL_USE_SSL"] = _env_bool("MAIL_USE_SSL", False)
+    app.config["MAIL_USE_TLS"] = _env_bool("MAIL_USE_TLS", False)
+    app.config["MAIL_USERNAME"] = mail_username_raw
+    app.config["MAIL_PASSWORD"] = mail_password_raw
+    app.config["MAIL_DEFAULT_SENDER"] = (
+        mail_default_sender_raw or "contact@helpchain.live"
+    )
+
+    missing_mail_keys = [
+        key
+        for key, present in (
+            ("MAIL_SERVER", bool(app.config.get("MAIL_SERVER"))),
+            ("MAIL_PORT", bool(app.config.get("MAIL_PORT"))),
+            ("MAIL_USERNAME", bool(app.config.get("MAIL_USERNAME"))),
+            ("MAIL_PASSWORD", bool(app.config.get("MAIL_PASSWORD"))),
+            ("MAIL_DEFAULT_SENDER", bool(app.config.get("MAIL_DEFAULT_SENDER"))),
+        )
+        if not present
+    ]
+    if missing_mail_keys:
+        app.logger.error(
+            "[ENV] mail config missing for local/runtime SMTP: %s",
+            ", ".join(missing_mail_keys),
+        )
+
+    app.logger.info(
+        "[ENV] dotenv files loaded=%s | MAIL_SERVER=%r | MAIL_PORT=%r | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%r | MAIL_PASSWORD_SET=%s | MAIL_DEFAULT_SENDER=%r",
+        loaded_dotenv_paths or [],
+        app.config.get("MAIL_SERVER"),
+        app.config.get("MAIL_PORT"),
+        app.config.get("MAIL_USE_SSL"),
+        app.config.get("MAIL_USE_TLS"),
+        app.config.get("MAIL_USERNAME"),
+        bool(app.config.get("MAIL_PASSWORD")),
+        app.config.get("MAIL_DEFAULT_SENDER"),
     )
 
     # DB + Migrate

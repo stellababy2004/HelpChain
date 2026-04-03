@@ -1,5 +1,6 @@
 import hashlib
 import math
+import os
 import re
 import secrets
 import time
@@ -27,6 +28,7 @@ from flask import (
 )
 from flask_babel import get_locale as babel_get_locale
 from flask_babel import gettext as _
+from flask_mail import Message
 from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
 from markupsafe import Markup, escape
@@ -43,7 +45,7 @@ from ..constants.categories import (
     request_category_label,
 )
 from ..category_data import ALIASES, CATEGORIES, COMMON
-from ..extensions import csrf, limiter
+from ..extensions import csrf, limiter, mail
 from ..models import (
     Notification,
     ProfessionalLead,
@@ -3307,62 +3309,109 @@ def success_stories():
     return render_template("success_stories.html")
 
 
+@main_bp.route("/demo", methods=["GET", "POST"])
 @main_bp.route("/contact", methods=["GET", "POST"])
 def contact():
+    is_demo = request.path == "/demo"
+    if is_demo and request.method == "POST":
+        current_app.logger.info("demo form detected")
     if request.method == "GET":
         submitted = request.args.get("sent") == "1"
         return render_template(
             "contact.html",
             submitted=submitted,
+            is_demo=is_demo,
             form_data={},
             form_errors={},
         ), 200
 
+    demo_organisation = (
+        request.form.get("organisation") or request.form.get("structure") or ""
+    ).strip()
     form_data = {
         "full_name": (request.form.get("full_name") or "").strip(),
         "fonction": (request.form.get("fonction") or "").strip(),
-        "structure": (request.form.get("structure") or "").strip(),
+        "organisation": demo_organisation,
+        "structure": (
+            demo_organisation
+            if is_demo
+            else (request.form.get("structure") or "").strip()
+        ),
         "structure_type": (request.form.get("structure_type") or "").strip(),
         "city": (request.form.get("city") or "").strip(),
         "email": (request.form.get("email") or "").strip().lower(),
         "phone": (request.form.get("phone") or "").strip(),
         "objet_echange": (request.form.get("objet_echange") or "").strip(),
         "message": (request.form.get("message") or "").strip(),
+        "form_type": (request.form.get("form_type") or "").strip(),
+        "source": (request.form.get("source") or "").strip(),
+        "organization_size": (request.form.get("organization_size") or "").strip(),
     }
     form_errors: dict[str, str] = {}
 
-    required_fields = (
-        ("full_name", _("Veuillez renseigner votre nom et prénom.")),
-        ("fonction", _("Veuillez renseigner votre fonction.")),
-        ("structure", _("Veuillez renseigner le nom de votre structure.")),
-        ("structure_type", _("Veuillez sélectionner un type de structure.")),
-        ("city", _("Veuillez renseigner votre territoire ou ville.")),
-        ("email", _("Veuillez renseigner une adresse e-mail valide.")),
-        ("objet_echange", _("Veuillez sélectionner l’objet de l’échange.")),
-        ("message", _("Veuillez renseigner le contexte de votre demande.")),
-    )
+    if is_demo:
+        form_data["objet_echange"] = "Démonstration"
+        form_data["city"] = form_data.get("city") or "Non renseigné"
+        required_fields = (
+            ("email", _("Veuillez renseigner une adresse e-mail professionnelle.")),
+            ("organisation", _("Veuillez renseigner le nom de votre organisation.")),
+        )
+    else:
+        required_fields = (
+            ("full_name", _("Veuillez renseigner votre nom et prénom.")),
+            ("fonction", _("Veuillez renseigner votre fonction.")),
+            ("structure", _("Veuillez renseigner le nom de votre structure.")),
+            ("structure_type", _("Veuillez sélectionner un type de structure.")),
+            ("city", _("Veuillez renseigner votre territoire ou ville.")),
+            ("email", _("Veuillez renseigner une adresse e-mail valide.")),
+            ("objet_echange", _("Veuillez sélectionner l’objet de l’échange.")),
+            ("message", _("Veuillez renseigner le contexte de votre demande.")),
+        )
     for key, msg in required_fields:
         if not form_data[key]:
             form_errors[key] = msg
 
     if form_data["email"] and ("@" not in form_data["email"] or "." not in form_data["email"]):
-        form_errors["email"] = _("Veuillez renseigner une adresse e-mail valide.")
+        form_errors["email"] = _(
+            "Veuillez renseigner une adresse e-mail professionnelle valide afin que nous puissions vous recontacter."
+            if is_demo
+            else "Veuillez renseigner une adresse e-mail valide."
+        )
 
     if form_errors:
-        flash(_("Merci de corriger les champs indiqués."), "warning")
+        flash(
+            _(
+                "Merci de corriger les champs indiqués pour planifier la démonstration."
+                if is_demo
+                else "Merci de corriger les champs indiqués."
+            ),
+            "warning",
+        )
         return render_template(
             "contact.html",
             submitted=False,
+            is_demo=is_demo,
             form_data=form_data,
             form_errors=form_errors,
         ), 400
 
-    lead_message = (
-        f"Type de structure : {form_data['structure_type']}\n"
-        f"Objet de l’échange : {form_data['objet_echange']}\n"
-        f"Téléphone : {form_data['phone'] or '-'}\n\n"
-        f"Contexte:\n{form_data['message']}"
-    )
+    if is_demo:
+        lead_message = (
+            f"Form type : demo\n"
+            f"Source : {form_data['source'] or 'demo_page'}\n"
+            f"Type de structure : {form_data['structure_type']}\n"
+            f"Taille : {form_data['organization_size']}\n"
+            f"Rôle : {form_data['fonction']}\n"
+            f"Téléphone : {form_data['phone'] or '-'}\n\n"
+            f"Contexte:\n{form_data['message']}"
+        )
+    else:
+        lead_message = (
+            f"Type de structure : {form_data['structure_type']}\n"
+            f"Objet de l’échange : {form_data['objet_echange']}\n"
+            f"Téléphone : {form_data['phone'] or '-'}\n\n"
+            f"Contexte:\n{form_data['message']}"
+        )
 
     existing = (
         ProfessionalLead.query.filter(ProfessionalLead.email == form_data["email"])
@@ -3374,11 +3423,17 @@ def contact():
         if existing:
             existing.full_name = form_data["full_name"]
             existing.profession = form_data["fonction"]
-            existing.organization = form_data["structure"]
+            existing.organization = (
+                form_data["organisation"] if is_demo else form_data["structure"]
+            )
             existing.city = form_data["city"]
             existing.phone = form_data["phone"] or existing.phone
             existing.availability = (
-                f"{form_data['structure_type']} | {form_data['objet_echange']}"
+                (
+                    f"{form_data['structure_type']} | {form_data['organization_size']} | Démonstration"
+                    if is_demo
+                    else f"{form_data['structure_type']} | {form_data['objet_echange']}"
+                )
             )
             existing.message = lead_message
             existing.locale = (
@@ -3386,7 +3441,7 @@ def contact():
             ).strip() or existing.locale
             existing.ip = _client_ip() or existing.ip
             existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
-            existing.source = "contact_echange"
+            existing.source = "demo_page" if is_demo else "contact_echange"
             db.session.commit()
             lead = existing
         else:
@@ -3396,17 +3451,27 @@ def contact():
                 phone=form_data["phone"] or None,
                 city=form_data["city"] or None,
                 profession=form_data["fonction"],
-                organization=form_data["structure"] or None,
-                availability=f"{form_data['structure_type']} | {form_data['objet_echange']}",
+                organization=(
+                    form_data["organisation"] or None
+                    if is_demo
+                    else form_data["structure"] or None
+                ),
+                availability=(
+                    f"{form_data['structure_type']} | {form_data['organization_size']} | Démonstration"
+                    if is_demo
+                    else f"{form_data['structure_type']} | {form_data['objet_echange']}"
+                ),
                 message=lead_message,
                 locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
                 ip=_client_ip(),
                 user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
-                source="contact_echange",
+                source="demo_page" if is_demo else "contact_echange",
                 created_at=datetime.now(UTC),
             )
             db.session.add(lead)
             db.session.commit()
+        if is_demo:
+            current_app.logger.info("lead saved")
     except Exception:
         db.session.rollback()
         current_app.logger.exception("[CONTACT] lead save failed")
@@ -3417,18 +3482,64 @@ def contact():
         return render_template(
             "contact.html",
             submitted=False,
+            is_demo=is_demo,
             form_data=form_data,
             form_errors={},
         ), 500
 
     notify_ok = True
     try:
-        from backend.helpchain_backend.src.services.notification_jobs import (
-            enqueue_email_notification,
-        )
+        if is_demo:
+            def enqueue_email_notification(
+                *,
+                recipient,
+                subject,
+                template=None,
+                context=None,
+                purpose=None,
+                structure_id=None,
+                send_now=False,
+                **kwargs,
+            ):
+                msg = Message(
+                    subject="New demo request",
+                    sender="contact@helpchain.live",
+                    recipients=["contact@helpchain.live"],
+                )
+                msg.body = (
+                    "New demo request\n\n"
+                    f"Organisation: {form_data.get('organisation') or 'Non renseigné'}\n"
+                    f"Type de structure: {form_data.get('structure_type') or 'Non renseigné'}\n"
+                    f"Taille: {form_data.get('organization_size') or 'Non renseigné'}\n"
+                    f"Rôle: {form_data.get('fonction') or 'Non renseigné'}\n"
+                    f"Nom: {form_data.get('full_name') or 'Non renseigné'}\n"
+                    f"Email: {form_data.get('email') or 'Non renseigné'}\n"
+                    f"Téléphone: {form_data.get('phone') or 'Non renseigné'}\n"
+                    f"Source: {form_data.get('source') or 'Non renseigné'}\n"
+                    f"Lead ID: {lead.id}\n"
+                    f"Admin URL: {request.host_url.rstrip('/')}/admin/professional-leads\n\n"
+                    "Contexte:\n"
+                    f"{form_data.get('message') or 'Non renseigné'}\n"
+                )
+                current_app.logger.info(
+                    "Demo SMTP pre-send | MAIL_SERVER=%r | MAIL_PORT=%r | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%r | MAIL_PASSWORD_SET=%s | MAIL_DEFAULT_SENDER=%r",
+                    current_app.config.get("MAIL_SERVER"),
+                    current_app.config.get("MAIL_PORT"),
+                    current_app.config.get("MAIL_USE_SSL"),
+                    current_app.config.get("MAIL_USE_TLS"),
+                    current_app.config.get("MAIL_USERNAME"),
+                    bool(current_app.config.get("MAIL_PASSWORD")),
+                    current_app.config.get("MAIL_DEFAULT_SENDER"),
+                )
+                mail.send(msg)
+                return None, True
+        else:
+            from backend.helpchain_backend.src.services.notification_jobs import (
+                enqueue_email_notification,
+            )
 
-        admin_to = (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
-        if not admin_to:
+        admin_to = "contact@helpchain.live" if is_demo else (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
+        if not admin_to and not is_demo:
             admin_to = (current_app.config.get("ADMIN_NOTIFY_EMAIL") or "").strip()
 
         ctx = {
@@ -3448,31 +3559,109 @@ def contact():
             "user_agent": lead.user_agent,
             "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
         }
+        if is_demo:
+            demo_ctx = {
+                "type_structure": form_data.get("structure_type") or "Non renseigné",
+                "organization_size": form_data.get("organization_size") or "Non renseigné",
+                "role_name": form_data.get("fonction") or "Non renseigné",
+                "full_name": form_data.get("full_name") or "Non renseigné",
+                "email": form_data.get("email") or "Non renseigné",
+                "organization": form_data.get("organisation") or "Non renseigné",
+                "phone": form_data.get("phone") or "Non renseigné",
+                "message": form_data.get("message") or "Non renseigné",
+                "source": form_data.get("source") or "Non renseigné",
+                "lead_id": lead.id,
+                "created_at": lead.created_at,
+                "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
+            }
         if admin_to:
-            _, delivered = enqueue_email_notification(
+            if is_demo:
+                current_app.logger.info(
+                    "Sending demo notification to contact@helpchain.live"
+                )
+                print("=== DEMO EMAIL DEBUG START ===")
+                print("form_type:", form_data.get("form_type"))
+                print("recipient:", "contact@helpchain.live")
+                print("organisation:", form_data.get("organisation"))
+                print("email:", form_data.get("email"))
+                print("=== CALLING SEND EMAIL ===")
+            job_id, delivered = enqueue_email_notification(
                 recipient=admin_to,
-                subject="[HelpChain] Nouvelle demande d’échange",
-                template="emails/professional_lead_notify.html",
-                context=ctx,
-                purpose="contact_exchange",
+                subject=(
+                    f"[Nouvelle demande démo] {form_data.get('structure') or 'Non renseigné'} — {form_data.get('structure_type') or 'Non renseigné'}"
+                    if is_demo
+                    else "[HelpChain] Nouvelle demande d’échange"
+                ),
+                template=(
+                    "emails/demo_request_notify.html"
+                    if is_demo
+                    else "emails/professional_lead_notify.html"
+                ),
+                context=(demo_ctx if is_demo else ctx),
+                purpose="demo_request_internal" if is_demo else "contact_exchange",
                 structure_id=getattr(lead, "structure_id", None),
                 send_now=True,
             )
             notify_ok = bool(delivered)
+            if is_demo and notify_ok:
+                current_app.logger.info("Demo notification sent successfully")
             if not notify_ok:
-                current_app.logger.error(
-                    "[CONTACT] notify queued (delivery failed) lead_id=%s", lead.id
-                )
+                if is_demo:
+                    current_app.logger.warning(
+                        "notification attempt started but delivery not confirmed | recipient=%s | resend_enabled=%s | mail_server=%s | mail_port=%s | mail_username=%s | mail_password=%s | mail_default_sender=%s",
+                        admin_to,
+                        bool((os.getenv("RESEND_API_KEY") or "").strip()),
+                        bool(current_app.config.get("MAIL_SERVER")),
+                        bool(current_app.config.get("MAIL_PORT")),
+                        bool(current_app.config.get("MAIL_USERNAME")),
+                        bool(current_app.config.get("MAIL_PASSWORD")),
+                        bool(current_app.config.get("MAIL_DEFAULT_SENDER")),
+                    )
+                    current_app.logger.warning(
+                        "Demo notification failed | lead_id=%s | type_structure=%s | taille=%s | role=%s | nom=%s | email=%s | organisation=%s | telephone=%s | contexte_present=%s | source=%s",
+                        lead.id,
+                        demo_ctx.get("type_structure"),
+                        demo_ctx.get("organization_size"),
+                        demo_ctx.get("role_name"),
+                        demo_ctx.get("full_name"),
+                        demo_ctx.get("email"),
+                        demo_ctx.get("organization"),
+                        demo_ctx.get("phone"),
+                        bool(demo_ctx.get("message") and demo_ctx.get("message") != "Non renseigné"),
+                        demo_ctx.get("source"),
+                    )
+                else:
+                    current_app.logger.error(
+                        "[CONTACT] notify queued (delivery failed) lead_id=%s", lead.id
+                    )
         else:
             notify_ok = False
-            current_app.logger.error(
-                "[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL"
-            )
-    except Exception:
+            if is_demo:
+                current_app.logger.warning(
+                    "Demo notification failed | recipient missing | resend_enabled=%s | mail_server=%s | mail_port=%s | mail_username=%s | mail_password=%s | mail_default_sender=%s",
+                    bool((os.getenv("RESEND_API_KEY") or "").strip()),
+                    bool(current_app.config.get("MAIL_SERVER")),
+                    bool(current_app.config.get("MAIL_PORT")),
+                    bool(current_app.config.get("MAIL_USERNAME")),
+                    bool(current_app.config.get("MAIL_PASSWORD")),
+                    bool(current_app.config.get("MAIL_DEFAULT_SENDER")),
+                )
+            else:
+                current_app.logger.error(
+                    "[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL"
+                )
+    except Exception as exc:
         notify_ok = False
-        current_app.logger.exception("[CONTACT] notify email failed lead_id=%s", lead.id)
+        if is_demo:
+            current_app.logger.exception(
+                "Demo notification failed exactly | lead_id=%s | error=%s",
+                lead.id,
+                exc,
+            )
+        else:
+            current_app.logger.exception("[CONTACT] notify email failed lead_id=%s", lead.id)
 
-    if not notify_ok:
+    if not notify_ok and not is_demo:
         flash(
             _(
                 "Votre demande a été enregistrée, mais l’envoi de notification a échoué. "
@@ -3481,7 +3670,7 @@ def contact():
             "warning",
         )
 
-    return redirect(url_for("main.contact", sent="1"), code=303)
+    return redirect(("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")), code=303)
 
 
 @main_bp.get("/confidentialite")
