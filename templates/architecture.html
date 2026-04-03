@@ -1,9 +1,23 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _("Architecture de la plateforme") }} | HelpChain{% endblock %}
 {% block meta_description %}{{ _("Présentation institutionnelle de l’architecture de la plateforme HelpChain : organisation des usages, accès structurés et cadre de coordination.") }}{% endblock %}
 {% block og_title %}{{ _("Architecture de la plateforme") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Architecture de la plateforme") }}{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style>
+    .hc-doc-page ul {
+      padding-left: 1rem;
+    }
+    .hc-doc-page li {
+      margin-bottom: 0.375rem;
+    }
+    .hc-doc-page li:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
 <div class="container hc-doc-page">
@@ -11,68 +25,63 @@
     <p class="hc-doc-intro__label">{{ _("Architecture") }}</p>
     <h1 class="hc-doc-intro__title">{{ _("Architecture de la plateforme") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("HelpChain repose sur une architecture numérique structurée pour soutenir les flux de coordination, de suivi et de pilotage des situations sociales.") }}
+      {{ _("HelpChain repose sur une architecture conçue pour organiser le traitement des demandes, encadrer les accès et assurer le suivi des actions dans un cadre commun.") }}
     </p>
   </header>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
-      <p class="mb-0">
-        {{ _("La plateforme est organisée pour permettre une circulation maîtrisée de l’information entre les acteurs habilités, tout en conservant un cadre de traçabilité et de continuité opérationnelle.") }}
-      </p>
+      <h2 class="h5 mb-3">{{ _("Architecture de coordination et de pilotage") }}</h2>
+      <p class="mb-3">{{ _("Chaque niveau répond à un rôle spécifique dans le traitement des situations.") }}</p>
+      <ul class="mb-0">
+        <li><strong>{{ _("Interface publique") }}</strong><br>{{ _("Dépôt et orientation initiale des demandes") }}</li>
+        <li><strong>{{ _("Espace intervenants") }}</strong><br>{{ _("Coordination des actions, attribution et suivi des situations") }}</li>
+        <li><strong>{{ _("Outils administratifs") }}</strong><br>{{ _("Pilotage, supervision et gestion des responsabilités") }}</li>
+        <li><strong>{{ _("Infrastructure applicative") }}</strong><br>{{ _("Gestion des flux, des règles de traitement et des accès") }}</li>
+      </ul>
+      <p class="mt-3 mb-2">{{ _("Ces niveaux fonctionnent ensemble comme un système coordonné, dans lequel l’enregistrement, l’attribution, le suivi et le pilotage restent alignés.") }}</p>
+      <p class="mb-0">{{ _("Interface publique → Qualification → Attribution → Suivi → Pilotage") }}</p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Une architecture à plusieurs niveaux") }}</h2>
-      <p class="mb-2">{{ _("L’organisation de la plateforme distingue plusieurs niveaux d’usage complémentaires :") }}</p>
+      <h2 class="h5 mb-3">{{ _("Séparation opérationnelle des usages") }}</h2>
+      <p class="mb-3">{{ _("La séparation des usages évite les confusions de rôle, sécurise les interventions et améliore la cohérence du traitement entre acteurs.") }}</p>
       <ul class="mb-0">
-        <li>{{ _("interface publique d’orientation et de dépôt des demandes ;") }}</li>
-        <li>{{ _("espaces intervenants dédiés à la coordination des actions ;") }}</li>
-        <li>{{ _("outils de pilotage administratif pour le suivi opérationnel ;") }}</li>
-        <li>{{ _("infrastructure applicative assurant la gestion des flux et des accès.") }}</li>
+        <li>{{ _("Dépôt des demandes") }}</li>
+        <li>{{ _("Qualification des situations") }}</li>
+        <li>{{ _("Attribution des responsabilités") }}</li>
+        <li>{{ _("Coordination des actions") }}</li>
+        <li>{{ _("Suivi des situations") }}</li>
+        <li>{{ _("Accès professionnels et institutionnels") }}</li>
+        <li>{{ _("Pilotage de l’activité") }}</li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Séparation des usages") }}</h2>
-      <p class="mb-2">{{ _("Le dispositif est structuré pour distinguer les principaux parcours fonctionnels :") }}</p>
+      <h2 class="h5 mb-3">{{ _("Gouvernance des accès et des responsabilités") }}</h2>
+      <p class="mb-3">
+        {{ _("Les accès sont définis selon les rôles, les responsabilités et le périmètre d’intervention. Cette organisation renforce le caractère contrôlé de l’environnement et la fiabilité du traitement opérationnel.") }}
+      </p>
       <ul class="mb-0">
-        <li>{{ _("dépôt des demandes ;") }}</li>
-        <li>{{ _("coordination des actions ;") }}</li>
-        <li>{{ _("suivi des situations ;") }}</li>
-        <li>{{ _("accès professionnels et institutionnels.") }}</li>
+        <li>{{ _("Profils d’accès différenciés") }}</li>
+        <li>{{ _("Permissions adaptées aux responsabilités") }}</li>
+        <li>{{ _("Visibilité encadrée selon le périmètre d’intervention") }}</li>
+        <li>{{ _("Traçabilité des actions et des décisions") }}</li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Gouvernance des accès") }}</h2>
-      <p class="mb-2">
-        {{ _("Les accès sont organisés selon des profils et des permissions afin de garantir un usage conforme au rôle de chaque acteur dans le cadre opérationnel.") }}
-      </p>
-      <ul class="mb-0">
-        <li>{{ _("profils d’accès différenciés ;") }}</li>
-        <li>{{ _("permissions adaptées aux responsabilités ;") }}</li>
-        <li>{{ _("traçabilité des actions réalisées dans la plateforme.") }}</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Infrastructure au service de la coordination sociale") }}</h2>
-      <p class="mb-2">
-        {{ _("L’architecture est conçue pour soutenir la coordination entre associations, collectivités, réseaux professionnels et intervenants dans un cadre commun de suivi.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("HelpChain est conçu comme une infrastructure numérique de coordination et non comme un simple site de mise en relation.") }}
-      </p>
+      <h2 class="h5 mb-3">{{ _("Positionnement de l’architecture") }}</h2>
+      <p class="mb-2">{{ _("HelpChain n’est pas une interface de mise en relation.") }}</p>
+      <p class="mb-2">{{ _("C’est une infrastructure de coordination opérationnelle conçue pour des environnements structurés.") }}</p>
+      <p class="mb-2">{{ _("Le traitement des demandes, la répartition des responsabilités et le suivi de l’activité y restent lisibles, contrôlés et traçables.") }}</p>
+      <p class="mb-0">{{ _("Elle permet de transformer un fonctionnement fragmenté en un système structuré et pilotable.") }}</p>
     </div>
   </section>
 </div>

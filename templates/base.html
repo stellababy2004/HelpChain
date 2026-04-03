@@ -550,7 +550,7 @@
             <a class="nav-link nav-link--secondary hc-public-nav-login" href="{{ url_for('main.volunteer_login') }}">
               {{ _('Connexion') }}
             </a>
-            <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
+            <a class="nav-link hc-nav-cta hc-cta" href="/demo">
               <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
             </a>
           </div>
@@ -582,7 +582,7 @@
               </a>
             </li>
             <li class="nav-item hc-public-nav-cta">
-              <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
+              <a class="nav-link hc-nav-cta hc-cta" href="/demo">
                 <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
               </a>
             </li>
@@ -860,7 +860,7 @@
             <a class="{{ 'is-active' if mobile_ep.startswith('main.volunteer_login') else '' }}" href="{{ url_for('main.volunteer_login') }}" {% if mobile_ep.startswith('main.volunteer_login') %}aria-current="page"{% endif %}>{{ _('Connexion') }}</a>
           </li>
           <li class="hc-mobile-nav__item hc-mobile-nav__item--cta">
-            <a href="{{ url_for('main.contact') }}">{{ _('Planifier une démo') }}</a>
+            <a href="/demo">{{ _('Planifier une démo') }}</a>
           </li>
         </ul>
       </aside>

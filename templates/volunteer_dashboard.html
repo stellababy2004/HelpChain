@@ -38,22 +38,22 @@
     {% endif %}
   {% else %}
     <div class="hc-vdash-empty">
-      <div class="hc-vdash-empty__title">{{ _('Aucune correspondance pour le moment') }}</div>
-      <div class="hc-vdash-empty__text">{{ _('Vous serez notifié dès qu’une demande correspondra à votre profil.') }}</div>
+      <div class="hc-vdash-empty__title">{{ _('Aucune demande disponible pour le moment') }}</div>
+      <div class="hc-vdash-empty__text">{{ _('Vous serez notifié dès qu’une situation correspondant à votre profil pourra vous être proposée.') }}</div>
     </div>
   {% endif %}
 
   {% set locale_code = (get_locale()|string)[:2] %}
   {% set copy_map = {
     'fr': {
-      'almost_ready': {'title': 'Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter mon profil'},
-      'waiting': {'title': "C’est calme pour l’instant", 'body': "Nous cherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une aide vous correspond.", 'cta': 'Comment ça marche ?'},
-      'matches': {'title': 'Des demandes correspondent à votre profil', 'body': 'Consultez-les et choisissez comment aider.', 'cta': 'Voir les demandes'},
+      'almost_ready': {'title': 'Profil à compléter', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir les demandes qui vous correspondent.', 'cta': 'Compléter mon profil'},
+      'waiting': {'title': "Aucune demande disponible pour le moment", 'body': "Aucune demande ne correspond à votre profil pour le moment.\nVous serez notifié dès qu’une situation pourra vous être proposée.", 'cta': 'Voir comment ça marche'},
+      'matches': {'title': 'Demandes proposées', 'body': 'Certaines demandes correspondent à votre profil. Vous pouvez les consulter et choisir si vous souhaitez intervenir.', 'cta': 'Voir les demandes'},
       'checklist_title': 'Votre profil',
       'label_location': 'Localisation',
       'label_availability': 'Disponibilité',
       'steps': 'étapes restantes',
-      'empty': "Aucune demande ne correspond encore à votre profil.\nCela peut prendre un peu de temps — votre aide compte.",
+      'empty': "Aucune demande ne correspond à votre profil pour le moment.\nVous serez notifié dès qu’une nouvelle situation pourra vous être proposée.",
     },
     'bg': {
       'almost_ready': {'title': 'Профилът ти е почти готов', 'body': 'Добави локация и наличност, за да получаваш подходящи заявки.', 'cta': 'Попълни профила'},
@@ -66,14 +66,14 @@
       'empty': "Все още няма заявки, които да съвпадат с профила ти.\nТова е нормално — помощта ти е ценна.",
     },
     'en': {
-      'almost_ready': {'title': 'Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter mon profil'},
-      'waiting': {'title': "C’est calme pour l’instant", 'body': "Nous cherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une aide vous correspond.", 'cta': 'Comment ça marche ?'},
-      'matches': {'title': 'Des demandes correspondent à votre profil', 'body': 'Consultez-les et choisissez comment aider.', 'cta': 'Voir les demandes'},
+      'almost_ready': {'title': 'Profil à compléter', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir les demandes qui vous correspondent.', 'cta': 'Compléter mon profil'},
+      'waiting': {'title': "Aucune demande disponible pour le moment", 'body': "Aucune demande ne correspond à votre profil pour le moment.\nVous serez notifié dès qu’une situation pourra vous être proposée.", 'cta': 'Voir comment ça marche'},
+      'matches': {'title': 'Demandes proposées', 'body': 'Certaines demandes correspondent à votre profil. Vous pouvez les consulter et choisir si vous souhaitez intervenir.', 'cta': 'Voir les demandes'},
       'checklist_title': 'Votre profil',
       'label_location': 'Localisation',
       'label_availability': 'Disponibilité',
       'steps': 'étapes restantes',
-      'empty': "Aucune demande ne correspond encore à votre profil.\nCela peut prendre un peu de temps — votre aide compte.",
+      'empty': "Aucune demande ne correspond à votre profil pour le moment.\nVous serez notifié dès qu’une nouvelle situation pourra vous être proposée.",
     },
   } %}
   {% set copy_lang = copy_map.get(locale_code, copy_map['en']) %}
