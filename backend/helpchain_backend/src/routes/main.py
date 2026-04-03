@@ -3035,7 +3035,7 @@ def pilot_kpi_api():
 
     closed_requests = (
         db.session.query(func.count(Request.id))
-        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "cancelled"]))
         .scalar()
         or 0
     )
