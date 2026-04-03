@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Demo leads') }} | {{ _('Admin') }}{% endblock %}
+{% block body_class %}hc-admin-proleads-page{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+  <style>
+    .hc-demo-leads-col-created { width: 112px; white-space: nowrap; }
+    .hc-demo-leads-col-contact { width: 260px; min-width: 220px; }
+    .hc-demo-leads-contact { min-width: 220px; max-width: 260px; }
+    .hc-demo-leads-col-profession { width: 120px; }
+    .hc-demo-leads-col-city { width: 120px; }
+    .hc-demo-leads-col-context { width: 180px; max-width: 180px; }
+    .hc-demo-leads-col-age { width: 128px; white-space: nowrap; }
+    .hc-demo-leads-col-status { width: 188px; white-space: nowrap; }
+    .hc-demo-leads-contact a { word-break: normal; overflow-wrap: normal; }
+    .hc-demo-leads-identity { min-width: 0; }
+    .hc-demo-leads-name {
+      display: block;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-demo-leads-org {
+      display: block;
+      color: rgba(15, 23, 42, .68);
+      font-size: .84rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .hc-demo-leads-email {
+      display: block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-demo-leads-phone {
+      display: block;
+      color: rgba(15, 23, 42, .66);
+      font-size: .82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+    }
+    .hc-demo-leads-table th,
+    .hc-demo-leads-table td { vertical-align: middle; }
+    .hc-demo-leads-table { table-layout: fixed; width: 100%; }
+    .hc-demo-leads-table td { padding-top: .5rem; padding-bottom: .5rem; }
+    .hc-demo-leads-table td:nth-child(3),
+    .hc-demo-leads-table td:nth-child(4),
+    .hc-demo-leads-table td:nth-child(5) { min-width: 0; }
+    .hc-demo-leads-table td:nth-child(3) > div:first-child,
+    .hc-demo-leads-table td:nth-child(4) > div:first-child,
+    .hc-demo-leads-table td:nth-child(5) > div:first-child {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-demo-leads-context {
+      display: block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hc-demo-leads-kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: .75rem;
+      margin: 1rem 0;
+    }
+    .hc-demo-leads-kpi {
+      padding: .85rem 1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, .20);
+      background: rgba(255, 255, 255, .76);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, .04);
+    }
+    .hc-demo-leads-kpi__label {
+      display: block;
+      font-size: .72rem;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: rgba(71, 85, 105, .88);
+      margin-bottom: .35rem;
+    }
+    .hc-demo-leads-kpi__value {
+      display: block;
+      font-size: 1.45rem;
+      line-height: 1;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .hc-demo-leads-kpi--new {
+      background: rgba(148, 163, 184, .08);
+      border-color: rgba(100, 116, 139, .20);
+    }
+    .hc-demo-leads-kpi--contacted {
+      background: rgba(245, 158, 11, .08);
+      border-color: rgba(217, 119, 6, .18);
+    }
+    .hc-demo-leads-kpi--demo_scheduled {
+      background: rgba(59, 130, 246, .08);
+      border-color: rgba(37, 99, 235, .18);
+    }
+    .hc-demo-leads-kpi--pilot_discussion {
+      background: rgba(139, 92, 246, .08);
+      border-color: rgba(124, 58, 237, .16);
+    }
+    .hc-demo-leads-kpi--closed {
+      background: rgba(34, 197, 94, .08);
+      border-color: rgba(22, 163, 74, .16);
+    }
+    .hc-demo-leads-kpi--overdue {
+      background: rgba(239, 68, 68, .08);
+      border-color: rgba(220, 38, 38, .16);
+    }
+    .hc-demo-leads-card + .hc-demo-leads-card { margin-top: .75rem; }
+    .hc-demo-leads-card__meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .5rem .75rem;
+    }
+    .hc-demo-leads-card__label {
+      display: block;
+      font-size: .75rem;
+      color: rgba(15, 23, 42, .6);
+      text-transform: uppercase;
+      letter-spacing: .03em;
+    }
+    .hc-demo-leads-status-form {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      min-width: 0;
+      width: 100%;
+    }
+    .hc-demo-leads-status-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .4rem;
+      width: 100%;
+    }
+    .hc-demo-leads-status-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: .76rem;
+      line-height: 1;
+      font-weight: 600;
+      letter-spacing: .01em;
+      white-space: nowrap;
+    }
+    .hc-demo-leads-status-badge--new {
+      color: #42526b;
+      background: rgba(148, 163, 184, .14);
+      border-color: rgba(100, 116, 139, .28);
+    }
+    .hc-demo-leads-status-badge--contacted {
+      color: #8a5a00;
+      background: rgba(245, 158, 11, .14);
+      border-color: rgba(217, 119, 6, .28);
+    }
+    .hc-demo-leads-status-badge--demo_scheduled {
+      color: #1e4fa3;
+      background: rgba(59, 130, 246, .14);
+      border-color: rgba(37, 99, 235, .28);
+    }
+    .hc-demo-leads-status-badge--pilot_discussion {
+      color: #6b3fa0;
+      background: rgba(139, 92, 246, .12);
+      border-color: rgba(124, 58, 237, .24);
+    }
+    .hc-demo-leads-status-badge--closed {
+      color: #22603a;
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(22, 163, 74, .24);
+    }
+    .hc-demo-leads-age {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: .35rem;
+    }
+    .hc-demo-leads-age__value {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, .24);
+      background: rgba(248, 250, 252, .95);
+      color: #334155;
+      font-size: .76rem;
+      line-height: 1;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .hc-demo-leads-urgency-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: .76rem;
+      line-height: 1;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .hc-demo-leads-urgency-badge--normal {
+      color: #475569;
+      background: rgba(148, 163, 184, .12);
+      border-color: rgba(100, 116, 139, .20);
+    }
+    .hc-demo-leads-urgency-badge--aging {
+      color: #8a5a00;
+      background: rgba(245, 158, 11, .12);
+      border-color: rgba(217, 119, 6, .22);
+    }
+    .hc-demo-leads-urgency-badge--overdue {
+      color: #9f1239;
+      background: rgba(239, 68, 68, .10);
+      border-color: rgba(220, 38, 38, .22);
+    }
+    .hc-demo-leads-urgency-badge--closed {
+      color: #64748b;
+      background: rgba(226, 232, 240, .72);
+      border-color: rgba(148, 163, 184, .24);
+    }
+    .hc-demo-leads-status-form .hc-input {
+      min-width: 0;
+      flex: 1 1 auto;
+      width: auto;
+    }
+    .hc-demo-leads-status-form .btn {
+      flex: 0 0 auto;
+    }
+    .hc-demo-leads-desktop { display: block; }
+    .hc-demo-leads-mobile { display: none; }
+    @media (max-width: 767.98px) {
+      .hc-demo-leads-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .hc-demo-leads-desktop { display: none; }
+      .hc-demo-leads-mobile { display: block; }
+    }
+    @media (max-width: 575.98px) {
+      .hc-demo-leads-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hc-demo-leads-card__meta { grid-template-columns: 1fr; }
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<section class="hc-admin-wrap hc-admin-shell">
+  <header class="hc-admin-toolbar">
+    <div>
+      <h1 class="hc-admin-title mb-1">{{ _('Demo leads') }}</h1>
+      <p class="hc-muted mb-0">{{ _('Latest leads captured via /demo.') }}</p>
+    </div>
+  </header>
+
+  <form method="GET" class="hc-card hc-admin-filterbar">
+    <div class="hc-admin-filtergrid">
+      <div class="hc-admin-filtergrid__item hc-admin-filtergrid__item--grow">
+        <label class="hc-muted" for="q">{{ _('Search') }}</label>
+        <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="{{ _('Email, name, organisation...') }}" />
+      </div>
+
+      <div class="hc-admin-filtergrid__item">
+        <label class="hc-muted" for="profession">{{ _('Profession') }}</label>
+        <select id="profession" name="profession" class="hc-input">
+          <option value="">{{ _('All') }}</option>
+          {% for p in professions %}
+            <option value="{{ p }}" {% if p == profession %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="hc-admin-filtergrid__item">
+        <label class="hc-muted" for="city">{{ _('City') }}</label>
+        <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="{{ _('City') }}" />
+      </div>
+
+      <div class="hc-admin-filtergrid__item">
+        <label class="hc-muted" for="status">{{ _('Status') }}</label>
+        <select id="status" name="status" class="hc-input">
+          <option value="">{{ _('All') }}</option>
+          {% for s in status_choices %}
+            <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="hc-admin-actions">
+      <button class="btn btn-primary btn-sm" type="submit">{{ _('Filter') }}</button>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_demo_leads') }}">{{ _('Reset') }}</a>
+    </div>
+  </form>
+
+  <section class="hc-demo-leads-kpis" aria-label="{{ _('Demo lead funnel summary') }}">
+    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--new">
+      <span class="hc-demo-leads-kpi__label">new</span>
+      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('new', 0) }}</strong>
+    </article>
+    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--contacted">
+      <span class="hc-demo-leads-kpi__label">contacted</span>
+      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('contacted', 0) }}</strong>
+    </article>
+    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--demo_scheduled">
+      <span class="hc-demo-leads-kpi__label">demo_scheduled</span>
+      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('demo_scheduled', 0) }}</strong>
+    </article>
+    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--pilot_discussion">
+      <span class="hc-demo-leads-kpi__label">pilot_discussion</span>
+      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('pilot_discussion', 0) }}</strong>
+    </article>
+    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--closed">
+      <span class="hc-demo-leads-kpi__label">closed</span>
+      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('closed', 0) }}</strong>
+    </article>
+    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--overdue">
+      <span class="hc-demo-leads-kpi__label">overdue</span>
+      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('overdue', 0) }}</strong>
+    </article>
+  </section>
+
+  <div class="hc-card hc-admin-table-shell hc-demo-leads-desktop">
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table hc-demo-leads-table mb-0">
+        <thead>
+          <tr>
+            <th class="hc-demo-leads-col-created">{{ _('Created') }}</th>
+            <th class="hc-demo-leads-col-contact">{{ _('Contact') }}</th>
+            <th class="hc-demo-leads-col-profession">{{ _('Profession') }}</th>
+            <th class="hc-demo-leads-col-city">{{ _('City') }}</th>
+            <th class="hc-demo-leads-col-context">{{ _('Context') }}</th>
+            <th class="hc-demo-leads-col-age">{{ _('Follow-up') }}</th>
+            <th class="hc-demo-leads-col-status">{{ _('Status') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for lead in leads %}
+            {% set current_status = (lead.status or 'new') %}
+            <tr>
+              <td class="small text-muted hc-demo-leads-col-created">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') if lead.created_at else '-' }}</td>
+              <td class="hc-demo-leads-col-contact">
+                <div class="hc-demo-leads-contact">
+                  <div class="hc-demo-leads-identity">
+                    {% if lead.full_name %}
+                      <span class="hc-demo-leads-name" title="{{ lead.full_name }}">{{ lead.full_name }}</span>
+                    {% endif %}
+                    {% if lead.organization %}
+                      <span class="hc-demo-leads-org" title="{{ lead.organization }}">{{ lead.organization }}</span>
+                    {% endif %}
+                  </div>
+                  <a class="hc-demo-leads-email" href="mailto:{{ lead.email }}" title="{{ lead.email }}">{{ lead.email }}</a>
+                  {% if lead.phone %}<span class="hc-demo-leads-phone" title="{{ lead.phone }}">{{ lead.phone }}</span>{% endif %}
+                </div>
+              </td>
+              <td class="hc-demo-leads-col-profession">
+                <div>{{ lead.profession or '-' }}</div>
+              </td>
+              <td class="hc-demo-leads-col-city">
+                <div>{{ lead.city or '-' }}</div>
+              </td>
+              <td class="hc-demo-leads-col-context">
+                <div class="hc-demo-leads-context" title="{{ lead.message or lead.availability or '-' }}">
+                  {{ (lead.message or lead.availability or '-')|truncate(100, True) }}
+                </div>
+              </td>
+              <td class="hc-demo-leads-col-age">
+                <div class="hc-demo-leads-age">
+                  <span class="hc-demo-leads-age__value">{{ lead.age_label }}</span>
+                  <span class="hc-demo-leads-urgency-badge hc-demo-leads-urgency-badge--{{ lead.urgency }}">
+                    {{ lead.urgency }}
+                  </span>
+                </div>
+              </td>
+              <td class="hc-demo-leads-col-status">
+                <div class="hc-demo-leads-status-stack">
+                  <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">
+                    {{ current_status }}
+                  </span>
+                  <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_status', lead_id=lead.id) }}" class="hc-demo-leads-status-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="q" value="{{ q }}">
+                    <input type="hidden" name="profession" value="{{ profession }}">
+                    <input type="hidden" name="city" value="{{ city }}">
+                    <input type="hidden" name="status" value="{{ status }}">
+                    <select name="lead_status" class="hc-input hc-input-sm" aria-label="{{ _('Lead status') }}">
+                      {% for option in status_choices %}
+                        <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ option }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">{{ _('Update') }}</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7" class="text-center text-muted py-4">{{ _('No demo leads yet.') }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="hc-demo-leads-mobile">
+    {% for lead in leads %}
+      {% set current_status = (lead.status or 'new') %}
+      <article class="hc-card hc-demo-leads-card">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <div class="small text-muted">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') if lead.created_at else '-' }}</div>
+          <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">{{ current_status }}</span>
+        </div>
+        <div class="hc-demo-leads-contact mb-2">
+          <div class="hc-demo-leads-identity">
+            {% if lead.full_name %}
+              <span class="hc-demo-leads-name" title="{{ lead.full_name }}">{{ lead.full_name }}</span>
+            {% endif %}
+            {% if lead.organization %}
+              <span class="hc-demo-leads-org" title="{{ lead.organization }}">{{ lead.organization }}</span>
+            {% endif %}
+          </div>
+          <a class="hc-demo-leads-email" href="mailto:{{ lead.email }}" title="{{ lead.email }}">{{ lead.email }}</a>
+          {% if lead.phone %}<span class="hc-demo-leads-phone" title="{{ lead.phone }}">{{ lead.phone }}</span>{% endif %}
+        </div>
+        <div class="hc-demo-leads-card__meta">
+          <div>
+            <span class="hc-demo-leads-card__label">{{ _('Profession') }}</span>
+            <div>{{ lead.profession or '-' }}</div>
+          </div>
+          <div>
+            <span class="hc-demo-leads-card__label">{{ _('City') }}</span>
+            <div>{{ lead.city or '-' }}</div>
+          </div>
+          <div>
+            <span class="hc-demo-leads-card__label">{{ _('Context') }}</span>
+            <div title="{{ lead.message or lead.availability or '-' }}">
+              {{ (lead.message or lead.availability or '-')|truncate(120, True) }}
+            </div>
+          </div>
+          <div>
+            <span class="hc-demo-leads-card__label">{{ _('Follow-up') }}</span>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <span class="hc-demo-leads-age__value">{{ lead.age_label }}</span>
+              <span class="hc-demo-leads-urgency-badge hc-demo-leads-urgency-badge--{{ lead.urgency }}">{{ lead.urgency }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="hc-demo-leads-status-stack mt-3">
+          <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_status', lead_id=lead.id) }}" class="hc-demo-leads-status-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="q" value="{{ q }}">
+            <input type="hidden" name="profession" value="{{ profession }}">
+            <input type="hidden" name="city" value="{{ city }}">
+            <input type="hidden" name="status" value="{{ status }}">
+            <select name="lead_status" class="hc-input hc-input-sm" aria-label="{{ _('Lead status') }}">
+              {% for option in status_choices %}
+                <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">{{ _('Update') }}</button>
+          </form>
+        </div>
+      </article>
+    {% else %}
+      <div class="hc-card text-center text-muted py-4">{{ _('No demo leads yet.') }}</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

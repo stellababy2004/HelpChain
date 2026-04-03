@@ -6560,6 +6560,208 @@ def admin_professional_leads():
     )
 
 
+@admin_bp.get("/professional-leads/demo")
+@login_required
+@admin_required
+def admin_demo_leads():
+    def _lead_age_meta(created_at, status_value: str | None):
+        now_utc = datetime.now(UTC)
+        if created_at is None:
+            age_days = 0
+        else:
+            created_dt = created_at
+            if getattr(created_dt, "tzinfo", None) is None:
+                created_dt = created_dt.replace(tzinfo=UTC)
+            age_days = max(0, (now_utc.date() - created_dt.astimezone(UTC).date()).days)
+
+        normalized_status = ((status_value or "").strip().lower() or "new")
+        if normalized_status == "closed":
+            urgency = "closed"
+        elif age_days <= 1:
+            urgency = "normal"
+        elif age_days <= 3:
+            urgency = "aging"
+        else:
+            urgency = "overdue"
+
+        return {
+            "age_days": age_days,
+            "age_label": f"{age_days}d",
+            "urgency": urgency,
+        }
+
+    if not _table_exists("professional_leads"):
+        flash(
+            "Professional leads table is not available in this environment yet.",
+            "warning",
+        )
+        return (
+            render_template(
+                "admin/demo_leads.html",
+                leads=[],
+                q="",
+                profession="",
+                city="",
+                status="",
+                status_choices=["new", "contacted", "demo_scheduled", "pilot_discussion", "closed"],
+                professions=[],
+                kpi_counts={
+                    "new": 0,
+                    "contacted": 0,
+                    "demo_scheduled": 0,
+                    "pilot_discussion": 0,
+                    "closed": 0,
+                    "overdue": 0,
+                },
+            ),
+            200,
+        )
+
+    q = (request.args.get("q") or "").strip()
+    profession = (request.args.get("profession") or "").strip()
+    city = (request.args.get("city") or "").strip()
+    status = (request.args.get("status") or "").strip().lower()
+    status_choices = ["new", "contacted", "demo_scheduled", "pilot_discussion", "closed"]
+
+    query = ProfessionalLead.query.filter(ProfessionalLead.source == "demo_page")
+
+    if q:
+        like = f"%{q.lower()}%"
+        query = query.filter(
+            or_(
+                ProfessionalLead.email.ilike(like),
+                ProfessionalLead.full_name.ilike(like),
+                ProfessionalLead.organization.ilike(like),
+                ProfessionalLead.message.ilike(like),
+            )
+        )
+
+    if profession:
+        query = query.filter(ProfessionalLead.profession == profession)
+
+    if city:
+        query = query.filter(ProfessionalLead.city.ilike(f"%{city}%"))
+
+    kpi_counts = {key: 0 for key in status_choices}
+    count_rows = (
+        query.with_entities(
+            func.lower(ProfessionalLead.status).label("status_key"),
+            func.count(ProfessionalLead.id).label("lead_count"),
+        )
+        .group_by(func.lower(ProfessionalLead.status))
+        .all()
+    )
+    for row in count_rows:
+        status_key = (getattr(row, "status_key", None) or "").strip().lower() or "new"
+        if status_key in kpi_counts:
+            kpi_counts[status_key] = int(getattr(row, "lead_count", 0) or 0)
+
+    overdue_rows = query.with_entities(
+        ProfessionalLead.status,
+        ProfessionalLead.created_at,
+    ).all()
+    overdue_count = 0
+    for row in overdue_rows:
+        age_meta = _lead_age_meta(
+            getattr(row, "created_at", None),
+            getattr(row, "status", None),
+        )
+        if age_meta["urgency"] == "overdue":
+            overdue_count += 1
+    kpi_counts["overdue"] = overdue_count
+
+    if status:
+        query = query.filter(func.lower(ProfessionalLead.status) == status)
+
+    leads = (
+        query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
+        .limit(200)
+        .all()
+    )
+    for lead in leads:
+        age_meta = _lead_age_meta(getattr(lead, "created_at", None), getattr(lead, "status", None))
+        setattr(lead, "age_days", age_meta["age_days"])
+        setattr(lead, "age_label", age_meta["age_label"])
+        setattr(lead, "urgency", age_meta["urgency"])
+
+    professions = (
+        ProfessionalLead.query.with_entities(ProfessionalLead.profession)
+        .filter(ProfessionalLead.source == "demo_page")
+        .distinct()
+        .order_by(ProfessionalLead.profession.asc())
+        .all()
+    )
+    professions = [p[0] for p in professions if p and p[0]]
+
+    return (
+        render_template(
+            "admin/demo_leads.html",
+            leads=leads,
+            q=q,
+            profession=profession,
+            city=city,
+            status=status,
+            status_choices=status_choices,
+            professions=professions,
+            kpi_counts=kpi_counts,
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/professional-leads/<int:lead_id>/status")
+@login_required
+@admin_required
+def admin_professional_lead_update_status(lead_id: int):
+    allowed_statuses = {
+        "new",
+        "contacted",
+        "demo_scheduled",
+        "pilot_discussion",
+        "closed",
+    }
+
+    redirect_kwargs = {}
+    for key in ("q", "profession", "city", "status"):
+        value = (request.form.get(key) or "").strip()
+        if value:
+            redirect_kwargs[key] = value
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.warning(
+            "Lead status update skipped: professional_leads table unavailable"
+        )
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    lead = ProfessionalLead.query.get_or_404(lead_id)
+    old_status = ((lead.status or "").strip() or "new")
+    new_status = (request.form.get("lead_status") or "").strip().lower()
+
+    if new_status not in allowed_statuses:
+        current_app.logger.warning(
+            "Lead %s status update ignored: invalid status %r",
+            lead.id,
+            new_status,
+        )
+        flash("Invalid lead status.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    if old_status != new_status:
+        lead.status = new_status
+        if new_status == "contacted" and not lead.contacted_at:
+            lead.contacted_at = datetime.now(UTC)
+        db.session.commit()
+        current_app.logger.info(
+            "Lead %s status changed from %s → %s",
+            lead.id,
+            old_status,
+            new_status,
+        )
+
+    return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+
 @admin_bp.post("/professional-leads/<int:lead_id>/contacted")
 @login_required
 @admin_required
