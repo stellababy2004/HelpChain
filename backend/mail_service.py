@@ -89,10 +89,11 @@ def _log_mail_config_presence(*, purpose: str | None = None):
         "MAIL_PASSWORD_STATE": masked.get("MAIL_PASSWORD_STATE"),
         "MAIL_DEFAULT_SENDER": bool(masked.get("MAIL_DEFAULT_SENDER")),
     }
+    log_presence = {k: v for k, v in presence.items() if k != "MAIL_PASSWORD_STATE"}
     logger.info(
         "SMTP config loaded%s | config=%s",
         f" | purpose={purpose}" if purpose else "",
-        presence,
+        log_presence,
     )
     return presence
 
