@@ -55,7 +55,7 @@ def mask_sensitive(data):
         for key, value in data.items():
             key_text = str(key)
             if _is_sensitive_log_key(key_text):
-                masked[key_text] = bool(value)
+                masked[key_text] = "***"
             else:
                 masked[key_text] = mask_sensitive(value)
         return masked
@@ -76,7 +76,7 @@ def _log_mail_config_presence(*, purpose: str | None = None):
         "MAIL_USE_SSL": cfg.get("MAIL_USE_SSL"),
         "MAIL_USE_TLS": cfg.get("MAIL_USE_TLS"),
         "MAIL_USERNAME": cfg.get("MAIL_USERNAME"),
-        "MAIL_PASSWORD": cfg.get("MAIL_PASSWORD"),
+        "MAIL_PASSWORD_STATE": "SET" if cfg.get("MAIL_PASSWORD") else "NOT_SET",
         "MAIL_DEFAULT_SENDER": cfg.get("MAIL_DEFAULT_SENDER"),
     }
     masked = mask_sensitive(diagnostics)
@@ -86,7 +86,7 @@ def _log_mail_config_presence(*, purpose: str | None = None):
         "MAIL_USE_SSL": masked.get("MAIL_USE_SSL") is not None,
         "MAIL_USE_TLS": masked.get("MAIL_USE_TLS") is not None,
         "MAIL_USERNAME": bool(masked.get("MAIL_USERNAME")),
-        "MAIL_PASSWORD": bool(masked.get("MAIL_PASSWORD")),
+        "MAIL_PASSWORD_STATE": masked.get("MAIL_PASSWORD_STATE"),
         "MAIL_DEFAULT_SENDER": bool(masked.get("MAIL_DEFAULT_SENDER")),
     }
     logger.info(
@@ -510,7 +510,7 @@ def send_notification_email(
             if not mail_sender:
                 missing.append("MAIL_DEFAULT_SENDER")
             logger.error(
-                "SMTP not configured (missing %s) | purpose=%s | MAIL_SERVER=%s | MAIL_PORT=%s | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%s | MAIL_PASSWORD=%s | MAIL_DEFAULT_SENDER=%s",
+                "SMTP not configured (missing %s) | purpose=%s | MAIL_SERVER=%s | MAIL_PORT=%s | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%s | MAIL_PASSWORD_STATE=%s | MAIL_DEFAULT_SENDER=%s",
                 ", ".join(missing) or "MAIL_*",
                 purpose,
                 presence["MAIL_SERVER"],
@@ -518,7 +518,7 @@ def send_notification_email(
                 presence["MAIL_USE_SSL"],
                 presence["MAIL_USE_TLS"],
                 presence["MAIL_USERNAME"],
-                presence["MAIL_PASSWORD"],
+                presence["MAIL_PASSWORD_STATE"],
                 presence["MAIL_DEFAULT_SENDER"],
             )
             _log_email_event(

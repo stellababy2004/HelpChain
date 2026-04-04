@@ -1284,7 +1284,7 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
             )
         )
     _mfa_ok_set()
-    return redirect(next_url or _default_admin_landing_url(user), code=303)
+    return _redirect_to_safe_next(next_url, _default_admin_landing_url(user), code=303)
 
 
 def audit_admin_action(
@@ -2421,15 +2421,14 @@ def admin_translations_bulk_suggest_apply():
     )
 
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url)
-    return redirect(
+    return _redirect_to_safe_next(
+        next_url,
         url_for(
             "admin.admin_translations_list",
             locale=locale,
             view=view,
             only_missing="1",
-        )
+        ),
     )
 
 
@@ -2539,15 +2538,14 @@ def admin_translations_bootstrap_from_po():
     )
 
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url)
-    return redirect(
+    return _redirect_to_safe_next(
+        next_url,
         url_for(
             "admin.admin_translations_list",
             locale=locale,
             view=view,
             only_missing="1",
-        )
+        ),
     )
 
 
@@ -2601,9 +2599,11 @@ def admin_translations_locale_lock():
         "success",
     )
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url)
-    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list", locale=locale, view=view),
+        code=303,
+    )
 
 
 @admin_bp.post("/translations/freeze")
@@ -2652,9 +2652,11 @@ def admin_translations_freeze_toggle():
         f"Translation freeze {'activated' if row.is_active else 'deactivated'}.",
         "success",
     )
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url, code=303)
-    return redirect(url_for("admin.admin_translations_list"), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list"),
+        code=303,
+    )
 
 
 def admin_required_404():
@@ -2727,10 +2729,12 @@ def _blocked_by_locale_lock(locale: str):
         return jsonify({"ok": False, "error": "locale_locked", "locale": locale}), 423
     flash(f"Locale {locale.upper()} is locked.", "warning")
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url, code=303)
     view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
-    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list", locale=locale, view=view),
+        code=303,
+    )
 
 
 def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = False):
@@ -2756,10 +2760,12 @@ def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = Fa
         msg = f"Translation freeze active ({freeze.release_tag})."
     flash(msg, "warning")
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url, code=303)
     view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
-    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list", locale=locale, view=view),
+        code=303,
+    )
 
 
 def _sanitize_translation_text(value: str) -> str:
@@ -3153,6 +3159,16 @@ def is_safe_url(target: str) -> bool:
 def _redirect_protected_login(endpoint: str):
     nxt = request.full_path if request.query_string else request.path
     return redirect(url_for(endpoint, next=nxt), code=303)
+
+
+def _safe_next_url(candidate: str | None) -> str:
+    target = (candidate or "").strip()
+    return target if target and is_safe_url(target) else ""
+
+
+def _redirect_to_safe_next(next_url: str | None, fallback_url: str, *, code: int = 303):
+    target = _safe_next_url(next_url)
+    return redirect(target or fallback_url, code=code)
 
 
 def admin_required(view_func):
@@ -3832,7 +3848,7 @@ def admin_ops_login():
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
-    next_url = next_candidate if is_safe_url(next_candidate) else ""
+    next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
         if not _table_exists("admin_users"):
@@ -3900,7 +3916,7 @@ def admin_login_legacy():
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
-    next_url = next_candidate if is_safe_url(next_candidate) else ""
+    next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
         if not _table_exists("admin_users"):
@@ -3968,7 +3984,7 @@ def admin_reauth():
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
-    next_url = next_candidate if is_safe_url(next_candidate) else ""
+    next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
         password = request.form.get("password", "")
@@ -3995,7 +4011,11 @@ def admin_reauth():
                 },
             )
             flash("Vérification effectuée.", "success")
-            return redirect(next_url or url_for("admin.admin_requests"), code=303)
+            return _redirect_to_safe_next(
+                next_url,
+                url_for("admin.admin_requests"),
+                code=303,
+            )
         log_security_event(
             "auth_admin_reauth_failed",
             actor_type="admin",
@@ -4132,7 +4152,10 @@ def admin_mfa_verify():
         now = _utc_now()
         _touch_admin_last_seen(now)
         _touch_admin_auth_at(now)
-        return redirect(request.args.get("next") or _default_admin_landing_url())
+        return _redirect_to_safe_next(
+            request.args.get("next"),
+            _default_admin_landing_url(),
+        )
 
     locked, remaining = _mfa_lock_is_active()
     if request.method == "GET":
@@ -4183,10 +4206,10 @@ def admin_mfa_verify():
             persist=True,
         )
         flash(_("MFA verified."), "success")
-        nxt = request.args.get("next")
-        if nxt and nxt.startswith("/"):
-            return redirect(nxt)
-        return redirect(_default_admin_landing_url())
+        return _redirect_to_safe_next(
+            request.args.get("next"),
+            _default_admin_landing_url(),
+        )
 
     _mfa_attempt_fail()
     locked, remaining = _mfa_lock_is_active()
@@ -6867,10 +6890,10 @@ def _demo_lead_priority(lead: ProfessionalLead) -> str:
     is_stale = _demo_lead_is_stale(lead)
     urgency = getattr(lead, "urgency", None)
 
-    if is_unassigned or is_stale or status_key == "new" or urgency == "overdue":
-        return "high"
     if status_key == "contacted" and is_stale:
         return "medium"
+    if is_unassigned or status_key == "new" or urgency == "overdue" or is_stale:
+        return "high"
     return "normal"
 
 
