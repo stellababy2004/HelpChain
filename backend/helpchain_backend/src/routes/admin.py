@@ -1768,7 +1768,7 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import and_, case, func, or_, select, text
+from sqlalchemy import and_, case, func, or_
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import joinedload, load_only
 
