@@ -1,9 +1,9 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Audit trail') }} | HelpChain{% endblock %}
-{% block admin_body_class %} hc-admin-audit-page{% endblock %}
+{% block admin_body_class %} hc-admin-audit-page hc-admin-table-page{% endblock %}
 
 {% block admin_content %}
-<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell">
   <div class="hc-card mb-3 hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
@@ -53,13 +53,21 @@
     </form>
   </div>
 
-  <div class="hc-card hc-admin-table-shell">
+  <div class="hc-card hc-admin-table-shell hc-table-shell">
     <div class="hc-card__section hc-card__section--header hc-audit-tableHeader">
       <strong>{{ _('Recent events') }}</strong>
       <span class="hc-muted small">{{ _('Traceability log for admin actions, targets and payload changes.') }}</span>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-audit-table mb-0">
+      <table class="table table-hover align-middle hc-admin-table hc-table hc-audit-table mb-0">
+        <colgroup>
+          <col style="width: 220px;">
+          <col style="width: 120px;">
+          <col style="width: 140px;">
+          <col style="width: 150px;">
+          <col>
+          <col style="width: 180px;">
+        </colgroup>
         <thead>
           <tr>
             <th class="hc-col-time">{{ _('Time') }}</th>
@@ -72,8 +80,9 @@
         </thead>
         <tbody>
           {% for e in events %}
+          {% set created_at_label = e.created_at.strftime('%Y-%m-%d %H:%M:%S') if e.created_at and e.created_at.strftime is defined else e.created_at %}
           <tr>
-            <td class="small text-muted hc-audit-time">{{ e.created_at }}</td>
+            <td class="small text-muted hc-audit-time" title="{{ created_at_label }}">{{ created_at_label }}</td>
             <td class="hc-audit-actionCell"><span class="badge text-bg-secondary">{{ e.action }}</span></td>
             <td class="small hc-audit-admin">{{ e.admin_username or ("#" ~ e.admin_user_id) }}</td>
             <td class="small hc-audit-target">
@@ -82,7 +91,7 @@
                 <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ _('view') }}</a>
               {% endif %}
             </td>
-            <td class="small hc-audit-change">
+            <td class="small hc-audit-change change-cell">
               {% if e.payload and e.payload.old and e.payload.new %}
                 <div class="audit-diff">
                   <div><span class="text-muted">{{ _('old:') }}</span> <code>{{ e.payload.old }}</code></div>
@@ -94,7 +103,7 @@
                 <span class="text-muted">—</span>
               {% endif %}
             </td>
-            <td class="small text-muted hc-audit-ip">{{ e.ip or "—" }}</td>
+            <td class="small text-muted hc-audit-ip" title="{{ e.ip or '—' }}">{{ e.ip or "—" }}</td>
           </tr>
           {% endfor %}
           {% if events|length == 0 %}

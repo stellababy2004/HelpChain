@@ -37,6 +37,7 @@ from .guardrail_counter import GuardrailCounter  # noqa: F401
 from .magic_link_token import MagicLinkToken  # noqa: F401
 from .notification import Notification  # noqa: F401
 from .professional_lead import ProfessionalLead  # noqa: F401
+from .professional_lead_activity import ProfessionalLeadActivity  # noqa: F401
 from .case import Case  # noqa: F401
 from .case_event import CaseEvent  # noqa: F401
 from .case_participant import CaseParticipant  # noqa: F401
@@ -81,6 +82,7 @@ __all__ = [
     "VolunteerAction",
     "MagicLinkToken",
     "ProfessionalLead",
+    "ProfessionalLeadActivity",
     "Case",
     "CaseEvent",
     "CaseParticipant",

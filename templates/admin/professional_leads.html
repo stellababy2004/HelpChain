@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Pros') }} - {{ _('Leads') }} | {{ _('Admin') }}{% endblock %}
-{% block body_class %}hc-admin-proleads-page{% endblock %}
+{% block body_class %}hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
   <style>
@@ -99,7 +99,7 @@
 {% set page_intro = page_intro|default(_('Latest leads captured via /professionnels/pilote.')) %}
 {% set reset_endpoint = reset_endpoint|default('admin.admin_professional_leads') %}
 
-<section class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
+<section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell">
   <header class="hc-admin-toolbar">
     <div>
       <h1 class="hc-admin-title mb-1">{{ page_title }}</h1>
