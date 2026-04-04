@@ -8,6 +8,7 @@ import logging
 import os
 import smtplib
 import time
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
@@ -30,6 +31,38 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+_SENSITIVE_LOG_KEY_PARTS = (
+    "password",
+    "secret",
+    "token",
+    "api_key",
+    "apikey",
+    "private_key",
+    "client_secret",
+    "access_key",
+)
+
+
+def _is_sensitive_log_key(key: str) -> bool:
+    normalized = (key or "").strip().lower()
+    return any(part in normalized for part in _SENSITIVE_LOG_KEY_PARTS)
+
+
+def mask_sensitive(data):
+    """Return a log-safe copy of nested diagnostic data."""
+    if isinstance(data, Mapping):
+        masked = {}
+        for key, value in data.items():
+            key_text = str(key)
+            if _is_sensitive_log_key(key_text):
+                masked[key_text] = bool(value)
+            else:
+                masked[key_text] = mask_sensitive(value)
+        return masked
+    if isinstance(data, Sequence) and not isinstance(data, (str, bytes, bytearray)):
+        return [mask_sensitive(item) for item in data]
+    return data
+
 
 def _norm_email(raw: str) -> str:
     return (raw or "").strip().lower()
@@ -37,25 +70,29 @@ def _norm_email(raw: str) -> str:
 
 def _log_mail_config_presence(*, purpose: str | None = None):
     cfg = current_app.config
+    diagnostics = {
+        "MAIL_SERVER": cfg.get("MAIL_SERVER"),
+        "MAIL_PORT": cfg.get("MAIL_PORT"),
+        "MAIL_USE_SSL": cfg.get("MAIL_USE_SSL"),
+        "MAIL_USE_TLS": cfg.get("MAIL_USE_TLS"),
+        "MAIL_USERNAME": cfg.get("MAIL_USERNAME"),
+        "MAIL_PASSWORD": cfg.get("MAIL_PASSWORD"),
+        "MAIL_DEFAULT_SENDER": cfg.get("MAIL_DEFAULT_SENDER"),
+    }
+    masked = mask_sensitive(diagnostics)
     presence = {
-        "MAIL_SERVER": bool(cfg.get("MAIL_SERVER")),
-        "MAIL_PORT": bool(cfg.get("MAIL_PORT")),
-        "MAIL_USE_SSL": cfg.get("MAIL_USE_SSL") is not None,
-        "MAIL_USE_TLS": cfg.get("MAIL_USE_TLS") is not None,
-        "MAIL_USERNAME": bool(cfg.get("MAIL_USERNAME")),
-        "MAIL_PASSWORD": bool(cfg.get("MAIL_PASSWORD")),
-        "MAIL_DEFAULT_SENDER": bool(cfg.get("MAIL_DEFAULT_SENDER")),
+        "MAIL_SERVER": bool(masked.get("MAIL_SERVER")),
+        "MAIL_PORT": bool(masked.get("MAIL_PORT")),
+        "MAIL_USE_SSL": masked.get("MAIL_USE_SSL") is not None,
+        "MAIL_USE_TLS": masked.get("MAIL_USE_TLS") is not None,
+        "MAIL_USERNAME": bool(masked.get("MAIL_USERNAME")),
+        "MAIL_PASSWORD": bool(masked.get("MAIL_PASSWORD")),
+        "MAIL_DEFAULT_SENDER": bool(masked.get("MAIL_DEFAULT_SENDER")),
     }
     logger.info(
-        "SMTP config loaded%s | MAIL_SERVER=%s | MAIL_PORT=%s | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%s | MAIL_PASSWORD=%s | MAIL_DEFAULT_SENDER=%s",
+        "SMTP config loaded%s | config=%s",
         f" | purpose={purpose}" if purpose else "",
-        presence["MAIL_SERVER"],
-        presence["MAIL_PORT"],
-        presence["MAIL_USE_SSL"],
-        presence["MAIL_USE_TLS"],
-        presence["MAIL_USERNAME"],
-        presence["MAIL_PASSWORD"],
-        presence["MAIL_DEFAULT_SENDER"],
+        presence,
     )
     return presence
 
