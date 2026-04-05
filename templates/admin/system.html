@@ -7,8 +7,8 @@
   <div class="hc-card mb-3 hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">System</h1>
-        <div class="hc-muted">Operational diagnostics for deploy verification.</div>
+        <h1 class="hc-admin-title">Système</h1>
+        <div class="hc-muted">Diagnostics opérationnels pour vérifier l'état du déploiement.</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
@@ -17,7 +17,7 @@
   <div class="hc-card hc-admin-table-shell hc-table-shell">
     <div class="hc-card__section hc-card__section--header">
       <strong>Diagnostics</strong>
-      <span class="hc-muted small">Per-check status, resilient to individual failures.</span>
+      <span class="hc-muted small">Statut par contrôle, sans bloquer l'affichage en cas d'erreur isolée.</span>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-table mb-0">
@@ -28,9 +28,9 @@
         </colgroup>
         <thead>
           <tr>
-            <th>Check</th>
-            <th>Status</th>
-            <th>Detail</th>
+            <th>Contrôle</th>
+            <th>Statut</th>
+            <th>Détail</th>
           </tr>
         </thead>
         <tbody>
@@ -41,9 +41,9 @@
               {% if item.status == "ok" %}
                 <span class="badge text-bg-success">OK</span>
               {% elif item.status == "warning" %}
-                <span class="badge text-bg-warning text-dark">WARNING</span>
+                <span class="badge text-bg-warning text-dark">ALERTE</span>
               {% else %}
-                <span class="badge text-bg-danger">ERROR</span>
+                <span class="badge text-bg-danger">ERREUR</span>
               {% endif %}
             </td>
             <td class="small">{{ item.detail or "—" }}</td>

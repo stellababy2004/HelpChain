@@ -617,7 +617,7 @@
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Roles') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('SLA') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_demo_leads' else '' }}" href="{{ url_for('admin.admin_demo_leads') }}">{{ _('Demandes de démonstration') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('System Health') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('Santé du système') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_audit' else '' }}" href="{{ url_for('admin.admin_audit') }}">{{ _('Audit') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_security' else '' }}" href="{{ url_for('admin.admin_security') }}">{{ _('Paramètres') }}</a></li>
                   </ul>
@@ -644,7 +644,7 @@
                     </li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_ops' else '' }}" href="{{ url_for('admin.admin_ops') }}">{{ _('Santé') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('System Health') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('Santé du système') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_panel' else '' }}" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Alertes') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_intervenants', 'admin.admin_volunteers'] else '' }}" href="{{ url_for('admin.admin_intervenants') }}">{{ _('Intervenants') }}</a></li>
                   </ul>
@@ -660,7 +660,7 @@
                      data-bs-toggle="dropdown"
                      aria-expanded="false"
                      {% if ops_active %}aria-current="page"{% endif %}>
-                    {{ _('Operations') }}
+                    {{ _('Opérations') }}
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="opsConsoleDropdown">
                     <li><a class="dropdown-item {{ 'active' if ep == 'ops.ops_workspace' else '' }}" href="{{ url_for('ops.ops_workspace') }}">{{ _('Tableau opérateur') }}</a></li>

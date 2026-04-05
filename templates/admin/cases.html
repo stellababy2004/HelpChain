@@ -1,5 +1,5 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Admin - Cases{% endblock %}
+{% block title %}Admin • Cas | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
 {% block admin_content %}
@@ -8,10 +8,10 @@
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">Cases</h1>
-        <div class="hc-muted">Operational cases linked to requests.</div>
+        <h1 class="hc-admin-title">Cas</h1>
+        <div class="hc-muted">Suivi opérationnel des cas liés aux demandes.</div>
       </div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Back to requests</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
   </div>
 
@@ -36,28 +36,28 @@
     </div>
     <form method="get" class="row g-2 align-items-end hc-ops-filters">
       <div class="col-12 col-md-6 col-xl-2">
-        <label class="form-label">Status</label>
+        <label class="form-label">Statut</label>
         <select name="status" class="form-select form-select-sm">
-          <option value="">All</option>
+          <option value="">Tous</option>
           {% for s in statuses %}
             <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-12 col-md-6 col-xl-2">
-        <label class="form-label">Priority</label>
+        <label class="form-label">Priorité</label>
         <select name="priority" class="form-select form-select-sm">
-          <option value="">All</option>
+          <option value="">Toutes</option>
           {% for p in priorities %}
             <option value="{{ p }}" {% if priority == p %}selected{% endif %}>{{ p }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-12 col-md-6 col-xl-3">
-        <label class="form-label">Owner</label>
+        <label class="form-label">Responsable</label>
         <select name="owner" class="form-select form-select-sm">
-          <option value="">All</option>
-          <option value="none" {% if owner == 'none' %}selected{% endif %}>Unassigned</option>
+          <option value="">Tous</option>
+          <option value="none" {% if owner == 'none' %}selected{% endif %}>Non attribué</option>
           {% for o in owners %}
             <option value="{{ o[0] }}" {% if owner == (o[0]|string) %}selected{% endif %}>{{ o[1] }}</option>
           {% endfor %}
@@ -66,20 +66,20 @@
       <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Catégorie</label>
         <select name="category" class="form-select form-select-sm">
-          <option value="">All</option>
+          <option value="">Toutes</option>
           {% for code, label in REQUEST_CATEGORY_CHOICES %}
             <option value="{{ code }}" {% if category == code %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-12 col-md-6 col-xl-2">
-        <label class="form-label">Risk</label>
+        <label class="form-label">Risque</label>
         <select name="risk" class="form-select form-select-sm">
-          <option value="">All</option>
-          <option value="critical" {% if risk == 'critical' %}selected{% endif %}>Critical</option>
-          <option value="high" {% if risk == 'high' %}selected{% endif %}>High</option>
+          <option value="">Tous</option>
+          <option value="critical" {% if risk == 'critical' %}selected{% endif %}>Critique</option>
+          <option value="high" {% if risk == 'high' %}selected{% endif %}>Élevé</option>
           <option value="normal" {% if risk == 'normal' %}selected{% endif %}>Normal</option>
-          <option value="low" {% if risk == 'low' %}selected{% endif %}>Low</option>
+          <option value="low" {% if risk == 'low' %}selected{% endif %}>Faible</option>
         </select>
       </div>
       <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 align-items-center hc-ops-filters__actions">
@@ -87,8 +87,8 @@
           <input type="checkbox" class="form-check-input" name="stale" value="1" {% if stale %}checked{% endif %}>
           <span class="form-check-label">Sans action 72h</span>
         </label>
-        <button class="btn btn-primary btn-sm" type="submit">Filter</button>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint) }}">Reset</a>
+        <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint) }}">Réinitialiser</a>
       </div>
     </form>
   </div>
@@ -165,7 +165,7 @@
                 <div class="small text-muted">{{ activity_ref or '—' }}</div>
               </td>
               <td class="actions-col text-end">
-                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Open</a>
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Ouvrir</a>
               </td>
             </tr>
           {% else %}

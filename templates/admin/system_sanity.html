@@ -1,5 +1,5 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Admin • System Sanity | HelpChain{% endblock %}
+{% block title %}Admin • Vérifications système | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
 {% block admin_content %}
@@ -7,9 +7,9 @@
   <div class="hc-card hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">System Sanity</h1>
-        <div class="hc-muted mb-1">Operational sanity checks for runtime integrity.</div>
-        <div class="small hc-muted">Last check: {{ checks.timestamp }}</div>
+        <h1 class="hc-admin-title">Vérifications système</h1>
+        <div class="hc-muted mb-1">Contrôles opérationnels de cohérence pour l'exécution applicative.</div>
+        <div class="small hc-muted">Dernière vérification : {{ checks.timestamp }}</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
@@ -17,15 +17,15 @@
 
   <div class="hc-card">
     <div class="hc-card__section hc-card__section--header">
-      <strong>Application checks</strong>
+      <strong>Contrôles applicatifs</strong>
     </div>
     <div class="hc-admin-statusgrid">
       <div class="hc-admin-statusitem">
-        <span class="hc-admin-statusitem__label">Database</span>
+        <span class="hc-admin-statusitem__label">Base de données</span>
         {% if checks.database == "ok" %}
           <span class="badge text-bg-success">OK</span>
         {% else %}
-          <span class="badge text-bg-danger">ERROR</span>
+          <span class="badge text-bg-danger">ERREUR</span>
         {% endif %}
       </div>
       <div class="hc-admin-statusitem">
@@ -33,27 +33,27 @@
         {% if checks.alembic == "ok" %}
           <span class="badge text-bg-success">OK</span>
         {% elif checks.alembic == "warning" %}
-          <span class="badge text-bg-warning text-dark">WARNING</span>
+          <span class="badge text-bg-warning text-dark">ALERTE</span>
         {% else %}
-          <span class="badge text-bg-danger">ERROR</span>
+          <span class="badge text-bg-danger">ERREUR</span>
         {% endif %}
       </div>
       <div class="hc-admin-statusitem">
-        <span class="hc-admin-statusitem__label">Structures table</span>
+        <span class="hc-admin-statusitem__label">Table des structures</span>
         {% if checks.structures_table == "ok" %}
           <span class="badge text-bg-success">OK</span>
         {% else %}
-          <span class="badge text-bg-danger">ERROR</span>
+          <span class="badge text-bg-danger">ERREUR</span>
         {% endif %}
       </div>
       <div class="hc-admin-statusitem">
-        <span class="hc-admin-statusitem__label">Default tenant</span>
+        <span class="hc-admin-statusitem__label">Locataire par défaut</span>
         {% if checks.default_structure == "ok" %}
           <span class="badge text-bg-success">OK</span>
         {% elif checks.default_structure == "warning" %}
-          <span class="badge text-bg-warning text-dark">MISSING</span>
+          <span class="badge text-bg-warning text-dark">MANQUANT</span>
         {% else %}
-          <span class="badge text-bg-danger">ERROR</span>
+          <span class="badge text-bg-danger">ERREUR</span>
         {% endif %}
       </div>
     </div>

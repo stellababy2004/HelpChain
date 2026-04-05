@@ -1,37 +1,37 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Admin • Operational Dashboard | HelpChain{% endblock %}
+{% block title %}Admin • Tableau opérationnel | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap">
   <div class="hc-card p-3 mb-3">
-    <h1 class="hc-admin-title mb-1">Operational Dashboard</h1>
-    <div class="hc-muted">Live operational metrics for requests triage.</div>
+    <h1 class="hc-admin-title mb-1">Tableau opérationnel</h1>
+    <div class="hc-muted">Indicateurs opérationnels en direct pour le tri des demandes.</div>
   </div>
 
   <div class="row g-3">
     <div class="col-12 col-sm-6 col-xl-3">
       <div class="hc-card p-3 h-100">
         <h3 id="active_requests" class="mb-1">0</h3>
-        <p class="mb-0 hc-muted">Active Requests</p>
+        <p class="mb-0 hc-muted">Demandes actives</p>
       </div>
     </div>
     <div class="col-12 col-sm-6 col-xl-3">
       <div class="hc-card p-3 h-100">
         <h3 id="high_risk_cases" class="mb-1">0</h3>
-        <p class="mb-0 hc-muted">High Risk Cases</p>
+        <p class="mb-0 hc-muted">Cas à risque élevé</p>
       </div>
     </div>
     <div class="col-12 col-sm-6 col-xl-3">
       <div class="hc-card p-3 h-100">
         <h3 id="unassigned_cases" class="mb-1">0</h3>
-        <p class="mb-0 hc-muted">Unassigned</p>
+        <p class="mb-0 hc-muted">Non attribués</p>
       </div>
     </div>
     <div class="col-12 col-sm-6 col-xl-3">
       <div class="hc-card p-3 h-100">
         <h3 id="resolved_today" class="mb-1">0</h3>
-        <p class="mb-0 hc-muted">Resolved Today</p>
+        <p class="mb-0 hc-muted">Résolus aujourd'hui</p>
       </div>
     </div>
   </div>
