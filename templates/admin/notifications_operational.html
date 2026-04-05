@@ -131,6 +131,7 @@
               <td>
                 {% if j.status == 'failed' %}
                   <form method="post" action="{{ url_for('admin.admin_notifications_retry', job_id=j.id, **request.args.to_dict(flat=True)) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-secondary btn-sm">Retry</button>
                   </form>
                 {% else %}
