@@ -15,6 +15,12 @@ if "$PY" -m flask --app run:app db upgrade --directory migrations; then
 else
   echo "[HC] WARNING: flask db upgrade failed; continuing startup"
 fi
+echo "[HC] Ensuring production admin user..."
+if "$PY" backend/scripts/ensure_render_admin.py; then
+  echo "[HC] ensure_render_admin completed successfully"
+else
+  echo "[HC] WARNING: ensure_render_admin failed; continuing startup"
+fi
 
 echo "[HC] Starting gunicorn on 0.0.0.0:10000"
 exec gunicorn run:app --bind 0.0.0.0:10000
