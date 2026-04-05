@@ -4,6 +4,7 @@ services:
     env: python
     healthCheckPath: /health
     buildCommand: "bash scripts/render_stamp_fix.sh"
+    preDeployCommand: "python -m flask --app run:app db upgrade --directory migrations"
     startCommand: "bash scripts/render_start.sh"
     region: frankfurt
     envVars:
