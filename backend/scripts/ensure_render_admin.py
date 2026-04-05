@@ -20,12 +20,16 @@ def _prepare_import_path() -> None:
 def main() -> int:
     _prepare_import_path()
 
-    username = (os.getenv("ADMIN_USERNAME") or "").strip()
-    email = (os.getenv("ADMIN_EMAIL") or "").strip()
-    password = os.getenv("ADMIN_PASSWORD") or ""
+    username = (os.getenv("ADMIN_SEED_USERNAME") or "").strip()
+    email = (os.getenv("ADMIN_SEED_EMAIL") or "").strip()
+    password = os.getenv("ADMIN_SEED_PASSWORD") or ""
+    role = (os.getenv("ADMIN_SEED_ROLE") or "superadmin").strip() or "superadmin"
 
     if not username or not email or not password:
-        print("[HC] ensure_render_admin: skipped (missing ADMIN_USERNAME/ADMIN_EMAIL/ADMIN_PASSWORD)")
+        print(
+            "[HC] ensure_render_admin: skipped "
+            "(missing ADMIN_SEED_USERNAME/ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD)"
+        )
         return 0
 
     from sqlalchemy import or_
@@ -58,7 +62,7 @@ def main() -> int:
             admin = AdminUser(
                 username=username,
                 email=email,
-                role="superadmin",
+                role=role,
                 is_active=True,
             )
             admin.password_hash = password_hash
@@ -71,7 +75,7 @@ def main() -> int:
         admin.email = email
         admin.password_hash = password_hash
         admin.is_active = True
-        admin.role = "superadmin"
+        admin.role = role
         db.session.commit()
         print(f"[HC] ensure_render_admin: updated admin id={admin.id}")
         return 0
