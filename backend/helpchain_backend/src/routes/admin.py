@@ -6505,7 +6505,7 @@ def _render_notifications_list():
     if not _table_exists("notification_jobs"):
         flash("Notification jobs table is not available yet. Run migrations first.", "warning")
         return render_template(
-            "admin/notifications.html",
+            "admin/notifications_operational.html",
             jobs=[],
             status="",
             channel="",
@@ -6586,7 +6586,7 @@ def _render_notifications_list():
     ]
 
     return render_template(
-        "admin/notifications.html",
+        "admin/notifications_operational.html",
         jobs=jobs,
         status=status,
         channel=channel,
