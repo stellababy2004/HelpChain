@@ -3272,6 +3272,91 @@ def admin_sanity():
     return render_template("admin/system_sanity.html", checks=checks)
 
 
+@admin_bp.get("/system")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_system():
+    admin_required_404()
+
+    diagnostics: list[dict[str, str]] = []
+
+    def add_check(label: str, fn):
+        try:
+            status, detail = fn()
+            diagnostics.append(
+                {
+                    "label": label,
+                    "status": status,
+                    "detail": detail or "",
+                }
+            )
+        except Exception as exc:
+            diagnostics.append(
+                {
+                    "label": label,
+                    "status": "error",
+                    "detail": str(exc),
+                }
+            )
+
+    def db_connectivity():
+        db.session.execute(db.text("SELECT 1"))
+        return "ok", "Connected"
+
+    def alembic_revision():
+        version = db.session.execute(
+            db.text("SELECT version_num FROM alembic_version")
+        ).scalar()
+        if version:
+            return "ok", str(version)
+        return "warning", "No revision recorded"
+
+    def deploy_version():
+        for key in ("GIT_SHA", "RENDER_GIT_COMMIT", "RENDER_GIT_COMMIT_SHA", "COMMIT_SHA"):
+            value = (os.getenv(key) or "").strip()
+            if value:
+                return "ok", f"{key}={value[:12]}"
+        return "warning", "No deploy SHA env"
+
+    def notification_jobs_exists():
+        if _table_exists("notification_jobs"):
+            return "ok", "Table exists"
+        return "warning", "Table missing"
+
+    def notification_jobs_count():
+        if not _table_exists("notification_jobs"):
+            return "warning", "Table missing"
+        count = db.session.query(func.count(NotificationJob.id)).scalar() or 0
+        return "ok", str(int(count))
+
+    def notification_jobs_failed():
+        if not _table_exists("notification_jobs"):
+            return "warning", "Table missing"
+        count = (
+            db.session.query(func.count(NotificationJob.id))
+            .filter(NotificationJob.status == "failed")
+            .scalar()
+            or 0
+        )
+        return "ok", str(int(count))
+
+    def admin_users_count():
+        if not _table_exists("admin_users"):
+            return "warning", "Table missing"
+        count = db.session.query(func.count(AdminUser.id)).scalar() or 0
+        return "ok", str(int(count))
+
+    add_check("Database connectivity", db_connectivity)
+    add_check("Alembic revision", alembic_revision)
+    add_check("Deploy version", deploy_version)
+    add_check("notification_jobs table", notification_jobs_exists)
+    add_check("notification_jobs rows", notification_jobs_count)
+    add_check("notification_jobs failed", notification_jobs_failed)
+    add_check("Admin users", admin_users_count)
+
+    return render_template("admin/system.html", diagnostics=diagnostics)
+
+
 @admin_bp.get("/ops")
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin")
