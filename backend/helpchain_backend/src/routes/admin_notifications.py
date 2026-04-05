@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from flask import flash, redirect, request, url_for
+from flask import current_app, flash, redirect, request, url_for
 
 from backend.audit import log_activity
 from backend.extensions import db
@@ -15,6 +15,8 @@ from .admin import (
     admin_required,
     admin_required_404,
     admin_role_required,
+    operator_required,
+    ops_bp,
 )
 
 
@@ -26,15 +28,21 @@ def admin_notifications_list():
     return _render_notifications_list()
 
 
-@admin_bp.post("/notifications/<int:job_id>/retry")
-@admin_required
-@admin_role_required("ops", "superadmin")
-def admin_notifications_retry(job_id: int):
-    admin_required_404()
+def _notifications_redirect_target() -> str:
+    return (
+        "ops.ops_notifications_list"
+        if request.path.startswith("/ops")
+        else "admin.admin_notifications_list"
+    )
 
+
+def _notification_retry_impl(job_id: int):
     if not _table_exists("notification_jobs"):
-        flash("Notification jobs table is not available yet. Run migrations first.", "warning")
-        return redirect(url_for("admin.admin_notifications_list"), code=303)
+        flash("La table des notifications n'est pas encore disponible. Exécutez d'abord les migrations.", "warning")
+        return redirect(
+            url_for(_notifications_redirect_target(), **request.form.to_dict(flat=True)),
+            code=303,
+        )
 
     query = NotificationJob.query
     try:
@@ -44,17 +52,23 @@ def admin_notifications_retry(job_id: int):
                 (NotificationJob.structure_id == sid)
                 | (NotificationJob.structure_id.is_(None))
             )
-    except Exception:
-        pass
+    except Exception as exc:
+        current_app.logger.warning("notification_retry_scope_failed: %s", exc)
 
     job = query.filter(NotificationJob.id == int(job_id)).first()
     if not job:
-        flash("Notification job not found.", "warning")
-        return redirect(url_for("admin.admin_notifications_list"), code=303)
+        flash("Notification introuvable.", "warning")
+        return redirect(
+            url_for(_notifications_redirect_target(), **request.form.to_dict(flat=True)),
+            code=303,
+        )
 
     if (job.status or "").lower() != "failed":
-        flash("Only failed notification jobs can be retried manually.", "warning")
-        return redirect(url_for("admin.admin_notifications_list"), code=303)
+        flash("Seules les notifications en échec peuvent être relancées manuellement.", "warning")
+        return redirect(
+            url_for(_notifications_redirect_target(), **request.form.to_dict(flat=True)),
+            code=303,
+        )
 
     try:
         job.status = "pending"
@@ -74,12 +88,27 @@ def admin_notifications_retry(job_id: int):
                 "event_type": job.event_type,
             },
         )
-        flash(f"Notification job #{job.id} was re-queued.", "success")
+        flash(f"La notification #{job.id} a été remise en file d'attente.", "success")
     except Exception:
         db.session.rollback()
-        flash(f"Failed to re-queue notification job #{job.id}.", "danger")
+        flash(f"Impossible de remettre la notification #{job.id} en file d'attente.", "danger")
 
     return redirect(
-        url_for("admin.admin_notifications_list", **request.args.to_dict(flat=True)),
+        url_for(_notifications_redirect_target(), **request.form.to_dict(flat=True)),
         code=303,
     )
+
+
+@admin_bp.post("/notifications/<int:job_id>/retry")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_notifications_retry(job_id: int):
+    admin_required_404()
+    return _notification_retry_impl(job_id)
+
+
+@ops_bp.post("/notifications/<int:job_id>/retry")
+@operator_required
+@admin_role_required("ops", "superadmin")
+def ops_notifications_retry(job_id: int):
+    return _notification_retry_impl(job_id)

@@ -115,6 +115,9 @@ from ..services.structure_service import create_structure_with_admin
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
     "Identifiants invalides ou accès temporairement bloqué."
 )
+GENERIC_ADMIN_LOGIN_FAIL_MSG = (
+    "Identifiants invalides ou accès temporairement bloqué."
+)
 CATEGORY_CASE_STATUSES = (
     "new",
     "triaged",
@@ -881,9 +884,9 @@ def _compute_case_signals(
             {
                 "code": "no_owner",
                 "level": "danger",
-                "title": "Aucun responsable assigne",
-                "why": "Sans owner, le dossier n'a pas de pilotage clair.",
-                "cta_label": "Assigner owner",
+                "title": "Aucun responsable assigné",
+                "why": "Sans responsable, le dossier n'a pas de pilotage clair.",
+                "cta_label": "Assigner un responsable",
                 "cta_href": "#owner-actions",
             }
         )
@@ -895,8 +898,8 @@ def _compute_case_signals(
                 "code": "owner_idle",
                 "level": "warning",
                 "title": "Owner inactif",
-                "why": "Responsable assigne mais pas d'activite recente.",
-                "cta_label": "Verifier activite",
+                "why": "Responsable assigné, mais pas d'activité récente.",
+                "cta_label": "Vérifier l'activité",
                 "cta_href": "#activity-timeline",
             }
         )
