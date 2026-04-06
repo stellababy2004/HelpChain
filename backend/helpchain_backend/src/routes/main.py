@@ -3537,38 +3537,6 @@ def contact():
                 )
                 return None, bool(delivered)
 
-                msg = Message(
-                    subject="New demo request",
-                    sender="contact@helpchain.live",
-                    recipients=["contact@helpchain.live"],
-                )
-                msg.body = (
-                    "New demo request\n\n"
-                    f"Organisation: {form_data.get('organisation') or 'Non renseigné'}\n"
-                    f"Type de structure: {form_data.get('structure_type') or 'Non renseigné'}\n"
-                    f"Taille: {form_data.get('organization_size') or 'Non renseigné'}\n"
-                    f"Rôle: {form_data.get('fonction') or 'Non renseigné'}\n"
-                    f"Nom: {form_data.get('full_name') or 'Non renseigné'}\n"
-                    f"Email: {form_data.get('email') or 'Non renseigné'}\n"
-                    f"Téléphone: {form_data.get('phone') or 'Non renseigné'}\n"
-                    f"Source: {form_data.get('source') or 'Non renseigné'}\n"
-                    f"Lead ID: {lead.id}\n"
-                    f"Admin URL: {request.host_url.rstrip('/')}/admin/professional-leads\n\n"
-                    "Contexte:\n"
-                    f"{form_data.get('message') or 'Non renseigné'}\n"
-                )
-                current_app.logger.info(
-                    "Demo SMTP pre-send | MAIL_SERVER=%r | MAIL_PORT=%r | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%r | MAIL_PASSWORD_SET=%s | MAIL_DEFAULT_SENDER=%r",
-                    current_app.config.get("MAIL_SERVER"),
-                    current_app.config.get("MAIL_PORT"),
-                    current_app.config.get("MAIL_USE_SSL"),
-                    current_app.config.get("MAIL_USE_TLS"),
-                    current_app.config.get("MAIL_USERNAME"),
-                    bool(current_app.config.get("MAIL_PASSWORD")),
-                    current_app.config.get("MAIL_DEFAULT_SENDER"),
-                )
-                mail.send(msg)
-                return None, True
         else:
             def enqueue_email_notification(
                 *,

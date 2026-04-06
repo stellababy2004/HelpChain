@@ -43,6 +43,17 @@ _SENSITIVE_LOG_KEY_PARTS = (
 )
 
 
+def _sanitize_for_log(value):
+    """Return a single-line, control-character-safe log value."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return "".join(
+            ch if ch >= " " and ch not in "\x7f\r\n\t" else " " for ch in value
+        ).strip()
+    return value
+
+
 def _is_sensitive_log_key(key: str) -> bool:
     normalized = (key or "").strip().lower()
     return any(part in normalized for part in _SENSITIVE_LOG_KEY_PARTS)
@@ -59,6 +70,8 @@ def mask_sensitive(data):
             else:
                 masked[key_text] = mask_sensitive(value)
         return masked
+    if isinstance(data, str):
+        return _sanitize_for_log(data)
     if isinstance(data, Sequence) and not isinstance(data, (str, bytes, bytearray)):
         return [mask_sensitive(item) for item in data]
     return data
@@ -343,9 +356,9 @@ def send_notification_email(
         if os.environ.get("MAIL_MOCK", "").lower() in ("true", "1", "yes"):
             logger.info(
                 "[MAIL_MOCK] Email suppressed | to=%s | subject=%s | template=%s",
-                recipient,
-                subject,
-                template,
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
+                _sanitize_for_log(template),
             )
             _log_email_event(
                 email_h=email_h,
@@ -435,7 +448,9 @@ def send_notification_email(
                     },
                 )
             logger.info(
-                "Email queued successfully | to=%s | subject=%s", recipient, subject
+                "Email queued successfully | to=%s | subject=%s",
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
             )
             _log_email_event(
                 email_h=email_h,
@@ -449,9 +464,9 @@ def send_notification_email(
         if broker and force_sync:
             logger.info(
                 "Email queue bypassed; forcing direct send | to=%s | subject=%s | purpose=%s",
-                recipient,
-                subject,
-                purpose,
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
+                _sanitize_for_log(purpose),
             )
 
         # If broker is configured but queue failed, warn once and fall back to SMTP.
@@ -529,7 +544,7 @@ def send_notification_email(
             logger.error(
                 "SMTP not configured (missing %s) | purpose=%s | MAIL_SERVER=%s | MAIL_PORT=%s | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%s | MAIL_PASSWORD_STATE=%s | MAIL_DEFAULT_SENDER=%s",
                 ", ".join(missing) or "MAIL_*",
-                purpose,
+                _sanitize_for_log(purpose),
                 presence["MAIL_SERVER"],
                 presence["MAIL_PORT"],
                 presence["MAIL_USE_SSL"],
@@ -576,7 +591,11 @@ def send_notification_email(
             mail_sender=mail_sender,
             reply_to=(reply_to or mail_user),
         ):
-            logger.info("Email sent via Resend | to=%s | subject=%s", recipient, subject)
+            logger.info(
+                "Email sent via Resend | to=%s | subject=%s",
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
+            )
             _log_email_event(
                 email_h=email_h,
                 purpose=purpose,
@@ -644,12 +663,20 @@ def send_notification_email(
                 },
             )
 
-        logger.info("Email sent successfully | to=%s | subject=%s", recipient, subject)
+        logger.info(
+            "Email sent successfully | to=%s | subject=%s",
+            _sanitize_for_log(recipient),
+            _sanitize_for_log(subject),
+        )
         _log_email_event(email_h=email_h, purpose=purpose, outcome="sent", reason=None)
         return True
 
     except Exception as e:
-        logger.error(f"Failed to queue email to {recipient}: {e}")
+        logger.error(
+            "Failed to queue email to %s: %s",
+            _sanitize_for_log(recipient),
+            e,
+        )
         try:
             if recipient:
                 _log_email_event(
