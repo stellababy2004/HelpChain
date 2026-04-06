@@ -264,7 +264,14 @@ def _send_via_resend(
 
 
 def send_notification_email(
-    recipient, subject, template, context=None, *, purpose="generic", structure_id=None
+    recipient,
+    subject,
+    template,
+    context=None,
+    *,
+    purpose="generic",
+    structure_id=None,
+    force_sync=False,
 ):
     """
     Send notification email to recipient
@@ -276,7 +283,7 @@ def send_notification_email(
         context (dict): Template context variables
 
     Returns:
-        bool: True if queued successfully, False otherwise
+        bool: True if delivered or intentionally suppressed, False otherwise
     """
     try:
         sid = structure_id or current_structure_id()
@@ -392,13 +399,14 @@ def send_notification_email(
             except Exception:
                 text_content = None
 
-        # Prefer async sending via Celery only when broker is configured.
+        # Prefer async sending via Celery only when broker is configured and
+        # this call has not explicitly requested in-request delivery.
         broker = os.environ.get("CELERY_BROKER_URL") or os.environ.get("BROKER_URL")
         queued = False
         queue_err = None
 
         try:
-            if broker:
+            if broker and not force_sync:
                 # Import here to avoid circular imports and to allow environments without Celery.
                 from .tasks import send_email_task
 
@@ -437,6 +445,14 @@ def send_notification_email(
                 structure_id=sid,
             )
             return True
+
+        if broker and force_sync:
+            logger.info(
+                "Email queue bypassed; forcing direct send | to=%s | subject=%s | purpose=%s",
+                recipient,
+                subject,
+                purpose,
+            )
 
         # If broker is configured but queue failed, warn once and fall back to SMTP.
         if broker and queue_err:

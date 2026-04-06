@@ -3491,6 +3491,8 @@ def contact():
 
     notify_ok = True
     try:
+        from backend.mail_service import send_notification_email
+
         if is_demo:
             def _send_demo_email(*, recipient, subject, body, html=None):
                 msg = Message(
@@ -3524,6 +3526,17 @@ def contact():
                 send_now=False,
                 **kwargs,
             ):
+                delivered = send_notification_email(
+                    recipient=recipient,
+                    subject=subject,
+                    template=template,
+                    context=context,
+                    purpose=purpose or "demo_request_internal",
+                    structure_id=structure_id,
+                    force_sync=True,
+                )
+                return None, bool(delivered)
+
                 msg = Message(
                     subject="New demo request",
                     sender="contact@helpchain.live",
@@ -3557,9 +3570,27 @@ def contact():
                 mail.send(msg)
                 return None, True
         else:
-            from backend.helpchain_backend.src.services.notification_jobs import (
-                enqueue_email_notification,
-            )
+            def enqueue_email_notification(
+                *,
+                recipient,
+                subject,
+                template=None,
+                context=None,
+                purpose=None,
+                structure_id=None,
+                send_now=False,
+                **kwargs,
+            ):
+                delivered = send_notification_email(
+                    recipient=recipient,
+                    subject=subject,
+                    template=template,
+                    context=context,
+                    purpose=purpose or "contact_exchange",
+                    structure_id=structure_id,
+                    force_sync=True,
+                )
+                return None, bool(delivered)
 
         admin_to = "contact@helpchain.live" if is_demo else (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
         if not admin_to and not is_demo:
@@ -3600,14 +3631,8 @@ def contact():
         if admin_to:
             if is_demo:
                 current_app.logger.info(
-                    "Sending demo notification to contact@helpchain.live"
+                    "Sending demo notification synchronously to contact@helpchain.live"
                 )
-                print("=== DEMO EMAIL DEBUG START ===")
-                print("form_type:", form_data.get("form_type"))
-                print("recipient:", "contact@helpchain.live")
-                print("organisation:", form_data.get("organisation"))
-                print("email:", form_data.get("email"))
-                print("=== CALLING SEND EMAIL ===")
             job_id, delivered = enqueue_email_notification(
                 recipient=admin_to,
                 subject=(
@@ -3655,7 +3680,7 @@ def contact():
                     )
                 else:
                     current_app.logger.error(
-                        "[CONTACT] notify queued (delivery failed) lead_id=%s", lead.id
+                        "[CONTACT] synchronous notify failed lead_id=%s", lead.id
                     )
         else:
             notify_ok = False
@@ -3732,9 +3757,9 @@ def contact():
                 exc,
             )
         else:
-            current_app.logger.exception("[CONTACT] notify email failed lead_id=%s", lead.id)
+            current_app.logger.exception("[CONTACT] synchronous notify email failed lead_id=%s", lead.id)
 
-    if not notify_ok and not is_demo:
+    if not notify_ok:
         flash(
             _(
                 "Votre demande a été enregistrée, mais l’envoi de notification a échoué. "
