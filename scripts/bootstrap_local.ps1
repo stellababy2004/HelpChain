@@ -19,7 +19,7 @@ Write-Host ""
 Write-Host "STEP 3 — Creating / resetting admin"
 
 if (-not $env:ADMIN_PASSWORD) {
-    $env:ADMIN_PASSWORD = "test-password"
+    throw "LOCAL ADMIN ONLY: set ADMIN_PASSWORD before running bootstrap_local.ps1. This script resets only the local DB admin user and does not affect Render/Neon production."
 }
 
 & $PY .\scripts\reset_admin_local.py --confirm-canonical-db

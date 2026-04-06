@@ -1,3 +1,9 @@
+"""Reset or create the local admin user on the canonical local database only.
+
+This script is for local development operations only.
+It must never be used as a production credential/bootstrap flow.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -27,10 +33,12 @@ ADMIN_ROLE = "superadmin"
 
 if not ADMIN_PASSWORD:
     raise RuntimeError(
-        "ADMIN_PASSWORD environment variable is required for reset_admin_local.py"
+        "LOCAL ADMIN ONLY: ADMIN_PASSWORD environment variable is required for reset_admin_local.py"
     )
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Reset local admin user on canonical DB only")
+    parser = argparse.ArgumentParser(
+        description="Reset local admin user on canonical local DB only (never Render/Neon/production)"
+    )
     parser.add_argument(
         "--confirm-canonical-db",
         action="store_true",
@@ -52,6 +60,9 @@ def main() -> int:
         with app.app_context():
             uri = app.config.get("SQLALCHEMY_DATABASE_URI")
             print_app_db_preflight(uri)
+            print("TARGET_ENV=local")
+            print("TARGET_SCOPE=canonical local DB only")
+            print("PRODUCTION_NOTE=does not affect Render/Neon production admin credentials")
             if not args.confirm_canonical_db:
                 print(canonical_confirmation_error())
                 return 2
@@ -64,7 +75,7 @@ def main() -> int:
             if "admin_users" not in tables:
                 print("ERROR: required table missing: admin_users")
                 print(
-                    "HINT: verify local DB target and run migrations on the same app entrypoint/database."
+                    "HINT: verify local DB target and run local migrations on the same app entrypoint/database."
                 )
                 return 1
 
@@ -130,14 +141,14 @@ def main() -> int:
             if changed:
                 db.session.commit()
                 print(
-                    f"OK: admin {action} (id={user.id}, username={user.username}, email={user.email}, role={user.role})"
+                    f"OK: local admin {action} (id={user.id}, username={user.username}, email={user.email}, role={user.role})"
                 )
             else:
                 print(
-                    f"OK: no changes needed (id={user.id}, username={user.username}, email={user.email}, role={user.role})"
+                    f"OK: no local admin changes needed (id={user.id}, username={user.username}, email={user.email}, role={user.role})"
                 )
     except Exception as exc:
-        print(f"ERROR: admin reset failed: {exc}")
+        print(f"ERROR: local admin reset failed: {exc}")
         return 1
 
     return 0

@@ -9,17 +9,18 @@ fi
 
 echo "=== RENDER START ==="
 echo "[HC] render_start.sh running"
+echo "[HC] ENVIRONMENT=production"
 echo "[HC] Applying database migrations..."
 if "$PY" -m flask --app run:app db upgrade --directory migrations; then
   echo "[HC] flask db upgrade completed successfully"
 else
   echo "[HC] WARNING: flask db upgrade failed; continuing startup"
 fi
-echo "[HC] Ensuring production admin user..."
+echo "[HC] Ensuring production admin user from Render env vars on the production database..."
 if "$PY" backend/scripts/ensure_render_admin.py; then
-  echo "[HC] ensure_render_admin completed successfully"
+  echo "[HC] ensure_render_admin completed successfully for production"
 else
-  echo "[HC] WARNING: ensure_render_admin failed; continuing startup"
+  echo "[HC] WARNING: ensure_render_admin failed during production bootstrap; continuing startup"
 fi
 
 echo "[HC] Starting gunicorn on 0.0.0.0:10000"

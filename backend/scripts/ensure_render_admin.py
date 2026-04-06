@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""Ensure the production admin user from Render env vars on the production database.
+
+This script is intended for the Render startup path only.
+It must not be treated as a local admin reset flow.
+"""
+
 from __future__ import annotations
 
 import os
@@ -27,7 +33,7 @@ def main() -> int:
 
     if not username or not email or not password:
         print(
-            "[HC] ensure_render_admin: skipped "
+            "[HC] ensure_render_admin: skipped production bootstrap "
             "(missing ADMIN_SEED_USERNAME/ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD)"
         )
         return 0
@@ -39,9 +45,12 @@ def main() -> int:
     from backend.models import AdminUser
 
     with app.app_context():
+        print("[HC] TARGET_ENV=production")
+        print("[HC] TARGET_SCOPE=Render/Neon production admin bootstrap only")
+        print("[HC] LOCAL_NOTE=does not affect any local SQLite admin credentials")
         inspector = db.inspect(db.engine)
         if "admin_users" not in inspector.get_table_names():
-            print("[HC] ensure_render_admin: skipped (admin_users table not available yet)")
+            print("[HC] ensure_render_admin: skipped production bootstrap (admin_users table not available yet)")
             return 0
 
         admin = (
@@ -68,7 +77,7 @@ def main() -> int:
             admin.password_hash = password_hash
             db.session.add(admin)
             db.session.commit()
-            print(f"[HC] ensure_render_admin: created admin id={admin.id}")
+            print(f"[HC] ensure_render_admin: created production admin id={admin.id}")
             return 0
 
         admin.username = username
@@ -77,7 +86,7 @@ def main() -> int:
         admin.is_active = True
         admin.role = role
         db.session.commit()
-        print(f"[HC] ensure_render_admin: updated admin id={admin.id}")
+        print(f"[HC] ensure_render_admin: updated production admin id={admin.id}")
         return 0
 
 
