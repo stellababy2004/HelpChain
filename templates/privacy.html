@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Politique de confidentialité") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Politique de confidentialité HelpChain : données collectées, finalités, bases de traitement, conservation, sécurité et droits des personnes.') }}{% endblock %}
+{% block meta_description %}{{ _('Politique de confidentialité HelpChain : responsable du traitement, données collectées, finalités, bases légales, sécurité, cookies et droits des personnes.') }}{% endblock %}
 {% block og_title %}{{ _('Politique de confidentialité | HelpChain') }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-privacy-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu visuel de la politique de confidentialité HelpChain") }}{% endblock %}
@@ -11,7 +11,7 @@
     <p class="hc-doc-intro__label">{{ _("Confidentialité") }}</p>
     <h1 class="hc-doc-intro__title">{{ _("Politique de confidentialité") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("Cette politique décrit la manière dont HelpChain traite les données personnelles dans le cadre de son activité de plateforme numérique de coordination des situations sociales.") }}
+      {{ _("Cette politique décrit la manière dont HelpChain traite les données personnelles dans le cadre de son activité de plateforme numérique de coordination, à destination d’acteurs associatifs, institutionnels et professionnels.") }}
     </p>
   </header>
 
@@ -19,7 +19,17 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
       <p class="mb-0">
-        {{ _("HelpChain traite les données personnelles avec un niveau d’exigence adapté à des usages associatifs, territoriaux et professionnels. Les traitements sont limités aux besoins opérationnels de la plateforme.") }}
+        {{ _("HelpChain applique une approche de minimisation des données et de maîtrise des accès. Les traitements sont limités à ce qui est nécessaire au fonctionnement du service, à la relation avec les structures utilisatrices et à la sécurité de la plateforme.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Responsable du traitement") }}</h2>
+      <p class="mb-2"><strong>{{ _("[À compléter avant mise en production : raison sociale / forme juridique / siège social / identifiant légal]") }}</strong></p>
+      <p class="mb-0">
+        {{ _("À défaut d’information plus précise dans le présent site, les demandes peuvent être adressées à l’équipe HelpChain via l’adresse de contact publiée ci-dessous.") }}
       </p>
     </div>
   </section>
@@ -28,9 +38,10 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Données collectées") }}</h2>
       <ul class="mb-0">
-        <li>{{ _("Données d’identification et de contact fournies par les utilisateurs (par exemple nom, email, téléphone lorsque requis).") }}</li>
-        <li>{{ _("Données liées aux demandes et au suivi des situations (catégorie, description, éléments de contexte transmis dans le service).") }}</li>
-        <li>{{ _("Données techniques et de sécurité nécessaires à l’exploitation de la plateforme (journaux, événements de sécurité, informations de session).") }}</li>
+        <li>{{ _("Données d’identification et de contact fournies par les utilisateurs ou les structures (nom, prénom, email, téléphone, organisation, fonction).") }}</li>
+        <li>{{ _("Données de contenu liées aux demandes, aux échanges de contact ou aux démarches de démonstration (catégorie, description, éléments contextuels, suivi de traitement).") }}</li>
+        <li>{{ _("Données de compte et d’administration nécessaires à la gestion des accès, des rôles et de la traçabilité opérationnelle.") }}</li>
+        <li>{{ _("Données techniques et de sécurité nécessaires à l’exploitation du service (journaux, événements de sécurité, informations de session, métadonnées de connexion).") }}</li>
       </ul>
     </div>
   </section>
@@ -39,22 +50,24 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Finalités du traitement") }}</h2>
       <ul class="mb-0">
-        <li>{{ _("Organiser l’orientation, la coordination et le suivi des situations sociales.") }}</li>
-        <li>{{ _("Assurer la gestion opérationnelle des comptes et des accès à la plateforme.") }}</li>
-        <li>{{ _("Maintenir la sécurité, la fiabilité et la traçabilité du service.") }}</li>
-        <li>{{ _("Répondre aux obligations légales et réglementaires applicables.") }}</li>
+        <li>{{ _("Permettre l’orientation, la coordination et le suivi de situations et demandes traitées dans la plateforme.") }}</li>
+        <li>{{ _("Gérer les comptes, les habilitations, les accès et les interactions liées au fonctionnement du service.") }}</li>
+        <li>{{ _("Répondre aux demandes de contact, de démonstration ou de déploiement émises via le site.") }}</li>
+        <li>{{ _("Assurer la sécurité, la continuité, la supervision et la traçabilité du service.") }}</li>
+        <li>{{ _("Respecter les obligations légales, réglementaires et probatoires applicables.") }}</li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Base de traitement") }}</h2>
-      <p class="mb-2">{{ _("Selon la nature des opérations, les traitements reposent notamment sur :") }}</p>
+      <h2 class="h5 mb-3">{{ _("Base légale") }}</h2>
+      <p class="mb-2">{{ _("Selon la nature des traitements, HelpChain s’appuie notamment sur les bases légales suivantes :") }}</p>
       <ul class="mb-0">
-        <li>{{ _("l’exécution du service demandé par l’utilisateur ou la structure utilisatrice ;") }}</li>
-        <li>{{ _("l’intérêt légitime de sécuriser et piloter la plateforme ;") }}</li>
-        <li>{{ _("le respect des obligations légales applicables.") }}</li>
+        <li>{{ _("l’exécution de mesures précontractuelles ou du service demandé par la structure utilisatrice ou la personne à l’origine du contact ;") }}</li>
+        <li>{{ _("l’intérêt légitime consistant à administrer, sécuriser, superviser et améliorer la plateforme ;") }}</li>
+        <li>{{ _("le respect des obligations légales applicables ;") }}</li>
+        <li>{{ _("le consentement lorsque celui-ci est requis par la réglementation.") }}</li>
       </ul>
     </div>
   </section>
@@ -62,20 +75,61 @@
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Durée de conservation") }}</h2>
+      <p class="mb-2">
+        {{ _("Les données sont conservées pendant une durée proportionnée à la finalité poursuivie, puis supprimées, anonymisées ou archivées selon les exigences légales et opérationnelles applicables.") }}
+      </p>
+      <ul class="mb-0">
+        <li>{{ _("Données de contact et de démonstration : durée nécessaire au traitement de la demande et au suivi commercial ou institutionnel associé.") }}</li>
+        <li>{{ _("Données de compte et de journalisation : durée nécessaire à la sécurité, à la gestion des accès et à la traçabilité.") }}</li>
+        <li>{{ _("Données métier : durée définie par la structure responsable du traitement et par ses obligations propres.") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Sécurité") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain met en œuvre des mesures techniques et organisationnelles appropriées pour protéger les données personnelles contre les accès non autorisés, l’altération, la divulgation, la perte ou la destruction non maîtrisée.") }}
+      </p>
       <p class="mb-0">
-        {{ _("Les données sont conservées pendant la durée strictement nécessaire aux finalités poursuivies, puis supprimées, anonymisées ou archivées conformément au cadre légal applicable.") }}
+        {{ _("Ces mesures incluent notamment la gestion des habilitations, la journalisation de certaines actions, la supervision technique et une séparation des environnements adaptée au contexte d’exploitation.") }}
       </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Sécurité des données") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Hébergement et infrastructure") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain met en œuvre des mesures techniques et organisationnelles proportionnées pour protéger les données personnelles contre les accès non autorisés, l’altération, la divulgation ou la perte.") }}
+        {{ _("HelpChain s’appuie sur une infrastructure cloud sécurisée pour l’hébergement applicatif et la base de données de production.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("L’infrastructure de production connue à ce jour repose notamment sur Render pour l’exécution applicative et sur Neon pour la base de données PostgreSQL.") }}
       </p>
       <p class="mb-0">
-        {{ _("L’accès aux données est limité aux personnes habilitées dans le cadre de l’exploitation et du pilotage de la plateforme.") }}
+        {{ _("La localisation exacte des ressources et les engagements contractuels des sous-traitants doivent être vérifiés dans la documentation contractuelle des prestataires avant toute affirmation plus précise sur la localisation des données.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Transferts hors Union européenne") }}</h2>
+      <p class="mb-0">
+        {{ _("À la connaissance de HelpChain, la plateforme est exploitée avec un objectif de maîtrise contractuelle et technique des traitements. Si certains prestataires ou sous-traitants impliquent un accès ou un transfert hors de l’Union européenne, ceux-ci doivent être encadrés par des garanties appropriées au sens du RGPD.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Cookies") }}</h2>
+      <p class="mb-2">
+        {{ _("Le site utilise uniquement des cookies et traceurs strictement nécessaires au fonctionnement du service, à la sécurité des accès et à la mémorisation de certains choix utiles à l’usage, comme la langue de navigation.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Aucun cookie publicitaire, de ciblage marketing ou de mesure d’audience tiers non indispensable n’est chargé sur le site public à la date de la présente politique.") }}
       </p>
     </div>
   </section>
@@ -83,30 +137,41 @@
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Droits des personnes") }}</h2>
-      <p class="mb-2">{{ _("Conformément au RGPD, vous disposez notamment des droits suivants, selon le cadre applicable :") }}</p>
+      <p class="mb-2">{{ _("Conformément au RGPD et sous réserve des conditions légales applicables, vous disposez notamment des droits suivants :") }}</p>
       <ul class="mb-0">
         <li>{{ _("droit d’accès") }}</li>
         <li>{{ _("droit de rectification") }}</li>
         <li>{{ _("droit d’effacement") }}</li>
         <li>{{ _("droit à la limitation du traitement") }}</li>
         <li>{{ _("droit d’opposition") }}</li>
+        <li>{{ _("droit à la portabilité lorsque ce droit est applicable") }}</li>
+        <li>{{ _("droit de définir des directives relatives au sort de vos données après votre décès, dans les conditions prévues par le droit français") }}</li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Contact relatif aux données personnelles") }}</h2>
-      <p class="mb-2">{{ _("Pour toute demande relative aux données personnelles :") }}</p>
+      <h2 class="h5 mb-3">{{ _("Contact") }}</h2>
+      <p class="mb-2">{{ _("Pour toute demande relative aux données personnelles ou à l’exercice de vos droits :") }}</p>
       <p class="mb-0"><a href="mailto:contact@helpchain.live">contact@helpchain.live</a></p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Mise à jour de la politique") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Droit de réclamation") }}</h2>
       <p class="mb-0">
-        {{ _("La présente politique peut être mise à jour pour tenir compte des évolutions légales, techniques ou organisationnelles. La version en vigueur est celle publiée sur cette page.") }}
+        {{ _("Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (www.cnil.fr).") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Mise à jour") }}</h2>
+      <p class="mb-0">
+        {{ _("La présente politique peut être mise à jour pour tenir compte des évolutions légales, techniques, contractuelles ou organisationnelles. La version en vigueur est celle publiée sur cette page.") }}
       </p>
     </div>
   </section>
