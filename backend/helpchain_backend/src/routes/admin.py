@@ -74,6 +74,7 @@ from ..models import (
     RequestActivity,
     RequestLog,
     RequestMetric,
+    SecurityEvent,
     UiLocaleLock,
     UiTranslationFreeze,
     UiTranslation,
@@ -7913,6 +7914,79 @@ def admin_security():
             top_denied_usernames=top_denied_usernames,
             anomalies=anomalies,
             risky_actions=RISKY_ACTIONS,
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/security/events")
+@login_required
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_security_events():
+    _require_global_admin()
+    limit = max(1, min(int(request.args.get("limit", 100) or 100), 500))
+    query = SecurityEvent.query
+    event_type = (request.args.get("event_type") or "").strip()
+    email_hash = (request.args.get("email_hash") or "").strip()
+    ip = (request.args.get("ip") or "").strip()
+    if event_type:
+        query = query.filter(SecurityEvent.event_type == event_type)
+    if email_hash:
+        query = query.filter(SecurityEvent.email_hash == email_hash)
+    if ip:
+        query = query.filter(SecurityEvent.ip == ip)
+    rows = query.order_by(SecurityEvent.created_at.desc()).limit(limit).all()
+    return (
+        jsonify(
+            {
+                "events": [
+                    {
+                        "id": row.id,
+                        "event_type": row.event_type,
+                        "actor_type": row.actor_type,
+                        "ip": row.ip,
+                        "email_hash": row.email_hash,
+                        "created_at": row.created_at.isoformat()
+                        if row.created_at
+                        else None,
+                        "meta_json": row.meta_json,
+                    }
+                    for row in rows
+                ]
+            }
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/security/summary")
+@login_required
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_security_summary():
+    _require_global_admin()
+    since = utc_now() - timedelta(minutes=15)
+
+    def _count(event_type: str) -> int:
+        return int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.created_at >= since,
+                SecurityEvent.event_type == event_type,
+            )
+            .scalar()
+            or 0
+        )
+
+    return (
+        jsonify(
+            {
+                "issued_last_15m": _count("magic_link_issued"),
+                "consumed_last_15m": _count("magic_link_consumed"),
+                "rate_limited_last_15m": _count("magic_link_rate_limited"),
+                "reuse_blocked_last_15m": _count("magic_link_reuse_blocked"),
+            }
         ),
         200,
     )
