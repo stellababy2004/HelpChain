@@ -217,7 +217,7 @@ def upgrade():
     sa.Column('key', sa.String(length=255), nullable=False),
     sa.Column('locale', sa.String(length=16), nullable=False),
     sa.Column('text', sa.Text(), nullable=False),
-    sa.Column('is_active', sa.Boolean(), server_default=sa.text('1'), nullable=False),
+    sa.Column('is_active', sa.Boolean(), server_default=sa.true(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
