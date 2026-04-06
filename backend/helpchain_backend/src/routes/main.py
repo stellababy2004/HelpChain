@@ -36,6 +36,11 @@ from sqlalchemy import desc, func, or_
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
 
+try:
+    from redis import Redis
+except Exception:  # pragma: no cover - keep runtime optional
+    Redis = None
+
 from ..authz import can_view_request
 from backend.core.tenant import current_structure_id
 from ..constants.categories import (
@@ -51,6 +56,7 @@ from ..models import (
     ProfessionalLead,
     Request,
     RequestActivity,
+    SecurityEvent,
     Volunteer,
     VolunteerAction,
     canonical_role,
@@ -107,6 +113,9 @@ def email_or_ip_key():
 
 
 _IN_MEMORY_RL: dict[str, deque] = {}
+_IN_MEMORY_BLOCKS: dict[str, float] = {}
+_REDIS_RL_CLIENT = None
+_REDIS_RL_URL = None
 
 
 def _client_ip() -> str:
@@ -115,26 +124,77 @@ def _client_ip() -> str:
     return xff or (request.remote_addr or "unknown")
 
 
-def _rate_limit_allow(key: str, limit: int, window_sec: int) -> bool:
-    """
-    MVP in-memory rate limit with a sliding time window.
-    Returns True when request is allowed, False when rate-limited.
+def _rate_limit_storage_key(key: str) -> str:
+    return f"rl:{key}"
 
-    Anti-enumeration: call sites should return a generic OK view on False.
-    """
+
+def _get_redis_rate_limit_client():
+    global _REDIS_RL_CLIENT, _REDIS_RL_URL
+    redis_url = (os.getenv("REDIS_URL") or "").strip()
+    if not redis_url or Redis is None:
+        return None
+    if _REDIS_RL_CLIENT is not None and _REDIS_RL_URL == redis_url:
+        return _REDIS_RL_CLIENT
+    try:
+        client = Redis.from_url(
+            redis_url,
+            decode_responses=True,
+            socket_connect_timeout=1,
+            socket_timeout=1,
+        )
+        client.ping()
+    except Exception:
+        _REDIS_RL_CLIENT = None
+        _REDIS_RL_URL = redis_url
+        return None
+    _REDIS_RL_CLIENT = client
+    _REDIS_RL_URL = redis_url
+    return _REDIS_RL_CLIENT
+
+
+def _rate_limit_block_key_for(key: str) -> str | None:
+    if ":ip:" not in key:
+        return None
+    return f"block:ip:{key.split(':ip:', 1)[1]}"
+
+
+def _in_memory_block_retry_after(block_key: str) -> int:
+    expires_at = _IN_MEMORY_BLOCKS.get(block_key)
+    if not expires_at:
+        return 0
     now = time.time()
-    q = _IN_MEMORY_RL.get(key)
-    if q is None:
-        q = deque()
-        _IN_MEMORY_RL[key] = q
+    if expires_at <= now:
+        _IN_MEMORY_BLOCKS.pop(block_key, None)
+        return 0
+    return int(max(1, math.ceil(expires_at - now)))
 
-    cutoff = now - float(window_sec)
-    while q and q[0] < cutoff:
-        q.popleft()
-    if len(q) >= int(limit):
-        return False
-    q.append(now)
-    return True
+
+def _rate_limit_block(block_key: str, duration_sec: int) -> None:
+    client = _get_redis_rate_limit_client()
+    if client is not None:
+        try:
+            client.set(_rate_limit_storage_key(block_key), "1", ex=int(duration_sec))
+            return
+        except Exception:
+            pass
+    _IN_MEMORY_BLOCKS[block_key] = time.time() + float(duration_sec)
+
+
+def _rate_limit_block_retry_after(block_key: str) -> int:
+    client = _get_redis_rate_limit_client()
+    if client is not None:
+        try:
+            ttl = int(client.ttl(_rate_limit_storage_key(block_key)) or 0)
+            if ttl > 0:
+                return ttl
+        except Exception:
+            pass
+    return _in_memory_block_retry_after(block_key)
+
+
+def _rate_limit_allow(key: str, limit: int, window_sec: int) -> bool:
+    allowed, _retry_after = _rate_limit_check(key, limit, window_sec)
+    return allowed
 
 
 def _rate_limit_check(key: str, limit: int, window_sec: int) -> tuple[bool, int]:
@@ -142,6 +202,32 @@ def _rate_limit_check(key: str, limit: int, window_sec: int) -> tuple[bool, int]
     Sliding-window limiter with retry_after support.
     Returns (allowed, retry_after_seconds).
     """
+    block_key = _rate_limit_block_key_for(key)
+    if block_key:
+        retry_after = _rate_limit_block_retry_after(block_key)
+        if retry_after > 0:
+            return False, retry_after
+
+    client = _get_redis_rate_limit_client()
+    if client is not None:
+        try:
+            storage_key = _rate_limit_storage_key(key)
+            pipe = client.pipeline(transaction=True)
+            pipe.incr(storage_key)
+            pipe.expire(storage_key, int(window_sec), nx=True)
+            pipe.ttl(storage_key)
+            current_count, _ttl_set, ttl = pipe.execute()
+            current_count = int(current_count or 0)
+            ttl = int(ttl or 0)
+            if ttl < 0:
+                client.expire(storage_key, int(window_sec))
+                ttl = int(window_sec)
+            if current_count > int(limit):
+                return False, int(max(1, ttl or window_sec))
+            return True, 0
+        except Exception:
+            pass
+
     now = time.time()
     q = _IN_MEMORY_RL.get(key)
     if q is None:
@@ -168,13 +254,25 @@ def has_control_chars(text: str) -> bool:
     return any(ord(ch) < 32 and ch not in ("\t", "\n", "\r") for ch in text)
 
 
-def _to_utc_naive(dt: datetime | None) -> datetime | None:
-    """Normalize datetimes to naive UTC for safe comparisons across legacy rows."""
+def _require_utc_datetime(
+    dt: datetime | None, *, assume_naive_utc: bool = False
+) -> datetime | None:
+    """Normalize datetimes to aware UTC and reject silent timezone ambiguity."""
     if dt is None:
         return None
     if dt.tzinfo is None:
-        return dt
-    return dt.astimezone(UTC).replace(tzinfo=None)
+        if not assume_naive_utc:
+            raise ValueError("naive datetime provided where UTC-aware datetime is required")
+        return dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
+
+
+def _to_utc_naive(dt: datetime | None) -> datetime | None:
+    """Legacy helper kept for non-auth call sites that still compare naive UTC."""
+    normalized = _require_utc_datetime(dt, assume_naive_utc=True)
+    if normalized is None:
+        return None
+    return normalized.replace(tzinfo=None)
 
 
 # --- Helpers ---
@@ -198,6 +296,338 @@ def is_safe_url(target: str) -> bool:
 
 def _sha256_hex(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
+
+def _magic_link_email_fingerprint(email: str | None) -> str | None:
+    cleaned = (email or "").strip().lower()
+    if not cleaned:
+        return None
+    return _sha256_hex(cleaned)[:12]
+
+
+def _magic_link_reject(
+    reason: str,
+    *,
+    token_hash: str | None = None,
+    token_id: int | None = None,
+    purpose: str | None = None,
+) -> tuple[str, int]:
+    log_security_event(
+        "magic_link_rejected",
+        actor_type="anonymous",
+        meta={
+            "reason": reason,
+            "purpose": purpose,
+            "token_id": token_id,
+            "token_hash_prefix": (token_hash or "")[:12] or None,
+        },
+    )
+    return render_template("magic_link_invalid.html"), 200
+
+
+def _magic_link_rate_limited(*, purpose: str, email: str, ip: str) -> bool:
+    window_sec = 15 * 60
+    ip_allowed, _ = _rate_limit_check(f"ml:issue:ip:{ip}", limit=10, window_sec=window_sec)
+    email_allowed = True
+    if email:
+        email_allowed, _ = _rate_limit_check(
+            f"ml:issue:email:{email}",
+            limit=3,
+            window_sec=window_sec,
+        )
+    if ip_allowed and email_allowed:
+        return False
+    log_security_event(
+        "magic_link_rate_limited",
+        actor_type="anonymous",
+        ip=ip,
+        email_hash=_sha256_hex(email) if email else None,
+        meta={
+            "purpose": purpose,
+            "email_hash_prefix": _magic_link_email_fingerprint(email),
+            "email_limited": not email_allowed,
+            "ip_limited": not ip_allowed,
+        },
+    )
+    return True
+
+
+def _detect_suspicious_activity(ip: str, email: str | None) -> bool:
+    since = utc_now() - timedelta(minutes=10)
+    email_hash = _sha256_hex((email or "").strip().lower()) if email else None
+    try:
+        ip_count = (
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+        distinct_email_count = (
+            db.session.query(func.count(func.distinct(SecurityEvent.email_hash)))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+                SecurityEvent.email_hash.isnot(None),
+            )
+            .scalar()
+            or 0
+        )
+        email_count = 0
+        if email_hash:
+            email_count = (
+                db.session.query(func.count(SecurityEvent.id))
+                .filter(
+                    SecurityEvent.event_type == "magic_link_attempt",
+                    SecurityEvent.created_at >= since,
+                    SecurityEvent.email_hash == email_hash,
+                )
+                .scalar()
+                or 0
+            )
+    except Exception:
+        db.session.rollback()
+        return False
+
+    suspicious = (
+        int(ip_count) > 20
+        or int(distinct_email_count) > 5
+        or int(email_count) > 10
+    )
+    if suspicious:
+        log_security_event(
+            "magic_link_suspicious_activity",
+            actor_type="anonymous",
+            ip=ip,
+            email_hash=email_hash,
+            meta={
+                "ip_count_10m": int(ip_count),
+                "distinct_emails_10m": int(distinct_email_count),
+                "email_count_10m": int(email_count),
+            },
+        )
+    return suspicious
+
+
+def _magic_link_trust_tier(email: str | None) -> str:
+    return "unknown"
+
+
+def _compute_magic_link_risk(ip: str, email: str | None) -> dict:
+    since = utc_now() - timedelta(minutes=10)
+    normalized_email = (email or "").strip().lower()
+    email_hash = _sha256_hex(normalized_email) if normalized_email else None
+    trust_tier = _magic_link_trust_tier(normalized_email)
+    query_failed = False
+    try:
+        ip_count_10m = int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+        distinct_emails_10m = int(
+            db.session.query(func.count(func.distinct(SecurityEvent.email_hash)))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+                SecurityEvent.email_hash.isnot(None),
+            )
+            .scalar()
+            or 0
+        )
+        email_count_10m = 0
+        recent_reuse_blocked_10m = 0
+        if email_hash:
+            email_count_10m = int(
+                db.session.query(func.count(SecurityEvent.id))
+                .filter(
+                    SecurityEvent.event_type == "magic_link_attempt",
+                    SecurityEvent.created_at >= since,
+                    SecurityEvent.email_hash == email_hash,
+                )
+                .scalar()
+                or 0
+            )
+            recent_reuse_blocked_10m = int(
+                db.session.query(func.count(SecurityEvent.id))
+                .filter(
+                    SecurityEvent.event_type == "magic_link_reuse_blocked",
+                    SecurityEvent.created_at >= since,
+                    SecurityEvent.email_hash == email_hash,
+                )
+                .scalar()
+                or 0
+            )
+        recent_rate_limited_10m = int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_rate_limited",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+        recent_suspicious_10m = int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_suspicious_activity",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+    except Exception:
+        db.session.rollback()
+        query_failed = True
+        ip_count_10m = 0
+        distinct_emails_10m = 0
+        email_count_10m = 0
+        recent_rate_limited_10m = 0
+        recent_reuse_blocked_10m = 0
+        recent_suspicious_10m = 0
+
+    score = 0
+    signals: list[str] = []
+    if query_failed:
+        score += 5
+        signals.append("risk_query_failure")
+    if ip_count_10m > 10:
+        score += 2
+        signals.append("ip_velocity")
+    if distinct_emails_10m > 5:
+        score += 3
+        signals.append("email_spray")
+    if email_count_10m > 5:
+        score += 2
+        signals.append("email_velocity")
+    if recent_rate_limited_10m > 0:
+        score += 2
+        signals.append("recent_rate_limit")
+    if recent_reuse_blocked_10m > 0:
+        score += 1
+        signals.append("recent_reuse_block")
+    if recent_suspicious_10m > 0:
+        score += 4
+        signals.append("recent_suspicious")
+    if trust_tier == "trusted":
+        score = max(0, score - 2)
+
+    return {
+        "score": score,
+        "signals": signals,
+        "ip_count_10m": ip_count_10m,
+        "distinct_emails_10m": distinct_emails_10m,
+        "email_count_10m": email_count_10m,
+        "recent_rate_limited_10m": recent_rate_limited_10m,
+        "recent_reuse_blocked_10m": recent_reuse_blocked_10m,
+        "recent_suspicious_10m": recent_suspicious_10m,
+        "trust_tier": trust_tier,
+    }
+
+
+def _magic_link_block_duration_for_score(score: int) -> int:
+    if score < 4:
+        return 0
+    if score <= 6:
+        return 10 * 60
+    if score <= 9:
+        return 60 * 60
+    return 24 * 60 * 60
+
+
+def _recent_active_magic_link(
+    *,
+    purpose: str,
+    email: str,
+    request_id: int | None = None,
+    cooldown_seconds: int = 120,
+):
+    now = utc_now()
+    cutoff = now - timedelta(seconds=cooldown_seconds)
+    query = MagicLinkToken.query.filter_by(
+        purpose=purpose,
+        email=(email or "").strip().lower(),
+        used_at=None,
+        invalidated_at=None,
+    )
+    if request_id is not None:
+        query = query.filter(MagicLinkToken.request_id == request_id)
+    for row in query.order_by(MagicLinkToken.created_at.desc()).all():
+        created_at = _require_utc_datetime(row.created_at, assume_naive_utc=True)
+        expires_at = _require_utc_datetime(row.expires_at, assume_naive_utc=True)
+        if created_at is None or expires_at is None:
+            continue
+        if expires_at <= now or created_at < cutoff:
+            continue
+        remaining = max(1, int((created_at + timedelta(seconds=cooldown_seconds) - now).total_seconds()))
+        return row, remaining
+    return None, 0
+
+
+def _invalidate_existing_magic_links(
+    *,
+    purpose: str,
+    email: str,
+    request_id: int | None = None,
+    exclude_token_hash: str | None = None,
+    reason: str = "superseded",
+) -> int:
+    now = utc_now()
+    query = MagicLinkToken.query.filter_by(
+        purpose=purpose,
+        email=(email or "").strip().lower(),
+        used_at=None,
+        invalidated_at=None,
+    )
+    if request_id is not None:
+        query = query.filter(MagicLinkToken.request_id == request_id)
+    if exclude_token_hash:
+        query = query.filter(MagicLinkToken.token_hash != exclude_token_hash)
+    invalidated = 0
+    for row in query.all():
+        row_expires_at = _require_utc_datetime(row.expires_at, assume_naive_utc=True)
+        if row_expires_at is None or row_expires_at < now:
+            continue
+        row.invalidated_at = now
+        row.invalidated_reason = reason[:64]
+        invalidated += 1
+    return invalidated
+
+
+def _load_legacy_request_magic_link(token_hash: str):
+    legacy_req = (
+        scoped_requests_query()
+        .filter(Request.requester_token_hash == token_hash)
+        .order_by(desc(Request.created_at))
+        .first()
+    )
+    if not legacy_req:
+        return None
+
+    created_at = _require_utc_datetime(
+        getattr(legacy_req, "requester_token_created_at", None),
+        assume_naive_utc=True,
+    )
+    if created_at is None:
+        return None
+
+    return {
+        "legacy_req": legacy_req,
+        "created_at": created_at,
+        "expires_at": created_at + timedelta(minutes=15),
+    }
 
 
 def get_safe_next(default_endpoint: str):
@@ -632,24 +1062,15 @@ def magic_link_consume(token: str):
 
     # Legacy compatibility (/r/<token> previously hashed into requests.requester_token_hash).
     if ml is None:
-        legacy_req = (
-            scoped_requests_query()
-            .filter(Request.requester_token_hash == token_hash)
-            .order_by(desc(Request.created_at))
-            .first()
-        )
-        if not legacy_req:
-            return render_template("magic_link_invalid.html"), 200
+        legacy = _load_legacy_request_magic_link(token_hash)
+        if legacy is None:
+            return _magic_link_reject("not_found", token_hash=token_hash)
 
-        created_at = getattr(legacy_req, "requester_token_created_at", None)
-        # If legacy token has no timestamp, treat as invalid to avoid indefinite reuse.
-        if not created_at:
-            return render_template("magic_link_invalid.html"), 200
-
-        expires_at = _to_utc_naive(created_at + timedelta(minutes=15))
-        now = _to_utc_naive(utc_now())
+        legacy_req = legacy["legacy_req"]
+        expires_at = legacy["expires_at"]
+        now = utc_now()
         if now > expires_at:
-            return render_template("magic_link_invalid.html"), 200
+            return _magic_link_reject("expired", token_hash=token_hash, purpose="request")
 
         # If the new table isn't available yet, keep legacy behavior (no single-use).
         try:
@@ -669,6 +1090,7 @@ def magic_link_consume(token: str):
                 purpose="request",
                 email=(getattr(legacy_req, "email", "") or "").strip().lower(),
                 request_id=getattr(legacy_req, "id", None),
+                created_at=legacy["created_at"],
                 expires_at=expires_at,
             )
             db.session.add(ml)
@@ -678,40 +1100,94 @@ def magic_link_consume(token: str):
             db.session.rollback()
             ml = MagicLinkToken.query.filter_by(token_hash=token_hash).first()
             if ml is None:
-                return render_template("magic_link_invalid.html"), 200
+                return _magic_link_reject("invalid", token_hash=token_hash)
 
-    now = _to_utc_naive(utc_now())
-    expires_at = _to_utc_naive(ml.expires_at)
-    if expires_at is None or now > expires_at:
-        return render_template("magic_link_invalid.html"), 200
-
-    # Single-use, race-safe: claim the token only if it's unused and unexpired.
     try:
-        claimed = (
-            MagicLinkToken.query.filter_by(token_hash=token_hash, used_at=None)
-            .filter(MagicLinkToken.expires_at >= now)
-            .update(
-                {
-                    MagicLinkToken.used_at: now,
-                    MagicLinkToken.used_ip: _client_ip(),
-                    MagicLinkToken.used_ua: (request.headers.get("User-Agent") or "")[
-                        :255
-                    ],
-                }
-            )
+        now = utc_now()
+        expires_at = _require_utc_datetime(ml.expires_at, assume_naive_utc=True)
+        used_at = _require_utc_datetime(ml.used_at, assume_naive_utc=True)
+        invalidated_at = _require_utc_datetime(
+            getattr(ml, "invalidated_at", None),
+            assume_naive_utc=True,
         )
+    except ValueError:
+        current_app.logger.warning(
+            "[MAGIC LINK] token_id=%s rejected due to naive datetime state",
+            getattr(ml, "id", None),
+        )
+        return _magic_link_reject(
+            "invalid",
+            token_hash=token_hash,
+            token_id=getattr(ml, "id", None),
+            purpose=getattr(ml, "purpose", None),
+        )
+
+    if ml.purpose not in {"request", "volunteer"}:
+        return _magic_link_reject(
+            "wrong_purpose",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+    if invalidated_at is not None:
+        return _magic_link_reject(
+            "invalid",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+    if used_at is not None:
+        return _magic_link_reject(
+            "already_used",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+    if expires_at is None or now > expires_at:
+        try:
+            if getattr(ml, "invalidated_at", None) is None:
+                ml.invalidated_at = now
+                ml.invalidated_reason = "expired"
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+        return _magic_link_reject(
+            "expired",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+
+    # Single-use claim via explicit row mutation to avoid bulk-update timezone sync issues.
+    try:
+        ml.used_at = now
+        ml.used_ip = _client_ip()
+        ml.used_ua = (request.headers.get("User-Agent") or "")[:255]
+        db.session.commit()
     except OperationalError:
         db.session.rollback()
-        return render_template("magic_link_invalid.html"), 200
-    if not claimed:
-        db.session.rollback()
-        return render_template("magic_link_invalid.html"), 200
-    db.session.commit()
+        return _magic_link_reject(
+            "invalid",
+            token_hash=token_hash,
+            token_id=getattr(ml, "id", None),
+            purpose=getattr(ml, "purpose", None),
+        )
 
     # Reload to get purpose/email/request_id.
     ml = MagicLinkToken.query.filter_by(token_hash=token_hash).first()
     if ml is None:
-        return render_template("magic_link_invalid.html"), 200
+        return _magic_link_reject("not_found", token_hash=token_hash)
+
+    log_security_event(
+        "magic_link_consumed",
+        actor_type="anonymous",
+        meta={
+            "purpose": ml.purpose,
+            "token_id": ml.id,
+            "request_id": ml.request_id,
+            "token_hash_prefix": token_hash[:12],
+        },
+    )
 
     if ml.purpose == "request":
         # Requester passwordless session (minimal)
@@ -749,7 +1225,12 @@ def magic_link_consume(token: str):
             target = url_for("main.volunteer_dashboard")
         return redirect(target, code=303)
 
-    return render_template("magic_link_invalid.html"), 200
+    return _magic_link_reject(
+        "wrong_purpose",
+        token_hash=token_hash,
+        token_id=ml.id,
+        purpose=ml.purpose,
+    )
 
 
 @main_bp.get("/r/<token>")
@@ -1111,7 +1592,7 @@ def become_volunteer():
         return render_template("become_volunteer.html", flow_mode=flow_mode), 200
 
     if request.method == "POST":
-        default_cooldown_seconds = 14
+        default_cooldown_seconds = 120
         response_cooldown_seconds = default_cooldown_seconds
         accept = (request.headers.get("Accept") or "").lower()
         wants_json = "application/json" in accept
@@ -1176,34 +1657,64 @@ def become_volunteer():
         # For regular form submits, require explicit form email to avoid stale session sends.
         email = form_email or (session_email if wants_json else "")
         email_key = email or ip
-        ip_allowed, _ip_retry_after = _rate_limit_check(
-            f"ml:vol:ip:{ip}", limit=10, window_sec=600
-        )
-        if not ip_allowed:
-            suppress = True
-            suppress_reasons.append("ip-limit")
-        email_allowed, _email_retry_after = _rate_limit_check(
-            f"ml:vol:email:{email_key}", limit=3, window_sec=600
-        )
-        if not email_allowed:
-            suppress = True
-            suppress_reasons.append("email-limit")
 
         # Volunteer magic link (purpose="volunteer") — always return generic OK.
         if not email or "@" not in email:
             return _volunteer_magic_ok_response()
         session["volunteer_magic_email"] = email
 
-        # UX cooldown: 1 send per email_key per default_cooldown_seconds.
-        cooldown_allowed, cooldown_retry_after = _rate_limit_check(
-            f"ml:vol:cooldown:{email_key}",
-            limit=1,
-            window_sec=default_cooldown_seconds,
+        email_hash = _sha256_hex(email)
+        risk = _compute_magic_link_risk(ip, email)
+        _detect_suspicious_activity(ip, email)
+        log_security_event(
+            "magic_link_attempt",
+            actor_type="anonymous",
+            ip=ip,
+            email_hash=email_hash,
+            meta={"purpose": "volunteer"},
         )
-        if not cooldown_allowed:
+        block_duration_sec = _magic_link_block_duration_for_score(risk["score"])
+        if block_duration_sec > 0:
+            _rate_limit_block(f"block:ip:{ip}", block_duration_sec)
             suppress = True
-            suppress_reasons.append("cooldown")
+            suppress_reasons.append("risk-blocked")
+            log_security_event(
+                "magic_link_risk_blocked",
+                actor_type="anonymous",
+                ip=ip,
+                email_hash=email_hash,
+                meta={
+                    "purpose": "volunteer",
+                    "risk_score": risk["score"],
+                    "signals": risk["signals"],
+                    "block_duration_sec": block_duration_sec,
+                    "trust_tier": risk["trust_tier"],
+                },
+            )
+
+        if _magic_link_rate_limited(purpose="volunteer", email=email, ip=ip):
+            suppress = True
+            suppress_reasons.append("rate-limited")
+
+        recent_token, cooldown_retry_after = _recent_active_magic_link(
+            purpose="volunteer",
+            email=email,
+            cooldown_seconds=default_cooldown_seconds,
+        )
+        if recent_token is not None:
+            suppress = True
+            suppress_reasons.append("reuse-blocked")
             response_cooldown_seconds = int(max(1, cooldown_retry_after))
+            log_security_event(
+                "magic_link_reuse_blocked",
+                actor_type="anonymous",
+                email_hash=email_hash,
+                meta={
+                    "purpose": "volunteer",
+                    "token_id": recent_token.id,
+                    "email_hash_prefix": _magic_link_email_fingerprint(email),
+                },
+            )
 
         current_app.logger.info(
             "[VOL-MAGIC] pre-send decision suppress=%s reasons=%s email=%s ip=%s",
@@ -1235,6 +1746,12 @@ def become_volunteer():
             ttl_minutes = 15
             expires_at = utc_now() + timedelta(minutes=ttl_minutes)
 
+            _invalidate_existing_magic_links(
+                purpose="volunteer",
+                email=email,
+                exclude_token_hash=token_hash,
+                reason="superseded",
+            )
             row = MagicLinkToken(
                 purpose="volunteer",
                 email=email,
@@ -1248,6 +1765,15 @@ def become_volunteer():
                 row.id,
                 email,
                 expires_at,
+            )
+            log_security_event(
+                "magic_link_issued",
+                actor_type="anonymous",
+                meta={
+                    "purpose": "volunteer",
+                    "token_id": row.id,
+                    "expires_at": expires_at.isoformat(),
+                },
             )
 
             base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
@@ -2609,16 +3135,36 @@ def submit_request_confirm():
 
         ip = _client_ip()
         email = (draft.get("email") or "").strip().lower()
-        email_key = email or ip
-        if not _rate_limit_allow(f"ml:req:ip:{ip}", limit=10, window_sec=600):
-            current_app.logger.info("[MAGIC LINK] rate-limited ip=%s", ip)
+        email_hash = _sha256_hex(email) if email else None
+        risk = _compute_magic_link_risk(ip, email)
+        _detect_suspicious_activity(ip, email)
+        if email:
+            log_security_event(
+                "magic_link_attempt",
+                actor_type="anonymous",
+                ip=ip,
+                email_hash=email_hash,
+                meta={"purpose": "request"},
+            )
+        block_duration_sec = _magic_link_block_duration_for_score(risk["score"])
+        if block_duration_sec > 0:
+            _rate_limit_block(f"block:ip:{ip}", block_duration_sec)
             suppress_magic_send = True
-        if not _rate_limit_allow(f"ml:req:email:{email_key}", limit=3, window_sec=600):
-            current_app.logger.info("[MAGIC LINK] rate-limited email_key=%s", email_key)
+            log_security_event(
+                "magic_link_risk_blocked",
+                actor_type="anonymous",
+                ip=ip,
+                email_hash=email_hash,
+                meta={
+                    "purpose": "request",
+                    "risk_score": risk["score"],
+                    "signals": risk["signals"],
+                    "block_duration_sec": block_duration_sec,
+                    "trust_tier": risk["trust_tier"],
+                },
+            )
+        if _magic_link_rate_limited(purpose="request", email=email, ip=ip):
             suppress_magic_send = True
-
-        raw_token = secrets.token_urlsafe(32)
-        token_hash = _sha256_hex(raw_token)
 
         req = Request(
             title=draft.get("title"),
@@ -2636,10 +3182,6 @@ def submit_request_confirm():
             category=draft.get("category"),
             structure_id=current_structure().id,
         )
-        # Legacy fields kept for backwards compatibility with existing /r/<token> links.
-        req.requester_token_hash = token_hash
-        req.requester_token_created_at = utc_now()
-
         db.session.add(req)
         db.session.commit()
         current_app.logger.info(
@@ -2658,32 +3200,77 @@ def submit_request_confirm():
         except Exception:
             pass
 
-        # Create single-use token row (DB) + build canonical URL.
-        expires_at = utc_now() + timedelta(minutes=15)
-        try:
-            ml = MagicLinkToken(
-                token_hash=token_hash,
+        raw_token = None
+        magic_url = None
+        recent_request_token = None
+        if not suppress_magic_send:
+            recent_request_token, _ = _recent_active_magic_link(
                 purpose="request",
                 email=(getattr(req, "email", "") or "").strip().lower(),
                 request_id=req.id,
-                expires_at=expires_at,
+                cooldown_seconds=120,
             )
-            db.session.add(ml)
-            db.session.commit()
-        except Exception:
-            # If this fails, we still keep legacy token fields; send will use /r/<token>.
-            db.session.rollback()
+            if recent_request_token is not None:
+                suppress_magic_send = True
+                log_security_event(
+                    "magic_link_reuse_blocked",
+                    actor_type="anonymous",
+                    email_hash=email_hash,
+                    meta={
+                        "purpose": "request",
+                        "request_id": req.id,
+                        "token_id": recent_request_token.id,
+                        "email_hash_prefix": _magic_link_email_fingerprint(email),
+                    },
+                )
 
-        try:
-            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
-            path = url_for("main.magic_link_consume", token=raw_token, _external=False)
-            magic_url = (
-                f"{base}{path}"
-                if base
-                else url_for("main.magic_link_consume", token=raw_token, _external=True)
-            )
-        except Exception:
-            magic_url = f"/auth/magic/{raw_token}"
+        # Create single-use token row (DB) + build canonical URL.
+        if not suppress_magic_send:
+            raw_token = secrets.token_urlsafe(32)
+            token_hash = _sha256_hex(raw_token)
+            expires_at = utc_now() + timedelta(minutes=15)
+            try:
+                _invalidate_existing_magic_links(
+                    purpose="request",
+                    email=(getattr(req, "email", "") or "").strip().lower(),
+                    request_id=req.id,
+                    exclude_token_hash=token_hash,
+                    reason="superseded",
+                )
+                ml = MagicLinkToken(
+                    token_hash=token_hash,
+                    purpose="request",
+                    email=(getattr(req, "email", "") or "").strip().lower(),
+                    request_id=req.id,
+                    expires_at=expires_at,
+                )
+                db.session.add(ml)
+                req.requester_token_hash = token_hash
+                req.requester_token_created_at = utc_now()
+                db.session.commit()
+                log_security_event(
+                    "magic_link_issued",
+                    actor_type="anonymous",
+                    meta={
+                        "purpose": "request",
+                        "token_id": ml.id,
+                        "request_id": req.id,
+                        "expires_at": expires_at.isoformat(),
+                    },
+                )
+                try:
+                    base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+                    path = url_for("main.magic_link_consume", token=raw_token, _external=False)
+                    magic_url = (
+                        f"{base}{path}"
+                        if base
+                        else url_for("main.magic_link_consume", token=raw_token, _external=True)
+                    )
+                except Exception:
+                    magic_url = f"/auth/magic/{raw_token}"
+            except Exception:
+                # If this fails, we still keep legacy token fields unset.
+                db.session.rollback()
 
         current_app.logger.info("[MAGIC LINK] request_id=%s url=%s", req.id, magic_url)
 
@@ -2692,7 +3279,7 @@ def submit_request_confirm():
             from backend.mail_service import send_notification_email
 
             recipient = getattr(req, "email", None)
-            if recipient and not suppress_magic_send:
+            if recipient and not suppress_magic_send and magic_url:
                 subject = "Confirmez votre demande HelpChain (15 min)"
 
                 # Dedicated template context (no "content" HTML string)
