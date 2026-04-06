@@ -412,67 +412,13 @@ def send_notification_email(
             except Exception:
                 text_content = None
 
-        # Prefer async sending via Celery only when broker is configured and
-        # this call has not explicitly requested in-request delivery.
         broker = os.environ.get("CELERY_BROKER_URL") or os.environ.get("BROKER_URL")
-        queued = False
-        queue_err = None
-
-        try:
-            if broker and not force_sync:
-                # Import here to avoid circular imports and to allow environments without Celery.
-                from .tasks import send_email_task
-
-                send_email_task.delay(
-                    subject=subject,
-                    recipients=[recipient],
-                    html=html_content,
-                    message_id=message_id,
-                    structure_id=sid,
-                )
-                queued = True
-        except Exception as e:
-            queue_err = e
-
-        if queued:
-            # Track analytics for queued email
-            if analytics_available and analytics_service:
-                analytics_service.track_event(
-                    event_type="email_queued",
-                    event_category="notification",
-                    context={
-                        "recipient": recipient,
-                        "template": template,
-                        "subject": subject,
-                        "message_id": message_id,
-                    },
-                )
+        if broker:
             logger.info(
-                "Email queued successfully | to=%s | subject=%s",
-                _sanitize_for_log(recipient),
-                _sanitize_for_log(subject),
-            )
-            _log_email_event(
-                email_h=email_h,
-                purpose=purpose,
-                outcome="sent",
-                reason="queued",
-                structure_id=sid,
-            )
-            return True
-
-        if broker and force_sync:
-            logger.info(
-                "Email queue bypassed; forcing direct send | to=%s | subject=%s | purpose=%s",
+                "Email broker configured but bypassed; using direct send | to=%s | subject=%s | purpose=%s",
                 _sanitize_for_log(recipient),
                 _sanitize_for_log(subject),
                 _sanitize_for_log(purpose),
-            )
-
-        # If broker is configured but queue failed, warn once and fall back to SMTP.
-        if broker and queue_err:
-            logger.warning(
-                "Email queue failed (%s). Falling back to direct SMTP.", queue_err
             )
 
         # --- Direct SMTP ---

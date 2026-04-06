@@ -846,6 +846,16 @@ def admin_request_new():
         db.session.flush()
         return user
 
+    def _safe_current_structure_id() -> int | None:
+        try:
+            return _current_structure_id()
+        except Exception as exc:
+            current_app.logger.warning(
+                "admin_request_new_current_structure_unavailable: %s",
+                exc,
+            )
+            return None
+
     categories = [code for code, _label in request_category_choices()]
 
     structures = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
@@ -904,7 +914,9 @@ def admin_request_new():
         structure_id = None
         if not _is_global_admin():
             try:
-                structure_id = _current_structure_id()
+                structure_id = _safe_current_structure_id()
+                if structure_id is None:
+                    raise RuntimeError("current structure unavailable")
             except Exception:
                 form_errors["structure_id"] = (
                     "Impossible de déterminer la structure active."
@@ -919,7 +931,9 @@ def admin_request_new():
                     form_errors["structure_id"] = "Structure invalide."
         else:
             try:
-                structure_id = _current_structure_id()
+                structure_id = _safe_current_structure_id()
+                if structure_id is None:
+                    raise RuntimeError("current structure unavailable")
             except Exception:
                 form_errors["structure_id"] = (
                     "Impossible de déterminer la structure active."
@@ -944,30 +958,44 @@ def admin_request_new():
                 "attention": "high",
                 "urgent": "urgent",
             }
-            req = Request(
-                title=form_data["title"],
-                description=form_data["description"],
-                name=form_data["person_name"],
-                email=form_data["email"] or None,
-                phone=form_data["phone"] or None,
-                address_line=form_data["address_line"] or None,
-                postcode=form_data["postcode"] or None,
-                city=form_data["city"],
-                country=form_data["country"] or None,
-                location_text=request_address_display_text(
+            request_kwargs = {
+                "title": form_data["title"],
+                "description": form_data["description"],
+                "name": form_data["person_name"],
+                "email": form_data["email"] or None,
+                "phone": form_data["phone"] or None,
+                "city": form_data["city"],
+                "category": form_data["category"],
+                "priority": priority_map.get(form_data["priority"], "medium"),
+                "status": "pending",
+                "structure_id": structure_id,
+                "user_id": requester_user.id,
+            }
+            optional_request_fields = {
+                "address_line": form_data["address_line"] or None,
+                "postcode": form_data["postcode"] or None,
+                "country": form_data["country"] or None,
+                "location_text": request_address_display_text(
                     address_line=form_data["address_line"] or None,
                     postcode=form_data["postcode"] or None,
                     city=form_data["city"] or None,
                     country=form_data["country"] or None,
                 ),
-                category=form_data["category"],
-                priority=priority_map.get(form_data["priority"], "medium"),
-                status="pending",
-                structure_id=structure_id,
-                owner_id=owner_id,
-                message=form_data["internal_notes"] or None,
-                user_id=requester_user.id,
-            )
+                "owner_id": owner_id,
+                "message": form_data["internal_notes"] or None,
+            }
+            skipped_columns: list[str] = []
+            for column_name, value in optional_request_fields.items():
+                if _table_has_column("requests", column_name):
+                    request_kwargs[column_name] = value
+                else:
+                    skipped_columns.append(column_name)
+            if skipped_columns:
+                current_app.logger.warning(
+                    "admin_request_new_missing_request_columns: %s",
+                    ",".join(sorted(skipped_columns)),
+                )
+            req = Request(**request_kwargs)
             db.session.add(req)
             db.session.commit()
             audit_admin_action(
@@ -995,7 +1023,7 @@ def admin_request_new():
         categories=categories,
         structures=structures,
         admins=admins,
-        current_structure_id=_current_structure_id(),
+        current_structure_id=_safe_current_structure_id(),
     )
 
 
