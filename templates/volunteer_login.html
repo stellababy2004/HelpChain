@@ -44,7 +44,7 @@
         </div>
         {% endfor %} {% endif %} {% endwith %}
 
-        <form method="POST" action="{{ url_for('main.volunteer_login') }}" data-action="showLoading">
+        <form method="POST" action="{{ url_for('main.volunteer_login') }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
             <label for="email" class="form-label">
@@ -66,7 +66,7 @@
             </div>
           </div>
 
-          <button type="submit" class="btn btn-login" id="submitBtn">
+          <button type="submit" class="btn btn-login" id="submitBtn" data-loading-label="{{ _('Sending...') }}">
             <i class="fas fa-paper-plane me-2"></i>{{ _("Recevoir mon lien de connexion") }}
           </button>
           <div class="text-center mt-2" style="opacity:0.75;font-size:0.9rem;">{{ _("~2 min.") }}</div>
@@ -102,41 +102,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
-    <script>
-      (function () {
-        function safeCall(fnName, el) {
-          try {
-            const fn = window[fnName];
-            if (typeof fn === "function") return fn(el);
-          } catch (_) {}
-          return undefined;
-        }
-
-        document.addEventListener(
-          "submit",
-          function (e) {
-            const form = e.target;
-            if (!form) return;
-            const action = form.getAttribute("data-action");
-            if (!action) return;
-            safeCall(action, form);
-          },
-          true,
-        );
-      })();
-
-      function showLoading() {
-        const btn = document.getElementById("submitBtn");
-        btn.disabled = true;
-        btn.innerHTML =
-          '<i class="fas fa-spinner fa-spin me-2"></i>{{ _("Sending...") }}';
-        return true; // Allow form submission
-      }
-    </script>
+    <script src="{{ url_for('static', filename='js/pages/auth_controls.js') }}"></script>
   </body>
 </html>
-
-
-
-
-
