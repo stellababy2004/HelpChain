@@ -1534,8 +1534,8 @@ body[data-hc-page^="/admin/audit"] .hc-audit-tableHeader{
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-table{
-  table-layout: fixed;
-  min-width: 1120px;
+  width: 100%;
+  min-width: 100%;
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-table th,
@@ -1543,31 +1543,16 @@ body[data-hc-page^="/admin/audit"] .hc-audit-table td{
   vertical-align: top;
 }
 
-body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-time{
-  width: 170px;
-}
-
-body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-action{
-  width: 190px;
-}
-
-body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-admin{
-  width: 150px;
-}
-
-body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-target{
-  width: 180px;
-}
-
-body[data-hc-page^="/admin/audit"] .hc-audit-table .hc-col-ip{
-  width: 140px;
-}
-
 body[data-hc-page^="/admin/audit"] .hc-audit-time{
   white-space: normal;
-  word-break: normal;
+  overflow: visible;
+  text-overflow: clip;
   overflow-wrap: anywhere;
-  line-height: 1.45;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+  line-height: 1.22;
+  min-width: 0;
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-actionCell .badge{
@@ -1584,16 +1569,37 @@ body[data-hc-page^="/admin/audit"] .hc-audit-actionCell .badge{
 body[data-hc-page^="/admin/audit"] .hc-audit-admin,
 body[data-hc-page^="/admin/audit"] .hc-audit-target,
 body[data-hc-page^="/admin/audit"] .hc-audit-ip{
-  line-height: 1.45;
+  line-height: 1.35;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-audit-ip{
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  width: 200px;
+  min-width: 200px;
+  text-align: left;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  padding-left: .95rem;
+  padding-right: 1rem;
+}
+
+body[data-hc-page^="/admin/audit"] .hc-col-ip{
+  width: 200px;
+  min-width: 200px;
+  text-align: left;
+  padding-left: .95rem;
+  padding-right: 1rem;
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-targetMain{
   font-weight: 600;
   color: var(--hc-ink, #24324b);
   margin-bottom: 0.18rem;
-  white-space: normal;
-  word-break: normal;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-target a{
@@ -1605,22 +1611,26 @@ body[data-hc-page^="/admin/audit"] .hc-audit-change{
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-change code{
-  display: inline-block;
+  display: block;
   max-width: 100%;
-  padding: 0.12rem 0.38rem;
+  max-height: 120px;
+  overflow: auto;
+  padding: 0.22rem 0.42rem;
   border-radius: 0.45rem;
   background: #f5f7fb;
   color: #c2418f;
   white-space: pre-wrap;
   word-break: break-word;
   overflow-wrap: anywhere;
-  font-size: 0.78rem;
-  line-height: 1.45;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 body[data-hc-page^="/admin/audit"] .audit-diff{
   display: grid;
-  gap: 0.35rem;
+  gap: 0.28rem;
+  max-height: 120px;
+  overflow: auto;
 }
 
 body[data-hc-page^="/admin/audit"] .hc-audit-pagination{
@@ -2325,6 +2335,197 @@ body[data-hc-page^="/admin"] .hc-admin-shell{
   display: flex;
   flex-direction: column;
   gap: var(--hc-admin-gap-3);
+}
+
+body.hc-admin-table-page .hc-admin-wrap{
+  width: min(1660px, calc(100vw - 24px));
+  max-width: min(1660px, calc(100vw - 24px));
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 0 24px;
+}
+
+body.hc-admin-table-page .hc-admin-shell{
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+body.hc-admin-table-page .hc-card{
+  border-radius: 14px;
+}
+
+body.hc-admin-table-page .hc-admin-toolbar{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+}
+
+body.hc-admin-table-page .hc-admin-filterbar{
+  padding: 14px 16px;
+  border-radius: 14px;
+}
+
+body.hc-admin-table-page .hc-admin-filtergrid{
+  gap: 10px 12px;
+}
+
+body.hc-admin-table-page .hc-admin-filtergrid .hc-muted,
+body.hc-admin-table-page .form-label{
+  display: block;
+  margin-bottom: .24rem;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(15,23,42,.58);
+}
+
+body.hc-admin-table-page :is(.hc-input, .form-control, .form-select){
+  min-height: 36px;
+  border-radius: 10px;
+  padding-top: .34rem;
+  padding-bottom: .34rem;
+  font-size: .875rem;
+}
+
+body.hc-admin-table-page .hc-admin-actions{
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+body.hc-admin-table-page :is(.btn, .btn-sm){
+  min-height: 32px;
+  padding-top: .32rem;
+  padding-bottom: .32rem;
+}
+
+body.hc-admin-table-page .hc-admin-table-shell{
+  padding: 0;
+  overflow: hidden;
+}
+
+body.hc-admin-table-page .hc-table-shell{
+  width: 100%;
+  max-width: 100%;
+}
+
+body.hc-admin-table-page .hc-admin-tablewrap{
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-gutter: stable both-edges;
+}
+
+body.hc-admin-table-page .hc-admin-table{
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.hc-admin-table-page .hc-table{
+  table-layout: fixed;
+  width: 100%;
+}
+
+body.hc-admin-table-page .hc-admin-table thead th{
+  position: static;
+  top: auto;
+  padding: .62rem .78rem;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(15,23,42,.62);
+  background: rgba(248,250,252,.98);
+  box-shadow: inset 0 -1px 0 rgba(15,23,42,.10);
+}
+
+body.hc-admin-table-page .hc-table th,
+body.hc-admin-table-page .hc-table td{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.hc-admin-table-page .hc-admin-table tbody td{
+  padding: .52rem .78rem;
+  font-size: .875rem;
+  line-height: 1.28;
+  vertical-align: middle;
+}
+
+body.hc-admin-table-page .hc-table td:first-child{
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-table-page .hc-table td:last-child{
+  text-align: right;
+}
+
+body.hc-admin-table-page .hc-table td.change-cell{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow: hidden;
+}
+
+body.hc-admin-table-page .hc-table td.change-cell:hover{
+  overflow: auto;
+}
+
+body.hc-admin-table-page .hc-admin-table tbody tr:nth-child(even) td{
+  background: rgba(248,250,252,.52);
+}
+
+body.hc-admin-table-page .hc-admin-table tbody tr:hover td{
+  background: rgba(239,246,255,.76);
+}
+
+body.hc-admin-table-page .hc-admin-table .badge{
+  font-size: 10.5px;
+  padding: .32em .58em;
+  border-radius: 999px;
+}
+
+body.hc-admin-table-page .hc-card__section--header{
+  padding: 12px 14px 10px;
+}
+
+body.hc-admin-table-page .hc-card__section--header .hc-muted{
+  font-size: 12px;
+}
+
+body.hc-admin-table-page .hc-empty-state{
+  padding: 18px 14px;
+}
+
+@media (max-width: 992px){
+  body.hc-admin-table-page .hc-admin-wrap{
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    padding: 8px 0 18px;
+  }
+
+  body.hc-admin-table-page .hc-admin-filtergrid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px){
+  body.hc-admin-table-page .hc-admin-filtergrid{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-admin-table-page .hc-admin-toolbar{
+    align-items: flex-start;
+  }
 }
 
 body[data-hc-page^="/admin"] .hc-admin-shell--narrow{

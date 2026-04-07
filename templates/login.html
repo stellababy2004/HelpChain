@@ -35,14 +35,6 @@
     {% endif %}
     {% endwith %}
 
-    <button class="btn btn-google btn-modern" type="button">
-      <i class="fab fa-google me-2"></i>Влез с Google
-    </button>
-
-    <div class="text-center mb-4">
-      <span style="color: #6c757d; font-size: 0.9rem">или</span>
-    </div>
-
     <form method="POST" id="loginForm" action="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% if form is defined %}
@@ -95,19 +87,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  const passwordToggle = document.getElementById("passwordToggle");
-  const passwordInput = document.getElementById("password");
-  const passwordIcon = passwordToggle ? passwordToggle.querySelector("i") : null;
-
-  if (passwordToggle && passwordInput && passwordIcon) {
-    passwordToggle.addEventListener("click", () => {
-      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
-      passwordInput.setAttribute("type", type);
-      passwordIcon.className = type === "password" ? "fas fa-eye" : "fas fa-eye-slash";
-    });
-  }
-</script>
+<script src="{{ url_for('static', filename='js/pages/auth_controls.js') }}"></script>
 {% endblock %}
 
 

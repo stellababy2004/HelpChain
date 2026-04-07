@@ -17,6 +17,7 @@ This project uses strict local DB safety rules.
   - `db.drop_all()`
 - Admin reset/bootstrap writes:
   - `.\.venv\Scripts\python.exe .\scripts\reset_admin_local.py`
+  - Scope: local DB only, not Render/Neon production
 - Recompute/backfill scripts that update data.
 - Direct SQL write/destructive commands (`INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`).
 
@@ -24,6 +25,7 @@ This project uses strict local DB safety rules.
 - `SQLALCHEMY_DATABASE_URI` must not be modified by Codex without explicit user permission.
 - Canonical local DB for manual writes is fixed to:
   - `sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db`
+- Local admin reset and production admin bootstrap are separate operations with separate credentials.
 
 ## Read-Only Safe Diagnostics
 - `.\.venv\Scripts\python.exe .\scripts\print_runtime_info.py`

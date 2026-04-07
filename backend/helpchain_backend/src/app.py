@@ -28,7 +28,24 @@ try:
 except ModuleNotFoundError:
     from models import AdminUser
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", "..", ".."))
+_DOTENV_CANDIDATES = (
+    os.path.join(PROJECT_ROOT, ".env"),
+    os.path.join(PROJECT_ROOT, "backend", ".env"),
+)
+
+
+def _load_runtime_dotenv(*, override: bool = False) -> list[str]:
+    loaded_paths: list[str] = []
+    for candidate in _DOTENV_CANDIDATES:
+        if os.path.exists(candidate):
+            load_dotenv(candidate, override=override)
+            loaded_paths.append(candidate)
+    return loaded_paths
+
+
+_load_runtime_dotenv()
 
 SUPPORTED_LOCALES = (
     "fr",
@@ -197,9 +214,12 @@ def add_security_headers(app: Flask):
         style_src = ["'self'", "'unsafe-inline'"]
         connect_src = ["'self'"]
         img_src = ["'self'", "data:"]
+        frame_src = ["'self'"]
         # Allow restrained map assets for admin territorial risk map.
         map_script_origin = "https://unpkg.com"
         map_tile_origin = "https://*.tile.openstreetmap.org"
+        turnstile_enabled = bool(app.config.get("HC_TURNSTILE_ENABLED", False))
+        turnstile_origin = "https://challenges.cloudflare.com"
         if map_script_origin not in script_src:
             script_src.append(map_script_origin)
         if map_script_origin not in style_src:
@@ -213,6 +233,13 @@ def add_security_headers(app: Flask):
                 script_src.append(script_origin)
             if api_origin and api_origin not in connect_src:
                 connect_src.append(api_origin)
+        if turnstile_enabled:
+            if turnstile_origin not in script_src:
+                script_src.append(turnstile_origin)
+            if turnstile_origin not in connect_src:
+                connect_src.append(turnstile_origin)
+            if turnstile_origin not in frame_src:
+                frame_src.append(turnstile_origin)
 
         # CSP enforce policy
         csp_enforce = (
@@ -220,7 +247,9 @@ def add_security_headers(app: Flask):
             "script-src-attr 'none'; "
             f"style-src {' '.join(style_src)}; "
             f"img-src {' '.join(img_src)}; "
-            "font-src 'self'; " + f"connect-src {' '.join(connect_src)}; "
+            "font-src 'self'; "
+            + f"connect-src {' '.join(connect_src)}; "
+            + f"frame-src {' '.join(frame_src)}; "
             "frame-ancestors 'self'; "
             "form-action 'self'; "
             "base-uri 'self'; "
@@ -258,7 +287,7 @@ def create_app(config_object=None) -> Flask:
     Single source of truth for app factory.
     Uses root-level /templates and /static as the template/static folders.
     """
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = BASE_DIR
     root_templates = os.path.abspath(
         os.path.join(base_dir, "..", "..", "..", "templates")
     )
@@ -279,6 +308,7 @@ def create_app(config_object=None) -> Flask:
         from core.tenant import current_structure_id
 
     # Config: caller overrides, then Config class, then env defaults
+    loaded_dotenv_paths = _load_runtime_dotenv()
     if isinstance(config_object, dict):
         app.config.update(config_object)
     try:
@@ -345,7 +375,7 @@ def create_app(config_object=None) -> Flask:
     if not app.config.get("SECRET_KEY"):
         secret = os.environ.get("SECRET_KEY")
         if not secret:
-            load_dotenv()
+            _load_runtime_dotenv(override=False)
             secret = os.environ.get("SECRET_KEY")
         if not secret:
             secret = "dev-only-change-me"
@@ -393,6 +423,66 @@ def create_app(config_object=None) -> Flask:
         "VAPID_SUBJECT", os.getenv("VAPID_SUBJECT", "mailto:admin@example.com")
     )
 
+    def _env_bool(name: str, default: bool) -> bool:
+        raw = os.getenv(name)
+        if raw is None:
+            return default
+        return str(raw).strip().lower() in ("true", "1", "yes", "on")
+
+    def _env_str(name: str) -> str:
+        return (os.getenv(name) or "").strip()
+
+    # Re-sync MAIL_* from the resolved runtime environment so Flask-Mail gets the
+    # same values regardless of where create_app() was launched from.
+    # Important for local demo flow: do not silently fall back to Mailtrap.
+    mail_server_raw = _env_str("MAIL_SERVER")
+    mail_port_raw = _env_str("MAIL_PORT")
+    mail_username_raw = _env_str("MAIL_USERNAME")
+    mail_password_raw = _env_str("MAIL_PASSWORD")
+    mail_default_sender_raw = _env_str("MAIL_DEFAULT_SENDER")
+
+    app.config["MAIL_SERVER"] = mail_server_raw or None
+    try:
+        app.config["MAIL_PORT"] = int(mail_port_raw) if mail_port_raw else None
+    except Exception:
+        app.config["MAIL_PORT"] = None
+    app.config["MAIL_USE_SSL"] = _env_bool("MAIL_USE_SSL", False)
+    app.config["MAIL_USE_TLS"] = _env_bool("MAIL_USE_TLS", False)
+    app.config["MAIL_USERNAME"] = mail_username_raw
+    app.config["MAIL_PASSWORD"] = mail_password_raw
+    app.config["MAIL_DEFAULT_SENDER"] = (
+        mail_default_sender_raw or "contact@helpchain.live"
+    )
+
+    missing_mail_keys = [
+        key
+        for key, present in (
+            ("MAIL_SERVER", bool(app.config.get("MAIL_SERVER"))),
+            ("MAIL_PORT", bool(app.config.get("MAIL_PORT"))),
+            ("MAIL_USERNAME", bool(app.config.get("MAIL_USERNAME"))),
+            ("MAIL_PASSWORD", bool(app.config.get("MAIL_PASSWORD"))),
+            ("MAIL_DEFAULT_SENDER", bool(app.config.get("MAIL_DEFAULT_SENDER"))),
+        )
+        if not present
+    ]
+    if missing_mail_keys:
+        app.logger.error(
+            "[ENV] mail config missing for local/runtime SMTP: %s",
+            ", ".join(missing_mail_keys),
+        )
+
+    app.logger.info(
+        "[ENV] dotenv files loaded=%s | MAIL_SERVER=%r | MAIL_PORT=%r | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%r | MAIL_PASSWORD_SET=%s | MAIL_DEFAULT_SENDER=%r",
+        loaded_dotenv_paths or [],
+        app.config.get("MAIL_SERVER"),
+        app.config.get("MAIL_PORT"),
+        app.config.get("MAIL_USE_SSL"),
+        app.config.get("MAIL_USE_TLS"),
+        app.config.get("MAIL_USERNAME"),
+        bool(app.config.get("MAIL_PASSWORD")),
+        app.config.get("MAIL_DEFAULT_SENDER"),
+    )
+
     # DB + Migrate
     db.init_app(app)
     from backend.system_guard import ensure_default_structure
@@ -416,6 +506,21 @@ def create_app(config_object=None) -> Flask:
 
     # CSRF for browser forms (JWT APIs are exempted per-blueprint)
     csrf.init_app(app)
+
+    @app.before_request
+    def _relax_secure_cookie_for_local_http():
+        host = (request.host or "").split(":", 1)[0].strip().lower()
+        if host not in {"127.0.0.1", "localhost"}:
+            return None
+        if request.is_secure:
+            return None
+        if app.config.get("SESSION_COOKIE_SECURE"):
+            app.logger.warning(
+                "[DEV] disabling SESSION_COOKIE_SECURE for local HTTP host=%s",
+                host,
+            )
+            app.config["SESSION_COOKIE_SECURE"] = False
+        return None
 
     @app.after_request
     def add_content_language_header(resp):
@@ -796,10 +901,62 @@ def create_app(config_object=None) -> Flask:
                 },
             )
 
+        def professional_lead_status_meta(status: str | None):
+            key = ((status or "").strip().lower() or "new")
+            return {
+                "new": {
+                    "label": "new",
+                    "badge_class": "badge text-bg-primary",
+                },
+                "imported": {
+                    "label": "imported",
+                    "badge_class": "badge text-bg-secondary",
+                },
+                "contacted": {
+                    "label": "contacted",
+                    "badge_class": "badge text-bg-info text-dark",
+                },
+                "qualified": {
+                    "label": "qualified",
+                    "badge_class": "badge text-bg-success",
+                },
+                "rejected": {
+                    "label": "rejected",
+                    "badge_class": "badge text-bg-secondary",
+                },
+                "demo_scheduled": {
+                    "label": "demo_scheduled",
+                    "badge_class": "badge text-bg-primary",
+                },
+                "pilot_discussion": {
+                    "label": "pilot_discussion",
+                    "badge_class": "badge text-bg-info text-dark",
+                },
+                "closed": {
+                    "label": "closed",
+                    "badge_class": "badge text-bg-success",
+                },
+                "invalid": {
+                    "label": "invalid",
+                    "badge_class": "badge text-bg-warning text-dark",
+                },
+                "spam": {
+                    "label": "spam",
+                    "badge_class": "badge text-bg-danger",
+                },
+            }.get(
+                key,
+                {
+                    "label": key or "unknown",
+                    "badge_class": "badge text-bg-light border",
+                },
+            )
+
         return {
             "REQUEST_STATUS_META": REQUEST_STATUS_META,
             "REQUEST_STATUS_ORDER": REQUEST_STATUS_ORDER,
             "status_meta": status_meta,
+            "professional_lead_status_meta": professional_lead_status_meta,
         }
 
     add_security_headers(app)
@@ -822,6 +979,8 @@ def create_app(config_object=None) -> Flask:
                     "VOLUNTEER_DEV_BYPASS_EMAIL"
                 ),
                 "HC_PRO_ACCESS_AVAILABLE": _pro_access_available,
+                "HC_TURNSTILE_ENABLED": _ca.config.get("HC_TURNSTILE_ENABLED", False),
+                "HC_TURNSTILE_SITE_KEY": _ca.config.get("HC_TURNSTILE_SITE_KEY", ""),
             }
         except Exception:
             return {}

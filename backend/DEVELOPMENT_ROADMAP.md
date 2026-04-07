@@ -67,7 +67,7 @@ make k8s-deploy
 
   - [x] Създаден `performance_optimization.py`
   - [ x] Инсталиране на Redis за caching
-  - [ ] Database indexing implementation
+  - [x]Database indexing implementation
   - [ x] Инсталиране на Redis за caching
   - [x] API response compression
   - [ ] Query optimization

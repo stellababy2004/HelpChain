@@ -4,83 +4,147 @@
 {% block og_title %}{{ _("Pilotage & Indicateurs") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Pilotage et indicateurs") }}{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style>
+    .hc-doc-page {
+      padding-top: 0.25rem;
+      padding-bottom: 1.5rem;
+    }
+    .hc-pilotage-hero {
+      padding: 1.75rem;
+    }
+    .hc-pilotage-highlight {
+      padding: 1.1rem 1.25rem;
+      border-left: 4px solid #24364a;
+      border-radius: 14px;
+      font-weight: 600;
+      color: #1d2b3a;
+    }
+    .hc-pilotage-soft {
+      background: #f8fafc;
+    }
+    .hc-pilotage-list {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 0;
+    }
+    .hc-pilotage-list li {
+      margin-bottom: 0.55rem;
+    }
+    .hc-pilotage-list li:last-child {
+      margin-bottom: 0;
+    }
+    .hc-pilotage-cta {
+      padding: 1.6rem;
+    }
+    .hc-pilotage-cta__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .hc-pilotage-cta .hc-btn + .hc-btn {
+      margin-left: 0;
+    }
+    .hc-doc-page ul:not(.hc-pilotage-list) {
+      padding-left: 1rem;
+    }
+    .hc-doc-page ul:not(.hc-pilotage-list) li {
+      margin-bottom: 0.375rem;
+    }
+    .hc-doc-page ul:not(.hc-pilotage-list) li:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
 <div class="container hc-doc-page">
-  <header class="hc-doc-intro">
+  <header class="hc-doc-intro hc-pilotage-hero mb-3">
     <p class="hc-doc-intro__label">{{ _("Pilotage") }}</p>
     <h1 class="hc-doc-intro__title">{{ _("Pilotage & Indicateurs") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("HelpChain donne aux structures une lecture opérationnelle des situations suivies, des priorités de traitement et des actions engagées dans un cadre de coordination partagé.") }}
+      {{ _("HelpChain fournit aux structures une lecture opérationnelle des situations suivies, des priorités de traitement et des actions engagées dans un cadre de coordination partagé.") }}
     </p>
     <p class="hc-doc-intro__lead">
-      {{ _("Cette vue aide à repérer les situations sensibles, suivre l’activité et ajuster les interventions avec des indicateurs lisibles.") }}
+      {{ _("Cette vue permet de repérer les situations sensibles, de suivre l’activité et d’ajuster les interventions à partir d’indicateurs lisibles.") }}
     </p>
   </header>
 
+  <section class="mb-3">
+    <div class="hc-pilotage-highlight">
+      {{ _("Une vue opérationnelle des demandes et de leur traitement") }}
+    </div>
+  </section>
+
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 1 — Suivi des demandes") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Suivi des demandes") }}</h2>
       <p class="mb-2">
-        {{ _("La plateforme permet de visualiser les demandes en cours et leur évolution.") }}
+        {{ _("HelpChain permet de visualiser les demandes en cours et leur évolution.") }}
       </p>
-      <p class="mb-2">{{ _("Les utilisateurs peuvent ainsi :") }}</p>
-      <ul class="mb-0">
-        <li>{{ _("identifier les demandes en attente") }}</li>
-        <li>{{ _("suivre l’avancement des situations") }}</li>
-        <li>{{ _("repérer les situations nécessitant une attention particulière") }}</li>
+      <ul class="hc-pilotage-list">
+        <li>{{ _("✔ identifier les demandes en attente") }}</li>
+        <li>{{ _("✔ suivre l’avancement des situations") }}</li>
+        <li>{{ _("✔ repérer les situations nécessitant une attention particulière") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3 hc-pilotage-soft">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Coordination des actions") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain structure la coordination entre les personnes impliquées dans une situation.") }}
+      </p>
+      <ul class="hc-pilotage-list">
+        <li>{{ _("✔ suivre les actions réalisées") }}</li>
+        <li>{{ _("✔ organiser les interventions") }}</li>
+        <li>{{ _("✔ améliorer la communication entre les participants") }}</li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 2 — Coordination des actions") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Vision globale des situations") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain facilite la coordination entre les personnes impliquées dans une situation.") }}
-      </p>
-      <p class="mb-2">{{ _("La plateforme permet notamment de :") }}</p>
-      <ul class="mb-0">
-        <li>{{ _("suivre les actions réalisées") }}</li>
-        <li>{{ _("organiser les interventions") }}</li>
-        <li>{{ _("améliorer la communication entre les participants") }}</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 3 — Vision globale des situations") }}</h2>
-      <p class="mb-0">
         {{ _("Les outils de pilotage permettent d’obtenir une vue d’ensemble des demandes et de leur évolution.") }}
       </p>
-      <p class="mt-2 mb-0">
-        {{ _("Cela peut aider les structures et les associations à mieux comprendre les besoins et à adapter leurs actions.") }}
-      </p>
+      <ul class="hc-pilotage-list">
+        <li>{{ _("✔ consolider une lecture d’ensemble de l’activité") }}</li>
+        <li>{{ _("✔ comprendre les besoins rencontrés sur le terrain") }}</li>
+        <li>{{ _("✔ adapter les actions aux réalités opérationnelles") }}</li>
+      </ul>
     </div>
   </section>
 
-  <section class="card mb-3">
+  <section class="card mb-3 hc-pilotage-soft">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 4 — Identification des priorités") }}</h2>
-      <p class="mb-0">
-        {{ _("Certaines situations peuvent nécessiter une intervention plus rapide.") }}
-      </p>
-      <p class="mt-2 mb-0">
-        {{ _("La plateforme permet d’identifier plus facilement les situations prioritaires et de faciliter la mobilisation des ressources d’intervention disponibles.") }}
-      </p>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("SECTION 5 — Amélioration continue") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Identification des priorités") }}</h2>
       <p class="mb-2">
-        {{ _("Les informations issues de la plateforme peuvent contribuer à améliorer l’organisation des actions de coordination et à mieux comprendre les besoins rencontrés sur le terrain.") }}
+        {{ _("Certaines situations nécessitent une intervention prioritaire.") }}
       </p>
-      <p class="mb-0">
-        {{ _("HelpChain vise ainsi à proposer un outil numérique permettant de soutenir la coordination et la coopération entre les différents acteurs.") }}
+      <ul class="hc-pilotage-list">
+        <li>{{ _("✔ identifier les situations prioritaires") }}</li>
+        <li>{{ _("✔ orienter plus rapidement les arbitrages") }}</li>
+        <li>{{ _("✔ soutenir la mobilisation des ressources disponibles") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Amélioration continue") }}</h2>
+      <p class="mb-2">
+        {{ _("Les informations issues de HelpChain contribuent à améliorer l’organisation des actions de coordination et à mieux qualifier les besoins rencontrés sur le terrain.") }}
       </p>
+      <ul class="hc-pilotage-list">
+        <li>{{ _("✔ mieux qualifier les besoins rencontrés") }}</li>
+        <li>{{ _("✔ ajuster l’organisation des actions") }}</li>
+        <li>{{ _("✔ renforcer la coordination entre acteurs") }}</li>
+      </ul>
     </div>
   </section>
 
@@ -88,11 +152,22 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain a pour objectif de faciliter l’organisation, le suivi et la coordination des situations sociales.") }}
+        {{ _("HelpChain a pour objectif de structurer l’organisation, le suivi et la coordination des situations sociales.") }}
       </p>
       <p class="mb-0">
-        {{ _("La plateforme constitue une infrastructure numérique destinée à soutenir les initiatives locales et à améliorer la coopération entre citoyens, intervenants et structures.") }}
+        {{ _("HelpChain constitue une infrastructure numérique destinée à soutenir les initiatives locales et à renforcer la coordination entre citoyens, intervenants et structures.") }}
       </p>
+    </div>
+  </section>
+
+  <section class="hc-pilotage-cta mb-3">
+    <h2 class="h5 mb-2">{{ _("Prolonger l’échange") }}</h2>
+    <p class="mb-0">
+      {{ _("Une démonstration permet de visualiser le cadre de pilotage. Un pilote permet de l’éprouver sur un périmètre maîtrisé.") }}
+    </p>
+    <div class="hc-pilotage-cta__actions">
+      <a href="/demo" class="hc-btn hc-btn--primary">{{ _("Planifier une démonstration") }}</a>
+      <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost">{{ _("Échanger sur un pilote") }}</a>
     </div>
   </section>
 </div>

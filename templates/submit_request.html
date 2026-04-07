@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_forms.html" import select, textarea, input_text, checkbox %}
 
-{% block title %}{{ _("Déposer une demande") }} | HelpChain{% endblock %}
+{% block title %}{{ _("Présenter une situation") }} | HelpChain{% endblock %}
 
 {% block head %}
   {{ super() }}
@@ -15,8 +15,8 @@
     <div class="py-4">
       <div class="d-flex align-items-center justify-content-between mb-3 hc-sr__topbar">
         <div>
-          <h1 class="h3 mb-1 page-title">{{ _("Déposer une demande d’aide") }}</h1>
-          <p class="text-muted mb-0 page-subtitle">{{ _("Renseignez les informations essentielles pour faciliter le traitement de votre demande.") }}</p>
+          <h1 class="h3 mb-1 page-title">{{ _("Présenter une situation") }}</h1>
+          <p class="text-muted mb-0 page-subtitle">{{ _("Renseignez les informations essentielles pour nous aider à comprendre votre situation et à l’orienter.") }}</p>
         </div>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.index') }}"
            data-hc-event="sr_nav_click" data-hc-cta="back_home">
@@ -39,7 +39,7 @@
         <div class="card-body p-0">
 
       <div class="mb-3 hc-sr-context">
-        <div class="small text-muted">{{ _("Formulaire public de coordination — durée estimée : 2 minutes.") }}</div>
+        <div class="small text-muted">{{ _("Formulaire de transmission d’une situation — comptez environ 2 minutes.") }}</div>
       </div>
 
       <form
@@ -69,10 +69,10 @@
           </div>
 
           <ul class="hc-form-trust" aria-label="{{ _('What happens next') }}">
-            <li>{{ _("Votre demande est transmise à l’équipe de coordination.") }}</li>
+            <li>{{ _("Votre situation sera examinée par l’équipe de coordination dès sa validation.") }}</li>
             <li>{{ _("Les informations collectées sont utilisées uniquement pour le suivi de la situation.") }}</li>
-            <li>{{ _("En cas d’urgence, votre demande est priorisée.") }}</li>
-            <li class="small text-muted">{{ _("Si la situation est critique, veuillez contacter les services d’urgence.") }}</li>
+            <li>{{ _("En cas d’urgence, votre demande est traitée en priorité.") }}</li>
+            <li class="small text-muted">{{ _("En cas de situation critique ou de danger immédiat, contactez directement les services d’urgence.") }}</li>
           </ul>
         </div>
 
@@ -148,7 +148,7 @@
 
             <div class="col-12 hc-form-group">
               <div id="srContactWarn" class="alert alert-info py-2 mb-0">
-                <span class="small">{{ _("Ajoutez un téléphone ou un email afin de permettre un recontact rapide.") }}</span>
+                <span class="small">{{ _("Ajoutez un téléphone ou un email afin de permettre un recontact.") }}</span>
               </div>
             </div>
           </div>
@@ -170,7 +170,7 @@
                   <option value="{{ category_code }}" {% if selected_category == category_code %}selected{% endif %}>{{ category_label }}</option>
                 {% endfor %}
               </select>
-              <p class="hc-category-suggestions__help">{{ _("Suggestions de catégories pour orienter votre demande plus rapidement.") }}</p>
+              <p class="hc-category-suggestions__help">{{ _("Suggestions de catégories pour structurer l’orientation de votre demande.") }}</p>
               <div class="hc-category-suggestions" role="group" aria-label="{{ _('Suggestions de catégories') }}">
                 <button type="button" class="hc-suggestion-pill" data-suggestion-label="Urgence sociale" data-suggestion-value="emergency">Urgence sociale</button>
                 <button type="button" class="hc-suggestion-pill" data-suggestion-label="Logement / hébergement" data-suggestion-value="housing">Logement / hébergement</button>
@@ -195,7 +195,7 @@
                 value="{{ request.form.get('title','') }}"
                 placeholder="{{ _('Ex : difficulté de logement, besoin d’aide médicale, accompagnement administratif…') }}"
               >
-              <div class="form-text">{{ _("Précisez brièvement le sujet principal de votre demande.") }}</div>
+              <div class="form-text">{{ _("Précisez brièvement l’objet principal de votre demande.") }}</div>
               <div id="srTitleHint" class="hc-sr-hint" aria-live="polite"></div>
             </div>
 
@@ -256,7 +256,7 @@
             </div>
 
             <div class="col-12 hc-form-group">
-              <label class="form-label" for="srDesc">{{ _("Décrivez votre situation") }} <span class="text-danger">*</span></label>
+              <label class="form-label" for="srDesc">{{ _("Décrivez la situation") }} <span class="text-danger">*</span></label>
               <textarea
                 id="srDesc"
                 name="description"
@@ -265,9 +265,9 @@
                 data-hc-field="description"
                 rows="5"
                 required minlength="10"
-                placeholder="{{ _('Décrivez en 2–3 phrases la situation et l’aide recherchée.') }}"
+                placeholder="{{ _('Indiquez les éléments essentiels de la situation (contexte, besoin, urgence).') }}"
               >{{ request.form.get('description','') }}</textarea>
-              <div class="form-text">{{ _("Expliquez le contexte de manière concise pour faciliter l’orientation.") }}</div>
+              <div class="form-text">{{ _("Ces informations facilitent l’orientation et le suivi de votre demande.") }}</div>
               <div id="sr-desc-status" class="hc-sr__status hc-sr__status--hidden" aria-live="polite"></div>
             </div>
           </div>
@@ -302,7 +302,7 @@
                 required
               >
               <label class="form-check-label" for="privacyConsent">
-                {{ _("J’accepte la Politique de confidentialité (RGPD).") }}
+                {{ _("Je confirme avoir pris connaissance de la Politique de confidentialité (RGPD).") }}
               </label>
             </div>
           </div>
@@ -316,7 +316,7 @@
               data-hc-cta="submit_request"
               {% if public_intake_mode == 'closed' %}disabled aria-disabled="true"{% endif %}
             >
-              {{ _("Envoyer la demande") }}
+              {{ _("Transmettre la situation") }}
             </button>
           </div>
         </div>

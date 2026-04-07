@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@82c7e631bb3cdc910f00a6bba0e8bb59e8c1ef3d
         with:
           python-version: "3.11"
 
@@ -27,9 +27,8 @@ jobs:
           python scripts/extract_ui_keys.py --report reports/ui_keys_extract.json
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ui-keys-report
           path: reports/ui_keys_extract.json
-
 

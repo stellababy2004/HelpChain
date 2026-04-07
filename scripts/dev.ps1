@@ -233,10 +233,11 @@ switch ($Command) {
 
         if (-not $env:ADMIN_PASSWORD) {
             Write-Host ""
-            Write-Host "ERROR: ADMIN_PASSWORD env variable not set."
+            Write-Host "ERROR: ADMIN_PASSWORD env variable not set for LOCAL admin reset."
             Write-Host "Example:"
-            Write-Host '$env:ADMIN_PASSWORD="NewStrongPassword!"'
+            Write-Host '$env:ADMIN_PASSWORD="NewLocalAdminPassword!"'
             Write-Host "powershell -ExecutionPolicy Bypass -File .\scripts\dev.ps1 reset-admin"
+            Write-Host "This resets only the local DB admin user. It does not affect Render/Neon production."
             Write-Host ""
             exit 1
         }

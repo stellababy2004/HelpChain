@@ -806,7 +806,7 @@ class Structure(db.Model):
         server_default="pending",
         index=True,
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=utc_now, nullable=False)
     services = relationship("StructureService", back_populates="structure", lazy="select")
 
 
@@ -926,7 +926,7 @@ class Request(db.Model):
     owned_at = Column(DateTime, nullable=True)
     owner = relationship("AdminUser", foreign_keys=[owner_id], lazy="joined")
     requester_token_hash = Column(String(128), nullable=True, index=True)
-    requester_token_created_at = Column(DateTime, nullable=True)
+    requester_token_created_at = Column(DateTime(timezone=True), nullable=True)
     risk_score = Column(Integer, nullable=False, default=0, server_default="0")
     risk_level = Column(
         String(20), nullable=False, default="standard", server_default="standard"
@@ -1173,6 +1173,8 @@ class SecurityEvent(db.Model):
     )  # anonymous/user/admin/api
     actor_id = Column(Integer, nullable=True)
 
+    ip = Column(String(64), nullable=True)
+    email_hash = Column(String(64), nullable=True)
     ip_hash = Column(String(64), nullable=True)
     ua_hash = Column(String(64), nullable=True)
 
@@ -1180,10 +1182,13 @@ class SecurityEvent(db.Model):
     method = Column(String(8), nullable=True)
 
     meta = Column(db.JSON, nullable=True)
+    meta_json = Column(Text, nullable=True)
 
     __table_args__ = (
         Index("ix_security_events_created_at", "created_at"),
         Index("ix_security_events_event_type_created_at", "event_type", "created_at"),
+        Index("ix_security_events_ip_created_at", "ip", "created_at"),
+        Index("ix_security_events_email_hash_created_at", "email_hash", "created_at"),
     )
 
 

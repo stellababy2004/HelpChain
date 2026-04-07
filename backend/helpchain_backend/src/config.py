@@ -173,6 +173,21 @@ class Config:
     # https://plausible.helpchain.live
     PLAUSIBLE_API_HOST = (os.getenv("PLAUSIBLE_API_HOST", "") or "").strip()
 
+    # --- Optional anti-bot / Turnstile ---
+    HC_TURNSTILE_ENABLED = os.getenv("HC_TURNSTILE_ENABLED", "0") == "1"
+    HC_TURNSTILE_SITE_KEY = (os.getenv("HC_TURNSTILE_SITE_KEY", "") or "").strip()
+    HC_TURNSTILE_SECRET_KEY = (os.getenv("HC_TURNSTILE_SECRET_KEY", "") or "").strip()
+    HC_TURNSTILE_VERIFY_URL = (
+        os.getenv(
+            "HC_TURNSTILE_VERIFY_URL",
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        )
+        or ""
+    ).strip()
+    HC_TURNSTILE_TIMEOUT_SECONDS = float(
+        os.getenv("HC_TURNSTILE_TIMEOUT_SECONDS", "2.5") or "2.5"
+    )
+
 
 class DevConfig(Config):
     SESSION_COOKIE_SECURE = False

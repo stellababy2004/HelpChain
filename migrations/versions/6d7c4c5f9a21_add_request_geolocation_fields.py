@@ -18,8 +18,14 @@ depends_on = None
 
 
 def _request_columns() -> set[str]:
-    inspector = sa.inspect(op.get_bind())
-    return {column["name"] for column in inspector.get_columns("requests")}
+    bind = op.get_bind()
+    try:
+        inspector = sa.inspect(bind)
+        return {column["name"] for column in inspector.get_columns("requests")}
+    except sa.exc.NoInspectionAvailable:
+        # Offline `flask db upgrade --sql` validation uses a mock connection.
+        # Return an empty set so Alembic can still render deterministic SQL.
+        return set()
 
 
 def upgrade():

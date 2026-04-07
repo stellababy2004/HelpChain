@@ -8,6 +8,7 @@ import logging
 import os
 import smtplib
 import time
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
@@ -30,9 +31,84 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+_SENSITIVE_LOG_KEY_PARTS = (
+    "password",
+    "secret",
+    "token",
+    "api_key",
+    "apikey",
+    "private_key",
+    "client_secret",
+    "access_key",
+)
+
+
+def _sanitize_for_log(value):
+    """Return a single-line, control-character-safe log value."""
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return "".join(
+            ch if ch >= " " and ch not in "\x7f\r\n\t" else " " for ch in value
+        ).strip()
+    return value
+
+
+def _is_sensitive_log_key(key: str) -> bool:
+    normalized = (key or "").strip().lower()
+    return any(part in normalized for part in _SENSITIVE_LOG_KEY_PARTS)
+
+
+def mask_sensitive(data):
+    """Return a log-safe copy of nested diagnostic data."""
+    if isinstance(data, Mapping):
+        masked = {}
+        for key, value in data.items():
+            key_text = str(key)
+            if _is_sensitive_log_key(key_text):
+                masked[key_text] = "***"
+            else:
+                masked[key_text] = mask_sensitive(value)
+        return masked
+    if isinstance(data, str):
+        return _sanitize_for_log(data)
+    if isinstance(data, Sequence) and not isinstance(data, (str, bytes, bytearray)):
+        return [mask_sensitive(item) for item in data]
+    return data
+
 
 def _norm_email(raw: str) -> str:
     return (raw or "").strip().lower()
+
+
+def _log_mail_config_presence(*, purpose: str | None = None):
+    cfg = current_app.config
+    diagnostics = {
+        "MAIL_SERVER": cfg.get("MAIL_SERVER"),
+        "MAIL_PORT": cfg.get("MAIL_PORT"),
+        "MAIL_USE_SSL": cfg.get("MAIL_USE_SSL"),
+        "MAIL_USE_TLS": cfg.get("MAIL_USE_TLS"),
+        "MAIL_USERNAME": cfg.get("MAIL_USERNAME"),
+        "MAIL_PASSWORD_STATE": "SET" if cfg.get("MAIL_PASSWORD") else "NOT_SET",
+        "MAIL_DEFAULT_SENDER": cfg.get("MAIL_DEFAULT_SENDER"),
+    }
+    masked = mask_sensitive(diagnostics)
+    presence = {
+        "MAIL_SERVER": bool(masked.get("MAIL_SERVER")),
+        "MAIL_PORT": bool(masked.get("MAIL_PORT")),
+        "MAIL_USE_SSL": masked.get("MAIL_USE_SSL") is not None,
+        "MAIL_USE_TLS": masked.get("MAIL_USE_TLS") is not None,
+        "MAIL_USERNAME": bool(masked.get("MAIL_USERNAME")),
+        "MAIL_PASSWORD_STATE": masked.get("MAIL_PASSWORD_STATE"),
+        "MAIL_DEFAULT_SENDER": bool(masked.get("MAIL_DEFAULT_SENDER")),
+    }
+    log_presence = {key: value for key, value in presence.items() if key != "MAIL_PASSWORD"}
+    logger.info(
+        "SMTP config loaded%s | config=%s",
+        f" | purpose={purpose}" if purpose else "",
+        log_presence,
+    )
+    return presence
 
 
 def _email_hash(email: str) -> str:
@@ -201,7 +277,14 @@ def _send_via_resend(
 
 
 def send_notification_email(
-    recipient, subject, template, context=None, *, purpose="generic", structure_id=None
+    recipient,
+    subject,
+    template,
+    context=None,
+    *,
+    purpose="generic",
+    structure_id=None,
+    force_sync=False,
 ):
     """
     Send notification email to recipient
@@ -213,7 +296,7 @@ def send_notification_email(
         context (dict): Template context variables
 
     Returns:
-        bool: True if queued successfully, False otherwise
+        bool: True if delivered or intentionally suppressed, False otherwise
     """
     try:
         sid = structure_id or current_structure_id()
@@ -273,9 +356,9 @@ def send_notification_email(
         if os.environ.get("MAIL_MOCK", "").lower() in ("true", "1", "yes"):
             logger.info(
                 "[MAIL_MOCK] Email suppressed | to=%s | subject=%s | template=%s",
-                recipient,
-                subject,
-                template,
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
+                _sanitize_for_log(template),
             )
             _log_email_event(
                 email_h=email_h,
@@ -329,60 +412,18 @@ def send_notification_email(
             except Exception:
                 text_content = None
 
-        # Prefer async sending via Celery only when broker is configured.
         broker = os.environ.get("CELERY_BROKER_URL") or os.environ.get("BROKER_URL")
-        queued = False
-        queue_err = None
-
-        try:
-            if broker:
-                # Import here to avoid circular imports and to allow environments without Celery.
-                from .tasks import send_email_task
-
-                send_email_task.delay(
-                    subject=subject,
-                    recipients=[recipient],
-                    html=html_content,
-                    message_id=message_id,
-                    structure_id=sid,
-                )
-                queued = True
-        except Exception as e:
-            queue_err = e
-
-        if queued:
-            # Track analytics for queued email
-            if analytics_available and analytics_service:
-                analytics_service.track_event(
-                    event_type="email_queued",
-                    event_category="notification",
-                    context={
-                        "recipient": recipient,
-                        "template": template,
-                        "subject": subject,
-                        "message_id": message_id,
-                    },
-                )
+        if broker:
             logger.info(
-                "Email queued successfully | to=%s | subject=%s", recipient, subject
-            )
-            _log_email_event(
-                email_h=email_h,
-                purpose=purpose,
-                outcome="sent",
-                reason="queued",
-                structure_id=sid,
-            )
-            return True
-
-        # If broker is configured but queue failed, warn once and fall back to SMTP.
-        if broker and queue_err:
-            logger.warning(
-                "Email queue failed (%s). Falling back to direct SMTP.", queue_err
+                "Email broker configured but bypassed; using direct send | to=%s | subject=%s | purpose=%s",
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
+                _sanitize_for_log(purpose),
             )
 
         # --- Direct SMTP ---
         cfg = current_app.config
+        presence = _log_mail_config_presence(purpose=purpose)
         mail_server = cfg.get("MAIL_SERVER")
         mail_port = int(cfg.get("MAIL_PORT") or 0)
         mail_user = cfg.get("MAIL_USERNAME")
@@ -393,6 +434,44 @@ def send_notification_email(
         use_tls = bool(cfg.get("MAIL_USE_TLS"))
         use_ssl = bool(cfg.get("MAIL_USE_SSL"))
         resend_enabled = bool(os.getenv("RESEND_API_KEY", "").strip())
+        demo_target = "contact@helpchain.live"
+
+        if purpose == "demo_request_internal":
+            recipient = demo_target
+            if _norm_email(mail_user) != demo_target:
+                logger.error(
+                    "Demo notification SMTP config invalid: MAIL_USERNAME must be %s, got %r",
+                    demo_target,
+                    mail_user,
+                )
+                _log_email_event(
+                    email_h=email_h,
+                    purpose=purpose,
+                    outcome="failed",
+                    reason="demo_mail_username_invalid",
+                    structure_id=sid,
+                )
+                return False
+            if _norm_email(mail_sender) != demo_target:
+                logger.error(
+                    "Demo notification SMTP config invalid: MAIL_DEFAULT_SENDER must be %s, got %r",
+                    demo_target,
+                    mail_sender,
+                )
+                _log_email_event(
+                    email_h=email_h,
+                    purpose=purpose,
+                    outcome="failed",
+                    reason="demo_mail_default_sender_invalid",
+                    structure_id=sid,
+                )
+                return False
+            logger.info(
+                "Demo notification SMTP routing | authenticated_account=%s | sender=%s | recipient=%s",
+                mail_user,
+                mail_sender,
+                recipient,
+            )
 
         if not (
             mail_server and mail_port and mail_user and mail_pass and mail_sender
@@ -409,7 +488,16 @@ def send_notification_email(
             if not mail_sender:
                 missing.append("MAIL_DEFAULT_SENDER")
             logger.error(
-                "SMTP not configured (missing %s).", ", ".join(missing) or "MAIL_*"
+                "SMTP not configured (missing %s) | purpose=%s | MAIL_SERVER=%s | MAIL_PORT=%s | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%s | MAIL_PASSWORD_STATE=%s | MAIL_DEFAULT_SENDER=%s",
+                ", ".join(missing) or "MAIL_*",
+                _sanitize_for_log(purpose),
+                presence["MAIL_SERVER"],
+                presence["MAIL_PORT"],
+                presence["MAIL_USE_SSL"],
+                presence["MAIL_USE_TLS"],
+                presence["MAIL_USERNAME"],
+                presence["MAIL_PASSWORD_STATE"],
+                presence["MAIL_DEFAULT_SENDER"],
             )
             _log_email_event(
                 email_h=email_h,
@@ -449,7 +537,11 @@ def send_notification_email(
             mail_sender=mail_sender,
             reply_to=(reply_to or mail_user),
         ):
-            logger.info("Email sent via Resend | to=%s | subject=%s", recipient, subject)
+            logger.info(
+                "Email sent via Resend | to=%s | subject=%s",
+                _sanitize_for_log(recipient),
+                _sanitize_for_log(subject),
+            )
             _log_email_event(
                 email_h=email_h,
                 purpose=purpose,
@@ -469,8 +561,21 @@ def send_notification_email(
                     server.starttls()
                 server.login(mail_user, mail_pass)
                 server.send_message(msg)
+        except smtplib.SMTPAuthenticationError as smtp_auth_e:
+            logger.exception(
+                "Direct SMTP auth failed exactly: %r",
+                smtp_auth_e,
+            )
+            _log_email_event(
+                email_h=email_h,
+                purpose=purpose,
+                outcome="failed",
+                reason=f"smtp_auth_error:{smtp_auth_e}",
+                structure_id=sid,
+            )
+            return False
         except Exception as smtp_e:
-            logger.error("Direct SMTP send failed: %s", smtp_e)
+            logger.exception("Direct SMTP send failed: %s", smtp_e)
             # Dev-friendly fallback: write to a local file for manual inspection.
             try:
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
@@ -480,8 +585,9 @@ def send_notification_email(
                         f.write(text_content + "\n\n")
                     f.write(html_content)
                     f.write("\n")
-            except Exception:
-                pass
+            except Exception as e:
+                print("EMAIL ERROR:", str(e))
+                raise
             _log_email_event(
                 email_h=email_h,
                 purpose=purpose,
@@ -503,12 +609,20 @@ def send_notification_email(
                 },
             )
 
-        logger.info("Email sent successfully | to=%s | subject=%s", recipient, subject)
+        logger.info(
+            "Email sent successfully | to=%s | subject=%s",
+            _sanitize_for_log(recipient),
+            _sanitize_for_log(subject),
+        )
         _log_email_event(email_h=email_h, purpose=purpose, outcome="sent", reason=None)
         return True
 
     except Exception as e:
-        logger.error(f"Failed to queue email to {recipient}: {e}")
+        logger.error(
+            "Failed to queue email to %s: %s",
+            _sanitize_for_log(recipient),
+            e,
+        )
         try:
             if recipient:
                 _log_email_event(
@@ -517,8 +631,9 @@ def send_notification_email(
                     outcome="failed",
                     reason="unexpected_error",
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            print("EMAIL ERROR:", str(e))
+            raise
 
         # Track failed email queuing
         if analytics_available and analytics_service:

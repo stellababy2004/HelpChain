@@ -105,7 +105,7 @@
           <div class="hc-field hc-consent">
             <label class="hc-consent__row">
               <input type="checkbox" name="consent" {% if not is_login_mode %}required{% endif %}>
-              <span>{{ _('J’accepte les') }} <a href="/legal" class="hc-link">{{ _('conditions d’utilisation') }}</a> {{ _('et la') }} <a href="/legal" class="hc-link">{{ _('politique de confidentialité') }}</a>.</span>
+              <span>{{ _('J’accepte les') }} <a href="{{ url_for('main.conditions_utilisation') }}" class="hc-link">{{ _('conditions d’utilisation') }}</a> {{ _('et la') }} <a href="{{ url_for('main.confidentialite') }}" class="hc-link">{{ _('politique de confidentialité') }}</a>.</span>
             </label>
           </div>
 

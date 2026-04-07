@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
 if command -v python3 >/dev/null 2>&1; then
   PY=python3
@@ -9,22 +9,14 @@ fi
 
 echo "=== RENDER START ==="
 echo "[HC] render_start.sh running"
+echo "[HC] ENVIRONMENT=production"
 echo "[HC] Applying database migrations..."
-if ! "$PY" -m flask --app run:app db upgrade --directory migrations; then
-  echo "[HC] WARNING: flask db upgrade failed; continuing startup"
-fi
+"$PY" -m flask --app run:app db upgrade --directory migrations
+echo "[HC] flask db upgrade completed successfully"
 
-# Best-effort table bootstrap for production DBs that historically drifted.
-echo "[HC] running schema bootstrap (create missing tables only)"
-"$PY" -m backend.scripts.bootstrap_schema || echo "[HC] schema bootstrap failed; continuing startup"
+echo "[HC] Ensuring production admin user from Render env vars on the production database..."
+"$PY" backend/scripts/ensure_render_admin.py
+echo "[HC] ensure_render_admin completed successfully for production"
 
-# Optional recovery bootstrap for DB-backed admin auth.
-# Enabled only when seed env vars are explicitly provided.
-if [ -n "${ADMIN_SEED_USERNAME:-}" ] && [ -n "${ADMIN_SEED_PASSWORD:-}" ]; then
-  echo "[HC] running ensure_admin.py bootstrap"
-  "$PY" backend/scripts/ensure_admin.py || echo "[HC] ensure_admin.py failed; continuing startup"
-fi
-
-echo "[HC] Starting web service despite migration status..."
-echo "[HC] Starting gunicorn on port ${PORT}..."
-exec gunicorn run:app --bind "0.0.0.0:${PORT}" --workers 2 --timeout 120
+echo "[HC] Starting gunicorn on 0.0.0.0:10000"
+exec gunicorn run:app --bind 0.0.0.0:10000

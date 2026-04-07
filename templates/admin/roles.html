@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Roles') }} | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block body_class %}hc-admin-requests-page hc-admin-table-page hc-admin-roles-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="hc-admin-wrap">
-  <div class="hc-card mb-3">
-    <div class="hc-row hc-admin-headerTop">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell hc-admin-shell--narrow">
+  <div class="hc-card mb-3 hc-admin-headerCard">
+    <div class="hc-admin-toolbar hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">{{ _('Admin roles') }}</h1>
         <div class="hc-muted">{{ _('Governance: superadmin / ops / readonly') }}</div>
@@ -17,7 +17,7 @@
     </div>
   </div>
 
-  <div class="hc-card">
+  <div class="hc-card hc-admin-table-shell">
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table mb-0">
         <thead>

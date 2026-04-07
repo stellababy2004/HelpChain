@@ -1,0 +1,57 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Admin • System | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-audit-page hc-admin-table-page{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell">
+  <div class="hc-card mb-3 hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Système</h1>
+        <div class="hc-muted">Diagnostics opérationnels pour vérifier l'état du déploiement.</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell hc-table-shell">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Diagnostics</strong>
+      <span class="hc-muted small">Statut par contrôle, sans bloquer l'affichage en cas d'erreur isolée.</span>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table hc-table mb-0">
+        <colgroup>
+          <col style="width: 260px;">
+          <col style="width: 120px;">
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Contrôle</th>
+            <th>Statut</th>
+            <th>Détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in diagnostics %}
+          <tr>
+            <td><strong>{{ item.label }}</strong></td>
+            <td>
+              {% if item.status == "ok" %}
+                <span class="badge text-bg-success">OK</span>
+              {% elif item.status == "warning" %}
+                <span class="badge text-bg-warning text-dark">ALERTE</span>
+              {% else %}
+                <span class="badge text-bg-danger">ERREUR</span>
+              {% endif %}
+            </td>
+            <td class="small">{{ item.detail or "—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

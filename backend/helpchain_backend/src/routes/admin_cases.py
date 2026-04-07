@@ -4,6 +4,7 @@ import json
 
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
+from sqlalchemy import func, or_
 
 from backend.extensions import db
 from ..models import (
@@ -173,7 +174,13 @@ def admin_case_detail(case_id: int):
         .all()
     )
     professionals = (
-        ProfessionalLead.query.order_by(
+        ProfessionalLead.query.filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(("invalid", "spam")),
+            )
+        )
+        .order_by(
             ProfessionalLead.created_at.desc(),
             ProfessionalLead.id.desc(),
         )

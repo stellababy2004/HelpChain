@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Step 13 - SEO & Social preview -->
-    <meta name="description" content="{% block meta_description %}{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, à vocation européenne.') }}{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{{ _('Orientation structurée, coordination traçable, pilotage responsable. Conçu et opéré depuis la France, avec une infrastructure sécurisée adaptée aux usages institutionnels.') }}{% endblock %}">
     <meta name="robots" content="index,follow">
 
     <meta property="og:site_name" content="HelpChain">
@@ -550,7 +550,7 @@
             <a class="nav-link nav-link--secondary hc-public-nav-login" href="{{ url_for('main.volunteer_login') }}">
               {{ _('Connexion') }}
             </a>
-            <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
+            <a class="nav-link hc-nav-cta hc-cta" href="/demo">
               <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
             </a>
           </div>
@@ -582,7 +582,7 @@
               </a>
             </li>
             <li class="nav-item hc-public-nav-cta">
-              <a class="nav-link hc-nav-cta hc-cta" href="{{ url_for('main.contact') }}">
+              <a class="nav-link hc-nav-cta hc-cta" href="/demo">
                 <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
               </a>
             </li>
@@ -597,7 +597,7 @@
                 {% set show_structure_admin = is_structure_admin %}
                 {% set show_ops_console = is_operator_role or is_structure_admin or is_global_admin %}
                 {% set ops_active = ep in ['ops.ops_workspace', 'ops.ops_cases_list', 'ops.ops_notifications_list', 'admin.admin_professionals_map', 'risk_api.professionals_map_page', 'admin.admin_risk_map'] or ep.startswith('social_requests.') %}
-                {% set platform_admin_active = ep in ['admin.admin_structures', 'admin.admin_volunteers', 'admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_security', 'admin.admin_system_health'] %}
+                {% set platform_admin_active = ep in ['admin.admin_structures', 'admin.admin_volunteers', 'admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_security', 'admin.admin_system_health', 'admin.admin_demo_leads'] %}
                 {% set structure_admin_active = ep in ['admin.admin_requests', 'admin.admin_ops', 'admin.admin_risk_panel', 'admin.admin_system_health'] or ep.startswith('admin.admin_structure_') %}
 
                 {% if show_platform_admin %}
@@ -616,7 +616,8 @@
                     <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_intervenants', 'admin.admin_volunteers'] else '' }}" href="{{ url_for('admin.admin_intervenants') }}">{{ _('Intervenants') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Roles') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('SLA') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('System Health') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_demo_leads' else '' }}" href="{{ url_for('admin.admin_demo_leads') }}">{{ _('Demandes de démonstration') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('Santé du système') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_audit' else '' }}" href="{{ url_for('admin.admin_audit') }}">{{ _('Audit') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_security' else '' }}" href="{{ url_for('admin.admin_security') }}">{{ _('Paramètres') }}</a></li>
                   </ul>
@@ -643,7 +644,7 @@
                     </li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_requests' else '' }}" href="{{ url_for('admin.admin_requests') }}">{{ _('Demandes') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_ops' else '' }}" href="{{ url_for('admin.admin_ops') }}">{{ _('Santé') }}</a></li>
-                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('System Health') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_system_health' else '' }}" href="{{ url_for('admin.admin_system_health') }}">{{ _('Santé du système') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_risk_panel' else '' }}" href="{{ url_for('admin.admin_risk_panel') }}">{{ _('Alertes') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_intervenants', 'admin.admin_volunteers'] else '' }}" href="{{ url_for('admin.admin_intervenants') }}">{{ _('Intervenants') }}</a></li>
                   </ul>
@@ -659,7 +660,7 @@
                      data-bs-toggle="dropdown"
                      aria-expanded="false"
                      {% if ops_active %}aria-current="page"{% endif %}>
-                    {{ _('Operations') }}
+                    {{ _('Opérations') }}
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="opsConsoleDropdown">
                     <li><a class="dropdown-item {{ 'active' if ep == 'ops.ops_workspace' else '' }}" href="{{ url_for('ops.ops_workspace') }}">{{ _('Tableau opérateur') }}</a></li>
@@ -860,7 +861,7 @@
             <a class="{{ 'is-active' if mobile_ep.startswith('main.volunteer_login') else '' }}" href="{{ url_for('main.volunteer_login') }}" {% if mobile_ep.startswith('main.volunteer_login') %}aria-current="page"{% endif %}>{{ _('Connexion') }}</a>
           </li>
           <li class="hc-mobile-nav__item hc-mobile-nav__item--cta">
-            <a href="{{ url_for('main.contact') }}">{{ _('Planifier une démo') }}</a>
+            <a href="/demo">{{ _('Planifier une démo') }}</a>
           </li>
         </ul>
       </aside>
@@ -1443,7 +1444,7 @@
           <div class="hc-footer__brand">
             <div class="hc-footer__copyright">&copy; {{ current_year|default(2026) }} HelpChain — Infrastructure de coordination sociale</div>
             <p class="hc-footer__trust">
-              {{ _('Données hébergées en Europe') }} · {{ _('Conformité RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Conçu et opéré depuis la France') }}
+              {{ _('Infrastructure sécurisée') }} · {{ _('Conformité RGPD') }} · {{ _('Sécurité renforcée') }} · {{ _('Conçu et opéré depuis la France') }}
             </p>
           </div>
 

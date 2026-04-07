@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _('Pros') }} - {{ _('Leads') }} | {{ _('Admin') }}{% endblock %}
-{% block body_class %}hc-admin-proleads-page{% endblock %}
+{% block body_class %}hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
   <style>
@@ -95,12 +95,19 @@
   {% set is_urgent = 'urgence' in urgency_text or 'urgent' in urgency_text or 'asap' in urgency_text %}
   <span class="badge {{ 'text-bg-danger' if is_urgent else 'text-bg-light border' }}">{{ _('Urgent') if is_urgent else _('Normal') }}</span>
 {%- endmacro %}
+{% macro lead_status_badge(status) -%}
+  {% set meta = professional_lead_status_meta(status) %}
+  <span class="{{ meta.badge_class }}">{{ meta.label }}</span>
+{%- endmacro %}
+{% set page_title = page_title|default(_('Professional leads')) %}
+{% set page_intro = page_intro|default(_('Latest leads captured via /professionnels/pilote.')) %}
+{% set reset_endpoint = reset_endpoint|default('admin.admin_professional_leads') %}
 
-<section class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
+<section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell">
   <header class="hc-admin-toolbar">
     <div>
-      <h1 class="hc-admin-title mb-1">{{ _('Professional leads') }}</h1>
-      <p class="hc-muted mb-0">{{ _('Latest leads captured via /professionnels/pilote.') }}</p>
+      <h1 class="hc-admin-title mb-1">{{ page_title }}</h1>
+      <p class="hc-muted mb-0">{{ page_intro }}</p>
     </div>
   </header>
 
@@ -139,7 +146,7 @@
 
     <div class="hc-admin-actions">
       <button class="btn btn-primary btn-sm" type="submit">{{ _('Filter') }}</button>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professional_leads') }}">{{ _('Reset') }}</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(reset_endpoint) }}">{{ _('Reset') }}</a>
     </div>
   </form>
 
@@ -191,7 +198,7 @@
                 {% if l.locale %}<div class="hc-mutedSmall">{{ l.locale|upper }}</div>{% endif %}
               </td>
               <td class="small text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "—" }}</td>
-              <td><span class="badge text-bg-light border">{{ l.status or _("new") }}</span></td>
+              <td>{{ lead_status_badge(l.status) }}</td>
               <td>{{ urgency_badge(l) }}</td>
               <td class="text-end hc-td-action hc-proleads-col-actions">
                 <div class="d-inline-flex flex-wrap justify-content-end gap-1">
@@ -218,7 +225,7 @@
       <article class="hc-card hc-proleads-card">
         <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
           <div class="small text-muted">#{{ l.id }}</div>
-          <span class="badge text-bg-light border">{{ l.status or _("new") }}</span>
+          {{ lead_status_badge(l.status) }}
         </div>
         <div class="hc-proleads-contact mb-2">
           <div class="hc-proleads-identity">

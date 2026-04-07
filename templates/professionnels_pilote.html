@@ -1,7 +1,8 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Phase pilote | Professionnels — HelpChain') }}{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}{{ _('Phase pilote | Professionnels â€” HelpChain') }}{% endblock %}
 
 {% block content %}
+{% set form_data = form_data or {} %}
 <section class="hc-vol-join">
   <div class="hc-shell">
     <div class="hc-narrow">
@@ -9,17 +10,17 @@
       <header class="hc-pagehead">
         <div class="hc-become-head">
           <div class="hc-become-titleblock">
-            <h1 class="hc-title">{{ _('Phase pilote — Professionnels') }}</h1>
+            <h1 class="hc-title">{{ _('Phase pilote â€” Professionnels') }}</h1>
             <p class="hc-subtitle">
               {{ _('Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.') }}
             </p>
           </div>
 
-          <aside class="hc-trust-card" aria-label="{{ _('Confiance et confidentialité') }}">
+          <aside class="hc-trust-card" aria-label="{{ _('Confiance et confidentialitÃ©') }}">
             <ul class="hc-trust-list">
-              <li>{{ _('Accès réservé aux intervenants autorisés') }}</li>
-              <li>{{ _('Processus simple, traçable et responsable') }}</li>
-              <li>{{ _('Données minimales, respect RGPD') }}</li>
+              <li>{{ _('AccÃ¨s rÃ©servÃ© aux intervenants autorisÃ©s') }}</li>
+              <li>{{ _('Processus simple, traÃ§able et responsable') }}</li>
+              <li>{{ _('DonnÃ©es minimales, respect RGPD') }}</li>
             </ul>
           </aside>
         </div>
@@ -33,48 +34,58 @@
 
         <form method="POST" class="hc-form" autocomplete="on">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
+            <label for="website">Website</label>
+            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
 
           <div class="hc-field">
-            <label class="hc-label" for="profession">{{ _('Votre métier') }} <span class="hc-req">*</span></label>
-            <input class="hc-input" id="profession" name="profession" required placeholder="{{ _('Psychologue, avocat, médecin, assistant social...') }}">
+            <label class="hc-label" for="profession">{{ _('Votre mÃ©tier') }} <span class="hc-req">*</span></label>
+            <input class="hc-input" id="profession" name="profession" value="{{ form_data.get('profession', '') }}" required placeholder="{{ _('Psychologue, avocat, mÃ©decin, assistant social...') }}">
           </div>
 
           <div class="hc-field">
             <label class="hc-label" for="email">{{ _('E-mail') }} <span class="hc-req">*</span></label>
-            <input class="hc-input" id="email" type="email" name="email" autocomplete="email" required placeholder="{{ _('vous@email.com') }}">
+            <input class="hc-input" id="email" type="email" name="email" value="{{ form_data.get('email', '') }}" autocomplete="email" required placeholder="{{ _('vous@email.com') }}">
           </div>
 
           <div class="hc-grid-2">
             <div class="hc-field">
               <label class="hc-label" for="full_name">{{ _('Nom (optionnel)') }}</label>
-              <input class="hc-input" id="full_name" name="full_name" autocomplete="name" placeholder="{{ _('Nom Prénom') }}">
+              <input class="hc-input" id="full_name" name="full_name" value="{{ form_data.get('full_name', '') }}" autocomplete="name" placeholder="{{ _('Nom PrÃ©nom') }}">
             </div>
             <div class="hc-field">
-              <label class="hc-label" for="phone">{{ _('Téléphone (optionnel)') }}</label>
-              <input class="hc-input" id="phone" name="phone" autocomplete="tel" placeholder="{{ _('+33...') }}">
+              <label class="hc-label" for="phone">{{ _('TÃ©lÃ©phone (optionnel)') }}</label>
+              <input class="hc-input" id="phone" name="phone" value="{{ form_data.get('phone', '') }}" autocomplete="tel" placeholder="{{ _('+33...') }}">
             </div>
           </div>
 
           <div class="hc-grid-2">
             <div class="hc-field">
               <label class="hc-label" for="city">{{ _('Ville / zone (optionnel)') }}</label>
-              <input class="hc-input" id="city" name="city" autocomplete="address-level2" placeholder="{{ _('Paris, Boulogne-Billancourt...') }}">
+              <input class="hc-input" id="city" name="city" value="{{ form_data.get('city', '') }}" autocomplete="address-level2" placeholder="{{ _('Paris, Boulogne-Billancourt...') }}">
             </div>
             <div class="hc-field">
               <label class="hc-label" for="organization">{{ _('Organisation (optionnel)') }}</label>
-              <input class="hc-input" id="organization" name="organization" autocomplete="organization" placeholder="{{ _('Cabinet, association, structure...') }}">
+              <input class="hc-input" id="organization" name="organization" value="{{ form_data.get('organization', '') }}" autocomplete="organization" placeholder="{{ _('Cabinet, association, structure...') }}">
             </div>
           </div>
 
           <div class="hc-field">
-            <label class="hc-label" for="availability">{{ _('Disponibilité (optionnel)') }}</label>
-            <input class="hc-input" id="availability" name="availability" placeholder="{{ _('Ex: 2h/semaine, soirs, urgences...') }}">
+            <label class="hc-label" for="availability">{{ _('DisponibilitÃ© (optionnel)') }}</label>
+            <input class="hc-input" id="availability" name="availability" value="{{ form_data.get('availability', '') }}" placeholder="{{ _('Ex: 2h/semaine, soirs, urgences...') }}">
           </div>
 
           <div class="hc-field">
             <label class="hc-label" for="message">{{ _('Message (optionnel)') }}</label>
-            <textarea class="hc-input" id="message" name="message" rows="4" placeholder="{{ _('Type de demandes, conditions, périmètre...') }}"></textarea>
+            <textarea class="hc-input" id="message" name="message" rows="4" placeholder="{{ _('Type de demandes, conditions, pÃ©rimÃ¨tre...') }}">{{ form_data.get('message', '') }}</textarea>
           </div>
+
+          {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
+            <div class="hc-field">
+              <div class="cf-turnstile" data-sitekey="{{ HC_TURNSTILE_SITE_KEY }}"></div>
+            </div>
+          {% endif %}
 
           <button class="hc-btn hc-btn--primary hc-btn--full" type="submit">{{ _('Rejoindre le pilote') }}</button>
 
@@ -83,7 +94,7 @@
           </div>
 
           <p class="hc-help">
-            {{ _('Données minimales') }} • {{ _('RGPD') }} • {{ _('Pas de spam.') }}
+            {{ _('DonnÃ©es minimales') }} â€¢ {{ _('RGPD') }} â€¢ {{ _('Pas de spam.') }}
           </p>
         </form>
       </div>
@@ -92,3 +103,11 @@
   </div>
 </section>
 {% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+{% endblock %}
+

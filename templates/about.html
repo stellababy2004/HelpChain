@@ -7,6 +7,93 @@
 {% block og_image_alt %}{{ _("Aperçu visuel de la page À propos de HelpChain") }}{% endblock %}
 
 {% block body_class %}hc-page-about{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style>
+    .hc-page-about .hc-container {
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+    .hc-page-about .hc-about__hero {
+      padding: 4.8rem 0 3.9rem;
+    }
+    .hc-page-about .hc-about__hero-copy {
+      max-width: 660px;
+    }
+    .hc-page-about .hc-about__hero-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(320px, 0.82fr);
+      gap: 1.4rem;
+      align-items: start;
+    }
+    .hc-page-about .hc-about__hero-panel {
+      padding: 1.6rem;
+    }
+    .hc-page-about .hc-about__hero-actions {
+      margin-top: 1.35rem;
+    }
+    .hc-page-about .hc-about__section {
+      padding: 3rem 0;
+    }
+    .hc-page-about .hc-about__section + .hc-about__section {
+      border-top: 1px solid rgba(20, 35, 55, 0.08);
+    }
+    .hc-page-about .hc-about__section--alt {
+      border-radius: 24px;
+      padding: 2.1rem;
+    }
+    .hc-page-about .hc-about__section-head {
+      max-width: 58rem;
+      margin-bottom: 1.25rem;
+    }
+    .hc-page-about .hc-about__split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.15rem;
+    }
+    .hc-page-about .hc-about__mission-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+    }
+    .hc-page-about .hc-about__mission-list li {
+      margin-bottom: 0.6rem;
+    }
+    .hc-page-about .hc-about__mission-list li:last-child {
+      margin-bottom: 0;
+    }
+    .hc-page-about .hc-about__list {
+      padding-left: 1rem;
+    }
+    .hc-page-about .hc-about__list li {
+      margin-bottom: 0.375rem;
+    }
+    .hc-page-about .hc-about__list li:last-child {
+      margin-bottom: 0;
+    }
+    .hc-page-about .hc-about__midcta {
+      padding: 1.5rem;
+      border: 1px solid rgba(20, 35, 55, 0.08);
+      border-radius: 18px;
+      background: #f7f8fa;
+    }
+    .hc-page-about .hc-about__midcta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 900px) {
+      .hc-page-about .hc-about__hero {
+        padding: 3.25rem 0 2.75rem;
+      }
+      .hc-page-about .hc-about__hero-inner,
+      .hc-page-about .hc-about__split {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
 <main class="hc-about">
@@ -14,30 +101,34 @@
     <div class="hc-container">
       <div class="hc-about__hero-inner">
         <div class="hc-about__hero-copy">
+          <p class="hc-doc-intro__label">{{ _('Infrastructure de coordination') }}</p>
           <h1 class="hc-about__title">{{ _('À propos de HelpChain') }}</h1>
           <p class="hc-about__subtitle">
-            {{ _('HelpChain est une infrastructure numérique de coordination conçue pour structurer, sécuriser et piloter la prise en charge des situations sociales.') }}
+            {{ _('HelpChain est une infrastructure de coordination opérationnelle conçue pour structurer le traitement des demandes, clarifier les responsabilités et renforcer la visibilité sur l’activité.') }}
+          </p>
+          <p class="hc-about__subtitle">
+            {{ _('Pensé pour les structures publiques, associatives et professionnelles opérant en France, HelpChain soutient un cadre de traitement lisible, traçable et pilotable.') }}
           </p>
 
           <div class="hc-about__hero-actions">
             <a
               class="hc-btn hc-btn--primary"
-              href="{{ url_for('main.submit_request') }}"
+              href="/demo"
               data-hc-event="about_primary_cta"
             >
-              {{ _('Déposer une demande') }}
+              {{ _('Planifier une démonstration') }}
             </a>
             <a
-              class="hc-btn hc-btn-outline"
-              href="{{ url_for('main.orienter') }}"
+              class="hc-btn hc-btn--ghost"
+              href="{{ url_for('main.contact') }}"
               data-hc-event="about_secondary_cta"
             >
-              {{ _('Orienter une demande') }}
+              {{ _('Échanger sur un pilote') }}
             </a>
           </div>
 
           <p class="hc-about__trustline">
-            {{ _('Cadre RGPD') }} • {{ _('Sécurité opérationnelle') }} • {{ _('Hébergement & souveraineté') }}
+            {{ _('Cadre RGPD') }} • {{ _('Sécurité opérationnelle') }} • {{ _('Infrastructure & gouvernance') }}
           </p>
 
           <div class="hc-about__institutional">
@@ -52,17 +143,19 @@
         </div>
 
         <div class="hc-about__hero-proof" aria-label="{{ _('Repères') }}">
-          <div class="hc-about__proof-card">
-            <div class="hc-about__proof-label">{{ _('Approche') }}</div>
-            <div class="hc-about__proof-value">{{ _('Structurée') }}</div>
-          </div>
-          <div class="hc-about__proof-card">
-            <div class="hc-about__proof-label">{{ _('Pilotage') }}</div>
-            <div class="hc-about__proof-value">{{ _('Opérationnel') }}</div>
-          </div>
-          <div class="hc-about__proof-card">
-            <div class="hc-about__proof-label">{{ _('Conformité') }}</div>
-            <div class="hc-about__proof-value">{{ _('RGPD') }}</div>
+          <div class="hc-about__hero-panel">
+            <div class="hc-about__proof-card">
+              <div class="hc-about__proof-label">{{ _('Approche') }}</div>
+              <div class="hc-about__proof-value">{{ _('Structurée') }}</div>
+            </div>
+            <div class="hc-about__proof-card">
+              <div class="hc-about__proof-label">{{ _('Pilotage') }}</div>
+              <div class="hc-about__proof-value">{{ _('Opérationnel') }}</div>
+            </div>
+            <div class="hc-about__proof-card">
+              <div class="hc-about__proof-label">{{ _('Conformité') }}</div>
+              <div class="hc-about__proof-value">{{ _('RGPD') }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -75,35 +168,30 @@
         <header class="hc-about__section-head">
           <h2 id="about-mission" class="hc-about__h2">{{ _('Notre mission') }}</h2>
           <p class="hc-about__lead">
-            {{ _('Fournir un cadre de coordination clair permettant une prise en charge cohérente, mesurable et responsable.') }}
+            {{ _('Fournir un cadre de coordination clair pour organiser, suivre et piloter les situations sociales.') }}
           </p>
         </header>
 
-        <div class="hc-about__grid">
-          <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Orientation claire') }}</h3>
-            <p class="hc-about__text">
-              {{ _('Structurer l’entrée des demandes avec une catégorisation fonctionnelle et un formulaire guidé.') }}
-            </p>
+        <div class="hc-about__split">
+          <div class="hc-about__split-col">
+            <div class="hc-about__card">
+              <p class="hc-about__text">
+                {{ _('Une infrastructure pensée pour des environnements dans lesquels la clarté des responsabilités et la continuité du suivi sont essentielles.') }}
+              </p>
+            </div>
           </div>
-
-          <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Coordination traçable') }}</h3>
-            <p class="hc-about__text">
-              {{ _('Assurer une continuité opérationnelle grâce à la traçabilité des actions et des décisions.') }}
-            </p>
-          </div>
-
-          <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Pilotage opérationnel') }}</h3>
-            <p class="hc-about__text">
-              {{ _('Offrir une visibilité terrain via des indicateurs, des alertes et une gouvernance de traitement.') }}
-            </p>
+          <div class="hc-about__split-col">
+            <ul class="hc-about__mission-list">
+              <li>{{ _('✔ structurer l’entrée et l’orientation des demandes') }}</li>
+              <li>{{ _('✔ clarifier l’attribution des responsabilités') }}</li>
+              <li>{{ _('✔ assurer un suivi traçable des actions et des décisions') }}</li>
+              <li>{{ _('✔ renforcer le pilotage opérationnel de l’activité') }}</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      <section class="hc-about__section" aria-labelledby="about-positionnement">
+      <section class="hc-about__section hc-about__section--alt" aria-labelledby="about-positionnement">
         <header class="hc-about__section-head">
           <h2 id="about-positionnement" class="hc-about__h2">{{ _('Cas d’usage — pour qui ?') }}</h2>
           <p class="hc-about__lead">
@@ -136,6 +224,17 @@
             {{ _('HelpChain peut être déployé à l’échelle d’une structure, d’un réseau associatif ou d’un territoire local (ville ou intercommunalité).') }}
           </p>
         </div>
+
+        <div class="hc-about__midcta">
+          <h3 class="hc-about__h3">{{ _('Vous souhaitez tester HelpChain sur votre territoire ?') }}</h3>
+          <p class="hc-about__text">
+            {{ _('Une démonstration permet de visualiser le cadre de traitement. Un pilote permet de l’éprouver sur un périmètre maîtrisé.') }}
+          </p>
+          <div class="hc-about__midcta-actions">
+            <a class="hc-btn hc-btn--primary" href="/demo">{{ _('Planifier une démonstration') }}</a>
+            <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.contact') }}">{{ _('Échanger sur un pilote') }}</a>
+          </div>
+        </div>
       </section>
 
       <section class="hc-about__section" aria-labelledby="about-securite">
@@ -146,7 +245,7 @@
           </p>
         </header>
 
-        <div class="hc-about__grid">
+        <div class="hc-about__split">
           <div class="hc-about__card">
             <h3 class="hc-about__h3">{{ _('Cadre RGPD') }}</h3>
             <p class="hc-about__text">
@@ -162,9 +261,9 @@
           </div>
 
           <div class="hc-about__card">
-            <h3 class="hc-about__h3">{{ _('Hébergement & souveraineté') }}</h3>
+            <h3 class="hc-about__h3">{{ _('Infrastructure & gouvernance') }}</h3>
             <p class="hc-about__text">
-              {{ _('Données hébergées en Europe, pilotage par structure, conçu et opéré depuis la France.') }}
+              {{ _('Infrastructure sécurisée, pilotage par structure, conçu et opéré depuis la France.') }}
             </p>
           </div>
         </div>
@@ -172,14 +271,14 @@
 
       <section class="hc-about__section hc-about__section--pilot" aria-labelledby="about-pilot">
         <div class="hc-about__pilot">
-          <h2 id="about-pilot" class="hc-about__h2">{{ _('Phase pilote — cadre simple') }}</h2>
+          <h2 id="about-pilot" class="hc-about__h2">{{ _('Phase pilote — cadre contrôlé') }}</h2>
           <p class="hc-about__text">
             {{ _('HelpChain est actuellement déployé en phase pilote avec un nombre limité de structures.') }}
           </p>
           <p class="hc-about__text"><strong>{{ _('Objectif du pilote :') }}</strong></p>
           <ul class="hc-about__list">
             <li>{{ _('tester la coordination sur des cas réels') }}</li>
-            <li>{{ _('observer les gains de visibilité et de suivi') }}</li>
+            <li>{{ _('observer les effets sur la visibilité et le suivi') }}</li>
             <li>{{ _('adapter l’outil aux réalités du terrain') }}</li>
           </ul>
           <p class="hc-about__text">
@@ -203,7 +302,7 @@
             <li>{{ _('durée : 30 à 60 jours') }}</li>
           </ul>
           <p class="hc-about__text">
-            {{ _('L’objectif est d’observer les gains de visibilité, de coordination et de traçabilité des actions.') }}
+            {{ _('L’objectif est d’observer les effets sur la visibilité, la coordination et la traçabilité des actions.') }}
           </p>
         </div>
       </section>
@@ -216,7 +315,7 @@
             {{ _('HelpChain est actuellement en phase de mise en place de premiers pilotes locaux avec des structures associatives et des acteurs de l’accompagnement social.') }}
           </p>
           <p class="hc-about__text">
-            {{ _('L’objectif est d’expérimenter un cadre simple de coordination et d’observer les gains de visibilité et de suivi des situations.') }}
+            {{ _('L’objectif est d’expérimenter un cadre contrôlé de coordination et d’observer les effets sur la visibilité et le suivi des situations.') }}
           </p>
           <p class="hc-about__text">
             {{ _('Les structures intéressées peuvent rejoindre cette phase pilote.') }}

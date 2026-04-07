@@ -20,9 +20,11 @@ Legend: [x] Done • [ ] Pending • Notes may include (in progress)
 - [ ] **File Uploads**: Directory permissions correct
 - [ ] **Environment Variables**: All secrets configured
    - Core: `SECRET_KEY`, `DEBUG`
-   - Admin: `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-   - Database: `SQLALCHEMY_DATABASE_URI` or `DATABASE_URL` (Render Postgres)
+   - Admin bootstrap (production only): `ADMIN_SEED_USERNAME`, `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, optional `ADMIN_SEED_ROLE`
+   - Database: `SQLALCHEMY_DATABASE_URI` or `DATABASE_URL` (Render/Neon Postgres)
    - Mail: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USE_TLS`, `MAIL_USE_SSL`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_DEFAULT_SENDER`
+
+- [ ] **Admin Credential Separation**: Confirm the team understands that local admin reset scripts change only local SQLite credentials, while Render env vars bootstrap only the production Render/Neon admin account.
 
 ### 🔍 Security Monitoring
 - [x] **GitHub Security**: CodeQL, Bandit, pip-audit enabled (Bandit/pip-audit CI добавени; CodeQL вече активен)

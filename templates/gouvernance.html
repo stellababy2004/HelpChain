@@ -4,6 +4,20 @@
 {% block og_title %}{{ _("Gouvernance de la plateforme") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Gouvernance de la plateforme") }}{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style>
+    .hc-doc-page ul {
+      padding-left: 1rem;
+    }
+    .hc-doc-page li {
+      margin-bottom: 0.375rem;
+    }
+    .hc-doc-page li:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
 <div class="container hc-doc-page">
@@ -29,10 +43,10 @@
       <h2 class="h5 mb-3">{{ _("Principes de gouvernance") }}</h2>
       <p class="mb-2">{{ _("Le dispositif s’appuie sur des principes directeurs structurants :") }}</p>
       <ul class="mb-0">
-        <li>{{ _("responsabilité dans la conduite des opérations ;") }}</li>
-        <li>{{ _("transparence des règles d’usage et de pilotage ;") }}</li>
-        <li>{{ _("protection des données et maîtrise des accès ;") }}</li>
-        <li>{{ _("coopération avec les acteurs territoriaux.") }}</li>
+        <li>{{ _("responsabilité dans la conduite des opérations") }}</li>
+        <li>{{ _("transparence des règles d’usage et de pilotage") }}</li>
+        <li>{{ _("protection des données et maîtrise des accès") }}</li>
+        <li>{{ _("coopération avec les acteurs territoriaux") }}</li>
       </ul>
     </div>
   </section>
@@ -41,12 +55,12 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Accès et responsabilités") }}</h2>
       <p class="mb-2">
-        {{ _("Les droits d’accès sont structurés selon les responsabilités exercées dans la plateforme.") }}
+        {{ _("Les droits d’accès sont structurés selon les responsabilités exercées dans HelpChain.") }}
       </p>
       <ul class="mb-0">
-        <li>{{ _("intervenants ;") }}</li>
-        <li>{{ _("administrateurs ;") }}</li>
-        <li>{{ _("structures partenaires.") }}</li>
+        <li>{{ _("intervenants") }}</li>
+        <li>{{ _("administrateurs") }}</li>
+        <li>{{ _("structures partenaires") }}</li>
       </ul>
     </div>
   </section>
@@ -55,7 +69,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Évolution du dispositif") }}</h2>
       <p class="mb-0">
-        {{ _("La plateforme évolue de manière progressive sur la base des retours d’usage, des besoins opérationnels et des échanges avec les partenaires institutionnels.") }}
+        {{ _("Le dispositif évolue de manière progressive sur la base des retours d’usage, des besoins opérationnels et des échanges avec les partenaires institutionnels.") }}
       </p>
     </div>
   </section>

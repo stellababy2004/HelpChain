@@ -4,7 +4,7 @@
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact">
-  <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
+<nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
     <a href="{{ safe_url_for('main.index') }}">Accueil</a>
     <span>/</span>
     <span>Demandes</span>
@@ -22,7 +22,7 @@
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
-        <div class="hc-muted">Pilotage des situations par priorité, service et responsable</div>
+        <div class="hc-muted">Pilotage opérationnel des situations par priorité, service et responsable</div>
         {% if scope_label %}
         <div class="text-muted small">{{ scope_label }}</div>
         {% endif %}
@@ -60,7 +60,7 @@
         <div class="hc-kpi__value">0</div>
       </div>
       <div class="hc-kpi" data-kpi="COMPLETED">
-        <div class="hc-kpi__label">Clôturées</div>
+        <div class="hc-kpi__label">Situations clôturées</div>
         <div class="hc-kpi__value">0</div>
       </div>
     </div>
@@ -73,7 +73,7 @@
     </div>
     <a class="btn btn-sm btn-outline-primary"
        href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, category=request.args.get('category') or None) }}">
-      Réinitialiser le filtre
+      Réinitialiser les filtres
     </a>
   </div>
   {% endif %}
@@ -107,7 +107,7 @@
     <div class="hc-ops-kpis__header">
       <h2 class="hc-h2">Pilotage opérationnel</h2>
       <div class="hc-ops-kpis__controls">
-        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre: 30 jours</span>
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre : 30 jours</span>
         <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
           <option value="7">{{ _('7 days') }}</option>
           <option value="30" selected>{{ _('30 days') }}</option>
@@ -118,7 +118,7 @@
 
     <div class="hc-ops-kpis__grid">
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Demandes reçues</div>
+        <div class="hc-kpi-label">Nombre de demandes reçues</div>
         <div class="hc-kpi-value" id="kpi-new">—</div>
       </div>
 
@@ -134,7 +134,7 @@
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Délai moyen de résolution</div>
+        <div class="hc-kpi-label">Délai moyen de traitement jusqu’à clôture</div>
         <div class="hc-kpi-value" id="kpi-resolve">—</div>
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
@@ -311,7 +311,7 @@
             value="1"
             {% if show_deleted %}checked{% endif %}
           />
-          <label class="form-check-label" for="filterDeleted">Afficher les supprimées</label>
+          <label class="form-check-label" for="filterDeleted">Afficher les demandes supprimées</label>
         </div>
       </div>
 
@@ -618,7 +618,7 @@
                     data-no-rowclick
                     onclick="this.disabled=true; this.form.submit(); return false;"
                   >
-                    {{ _('Take ownership') }}
+                    {{ _('Attribuer un responsable') }}
                   </button>
                 </form>
               {% elif r.owner_id == current_user.id %}
@@ -653,7 +653,7 @@
                             class="hc-rowmenu__item hc-rowmenu__item--button"
                             data-no-rowclick
                             {% if already_assigned or is_closed %}disabled{% endif %}>
-                      {{ _('Assign volunteer') }} #{{ sig.volunteer_id }}
+                      {{ _('Attribuer un responsable') }} #{{ sig.volunteer_id }}
                     </button>
                   </form>
                 {% endif %}
@@ -704,17 +704,17 @@
     </button>
     <div class="hc-live-body hc-fold__body" id="hcLiveBody" hidden>
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné: 0</p>
-        <div class="hc-activity-meta">Priorité: affecter ou clôturer</div>
+        <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné : 0</p>
+        <div class="hc-activity-meta">Priorité : affecter ou clôturer</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveInProgress">• En cours: 0</p>
+        <p class="hc-activity-title" id="hcLiveInProgress">• En cours : 0</p>
         <div class="hc-activity-meta">À suivre</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP): 0</p>
+        <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP) : 0</p>
         <div class="hc-activity-meta">Bénévoles mobilisables</div>
       </div>
     </div>

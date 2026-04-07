@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Idempotent admin bootstrap for DB-backed admin login.
+Idempotent admin bootstrap for the effective local runtime DB only.
 
 Behavior:
 - If ADMIN_SEED_USERNAME or ADMIN_SEED_PASSWORD is missing, exits with no-op.
@@ -8,6 +8,9 @@ Behavior:
 - If admin user exists:
   - ADMIN_SEED_FORCE_RESET=1 -> reset password (and update email if provided)
   - otherwise no-op.
+
+This script is for local/runtime DB recovery only.
+It is not the Render/Neon production bootstrap flow.
 """
 
 from __future__ import annotations
@@ -37,7 +40,7 @@ def _env_truthy(value: str | None) -> bool:
 def main() -> int:
     _prepare_import_path()
     parser = argparse.ArgumentParser(
-        description="Ensure admin user on the effective local runtime DB"
+        description="Ensure admin user on the effective local runtime DB only (never Render/Neon/production)"
     )
     parser.add_argument(
         "--confirm-canonical-db",
@@ -83,6 +86,9 @@ def main() -> int:
         runtime_uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
         print_app_db_preflight(runtime_uri)
         print(f"EFFECTIVE LOCAL DB: {selection.selected_uri}")
+        print("TARGET_ENV=local")
+        print("TARGET_SCOPE=effective local runtime DB only")
+        print("PRODUCTION_NOTE=does not affect Render/Neon production admin credentials")
         if not args.confirm_canonical_db:
             print(runtime_confirmation_error())
             return 2
@@ -96,19 +102,19 @@ def main() -> int:
         existing = db.session.query(AdminUser).filter_by(username=username).first()
         if existing:
             if not force_reset:
-                print("ENSURE_ADMIN: exists (no-op)")
+                print("ENSURE_ADMIN_LOCAL: exists on local DB (no-op)")
                 return 0
 
             if len(password) < 12:
                 print(
-                    "ENSURE_ADMIN: error (ADMIN_SEED_FORCE_RESET=1 requires password length >= 12)"
+                    "ENSURE_ADMIN_LOCAL: error (ADMIN_SEED_FORCE_RESET=1 requires password length >= 12)"
                 )
                 return 1
 
             try:
                 existing.set_password(password)
             except Exception as exc:
-                print(f"ENSURE_ADMIN: error (invalid ADMIN_SEED_PASSWORD: {exc})")
+                print(f"ENSURE_ADMIN_LOCAL: error (invalid ADMIN_SEED_PASSWORD: {exc})")
                 return 1
 
             if email:
@@ -130,7 +136,7 @@ def main() -> int:
             except Exception:
                 pass
 
-            print("ENSURE_ADMIN: reset password (forced)")
+            print("ENSURE_ADMIN_LOCAL: reset password on local DB (forced)")
             return 0
 
         create_email = email or "admin@helpchain.live"
@@ -138,12 +144,12 @@ def main() -> int:
         try:
             admin.set_password(password)
         except Exception as exc:
-            print(f"ENSURE_ADMIN: error (invalid ADMIN_SEED_PASSWORD: {exc})")
+            print(f"ENSURE_ADMIN_LOCAL: error (invalid ADMIN_SEED_PASSWORD: {exc})")
             return 1
 
         db.session.add(admin)
         db.session.commit()
-        print("ENSURE_ADMIN: created")
+        print("ENSURE_ADMIN_LOCAL: created on local DB")
         return 0
 
 

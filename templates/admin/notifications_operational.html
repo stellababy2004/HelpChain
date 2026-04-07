@@ -1,0 +1,174 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Admin • Notifications | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
+
+{% block admin_content %}
+{% set notifications_endpoint = 'ops.ops_notifications_list' if request.path.startswith('/ops') else 'admin.admin_notifications_list' %}
+{% set retry_endpoint = 'ops.ops_notifications_retry' if request.path.startswith('/ops') else 'admin.admin_notifications_retry' %}
+<div class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Notifications</h1>
+        <div class="hc-muted">Suivi opérationnel des notifications en file d'attente.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3 hc-ops-toolbar-card">
+    <div class="hc-notify-summary mb-3">
+      <div class="hc-notify-summary__item">
+        <div class="hc-notify-summary__label">En attente</div>
+        <div class="hc-notify-summary__value">{{ summary.pending or 0 }}</div>
+      </div>
+      <div class="hc-notify-summary__item">
+        <div class="hc-notify-summary__label">À relancer</div>
+        <div class="hc-notify-summary__value">{{ summary.retry or 0 }}</div>
+      </div>
+      <div class="hc-notify-summary__item">
+        <div class="hc-notify-summary__label">En échec</div>
+        <div class="hc-notify-summary__value">{{ summary.failed or 0 }}</div>
+      </div>
+      <div class="hc-notify-summary__item">
+        <div class="hc-notify-summary__label">Envoyées</div>
+        <div class="hc-notify-summary__value">{{ summary.sent or 0 }}</div>
+      </div>
+    </div>
+
+    <form method="get" class="row g-2 align-items-end hc-ops-filters">
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label">Statut</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">Tous</option>
+          {% for s in ['pending','processing','retry','failed','sent'] %}
+            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label">Canal</label>
+        <select name="channel" class="form-select form-select-sm">
+          <option value="">Tous</option>
+          {% for c in channels %}
+            <option value="{{ c }}" {% if channel == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">Type d'événement</label>
+        <input name="event_type" value="{{ event_type }}" class="form-control form-control-sm" placeholder="contact_exchange">
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">Destinataire</label>
+        <input name="recipient" value="{{ recipient }}" class="form-control form-control-sm" placeholder="adresse e-mail">
+      </div>
+      <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 align-items-center hc-ops-filters__actions">
+        <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(notifications_endpoint) }}">Réinitialiser</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell hc-ops-table-shell">
+    <div class="hc-card__header">
+      <h2 class="h6 mb-1">Flux des notifications</h2>
+      <div class="hc-muted">Suivi des envois avec statut, tentatives et erreurs récentes.</div>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table hc-notify-table mb-0">
+        <colgroup>
+          <col class="hc-notify-col-id">
+          <col class="hc-notify-col-created">
+          <col class="hc-notify-col-channel">
+          <col class="hc-notify-col-event">
+          <col class="hc-notify-col-recipient-col">
+          <col class="hc-notify-col-status">
+          <col class="hc-notify-col-attempts">
+          <col class="hc-notify-col-next-retry">
+          <col class="hc-notify-col-sent-at">
+          <col class="hc-notify-col-error-col">
+          <col style="width: 96px;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Créée le</th>
+            <th>Canal</th>
+            <th>Événement</th>
+            <th>Destinataire</th>
+            <th>Statut</th>
+            <th>Attempts</th>
+            <th>Prochaine relance</th>
+            <th>Envoyée le</th>
+            <th>Dernière erreur</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for j in jobs %}
+            <tr>
+              <td class="text-muted">#{{ j.id }}</td>
+              <td class="small text-muted">{{ j.created_at.strftime('%Y-%m-%d %H:%M') if j.created_at else '-' }}</td>
+              <td>{{ j.channel or '-' }}</td>
+              <td>{{ j.event_type or '-' }}</td>
+              <td class="hc-notify-col-recipient" title="{{ j.recipient }}">{{ j.recipient }}</td>
+              <td>
+                {% if j.status == 'sent' %}
+                  <span class="badge text-bg-success">envoyée</span>
+                {% elif j.status == 'retry' %}
+                  <span class="badge text-bg-warning text-dark">relance</span>
+                {% elif j.status == 'failed' %}
+                  <span class="badge text-bg-danger">échec</span>
+                {% elif j.status == 'processing' %}
+                  <span class="badge text-bg-info text-dark">en cours</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">en attente</span>
+                {% endif %}
+              </td>
+              <td>{{ j.attempts or 0 }}/{{ j.max_attempts or 0 }}</td>
+              <td class="small text-muted">{{ j.next_retry_at.strftime('%Y-%m-%d %H:%M') if j.next_retry_at else '-' }}</td>
+              <td class="small text-muted">{{ j.sent_at.strftime('%Y-%m-%d %H:%M') if j.sent_at else '-' }}</td>
+              <td class="hc-notify-col-error" title="{{ j.last_error or '-' }}">{{ (j.last_error or '-')|truncate(80, True) }}</td>
+              <td>
+                {% if j.status == 'failed' %}
+                  <form method="post" action="{{ url_for(retry_endpoint, job_id=j.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="status" value="{{ status }}">
+                    <input type="hidden" name="channel" value="{{ channel }}">
+                    <input type="hidden" name="event_type" value="{{ event_type }}">
+                    <input type="hidden" name="recipient" value="{{ recipient }}">
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Relancer</button>
+                  </form>
+                {% else %}
+                  <span class="small text-muted">-</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="11" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">
+                    {% if status or channel or event_type or recipient %}
+                      Aucune notification ne correspond aux filtres actifs
+                    {% else %}
+                      Aucune notification
+                    {% endif %}
+                  </div>
+                  <div class="hc-empty-state__text">
+                    {% if status or channel or event_type or recipient %}
+                      Ajustez ou réinitialisez les filtres pour réafficher le flux opérationnel.
+                    {% else %}
+                      Aucun envoi n'est actuellement en file d'attente, en reprise ou en erreur sur cette instance.
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

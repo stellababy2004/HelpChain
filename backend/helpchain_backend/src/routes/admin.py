@@ -33,6 +33,7 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 from flask_babel import force_locale, gettext as _
+from flask_mail import Message
 from babel.support import Translations
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -42,7 +43,7 @@ except Exception:  # pragma: no cover - keep admin routes import-safe
     psutil = None
 
 from backend.audit import log_activity
-from backend.extensions import db, limiter
+from backend.extensions import db, limiter, mail
 from backend.system_sanity import run_system_checks
 from ..models.volunteer_interest import VolunteerInterest
 from ..observability import (
@@ -67,11 +68,13 @@ from ..models import (
     Notification,
     NotificationJob,
     ProfessionalLead,
+    ProfessionalLeadActivity,
     Intervenant,
     Request,
     RequestActivity,
     RequestLog,
     RequestMetric,
+    SecurityEvent,
     UiLocaleLock,
     UiTranslationFreeze,
     UiTranslation,
@@ -110,6 +113,9 @@ from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
 from ..services.structure_service import create_structure_with_admin
 
+GENERIC_ADMIN_LOGIN_FAIL_MSG = (
+    "Identifiants invalides ou accès temporairement bloqué."
+)
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
     "Identifiants invalides ou accès temporairement bloqué."
 )
@@ -155,6 +161,33 @@ CASE_PARTICIPANT_ROLES = (
     "observer",
     "coordinator",
 )
+SCREENED_PROFESSIONAL_LEAD_STATUSES = ("invalid", "spam")
+PROFESSIONAL_LEAD_STATUS_CHOICES = [
+    "new",
+    "imported",
+    "contacted",
+    "qualified",
+    "rejected",
+    "invalid",
+    "spam",
+]
+DEMO_LEAD_STATUS_CHOICES = [
+    "new",
+    "contacted",
+    "demo_scheduled",
+    "pilot_discussion",
+    "closed",
+    "invalid",
+    "spam",
+]
+
+
+def _is_screened_professional_lead_status(status: str | None) -> bool:
+    return ((status or "").strip().lower() or "") in SCREENED_PROFESSIONAL_LEAD_STATUSES
+
+
+def _professional_lead_is_business_pipeline(status: str | None) -> bool:
+    return not _is_screened_professional_lead_status(status)
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
@@ -879,9 +912,9 @@ def _compute_case_signals(
             {
                 "code": "no_owner",
                 "level": "danger",
-                "title": "Aucun responsable assigne",
-                "why": "Sans owner, le dossier n'a pas de pilotage clair.",
-                "cta_label": "Assigner owner",
+                "title": "Aucun responsable assigné",
+                "why": "Sans responsable, le dossier n'a pas de pilotage clair.",
+                "cta_label": "Assigner un responsable",
                 "cta_href": "#owner-actions",
             }
         )
@@ -893,8 +926,8 @@ def _compute_case_signals(
                 "code": "owner_idle",
                 "level": "warning",
                 "title": "Owner inactif",
-                "why": "Responsable assigne mais pas d'activite recente.",
-                "cta_label": "Verifier activite",
+                "why": "Responsable assigné, mais pas d'activité récente.",
+                "cta_label": "Vérifier l'activité",
                 "cta_href": "#activity-timeline",
             }
         )
@@ -1121,6 +1154,15 @@ def _verify_admin_password(user: AdminUser | None, password: str) -> bool:
         return False
 
 
+def _default_admin_landing_url(user: AdminUser | None = None) -> str:
+    role = _normalize_admin_role_value(
+        getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
+    )
+    if role in {"ops", "readonly"}:
+        return url_for("admin.admin_operator_dashboard")
+    return url_for("admin.admin_requests")
+
+
 def _admin_login_is_locked(
     ip: str, username: str | None, now: datetime
 ) -> tuple[bool, int]:
@@ -1269,11 +1311,11 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
         return redirect(
             url_for(
                 "admin.admin_mfa_verify",
-                next=next_url or url_for("admin.admin_requests"),
+                next=next_url or _default_admin_landing_url(user),
             )
         )
     _mfa_ok_set()
-    return redirect(next_url or url_for("admin.admin_requests"), code=303)
+    return _redirect_to_safe_next(next_url, _default_admin_landing_url(user), code=303)
 
 
 def audit_admin_action(
@@ -1757,9 +1799,9 @@ def _locked_by_other(req, admin_id, now: datetime | None = None) -> bool:
     )
 
 
-from sqlalchemy import case, func, or_, select, text
+from sqlalchemy import and_, case, func, or_
 from sqlalchemy import inspect as sa_inspect
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, load_only
 
 from ..utils.mfa import (
     build_totp_uri,
@@ -1901,14 +1943,14 @@ def metrics_tenant_leak_test():
 
 @admin_bp.get("/")
 def admin_index():
-    """Redirect bare /admin to the main requests list."""
-    return redirect(url_for("admin.admin_requests"))
+    """Redirect bare /admin to the role-appropriate admin home."""
+    return redirect(_default_admin_landing_url())
 
 
 @admin_bp.get("/dashboard")
 def admin_dashboard_redirect():
-    """Alias for /admin/requests to avoid 404s from legacy /admin/dashboard links."""
-    return redirect(url_for("admin.admin_requests"))
+    """Alias for the role-appropriate admin landing page."""
+    return redirect(_default_admin_landing_url())
 
 
 @admin_bp.get("/translations")
@@ -2410,15 +2452,14 @@ def admin_translations_bulk_suggest_apply():
     )
 
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url)
-    return redirect(
+    return _redirect_to_safe_next(
+        next_url,
         url_for(
             "admin.admin_translations_list",
             locale=locale,
             view=view,
             only_missing="1",
-        )
+        ),
     )
 
 
@@ -2528,15 +2569,14 @@ def admin_translations_bootstrap_from_po():
     )
 
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url)
-    return redirect(
+    return _redirect_to_safe_next(
+        next_url,
         url_for(
             "admin.admin_translations_list",
             locale=locale,
             view=view,
             only_missing="1",
-        )
+        ),
     )
 
 
@@ -2590,9 +2630,11 @@ def admin_translations_locale_lock():
         "success",
     )
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url)
-    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list", locale=locale, view=view),
+        code=303,
+    )
 
 
 @admin_bp.post("/translations/freeze")
@@ -2641,9 +2683,11 @@ def admin_translations_freeze_toggle():
         f"Translation freeze {'activated' if row.is_active else 'deactivated'}.",
         "success",
     )
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url, code=303)
-    return redirect(url_for("admin.admin_translations_list"), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list"),
+        code=303,
+    )
 
 
 def admin_required_404():
@@ -2716,10 +2760,12 @@ def _blocked_by_locale_lock(locale: str):
         return jsonify({"ok": False, "error": "locale_locked", "locale": locale}), 423
     flash(f"Locale {locale.upper()} is locked.", "warning")
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url, code=303)
     view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
-    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list", locale=locale, view=view),
+        code=303,
+    )
 
 
 def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = False):
@@ -2745,10 +2791,12 @@ def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = Fa
         msg = f"Translation freeze active ({freeze.release_tag})."
     flash(msg, "warning")
     next_url = (request.form.get("next") or "").strip()
-    if next_url and is_safe_url(next_url):
-        return redirect(next_url, code=303)
     view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
-    return redirect(url_for("admin.admin_translations_list", locale=locale, view=view), code=303)
+    return _redirect_to_safe_next(
+        next_url,
+        url_for("admin.admin_translations_list", locale=locale, view=view),
+        code=303,
+    )
 
 
 def _sanitize_translation_text(value: str) -> str:
@@ -3144,6 +3192,16 @@ def _redirect_protected_login(endpoint: str):
     return redirect(url_for(endpoint, next=nxt), code=303)
 
 
+def _safe_next_url(candidate: str | None) -> str:
+    target = (candidate or "").strip()
+    return target if target and is_safe_url(target) else ""
+
+
+def _redirect_to_safe_next(next_url: str | None, fallback_url: str, *, code: int = 303):
+    target = _safe_next_url(next_url)
+    return redirect(target or fallback_url, code=code)
+
+
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
@@ -3243,6 +3301,91 @@ def admin_sanity():
     admin_required_404()
     checks = run_system_checks()
     return render_template("admin/system_sanity.html", checks=checks)
+
+
+@admin_bp.get("/system")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_system():
+    admin_required_404()
+
+    diagnostics: list[dict[str, str]] = []
+
+    def add_check(label: str, fn):
+        try:
+            status, detail = fn()
+            diagnostics.append(
+                {
+                    "label": label,
+                    "status": status,
+                    "detail": detail or "",
+                }
+            )
+        except Exception as exc:
+            diagnostics.append(
+                {
+                    "label": label,
+                    "status": "error",
+                    "detail": str(exc),
+                }
+            )
+
+    def db_connectivity():
+        db.session.execute(db.text("SELECT 1"))
+        return "ok", "Connected"
+
+    def alembic_revision():
+        version = db.session.execute(
+            db.text("SELECT version_num FROM alembic_version")
+        ).scalar()
+        if version:
+            return "ok", str(version)
+        return "warning", "No revision recorded"
+
+    def deploy_version():
+        for key in ("GIT_SHA", "RENDER_GIT_COMMIT", "RENDER_GIT_COMMIT_SHA", "COMMIT_SHA"):
+            value = (os.getenv(key) or "").strip()
+            if value:
+                return "ok", f"{key}={value[:12]}"
+        return "warning", "No deploy SHA env"
+
+    def notification_jobs_exists():
+        if _table_exists("notification_jobs"):
+            return "ok", "Table exists"
+        return "warning", "Table missing"
+
+    def notification_jobs_count():
+        if not _table_exists("notification_jobs"):
+            return "warning", "Table missing"
+        count = db.session.query(func.count(NotificationJob.id)).scalar() or 0
+        return "ok", str(int(count))
+
+    def notification_jobs_failed():
+        if not _table_exists("notification_jobs"):
+            return "warning", "Table missing"
+        count = (
+            db.session.query(func.count(NotificationJob.id))
+            .filter(NotificationJob.status == "failed")
+            .scalar()
+            or 0
+        )
+        return "ok", str(int(count))
+
+    def admin_users_count():
+        if not _table_exists("admin_users"):
+            return "warning", "Table missing"
+        count = db.session.query(func.count(AdminUser.id)).scalar() or 0
+        return "ok", str(int(count))
+
+    add_check("Database connectivity", db_connectivity)
+    add_check("Alembic revision", alembic_revision)
+    add_check("Deploy version", deploy_version)
+    add_check("notification_jobs table", notification_jobs_exists)
+    add_check("notification_jobs rows", notification_jobs_count)
+    add_check("notification_jobs failed", notification_jobs_failed)
+    add_check("Admin users", admin_users_count)
+
+    return render_template("admin/system.html", diagnostics=diagnostics)
 
 
 @admin_bp.get("/ops")
@@ -3821,7 +3964,7 @@ def admin_ops_login():
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
-    next_url = next_candidate if is_safe_url(next_candidate) else ""
+    next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
         if not _table_exists("admin_users"):
@@ -3889,7 +4032,7 @@ def admin_login_legacy():
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
-    next_url = next_candidate if is_safe_url(next_candidate) else ""
+    next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
         if not _table_exists("admin_users"):
@@ -3957,7 +4100,7 @@ def admin_reauth():
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
-    next_url = next_candidate if is_safe_url(next_candidate) else ""
+    next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
         password = request.form.get("password", "")
@@ -3984,7 +4127,11 @@ def admin_reauth():
                 },
             )
             flash("Vérification effectuée.", "success")
-            return redirect(next_url or url_for("admin.admin_requests"), code=303)
+            return _redirect_to_safe_next(
+                next_url,
+                url_for("admin.admin_requests"),
+                code=303,
+            )
         log_security_event(
             "auth_admin_reauth_failed",
             actor_type="admin",
@@ -4121,7 +4268,10 @@ def admin_mfa_verify():
         now = _utc_now()
         _touch_admin_last_seen(now)
         _touch_admin_auth_at(now)
-        return redirect(request.args.get("next") or url_for("admin.admin_requests"))
+        return _redirect_to_safe_next(
+            request.args.get("next"),
+            _default_admin_landing_url(),
+        )
 
     locked, remaining = _mfa_lock_is_active()
     if request.method == "GET":
@@ -4172,10 +4322,10 @@ def admin_mfa_verify():
             persist=True,
         )
         flash(_("MFA verified."), "success")
-        nxt = request.args.get("next")
-        if nxt and nxt.startswith("/"):
-            return redirect(nxt)
-        return redirect(url_for("admin.admin_requests"))
+        return _redirect_to_safe_next(
+            request.args.get("next"),
+            _default_admin_landing_url(),
+        )
 
     _mfa_attempt_fail()
     locked, remaining = _mfa_lock_is_active()
@@ -6386,7 +6536,7 @@ def _render_notifications_list():
     if not _table_exists("notification_jobs"):
         flash("Notification jobs table is not available yet. Run migrations first.", "warning")
         return render_template(
-            "admin/notifications.html",
+            "admin/notifications_operational.html",
             jobs=[],
             status="",
             channel="",
@@ -6467,7 +6617,7 @@ def _render_notifications_list():
     ]
 
     return render_template(
-        "admin/notifications.html",
+        "admin/notifications_operational.html",
         jobs=jobs,
         status=status,
         channel=channel,
@@ -6495,7 +6645,7 @@ def admin_professional_leads():
                 profession="",
                 city="",
                 status="",
-                status_choices=["new", "imported", "contacted", "qualified", "rejected"],
+                status_choices=PROFESSIONAL_LEAD_STATUS_CHOICES,
                 professions=[],
             ),
             200,
@@ -6505,9 +6655,9 @@ def admin_professional_leads():
     profession = (request.args.get("profession") or "").strip()
     city = (request.args.get("city") or "").strip()
     status = (request.args.get("status") or "").strip().lower()
-    status_choices = ["new", "imported", "contacted", "qualified", "rejected"]
+    status_choices = PROFESSIONAL_LEAD_STATUS_CHOICES
 
-    query = ProfessionalLead.query
+    query = _professional_lead_list_query(ProfessionalLead.query)
 
     if q:
         like = f"%{q.lower()}%"
@@ -6521,6 +6671,13 @@ def admin_professional_leads():
 
     if status:
         query = query.filter(func.lower(ProfessionalLead.status) == status)
+    else:
+        query = query.filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+            )
+        )
 
     leads = (
         query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
@@ -6530,6 +6687,14 @@ def admin_professional_leads():
 
     professions = (
         ProfessionalLead.query.with_entities(ProfessionalLead.profession)
+        .filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(
+                    SCREENED_PROFESSIONAL_LEAD_STATUSES
+                ),
+            )
+        )
         .distinct()
         .order_by(ProfessionalLead.profession.asc())
         .all()
@@ -6549,6 +6714,796 @@ def admin_professional_leads():
         ),
         200,
     )
+
+
+def _send_due_demo_lead_followups() -> None:
+    if not (
+        _table_has_column("professional_leads", "first_followup_sent_at")
+        and _table_has_column("professional_leads", "second_followup_sent_at")
+    ):
+        return
+
+    now_utc = datetime.now(UTC)
+    sender = current_app.config.get("MAIL_DEFAULT_SENDER") or "contact@helpchain.live"
+    due_leads = (
+        ProfessionalLead.query.filter(ProfessionalLead.source == "demo_page")
+        .filter(
+            or_(
+                and_(
+                    func.lower(ProfessionalLead.status) == "new",
+                    ProfessionalLead.created_at <= now_utc - timedelta(days=1),
+                    ProfessionalLead.first_followup_sent_at.is_(None),
+                ),
+                and_(
+                    func.lower(ProfessionalLead.status) == "contacted",
+                    ProfessionalLead.created_at <= now_utc - timedelta(days=2),
+                    ProfessionalLead.second_followup_sent_at.is_(None),
+                ),
+            )
+        )
+        .order_by(ProfessionalLead.created_at.asc(), ProfessionalLead.id.asc())
+        .limit(25)
+        .all()
+    )
+
+    for lead in due_leads:
+        email = (getattr(lead, "email", None) or "").strip()
+        if not email:
+            continue
+
+        normalized_status = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+        if normalized_status == "new":
+            followup_field = ProfessionalLead.first_followup_sent_at
+            followup_label = "first"
+            subject = "Quick follow-up on your HelpChain request"
+            body = (
+                f"Hello {getattr(lead, 'full_name', None) or ''},\n\n"
+                "Just following up on your recent HelpChain request. "
+                "If you would like to continue the conversation or schedule a demo, "
+                "feel free to reply to this email.\n\n"
+                "Best regards,\n"
+                "HelpChain"
+            ).replace("Hello ,", "Hello,")
+        elif normalized_status == "contacted":
+            followup_field = ProfessionalLead.second_followup_sent_at
+            followup_label = "second"
+            subject = "Checking in about your HelpChain demo"
+            body = (
+                f"Hello {getattr(lead, 'full_name', None) or ''},\n\n"
+                "A quick follow-up in case my previous message was missed. "
+                "If a demo or pilot discussion is still relevant for you, "
+                "just reply and we will be happy to continue.\n\n"
+                "Best regards,\n"
+                "HelpChain"
+            ).replace("Hello ,", "Hello,")
+        else:
+            continue
+
+        sent_at = datetime.now(UTC)
+        reserved = (
+            ProfessionalLead.query.filter(
+                ProfessionalLead.id == lead.id,
+                ProfessionalLead.source == "demo_page",
+                func.lower(ProfessionalLead.status) == normalized_status,
+                followup_field.is_(None),
+            ).update({followup_field: sent_at}, synchronize_session=False)
+        )
+        if reserved != 1:
+            db.session.rollback()
+            continue
+
+        db.session.commit()
+
+        try:
+            msg = Message(subject=subject, sender=sender, recipients=[email])
+            msg.body = body
+            mail.send(msg)
+            current_app.logger.info("Lead %s %s follow-up sent", lead.id, followup_label)
+        except Exception:
+            current_app.logger.exception(
+                "Lead %s %s follow-up failed",
+                lead.id,
+                followup_label,
+            )
+            (
+                ProfessionalLead.query.filter(
+                    ProfessionalLead.id == lead.id,
+                    followup_field == sent_at,
+                ).update({followup_field: None}, synchronize_session=False)
+            )
+            db.session.commit()
+
+
+def _professional_lead_list_query(query):
+    load_fields = [
+        ProfessionalLead.id,
+        ProfessionalLead.email,
+        ProfessionalLead.full_name,
+        ProfessionalLead.phone,
+        ProfessionalLead.city,
+        ProfessionalLead.profession,
+        ProfessionalLead.organization,
+        ProfessionalLead.availability,
+        ProfessionalLead.message,
+        ProfessionalLead.source,
+        ProfessionalLead.locale,
+        ProfessionalLead.ip,
+        ProfessionalLead.user_agent,
+        ProfessionalLead.status,
+        ProfessionalLead.notes,
+        ProfessionalLead.contacted_at,
+        ProfessionalLead.created_at,
+    ]
+    if _table_has_column("professional_leads", "owner_admin_id"):
+        load_fields.append(ProfessionalLead.owner_admin_id)
+    if _table_has_column("professional_leads", "first_followup_sent_at"):
+        load_fields.append(ProfessionalLead.first_followup_sent_at)
+    if _table_has_column("professional_leads", "second_followup_sent_at"):
+        load_fields.append(ProfessionalLead.second_followup_sent_at)
+    if _table_has_column("professional_leads", "last_touched_at"):
+        load_fields.append(ProfessionalLead.last_touched_at)
+    if _table_has_column("professional_leads", "last_touched_by_admin_id"):
+        load_fields.append(ProfessionalLead.last_touched_by_admin_id)
+    return query.options(load_only(*load_fields))
+
+
+def _professional_lead_activity_enabled() -> bool:
+    return _table_exists("professional_lead_activities") and all(
+        _table_has_column("professional_lead_activities", column_name)
+        for column_name in (
+            "professional_lead_id",
+            "admin_user_id",
+            "action",
+            "payload_json",
+            "created_at",
+        )
+    )
+
+
+def _format_demo_touch_elapsed(dt_val: datetime | None) -> str:
+    dt_aware = _as_aware_utc(dt_val)
+    if not dt_aware:
+        return "-"
+    delta = max(timedelta(0), _now_utc() - dt_aware)
+    total_minutes = int(delta.total_seconds() // 60)
+    if total_minutes < 1:
+        return "0 min"
+    if total_minutes < 60:
+        return f"{total_minutes} min"
+    total_hours = int(delta.total_seconds() // 3600)
+    if total_hours < 24:
+        return f"{total_hours}h"
+    total_days = int(delta.total_seconds() // 86400)
+    return f"{total_days}d"
+
+
+def _professional_lead_activity_label(action: str | None) -> str:
+    return {
+        "status_changed": "status",
+        "owner_changed": "owner",
+        "notes_updated": "notes",
+    }.get((action or "").strip().lower(), (action or "activity").replace("_", " "))
+
+
+def _record_professional_lead_touch(
+    lead: ProfessionalLead,
+    *,
+    action: str,
+    payload: dict | None = None,
+) -> None:
+    touched_at = datetime.now(UTC)
+    admin_user_id = getattr(current_user, "id", None)
+    try:
+        admin_user_id = int(admin_user_id) if admin_user_id is not None else None
+    except (TypeError, ValueError):
+        admin_user_id = None
+
+    if admin_user_id is not None and db.session.get(AdminUser, admin_user_id) is None:
+        admin_user_id = None
+
+    if _table_has_column("professional_leads", "last_touched_at"):
+        lead.last_touched_at = touched_at
+    if _table_has_column("professional_leads", "last_touched_by_admin_id"):
+        lead.last_touched_by_admin_id = admin_user_id
+
+    if not _professional_lead_activity_enabled():
+        return
+
+    payload_json = None
+    if payload:
+        payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
+
+    db.session.add(
+        ProfessionalLeadActivity(
+            professional_lead_id=int(lead.id),
+            admin_user_id=admin_user_id,
+            action=action,
+            payload_json=payload_json,
+            created_at=touched_at,
+        )
+    )
+
+
+def _attach_demo_lead_activity_state(
+    leads: list[ProfessionalLead], owner_labels: dict[int, str]
+) -> None:
+    if not leads:
+        return
+
+    admin_labels = dict(owner_labels)
+    lead_ids = [int(lead.id) for lead in leads if getattr(lead, "id", None) is not None]
+    activity_rows = []
+
+    if _professional_lead_activity_enabled() and lead_ids:
+        activity_rows = (
+            ProfessionalLeadActivity.query.with_entities(
+                ProfessionalLeadActivity.professional_lead_id,
+                ProfessionalLeadActivity.admin_user_id,
+                ProfessionalLeadActivity.action,
+                ProfessionalLeadActivity.created_at,
+            )
+            .filter(ProfessionalLeadActivity.professional_lead_id.in_(lead_ids))
+            .order_by(
+                ProfessionalLeadActivity.created_at.desc(),
+                ProfessionalLeadActivity.id.desc(),
+            )
+            .all()
+        )
+
+    activity_preview_map: dict[int, list[dict[str, str | None]]] = {}
+    admin_ids: set[int] = set()
+    for lead in leads:
+        touch_admin_id = getattr(lead, "last_touched_by_admin_id", None)
+        if touch_admin_id is not None:
+            admin_ids.add(int(touch_admin_id))
+
+    for row in activity_rows:
+        lead_id = int(getattr(row, "professional_lead_id", 0) or 0)
+        if lead_id <= 0:
+            continue
+        bucket = activity_preview_map.setdefault(lead_id, [])
+        if len(bucket) >= 2:
+            continue
+        admin_user_id = getattr(row, "admin_user_id", None)
+        if admin_user_id is not None:
+            admin_ids.add(int(admin_user_id))
+        bucket.append(
+            {
+                "label": _professional_lead_activity_label(getattr(row, "action", None)),
+                "created_label": _format_demo_touch_elapsed(getattr(row, "created_at", None)),
+            }
+        )
+
+    if admin_ids:
+        admin_rows = (
+            AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
+            .filter(AdminUser.id.in_(sorted(admin_ids)))
+            .all()
+        )
+        for admin_id, username in admin_rows:
+            if admin_id is not None:
+                admin_labels[int(admin_id)] = username or f"#{admin_id}"
+
+    for lead in leads:
+        touch_admin_id = getattr(lead, "last_touched_by_admin_id", None)
+        touch_admin_label = None
+        if touch_admin_id is not None:
+            touch_admin_label = admin_labels.get(int(touch_admin_id), f"#{touch_admin_id}")
+        setattr(
+            lead,
+            "last_touch_label",
+            _format_demo_touch_elapsed(getattr(lead, "last_touched_at", None))
+            if getattr(lead, "last_touched_at", None)
+            else None,
+        )
+        setattr(lead, "last_touch_admin_label", touch_admin_label)
+        setattr(lead, "activity_preview", activity_preview_map.get(int(lead.id), []))
+
+
+def _demo_lead_is_stale(lead: ProfessionalLead, *, threshold_hours: int = 24) -> bool:
+    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
+        return False
+
+    last_touched_at = _as_aware_utc(getattr(lead, "last_touched_at", None))
+    if not last_touched_at:
+        return True
+
+    return (_now_utc() - last_touched_at) > timedelta(hours=threshold_hours)
+
+
+def _demo_lead_priority(lead: ProfessionalLead) -> str:
+    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
+        return "normal"
+
+    is_unassigned = not getattr(lead, "owner_admin_id", None)
+    is_stale = _demo_lead_is_stale(lead)
+    urgency = getattr(lead, "urgency", None)
+
+    if status_key == "contacted" and is_stale:
+        return "medium"
+    if is_unassigned or status_key == "new" or urgency == "overdue" or is_stale:
+        return "high"
+    return "normal"
+
+
+def _demo_lead_queue(lead: ProfessionalLead) -> str:
+    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
+        return "done"
+
+    priority = getattr(lead, "priority_level", None) or _demo_lead_priority(lead)
+    is_stale = _demo_lead_is_stale(lead)
+
+    if priority == "high":
+        return "needs_action"
+    if status_key in {"contacted", "demo_scheduled", "pilot_discussion"} and not is_stale:
+        return "waiting"
+    return "active"
+
+
+def _demo_lead_next_action(lead: ProfessionalLead) -> str | None:
+    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
+        return None
+
+    has_owner = bool(getattr(lead, "owner_admin_id", None))
+    is_stale = _demo_lead_is_stale(lead)
+
+    if not has_owner:
+        return "Assigner"
+    if status_key == "new":
+        return "Appeler"
+    if status_key == "contacted" and is_stale:
+        return "Relancer"
+    if status_key == "demo_scheduled":
+        return "Preparer demo"
+    if status_key == "pilot_discussion":
+        return "Proposer pilote"
+    if status_key == "contacted":
+        return "Suivre"
+    return None
+
+
+def _demo_lead_sla_state(lead: ProfessionalLead) -> str | None:
+    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
+        return None
+
+    now = _now_utc()
+    created_at = _as_aware_utc(getattr(lead, "created_at", None)) or now
+    last_touched_at = _as_aware_utc(getattr(lead, "last_touched_at", None))
+
+    if status_key == "new":
+        age_hours = max(0.0, (now - created_at).total_seconds() / 3600)
+        return "late" if age_hours > 24 else "on_time"
+
+    reference = last_touched_at or created_at
+    elapsed_hours = max(0.0, (now - reference).total_seconds() / 3600)
+
+    if status_key == "contacted":
+        if elapsed_hours > 48:
+            return "late"
+        if elapsed_hours >= 36:
+            return "due_soon"
+        return "on_time"
+
+    if status_key == "demo_scheduled":
+        if elapsed_hours > 72:
+            return "late"
+        if elapsed_hours >= 48:
+            return "due_soon"
+        return "on_time"
+
+    if status_key == "pilot_discussion":
+        if elapsed_hours > 96:
+            return "late"
+        if elapsed_hours >= 72:
+            return "due_soon"
+        return "on_time"
+
+    return "on_time"
+
+
+@admin_bp.get("/professional-leads/demo")
+@login_required
+@admin_required
+def admin_demo_leads():
+    def _lead_age_meta(created_at, status_value: str | None):
+        now_utc = datetime.now(UTC)
+        if created_at is None:
+            age_days = 0
+        else:
+            created_dt = created_at
+            if getattr(created_dt, "tzinfo", None) is None:
+                created_dt = created_dt.replace(tzinfo=UTC)
+            age_days = max(0, (now_utc.date() - created_dt.astimezone(UTC).date()).days)
+
+        normalized_status = ((status_value or "").strip().lower() or "new")
+        if normalized_status == "closed" or _is_screened_professional_lead_status(
+            normalized_status
+        ):
+            urgency = "closed"
+        elif age_days <= 1:
+            urgency = "normal"
+        elif age_days <= 3:
+            urgency = "aging"
+        else:
+            urgency = "overdue"
+
+        return {
+            "age_days": age_days,
+            "age_label": f"{age_days}d",
+            "urgency": urgency,
+        }
+
+    if not _table_exists("professional_leads"):
+        flash(
+            "Professional leads table is not available in this environment yet.",
+            "warning",
+        )
+        return (
+            render_template(
+                "admin/demo_leads.html",
+                leads=[],
+                q="",
+                profession="",
+                city="",
+                status="",
+                status_choices=DEMO_LEAD_STATUS_CHOICES,
+                professions=[],
+                kpi_counts={
+                    "new": 0,
+                    "contacted": 0,
+                    "demo_scheduled": 0,
+                    "pilot_discussion": 0,
+                    "closed": 0,
+                    "overdue": 0,
+                },
+            ),
+            200,
+        )
+
+    q = (request.args.get("q") or "").strip()
+    profession = (request.args.get("profession") or "").strip()
+    city = (request.args.get("city") or "").strip()
+    status = (request.args.get("status") or "").strip().lower()
+    queue = (request.args.get("queue") or "").strip().lower()
+    status_choices = DEMO_LEAD_STATUS_CHOICES
+    queue_choices = ["needs_action", "waiting", "active", "done"]
+
+    _send_due_demo_lead_followups()
+
+    query = _professional_lead_list_query(
+        ProfessionalLead.query.filter(ProfessionalLead.source == "demo_page")
+    )
+
+    if q:
+        like = f"%{q.lower()}%"
+        query = query.filter(
+            or_(
+                ProfessionalLead.email.ilike(like),
+                ProfessionalLead.full_name.ilike(like),
+                ProfessionalLead.organization.ilike(like),
+                ProfessionalLead.message.ilike(like),
+            )
+        )
+
+    if profession:
+        query = query.filter(ProfessionalLead.profession == profession)
+
+    if city:
+        query = query.filter(ProfessionalLead.city.ilike(f"%{city}%"))
+
+    if not status:
+        query = query.filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+            )
+        )
+
+    kpi_counts = {
+        key: 0
+        for key in ("new", "contacted", "demo_scheduled", "pilot_discussion", "closed")
+    }
+    count_rows = (
+        query.with_entities(
+            func.lower(ProfessionalLead.status).label("status_key"),
+            func.count(ProfessionalLead.id).label("lead_count"),
+        )
+        .group_by(func.lower(ProfessionalLead.status))
+        .all()
+    )
+    for row in count_rows:
+        status_key = (getattr(row, "status_key", None) or "").strip().lower() or "new"
+        if status_key in kpi_counts:
+            kpi_counts[status_key] = int(getattr(row, "lead_count", 0) or 0)
+
+    overdue_rows = query.with_entities(
+        ProfessionalLead.status,
+        ProfessionalLead.created_at,
+    ).all()
+    overdue_count = 0
+    for row in overdue_rows:
+        age_meta = _lead_age_meta(
+            getattr(row, "created_at", None),
+            getattr(row, "status", None),
+        )
+        if age_meta["urgency"] == "overdue":
+            overdue_count += 1
+    kpi_counts["overdue"] = overdue_count
+
+    if status:
+        query = query.filter(func.lower(ProfessionalLead.status) == status)
+
+    leads = query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc()).all()
+    for lead in leads:
+        age_meta = _lead_age_meta(getattr(lead, "created_at", None), getattr(lead, "status", None))
+        setattr(lead, "age_days", age_meta["age_days"])
+        setattr(lead, "age_label", age_meta["age_label"])
+        setattr(lead, "urgency", age_meta["urgency"])
+
+    professions = (
+        ProfessionalLead.query.with_entities(ProfessionalLead.profession)
+        .filter(ProfessionalLead.source == "demo_page")
+        .filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(
+                    SCREENED_PROFESSIONAL_LEAD_STATUSES
+                ),
+            )
+        )
+        .distinct()
+        .order_by(ProfessionalLead.profession.asc())
+        .all()
+    )
+    professions = [p[0] for p in professions if p and p[0]]
+    owners = (
+        AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
+        .filter(AdminUser.is_active.is_(True))
+        .order_by(AdminUser.username.asc(), AdminUser.id.asc())
+        .all()
+    )
+    owner_labels = {int(row[0]): row[1] for row in owners if row and row[0] is not None}
+    _attach_demo_lead_activity_state(leads, owner_labels)
+
+    queue_counts = {key: 0 for key in queue_choices}
+    priority_rank = {"high": 0, "medium": 1, "normal": 2}
+    for lead in leads:
+        priority_level = _demo_lead_priority(lead)
+        queue_key = _demo_lead_queue(lead)
+        next_action = _demo_lead_next_action(lead)
+        sla_state = _demo_lead_sla_state(lead)
+        is_stale = _demo_lead_is_stale(lead)
+        last_touched_at = _as_aware_utc(getattr(lead, "last_touched_at", None))
+        sort_touch = last_touched_at or _as_aware_utc(getattr(lead, "created_at", None)) or _now_utc()
+        setattr(lead, "priority_level", priority_level)
+        setattr(lead, "queue_key", queue_key)
+        setattr(lead, "next_action", next_action)
+        setattr(lead, "sla_state", sla_state)
+        setattr(lead, "is_stale", is_stale)
+        setattr(lead, "needs_action", priority_level == "high")
+        setattr(lead, "priority_rank", priority_rank.get(priority_level, 2))
+        setattr(lead, "sort_touch_at", sort_touch)
+        if queue_key in queue_counts:
+            queue_counts[queue_key] += 1
+
+    if queue in queue_choices:
+        leads = [lead for lead in leads if getattr(lead, "queue_key", None) == queue]
+
+    leads = sorted(
+        leads,
+        key=lambda lead: (
+            getattr(lead, "priority_rank", 2),
+            getattr(lead, "sort_touch_at", _now_utc()),
+            -int(getattr(lead, "id", 0) or 0),
+        ),
+    )[:200]
+
+    return (
+        render_template(
+            "admin/demo_leads.html",
+            leads=leads,
+            q=q,
+            profession=profession,
+            city=city,
+            status=status,
+            queue=queue,
+            status_choices=status_choices,
+            queue_choices=queue_choices,
+            professions=professions,
+            owners=owners,
+            owner_labels=owner_labels,
+            kpi_counts=kpi_counts,
+            queue_counts=queue_counts,
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/professional-leads/<int:lead_id>/status")
+@login_required
+@admin_required
+def admin_professional_lead_update_status(lead_id: int):
+    allowed_statuses = {
+        "new",
+        "contacted",
+        "demo_scheduled",
+        "pilot_discussion",
+        "closed",
+        "invalid",
+        "spam",
+    }
+
+    redirect_kwargs = {}
+    for key in ("q", "profession", "city", "status", "queue"):
+        value = (request.form.get(key) or "").strip()
+        if value:
+            redirect_kwargs[key] = value
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.warning(
+            "Lead status update skipped: professional_leads table unavailable"
+        )
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    lead = ProfessionalLead.query.get_or_404(lead_id)
+    old_status = ((lead.status or "").strip() or "new")
+    new_status = (request.form.get("lead_status") or "").strip().lower()
+
+    if new_status not in allowed_statuses:
+        current_app.logger.warning(
+            "Lead %s status update ignored: invalid status %r",
+            lead.id,
+            new_status,
+        )
+        flash("Invalid lead status.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    if old_status != new_status:
+        lead.status = new_status
+        if new_status == "contacted" and not lead.contacted_at:
+            lead.contacted_at = datetime.now(UTC)
+        _record_professional_lead_touch(
+            lead,
+            action="status_changed",
+            payload={"old_status": old_status, "new_status": new_status},
+        )
+        db.session.commit()
+        current_app.logger.info(
+            "Lead %s status changed from %s → %s",
+            lead.id,
+            old_status,
+            new_status,
+        )
+
+    return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+
+@admin_bp.post("/professional-leads/<int:lead_id>/notes")
+@login_required
+@admin_required
+def admin_professional_lead_update_notes(lead_id: int):
+    redirect_kwargs = {}
+    for key in ("q", "profession", "city", "status", "queue"):
+        value = (request.form.get(key) or "").strip()
+        if value:
+            redirect_kwargs[key] = value
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.warning(
+            "Lead notes update skipped: professional_leads table unavailable"
+        )
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    if not _table_has_column("professional_leads", "notes"):
+        current_app.logger.warning(
+            "Lead notes update skipped: professional_leads.notes unavailable"
+        )
+        flash("Lead notes are not available until the latest migration is applied.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    lead = ProfessionalLead.query.get_or_404(lead_id)
+    old_notes = getattr(lead, "notes", None)
+    new_notes = (request.form.get("notes") or "").strip() or None
+
+    if old_notes != new_notes:
+        lead.notes = new_notes
+        note_action = "added" if not (old_notes or "").strip() else "updated"
+        _record_professional_lead_touch(
+            lead,
+            action="notes_updated",
+            payload={"mode": note_action},
+        )
+        db.session.commit()
+        current_app.logger.info("Lead %s notes %s", lead.id, note_action)
+    else:
+        current_app.logger.info("Lead %s notes unchanged", lead.id)
+
+    return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+
+@admin_bp.post("/professional-leads/<int:lead_id>/owner")
+@login_required
+@admin_required
+def admin_professional_lead_update_owner(lead_id: int):
+    redirect_kwargs = {}
+    for key in ("q", "profession", "city", "status", "queue"):
+        value = (request.form.get(key) or "").strip()
+        if value:
+            redirect_kwargs[key] = value
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.warning(
+            "Lead owner update skipped: professional_leads table unavailable"
+        )
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    if not _table_has_column("professional_leads", "owner_admin_id"):
+        current_app.logger.warning(
+            "Lead owner update skipped: professional_leads.owner_admin_id unavailable"
+        )
+        flash("Lead ownership is not available until the latest migration is applied.", "warning")
+        return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+    lead = ProfessionalLead.query.get_or_404(lead_id)
+    old_owner_id = getattr(lead, "owner_admin_id", None)
+    raw_owner_id = (request.form.get("owner_admin_id") or "").strip()
+
+    if raw_owner_id:
+        try:
+            new_owner_id = int(raw_owner_id)
+        except ValueError:
+            flash("Invalid owner selection.", "warning")
+            return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+
+        owner = db.session.get(AdminUser, new_owner_id)
+        if owner is None:
+            flash("Selected admin user was not found.", "warning")
+            return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+    else:
+        new_owner_id = None
+
+    if old_owner_id != new_owner_id:
+        lead.owner_admin_id = new_owner_id
+        _record_professional_lead_touch(
+            lead,
+            action="owner_changed",
+            payload={
+                "old_owner_id": old_owner_id,
+                "new_owner_id": new_owner_id,
+            },
+        )
+        log_activity(
+            entity_type="ProfessionalLead",
+            entity_id=int(lead.id),
+            action="lead.owner_changed",
+            message="Demo lead owner updated",
+            old_value=str(old_owner_id) if old_owner_id is not None else None,
+            new_value=str(new_owner_id) if new_owner_id is not None else None,
+            meta={"scope": "demo_leads"},
+        )
+        db.session.commit()
+        current_app.logger.info(
+            "Lead %s owner changed from %s to %s",
+            lead.id,
+            old_owner_id,
+            new_owner_id,
+        )
+    else:
+        current_app.logger.info(
+            "Lead %s owner unchanged at %s",
+            lead.id,
+            old_owner_id,
+        )
+
+    return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
 
 
 @admin_bp.post("/professional-leads/<int:lead_id>/contacted")
@@ -6578,7 +7533,7 @@ def admin_professional_lead_detail(lead_id: int):
         return redirect(url_for("admin.admin_professional_leads"), code=303)
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
-    status_choices = ["new", "imported", "contacted", "qualified", "rejected"]
+    status_choices = PROFESSIONAL_LEAD_STATUS_CHOICES
 
     if request.method == "POST":
         status = (request.form.get("status") or "").strip().lower()
@@ -7024,6 +7979,79 @@ def admin_security():
             top_denied_usernames=top_denied_usernames,
             anomalies=anomalies,
             risky_actions=RISKY_ACTIONS,
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/security/events")
+@login_required
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_security_events():
+    _require_global_admin()
+    limit = max(1, min(int(request.args.get("limit", 100) or 100), 500))
+    query = SecurityEvent.query
+    event_type = (request.args.get("event_type") or "").strip()
+    email_hash = (request.args.get("email_hash") or "").strip()
+    ip = (request.args.get("ip") or "").strip()
+    if event_type:
+        query = query.filter(SecurityEvent.event_type == event_type)
+    if email_hash:
+        query = query.filter(SecurityEvent.email_hash == email_hash)
+    if ip:
+        query = query.filter(SecurityEvent.ip == ip)
+    rows = query.order_by(SecurityEvent.created_at.desc()).limit(limit).all()
+    return (
+        jsonify(
+            {
+                "events": [
+                    {
+                        "id": row.id,
+                        "event_type": row.event_type,
+                        "actor_type": row.actor_type,
+                        "ip": row.ip,
+                        "email_hash": row.email_hash,
+                        "created_at": row.created_at.isoformat()
+                        if row.created_at
+                        else None,
+                        "meta_json": row.meta_json,
+                    }
+                    for row in rows
+                ]
+            }
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/security/summary")
+@login_required
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin")
+def admin_security_summary():
+    _require_global_admin()
+    since = utc_now() - timedelta(minutes=15)
+
+    def _count(event_type: str) -> int:
+        return int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.created_at >= since,
+                SecurityEvent.event_type == event_type,
+            )
+            .scalar()
+            or 0
+        )
+
+    return (
+        jsonify(
+            {
+                "issued_last_15m": _count("magic_link_issued"),
+                "consumed_last_15m": _count("magic_link_consumed"),
+                "rate_limited_last_15m": _count("magic_link_rate_limited"),
+                "reuse_blocked_last_15m": _count("magic_link_reuse_blocked"),
+            }
         ),
         200,
     )

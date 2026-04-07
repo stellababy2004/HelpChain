@@ -1,5 +1,6 @@
 import hashlib
 import math
+import os
 import re
 import secrets
 import time
@@ -27,12 +28,18 @@ from flask import (
 )
 from flask_babel import get_locale as babel_get_locale
 from flask_babel import gettext as _
+from flask_mail import Message
 from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
 from markupsafe import Markup, escape
 from sqlalchemy import desc, func, or_
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
+
+try:
+    from redis import Redis
+except Exception:  # pragma: no cover - keep runtime optional
+    Redis = None
 
 from ..authz import can_view_request
 from backend.core.tenant import current_structure_id
@@ -43,12 +50,13 @@ from ..constants.categories import (
     request_category_label,
 )
 from ..category_data import ALIASES, CATEGORIES, COMMON
-from ..extensions import csrf, limiter
+from ..extensions import csrf, limiter, mail
 from ..models import (
     Notification,
     ProfessionalLead,
     Request,
     RequestActivity,
+    SecurityEvent,
     Volunteer,
     VolunteerAction,
     canonical_role,
@@ -105,6 +113,9 @@ def email_or_ip_key():
 
 
 _IN_MEMORY_RL: dict[str, deque] = {}
+_IN_MEMORY_BLOCKS: dict[str, float] = {}
+_REDIS_RL_CLIENT = None
+_REDIS_RL_URL = None
 
 
 def _client_ip() -> str:
@@ -113,26 +124,77 @@ def _client_ip() -> str:
     return xff or (request.remote_addr or "unknown")
 
 
-def _rate_limit_allow(key: str, limit: int, window_sec: int) -> bool:
-    """
-    MVP in-memory rate limit with a sliding time window.
-    Returns True when request is allowed, False when rate-limited.
+def _rate_limit_storage_key(key: str) -> str:
+    return f"rl:{key}"
 
-    Anti-enumeration: call sites should return a generic OK view on False.
-    """
+
+def _get_redis_rate_limit_client():
+    global _REDIS_RL_CLIENT, _REDIS_RL_URL
+    redis_url = (os.getenv("REDIS_URL") or "").strip()
+    if not redis_url or Redis is None:
+        return None
+    if _REDIS_RL_CLIENT is not None and _REDIS_RL_URL == redis_url:
+        return _REDIS_RL_CLIENT
+    try:
+        client = Redis.from_url(
+            redis_url,
+            decode_responses=True,
+            socket_connect_timeout=1,
+            socket_timeout=1,
+        )
+        client.ping()
+    except Exception:
+        _REDIS_RL_CLIENT = None
+        _REDIS_RL_URL = redis_url
+        return None
+    _REDIS_RL_CLIENT = client
+    _REDIS_RL_URL = redis_url
+    return _REDIS_RL_CLIENT
+
+
+def _rate_limit_block_key_for(key: str) -> str | None:
+    if ":ip:" not in key:
+        return None
+    return f"block:ip:{key.split(':ip:', 1)[1]}"
+
+
+def _in_memory_block_retry_after(block_key: str) -> int:
+    expires_at = _IN_MEMORY_BLOCKS.get(block_key)
+    if not expires_at:
+        return 0
     now = time.time()
-    q = _IN_MEMORY_RL.get(key)
-    if q is None:
-        q = deque()
-        _IN_MEMORY_RL[key] = q
+    if expires_at <= now:
+        _IN_MEMORY_BLOCKS.pop(block_key, None)
+        return 0
+    return int(max(1, math.ceil(expires_at - now)))
 
-    cutoff = now - float(window_sec)
-    while q and q[0] < cutoff:
-        q.popleft()
-    if len(q) >= int(limit):
-        return False
-    q.append(now)
-    return True
+
+def _rate_limit_block(block_key: str, duration_sec: int) -> None:
+    client = _get_redis_rate_limit_client()
+    if client is not None:
+        try:
+            client.set(_rate_limit_storage_key(block_key), "1", ex=int(duration_sec))
+            return
+        except Exception:
+            pass
+    _IN_MEMORY_BLOCKS[block_key] = time.time() + float(duration_sec)
+
+
+def _rate_limit_block_retry_after(block_key: str) -> int:
+    client = _get_redis_rate_limit_client()
+    if client is not None:
+        try:
+            ttl = int(client.ttl(_rate_limit_storage_key(block_key)) or 0)
+            if ttl > 0:
+                return ttl
+        except Exception:
+            pass
+    return _in_memory_block_retry_after(block_key)
+
+
+def _rate_limit_allow(key: str, limit: int, window_sec: int) -> bool:
+    allowed, _retry_after = _rate_limit_check(key, limit, window_sec)
+    return allowed
 
 
 def _rate_limit_check(key: str, limit: int, window_sec: int) -> tuple[bool, int]:
@@ -140,6 +202,32 @@ def _rate_limit_check(key: str, limit: int, window_sec: int) -> tuple[bool, int]
     Sliding-window limiter with retry_after support.
     Returns (allowed, retry_after_seconds).
     """
+    block_key = _rate_limit_block_key_for(key)
+    if block_key:
+        retry_after = _rate_limit_block_retry_after(block_key)
+        if retry_after > 0:
+            return False, retry_after
+
+    client = _get_redis_rate_limit_client()
+    if client is not None:
+        try:
+            storage_key = _rate_limit_storage_key(key)
+            pipe = client.pipeline(transaction=True)
+            pipe.incr(storage_key)
+            pipe.expire(storage_key, int(window_sec), nx=True)
+            pipe.ttl(storage_key)
+            current_count, _ttl_set, ttl = pipe.execute()
+            current_count = int(current_count or 0)
+            ttl = int(ttl or 0)
+            if ttl < 0:
+                client.expire(storage_key, int(window_sec))
+                ttl = int(window_sec)
+            if current_count > int(limit):
+                return False, int(max(1, ttl or window_sec))
+            return True, 0
+        except Exception:
+            pass
+
     now = time.time()
     q = _IN_MEMORY_RL.get(key)
     if q is None:
@@ -166,13 +254,212 @@ def has_control_chars(text: str) -> bool:
     return any(ord(ch) < 32 and ch not in ("\t", "\n", "\r") for ch in text)
 
 
-def _to_utc_naive(dt: datetime | None) -> datetime | None:
-    """Normalize datetimes to naive UTC for safe comparisons across legacy rows."""
+PRO_LEAD_INVALID_EMAIL_DOMAINS = {"example.com", "test.com"}
+PRO_LEAD_SPAM_EMAIL_DOMAINS = {"mailinator.com"}
+PRO_LEAD_SUSPICIOUS_MARKERS = ("zap", "zaproxy")
+PRO_LEAD_DUMMY_TOKENS = {
+    "test",
+    "dummy",
+    "asdf",
+    "qwerty",
+    "foobar",
+    "lorem ipsum",
+    "john doe",
+    "jane doe",
+    "n/a",
+    "na",
+    "none",
+    "null",
+    "xxx",
+}
+
+
+def _normalize_lead_probe_text(value: str | None) -> str:
+    return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+
+def _lead_field_looks_dummy(value: str | None) -> bool:
+    normalized = _normalize_lead_probe_text(value)
+    return bool(normalized) and normalized in PRO_LEAD_DUMMY_TOKENS
+
+
+def _phone_has_basic_sanity(phone: str | None) -> bool:
+    cleaned = (phone or "").strip()
+    if not cleaned:
+        return True
+    if re.search(r"[A-Za-z]", cleaned):
+        return False
+    digits = re.sub(r"\D", "", cleaned)
+    if len(digits) < 7 or len(digits) > 15:
+        return False
+    if len(digits) >= 7 and len(set(digits)) == 1:
+        return False
+    return True
+
+
+def _screen_professional_lead_submission(
+    form_data: dict[str, str | None],
+    *,
+    user_agent: str | None,
+) -> tuple[str | None, list[str]]:
+    website = (form_data.get("website") or "").strip()
+    if website:
+        return "discard", ["honeypot:website"]
+
+    email = ((form_data.get("email") or "").strip().lower())
+    _local_part, _sep, domain = email.partition("@")
+    domain = domain.strip().lower()
+
+    invalid_reasons: list[str] = []
+    spam_reasons: list[str] = []
+
+    if domain in PRO_LEAD_INVALID_EMAIL_DOMAINS:
+        invalid_reasons.append(f"email_domain:{domain}")
+    elif domain in PRO_LEAD_SPAM_EMAIL_DOMAINS:
+        spam_reasons.append(f"email_domain:{domain}")
+
+    phone = (form_data.get("phone") or "").strip()
+    if phone and not _phone_has_basic_sanity(phone):
+        invalid_reasons.append("phone:invalid")
+
+    suspicious_blob = " ".join(
+        part
+        for part in (
+            user_agent,
+            form_data.get("full_name"),
+            form_data.get("organisation"),
+            form_data.get("organization"),
+            form_data.get("structure"),
+            form_data.get("city"),
+            form_data.get("profession"),
+            form_data.get("fonction"),
+            form_data.get("message"),
+        )
+        if part
+    ).lower()
+    marker_hits = [
+        marker for marker in PRO_LEAD_SUSPICIOUS_MARKERS if marker in suspicious_blob
+    ]
+    if marker_hits:
+        spam_reasons.append(f"marker:{','.join(marker_hits)}")
+
+    dummy_fields = [
+        field_name
+        for field_name in (
+            "full_name",
+            "organisation",
+            "organization",
+            "structure",
+            "city",
+            "profession",
+            "fonction",
+        )
+        if _lead_field_looks_dummy(form_data.get(field_name))
+    ]
+    if len(dummy_fields) >= 2:
+        invalid_reasons.append(f"dummy_fields:{','.join(dummy_fields)}")
+    elif _lead_field_looks_dummy(form_data.get("message")):
+        invalid_reasons.append("dummy_fields:message")
+
+    if spam_reasons:
+        return "spam", spam_reasons
+    if invalid_reasons:
+        return "invalid", invalid_reasons
+    return None, []
+
+
+def _screening_note(classification: str, reasons: list[str]) -> str:
+    reason_text = ", ".join(reasons) if reasons else "screened"
+    return f"[screening:{classification}] {reason_text}"
+
+
+def _merge_lead_notes(*parts: str | None) -> str | None:
+    cleaned_parts: list[str] = []
+    for part in parts:
+        text = (part or "").strip()
+        if text and text not in cleaned_parts:
+            cleaned_parts.append(text)
+    if not cleaned_parts:
+        return None
+    return "\n\n".join(cleaned_parts)
+
+
+def _resolved_lead_status(existing_status: str | None, screening_status: str | None) -> str:
+    if screening_status in {"invalid", "spam"}:
+        return screening_status
+    current_status = ((existing_status or "").strip().lower() or "new")
+    if current_status in {"invalid", "spam"}:
+        return "new"
+    return current_status
+
+
+def _turnstile_is_enabled() -> bool:
+    return bool(current_app.config.get("HC_TURNSTILE_ENABLED"))
+
+
+def _verify_turnstile_token(*, remote_ip: str | None) -> bool:
+    if not _turnstile_is_enabled():
+        return True
+
+    token = (request.form.get("cf-turnstile-response") or "").strip()
+    secret = (current_app.config.get("HC_TURNSTILE_SECRET_KEY") or "").strip()
+    verify_url = (current_app.config.get("HC_TURNSTILE_VERIFY_URL") or "").strip()
+    timeout_sec = float(current_app.config.get("HC_TURNSTILE_TIMEOUT_SECONDS") or 2.5)
+
+    if not token or not secret or not verify_url:
+        current_app.logger.warning(
+            "[TURNSTILE] missing verification input token=%s secret=%s verify_url=%s",
+            bool(token),
+            bool(secret),
+            bool(verify_url),
+        )
+        return False
+
+    try:
+        import requests
+
+        response = requests.post(
+            verify_url,
+            data={
+                "secret": secret,
+                "response": token,
+                "remoteip": remote_ip or "",
+            },
+            timeout=max(0.5, timeout_sec),
+        )
+        payload = response.json() if response.content else {}
+    except Exception:
+        current_app.logger.exception("[TURNSTILE] verification failed")
+        return False
+
+    success = bool(payload.get("success"))
+    if not success:
+        current_app.logger.info(
+            "[TURNSTILE] verification rejected errors=%s",
+            payload.get("error-codes") or [],
+        )
+    return success
+
+
+def _require_utc_datetime(
+    dt: datetime | None, *, assume_naive_utc: bool = False
+) -> datetime | None:
+    """Normalize datetimes to aware UTC and reject silent timezone ambiguity."""
     if dt is None:
         return None
     if dt.tzinfo is None:
-        return dt
-    return dt.astimezone(UTC).replace(tzinfo=None)
+        if not assume_naive_utc:
+            raise ValueError("naive datetime provided where UTC-aware datetime is required")
+        return dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
+
+
+def _to_utc_naive(dt: datetime | None) -> datetime | None:
+    """Legacy helper kept for non-auth call sites that still compare naive UTC."""
+    normalized = _require_utc_datetime(dt, assume_naive_utc=True)
+    if normalized is None:
+        return None
+    return normalized.replace(tzinfo=None)
 
 
 # --- Helpers ---
@@ -196,6 +483,338 @@ def is_safe_url(target: str) -> bool:
 
 def _sha256_hex(s: str) -> str:
     return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
+
+def _magic_link_email_fingerprint(email: str | None) -> str | None:
+    cleaned = (email or "").strip().lower()
+    if not cleaned:
+        return None
+    return _sha256_hex(cleaned)[:12]
+
+
+def _magic_link_reject(
+    reason: str,
+    *,
+    token_hash: str | None = None,
+    token_id: int | None = None,
+    purpose: str | None = None,
+) -> tuple[str, int]:
+    log_security_event(
+        "magic_link_rejected",
+        actor_type="anonymous",
+        meta={
+            "reason": reason,
+            "purpose": purpose,
+            "token_id": token_id,
+            "token_hash_prefix": (token_hash or "")[:12] or None,
+        },
+    )
+    return render_template("magic_link_invalid.html"), 200
+
+
+def _magic_link_rate_limited(*, purpose: str, email: str, ip: str) -> bool:
+    window_sec = 15 * 60
+    ip_allowed, _ = _rate_limit_check(f"ml:issue:ip:{ip}", limit=10, window_sec=window_sec)
+    email_allowed = True
+    if email:
+        email_allowed, _ = _rate_limit_check(
+            f"ml:issue:email:{email}",
+            limit=3,
+            window_sec=window_sec,
+        )
+    if ip_allowed and email_allowed:
+        return False
+    log_security_event(
+        "magic_link_rate_limited",
+        actor_type="anonymous",
+        ip=ip,
+        email_hash=_sha256_hex(email) if email else None,
+        meta={
+            "purpose": purpose,
+            "email_hash_prefix": _magic_link_email_fingerprint(email),
+            "email_limited": not email_allowed,
+            "ip_limited": not ip_allowed,
+        },
+    )
+    return True
+
+
+def _detect_suspicious_activity(ip: str, email: str | None) -> bool:
+    since = utc_now() - timedelta(minutes=10)
+    email_hash = _sha256_hex((email or "").strip().lower()) if email else None
+    try:
+        ip_count = (
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+        distinct_email_count = (
+            db.session.query(func.count(func.distinct(SecurityEvent.email_hash)))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+                SecurityEvent.email_hash.isnot(None),
+            )
+            .scalar()
+            or 0
+        )
+        email_count = 0
+        if email_hash:
+            email_count = (
+                db.session.query(func.count(SecurityEvent.id))
+                .filter(
+                    SecurityEvent.event_type == "magic_link_attempt",
+                    SecurityEvent.created_at >= since,
+                    SecurityEvent.email_hash == email_hash,
+                )
+                .scalar()
+                or 0
+            )
+    except Exception:
+        db.session.rollback()
+        return False
+
+    suspicious = (
+        int(ip_count) > 20
+        or int(distinct_email_count) >= 5
+        or int(email_count) > 10
+    )
+    if suspicious:
+        log_security_event(
+            "magic_link_suspicious_activity",
+            actor_type="anonymous",
+            ip=ip,
+            email_hash=email_hash,
+            meta={
+                "ip_count_10m": int(ip_count),
+                "distinct_emails_10m": int(distinct_email_count),
+                "email_count_10m": int(email_count),
+            },
+        )
+    return suspicious
+
+
+def _magic_link_trust_tier(email: str | None) -> str:
+    return "unknown"
+
+
+def _compute_magic_link_risk(ip: str, email: str | None) -> dict:
+    since = utc_now() - timedelta(minutes=10)
+    normalized_email = (email or "").strip().lower()
+    email_hash = _sha256_hex(normalized_email) if normalized_email else None
+    trust_tier = _magic_link_trust_tier(normalized_email)
+    query_failed = False
+    try:
+        ip_count_10m = int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+        distinct_emails_10m = int(
+            db.session.query(func.count(func.distinct(SecurityEvent.email_hash)))
+            .filter(
+                SecurityEvent.event_type == "magic_link_attempt",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+                SecurityEvent.email_hash.isnot(None),
+            )
+            .scalar()
+            or 0
+        )
+        email_count_10m = 0
+        recent_reuse_blocked_10m = 0
+        if email_hash:
+            email_count_10m = int(
+                db.session.query(func.count(SecurityEvent.id))
+                .filter(
+                    SecurityEvent.event_type == "magic_link_attempt",
+                    SecurityEvent.created_at >= since,
+                    SecurityEvent.email_hash == email_hash,
+                )
+                .scalar()
+                or 0
+            )
+            recent_reuse_blocked_10m = int(
+                db.session.query(func.count(SecurityEvent.id))
+                .filter(
+                    SecurityEvent.event_type == "magic_link_reuse_blocked",
+                    SecurityEvent.created_at >= since,
+                    SecurityEvent.email_hash == email_hash,
+                )
+                .scalar()
+                or 0
+            )
+        recent_rate_limited_10m = int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_rate_limited",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+        recent_suspicious_10m = int(
+            db.session.query(func.count(SecurityEvent.id))
+            .filter(
+                SecurityEvent.event_type == "magic_link_suspicious_activity",
+                SecurityEvent.created_at >= since,
+                SecurityEvent.ip == ip,
+            )
+            .scalar()
+            or 0
+        )
+    except Exception:
+        db.session.rollback()
+        query_failed = True
+        ip_count_10m = 0
+        distinct_emails_10m = 0
+        email_count_10m = 0
+        recent_rate_limited_10m = 0
+        recent_reuse_blocked_10m = 0
+        recent_suspicious_10m = 0
+
+    score = 0
+    signals: list[str] = []
+    if query_failed:
+        score += 5
+        signals.append("risk_query_failure")
+    if ip_count_10m > 10:
+        score += 2
+        signals.append("ip_velocity")
+    if distinct_emails_10m >= 5:
+        score += 4
+        signals.append("email_spray")
+    if email_count_10m > 5:
+        score += 2
+        signals.append("email_velocity")
+    if recent_rate_limited_10m > 0:
+        score += 2
+        signals.append("recent_rate_limit")
+    if recent_reuse_blocked_10m > 0:
+        score += 1
+        signals.append("recent_reuse_block")
+    if recent_suspicious_10m > 0:
+        score += 4
+        signals.append("recent_suspicious")
+    if trust_tier == "trusted":
+        score = max(0, score - 2)
+
+    return {
+        "score": score,
+        "signals": signals,
+        "ip_count_10m": ip_count_10m,
+        "distinct_emails_10m": distinct_emails_10m,
+        "email_count_10m": email_count_10m,
+        "recent_rate_limited_10m": recent_rate_limited_10m,
+        "recent_reuse_blocked_10m": recent_reuse_blocked_10m,
+        "recent_suspicious_10m": recent_suspicious_10m,
+        "trust_tier": trust_tier,
+    }
+
+
+def _magic_link_block_duration_for_score(score: int) -> int:
+    if score < 4:
+        return 0
+    if score <= 6:
+        return 10 * 60
+    if score <= 9:
+        return 60 * 60
+    return 24 * 60 * 60
+
+
+def _recent_active_magic_link(
+    *,
+    purpose: str,
+    email: str,
+    request_id: int | None = None,
+    cooldown_seconds: int = 120,
+):
+    now = utc_now()
+    cutoff = now - timedelta(seconds=cooldown_seconds)
+    query = MagicLinkToken.query.filter_by(
+        purpose=purpose,
+        email=(email or "").strip().lower(),
+        used_at=None,
+        invalidated_at=None,
+    )
+    if request_id is not None:
+        query = query.filter(MagicLinkToken.request_id == request_id)
+    for row in query.order_by(MagicLinkToken.created_at.desc()).all():
+        created_at = _require_utc_datetime(row.created_at, assume_naive_utc=True)
+        expires_at = _require_utc_datetime(row.expires_at, assume_naive_utc=True)
+        if created_at is None or expires_at is None:
+            continue
+        if expires_at <= now or created_at < cutoff:
+            continue
+        remaining = max(1, int((created_at + timedelta(seconds=cooldown_seconds) - now).total_seconds()))
+        return row, remaining
+    return None, 0
+
+
+def _invalidate_existing_magic_links(
+    *,
+    purpose: str,
+    email: str,
+    request_id: int | None = None,
+    exclude_token_hash: str | None = None,
+    reason: str = "superseded",
+) -> int:
+    now = utc_now()
+    query = MagicLinkToken.query.filter_by(
+        purpose=purpose,
+        email=(email or "").strip().lower(),
+        used_at=None,
+        invalidated_at=None,
+    )
+    if request_id is not None:
+        query = query.filter(MagicLinkToken.request_id == request_id)
+    if exclude_token_hash:
+        query = query.filter(MagicLinkToken.token_hash != exclude_token_hash)
+    invalidated = 0
+    for row in query.all():
+        row_expires_at = _require_utc_datetime(row.expires_at, assume_naive_utc=True)
+        if row_expires_at is None or row_expires_at < now:
+            continue
+        row.invalidated_at = now
+        row.invalidated_reason = reason[:64]
+        invalidated += 1
+    return invalidated
+
+
+def _load_legacy_request_magic_link(token_hash: str):
+    legacy_req = (
+        scoped_requests_query()
+        .filter(Request.requester_token_hash == token_hash)
+        .order_by(desc(Request.created_at))
+        .first()
+    )
+    if not legacy_req:
+        return None
+
+    created_at = _require_utc_datetime(
+        getattr(legacy_req, "requester_token_created_at", None),
+        assume_naive_utc=True,
+    )
+    if created_at is None:
+        return None
+
+    return {
+        "legacy_req": legacy_req,
+        "created_at": created_at,
+        "expires_at": created_at + timedelta(minutes=15),
+    }
 
 
 def get_safe_next(default_endpoint: str):
@@ -630,24 +1249,15 @@ def magic_link_consume(token: str):
 
     # Legacy compatibility (/r/<token> previously hashed into requests.requester_token_hash).
     if ml is None:
-        legacy_req = (
-            scoped_requests_query()
-            .filter(Request.requester_token_hash == token_hash)
-            .order_by(desc(Request.created_at))
-            .first()
-        )
-        if not legacy_req:
-            return render_template("magic_link_invalid.html"), 200
+        legacy = _load_legacy_request_magic_link(token_hash)
+        if legacy is None:
+            return _magic_link_reject("not_found", token_hash=token_hash)
 
-        created_at = getattr(legacy_req, "requester_token_created_at", None)
-        # If legacy token has no timestamp, treat as invalid to avoid indefinite reuse.
-        if not created_at:
-            return render_template("magic_link_invalid.html"), 200
-
-        expires_at = _to_utc_naive(created_at + timedelta(minutes=15))
-        now = _to_utc_naive(utc_now())
+        legacy_req = legacy["legacy_req"]
+        expires_at = legacy["expires_at"]
+        now = utc_now()
         if now > expires_at:
-            return render_template("magic_link_invalid.html"), 200
+            return _magic_link_reject("expired", token_hash=token_hash, purpose="request")
 
         # If the new table isn't available yet, keep legacy behavior (no single-use).
         try:
@@ -667,6 +1277,7 @@ def magic_link_consume(token: str):
                 purpose="request",
                 email=(getattr(legacy_req, "email", "") or "").strip().lower(),
                 request_id=getattr(legacy_req, "id", None),
+                created_at=legacy["created_at"],
                 expires_at=expires_at,
             )
             db.session.add(ml)
@@ -676,40 +1287,94 @@ def magic_link_consume(token: str):
             db.session.rollback()
             ml = MagicLinkToken.query.filter_by(token_hash=token_hash).first()
             if ml is None:
-                return render_template("magic_link_invalid.html"), 200
+                return _magic_link_reject("invalid", token_hash=token_hash)
 
-    now = _to_utc_naive(utc_now())
-    expires_at = _to_utc_naive(ml.expires_at)
-    if expires_at is None or now > expires_at:
-        return render_template("magic_link_invalid.html"), 200
-
-    # Single-use, race-safe: claim the token only if it's unused and unexpired.
     try:
-        claimed = (
-            MagicLinkToken.query.filter_by(token_hash=token_hash, used_at=None)
-            .filter(MagicLinkToken.expires_at >= now)
-            .update(
-                {
-                    MagicLinkToken.used_at: now,
-                    MagicLinkToken.used_ip: _client_ip(),
-                    MagicLinkToken.used_ua: (request.headers.get("User-Agent") or "")[
-                        :255
-                    ],
-                }
-            )
+        now = utc_now()
+        expires_at = _require_utc_datetime(ml.expires_at, assume_naive_utc=True)
+        used_at = _require_utc_datetime(ml.used_at, assume_naive_utc=True)
+        invalidated_at = _require_utc_datetime(
+            getattr(ml, "invalidated_at", None),
+            assume_naive_utc=True,
         )
+    except ValueError:
+        current_app.logger.warning(
+            "[MAGIC LINK] token_id=%s rejected due to naive datetime state",
+            getattr(ml, "id", None),
+        )
+        return _magic_link_reject(
+            "invalid",
+            token_hash=token_hash,
+            token_id=getattr(ml, "id", None),
+            purpose=getattr(ml, "purpose", None),
+        )
+
+    if ml.purpose not in {"request", "volunteer"}:
+        return _magic_link_reject(
+            "wrong_purpose",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+    if invalidated_at is not None:
+        return _magic_link_reject(
+            "invalid",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+    if used_at is not None:
+        return _magic_link_reject(
+            "already_used",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+    if expires_at is None or now > expires_at:
+        try:
+            if getattr(ml, "invalidated_at", None) is None:
+                ml.invalidated_at = now
+                ml.invalidated_reason = "expired"
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+        return _magic_link_reject(
+            "expired",
+            token_hash=token_hash,
+            token_id=ml.id,
+            purpose=ml.purpose,
+        )
+
+    # Single-use claim via explicit row mutation to avoid bulk-update timezone sync issues.
+    try:
+        ml.used_at = now
+        ml.used_ip = _client_ip()
+        ml.used_ua = (request.headers.get("User-Agent") or "")[:255]
+        db.session.commit()
     except OperationalError:
         db.session.rollback()
-        return render_template("magic_link_invalid.html"), 200
-    if not claimed:
-        db.session.rollback()
-        return render_template("magic_link_invalid.html"), 200
-    db.session.commit()
+        return _magic_link_reject(
+            "invalid",
+            token_hash=token_hash,
+            token_id=getattr(ml, "id", None),
+            purpose=getattr(ml, "purpose", None),
+        )
 
     # Reload to get purpose/email/request_id.
     ml = MagicLinkToken.query.filter_by(token_hash=token_hash).first()
     if ml is None:
-        return render_template("magic_link_invalid.html"), 200
+        return _magic_link_reject("not_found", token_hash=token_hash)
+
+    log_security_event(
+        "magic_link_consumed",
+        actor_type="anonymous",
+        meta={
+            "purpose": ml.purpose,
+            "token_id": ml.id,
+            "request_id": ml.request_id,
+            "token_hash_prefix": token_hash[:12],
+        },
+    )
 
     if ml.purpose == "request":
         # Requester passwordless session (minimal)
@@ -747,7 +1412,12 @@ def magic_link_consume(token: str):
             target = url_for("main.volunteer_dashboard")
         return redirect(target, code=303)
 
-    return render_template("magic_link_invalid.html"), 200
+    return _magic_link_reject(
+        "wrong_purpose",
+        token_hash=token_hash,
+        token_id=ml.id,
+        purpose=ml.purpose,
+    )
 
 
 @main_bp.get("/r/<token>")
@@ -946,6 +1616,12 @@ def search():
         pro_rows = (
             ProfessionalLead.query.filter(
                 or_(
+                    ProfessionalLead.status.is_(None),
+                    ~func.lower(ProfessionalLead.status).in_(("invalid", "spam")),
+                )
+            )
+            .filter(
+                or_(
                     ProfessionalLead.full_name.ilike(q_like),
                     ProfessionalLead.profession.ilike(q_like),
                     ProfessionalLead.organization.ilike(q_like),
@@ -1109,7 +1785,7 @@ def become_volunteer():
         return render_template("become_volunteer.html", flow_mode=flow_mode), 200
 
     if request.method == "POST":
-        default_cooldown_seconds = 14
+        default_cooldown_seconds = 120
         response_cooldown_seconds = default_cooldown_seconds
         accept = (request.headers.get("Accept") or "").lower()
         wants_json = "application/json" in accept
@@ -1174,34 +1850,64 @@ def become_volunteer():
         # For regular form submits, require explicit form email to avoid stale session sends.
         email = form_email or (session_email if wants_json else "")
         email_key = email or ip
-        ip_allowed, _ip_retry_after = _rate_limit_check(
-            f"ml:vol:ip:{ip}", limit=10, window_sec=600
-        )
-        if not ip_allowed:
-            suppress = True
-            suppress_reasons.append("ip-limit")
-        email_allowed, _email_retry_after = _rate_limit_check(
-            f"ml:vol:email:{email_key}", limit=3, window_sec=600
-        )
-        if not email_allowed:
-            suppress = True
-            suppress_reasons.append("email-limit")
 
         # Volunteer magic link (purpose="volunteer") — always return generic OK.
         if not email or "@" not in email:
             return _volunteer_magic_ok_response()
         session["volunteer_magic_email"] = email
 
-        # UX cooldown: 1 send per email_key per default_cooldown_seconds.
-        cooldown_allowed, cooldown_retry_after = _rate_limit_check(
-            f"ml:vol:cooldown:{email_key}",
-            limit=1,
-            window_sec=default_cooldown_seconds,
+        email_hash = _sha256_hex(email)
+        risk = _compute_magic_link_risk(ip, email)
+        _detect_suspicious_activity(ip, email)
+        log_security_event(
+            "magic_link_attempt",
+            actor_type="anonymous",
+            ip=ip,
+            email_hash=email_hash,
+            meta={"purpose": "volunteer"},
         )
-        if not cooldown_allowed:
+        block_duration_sec = _magic_link_block_duration_for_score(risk["score"])
+        if block_duration_sec > 0:
+            _rate_limit_block(f"block:ip:{ip}", block_duration_sec)
             suppress = True
-            suppress_reasons.append("cooldown")
+            suppress_reasons.append("risk-blocked")
+            log_security_event(
+                "magic_link_risk_blocked",
+                actor_type="anonymous",
+                ip=ip,
+                email_hash=email_hash,
+                meta={
+                    "purpose": "volunteer",
+                    "risk_score": risk["score"],
+                    "signals": risk["signals"],
+                    "block_duration_sec": block_duration_sec,
+                    "trust_tier": risk["trust_tier"],
+                },
+            )
+
+        if _magic_link_rate_limited(purpose="volunteer", email=email, ip=ip):
+            suppress = True
+            suppress_reasons.append("rate-limited")
+
+        recent_token, cooldown_retry_after = _recent_active_magic_link(
+            purpose="volunteer",
+            email=email,
+            cooldown_seconds=default_cooldown_seconds,
+        )
+        if recent_token is not None:
+            suppress = True
+            suppress_reasons.append("reuse-blocked")
             response_cooldown_seconds = int(max(1, cooldown_retry_after))
+            log_security_event(
+                "magic_link_reuse_blocked",
+                actor_type="anonymous",
+                email_hash=email_hash,
+                meta={
+                    "purpose": "volunteer",
+                    "token_id": recent_token.id,
+                    "email_hash_prefix": _magic_link_email_fingerprint(email),
+                },
+            )
 
         current_app.logger.info(
             "[VOL-MAGIC] pre-send decision suppress=%s reasons=%s email=%s ip=%s",
@@ -1233,6 +1939,12 @@ def become_volunteer():
             ttl_minutes = 15
             expires_at = utc_now() + timedelta(minutes=ttl_minutes)
 
+            _invalidate_existing_magic_links(
+                purpose="volunteer",
+                email=email,
+                exclude_token_hash=token_hash,
+                reason="superseded",
+            )
             row = MagicLinkToken(
                 purpose="volunteer",
                 email=email,
@@ -1246,6 +1958,15 @@ def become_volunteer():
                 row.id,
                 email,
                 expires_at,
+            )
+            log_security_event(
+                "magic_link_issued",
+                actor_type="anonymous",
+                meta={
+                    "purpose": "volunteer",
+                    "token_id": row.id,
+                    "expires_at": expires_at.isoformat(),
+                },
             )
 
             base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
@@ -2607,16 +3328,36 @@ def submit_request_confirm():
 
         ip = _client_ip()
         email = (draft.get("email") or "").strip().lower()
-        email_key = email or ip
-        if not _rate_limit_allow(f"ml:req:ip:{ip}", limit=10, window_sec=600):
-            current_app.logger.info("[MAGIC LINK] rate-limited ip=%s", ip)
+        email_hash = _sha256_hex(email) if email else None
+        risk = _compute_magic_link_risk(ip, email)
+        _detect_suspicious_activity(ip, email)
+        if email:
+            log_security_event(
+                "magic_link_attempt",
+                actor_type="anonymous",
+                ip=ip,
+                email_hash=email_hash,
+                meta={"purpose": "request"},
+            )
+        block_duration_sec = _magic_link_block_duration_for_score(risk["score"])
+        if block_duration_sec > 0:
+            _rate_limit_block(f"block:ip:{ip}", block_duration_sec)
             suppress_magic_send = True
-        if not _rate_limit_allow(f"ml:req:email:{email_key}", limit=3, window_sec=600):
-            current_app.logger.info("[MAGIC LINK] rate-limited email_key=%s", email_key)
+            log_security_event(
+                "magic_link_risk_blocked",
+                actor_type="anonymous",
+                ip=ip,
+                email_hash=email_hash,
+                meta={
+                    "purpose": "request",
+                    "risk_score": risk["score"],
+                    "signals": risk["signals"],
+                    "block_duration_sec": block_duration_sec,
+                    "trust_tier": risk["trust_tier"],
+                },
+            )
+        if _magic_link_rate_limited(purpose="request", email=email, ip=ip):
             suppress_magic_send = True
-
-        raw_token = secrets.token_urlsafe(32)
-        token_hash = _sha256_hex(raw_token)
 
         req = Request(
             title=draft.get("title"),
@@ -2634,10 +3375,6 @@ def submit_request_confirm():
             category=draft.get("category"),
             structure_id=current_structure().id,
         )
-        # Legacy fields kept for backwards compatibility with existing /r/<token> links.
-        req.requester_token_hash = token_hash
-        req.requester_token_created_at = utc_now()
-
         db.session.add(req)
         db.session.commit()
         current_app.logger.info(
@@ -2656,32 +3393,77 @@ def submit_request_confirm():
         except Exception:
             pass
 
-        # Create single-use token row (DB) + build canonical URL.
-        expires_at = utc_now() + timedelta(minutes=15)
-        try:
-            ml = MagicLinkToken(
-                token_hash=token_hash,
+        raw_token = None
+        magic_url = None
+        recent_request_token = None
+        if not suppress_magic_send:
+            recent_request_token, _ = _recent_active_magic_link(
                 purpose="request",
                 email=(getattr(req, "email", "") or "").strip().lower(),
                 request_id=req.id,
-                expires_at=expires_at,
+                cooldown_seconds=120,
             )
-            db.session.add(ml)
-            db.session.commit()
-        except Exception:
-            # If this fails, we still keep legacy token fields; send will use /r/<token>.
-            db.session.rollback()
+            if recent_request_token is not None:
+                suppress_magic_send = True
+                log_security_event(
+                    "magic_link_reuse_blocked",
+                    actor_type="anonymous",
+                    email_hash=email_hash,
+                    meta={
+                        "purpose": "request",
+                        "request_id": req.id,
+                        "token_id": recent_request_token.id,
+                        "email_hash_prefix": _magic_link_email_fingerprint(email),
+                    },
+                )
 
-        try:
-            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
-            path = url_for("main.magic_link_consume", token=raw_token, _external=False)
-            magic_url = (
-                f"{base}{path}"
-                if base
-                else url_for("main.magic_link_consume", token=raw_token, _external=True)
-            )
-        except Exception:
-            magic_url = f"/auth/magic/{raw_token}"
+        # Create single-use token row (DB) + build canonical URL.
+        if not suppress_magic_send:
+            raw_token = secrets.token_urlsafe(32)
+            token_hash = _sha256_hex(raw_token)
+            expires_at = utc_now() + timedelta(minutes=15)
+            try:
+                _invalidate_existing_magic_links(
+                    purpose="request",
+                    email=(getattr(req, "email", "") or "").strip().lower(),
+                    request_id=req.id,
+                    exclude_token_hash=token_hash,
+                    reason="superseded",
+                )
+                ml = MagicLinkToken(
+                    token_hash=token_hash,
+                    purpose="request",
+                    email=(getattr(req, "email", "") or "").strip().lower(),
+                    request_id=req.id,
+                    expires_at=expires_at,
+                )
+                db.session.add(ml)
+                req.requester_token_hash = token_hash
+                req.requester_token_created_at = utc_now()
+                db.session.commit()
+                log_security_event(
+                    "magic_link_issued",
+                    actor_type="anonymous",
+                    meta={
+                        "purpose": "request",
+                        "token_id": ml.id,
+                        "request_id": req.id,
+                        "expires_at": expires_at.isoformat(),
+                    },
+                )
+                try:
+                    base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+                    path = url_for("main.magic_link_consume", token=raw_token, _external=False)
+                    magic_url = (
+                        f"{base}{path}"
+                        if base
+                        else url_for("main.magic_link_consume", token=raw_token, _external=True)
+                    )
+                except Exception:
+                    magic_url = f"/auth/magic/{raw_token}"
+            except Exception:
+                # If this fails, we still keep legacy token fields unset.
+                db.session.rollback()
 
         current_app.logger.info("[MAGIC LINK] request_id=%s url=%s", req.id, magic_url)
 
@@ -2690,7 +3472,7 @@ def submit_request_confirm():
             from backend.mail_service import send_notification_email
 
             recipient = getattr(req, "email", None)
-            if recipient and not suppress_magic_send:
+            if recipient and not suppress_magic_send and magic_url:
                 subject = "Confirmez votre demande HelpChain (15 min)"
 
                 # Dedicated template context (no "content" HTML string)
@@ -3035,7 +3817,7 @@ def pilot_kpi_api():
 
     closed_requests = (
         db.session.query(func.count(Request.id))
-        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "rejected"]))
+        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "cancelled"]))
         .scalar()
         or 0
     )
@@ -3199,7 +3981,7 @@ def volunteer_register_legacy():
 @main_bp.route("/professionnels/pilote", methods=["GET", "POST"])
 def professionnels_pilote():
     if request.method == "GET":
-        return render_template("professionnels_pilote.html"), 200
+        return render_template("professionnels_pilote.html", form_data={}), 200
 
     email = (request.form.get("email") or "").strip().lower()
     full_name = (request.form.get("full_name") or "").strip()
@@ -3209,10 +3991,51 @@ def professionnels_pilote():
     organization = (request.form.get("organization") or "").strip()
     availability = (request.form.get("availability") or "").strip()
     message = (request.form.get("message") or "").strip()
+    website = (request.form.get("website") or "").strip()
+    user_agent = ((request.headers.get("User-Agent") or "")[:255] or None)
+    form_data = {
+        "email": email,
+        "full_name": full_name,
+        "phone": phone,
+        "city": city,
+        "profession": profession,
+        "organization": organization,
+        "availability": availability,
+        "message": message,
+    }
 
     if not email or "@" not in email or not profession:
         flash(_("Please provide at least your email and your role."), "error")
-        return render_template("professionnels_pilote.html"), 400
+        return render_template("professionnels_pilote.html", form_data=form_data), 400
+
+    screening_status, screening_reasons = _screen_professional_lead_submission(
+        {
+            "email": email,
+            "full_name": full_name,
+            "phone": phone,
+            "city": city,
+            "profession": profession,
+            "organization": organization,
+            "message": message,
+            "website": website,
+        },
+        user_agent=user_agent,
+    )
+    if screening_status == "discard":
+        current_app.logger.info(
+            "[PRO-LEAD] discarded submission reasons=%s ip=%s ua=%s",
+            ",".join(screening_reasons),
+            _client_ip(),
+            user_agent,
+        )
+        return render_template(
+            "professionnels_pilote_thanks.html",
+            lead=SimpleNamespace(id="—"),
+        ), 200
+
+    if not _verify_turnstile_token(remote_ip=_client_ip()):
+        flash(_("Bot verification failed. Please try again."), "warning")
+        return render_template("professionnels_pilote.html", form_data=form_data), 400
 
     existing = (
         ProfessionalLead.query.filter(ProfessionalLead.email == email)
@@ -3228,10 +4051,14 @@ def professionnels_pilote():
             session.get("lang") or str(babel_get_locale() or "")
         ).strip() or existing.locale
         existing.ip = _client_ip() or existing.ip
-        existing.user_agent = (request.headers.get("User-Agent") or "")[
-            :255
-        ] or existing.user_agent
+        existing.user_agent = user_agent or existing.user_agent
         existing.source = "professionnels_pilote"
+        existing.status = _resolved_lead_status(existing.status, screening_status)
+        if screening_status in {"invalid", "spam"}:
+            existing.notes = _merge_lead_notes(
+                existing.notes,
+                _screening_note(screening_status, screening_reasons),
+            )
         db.session.commit()
         current_app.logger.info(
             "[PRO-LEAD] dedup hit email=%s existing_id=%s created_at=%s",
@@ -3253,12 +4080,27 @@ def professionnels_pilote():
         message=message or None,
         locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
         ip=_client_ip(),
-        user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+        user_agent=user_agent,
         source="professionnels_pilote",
+        status=_resolved_lead_status(None, screening_status),
+        notes=(
+            _screening_note(screening_status, screening_reasons)
+            if screening_status in {"invalid", "spam"}
+            else None
+        ),
         created_at=datetime.now(UTC),
     )
     db.session.add(lead)
     db.session.commit()
+
+    if screening_status in {"invalid", "spam"}:
+        current_app.logger.info(
+            "[PRO-LEAD] screened lead id=%s status=%s reasons=%s",
+            lead.id,
+            screening_status,
+            ",".join(screening_reasons),
+        )
+        return render_template("professionnels_pilote_thanks.html", lead=lead), 200
 
     try:
         from backend.mail_service import send_notification_email
@@ -3307,62 +4149,138 @@ def success_stories():
     return render_template("success_stories.html")
 
 
+@main_bp.route("/demo", methods=["GET", "POST"])
 @main_bp.route("/contact", methods=["GET", "POST"])
 def contact():
+    is_demo = request.path == "/demo"
+    if is_demo and request.method == "POST":
+        current_app.logger.info("demo form detected")
     if request.method == "GET":
         submitted = request.args.get("sent") == "1"
         return render_template(
             "contact.html",
             submitted=submitted,
+            is_demo=is_demo,
             form_data={},
             form_errors={},
         ), 200
 
+    demo_organisation = (
+        request.form.get("organisation") or request.form.get("structure") or ""
+    ).strip()
     form_data = {
         "full_name": (request.form.get("full_name") or "").strip(),
         "fonction": (request.form.get("fonction") or "").strip(),
-        "structure": (request.form.get("structure") or "").strip(),
+        "organisation": demo_organisation,
+        "structure": (
+            demo_organisation
+            if is_demo
+            else (request.form.get("structure") or "").strip()
+        ),
         "structure_type": (request.form.get("structure_type") or "").strip(),
         "city": (request.form.get("city") or "").strip(),
         "email": (request.form.get("email") or "").strip().lower(),
         "phone": (request.form.get("phone") or "").strip(),
         "objet_echange": (request.form.get("objet_echange") or "").strip(),
         "message": (request.form.get("message") or "").strip(),
+        "form_type": (request.form.get("form_type") or "").strip(),
+        "source": (request.form.get("source") or "").strip(),
+        "organization_size": (request.form.get("organization_size") or "").strip(),
+        "website": (request.form.get("website") or "").strip(),
     }
     form_errors: dict[str, str] = {}
+    user_agent = ((request.headers.get("User-Agent") or "")[:255] or None)
 
-    required_fields = (
-        ("full_name", _("Veuillez renseigner votre nom et prénom.")),
-        ("fonction", _("Veuillez renseigner votre fonction.")),
-        ("structure", _("Veuillez renseigner le nom de votre structure.")),
-        ("structure_type", _("Veuillez sélectionner un type de structure.")),
-        ("city", _("Veuillez renseigner votre territoire ou ville.")),
-        ("email", _("Veuillez renseigner une adresse e-mail valide.")),
-        ("objet_echange", _("Veuillez sélectionner l’objet de l’échange.")),
-        ("message", _("Veuillez renseigner le contexte de votre demande.")),
-    )
+    if is_demo:
+        form_data["objet_echange"] = "Démonstration"
+        form_data["city"] = form_data.get("city") or "Non renseigné"
+        required_fields = (
+            ("email", _("Veuillez renseigner une adresse e-mail professionnelle.")),
+            ("organisation", _("Veuillez renseigner le nom de votre organisation.")),
+        )
+    else:
+        required_fields = (
+            ("full_name", _("Veuillez renseigner votre nom et prénom.")),
+            ("fonction", _("Veuillez renseigner votre fonction.")),
+            ("structure", _("Veuillez renseigner le nom de votre structure.")),
+            ("structure_type", _("Veuillez sélectionner un type de structure.")),
+            ("city", _("Veuillez renseigner votre territoire ou ville.")),
+            ("email", _("Veuillez renseigner une adresse e-mail valide.")),
+            ("objet_echange", _("Veuillez sélectionner l’objet de l’échange.")),
+            ("message", _("Veuillez renseigner le contexte de votre demande.")),
+        )
     for key, msg in required_fields:
         if not form_data[key]:
             form_errors[key] = msg
 
     if form_data["email"] and ("@" not in form_data["email"] or "." not in form_data["email"]):
-        form_errors["email"] = _("Veuillez renseigner une adresse e-mail valide.")
+        form_errors["email"] = _(
+            "Veuillez renseigner une adresse e-mail professionnelle valide afin que nous puissions vous recontacter."
+            if is_demo
+            else "Veuillez renseigner une adresse e-mail valide."
+        )
 
     if form_errors:
-        flash(_("Merci de corriger les champs indiqués."), "warning")
+        flash(
+            _(
+                "Merci de corriger les champs indiqués pour planifier la démonstration."
+                if is_demo
+                else "Merci de corriger les champs indiqués."
+            ),
+            "warning",
+        )
         return render_template(
             "contact.html",
             submitted=False,
+            is_demo=is_demo,
             form_data=form_data,
             form_errors=form_errors,
         ), 400
 
-    lead_message = (
-        f"Type de structure : {form_data['structure_type']}\n"
-        f"Objet de l’échange : {form_data['objet_echange']}\n"
-        f"Téléphone : {form_data['phone'] or '-'}\n\n"
-        f"Contexte:\n{form_data['message']}"
+    screening_status, screening_reasons = _screen_professional_lead_submission(
+        form_data,
+        user_agent=user_agent,
     )
+    if screening_status == "discard":
+        current_app.logger.info(
+            "[CONTACT] discarded submission reasons=%s source=%s ip=%s ua=%s",
+            ",".join(screening_reasons),
+            "demo_page" if is_demo else "contact_echange",
+            _client_ip(),
+            user_agent,
+        )
+        return redirect(
+            ("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")),
+            code=303,
+        )
+
+    if not _verify_turnstile_token(remote_ip=_client_ip()):
+        flash(_("Bot verification failed. Please try again."), "warning")
+        return render_template(
+            "contact.html",
+            submitted=False,
+            is_demo=is_demo,
+            form_data=form_data,
+            form_errors={},
+        ), 400
+
+    if is_demo:
+        lead_message = (
+            f"Form type : demo\n"
+            f"Source : {form_data['source'] or 'demo_page'}\n"
+            f"Type de structure : {form_data['structure_type']}\n"
+            f"Taille : {form_data['organization_size']}\n"
+            f"Rôle : {form_data['fonction']}\n"
+            f"Téléphone : {form_data['phone'] or '-'}\n\n"
+            f"Contexte:\n{form_data['message']}"
+        )
+    else:
+        lead_message = (
+            f"Type de structure : {form_data['structure_type']}\n"
+            f"Objet de l’échange : {form_data['objet_echange']}\n"
+            f"Téléphone : {form_data['phone'] or '-'}\n\n"
+            f"Contexte:\n{form_data['message']}"
+        )
 
     existing = (
         ProfessionalLead.query.filter(ProfessionalLead.email == form_data["email"])
@@ -3374,19 +4292,31 @@ def contact():
         if existing:
             existing.full_name = form_data["full_name"]
             existing.profession = form_data["fonction"]
-            existing.organization = form_data["structure"]
+            existing.organization = (
+                form_data["organisation"] if is_demo else form_data["structure"]
+            )
             existing.city = form_data["city"]
             existing.phone = form_data["phone"] or existing.phone
             existing.availability = (
-                f"{form_data['structure_type']} | {form_data['objet_echange']}"
+                (
+                    f"{form_data['structure_type']} | {form_data['organization_size']} | Démonstration"
+                    if is_demo
+                    else f"{form_data['structure_type']} | {form_data['objet_echange']}"
+                )
             )
             existing.message = lead_message
             existing.locale = (
                 session.get("lang") or str(babel_get_locale() or "")
             ).strip() or existing.locale
             existing.ip = _client_ip() or existing.ip
-            existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
-            existing.source = "contact_echange"
+            existing.user_agent = user_agent or existing.user_agent
+            existing.source = "demo_page" if is_demo else "contact_echange"
+            existing.status = _resolved_lead_status(existing.status, screening_status)
+            if screening_status in {"invalid", "spam"}:
+                existing.notes = _merge_lead_notes(
+                    existing.notes,
+                    _screening_note(screening_status, screening_reasons),
+                )
             db.session.commit()
             lead = existing
         else:
@@ -3396,17 +4326,33 @@ def contact():
                 phone=form_data["phone"] or None,
                 city=form_data["city"] or None,
                 profession=form_data["fonction"],
-                organization=form_data["structure"] or None,
-                availability=f"{form_data['structure_type']} | {form_data['objet_echange']}",
+                organization=(
+                    form_data["organisation"] or None
+                    if is_demo
+                    else form_data["structure"] or None
+                ),
+                availability=(
+                    f"{form_data['structure_type']} | {form_data['organization_size']} | Démonstration"
+                    if is_demo
+                    else f"{form_data['structure_type']} | {form_data['objet_echange']}"
+                ),
                 message=lead_message,
                 locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
                 ip=_client_ip(),
-                user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
-                source="contact_echange",
+                user_agent=user_agent,
+                source="demo_page" if is_demo else "contact_echange",
+                status=_resolved_lead_status(None, screening_status),
+                notes=(
+                    _screening_note(screening_status, screening_reasons)
+                    if screening_status in {"invalid", "spam"}
+                    else None
+                ),
                 created_at=datetime.now(UTC),
             )
             db.session.add(lead)
             db.session.commit()
+        if is_demo:
+            current_app.logger.info("lead saved")
     except Exception:
         db.session.rollback()
         current_app.logger.exception("[CONTACT] lead save failed")
@@ -3417,18 +4363,97 @@ def contact():
         return render_template(
             "contact.html",
             submitted=False,
+            is_demo=is_demo,
             form_data=form_data,
             form_errors={},
         ), 500
 
-    notify_ok = True
-    try:
-        from backend.helpchain_backend.src.services.notification_jobs import (
-            enqueue_email_notification,
+    if screening_status in {"invalid", "spam"}:
+        current_app.logger.info(
+            "[CONTACT] screened lead id=%s status=%s reasons=%s source=%s",
+            lead.id,
+            screening_status,
+            ",".join(screening_reasons),
+            lead.source,
+        )
+        return redirect(
+            ("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")),
+            code=303,
         )
 
-        admin_to = (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
-        if not admin_to:
+    notify_ok = True
+    try:
+        from backend.mail_service import send_notification_email
+
+        if is_demo:
+            def _send_demo_email(*, recipient, subject, body, html=None):
+                msg = Message(
+                    subject=subject,
+                    sender="contact@helpchain.live",
+                    recipients=[recipient],
+                )
+                msg.body = body
+                if html:
+                    msg.html = html
+                current_app.logger.info(
+                    "Demo SMTP pre-send | MAIL_SERVER=%r | MAIL_PORT=%r | MAIL_USE_SSL=%s | MAIL_USE_TLS=%s | MAIL_USERNAME=%r | MAIL_PASSWORD_SET=%s | MAIL_DEFAULT_SENDER=%r",
+                    current_app.config.get("MAIL_SERVER"),
+                    current_app.config.get("MAIL_PORT"),
+                    current_app.config.get("MAIL_USE_SSL"),
+                    current_app.config.get("MAIL_USE_TLS"),
+                    current_app.config.get("MAIL_USERNAME"),
+                    bool(current_app.config.get("MAIL_PASSWORD")),
+                    current_app.config.get("MAIL_DEFAULT_SENDER"),
+                )
+                mail.send(msg)
+
+            def enqueue_email_notification(
+                *,
+                recipient,
+                subject,
+                template=None,
+                context=None,
+                purpose=None,
+                structure_id=None,
+                send_now=False,
+                **kwargs,
+            ):
+                delivered = send_notification_email(
+                    recipient=recipient,
+                    subject=subject,
+                    template=template,
+                    context=context,
+                    purpose=purpose or "demo_request_internal",
+                    structure_id=structure_id,
+                    force_sync=True,
+                )
+                return None, bool(delivered)
+
+        else:
+            def enqueue_email_notification(
+                *,
+                recipient,
+                subject,
+                template=None,
+                context=None,
+                purpose=None,
+                structure_id=None,
+                send_now=False,
+                **kwargs,
+            ):
+                delivered = send_notification_email(
+                    recipient=recipient,
+                    subject=subject,
+                    template=template,
+                    context=context,
+                    purpose=purpose or "contact_exchange",
+                    structure_id=structure_id,
+                    force_sync=True,
+                )
+                return None, bool(delivered)
+
+        admin_to = "contact@helpchain.live" if is_demo else (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
+        if not admin_to and not is_demo:
             admin_to = (current_app.config.get("ADMIN_NOTIFY_EMAIL") or "").strip()
 
         ctx = {
@@ -3448,29 +4473,151 @@ def contact():
             "user_agent": lead.user_agent,
             "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
         }
+        if is_demo:
+            demo_ctx = {
+                "type_structure": form_data.get("structure_type") or "Non renseigné",
+                "organization_size": form_data.get("organization_size") or "Non renseigné",
+                "role_name": form_data.get("fonction") or "Non renseigné",
+                "full_name": form_data.get("full_name") or "Non renseigné",
+                "email": form_data.get("email") or "Non renseigné",
+                "organization": form_data.get("organisation") or "Non renseigné",
+                "phone": form_data.get("phone") or "Non renseigné",
+                "message": form_data.get("message") or "Non renseigné",
+                "source": form_data.get("source") or "Non renseigné",
+                "lead_id": lead.id,
+                "created_at": lead.created_at,
+                "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
+            }
         if admin_to:
-            _, delivered = enqueue_email_notification(
+            if is_demo:
+                current_app.logger.info(
+                    "Sending demo notification synchronously to contact@helpchain.live"
+                )
+            job_id, delivered = enqueue_email_notification(
                 recipient=admin_to,
-                subject="[HelpChain] Nouvelle demande d’échange",
-                template="emails/professional_lead_notify.html",
-                context=ctx,
-                purpose="contact_exchange",
+                subject=(
+                    f"[Nouvelle demande démo] {form_data.get('structure') or 'Non renseigné'} — {form_data.get('structure_type') or 'Non renseigné'}"
+                    if is_demo
+                    else "[HelpChain] Nouvelle demande d’échange"
+                ),
+                template=(
+                    "emails/demo_request_notify.html"
+                    if is_demo
+                    else "emails/professional_lead_notify.html"
+                ),
+                context=(demo_ctx if is_demo else ctx),
+                purpose="demo_request_internal" if is_demo else "contact_exchange",
                 structure_id=getattr(lead, "structure_id", None),
                 send_now=True,
             )
             notify_ok = bool(delivered)
+            if is_demo and notify_ok:
+                current_app.logger.info("Demo notification sent successfully")
             if not notify_ok:
-                current_app.logger.error(
-                    "[CONTACT] notify queued (delivery failed) lead_id=%s", lead.id
-                )
+                if is_demo:
+                    current_app.logger.warning(
+                        "notification attempt started but delivery not confirmed | recipient=%s | resend_enabled=%s | mail_server=%s | mail_port=%s | mail_username=%s | mail_password=%s | mail_default_sender=%s",
+                        admin_to,
+                        bool((os.getenv("RESEND_API_KEY") or "").strip()),
+                        bool(current_app.config.get("MAIL_SERVER")),
+                        bool(current_app.config.get("MAIL_PORT")),
+                        bool(current_app.config.get("MAIL_USERNAME")),
+                        bool(current_app.config.get("MAIL_PASSWORD")),
+                        bool(current_app.config.get("MAIL_DEFAULT_SENDER")),
+                    )
+                    current_app.logger.warning(
+                        "Demo notification failed | lead_id=%s | type_structure=%s | taille=%s | role=%s | nom=%s | email=%s | organisation=%s | telephone=%s | contexte_present=%s | source=%s",
+                        lead.id,
+                        demo_ctx.get("type_structure"),
+                        demo_ctx.get("organization_size"),
+                        demo_ctx.get("role_name"),
+                        demo_ctx.get("full_name"),
+                        demo_ctx.get("email"),
+                        demo_ctx.get("organization"),
+                        demo_ctx.get("phone"),
+                        bool(demo_ctx.get("message") and demo_ctx.get("message") != "Non renseigné"),
+                        demo_ctx.get("source"),
+                    )
+                else:
+                    current_app.logger.error(
+                        "[CONTACT] synchronous notify failed lead_id=%s", lead.id
+                    )
         else:
             notify_ok = False
-            current_app.logger.error(
-                "[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL"
-            )
-    except Exception:
+            if is_demo:
+                current_app.logger.warning(
+                    "Demo notification failed | recipient missing | resend_enabled=%s | mail_server=%s | mail_port=%s | mail_username=%s | mail_password=%s | mail_default_sender=%s",
+                    bool((os.getenv("RESEND_API_KEY") or "").strip()),
+                    bool(current_app.config.get("MAIL_SERVER")),
+                    bool(current_app.config.get("MAIL_PORT")),
+                    bool(current_app.config.get("MAIL_USERNAME")),
+                    bool(current_app.config.get("MAIL_PASSWORD")),
+                    bool(current_app.config.get("MAIL_DEFAULT_SENDER")),
+                )
+            else:
+                current_app.logger.error(
+                    "[CONTACT] notify skipped: no PRO_LEADS_NOTIFY_TO/ADMIN_NOTIFY_EMAIL"
+                )
+
+        if is_demo:
+            current_app.logger.info("Demo auto-reply attempt started")
+            try:
+                _send_demo_email(
+                    recipient=(form_data.get("email") or "").strip(),
+                    subject="Votre demande de démonstration HelpChain a bien été reçue",
+                    body=(
+                        "Bonjour,\n\n"
+                        "Votre demande de démonstration a bien été reçue.\n\n"
+                        "Nous vous recontacterons sous 24h afin d’organiser une présentation adaptée à votre structure.\n\n"
+                        "Cette démonstration pourra inclure :\n"
+                        "- une présentation du cadre de coordination\n"
+                        "- des cas d’usage concrets\n"
+                        "- une discussion autour d’un pilote possible\n\n"
+                        "Cordialement,\n"
+                        "L’équipe HelpChain\n"
+                    ),
+                    html=(
+                        "<!doctype html>"
+                        "<html>"
+                        "<body style=\"margin:0;padding:24px;background-color:#ffffff;font-family:Arial,sans-serif;color:#1f2937;\">"
+                        "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-collapse:collapse;background-color:#ffffff;\">"
+                        "<tr><td align=\"center\">"
+                        "<table role=\"presentation\" width=\"100%\" cellspacing=\"0\" cellpadding=\"0\" style=\"border-collapse:collapse;max-width:600px;background-color:#ffffff;\">"
+                        "<tr><td style=\"padding:12px 0 28px 0;font-size:26px;line-height:1.2;font-weight:700;color:#16324f;letter-spacing:0.01em;\">HelpChain</td></tr>"
+                        "<tr><td style=\"padding:0 0 18px 0;font-size:28px;line-height:1.25;font-weight:700;color:#111827;\">Votre demande a bien été reçue</td></tr>"
+                        "<tr><td style=\"padding:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;\">Bonjour,</td></tr>"
+                        "<tr><td style=\"padding:0 0 16px 0;font-size:16px;line-height:1.7;color:#374151;\">Votre demande de démonstration a bien été reçue.</td></tr>"
+                        "<tr><td style=\"padding:0 0 20px 0;font-size:16px;line-height:1.7;color:#374151;\">Nous vous recontacterons sous 24h afin d’organiser une présentation adaptée à votre structure.</td></tr>"
+                        "<tr><td style=\"padding:0 0 12px 0;font-size:16px;line-height:1.7;color:#374151;\">Cette démonstration pourra inclure :</td></tr>"
+                        "<tr><td style=\"padding:0 0 24px 0;\">"
+                        "<ul style=\"margin:0;padding-left:22px;color:#374151;font-size:16px;line-height:1.8;\">"
+                        "<li>une présentation du cadre de coordination</li>"
+                        "<li>des cas d’usage concrets</li>"
+                        "<li>une discussion autour d’un pilote possible</li>"
+                        "</ul>"
+                        "</td></tr>"
+                        "<tr><td style=\"padding:0 0 28px 0;font-size:16px;line-height:1.7;color:#374151;\">Cordialement,<br>L’équipe HelpChain</td></tr>"
+                        "<tr><td style=\"padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;line-height:1.6;color:#9ca3af;\">contact@helpchain.live</td></tr>"
+                        "</table>"
+                        "</td></tr>"
+                        "</table>"
+                        "</body>"
+                        "</html>"
+                    ),
+                )
+                current_app.logger.info("Demo auto-reply sent successfully")
+            except Exception:
+                current_app.logger.exception("Demo auto-reply failed")
+    except Exception as exc:
         notify_ok = False
-        current_app.logger.exception("[CONTACT] notify email failed lead_id=%s", lead.id)
+        if is_demo:
+            current_app.logger.exception(
+                "Demo notification failed exactly | lead_id=%s | error=%s",
+                lead.id,
+                exc,
+            )
+        else:
+            current_app.logger.exception("[CONTACT] synchronous notify email failed lead_id=%s", lead.id)
 
     if not notify_ok:
         flash(
@@ -3481,7 +4628,7 @@ def contact():
             "warning",
         )
 
-    return redirect(url_for("main.contact", sent="1"), code=303)
+    return redirect(("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")), code=303)
 
 
 @main_bp.get("/confidentialite")

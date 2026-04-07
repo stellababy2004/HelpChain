@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 import unicodedata
 
+from sqlalchemy import func, or_
+
 from ..models import ProfessionalLead
 from .case_risk import score_request_risk
 
@@ -204,7 +206,13 @@ def _score_lead(case_row, request_obj, lead: ProfessionalLead, triage: dict) -> 
 def suggest_professional_leads_for_case(case_row, request_obj, limit: int = 8) -> list[dict]:
     triage = score_request_risk(request_obj)
     leads = (
-        ProfessionalLead.query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
+        ProfessionalLead.query.filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(("invalid", "spam")),
+            )
+        )
+        .order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
         .limit(500)
         .all()
     )

@@ -27,9 +27,18 @@ class ProfessionalLead(db.Model):
     locale = db.Column(db.String(10), nullable=True)  # fr/bg/en
     ip = db.Column(db.String(64), nullable=True)
     user_agent = db.Column(db.String(255), nullable=True)
+    owner_admin_id = db.Column(
+        db.Integer, db.ForeignKey("admin_users.id"), nullable=True, index=True
+    )
     status = db.Column(db.String(30), nullable=False, default="new", index=True)
     notes = db.Column(db.Text, nullable=True)
     contacted_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    first_followup_sent_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    second_followup_sent_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    last_touched_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    last_touched_by_admin_id = db.Column(
+        db.Integer, db.ForeignKey("admin_users.id"), nullable=True, index=True
+    )
 
     created_at = db.Column(
         db.DateTime(timezone=True),

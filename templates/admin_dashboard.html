@@ -64,12 +64,12 @@
     </div>
   </div>
 
-  <h4 class="mt-4 mb-3">Impact (Pilot)</h4>
+  <h4 class="mt-4 mb-3">Impact (pilote)</h4>
   <div class="row g-3">
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Total requests</div>
+          <div class="text-muted small">Demandes totales</div>
           <div class="fs-3 fw-bold">{{ impact.total|default(0) }}</div>
         </div>
       </div>
@@ -78,9 +78,9 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Open requests</div>
+          <div class="text-muted small">Demandes ouvertes</div>
           <div class="fs-3 fw-bold">{{ impact.open_requests|default(0) }}</div>
-          <div class="small text-muted">Not done / not rejected</div>
+          <div class="small text-muted">Ni terminées ni rejetées</div>
         </div>
       </div>
     </div>
@@ -88,7 +88,7 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Closed</div>
+          <div class="text-muted small">Clôturées</div>
           <div class="fs-3 fw-bold">{{ impact.closed|default(0) }}</div>
         </div>
       </div>
@@ -97,7 +97,7 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Closed (last 7 days)</div>
+          <div class="text-muted small">Clôturées (7 derniers jours)</div>
           <div class="fs-3 fw-bold">{{ impact.closed_last_7d|default(0) }}</div>
         </div>
       </div>
@@ -106,7 +106,7 @@
     <div class="col-md-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted small">Avg resolution</div>
+          <div class="text-muted small">Résolution moyenne</div>
           <div class="fs-3 fw-bold">
             {% if impact.avg_resolution_hours is not none %}
               {{ impact.avg_resolution_hours|round(1) }} h
@@ -121,23 +121,23 @@
     <div class="col-md-4">
       <div class="card border-warning">
         <div class="card-body">
-          <div class="text-muted small">Unassigned &gt; 48h</div>
+          <div class="text-muted small">Sans responsable &gt; 48 h</div>
           <div class="fs-3 fw-bold">{{ impact.unassigned_48h|default(0) }}</div>
-          <div class="small text-muted">Open requests without owner</div>
+          <div class="small text-muted">Demandes ouvertes sans responsable</div>
         </div>
       </div>
     </div>
   </div>
 
-  <h5 class="mt-4 mb-3">Top risks</h5>
+  <h5 class="mt-4 mb-3">Principaux risques</h5>
 
   <div class="row g-3">
     <div class="col-md-4">
       <div class="card shadow-sm border-danger">
         <div class="card-body">
-          <div class="text-muted small">High priority open</div>
+          <div class="text-muted small">Ouvertes, priorité élevée</div>
           <div class="fs-3 fw-bold">{{ impact.high_open }}</div>
-          <div class="small text-muted">High + not closed</div>
+          <div class="small text-muted">Priorité élevée et non clôturées</div>
         </div>
       </div>
     </div>
@@ -145,9 +145,9 @@
     <div class="col-md-4">
       <div class="card shadow-sm border-warning">
         <div class="card-body">
-          <div class="text-muted small">Stale &gt; 7 days</div>
+          <div class="text-muted small">Sans activité &gt; 7 jours</div>
           <div class="fs-3 fw-bold">{{ impact.stale_open }}</div>
-          <div class="small text-muted">Open requests older than 7 days</div>
+          <div class="small text-muted">Demandes ouvertes depuis plus de 7 jours</div>
         </div>
       </div>
     </div>
@@ -155,9 +155,9 @@
     <div class="col-md-4">
       <div class="card shadow-sm border-warning">
         <div class="card-body">
-          <div class="text-muted small">Unassigned &gt; 48h</div>
+          <div class="text-muted small">Sans responsable &gt; 48 h</div>
           <div class="fs-3 fw-bold">{{ impact.unassigned_48h }}</div>
-          <div class="small text-muted">Open without owner</div>
+          <div class="small text-muted">Ouvertes sans responsable</div>
         </div>
       </div>
     </div>
@@ -179,14 +179,14 @@
   </div>
   <div class="card shadow-sm mt-4">
     <div class="card-body">
-      <h5 class="mb-3">New requests (last 14 days)</h5>
+      <h5 class="mb-3">Nouvelles demandes (14 derniers jours)</h5>
       <div id="requestsTrendChart"></div>
     </div>
   </div>
 
   <div class="card shadow-sm mt-4">
     <div class="card-body">
-      <h5 class="mb-3">Requests by category</h5>
+      <h5 class="mb-3">Demandes par catégorie</h5>
       <div id="requestsCategoryChart"></div>
     </div>
   </div>

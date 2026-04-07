@@ -12,6 +12,8 @@
 
 ## Official Admin Reset Command
 - `\.venv\Scripts\python.exe .\scripts\reset_admin_local.py`
+- This command is local-only and affects only the local DB selected by the local DB guard.
+- It must not be used or interpreted as the production Render/Neon admin credential flow.
 
 ## Drift Prevention Rules
 - Do not use temporary SQLite files for local dev.
@@ -34,6 +36,7 @@
   - `db.drop_all()`
 - Admin credential reset/bootstrap:
   - `.\.venv\Scripts\python.exe .\scripts\reset_admin_local.py`
+  - Scope: local DB only, never Render/Neon production
 - Any recompute/backfill script that writes to DB.
 - Any direct SQL `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`.
 

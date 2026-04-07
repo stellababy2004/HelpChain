@@ -2,6 +2,8 @@ import json
 import logging
 from datetime import timedelta
 
+from sqlalchemy import inspect
+
 from backend.extensions import db
 from backend.models import NotificationJob, current_structure, utc_now
 
@@ -33,6 +35,50 @@ def _next_retry_delay(attempts: int) -> timedelta:
     return timedelta(minutes=schedule_minutes[idx])
 
 
+def _notification_jobs_table_available() -> bool:
+    try:
+        return "notification_jobs" in set(inspect(db.engine).get_table_names())
+    except Exception:
+        return False
+
+
+def _deliver_email_without_job(
+    *,
+    recipient: str,
+    subject: str | None,
+    payload: dict | None,
+    structure_id: int | None,
+) -> tuple[None, bool]:
+    payload = payload or {}
+    template = payload.get("template")
+    context = payload.get("context") or {}
+    purpose = payload.get("purpose") or "generic"
+    if not template:
+        logger.error("[NOTIFY] direct email fallback missing template")
+        return None, False
+
+    from backend.mail_service import send_notification_email
+
+    delivered = bool(
+        send_notification_email(
+            recipient,
+            subject or "",
+            template,
+            context,
+            purpose=purpose,
+            structure_id=structure_id,
+            force_sync=True,
+        )
+    )
+    logger.info(
+        "[NOTIFY] direct email fallback delivered=%s recipient=%s purpose=%s",
+        delivered,
+        recipient,
+        purpose,
+    )
+    return None, delivered
+
+
 def enqueue_notification(
     *,
     channel: str,
@@ -55,26 +101,49 @@ def enqueue_notification(
         except Exception:
             sid = None
 
-    job = NotificationJob(
-        channel=(channel or "email"),
-        event_type=(event_type or "generic")[:64],
-        recipient=recipient,
-        subject=subject,
-        payload_json=_safe_json_dumps(payload),
-        status="pending",
-        attempts=0,
-        max_attempts=max_attempts,
-        next_retry_at=utc_now(),
-        structure_id=sid,
-        created_at=utc_now(),
-        updated_at=utc_now(),
-    )
-    db.session.add(job)
-    db.session.commit()
+    if (channel or "email") == "email" and not _notification_jobs_table_available():
+        logger.warning(
+            "[NOTIFY] notification_jobs table unavailable; sending email directly"
+        )
+        return _deliver_email_without_job(
+            recipient=recipient,
+            subject=subject,
+            payload=payload,
+            structure_id=sid,
+        )
 
-    delivered = False
-    if send_now:
-        delivered = deliver_notification_job(job)
+    try:
+        job = NotificationJob(
+            channel=(channel or "email"),
+            event_type=(event_type or "generic")[:64],
+            recipient=recipient,
+            subject=subject,
+            payload_json=_safe_json_dumps(payload),
+            status="pending",
+            attempts=0,
+            max_attempts=max_attempts,
+            next_retry_at=utc_now(),
+            structure_id=sid,
+            created_at=utc_now(),
+            updated_at=utc_now(),
+        )
+        db.session.add(job)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        logger.exception(
+            "[NOTIFY] failed to persist notification job; falling back to direct delivery"
+        )
+        if (channel or "email") == "email":
+            return _deliver_email_without_job(
+                recipient=recipient,
+                subject=subject,
+                payload=payload,
+                structure_id=sid,
+            )
+        raise
+
+    delivered = deliver_notification_job(job)
     return job, delivered
 
 
@@ -189,6 +258,9 @@ def deliver_notification_job(job: NotificationJob) -> bool:
 
 
 def process_pending_notifications(limit: int = 50) -> dict:
+    logger.info(
+        "[NOTIFY] queue processor running in compatibility mode; scanning legacy pending jobs only"
+    )
     now = utc_now()
     jobs = (
         NotificationJob.query.filter(
