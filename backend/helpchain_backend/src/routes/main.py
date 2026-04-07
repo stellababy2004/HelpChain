@@ -4164,8 +4164,19 @@ def contact():
             form_data={},
             form_errors={},
         ), 200
-
-    demo_organisation = (
+@main_bp.get("/demo/merci")
+def demo_thanks():
+    return (
+        render_template(
+            "contact.html",
+            submitted=True,
+            is_demo=True,
+            form_data={},
+            form_errors={},
+        ),
+        200,
+    )
+     demo_organisation = (
         request.form.get("organisation") or request.form.get("structure") or ""
     ).strip()
     form_data = {
@@ -4213,7 +4224,9 @@ def contact():
         if not form_data[key]:
             form_errors[key] = msg
 
-    if form_data["email"] and ("@" not in form_data["email"] or "." not in form_data["email"]):
+    if form_data["email"] and (
+        "@" not in form_data["email"] or "." not in form_data["email"]
+    ):
         form_errors["email"] = _(
             "Veuillez renseigner une adresse e-mail professionnelle valide afin que nous puissions vous recontacter."
             if is_demo
@@ -4250,7 +4263,9 @@ def contact():
             user_agent,
         )
         return redirect(
-            ("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")),
+            url_for("main.demo_thanks")
+            if is_demo
+            else url_for("main.contact", sent="1"),
             code=303,
         )
 
@@ -4376,12 +4391,12 @@ def contact():
             ",".join(screening_reasons),
             lead.source,
         )
-        return redirect(
-            ("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")),
-            code=303,
-        )
+ return redirect(
+    url_for("main.demo_thanks") if is_demo else url_for("main.contact", sent="1"),
+    code=303,
+)
 
-    notify_ok = True
+notify_ok = True
     try:
         from backend.mail_service import send_notification_email
 
@@ -4628,7 +4643,30 @@ def contact():
             "warning",
         )
 
-    return redirect(("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")), code=303)
+    return redirect(
+        url_for("main.demo_thanks") if is_demo else url_for("main.contact", sent="1"),
+        code=303,
+    )
+
+
+@main_bp.get("/demo/merci")
+def demo_thanks():
+    return (
+        render_template(
+            "contact.html",
+            submitted=True,
+            is_demo=True,
+            form_data={},
+            form_errors={},
+        ),
+        200,
+    )
+
+
+@main_bp.get("/confidentialite")
+@main_bp.get("/confidentialite/")
+def confidentialite():
+    return render_template("privacy.html")
 
 
 @main_bp.get("/confidentialite")
