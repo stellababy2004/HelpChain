@@ -367,6 +367,16 @@
       background: rgba(34, 197, 94, .12);
       border-color: rgba(22, 163, 74, .24);
     }
+    .hc-demo-leads-status-badge--invalid {
+      color: #8a5a00;
+      background: rgba(245, 158, 11, .14);
+      border-color: rgba(217, 119, 6, .24);
+    }
+    .hc-demo-leads-status-badge--spam {
+      color: #991b1b;
+      background: rgba(239, 68, 68, .12);
+      border-color: rgba(220, 38, 38, .24);
+    }
     .hc-demo-leads-age {
       display: flex;
       flex-wrap: wrap;
@@ -845,10 +855,12 @@
         <tbody>
           {% for lead in leads %}
             {% set current_status = (lead.status or 'new') %}
-            {% set is_unassigned = not lead.owner_admin_id and current_status != 'closed' %}
+            {% set current_status_meta = professional_lead_status_meta(current_status) %}
+            {% set is_terminal = current_status in ['closed', 'invalid', 'spam'] %}
+            {% set is_unassigned = not lead.owner_admin_id and not is_terminal %}
             {% set is_overdue = lead.urgency == 'overdue' %}
-            {% set is_no_activity = not lead.last_touch_label and current_status != 'closed' %}
-            {% set is_stale = (is_no_activity or 'd' in (lead.last_touch_label or '')) and current_status != 'closed' %}
+            {% set is_no_activity = not lead.last_touch_label and not is_terminal %}
+            {% set is_stale = (is_no_activity or 'd' in (lead.last_touch_label or '')) and not is_terminal %}
             <tr class="{% if is_overdue %}hc-demo-leads-row--overdue {% endif %}{% if is_unassigned %}hc-demo-leads-row--unassigned {% endif %}{% if is_stale %}hc-demo-leads-row--stale{% endif %}">
               <td class="small text-muted hc-demo-leads-col-created">
                 {% if lead.created_at %}
@@ -924,7 +936,7 @@
                   <div class="d-inline-flex align-items-center gap-2">
                     <span class="hc-demo-leads-priority-dot hc-demo-leads-priority-dot--{{ lead.priority_level }}" title="{{ lead.priority_level }}"></span>
                     <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">
-                      {{ current_status }}
+                      {{ current_status_meta.label }}
                     </span>
                   </div>
                   <div class="hc-demo-leads-control-group hc-demo-leads-control-group--inline">
@@ -1003,10 +1015,11 @@
   <div class="hc-demo-leads-mobile">
     {% for lead in leads %}
       {% set current_status = (lead.status or 'new') %}
+      {% set current_status_meta = professional_lead_status_meta(current_status) %}
       <article class="hc-card hc-demo-leads-card">
         <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
           <div class="small text-muted">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') if lead.created_at else '-' }}</div>
-          <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">{{ current_status }}</span>
+          <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">{{ current_status_meta.label }}</span>
         </div>
         <div class="hc-demo-leads-contact mb-2">
           <div class="hc-demo-leads-identity">

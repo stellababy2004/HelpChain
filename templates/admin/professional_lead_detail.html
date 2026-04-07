@@ -8,7 +8,11 @@
 {% block content %}
 <section class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
   <div class="hc-card">
-    <h1 class="hc-admin-title mb-1">{{ _('Professional lead') }} #{{ lead.id }}</h1>
+    {% set status_meta = professional_lead_status_meta(lead.status) %}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+      <h1 class="hc-admin-title mb-0">{{ _('Professional lead') }} #{{ lead.id }}</h1>
+      <span class="{{ status_meta.badge_class }}">{{ status_meta.label }}</span>
+    </div>
     <p class="hc-muted mb-0">
       {{ lead.email }} • {{ lead.profession }} • {{ lead.city or "-" }}
     </p>

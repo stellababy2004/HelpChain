@@ -214,9 +214,12 @@ def add_security_headers(app: Flask):
         style_src = ["'self'", "'unsafe-inline'"]
         connect_src = ["'self'"]
         img_src = ["'self'", "data:"]
+        frame_src = ["'self'"]
         # Allow restrained map assets for admin territorial risk map.
         map_script_origin = "https://unpkg.com"
         map_tile_origin = "https://*.tile.openstreetmap.org"
+        turnstile_enabled = bool(app.config.get("HC_TURNSTILE_ENABLED", False))
+        turnstile_origin = "https://challenges.cloudflare.com"
         if map_script_origin not in script_src:
             script_src.append(map_script_origin)
         if map_script_origin not in style_src:
@@ -230,6 +233,13 @@ def add_security_headers(app: Flask):
                 script_src.append(script_origin)
             if api_origin and api_origin not in connect_src:
                 connect_src.append(api_origin)
+        if turnstile_enabled:
+            if turnstile_origin not in script_src:
+                script_src.append(turnstile_origin)
+            if turnstile_origin not in connect_src:
+                connect_src.append(turnstile_origin)
+            if turnstile_origin not in frame_src:
+                frame_src.append(turnstile_origin)
 
         # CSP enforce policy
         csp_enforce = (
@@ -237,7 +247,9 @@ def add_security_headers(app: Flask):
             "script-src-attr 'none'; "
             f"style-src {' '.join(style_src)}; "
             f"img-src {' '.join(img_src)}; "
-            "font-src 'self'; " + f"connect-src {' '.join(connect_src)}; "
+            "font-src 'self'; "
+            + f"connect-src {' '.join(connect_src)}; "
+            + f"frame-src {' '.join(frame_src)}; "
             "frame-ancestors 'self'; "
             "form-action 'self'; "
             "base-uri 'self'; "
@@ -494,6 +506,21 @@ def create_app(config_object=None) -> Flask:
 
     # CSRF for browser forms (JWT APIs are exempted per-blueprint)
     csrf.init_app(app)
+
+    @app.before_request
+    def _relax_secure_cookie_for_local_http():
+        host = (request.host or "").split(":", 1)[0].strip().lower()
+        if host not in {"127.0.0.1", "localhost"}:
+            return None
+        if request.is_secure:
+            return None
+        if app.config.get("SESSION_COOKIE_SECURE"):
+            app.logger.warning(
+                "[DEV] disabling SESSION_COOKIE_SECURE for local HTTP host=%s",
+                host,
+            )
+            app.config["SESSION_COOKIE_SECURE"] = False
+        return None
 
     @app.after_request
     def add_content_language_header(resp):
@@ -874,10 +901,62 @@ def create_app(config_object=None) -> Flask:
                 },
             )
 
+        def professional_lead_status_meta(status: str | None):
+            key = ((status or "").strip().lower() or "new")
+            return {
+                "new": {
+                    "label": "new",
+                    "badge_class": "badge text-bg-primary",
+                },
+                "imported": {
+                    "label": "imported",
+                    "badge_class": "badge text-bg-secondary",
+                },
+                "contacted": {
+                    "label": "contacted",
+                    "badge_class": "badge text-bg-info text-dark",
+                },
+                "qualified": {
+                    "label": "qualified",
+                    "badge_class": "badge text-bg-success",
+                },
+                "rejected": {
+                    "label": "rejected",
+                    "badge_class": "badge text-bg-secondary",
+                },
+                "demo_scheduled": {
+                    "label": "demo_scheduled",
+                    "badge_class": "badge text-bg-primary",
+                },
+                "pilot_discussion": {
+                    "label": "pilot_discussion",
+                    "badge_class": "badge text-bg-info text-dark",
+                },
+                "closed": {
+                    "label": "closed",
+                    "badge_class": "badge text-bg-success",
+                },
+                "invalid": {
+                    "label": "invalid",
+                    "badge_class": "badge text-bg-warning text-dark",
+                },
+                "spam": {
+                    "label": "spam",
+                    "badge_class": "badge text-bg-danger",
+                },
+            }.get(
+                key,
+                {
+                    "label": key or "unknown",
+                    "badge_class": "badge text-bg-light border",
+                },
+            )
+
         return {
             "REQUEST_STATUS_META": REQUEST_STATUS_META,
             "REQUEST_STATUS_ORDER": REQUEST_STATUS_ORDER,
             "status_meta": status_meta,
+            "professional_lead_status_meta": professional_lead_status_meta,
         }
 
     add_security_headers(app)
@@ -900,6 +979,8 @@ def create_app(config_object=None) -> Flask:
                     "VOLUNTEER_DEV_BYPASS_EMAIL"
                 ),
                 "HC_PRO_ACCESS_AVAILABLE": _pro_access_available,
+                "HC_TURNSTILE_ENABLED": _ca.config.get("HC_TURNSTILE_ENABLED", False),
+                "HC_TURNSTILE_SITE_KEY": _ca.config.get("HC_TURNSTILE_SITE_KEY", ""),
             }
         except Exception:
             return {}

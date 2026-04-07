@@ -161,6 +161,33 @@ CASE_PARTICIPANT_ROLES = (
     "observer",
     "coordinator",
 )
+SCREENED_PROFESSIONAL_LEAD_STATUSES = ("invalid", "spam")
+PROFESSIONAL_LEAD_STATUS_CHOICES = [
+    "new",
+    "imported",
+    "contacted",
+    "qualified",
+    "rejected",
+    "invalid",
+    "spam",
+]
+DEMO_LEAD_STATUS_CHOICES = [
+    "new",
+    "contacted",
+    "demo_scheduled",
+    "pilot_discussion",
+    "closed",
+    "invalid",
+    "spam",
+]
+
+
+def _is_screened_professional_lead_status(status: str | None) -> bool:
+    return ((status or "").strip().lower() or "") in SCREENED_PROFESSIONAL_LEAD_STATUSES
+
+
+def _professional_lead_is_business_pipeline(status: str | None) -> bool:
+    return not _is_screened_professional_lead_status(status)
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
@@ -6618,7 +6645,7 @@ def admin_professional_leads():
                 profession="",
                 city="",
                 status="",
-                status_choices=["new", "imported", "contacted", "qualified", "rejected"],
+                status_choices=PROFESSIONAL_LEAD_STATUS_CHOICES,
                 professions=[],
             ),
             200,
@@ -6628,7 +6655,7 @@ def admin_professional_leads():
     profession = (request.args.get("profession") or "").strip()
     city = (request.args.get("city") or "").strip()
     status = (request.args.get("status") or "").strip().lower()
-    status_choices = ["new", "imported", "contacted", "qualified", "rejected"]
+    status_choices = PROFESSIONAL_LEAD_STATUS_CHOICES
 
     query = _professional_lead_list_query(ProfessionalLead.query)
 
@@ -6644,6 +6671,13 @@ def admin_professional_leads():
 
     if status:
         query = query.filter(func.lower(ProfessionalLead.status) == status)
+    else:
+        query = query.filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+            )
+        )
 
     leads = (
         query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
@@ -6653,6 +6687,14 @@ def admin_professional_leads():
 
     professions = (
         ProfessionalLead.query.with_entities(ProfessionalLead.profession)
+        .filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(
+                    SCREENED_PROFESSIONAL_LEAD_STATUSES
+                ),
+            )
+        )
         .distinct()
         .order_by(ProfessionalLead.profession.asc())
         .all()
@@ -6960,7 +7002,7 @@ def _attach_demo_lead_activity_state(
 
 def _demo_lead_is_stale(lead: ProfessionalLead, *, threshold_hours: int = 24) -> bool:
     status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
-    if status_key == "closed":
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return False
 
     last_touched_at = _as_aware_utc(getattr(lead, "last_touched_at", None))
@@ -6972,7 +7014,7 @@ def _demo_lead_is_stale(lead: ProfessionalLead, *, threshold_hours: int = 24) ->
 
 def _demo_lead_priority(lead: ProfessionalLead) -> str:
     status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
-    if status_key == "closed":
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return "normal"
 
     is_unassigned = not getattr(lead, "owner_admin_id", None)
@@ -6988,7 +7030,7 @@ def _demo_lead_priority(lead: ProfessionalLead) -> str:
 
 def _demo_lead_queue(lead: ProfessionalLead) -> str:
     status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
-    if status_key == "closed":
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return "done"
 
     priority = getattr(lead, "priority_level", None) or _demo_lead_priority(lead)
@@ -7003,7 +7045,7 @@ def _demo_lead_queue(lead: ProfessionalLead) -> str:
 
 def _demo_lead_next_action(lead: ProfessionalLead) -> str | None:
     status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
-    if status_key == "closed":
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return None
 
     has_owner = bool(getattr(lead, "owner_admin_id", None))
@@ -7026,7 +7068,7 @@ def _demo_lead_next_action(lead: ProfessionalLead) -> str | None:
 
 def _demo_lead_sla_state(lead: ProfessionalLead) -> str | None:
     status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
-    if status_key == "closed":
+    if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return None
 
     now = _now_utc()
@@ -7079,7 +7121,9 @@ def admin_demo_leads():
             age_days = max(0, (now_utc.date() - created_dt.astimezone(UTC).date()).days)
 
         normalized_status = ((status_value or "").strip().lower() or "new")
-        if normalized_status == "closed":
+        if normalized_status == "closed" or _is_screened_professional_lead_status(
+            normalized_status
+        ):
             urgency = "closed"
         elif age_days <= 1:
             urgency = "normal"
@@ -7107,7 +7151,7 @@ def admin_demo_leads():
                 profession="",
                 city="",
                 status="",
-                status_choices=["new", "contacted", "demo_scheduled", "pilot_discussion", "closed"],
+                status_choices=DEMO_LEAD_STATUS_CHOICES,
                 professions=[],
                 kpi_counts={
                     "new": 0,
@@ -7126,7 +7170,7 @@ def admin_demo_leads():
     city = (request.args.get("city") or "").strip()
     status = (request.args.get("status") or "").strip().lower()
     queue = (request.args.get("queue") or "").strip().lower()
-    status_choices = ["new", "contacted", "demo_scheduled", "pilot_discussion", "closed"]
+    status_choices = DEMO_LEAD_STATUS_CHOICES
     queue_choices = ["needs_action", "waiting", "active", "done"]
 
     _send_due_demo_lead_followups()
@@ -7152,7 +7196,18 @@ def admin_demo_leads():
     if city:
         query = query.filter(ProfessionalLead.city.ilike(f"%{city}%"))
 
-    kpi_counts = {key: 0 for key in status_choices}
+    if not status:
+        query = query.filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+            )
+        )
+
+    kpi_counts = {
+        key: 0
+        for key in ("new", "contacted", "demo_scheduled", "pilot_discussion", "closed")
+    }
     count_rows = (
         query.with_entities(
             func.lower(ProfessionalLead.status).label("status_key"),
@@ -7193,6 +7248,14 @@ def admin_demo_leads():
     professions = (
         ProfessionalLead.query.with_entities(ProfessionalLead.profession)
         .filter(ProfessionalLead.source == "demo_page")
+        .filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(
+                    SCREENED_PROFESSIONAL_LEAD_STATUSES
+                ),
+            )
+        )
         .distinct()
         .order_by(ProfessionalLead.profession.asc())
         .all()
@@ -7271,6 +7334,8 @@ def admin_professional_lead_update_status(lead_id: int):
         "demo_scheduled",
         "pilot_discussion",
         "closed",
+        "invalid",
+        "spam",
     }
 
     redirect_kwargs = {}
@@ -7468,7 +7533,7 @@ def admin_professional_lead_detail(lead_id: int):
         return redirect(url_for("admin.admin_professional_leads"), code=303)
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
-    status_choices = ["new", "imported", "contacted", "qualified", "rejected"]
+    status_choices = PROFESSIONAL_LEAD_STATUS_CHOICES
 
     if request.method == "POST":
         status = (request.form.get("status") or "").strip().lower()

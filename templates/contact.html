@@ -453,6 +453,14 @@
       opacity: 0.6;
       font-size: 12px;
     }
+    .hc-honeypot {
+      position: absolute;
+      left: -10000px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
   </style>
 {% endblock %}
 
@@ -560,6 +568,10 @@
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="form_type" value="demo">
           <input type="hidden" name="source" value="demo_page">
+          <div class="hc-honeypot" aria-hidden="true">
+            <label for="website-demo">Website</label>
+            <input id="website-demo" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
 
           <section class="hc-intake__section hc-intake__section--light" aria-labelledby="demo-section-1">
             <h2 id="demo-section-1" class="hc-intake__section-title hc-intake__section-title--light">{{ _('Votre structure') }}</h2>
@@ -640,6 +652,12 @@
             </div>
           </section>
 
+          {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
+            <div class="hc-intake__field hc-form-group">
+              <div class="cf-turnstile" data-sitekey="{{ HC_TURNSTILE_SITE_KEY }}"></div>
+            </div>
+          {% endif %}
+
           <div class="hc-intake__actions hc-intake__demo-actions">
             <p class="hc-intake__urgency">{{ _('Créneaux disponibles cette semaine') }}</p>
             <div class="hc-intake__cta-wrap">
@@ -652,6 +670,10 @@
         {% else %}
         <form class="hc-form" method="post" action="{{ url_for('main.contact') }}" novalidate>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="hc-honeypot" aria-hidden="true">
+            <label for="website-contact">Website</label>
+            <input id="website-contact" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
 
           <div class="hc-intake__grid">
             <div class="hc-intake__field hc-form-group">
@@ -726,6 +748,12 @@
             </div>
           </div>
 
+          {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
+            <div class="hc-intake__field hc-form-group">
+              <div class="cf-turnstile" data-sitekey="{{ HC_TURNSTILE_SITE_KEY }}"></div>
+            </div>
+          {% endif %}
+
           <div class="hc-intake__actions">
             <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Envoyer la demande') }}</button>
           </div>
@@ -741,5 +769,12 @@
     {% endif %}
   </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
 {% endblock %}
 

@@ -254,6 +254,193 @@ def has_control_chars(text: str) -> bool:
     return any(ord(ch) < 32 and ch not in ("\t", "\n", "\r") for ch in text)
 
 
+PRO_LEAD_INVALID_EMAIL_DOMAINS = {"example.com", "test.com"}
+PRO_LEAD_SPAM_EMAIL_DOMAINS = {"mailinator.com"}
+PRO_LEAD_SUSPICIOUS_MARKERS = ("zap", "zaproxy")
+PRO_LEAD_DUMMY_TOKENS = {
+    "test",
+    "dummy",
+    "asdf",
+    "qwerty",
+    "foobar",
+    "lorem ipsum",
+    "john doe",
+    "jane doe",
+    "n/a",
+    "na",
+    "none",
+    "null",
+    "xxx",
+}
+
+
+def _normalize_lead_probe_text(value: str | None) -> str:
+    return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+
+def _lead_field_looks_dummy(value: str | None) -> bool:
+    normalized = _normalize_lead_probe_text(value)
+    return bool(normalized) and normalized in PRO_LEAD_DUMMY_TOKENS
+
+
+def _phone_has_basic_sanity(phone: str | None) -> bool:
+    cleaned = (phone or "").strip()
+    if not cleaned:
+        return True
+    if re.search(r"[A-Za-z]", cleaned):
+        return False
+    digits = re.sub(r"\D", "", cleaned)
+    if len(digits) < 7 or len(digits) > 15:
+        return False
+    if len(digits) >= 7 and len(set(digits)) == 1:
+        return False
+    return True
+
+
+def _screen_professional_lead_submission(
+    form_data: dict[str, str | None],
+    *,
+    user_agent: str | None,
+) -> tuple[str | None, list[str]]:
+    website = (form_data.get("website") or "").strip()
+    if website:
+        return "discard", ["honeypot:website"]
+
+    email = ((form_data.get("email") or "").strip().lower())
+    _local_part, _sep, domain = email.partition("@")
+    domain = domain.strip().lower()
+
+    invalid_reasons: list[str] = []
+    spam_reasons: list[str] = []
+
+    if domain in PRO_LEAD_INVALID_EMAIL_DOMAINS:
+        invalid_reasons.append(f"email_domain:{domain}")
+    elif domain in PRO_LEAD_SPAM_EMAIL_DOMAINS:
+        spam_reasons.append(f"email_domain:{domain}")
+
+    phone = (form_data.get("phone") or "").strip()
+    if phone and not _phone_has_basic_sanity(phone):
+        invalid_reasons.append("phone:invalid")
+
+    suspicious_blob = " ".join(
+        part
+        for part in (
+            user_agent,
+            form_data.get("full_name"),
+            form_data.get("organisation"),
+            form_data.get("organization"),
+            form_data.get("structure"),
+            form_data.get("city"),
+            form_data.get("profession"),
+            form_data.get("fonction"),
+            form_data.get("message"),
+        )
+        if part
+    ).lower()
+    marker_hits = [
+        marker for marker in PRO_LEAD_SUSPICIOUS_MARKERS if marker in suspicious_blob
+    ]
+    if marker_hits:
+        spam_reasons.append(f"marker:{','.join(marker_hits)}")
+
+    dummy_fields = [
+        field_name
+        for field_name in (
+            "full_name",
+            "organisation",
+            "organization",
+            "structure",
+            "city",
+            "profession",
+            "fonction",
+        )
+        if _lead_field_looks_dummy(form_data.get(field_name))
+    ]
+    if len(dummy_fields) >= 2:
+        invalid_reasons.append(f"dummy_fields:{','.join(dummy_fields)}")
+    elif _lead_field_looks_dummy(form_data.get("message")):
+        invalid_reasons.append("dummy_fields:message")
+
+    if spam_reasons:
+        return "spam", spam_reasons
+    if invalid_reasons:
+        return "invalid", invalid_reasons
+    return None, []
+
+
+def _screening_note(classification: str, reasons: list[str]) -> str:
+    reason_text = ", ".join(reasons) if reasons else "screened"
+    return f"[screening:{classification}] {reason_text}"
+
+
+def _merge_lead_notes(*parts: str | None) -> str | None:
+    cleaned_parts: list[str] = []
+    for part in parts:
+        text = (part or "").strip()
+        if text and text not in cleaned_parts:
+            cleaned_parts.append(text)
+    if not cleaned_parts:
+        return None
+    return "\n\n".join(cleaned_parts)
+
+
+def _resolved_lead_status(existing_status: str | None, screening_status: str | None) -> str:
+    if screening_status in {"invalid", "spam"}:
+        return screening_status
+    current_status = ((existing_status or "").strip().lower() or "new")
+    if current_status in {"invalid", "spam"}:
+        return "new"
+    return current_status
+
+
+def _turnstile_is_enabled() -> bool:
+    return bool(current_app.config.get("HC_TURNSTILE_ENABLED"))
+
+
+def _verify_turnstile_token(*, remote_ip: str | None) -> bool:
+    if not _turnstile_is_enabled():
+        return True
+
+    token = (request.form.get("cf-turnstile-response") or "").strip()
+    secret = (current_app.config.get("HC_TURNSTILE_SECRET_KEY") or "").strip()
+    verify_url = (current_app.config.get("HC_TURNSTILE_VERIFY_URL") or "").strip()
+    timeout_sec = float(current_app.config.get("HC_TURNSTILE_TIMEOUT_SECONDS") or 2.5)
+
+    if not token or not secret or not verify_url:
+        current_app.logger.warning(
+            "[TURNSTILE] missing verification input token=%s secret=%s verify_url=%s",
+            bool(token),
+            bool(secret),
+            bool(verify_url),
+        )
+        return False
+
+    try:
+        import requests
+
+        response = requests.post(
+            verify_url,
+            data={
+                "secret": secret,
+                "response": token,
+                "remoteip": remote_ip or "",
+            },
+            timeout=max(0.5, timeout_sec),
+        )
+        payload = response.json() if response.content else {}
+    except Exception:
+        current_app.logger.exception("[TURNSTILE] verification failed")
+        return False
+
+    success = bool(payload.get("success"))
+    if not success:
+        current_app.logger.info(
+            "[TURNSTILE] verification rejected errors=%s",
+            payload.get("error-codes") or [],
+        )
+    return success
+
+
 def _require_utc_datetime(
     dt: datetime | None, *, assume_naive_utc: bool = False
 ) -> datetime | None:
@@ -395,7 +582,7 @@ def _detect_suspicious_activity(ip: str, email: str | None) -> bool:
 
     suspicious = (
         int(ip_count) > 20
-        or int(distinct_email_count) > 5
+        or int(distinct_email_count) >= 5
         or int(email_count) > 10
     )
     if suspicious:
@@ -506,8 +693,8 @@ def _compute_magic_link_risk(ip: str, email: str | None) -> dict:
     if ip_count_10m > 10:
         score += 2
         signals.append("ip_velocity")
-    if distinct_emails_10m > 5:
-        score += 3
+    if distinct_emails_10m >= 5:
+        score += 4
         signals.append("email_spray")
     if email_count_10m > 5:
         score += 2
@@ -1428,6 +1615,12 @@ def search():
     try:
         pro_rows = (
             ProfessionalLead.query.filter(
+                or_(
+                    ProfessionalLead.status.is_(None),
+                    ~func.lower(ProfessionalLead.status).in_(("invalid", "spam")),
+                )
+            )
+            .filter(
                 or_(
                     ProfessionalLead.full_name.ilike(q_like),
                     ProfessionalLead.profession.ilike(q_like),
@@ -3788,7 +3981,7 @@ def volunteer_register_legacy():
 @main_bp.route("/professionnels/pilote", methods=["GET", "POST"])
 def professionnels_pilote():
     if request.method == "GET":
-        return render_template("professionnels_pilote.html"), 200
+        return render_template("professionnels_pilote.html", form_data={}), 200
 
     email = (request.form.get("email") or "").strip().lower()
     full_name = (request.form.get("full_name") or "").strip()
@@ -3798,10 +3991,51 @@ def professionnels_pilote():
     organization = (request.form.get("organization") or "").strip()
     availability = (request.form.get("availability") or "").strip()
     message = (request.form.get("message") or "").strip()
+    website = (request.form.get("website") or "").strip()
+    user_agent = ((request.headers.get("User-Agent") or "")[:255] or None)
+    form_data = {
+        "email": email,
+        "full_name": full_name,
+        "phone": phone,
+        "city": city,
+        "profession": profession,
+        "organization": organization,
+        "availability": availability,
+        "message": message,
+    }
 
     if not email or "@" not in email or not profession:
         flash(_("Please provide at least your email and your role."), "error")
-        return render_template("professionnels_pilote.html"), 400
+        return render_template("professionnels_pilote.html", form_data=form_data), 400
+
+    screening_status, screening_reasons = _screen_professional_lead_submission(
+        {
+            "email": email,
+            "full_name": full_name,
+            "phone": phone,
+            "city": city,
+            "profession": profession,
+            "organization": organization,
+            "message": message,
+            "website": website,
+        },
+        user_agent=user_agent,
+    )
+    if screening_status == "discard":
+        current_app.logger.info(
+            "[PRO-LEAD] discarded submission reasons=%s ip=%s ua=%s",
+            ",".join(screening_reasons),
+            _client_ip(),
+            user_agent,
+        )
+        return render_template(
+            "professionnels_pilote_thanks.html",
+            lead=SimpleNamespace(id="—"),
+        ), 200
+
+    if not _verify_turnstile_token(remote_ip=_client_ip()):
+        flash(_("Bot verification failed. Please try again."), "warning")
+        return render_template("professionnels_pilote.html", form_data=form_data), 400
 
     existing = (
         ProfessionalLead.query.filter(ProfessionalLead.email == email)
@@ -3817,10 +4051,14 @@ def professionnels_pilote():
             session.get("lang") or str(babel_get_locale() or "")
         ).strip() or existing.locale
         existing.ip = _client_ip() or existing.ip
-        existing.user_agent = (request.headers.get("User-Agent") or "")[
-            :255
-        ] or existing.user_agent
+        existing.user_agent = user_agent or existing.user_agent
         existing.source = "professionnels_pilote"
+        existing.status = _resolved_lead_status(existing.status, screening_status)
+        if screening_status in {"invalid", "spam"}:
+            existing.notes = _merge_lead_notes(
+                existing.notes,
+                _screening_note(screening_status, screening_reasons),
+            )
         db.session.commit()
         current_app.logger.info(
             "[PRO-LEAD] dedup hit email=%s existing_id=%s created_at=%s",
@@ -3842,12 +4080,27 @@ def professionnels_pilote():
         message=message or None,
         locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
         ip=_client_ip(),
-        user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+        user_agent=user_agent,
         source="professionnels_pilote",
+        status=_resolved_lead_status(None, screening_status),
+        notes=(
+            _screening_note(screening_status, screening_reasons)
+            if screening_status in {"invalid", "spam"}
+            else None
+        ),
         created_at=datetime.now(UTC),
     )
     db.session.add(lead)
     db.session.commit()
+
+    if screening_status in {"invalid", "spam"}:
+        current_app.logger.info(
+            "[PRO-LEAD] screened lead id=%s status=%s reasons=%s",
+            lead.id,
+            screening_status,
+            ",".join(screening_reasons),
+        )
+        return render_template("professionnels_pilote_thanks.html", lead=lead), 200
 
     try:
         from backend.mail_service import send_notification_email
@@ -3933,8 +4186,10 @@ def contact():
         "form_type": (request.form.get("form_type") or "").strip(),
         "source": (request.form.get("source") or "").strip(),
         "organization_size": (request.form.get("organization_size") or "").strip(),
+        "website": (request.form.get("website") or "").strip(),
     }
     form_errors: dict[str, str] = {}
+    user_agent = ((request.headers.get("User-Agent") or "")[:255] or None)
 
     if is_demo:
         form_data["objet_echange"] = "Démonstration"
@@ -3982,6 +4237,33 @@ def contact():
             form_errors=form_errors,
         ), 400
 
+    screening_status, screening_reasons = _screen_professional_lead_submission(
+        form_data,
+        user_agent=user_agent,
+    )
+    if screening_status == "discard":
+        current_app.logger.info(
+            "[CONTACT] discarded submission reasons=%s source=%s ip=%s ua=%s",
+            ",".join(screening_reasons),
+            "demo_page" if is_demo else "contact_echange",
+            _client_ip(),
+            user_agent,
+        )
+        return redirect(
+            ("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")),
+            code=303,
+        )
+
+    if not _verify_turnstile_token(remote_ip=_client_ip()):
+        flash(_("Bot verification failed. Please try again."), "warning")
+        return render_template(
+            "contact.html",
+            submitted=False,
+            is_demo=is_demo,
+            form_data=form_data,
+            form_errors={},
+        ), 400
+
     if is_demo:
         lead_message = (
             f"Form type : demo\n"
@@ -4027,9 +4309,14 @@ def contact():
                 session.get("lang") or str(babel_get_locale() or "")
             ).strip() or existing.locale
             existing.ip = _client_ip() or existing.ip
-            existing.user_agent = (request.headers.get("User-Agent") or "")[:255] or existing.user_agent
+            existing.user_agent = user_agent or existing.user_agent
             existing.source = "demo_page" if is_demo else "contact_echange"
-            existing.status = ((existing.status or "").strip() or "new")
+            existing.status = _resolved_lead_status(existing.status, screening_status)
+            if screening_status in {"invalid", "spam"}:
+                existing.notes = _merge_lead_notes(
+                    existing.notes,
+                    _screening_note(screening_status, screening_reasons),
+                )
             db.session.commit()
             lead = existing
         else:
@@ -4052,9 +4339,14 @@ def contact():
                 message=lead_message,
                 locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
                 ip=_client_ip(),
-                user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+                user_agent=user_agent,
                 source="demo_page" if is_demo else "contact_echange",
-                status="new",
+                status=_resolved_lead_status(None, screening_status),
+                notes=(
+                    _screening_note(screening_status, screening_reasons)
+                    if screening_status in {"invalid", "spam"}
+                    else None
+                ),
                 created_at=datetime.now(UTC),
             )
             db.session.add(lead)
@@ -4075,6 +4367,19 @@ def contact():
             form_data=form_data,
             form_errors={},
         ), 500
+
+    if screening_status in {"invalid", "spam"}:
+        current_app.logger.info(
+            "[CONTACT] screened lead id=%s status=%s reasons=%s source=%s",
+            lead.id,
+            screening_status,
+            ",".join(screening_reasons),
+            lead.source,
+        )
+        return redirect(
+            ("/demo?sent=1" if is_demo else url_for("main.contact", sent="1")),
+            code=303,
+        )
 
     notify_ok = True
     try:
