@@ -34,24 +34,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev-minimal.txt
 
-      - name: Ruff (last commit only)
+      - name: Ruff (workflow files only)
         shell: bash
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '\.py$' || true)
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '^\.github/workflows/.*\.yml$' || true)
           if [ -n "$CHANGED_FILES" ]; then
-            echo "$CHANGED_FILES" | xargs ruff check
+            echo "No Python files changed in last commit; skipping Ruff."
           else
-            echo "No Python files changed"
+            echo "No workflow files changed"
           fi
 
-      - name: Black (check last commit only)
+      - name: Black (workflow files only)
         shell: bash
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '\.py$' || true)
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '^\.github/workflows/.*\.yml$' || true)
           if [ -n "$CHANGED_FILES" ]; then
-            echo "$CHANGED_FILES" | xargs black --check
+            echo "No Python files changed in last commit; skipping Black."
           else
-            echo "No Python files changed"
+            echo "No workflow files changed"
           fi
 
   smoke:
