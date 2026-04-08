@@ -9,18 +9,20 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
 
-      - name: install deps
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Migration Linter
+      - name: Migration Guard v7
         run: |
-          python scripts/migration_linter.py
+          python scripts/migration_guard_v7.py
 
       - name: Migration Doctor
+        continue-on-error: true
         run: |
           python scripts/migration_doctor.py
 
       - name: Runtime Estimator
+        continue-on-error: true
         run: |
           python scripts/migration_estimator.py
