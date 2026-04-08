@@ -8,6 +8,8 @@ regexes = [
   '''(?i)\bexample\b''',
   '''(?i)\bdummy\b''',
   '''(?i)replace_me''',
+  '''\$\{\{\s*secrets\.[A-Z0-9_]+\s*\}\}''',
+  '''(?i)\b(?:test|demo|sample|fake)_?(?:token|secret|password|key)\b''',
 ]
 
 [[rules]]
