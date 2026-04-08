@@ -494,7 +494,8 @@ def create_app(config_object=None) -> Flask:
             and app.config.get("HC_AUTO_HEAL_DEFAULT_STRUCTURE", True)
         ):
             ensure_default_structure()
-        check_database_integrity()
+        if not app.config.get("TESTING", False):
+            check_database_integrity()
     # Mail (Flask-Mail): used by backend.tasks.send_email_task via backend.mail_service
     mail.init_app(app)
     if app.debug or app.config.get("DEBUG"):
@@ -621,7 +622,7 @@ def create_app(config_object=None) -> Flask:
     # Login manager (admin UI)
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = "admin.ops_login"
+    login_manager.login_view = "admin.admin_login_legacy"
     login_manager.login_message = None
 
     @login_manager.user_loader
@@ -832,12 +833,88 @@ def create_app(config_object=None) -> Flask:
 
         stats = process_pending_notifications(limit=int(os.getenv("NOTIFY_BATCH", "50")))
         app.logger.info(
-            "[NOTIFY] processed scanned=%s sent=%s retried=%s failed=%s",
+            "[NOTIFY] processed scanned=%s completed=%s requeued=%s terminal=%s",
             stats.get("scanned"),
             stats.get("sent"),
             stats.get("retried"),
             stats.get("failed"),
         )
+
+    def _run_requests_process_sla():
+        try:
+            from backend.helpchain_backend.src.services.request_sla import (
+                process_request_sla,
+            )
+        except Exception:
+            from .services.request_sla import process_request_sla
+
+        stats = process_request_sla()
+        app.logger.info(
+            "[SLA] processed unowned_due=%s inactive_due=%s escalation_due=%s "
+            "owner_reminders=%s inactivity_reminders=%s inactivity_escalations=%s "
+            "suppressed=%s errors=%s",
+            stats.get("unowned_due"),
+            stats.get("inactive_due"),
+            stats.get("escalation_due"),
+            stats.get("owner_reminders_enqueued"),
+            stats.get("inactivity_reminders_enqueued"),
+            stats.get("inactivity_escalations_enqueued"),
+            stats.get("suppressed"),
+            stats.get("errors"),
+        )
+        print(
+            "[SLA] "
+            f"unowned_due={stats.get('unowned_due', 0)} "
+            f"inactive_due={stats.get('inactive_due', 0)} "
+            f"escalation_due={stats.get('escalation_due', 0)} "
+            f"owner_reminders={stats.get('owner_reminders_enqueued', 0)} "
+            f"inactivity_reminders={stats.get('inactivity_reminders_enqueued', 0)} "
+            f"inactivity_escalations={stats.get('inactivity_escalations_enqueued', 0)} "
+            f"suppressed={stats.get('suppressed', 0)} "
+            f"errors={stats.get('errors', 0)}"
+        )
+
+    @app.cli.command("requests.process_sla")
+    def requests_process_sla():
+        """Process request SLA reminders and escalations."""
+        _run_requests_process_sla()
+
+    @app.cli.command("requests.process-sla")
+    def requests_process_sla_alias():
+        """Process request SLA reminders and escalations."""
+        _run_requests_process_sla()
+
+    def _run_reports_daily_health():
+        try:
+            from backend.helpchain_backend.src.services.daily_health_report import (
+                enqueue_daily_health_report,
+            )
+        except Exception:
+            from .services.daily_health_report import enqueue_daily_health_report
+
+        result = enqueue_daily_health_report()
+        app.logger.info(
+            "[REPORT] daily_health recipient_count=%s enqueued=%s errors=%s",
+            result.get("recipient_count"),
+            result.get("enqueued"),
+            result.get("errors"),
+        )
+        print(
+            "[REPORT] daily_health "
+            f"recipient_count={result.get('recipient_count', 0)} "
+            f"enqueued={result.get('enqueued', 0)} "
+            f"errors={result.get('errors', 0)}"
+        )
+
+    @app.cli.command("reports.daily_health")
+    def reports_daily_health():
+        """Generate and enqueue the daily health report."""
+        _run_reports_daily_health()
+
+    @app.cli.command("reports.daily-health")
+    def reports_daily_health_alias():
+        """Generate and enqueue the daily health report."""
+        _run_reports_daily_health()
 
     @app.errorhandler(404)
     def not_found(e):
