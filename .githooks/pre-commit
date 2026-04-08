@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -e
+
+if [ -x ".venv/Scripts/python.exe" ]; then
+  ./.venv/Scripts/python.exe -m pytest tests/test_auth_access_invariants.py -q
+elif [ -x ".venv/bin/python" ]; then
+  ./.venv/bin/python -m pytest tests/test_auth_access_invariants.py -q
+else
+  python -m pytest tests/test_auth_access_invariants.py -q
+fi
