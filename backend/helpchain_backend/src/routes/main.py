@@ -89,7 +89,10 @@ def _allowed_locales() -> set[str]:
 
 
 def _current_structure_id():
-    return int(current_structure().id)
+    try:
+        return int(current_structure().id)
+    except RuntimeError:
+        return None
 
 
 def _scope_requests(query):
@@ -3805,22 +3808,24 @@ def pilot_metrics():
 @main_bp.get("/api/pilot-kpi")
 def pilot_kpi_api():
     # v1: marketing-safe counters (read-only)
-    tenant_filter = Request.structure_id == _current_structure_id()
+    structure_id = _current_structure_id()
     not_deleted = Request.deleted_at.is_(None)
 
-    helped_requests = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter, not_deleted, Request.status == "done")
-        .scalar()
-        or 0
+    helped_query = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
+        Request.status == "done",
+    )
+    closed_query = db.session.query(func.count(Request.id)).filter(
+        not_deleted,
+        Request.status.in_(["done", "cancelled"]),
     )
 
-    closed_requests = (
-        db.session.query(func.count(Request.id))
-        .filter(tenant_filter, not_deleted, Request.status.in_(["done", "cancelled"]))
-        .scalar()
-        or 0
-    )
+    if structure_id is not None:
+        helped_query = helped_query.filter(Request.structure_id == structure_id)
+        closed_query = closed_query.filter(Request.structure_id == structure_id)
+
+    helped_requests = helped_query.scalar() or 0
+    closed_requests = closed_query.scalar() or 0
 
     active_volunteers = (
         db.session.query(func.count(Volunteer.id))
@@ -4164,19 +4169,8 @@ def contact():
             form_data={},
             form_errors={},
         ), 200
-@main_bp.get("/demo/merci")
-def demo_thanks():
-    return (
-        render_template(
-            "contact.html",
-            submitted=True,
-            is_demo=True,
-            form_data={},
-            form_errors={},
-        ),
-        200,
-    )
-     demo_organisation = (
+
+    demo_organisation = (
         request.form.get("organisation") or request.form.get("structure") or ""
     ).strip()
     form_data = {
@@ -4391,12 +4385,14 @@ def demo_thanks():
             ",".join(screening_reasons),
             lead.source,
         )
- return redirect(
-    url_for("main.demo_thanks") if is_demo else url_for("main.contact", sent="1"),
-    code=303,
-)
+        return redirect(
+            url_for("main.demo_thanks")
+            if is_demo
+            else url_for("main.contact", sent="1"),
+            code=303,
+        )
 
-notify_ok = True
+    notify_ok = True
     try:
         from backend.mail_service import send_notification_email
 
@@ -4467,7 +4463,11 @@ notify_ok = True
                 )
                 return None, bool(delivered)
 
-        admin_to = "contact@helpchain.live" if is_demo else (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
+        admin_to = (
+            "contact@helpchain.live"
+            if is_demo
+            else (current_app.config.get("PRO_LEADS_NOTIFY_TO") or "").strip()
+        )
         if not admin_to and not is_demo:
             admin_to = (current_app.config.get("ADMIN_NOTIFY_EMAIL") or "").strip()
 
@@ -4503,6 +4503,7 @@ notify_ok = True
                 "created_at": lead.created_at,
                 "admin_url": f"{request.host_url.rstrip('/')}/admin/professional-leads",
             }
+
         if admin_to:
             if is_demo:
                 current_app.logger.info(
@@ -4531,16 +4532,6 @@ notify_ok = True
             if not notify_ok:
                 if is_demo:
                     current_app.logger.warning(
-                        "notification attempt started but delivery not confirmed | recipient=%s | resend_enabled=%s | mail_server=%s | mail_port=%s | mail_username=%s | mail_password=%s | mail_default_sender=%s",
-                        admin_to,
-                        bool((os.getenv("RESEND_API_KEY") or "").strip()),
-                        bool(current_app.config.get("MAIL_SERVER")),
-                        bool(current_app.config.get("MAIL_PORT")),
-                        bool(current_app.config.get("MAIL_USERNAME")),
-                        bool(current_app.config.get("MAIL_PASSWORD")),
-                        bool(current_app.config.get("MAIL_DEFAULT_SENDER")),
-                    )
-                    current_app.logger.warning(
                         "Demo notification failed | lead_id=%s | type_structure=%s | taille=%s | role=%s | nom=%s | email=%s | organisation=%s | telephone=%s | contexte_present=%s | source=%s",
                         lead.id,
                         demo_ctx.get("type_structure"),
@@ -4550,7 +4541,10 @@ notify_ok = True
                         demo_ctx.get("email"),
                         demo_ctx.get("organization"),
                         demo_ctx.get("phone"),
-                        bool(demo_ctx.get("message") and demo_ctx.get("message") != "Non renseigné"),
+                        bool(
+                            demo_ctx.get("message")
+                            and demo_ctx.get("message") != "Non renseigné"
+                        ),
                         demo_ctx.get("source"),
                     )
                 else:
@@ -4632,7 +4626,9 @@ notify_ok = True
                 exc,
             )
         else:
-            current_app.logger.exception("[CONTACT] synchronous notify email failed lead_id=%s", lead.id)
+            current_app.logger.exception(
+                "[CONTACT] synchronous notify email failed lead_id=%s", lead.id
+            )
 
     if not notify_ok:
         flash(
@@ -4648,7 +4644,6 @@ notify_ok = True
         code=303,
     )
 
-
 @main_bp.get("/demo/merci")
 def demo_thanks():
     return (
@@ -4661,12 +4656,6 @@ def demo_thanks():
         ),
         200,
     )
-
-
-@main_bp.get("/confidentialite")
-@main_bp.get("/confidentialite/")
-def confidentialite():
-    return render_template("privacy.html")
 
 
 @main_bp.get("/confidentialite")
