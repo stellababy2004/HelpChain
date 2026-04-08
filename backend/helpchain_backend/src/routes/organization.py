@@ -27,7 +27,7 @@ def create_organization():
         current_app.config.get("PUBLIC_BASE_URL")
         or request.host_url.rstrip("/")
     )
-    login_url = f"{base_url}/admin/ops/login"
+    login_url = f"{base_url}/admin/login"
     dashboard_url = f"{base_url}/admin"
     password = payload.get("password")
     admin_email = payload.get("admin_email")

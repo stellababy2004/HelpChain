@@ -537,12 +537,12 @@ def admin_request_archive(req_id: int):
 @admin_bp.get("/requests")
 @login_required
 @admin_required
-@admin_role_required("superadmin")
+@admin_role_required("superadmin", "admin")
 def admin_requests():
     admin_required_404()
-    if _admin_role_value() != "superadmin":
+    if _admin_role_value() not in {"superadmin", "admin"}:
         _audit_denied_action(
-            required_roles={"superadmin"},
+            required_roles={"superadmin", "admin"},
             actor_role=_admin_role_value(),
         )
         abort(403)
@@ -1465,7 +1465,7 @@ def admin_requests_export_xlsx_anonymized():
 
 @admin_bp.get("/requests/<int:req_id>")
 @admin_required
-@admin_role_required("superadmin")
+@admin_role_required("superadmin", "admin")
 def admin_request_details(req_id: int):
     admin_required_404()
     activities_supported = _table_has_column("request_activities", "volunteer_id")

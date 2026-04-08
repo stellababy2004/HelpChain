@@ -1,6 +1,18 @@
 from datetime import datetime, timedelta, UTC
 
 
+def _satisfy_privileged_mfa(client, session, admin_user):
+    admin_user.mfa_enabled = True
+    admin_user.totp_secret = "test-mfa-secret"
+    session.commit()
+    with client.session_transaction() as sess:
+        sess[client.application.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        sess["mfa_required"] = True
+        sess["mfa_ok_until"] = (
+            datetime.now(UTC) + timedelta(minutes=30)
+        ).isoformat()
+
+
 def _login_admin(client, admin_user):
     with client.session_transaction() as sess:
         sess["_user_id"] = str(admin_user.id)
@@ -88,10 +100,11 @@ def test_admin_requests_shows_seeded_requests_even_with_null_and_new_status(clie
         session,
         username="global_admin_visibility",
         email="global_admin_visibility@test.local",
-        role="admin",
+        role="superadmin",
         structure_id=None,
     )
     _login_admin(client, admin)
+    _satisfy_privileged_mfa(client, session, admin)
 
     _make_request(session, title="seed-null-status", user_id=user.id, structure_id=2, status=None)
     _make_request(session, title="seed-new-status", user_id=user.id, structure_id=2, status="new")
@@ -192,6 +205,7 @@ def test_structure_scoped_admin_requests_excludes_other_structures(client, sessi
         structure_id=structure.id,
     )
     _login_admin(client, scoped_admin)
+    _satisfy_privileged_mfa(client, session, scoped_admin)
 
     in_scope = _make_request(
         session,

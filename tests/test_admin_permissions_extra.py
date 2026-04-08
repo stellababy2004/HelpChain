@@ -1,6 +1,8 @@
+from datetime import timedelta
+
 import pytest
 
-from backend.models import AdminUser
+from backend.models import AdminUser, utc_now
 
 
 def _admin_id_from_client(client) -> int:
@@ -21,9 +23,26 @@ def _set_admin_role(session, client, role: str) -> None:
     session.commit()
 
 
+def _satisfy_privileged_mfa(session, client, *, role: str = "superadmin") -> None:
+    admin_id = _admin_id_from_client(client)
+    admin = session.get(AdminUser, admin_id)
+    admin.role = role
+    admin.structure_id = None
+    admin.mfa_enabled = True
+    admin.totp_secret = "test-mfa-secret"
+    session.commit()
+    with client.session_transaction() as sess:
+        sess["role"] = role
+        sess["mfa_required"] = True
+        sess[client.application.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        sess["mfa_ok_until"] = (utc_now() + timedelta(minutes=30)).isoformat()
+
+
 @pytest.fixture
 def admin_login(authenticated_admin_client, db_session):
-    _set_admin_role(db_session, authenticated_admin_client, "superadmin")
+    _satisfy_privileged_mfa(
+        db_session, authenticated_admin_client, role="superadmin"
+    )
     admin_id = _admin_id_from_client(authenticated_admin_client)
     with authenticated_admin_client.session_transaction() as sess:
         sess["_user_id"] = str(admin_id)

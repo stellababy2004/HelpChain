@@ -1,11 +1,30 @@
 from datetime import timedelta
 
-from backend.models import AdminAuditEvent, AdminLoginAttempt, utc_now
+from backend.models import AdminAuditEvent, AdminLoginAttempt, AdminUser, utc_now
 
 
 def test_admin_security_page_renders_with_data(authenticated_admin_client, session):
     client = authenticated_admin_client
     now = utc_now()
+    admin_id = None
+    with client.session_transaction() as sess:
+        admin_id = int(
+            sess.get("admin_user_id")
+            or sess.get("admin_id")
+            or sess.get("user_id")
+            or sess.get("_user_id")
+        )
+    admin = session.get(AdminUser, admin_id)
+    admin.role = "superadmin"
+    admin.structure_id = None
+    admin.mfa_enabled = True
+    admin.totp_secret = "test-mfa-secret"
+    session.commit()
+    with client.session_transaction() as sess:
+        sess["role"] = "superadmin"
+        sess["mfa_required"] = True
+        sess[client.application.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        sess["mfa_ok_until"] = (utc_now() + timedelta(minutes=30)).isoformat()
 
     session.query(AdminLoginAttempt).delete()
     session.query(AdminAuditEvent).delete()
@@ -44,7 +63,7 @@ def test_admin_security_page_renders_with_data(authenticated_admin_client, sessi
     resp = client.get("/admin/security", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "Sécurité et confidentialité" in html
+    assert "Security overview" in html
     assert "Lockout buckets (24h)" in html
     assert "Denied actions (24h)" in html
     assert "interest.reject" in html
