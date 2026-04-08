@@ -36,7 +36,13 @@ def main() -> int:
         try:
             with app.app_context():
                 stats = process_pending_notifications(limit=batch_size)
-            print(f"[HC] notification job processor tick: {stats}")
+            print(
+                "[HC] notification job processor tick: "
+                f"scanned={stats.get('scanned', 0)} "
+                f"completed={stats.get('sent', 0)} "
+                f"requeued={stats.get('retried', 0)} "
+                f"terminal={stats.get('failed', 0)}"
+            )
         except KeyboardInterrupt:
             print("[HC] notification job processor stopped")
             return 0

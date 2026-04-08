@@ -34,6 +34,7 @@ def canonical_role(role: str | None) -> str:
         "admin": "admin",
         "superadmin": "superadmin",
         "super_admin": "superadmin",
+        "super-admin": "superadmin",
         "ops": "ops",
         "readonly": "readonly",
         "read-only": "readonly",
@@ -783,6 +784,8 @@ class NotificationJob(db.Model):
     attempts = Column(Integer, nullable=False, default=0, server_default="0")
     max_attempts = Column(Integer, nullable=False, default=5, server_default="5")
     next_retry_at = Column(DateTime, nullable=True, index=True)
+    locked_at = Column(DateTime, nullable=True, index=True)
+    processed_at = Column(DateTime, nullable=True, index=True)
     sent_at = Column(DateTime, nullable=True)
     last_error = Column(Text, nullable=True)
     structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True, index=True)

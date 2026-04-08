@@ -5,7 +5,7 @@ import time
 from datetime import UTC, datetime, timedelta
 
 from flask import current_app, jsonify, render_template, url_for
-from sqlalchemy import func, or_, text
+from sqlalchemy import and_, func, or_, text
 
 from backend.extensions import db
 from ..models import NotificationJob, Request
@@ -47,6 +47,10 @@ def _collect_db_latency_ms() -> int | None:
 def _collect_notification_queue_snapshot(now: datetime) -> dict[str, int | None]:
     out: dict[str, int | None] = {
         "pending": 0,
+        "processing": 0,
+        "done": 0,
+        "dead_letter": 0,
+        "dead_letter_15m": 0,
         "failed_15m": 0,
         "oldest_pending_min": None,
     }
@@ -64,26 +68,42 @@ def _collect_notification_queue_snapshot(now: datetime) -> dict[str, int | None]
     except Exception:
         pass
 
-    pending_filter = func.lower(NotificationJob.status).in_(("pending", "retry"))
+    status_expr = func.lower(NotificationJob.status)
+    pending_filter = status_expr.in_(("pending", "retry"))
+    processing_filter = status_expr == "processing"
+    done_filter = status_expr.in_(("done", "sent"))
+    dead_letter_filter = status_expr.in_(("dead_letter", "failed"))
     failed_cutoff = now - timedelta(minutes=15)
 
     out["pending"] = int(queue_query.filter(pending_filter).count() or 0)
-    out["failed_15m"] = int(
+    out["processing"] = int(queue_query.filter(processing_filter).count() or 0)
+    out["done"] = int(queue_query.filter(done_filter).count() or 0)
+    out["dead_letter"] = int(queue_query.filter(dead_letter_filter).count() or 0)
+    recent_terminal = int(
         queue_query.filter(
-            func.lower(NotificationJob.status) == "failed",
+            dead_letter_filter,
             NotificationJob.updated_at >= failed_cutoff,
         ).count()
         or 0
     )
+    out["dead_letter_15m"] = recent_terminal
+    out["failed_15m"] = recent_terminal
 
     oldest_pending = (
-        queue_query.with_entities(NotificationJob.created_at)
-        .filter(pending_filter)
-        .order_by(NotificationJob.created_at.asc())
+        queue_query.with_entities(NotificationJob.next_retry_at, NotificationJob.created_at)
+        .filter(
+            or_(
+                status_expr == "retry",
+                and_(status_expr == "pending", NotificationJob.attempts > 0),
+                and_(status_expr == "pending", NotificationJob.next_retry_at.is_(None)),
+                and_(status_expr == "pending", NotificationJob.next_retry_at <= now),
+            )
+        )
+        .order_by(NotificationJob.next_retry_at.asc().nullsfirst(), NotificationJob.created_at.asc())
         .first()
     )
-    if oldest_pending and oldest_pending[0]:
-        created_at = _to_utc_naive(oldest_pending[0])
+    if oldest_pending and (oldest_pending[0] or oldest_pending[1]):
+        created_at = _to_utc_naive(oldest_pending[0] or oldest_pending[1])
         if created_at:
             out["oldest_pending_min"] = max(
                 0, int((now - created_at).total_seconds() // 60)
@@ -96,6 +116,10 @@ def _build_system_health_snapshot() -> dict[str, object]:
     now = datetime.now(UTC).replace(tzinfo=None)
     queue: dict[str, int | None] = {
         "pending": 0,
+        "processing": 0,
+        "done": 0,
+        "dead_letter": 0,
+        "dead_letter_15m": 0,
         "failed_15m": 0,
         "oldest_pending_min": None,
     }
@@ -202,7 +226,7 @@ def _build_system_health_snapshot() -> dict[str, object]:
 
     if int(queue.get("pending") or 0) > 50:
         score += 15
-    if int(queue.get("failed_15m") or 0) > 10:
+    if int(queue.get("dead_letter_15m") or queue.get("failed_15m") or 0) > 10:
         score += 20
     if (queue.get("oldest_pending_min") or 0) > 10:
         score += 20
@@ -240,6 +264,10 @@ def _build_system_health_error_snapshot(reason: str) -> dict[str, object]:
         "db_latency_ms": None,
         "queue": {
             "pending": 0,
+            "processing": 0,
+            "done": 0,
+            "dead_letter": 0,
+            "dead_letter_15m": 0,
             "failed_15m": 0,
             "oldest_pending_min": None,
         },

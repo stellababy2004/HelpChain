@@ -1158,9 +1158,20 @@ def _default_admin_landing_url(user: AdminUser | None = None) -> str:
     role = _normalize_admin_role_value(
         getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
     )
-    if role in {"ops", "readonly"}:
+    if role == "superadmin":
+        return url_for("admin.admin_roles")
+    if role == "admin":
+        return url_for("admin.admin_pilotage")
+    if role == "ops":
+        return url_for("admin.admin_operator_dashboard")
+    if role == "readonly":
         return url_for("admin.admin_operator_dashboard")
     return url_for("admin.admin_requests")
+
+
+def _admin_role_requires_mfa(raw_role) -> bool:
+    role = _normalize_admin_role_value(raw_role)
+    return role in {"superadmin", "admin"}
 
 
 def _admin_login_is_locked(
@@ -1303,9 +1314,19 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     session.pop(Config.MFA_SESSION_KEY, None)
     session.pop("mfa_required", None)
     mfa_globally_enabled = bool(Config.MFA_ENABLED)
+    role_requires_mfa = _admin_role_requires_mfa(getattr(user, "role", None))
     user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(
         getattr(user, "totp_secret", None)
     )
+    if mfa_globally_enabled and role_requires_mfa and not user_has_mfa:
+        session["mfa_required"] = True
+        flash(_("MFA setup is required for your role before continuing."), "warning")
+        return redirect(
+            url_for(
+                "admin.admin_mfa_setup",
+                next=next_url or _default_admin_landing_url(user),
+            )
+        )
     if mfa_globally_enabled and user_has_mfa:
         session["mfa_required"] = True
         return redirect(
@@ -3249,7 +3270,9 @@ def _admin_role_value() -> str | None:
     raw_role = getattr(current_user, "role", None)
     role = getattr(raw_role, "value", raw_role)
     role = (role or "").strip().lower()
-    if role in {"admin", "super_admin", "superadmin"}:
+    if role == "admin":
+        return "admin"
+    if role in {"super_admin", "super-admin", "superadmin"}:
         return "superadmin"
     if role in {"ops"}:
         return "ops"
@@ -3261,7 +3284,9 @@ def _admin_role_value() -> str | None:
 def _normalize_admin_role_value(raw_role) -> str | None:
     role = getattr(raw_role, "value", raw_role)
     role = (role or "").strip().lower()
-    if role in {"admin", "super_admin", "superadmin"}:
+    if role == "admin":
+        return "admin"
+    if role in {"super_admin", "super-admin", "superadmin"}:
         return "superadmin"
     if role == "ops":
         return "ops"
@@ -3365,7 +3390,7 @@ def admin_system():
             return "warning", "Table missing"
         count = (
             db.session.query(func.count(NotificationJob.id))
-            .filter(NotificationJob.status == "failed")
+            .filter(NotificationJob.status.in_(("dead_letter", "failed")))
             .scalar()
             or 0
         )
@@ -3453,8 +3478,18 @@ def _render_operator_dashboard():
                 )
         except Exception:
             pass
-        failed_notif_count = notif_base.filter(NotificationJob.status == "failed").count()
-        retry_notif_count = notif_base.filter(NotificationJob.status == "retry").count()
+        failed_notif_count = notif_base.filter(
+            NotificationJob.status.in_(("dead_letter", "failed"))
+        ).count()
+        retry_notif_count = notif_base.filter(
+            or_(
+                NotificationJob.status == "retry",
+                and_(
+                    NotificationJob.status == "pending",
+                    NotificationJob.attempts > 0,
+                ),
+            )
+        ).count()
 
     queue_query = (
         base_query.filter(actionable_filter)
@@ -3764,10 +3799,14 @@ def enforce_admin_mfa():
         return None
     if not current_user.is_authenticated:
         return None
-    if not (
-        getattr(current_user, "mfa_enabled", False)
-        and getattr(current_user, "totp_secret", None)
-    ):
+    role_requires_mfa = _admin_role_requires_mfa(getattr(current_user, "role", None))
+    user_has_mfa = bool(getattr(current_user, "mfa_enabled", False)) and bool(
+        getattr(current_user, "totp_secret", None)
+    )
+    if role_requires_mfa and not user_has_mfa:
+        nxt = request.full_path if request.query_string else request.path
+        return redirect(url_for("admin.admin_mfa_setup", next=nxt))
+    if not user_has_mfa:
         return None
     if _mfa_ok_is_valid():
         return None
@@ -3960,69 +3999,12 @@ def admin_volunteer_api(vol_id: int):
 @limiter.limit("5 per 5 minutes")
 @limiter.limit("20 per hour")
 def admin_ops_login():
-    # Preserve safe next across GET -> POST -> redirect (and across failed logins).
     next_candidate = (
         request.form.get("next") or request.args.get("next") or ""
     ).strip()
     next_url = _safe_next_url(next_candidate)
-
-    if request.method == "POST":
-        if not _table_exists("admin_users"):
-            flash("Database not initialized. Run dev_bootstrap.py", "danger")
-            return redirect(url_for("admin.ops_login", next=next_url))
-        username = request.form.get("username", "").strip()
-        username_norm = _norm_username(username)
-        ip = _client_ip()
-        now = datetime.now(UTC).replace(tzinfo=None)
-        locked, retry_after = _admin_login_is_locked(ip, username_norm, now)
-        if locked:
-            _log_admin_attempt(username=username_norm, ip=ip, success=False)
-            log_security_event(
-                "auth_admin_login_locked",
-                actor_type="anonymous",
-                meta={"username": username_norm, "ip": ip, "retry_after": retry_after},
-            )
-            return _lockout_response(retry_after, next_url=next_url)
-
-        password = request.form.get("password", "")
-        user = _find_admin_user(username)
-        if not _verify_admin_password(user, password):
-            _log_admin_attempt(username=username_norm, ip=ip, success=False)
-            log_security_event(
-                "auth_admin_login_failed",
-                actor_type="anonymous",
-                meta={"reason": "invalid_credentials"},
-            )
-            flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "danger")
-            return redirect(url_for("admin.ops_login", next=next_url))
-        _log_admin_attempt(username=username_norm, ip=ip, success=True)
-        cleared_fails = _clear_recent_admin_login_failures(username_norm, ip, now)
-        if cleared_fails > 0:
-            log_security_event(
-                "auth_admin_login_success_after_failures",
-                actor_type="admin",
-                actor_id=getattr(user, "id", None),
-                meta={
-                    "ip": ip,
-                    "username": username_norm,
-                    "cleared_failures": int(cleared_fails),
-                },
-            )
-            audit_admin_action(
-                action="admin.login.success_after_failures",
-                target_type="AdminUser",
-                target_id=int(getattr(user, "id", 0) or 0),
-                payload={
-                    "route": "admin.ops_login",
-                    "username": username_norm,
-                    "cleared_failures": int(cleared_fails),
-                    "ip": ip,
-                    "ua": (request.headers.get("User-Agent") or "")[:256],
-                },
-            )
-        # Successful login path
-        return _complete_admin_login(user, next_url, via="admin_ops_login")
-    return render_template("admin/login.html", next=next_url)
+    redirect_code = 303 if request.method == "POST" else 302
+    return redirect(url_for("admin.admin_login_legacy", next=next_url), code=redirect_code)
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])
@@ -4258,6 +4240,15 @@ def admin_mfa_verify():
     admin_required_404()
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
+
+    if _admin_role_requires_mfa(getattr(current_user, "role", None)) and not (
+        getattr(current_user, "mfa_enabled", False)
+        and getattr(current_user, "totp_secret", None)
+    ):
+        flash(_("MFA setup is required for your role before verification."), "warning")
+        return redirect(
+            url_for("admin.admin_mfa_setup", next=request.args.get("next") or "")
+        )
 
     if not (
         getattr(current_user, "mfa_enabled", False)
@@ -6542,7 +6533,15 @@ def _render_notifications_list():
             channel="",
             event_type="",
             recipient="",
-            summary={"pending": 0, "retry": 0, "failed": 0, "sent": 0},
+            summary={
+                "pending": 0,
+                "processing": 0,
+                "done": 0,
+                "dead_letter": 0,
+                "retry": 0,
+                "failed": 0,
+                "sent": 0,
+            },
             channels=[],
         )
 
@@ -6562,8 +6561,19 @@ def _render_notifications_list():
     except Exception:
         pass
 
-    if status in {"pending", "processing", "sent", "retry", "failed"}:
+    if status in {"pending", "processing", "done", "dead_letter"}:
         query = query.filter(NotificationJob.status == status)
+    elif status == "sent":
+        query = query.filter(NotificationJob.status.in_(("done", "sent")))
+    elif status == "failed":
+        query = query.filter(NotificationJob.status.in_(("dead_letter", "failed")))
+    elif status == "retry":
+        query = query.filter(
+            or_(
+                NotificationJob.status == "retry",
+                and_(NotificationJob.status == "pending", NotificationJob.attempts > 0),
+            )
+        )
     if channel:
         query = query.filter(NotificationJob.channel == channel)
     if event_type:
@@ -6572,10 +6582,11 @@ def _render_notifications_list():
         query = query.filter(NotificationJob.recipient.ilike(f"%{recipient}%"))
 
     status_rank = case(
-        (NotificationJob.status == "failed", 0),
-        (NotificationJob.status == "retry", 1),
+        (NotificationJob.status.in_(("dead_letter", "failed")), 0),
+        (NotificationJob.status == "processing", 1),
         (NotificationJob.status == "pending", 2),
-        (NotificationJob.status == "processing", 3),
+        (NotificationJob.status.in_(("done", "sent")), 3),
+        (NotificationJob.status == "retry", 4),
         else_=4,
     )
 
@@ -6600,11 +6611,27 @@ def _render_notifications_list():
     except Exception:
         pass
 
+    pending_count = counts_base.filter(NotificationJob.status == "pending").count()
+    processing_count = counts_base.filter(NotificationJob.status == "processing").count()
+    done_count = counts_base.filter(NotificationJob.status.in_(("done", "sent"))).count()
+    dead_letter_count = counts_base.filter(
+        NotificationJob.status.in_(("dead_letter", "failed"))
+    ).count()
+    retry_compat_count = counts_base.filter(
+        or_(
+            NotificationJob.status == "retry",
+            and_(NotificationJob.status == "pending", NotificationJob.attempts > 0),
+        )
+    ).count()
+
     summary = {
-        "pending": counts_base.filter(NotificationJob.status == "pending").count(),
-        "retry": counts_base.filter(NotificationJob.status == "retry").count(),
-        "failed": counts_base.filter(NotificationJob.status == "failed").count(),
-        "sent": counts_base.filter(NotificationJob.status == "sent").count(),
+        "pending": pending_count,
+        "processing": processing_count,
+        "done": done_count,
+        "dead_letter": dead_letter_count,
+        "retry": retry_compat_count,
+        "failed": dead_letter_count,
+        "sent": done_count,
     }
 
     channels = [

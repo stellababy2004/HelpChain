@@ -42,6 +42,45 @@ def _notification_jobs_table_available() -> bool:
         return False
 
 
+def _mark_job_done(job: NotificationJob) -> bool:
+    now = utc_now()
+    job.status = "done"
+    job.sent_at = now
+    job.processed_at = now
+    job.locked_at = None
+    job.last_error = None
+    job.next_retry_at = None
+    job.updated_at = now
+    db.session.commit()
+    return True
+
+
+def _reschedule_job(job: NotificationJob, error_message: str) -> bool:
+    now = utc_now()
+    job.status = "pending"
+    job.last_error = (error_message or "send_failed")[:512]
+    job.next_retry_at = now + _next_retry_delay(int(job.attempts or 0))
+    job.sent_at = None
+    job.processed_at = None
+    job.locked_at = None
+    job.updated_at = now
+    db.session.commit()
+    return False
+
+
+def _dead_letter_job(job: NotificationJob, error_message: str) -> bool:
+    now = utc_now()
+    job.status = "dead_letter"
+    job.last_error = (error_message or "send_failed")[:512]
+    job.next_retry_at = None
+    job.sent_at = None
+    job.processed_at = now
+    job.locked_at = None
+    job.updated_at = now
+    db.session.commit()
+    return False
+
+
 def _deliver_email_without_job(
     *,
     recipient: str,
@@ -123,6 +162,8 @@ def enqueue_notification(
             attempts=0,
             max_attempts=max_attempts,
             next_retry_at=utc_now(),
+            locked_at=None,
+            processed_at=None,
             structure_id=sid,
             created_at=utc_now(),
             updated_at=utc_now(),
@@ -183,11 +224,7 @@ def deliver_notification_job(job: NotificationJob) -> bool:
     job.updated_at = utc_now()
     try:
         if job.channel != "email":
-            job.status = "failed"
-            job.last_error = f"channel_not_supported:{job.channel}"
-            job.sent_at = None
-            job.next_retry_at = None
-            db.session.commit()
+            _dead_letter_job(job, f"channel_not_supported:{job.channel}")
             logger.warning(
                 "[NOTIFY] job=%s unsupported channel=%s",
                 job.id,
@@ -201,10 +238,7 @@ def deliver_notification_job(job: NotificationJob) -> bool:
         purpose = payload.get("purpose") or job.event_type or "generic"
 
         if not template:
-            job.status = "failed"
-            job.last_error = "missing_template"
-            job.next_retry_at = None
-            db.session.commit()
+            _dead_letter_job(job, "missing_template")
             logger.error("[NOTIFY] job=%s missing template", job.id)
             return False
 
@@ -221,36 +255,23 @@ def deliver_notification_job(job: NotificationJob) -> bool:
             )
         )
         if ok:
-            job.status = "sent"
-            job.sent_at = utc_now()
-            job.last_error = None
-            job.next_retry_at = None
-            db.session.commit()
+            _mark_job_done(job)
             logger.info("[NOTIFY] job=%s sent", job.id)
             return True
 
-        job.status = "retry" if job.attempts < job.max_attempts else "failed"
-        job.last_error = "send_failed"
-        job.next_retry_at = (
-            utc_now() + _next_retry_delay(job.attempts)
-            if job.status == "retry"
-            else None
-        )
-        job.sent_at = None
-        db.session.commit()
+        if int(job.attempts or 0) < int(job.max_attempts or 0):
+            _reschedule_job(job, "send_failed")
+        else:
+            _dead_letter_job(job, "send_failed")
         logger.error("[NOTIFY] job=%s send failed (attempt=%s)", job.id, job.attempts)
         return False
     except Exception as exc:
         db.session.rollback()
-        job.status = "retry" if job.attempts < job.max_attempts else "failed"
-        job.last_error = str(exc)[:512]
-        job.next_retry_at = (
-            utc_now() + _next_retry_delay(job.attempts)
-            if job.status == "retry"
-            else None
-        )
         try:
-            db.session.commit()
+            if int(job.attempts or 0) < int(job.max_attempts or 0):
+                _reschedule_job(job, str(exc))
+            else:
+                _dead_letter_job(job, str(exc))
         except Exception:
             db.session.rollback()
         logger.exception("[NOTIFY] job=%s delivery error", job.id)
@@ -259,7 +280,7 @@ def deliver_notification_job(job: NotificationJob) -> bool:
 
 def process_pending_notifications(limit: int = 50) -> dict:
     logger.info(
-        "[NOTIFY] queue processor running in compatibility mode; scanning legacy pending jobs only"
+        "[NOTIFY] queue processor running; scanning due notification jobs"
     )
     now = utc_now()
     jobs = (
@@ -277,7 +298,11 @@ def process_pending_notifications(limit: int = 50) -> dict:
     for job in jobs:
         stats["scanned"] += 1
         try:
+            if (job.status or "").lower() not in {"pending", "retry"}:
+                continue
             job.status = "processing"
+            job.locked_at = utc_now()
+            job.processed_at = None
             job.updated_at = utc_now()
             db.session.commit()
         except Exception:
@@ -289,7 +314,7 @@ def process_pending_notifications(limit: int = 50) -> dict:
         if ok:
             stats["sent"] += 1
         else:
-            if job.status == "retry":
+            if job.status == "pending":
                 stats["retried"] += 1
             else:
                 stats["failed"] += 1

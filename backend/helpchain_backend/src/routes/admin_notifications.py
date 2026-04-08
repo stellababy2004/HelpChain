@@ -64,7 +64,7 @@ def _notification_retry_impl(job_id: int):
             code=303,
         )
 
-    if (job.status or "").lower() != "failed":
+    if (job.status or "").lower() not in {"dead_letter", "failed"}:
         flash("Seules les notifications en échec peuvent être relancées manuellement.", "warning")
         return redirect(
             url_for(_notifications_redirect_target(), **request.form.to_dict(flat=True)),
@@ -77,6 +77,8 @@ def _notification_retry_impl(job_id: int):
         job.next_retry_at = utc_now()
         job.sent_at = None
         job.last_error = None
+        job.locked_at = None
+        job.processed_at = None
         job.updated_at = utc_now()
         db.session.commit()
         log_activity(
@@ -130,7 +132,7 @@ def _notification_retry_impl_sync(job_id: int):
             code=303,
         )
 
-    if (job.status or "").lower() != "failed":
+    if (job.status or "").lower() not in {"dead_letter", "failed"}:
         flash(
             "Seules les notifications en Ã©chec peuvent Ãªtre relancÃ©es manuellement.",
             "warning",
@@ -146,6 +148,8 @@ def _notification_retry_impl_sync(job_id: int):
         job.next_retry_at = utc_now()
         job.sent_at = None
         job.last_error = None
+        job.locked_at = None
+        job.processed_at = None
         job.updated_at = utc_now()
         db.session.commit()
         delivered = deliver_notification_job(job)
