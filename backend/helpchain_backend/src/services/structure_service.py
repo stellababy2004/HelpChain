@@ -54,7 +54,9 @@ def create_structure_with_admin(name: str, admin_email: str, password: str) -> t
     if existing_admin:
         raise ValueError("admin_email_exists")
 
-    with db.session.begin():
+    session = db.session()
+    tx = session.begin_nested() if session.in_transaction() else session.begin()
+    with tx:
         slug = _unique_slug(_slugify(normalized_name))
         structure = Structure(name=normalized_name, slug=slug)
         if hasattr(structure, "status"):

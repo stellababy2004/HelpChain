@@ -1,13 +1,20 @@
+from datetime import timedelta
+
 from backend.extensions import db
-from backend.helpchain_backend.src.models import AdminUser, Structure
+from backend.helpchain_backend.src.models import AdminUser, Structure, utc_now
 
 
 def _login_admin_session(client, admin_id: int):
     with client.session_transaction() as sess:
         sess["_user_id"] = str(admin_id)
         sess["_fresh"] = True
+        sess["role"] = "superadmin"
+        sess["is_admin"] = True
+        sess["is_authenticated"] = True
         sess["admin_logged_in"] = True
         sess["admin_user_id"] = admin_id
+        sess[client.application.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        sess["mfa_ok_until"] = (utc_now() + timedelta(minutes=30)).isoformat()
 
 
 def test_structure_creation_creates_admin_and_structure(client, app):
@@ -18,6 +25,8 @@ def test_structure_creation_creates_admin_and_structure(client, app):
             password_hash="x",
             role="superadmin",
             is_active=True,
+            mfa_enabled=True,
+            totp_secret="test-mfa-secret",
         )
         db.session.add(superadmin)
         db.session.commit()
