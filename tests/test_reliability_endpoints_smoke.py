@@ -26,7 +26,9 @@ def test_admin_sanity_renders_for_authenticated_admin(authenticated_admin_client
     assert resp.status_code == 200
 
     html = resp.get_data(as_text=True)
-    assert "Application" in html
+    assert "Vérifications système" in html
     assert "Base de données" in html  # Database
-    assert "File admin" in html  # Admin queue sanity
+    assert "Alembic" in html
+    assert "Table des structures" in html
+    assert "Locataire par défaut" in html
     assert "Sentry configuré" in html  # Error capture

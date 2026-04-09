@@ -62,6 +62,14 @@ def structure_admin(client, session):
 
 
 @pytest.fixture
+def bound_superadmin(client, session):
+    _ensure_structure(session, 2, "Structure 2", "structure-2")
+    admin = _ensure_admin_user(session, "bound_superadmin", "superadmin", 2)
+    _login_admin_session(client, admin)
+    return client
+
+
+@pytest.fixture
 def operator_user(client, session):
     _ensure_structure(session, 2, "Structure 2", "structure-2")
     admin = _ensure_admin_user(session, "operator_user", "ops", 2)
@@ -86,6 +94,9 @@ PLATFORM_ADMIN_ROUTES = [
 
 STRUCTURE_ADMIN_ROUTES = [
     "/admin/requests",
+]
+
+STRUCTURE_SUPERADMIN_ONLY_ROUTES = [
     "/admin/requests/new",
     "/admin/structures/2",
 ]
@@ -135,10 +146,18 @@ def test_structure_admin_routes_allow_structure_admin(structure_admin, path):
     assert resp.status_code == 200
 
 
-@pytest.mark.parametrize("path", STRUCTURE_ADMIN_ROUTES)
+@pytest.mark.parametrize("path", STRUCTURE_ADMIN_ROUTES + STRUCTURE_SUPERADMIN_ONLY_ROUTES)
 def test_structure_admin_routes_allow_global_admin(global_admin, path):
     resp = global_admin.get(path, follow_redirects=False)
     assert resp.status_code == 200
+
+
+@pytest.mark.parametrize("path", STRUCTURE_SUPERADMIN_ONLY_ROUTES)
+def test_structure_admin_routes_block_structure_admin_on_superadmin_only_pages(
+    structure_admin, path
+):
+    resp = structure_admin.get(path, follow_redirects=False)
+    assert resp.status_code == 403
 
 
 @pytest.mark.parametrize("path", STRUCTURE_ADMIN_ROUTES)
@@ -172,12 +191,12 @@ def test_ops_routes_block_anonymous(client, path):
     assert "/admin/ops/login" in (resp.headers.get("Location") or "")
 
 
-def test_structure_admin_structure_scoping(structure_admin, session):
+def test_structure_admin_structure_scoping(bound_superadmin, session):
     _ensure_structure(session, 2, "Structure 2", "structure-2")
     _ensure_structure(session, 3, "Structure 3", "structure-3")
 
-    resp_ok = structure_admin.get("/admin/structures/2", follow_redirects=False)
+    resp_ok = bound_superadmin.get("/admin/structures/2", follow_redirects=False)
     assert resp_ok.status_code == 200
 
-    resp_forbidden = structure_admin.get("/admin/structures/3", follow_redirects=False)
+    resp_forbidden = bound_superadmin.get("/admin/structures/3", follow_redirects=False)
     assert resp_forbidden.status_code == 403
