@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import UTC, datetime, timezone
 from typing import Optional
@@ -40,6 +41,41 @@ def canonical_role(role: str | None) -> str:
         "read-only": "readonly",
     }
     return mapping.get(r, r)
+
+
+def _request_risk_level_from_score(score: int) -> str:
+    if int(score or 0) >= 85:
+        return "critical"
+    if int(score or 0) >= 60:
+        return "attention"
+    return "standard"
+
+
+def _apply_request_risk_fields(target) -> None:
+    try:
+        from backend.helpchain_backend.src.services.case_risk import score_request_risk
+
+        triage = score_request_risk(target)
+        score = int(triage.get("risk_score") or triage.get("score") or 0)
+        matched_rules = triage.get("matched_rules") or []
+        signals = [
+            str(item.get("label")).strip()
+            for item in matched_rules
+            if isinstance(item, dict) and str(item.get("label") or "").strip()
+        ]
+        target.risk_score = score
+        target.risk_level = _request_risk_level_from_score(score)
+        target.risk_signals = json.dumps(signals, ensure_ascii=True)
+        target.risk_last_updated = utc_now()
+    except Exception:
+        if getattr(target, "risk_score", None) is None:
+            target.risk_score = 0
+        if not getattr(target, "risk_level", None):
+            target.risk_level = "standard"
+        if getattr(target, "risk_signals", None) is None:
+            target.risk_signals = "[]"
+        if getattr(target, "risk_last_updated", None) is None:
+            target.risk_last_updated = utc_now()
 
 
 # Unified ORM style: alias common SQLAlchemy names to Flask-SQLAlchemy `db.*`
@@ -1238,6 +1274,7 @@ def _apply_request_geolocation(target) -> None:
 # a user won't fail due to NOT NULL constraints on existing DB schemas.
 try:
     from sqlalchemy import MetaData, Table, event, insert, inspect as sa_inspect, select
+    from sqlalchemy.orm.attributes import set_committed_value
 
     def _request_geocoding_fields_changed(target) -> bool:
         try:
@@ -1260,6 +1297,34 @@ try:
     def _request_refresh_geolocation(mapper, connection, target):
         if _request_geocoding_fields_changed(target):
             _apply_request_geolocation(target)
+
+    @event.listens_for(Request, "before_insert")
+    def _request_prepare_risk_fields(mapper, connection, target):
+        _apply_request_risk_fields(target)
+
+    @event.listens_for(Request, "before_update")
+    def _request_refresh_risk_fields(mapper, connection, target):
+        _apply_request_risk_fields(target)
+
+    @event.listens_for(Request, "load")
+    def _request_hydrate_legacy_risk_fields(target, context):
+        score_missing = getattr(target, "risk_score", None) is None
+        level_missing = not getattr(target, "risk_level", None)
+        signals_missing = getattr(target, "risk_signals", None) in {None, ""}
+        updated_missing = getattr(target, "risk_last_updated", None) is None
+        if not (score_missing or level_missing or signals_missing or updated_missing):
+            return
+        _apply_request_risk_fields(target)
+        set_committed_value(target, "risk_score", getattr(target, "risk_score", 0))
+        set_committed_value(
+            target, "risk_level", getattr(target, "risk_level", "standard")
+        )
+        set_committed_value(
+            target, "risk_signals", getattr(target, "risk_signals", "[]")
+        )
+        set_committed_value(
+            target, "risk_last_updated", getattr(target, "risk_last_updated", None)
+        )
 
     @event.listens_for(Request, "before_insert")
     def _request_set_structure_id(mapper, connection, target):
