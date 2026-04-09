@@ -1,4 +1,7 @@
 import pytest
+from datetime import timedelta
+
+from backend.models import utc_now
 
 
 @pytest.fixture(autouse=True)
@@ -197,14 +200,18 @@ def authenticated_admin_client(app, session, init_test_data, db_schema):
                 username="admin_test_user",
                 email="admin@test.local",
                 password_hash="x",
-                role="admin",
+                role="superadmin",
                 is_active=True,
+                mfa_enabled=True,
+                totp_secret="test-mfa-secret",
             )
             session.add(admin)
             session.commit()
         else:
-            admin.role = "admin"
+            admin.role = "superadmin"
             admin.is_active = True
+            admin.mfa_enabled = True
+            admin.totp_secret = "test-mfa-secret"
             session.commit()
         admin_id = getattr(admin, "id", None)
     except Exception:
@@ -213,11 +220,16 @@ def authenticated_admin_client(app, session, init_test_data, db_schema):
     with client.session_transaction() as s:
         s["_user_id"] = str(admin_id)
         s["user_id"] = admin_id
-        s["role"] = "admin"
+        s["role"] = "superadmin"
         s["is_authenticated"] = True
         s["is_admin"] = True
         s["admin_logged_in"] = True
         s["admin_id"] = admin_id
+        s["mfa_required"] = True
+        s[app.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        s["mfa_ok_until"] = (utc_now() + timedelta(minutes=30)).isoformat()
+        s["admin_mfa_last_verified"] = 4102444800
+        s["admin_mfa_user_id"] = admin_id
 
     return client
 

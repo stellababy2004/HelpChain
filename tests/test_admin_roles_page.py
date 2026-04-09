@@ -1,6 +1,8 @@
+import time
+from datetime import timedelta
 from uuid import uuid4
 
-from backend.models import AdminAuditEvent, AdminUser
+from backend.models import AdminAuditEvent, AdminUser, utc_now
 
 
 def _admin_id_from_client(client) -> int:
@@ -22,6 +24,22 @@ def _set_current_admin_role(session, client, role: str) -> AdminUser:
     return admin
 
 
+def _satisfy_superadmin_access(session, client, *, structure_id: int | None) -> AdminUser:
+    admin = _set_current_admin_role(session, client, "superadmin")
+    admin.structure_id = structure_id
+    admin.mfa_enabled = True
+    admin.totp_secret = "test-mfa-secret"
+    session.commit()
+    with client.session_transaction() as sess:
+        sess["role"] = "superadmin"
+        sess["mfa_required"] = True
+        sess[client.application.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        sess["mfa_ok_until"] = (utc_now() + timedelta(minutes=30)).isoformat()
+        sess["admin_mfa_last_verified"] = int(time.time())
+        sess["admin_mfa_user_id"] = admin.id
+    return admin
+
+
 def _create_admin(session, role: str) -> AdminUser:
     suffix = uuid4().hex[:8]
     user = AdminUser(
@@ -38,7 +56,7 @@ def _create_admin(session, role: str) -> AdminUser:
 
 def test_roles_page_superadmin_access(authenticated_admin_client, session):
     client = authenticated_admin_client
-    _set_current_admin_role(session, client, "superadmin")
+    _satisfy_superadmin_access(session, client, structure_id=1)
     resp = client.get("/admin/roles", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
@@ -55,7 +73,7 @@ def test_roles_page_denied_for_ops(authenticated_admin_client, session):
 
 def test_change_role_logs_audit_event(authenticated_admin_client, session):
     client = authenticated_admin_client
-    actor = _set_current_admin_role(session, client, "superadmin")
+    actor = _satisfy_superadmin_access(session, client, structure_id=1)
     target = _create_admin(session, "ops")
 
     session.query(AdminAuditEvent).delete()
@@ -86,7 +104,7 @@ def test_change_role_logs_audit_event(authenticated_admin_client, session):
 
 def test_cannot_downgrade_last_superadmin(authenticated_admin_client, session):
     client = authenticated_admin_client
-    actor = _set_current_admin_role(session, client, "superadmin")
+    actor = _satisfy_superadmin_access(session, client, structure_id=1)
 
     # Ensure no other superadmin remains.
     (

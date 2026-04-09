@@ -16,7 +16,7 @@ def test_admin_security_page_renders_with_data(authenticated_admin_client, sessi
         )
     admin = session.get(AdminUser, admin_id)
     admin.role = "superadmin"
-    admin.structure_id = None
+    admin.structure_id = 1
     admin.mfa_enabled = True
     admin.totp_secret = "test-mfa-secret"
     session.commit()

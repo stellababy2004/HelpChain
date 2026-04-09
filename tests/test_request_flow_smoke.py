@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+import time
+from datetime import UTC, datetime, timedelta
 import os
 
-from backend.models import AdminUser, Request, Structure, db
+from backend.models import AdminUser, Request, Structure, db, utc_now
 import pytest
 
 
@@ -42,17 +43,22 @@ def admin_ops_client(app, session):
             username="admin_ops_smoke",
             email="admin.ops@test.local",
             password_hash="",
-            role="admin",
+            role="superadmin",
             is_active=True,
         )
         admin.set_password(password)
         session.add(admin)
         session.commit()
     else:
-        admin.role = "admin"
+        admin.role = "superadmin"
         admin.is_active = True
         admin.set_password(password)
+        admin.mfa_enabled = True
+        admin.totp_secret = "test-mfa-secret"
         session.commit()
+    admin.mfa_enabled = True
+    admin.totp_secret = "test-mfa-secret"
+    session.commit()
 
     client = app.test_client()
     login_resp = client.post(
@@ -61,6 +67,13 @@ def admin_ops_client(app, session):
         follow_redirects=False,
     )
     assert login_resp.status_code in (302, 303)
+    with client.session_transaction() as sess:
+        sess["role"] = "superadmin"
+        sess["mfa_required"] = True
+        sess[client.application.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+        sess["mfa_ok_until"] = (utc_now() + timedelta(minutes=30)).isoformat()
+        sess["admin_mfa_last_verified"] = int(time.time())
+        sess["admin_mfa_user_id"] = admin.id
     return client
 
 
