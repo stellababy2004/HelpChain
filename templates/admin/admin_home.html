@@ -1,0 +1,102 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Admin dashboard | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Admin dashboard</h1>
+        <div class="hc-muted">Vue op&eacute;rationnelle rapide pour prioriser les prochaines actions.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3">
+    <div class="hc-ops-summary mb-3">
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Needs attention</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if attention_count }}">{{ attention_count or 0 }}</div>
+        <div class="hc-muted small">{{ unassigned_count or 0 }} non assign&eacute;es, {{ followup_count or 0 }} &agrave; relancer</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Requests backlog</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}">{{ unassigned_count or 0 }}</div>
+        <div class="hc-muted small">{{ stale_count or 0 }} sans action r&eacute;cente</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Notification queue</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if queue_summary.dead_letter or queue_summary.retry }}">{{ queue_summary.pending or 0 }}</div>
+        <div class="hc-muted small">{{ queue_summary.processing or 0 }} processing, {{ queue_summary.failed or 0 }} failed</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Security 24h</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if security_summary.available and (security_summary.failed_logins_24h or security_summary.denied_actions_24h or security_summary.risky_actions_24h) }}">{{ security_summary.failed_logins_24h if security_summary.available else "—" }}</div>
+        <div class="hc-muted small">
+          {% if security_summary.available %}
+            {{ security_summary.denied_actions_24h }} denied, {{ security_summary.risky_actions_24h }} risky actions
+          {% else %}
+            Disponible pour le global admin
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-ops-actions">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_requests') }}">Voir les demandes</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_notifications_list') }}">Voir les notifications</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir la s&eacute;curit&eacute;</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_roles') }}">G&eacute;rer les r&ocirc;les</a>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell">
+    <div class="hc-card__header">
+      <h2 class="h6 mb-1">&Agrave; traiter maintenant</h2>
+      <div class="hc-muted">Demandes urgentes, non assign&eacute;es ou sans action r&eacute;cente.</div>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Demande</th>
+            <th>Ville</th>
+            <th>Statut</th>
+            <th>Derni&egrave;re activit&eacute;</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in attention_rows %}
+            {% set activity_ref = r.updated_at or r.created_at %}
+            <tr>
+              <td class="text-muted">#{{ r.id }}</td>
+              <td>
+                <div class="fw-semibold">{{ r.title or r.name or 'Demande' }}</div>
+                <div class="small text-muted">{{ request_category_label(r.category) }}</div>
+              </td>
+              <td class="small text-muted">{{ r.city or r.location_text or '—' }}</td>
+              <td><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
+              <td class="small text-muted">{{ activity_ref or '—' }}</td>
+              <td class="text-end">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Rien d'urgent pour l'instant</div>
+                  <div class="hc-empty-state__text">Les files op&eacute;rationnelles sont sous contr&ocirc;le. Utilisez les raccourcis ci-dessus pour approfondir.</div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

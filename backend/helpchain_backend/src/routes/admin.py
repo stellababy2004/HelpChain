@@ -1159,7 +1159,7 @@ def _default_admin_landing_url(user: AdminUser | None = None) -> str:
         getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
     )
     if role == "superadmin":
-        return url_for("admin.admin_roles")
+        return url_for("admin.admin_home")
     if role == "admin":
         return url_for("admin.admin_pilotage")
     if role == "ops":
@@ -1171,6 +1171,14 @@ def _default_admin_landing_url(user: AdminUser | None = None) -> str:
 
 def _admin_role_requires_mfa(raw_role) -> bool:
     role = _normalize_admin_role_value(raw_role)
+    return role in {"superadmin", "admin"}
+
+
+def is_mfa_required(user) -> bool:
+    if not current_app.config.get("REQUIRE_ADMIN_MFA", True):
+        return False
+
+    role = _normalize_admin_role_value(getattr(user, "role", ""))
     return role in {"superadmin", "admin"}
 
 
@@ -1282,6 +1290,12 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     login_user(user, remember=False)
     session["admin_user_id"] = user.id
     session["admin_logged_in"] = True
+    current_app.logger.warning(
+        "[LOGIN] user_id=%s role=%s via=%s",
+        getattr(user, "id", None),
+        getattr(user, "role", None),
+        via,
+    )
     now = _utc_now()
     _touch_admin_last_seen(now)
     _touch_admin_auth_at(now)
@@ -1314,21 +1328,25 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     session.pop(Config.MFA_SESSION_KEY, None)
     session.pop("mfa_required", None)
     mfa_globally_enabled = bool(Config.MFA_ENABLED)
-    role_requires_mfa = _admin_role_requires_mfa(getattr(user, "role", None))
+    role_requires_mfa = is_mfa_required(user)
     user_has_mfa = bool(getattr(user, "mfa_enabled", False)) and bool(
         getattr(user, "totp_secret", None)
     )
     if mfa_globally_enabled and role_requires_mfa and not user_has_mfa:
         session["mfa_required"] = True
+        session.modified = True
+        current_app.logger.warning("[SESSION] %s", dict(session))
         flash(_("MFA setup is required for your role before continuing."), "warning")
         return redirect(
             url_for(
                 "admin.admin_mfa_setup",
                 next=next_url or _default_admin_landing_url(user),
             )
-        )
+    )
     if mfa_globally_enabled and user_has_mfa:
         session["mfa_required"] = True
+        session.modified = True
+        current_app.logger.warning("[SESSION] %s", dict(session))
         return redirect(
             url_for(
                 "admin.admin_mfa_verify",
@@ -1336,6 +1354,8 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
             )
         )
     _mfa_ok_set()
+    session.modified = True
+    current_app.logger.warning("[SESSION] %s", dict(session))
     return _redirect_to_safe_next(next_url, _default_admin_landing_url(user), code=303)
 
 
@@ -3694,6 +3714,37 @@ def _mfa_ok_is_valid() -> bool:
         return False
 
 
+def mark_mfa_verified():
+    session["admin_mfa_last_verified"] = int(time.time())
+    session["admin_mfa_user_id"] = getattr(current_user, "id", None)
+
+
+def is_mfa_fresh() -> bool:
+    ts = session.get("admin_mfa_last_verified")
+    if not ts:
+        return False
+    if session.get("admin_mfa_user_id") != getattr(current_user, "id", None):
+        return False
+
+    ttl = current_app.config.get("ADMIN_MFA_STEPUP_TTL_SECONDS", 600)
+    return (int(time.time()) - int(ts)) < int(ttl)
+
+
+def require_fresh_mfa(view):
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not is_mfa_required(current_user):
+            return view(*args, **kwargs)
+
+        if not is_mfa_fresh():
+            nxt = request.full_path if request.query_string else request.path
+            return redirect(url_for("admin.admin_mfa_verify", next=nxt))
+
+        return view(*args, **kwargs)
+
+    return wrapper
+
+
 def _mfa_lock_is_active() -> tuple[bool, int]:
     lock_until = session.get("mfa_lock_until")
     if not lock_until:
@@ -3799,7 +3850,7 @@ def enforce_admin_mfa():
         return None
     if not current_user.is_authenticated:
         return None
-    role_requires_mfa = _admin_role_requires_mfa(getattr(current_user, "role", None))
+    role_requires_mfa = is_mfa_required(current_user)
     user_has_mfa = bool(getattr(current_user, "mfa_enabled", False)) and bool(
         getattr(current_user, "totp_secret", None)
     )
@@ -4007,6 +4058,7 @@ def admin_ops_login():
     return redirect(url_for("admin.admin_login_legacy", next=next_url), code=redirect_code)
 
 
+@admin_bp.route("/login", methods=["GET", "POST"], endpoint="admin_login")
 @admin_bp.route("/login", methods=["GET", "POST"])
 @limiter.limit("30 per minute")
 def admin_login_legacy():
@@ -4241,7 +4293,7 @@ def admin_mfa_verify():
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
 
-    if _admin_role_requires_mfa(getattr(current_user, "role", None)) and not (
+    if is_mfa_required(current_user) and not (
         getattr(current_user, "mfa_enabled", False)
         and getattr(current_user, "totp_secret", None)
     ):
@@ -4301,6 +4353,7 @@ def admin_mfa_verify():
     if totp_ok or backup_ok:
         _mfa_attempt_reset()
         _mfa_ok_set()
+        mark_mfa_verified()
         session["admin_logged_in"] = True
         now = _utc_now()
         _touch_admin_last_seen(now)
@@ -5295,10 +5348,8 @@ def admin_dashboard():
             logs_dict[log.request_id] = []
         logs_dict[log.request_id].append(log)
 
-    # Convert to JSON serializable format
     requests_dict = []
     for r in requests:
-        # Fallback location using location_text -> city/region
         loc = (
             getattr(r, "location_text", None)
             or ", ".join(
@@ -5320,7 +5371,6 @@ def admin_dashboard():
                 "category": r.category,
                 "description": r.description,
                 "status": r.status,
-                # Map urgency to priority if urgency field is missing
                 "urgency": getattr(r, "urgency", None) or getattr(r, "priority", None),
             }
         )
@@ -5337,7 +5387,6 @@ def admin_dashboard():
         for v in volunteers
     ]
 
-    # Defensive stats: ensure templates always receive a `stats` mapping
     try:
         total_requests = len(requests) if requests is not None else 0
     except Exception:
@@ -5430,7 +5479,6 @@ def admin_dashboard():
             or 0
         )
 
-        # --- Requests per day (last 14 days) ---
         since_dt = now - timedelta(days=14)
         rows = (
             db.session.query(func.date(Request.created_at), func.count(Request.id))
@@ -5443,7 +5491,6 @@ def admin_dashboard():
         impact_dates = [str(r[0]) for r in rows]
         impact_counts = [int(r[1]) for r in rows]
 
-        # --- Requests by category ---
         cat_rows = (
             db.session.query(Request.category, func.count(Request.id))
             .group_by(Request.category)
@@ -5487,7 +5534,6 @@ def admin_dashboard():
             "stale_open": 0,
         }
 
-    # Log the final template context summary for diagnostics during tests
     try:
         import logging as _logging
 
@@ -5511,6 +5557,144 @@ def admin_dashboard():
         stats=stats,
         impact=impact,
         STATUS_LABELS=STATUS_LABELS,
+    )
+
+
+@admin_bp.route("/home")
+@admin_required
+def admin_home():
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("You do not have access to the admin panel."), "error")
+        return redirect(url_for("main.dashboard"))
+
+    base_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
+    try:
+        base_query = base_query.filter(Request.is_archived.is_(False))
+    except Exception:
+        pass
+
+    status_expr = func.lower(func.coalesce(Request.status, ""))
+    actionable_statuses = ("new", "open", "in_progress", "approved", "pending")
+    actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
+    activity_expr = func.coalesce(Request.updated_at, Request.created_at)
+    stale_threshold = _now_utc() - timedelta(hours=72)
+    urgent_filter = or_(
+        func.lower(func.coalesce(Request.priority, "")).in_(["high", "critical"]),
+        func.coalesce(Request.risk_score, 0) >= 85,
+    )
+    unassigned_filter = Request.owner_id.is_(None)
+    stale_filter = activity_expr <= stale_threshold
+    attention_filter = or_(urgent_filter, unassigned_filter, stale_filter)
+
+    attention_count = base_query.filter(actionable_filter, attention_filter).count()
+    unassigned_count = base_query.filter(actionable_filter, unassigned_filter).count()
+    followup_count = base_query.filter(actionable_filter, stale_filter).count()
+    stale_count = followup_count
+
+    attention_rows = (
+        base_query.filter(actionable_filter, attention_filter)
+        .options(joinedload(Request.owner))
+        .order_by(
+            case((urgent_filter, 0), (unassigned_filter, 1), (stale_filter, 2), else_=3),
+            activity_expr.asc().nullslast(),
+            Request.created_at.desc().nullslast(),
+            Request.id.desc(),
+        )
+        .limit(5)
+        .all()
+    )
+
+    queue_summary = {
+        "pending": 0,
+        "processing": 0,
+        "dead_letter": 0,
+        "retry": 0,
+        "failed": 0,
+    }
+    if _table_exists("notification_jobs"):
+        notif_base = NotificationJob.query
+        try:
+            if not _is_global_admin():
+                sid = _current_structure_id()
+                notif_base = notif_base.filter(
+                    (NotificationJob.structure_id == sid)
+                    | (NotificationJob.structure_id.is_(None))
+                )
+        except Exception:
+            pass
+        queue_summary = {
+            "pending": notif_base.filter(NotificationJob.status == "pending").count(),
+            "processing": notif_base.filter(NotificationJob.status == "processing").count(),
+            "dead_letter": notif_base.filter(
+                NotificationJob.status.in_(("dead_letter", "failed"))
+            ).count(),
+            "retry": notif_base.filter(
+                or_(
+                    NotificationJob.status == "retry",
+                    and_(NotificationJob.status == "pending", NotificationJob.attempts > 0),
+                )
+            ).count(),
+            "failed": 0,
+        }
+        queue_summary["failed"] = queue_summary["dead_letter"]
+
+    security_summary = {
+        "failed_logins_24h": 0,
+        "denied_actions_24h": 0,
+        "risky_actions_24h": 0,
+        "available": False,
+    }
+    if _is_global_admin():
+        since_24h = datetime.now(timezone.utc) - timedelta(hours=24)
+        try:
+            security_summary = {
+                "failed_logins_24h": (
+                    db.session.query(func.count(AdminLoginAttempt.id))
+                    .filter(
+                        AdminLoginAttempt.created_at >= since_24h,
+                        AdminLoginAttempt.success.is_(False),
+                    )
+                    .scalar()
+                    or 0
+                ),
+                "denied_actions_24h": (
+                    db.session.query(func.count(AdminAuditEvent.id))
+                    .filter(
+                        AdminAuditEvent.created_at >= since_24h,
+                        AdminAuditEvent.action == "security.denied_action",
+                    )
+                    .scalar()
+                    or 0
+                ),
+                "risky_actions_24h": (
+                    db.session.query(func.count(AdminAuditEvent.id))
+                    .filter(
+                        AdminAuditEvent.created_at >= since_24h,
+                        AdminAuditEvent.action.in_(RISKY_ACTIONS),
+                    )
+                    .scalar()
+                    or 0
+                ),
+                "available": True,
+            }
+        except Exception:
+            security_summary = {
+                "failed_logins_24h": 0,
+                "denied_actions_24h": 0,
+                "risky_actions_24h": 0,
+                "available": True,
+            }
+
+    return render_template(
+        "admin/admin_home.html",
+        attention_count=attention_count,
+        unassigned_count=unassigned_count,
+        followup_count=followup_count,
+        stale_count=stale_count,
+        attention_rows=attention_rows,
+        queue_summary=queue_summary,
+        security_summary=security_summary,
     )
 
 
@@ -8115,6 +8299,7 @@ def admin_roles():
 @admin_required
 @admin_role_required("superadmin")
 @require_admin_fresh_auth(minutes=10)
+@require_fresh_mfa
 def admin_roles_set_role(admin_id: int):
     _require_global_admin()
     target = db.session.get(AdminUser, admin_id)

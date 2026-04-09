@@ -284,7 +284,7 @@
               {% endif %}
             {% endwith %}
 
-            <form method="post" action="{{ url_for('admin.ops_login') }}" class="hc-auth-form">
+            <form method="post" action="{{ url_for('admin.admin_login') }}" class="hc-auth-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="next" value="{{ next or '' }}">
 

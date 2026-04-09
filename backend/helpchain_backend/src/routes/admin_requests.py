@@ -93,6 +93,7 @@ from .admin import (
     is_stale,
     is_safe_url,
     log_request_activity,
+    require_fresh_mfa,
     suggest_best_professional,
 )
 
@@ -501,6 +502,7 @@ def admin_requests_bulk():
 @login_required
 @admin_required
 @admin_role_required("superadmin")
+@require_fresh_mfa
 def admin_request_archive(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
@@ -1845,6 +1847,7 @@ def admin_open_case_from_request(req_id: int):
 @admin_bp.post("/requests/<int:req_id>/unlock", endpoint="admin_request_unlock")
 @admin_required
 @admin_role_required("superadmin")
+@require_fresh_mfa
 def admin_request_unlock(req_id: int):
     admin_required_404()
     admin_id = _admin_id()
@@ -2060,6 +2063,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
 @login_required
 @admin_required
 @admin_role_required("ops", "superadmin")
+@require_fresh_mfa
 def admin_request_assign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
@@ -2269,6 +2273,7 @@ def admin_request_nudge(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
 @login_required
+@require_fresh_mfa
 def admin_request_delete(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):

@@ -332,6 +332,27 @@ def create_app(config_object=None) -> Flask:
     except Exception:
         pass
 
+    explicit_require_admin_mfa = isinstance(config_object, dict) and (
+        "REQUIRE_ADMIN_MFA" in config_object
+    )
+    if explicit_require_admin_mfa:
+        app.config["REQUIRE_ADMIN_MFA"] = bool(app.config.get("REQUIRE_ADMIN_MFA"))
+    elif app.config.get("TESTING"):
+        app.config["REQUIRE_ADMIN_MFA"] = True
+    else:
+        app.config["REQUIRE_ADMIN_MFA"] = (
+            os.getenv("REQUIRE_ADMIN_MFA", "true").lower() == "true"
+        )
+
+    if not app.config.get("ADMIN_MFA_STEPUP_TTL_SECONDS"):
+        app.config["ADMIN_MFA_STEPUP_TTL_SECONDS"] = int(
+            os.getenv("ADMIN_MFA_STEPUP_TTL_SECONDS", "600")
+        )
+    if env_name in ("prod", "production") and not app.config.get(
+        "REQUIRE_ADMIN_MFA", True
+    ):
+        raise RuntimeError("MFA cannot be disabled in production")
+
     # Local/dev safety: if tenant fallback is not explicitly configured,
     # keep default tenant enabled outside production.
     if env_name not in ("prod", "production"):
@@ -358,6 +379,10 @@ def create_app(config_object=None) -> Flask:
     # will fail with "CSRF session token is missing".
     if app.debug or app.config.get("DEBUG"):
         app.config["SESSION_COOKIE_SECURE"] = False
+    app.config["SESSION_COOKIE_SECURE"] = False
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_PERMANENT"] = False
 
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
