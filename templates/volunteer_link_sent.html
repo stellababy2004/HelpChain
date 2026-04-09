@@ -19,9 +19,9 @@
       <button
         id="resend-link"
         class="hc-btn hc-btn--primary"
-        data-email="{{ resend_email or '' }}"
+        data-can-resend="{% if session.get('volunteer_magic_email') %}1{% else %}0{% endif %}"
         data-cooldown="{{ cooldown_seconds or 14 }}"
-        {% if not (resend_email or '') %}disabled{% endif %}
+        {% if not session.get('volunteer_magic_email') %}disabled{% endif %}
       >
         {{ _('Resend link') }}
       </button>
@@ -44,7 +44,7 @@
   const btn = document.getElementById("resend-link");
   if (!btn) return;
 
-  const email = (btn.dataset.email || "").trim();
+  const canResend = (btn.dataset.canResend || "").trim() === "1";
   const defaultCooldown = parseInt(btn.dataset.cooldown || "14", 10) || 14;
   const msgEl = document.getElementById("resend-msg");
   function showResendMsg(text) {
@@ -52,7 +52,7 @@
     msgEl.textContent = text;
     msgEl.style.display = "block";
   }
-  if (!email) {
+  if (!canResend) {
     showResendMsg("{{ _('Please start again from the form.') }}");
     btn.disabled = true;
     return;
@@ -83,7 +83,6 @@
     btn.disabled = true;
     btn.textContent = "{{ _('Sending…') }}";
     const params = new URLSearchParams();
-    params.append("email", email);
     params.append("started_at", String(Date.now() - 5000));
     params.append("company_fax", "");
     const csrf = document.getElementById("resend-csrf-token");

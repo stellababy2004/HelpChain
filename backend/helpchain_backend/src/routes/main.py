@@ -709,7 +709,10 @@ def _compute_magic_link_risk(ip: str, email: str | None) -> dict:
         score += 1
         signals.append("recent_reuse_block")
     if recent_suspicious_10m > 0:
-        score += 4
+        # A recent suspicious-activity marker should push the next attempt into
+        # a meaningfully stronger shadow-block tier when combined with any
+        # additional signal such as rate limiting.
+        score += 5
         signals.append("recent_suspicious")
     if trust_tier == "trusted":
         score = max(0, score - 2)
