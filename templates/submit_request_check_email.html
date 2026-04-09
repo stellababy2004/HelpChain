@@ -11,26 +11,6 @@
         {{ _("Изпратихме линк за потвърждение на:") }}
         <strong>{{ masked_email }}</strong>
       </p>
-      {% if email %}
-        <div class="hc-ctaRow" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-          <a
-            class="hc-btn hc-btn--ghost"
-            href="mailto:"
-            id="openMailApp"
-          >
-            {{ _("Отвори имейл приложението") }}
-          </a>
-          <button
-            type="button"
-            class="hc-btn hc-btn--ghost"
-            id="copyEmailBtn"
-            data-email="{{ email }}"
-          >
-            {{ _("Копирай имейла") }}
-          </button>
-          <span class="hc-muted hc-small" id="copyEmailStatus" style="align-self:center;"></span>
-        </div>
-      {% endif %}
     </header>
 
     <div class="hc-card__body">
@@ -41,10 +21,9 @@
 
       <hr class="hc-hr" />
 
-      {% if email %}
+      {% if masked_email %}
         <form method="POST" action="{{ url_for('main.submit_request_resend') }}" class="hc-form" novalidate>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="email" value="{{ email }}">
 
           <button
             type="submit"
@@ -76,57 +55,8 @@
 
 <script>
 (function () {
-  var copyBtn = document.getElementById("copyEmailBtn");
-  var copyStatus = document.getElementById("copyEmailStatus");
-  var openMail = document.getElementById("openMailApp");
   var btn = document.getElementById("resendBtn");
   var cd = document.getElementById("cooldownText");
-  var emailVal = "";
-  if (copyBtn) emailVal = (copyBtn.getAttribute("data-email") || "").trim();
-
-  if (openMail) {
-    var subj = encodeURIComponent("HelpChain");
-    var body = encodeURIComponent("");
-    if (!emailVal) {
-      openMail.setAttribute("aria-disabled", "true");
-    } else {
-      openMail.href = "mailto:" + encodeURIComponent(emailVal) + "?subject=" + subj + "&body=" + body;
-    }
-  }
-
-  if (copyBtn) {
-    if (!emailVal) {
-      copyBtn.disabled = true;
-      copyBtn.title = "No email available";
-    }
-
-    copyBtn.addEventListener("click", async function () {
-      if (!emailVal) return;
-
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(emailVal);
-        } else {
-          var ta = document.createElement("textarea");
-          ta.value = emailVal;
-          ta.setAttribute("readonly", "");
-          ta.style.position = "absolute";
-          ta.style.left = "-9999px";
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          document.body.removeChild(ta);
-        }
-
-        if (copyStatus) copyStatus.textContent = "{{ _('Копирано ') }}";
-        window.setTimeout(function () {
-          if (copyStatus) copyStatus.textContent = "";
-        }, 2000);
-      } catch (e) {
-        if (copyStatus) copyStatus.textContent = "{{ _('Не успях да копирам. Опитай ръчно.') }}";
-      }
-    });
-  }
 
   if (!btn || !cd) return;
 
