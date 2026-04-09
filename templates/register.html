@@ -120,15 +120,6 @@
         </div>
         {% endfor %} {% endif %} {% endwith %}
 
-        <!-- Social Registration -->
-        <button class="btn btn-google btn-modern" type="button">
-          <i class="fab fa-google me-2"></i>Регистрирай се с Google
-        </button>
-
-        <div class="text-center mb-4">
-          <span style="color: #6c757d; font-size: 0.9rem">или</span>
-        </div>
-
         <form method="POST" id="registerForm">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="form-group-modern">

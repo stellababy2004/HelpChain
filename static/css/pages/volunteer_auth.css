@@ -378,9 +378,6 @@ body.hc-page-volunteer-auth {
   .btn-primary-modern { background: var(--primary-gradient); color: white; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3); }
   .btn-primary-modern:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4); }
 
-  .btn-google { background: white; color: #444; border: 2px solid #e1e5e9; }
-  .btn-google:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.08); transform: translateY(-2px); }
-
   .btn-link-modern { color: #667eea; text-decoration: none; font-weight: 600; }
   .btn-link-modern:hover { text-decoration: underline; }
 
@@ -817,17 +814,6 @@ body.hc-page-volunteer-auth {
       .btn-primary-modern:hover {
         transform: translateY(-3px);
         box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-      }
-
-      .btn-google {
-        background: #4285f4;
-        color: white;
-        border: 1px solid #4285f4;
-      }
-
-      .btn-google:hover {
-        background: #3367d6;
-        transform: translateY(-2px);
       }
 
       /* Alert Messages */

@@ -132,9 +132,12 @@
               </button>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-danger" href="#" data-action="logout">
+              <form method="post" action="{{ url_for('admin.admin_logout') }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="nav-link text-danger btn btn-link p-0">
                 <i class="fas fa-sign-out-alt me-1"></i>Изход
-              </a>
+                </button>
+              </form>
             </li>
           </ul>
         </div>
@@ -451,7 +454,7 @@
           // Create and submit logout form
           const form = document.createElement("form");
           form.method = "POST";
-          form.action = "/admin_logout";
+          form.action = "{{ url_for('admin.admin_logout') }}";
           document.body.appendChild(form);
           form.submit();
         }
