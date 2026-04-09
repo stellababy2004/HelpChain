@@ -222,17 +222,18 @@ def collect_admin_security_health(now: datetime | None = None) -> dict:
         or 0
     )
 
+    username_expr = func.coalesce(AdminLoginAttempt.username, "")
     fail_buckets = (
         db.session.query(
             AdminLoginAttempt.ip.label("ip"),
-            func.coalesce(AdminLoginAttempt.username, "").label("username"),
+            username_expr.label("username"),
             func.count(AdminLoginAttempt.id).label("fails"),
         )
         .filter(
             AdminLoginAttempt.created_at >= since_24h,
             AdminLoginAttempt.success.is_(False),
         )
-        .group_by(AdminLoginAttempt.ip, func.coalesce(AdminLoginAttempt.username, ""))
+        .group_by(AdminLoginAttempt.ip, username_expr)
         .having(func.count(AdminLoginAttempt.id) >= admin_login_max_fails)
         .subquery()
     )
