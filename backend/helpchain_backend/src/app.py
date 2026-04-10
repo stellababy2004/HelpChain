@@ -210,8 +210,20 @@ def add_security_headers(app: Flask):
         plausible_script_url = (app.config.get("PLAUSIBLE_SCRIPT_URL") or "").strip()
         plausible_api_host = (app.config.get("PLAUSIBLE_API_HOST") or "").strip()
 
+        is_dev_csp = bool(app.debug or app.config.get("DEBUG")) or (
+            str(
+                app.config.get("ENV")
+                or app.config.get("APP_ENV")
+                or app.config.get("FLASK_ENV")
+                or app.config.get("FLASK_CONFIG")
+                or ""
+            ).lower()
+            in ("dev", "development")
+        )
+
         script_src = ["'self'"]
         style_src = ["'self'", "'unsafe-inline'"]
+        font_src = ["'self'"]
         connect_src = ["'self'"]
         img_src = ["'self'", "data:"]
         frame_src = ["'self'"]
@@ -226,6 +238,22 @@ def add_security_headers(app: Flask):
             style_src.append(map_script_origin)
         if map_tile_origin not in img_src:
             img_src.append(map_tile_origin)
+        if is_dev_csp:
+            for origin in ("https://fonts.googleapis.com", "https://unpkg.com"):
+                if origin not in style_src:
+                    style_src.append(origin)
+            if "'unsafe-inline'" not in script_src:
+                script_src.append("'unsafe-inline'")
+            if "https://fonts.gstatic.com" not in font_src:
+                font_src.append("https://fonts.gstatic.com")
+            for origin in (
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "ws://localhost:*",
+                "ws://127.0.0.1:*",
+            ):
+                if origin not in connect_src:
+                    connect_src.append(origin)
         if plausible_enabled:
             script_origin = _origin_from_url(plausible_script_url)
             api_origin = _origin_from_url(plausible_api_host) or script_origin
@@ -247,7 +275,7 @@ def add_security_headers(app: Flask):
             "script-src-attr 'none'; "
             f"style-src {' '.join(style_src)}; "
             f"img-src {' '.join(img_src)}; "
-            "font-src 'self'; "
+            + f"font-src {' '.join(font_src)}; "
             + f"connect-src {' '.join(connect_src)}; "
             + f"frame-src {' '.join(frame_src)}; "
             "frame-ancestors 'self'; "

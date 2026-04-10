@@ -9,7 +9,7 @@ def admin_login(authenticated_admin_client):
 
 
 def test_admin_template_failure_is_controlled(app, admin_login, monkeypatch):
-    from backend.helpchain_backend.src.routes import admin as admin_routes
+    from backend.helpchain_backend.src.routes import admin_requests as admin_requests_routes
 
     state = {"called": False}
 
@@ -17,7 +17,7 @@ def test_admin_template_failure_is_controlled(app, admin_login, monkeypatch):
         state["called"] = True
         raise RuntimeError("template boom (test)")
 
-    monkeypatch.setattr(admin_routes, "render_template", boom)
+    monkeypatch.setattr(admin_requests_routes, "render_template", boom)
     app.config["PROPAGATE_EXCEPTIONS"] = False
 
     r = admin_login.get("/admin/requests")

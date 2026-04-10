@@ -69,7 +69,7 @@ def test_structures_list_requires_global_admin(client):
 
 def test_structures_list_accessible_for_global_admin(client, session):
     admin = _make_admin(
-        session, username="global_admin", email="global_admin@test.local", role="admin"
+        session, username="global_admin", email="global_admin@test.local", role="superadmin"
     )
     _login_admin(client, admin)
     resp = client.get("/admin/structures", follow_redirects=False)
@@ -78,7 +78,7 @@ def test_structures_list_accessible_for_global_admin(client, session):
 
 def test_structure_create_success(client, session):
     admin = _make_admin(
-        session, username="creator_admin", email="creator_admin@test.local", role="admin"
+        session, username="creator_admin", email="creator_admin@test.local", role="superadmin"
     )
     _login_admin(client, admin)
     resp = client.post(
@@ -105,7 +105,7 @@ def test_structure_create_success(client, session):
 )
 def test_structure_create_missing_fields(client, session, payload):
     admin = _make_admin(
-        session, username="creator_missing", email="creator_missing@test.local", role="admin"
+        session, username="creator_missing", email="creator_missing@test.local", role="superadmin"
     )
     _login_admin(client, admin)
     resp = client.post("/admin/structures/new", data=payload, follow_redirects=False)
@@ -115,7 +115,7 @@ def test_structure_create_missing_fields(client, session, payload):
 def test_structure_create_duplicate_slug(client, session):
     _make_structure(session, name="Existing", slug="dup-slug")
     admin = _make_admin(
-        session, username="creator_dup", email="creator_dup@test.local", role="admin"
+        session, username="creator_dup", email="creator_dup@test.local", role="superadmin"
     )
     _login_admin(client, admin)
     resp = client.post(
@@ -129,7 +129,7 @@ def test_structure_create_duplicate_slug(client, session):
 def test_structure_detail_loads(client, session):
     st = _make_structure(session, name="Detail", slug="detail")
     admin = _make_admin(
-        session, username="detail_admin", email="detail_admin@test.local", role="admin"
+        session, username="detail_admin", email="detail_admin@test.local", role="superadmin"
     )
     _login_admin(client, admin)
     resp = client.get(f"/admin/structures/{st.id}", follow_redirects=False)
@@ -139,7 +139,7 @@ def test_structure_detail_loads(client, session):
 def test_assign_admin_success(client, session):
     st = _make_structure(session, name="Assign", slug="assign")
     global_admin = _make_admin(
-        session, username="assign_global", email="assign_global@test.local", role="admin"
+        session, username="assign_global", email="assign_global@test.local", role="superadmin"
     )
     target_admin = _make_admin(
         session, username="assign_target", email="assign_target@test.local", role="admin"
@@ -160,7 +160,7 @@ def test_assign_admin_success(client, session):
 def test_assign_admin_invalid_id(client, session, admin_id):
     st = _make_structure(session, name="AssignBad", slug="assign-bad")
     global_admin = _make_admin(
-        session, username="assign_bad_global", email="assign_bad_global@test.local", role="admin"
+        session, username="assign_bad_global", email="assign_bad_global@test.local", role="superadmin"
     )
     target_admin = _make_admin(
         session, username="assign_bad_target", email="assign_bad_target@test.local", role="admin"
@@ -186,7 +186,7 @@ def test_tenant_scoping_global_admin_unfiltered(client, session):
     _make_request(session, title="Req 2", user_id=u2.id, structure_id=st2.id)
 
     global_admin = _make_admin(
-        session, username="global_ops", email="global_ops@test.local", role="admin"
+        session, username="global_ops", email="global_ops@test.local", role="superadmin"
     )
     _login_admin(client, global_admin)
     resp = client.get("/admin/api/ops-kpis", follow_redirects=False)
