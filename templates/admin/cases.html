@@ -130,7 +130,11 @@
               </td>
               <td class="request-col">
                 <div class="fw-semibold">
-                  <a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a>
+                  {% if config.DEMO_MODE %}
+                    <a href="{{ url_for('admin.admin_requests') }}">#{{ c.request_id }}</a>
+                  {% else %}
+                    <a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a>
+                  {% endif %}
                   <span class="ms-1">{{ c.request.title if c.request else '—' }}</span>
                 </div>
                 <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }} · {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}">
@@ -176,7 +180,11 @@
                 <div class="small text-muted">{{ activity_ref or '—' }}</div>
               </td>
               <td class="actions-col text-end">
-                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Ouvrir</a>
+                {% if config.DEMO_MODE %}
+                  <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Aperçu</span>
+                {% else %}
+                  <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Ouvrir</a>
+                {% endif %}
               </td>
             </tr>
           {% else %}

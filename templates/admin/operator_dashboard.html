@@ -134,7 +134,11 @@
                 <div class="small text-muted hc-ops-activity-meta">{{ activity_ref or '—' }}</div>
               </td>
               <td class="text-end hc-ops-cell-action">
-                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
+                {% if config.DEMO_MODE %}
+                  <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Aperçu</span>
+                {% else %}
+                  <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
+                {% endif %}
               </td>
             </tr>
           {% else %}
