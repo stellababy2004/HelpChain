@@ -4771,6 +4771,20 @@ body.hc-ops-console-page .hc-notify-table :is(.hc-notify-col-recipient, .hc-noti
   min-height: 100%;
 }
 
+.demo-badge{
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  background: #ff4d4f;
+  color: white;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  z-index: 9999;
+  box-shadow: 0 10px 24px rgba(0,0,0,.16);
+}
+
 .hc-admin-shellbar{
   position: sticky;
   top: 0;
