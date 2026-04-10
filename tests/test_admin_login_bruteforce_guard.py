@@ -97,3 +97,29 @@ def test_admin_login_success_clears_recent_failed_bucket(client, session):
         .count()
     )
     assert remaining_recent_fails == 0
+
+
+def test_admin_login_rate_limit_per_ip(client, session):
+    client.application.config["EMAIL_2FA_ENABLED"] = False
+    username = "rate_limit_admin"
+    ip = "203.0.113.12"
+
+    _ensure_admin_user(session, username, TEST_ADMIN_PASSWORD)
+    session.query(AdminLoginAttempt).delete()
+    session.commit()
+
+    responses = []
+    for _ in range(6):
+        responses.append(
+            client.post(
+                "/admin/login",
+                data={"username": username, "password": "wrong-password"},
+                environ_base={"REMOTE_ADDR": ip},
+                follow_redirects=False,
+            )
+        )
+
+    assert responses[-1].status_code == 429
+    retry_after = responses[-1].headers.get("Retry-After")
+    assert retry_after is not None
+    assert int(retry_after) > 0

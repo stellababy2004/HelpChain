@@ -1284,6 +1284,74 @@ def _lockout_response(retry_after_seconds: int, next_url: str = ""):
     return response
 
 
+def _admin_auth_rate_limit_response(_request_limit):
+    next_candidate = (
+        request.form.get("next") or request.args.get("next") or ""
+    ).strip()
+    next_url = _safe_next_url(next_candidate)
+    flash(_("Too many attempts. Please wait a minute and try again."), "warning")
+
+    if request.path.endswith("/re-auth"):
+        response = make_response(
+            render_template("admin/reauth.html", next=next_url),
+            429,
+        )
+    elif request.path.endswith("/mfa/verify"):
+        response = make_response(
+            render_template(
+                "admin/mfa_verify.html",
+                locked=True,
+                remaining=60,
+                next=next_url,
+            ),
+            429,
+        )
+    else:
+        response = make_response(
+            render_template("admin/login.html", next=next_url),
+            429,
+        )
+    response.headers["Retry-After"] = "60"
+    return response
+
+
+def _audit_admin_auth_event(
+    event_type: str,
+    *,
+    route_context: str,
+    attempted_identifier: str | None = None,
+    user: AdminUser | None = None,
+    next_url: str = "",
+    extra_payload: dict | None = None,
+) -> None:
+    payload = {
+        "route": route_context,
+        "attempted_identifier": (attempted_identifier or "")[:255],
+        "next": (next_url or "")[:255],
+        "ip": _client_ip(),
+        "ua": (request.headers.get("User-Agent") or "")[:256],
+    }
+    if extra_payload:
+        payload.update(extra_payload)
+
+    log_security_event(
+        event_type,
+        actor_type="admin",
+        actor_id=getattr(user, "id", None),
+        meta={
+            "route": route_context,
+            "attempted_identifier": (attempted_identifier or "")[:255],
+            "ip": payload["ip"],
+        },
+    )
+    audit_admin_action(
+        action=event_type,
+        target_type="AdminUser",
+        target_id=int(getattr(user, "id", 0) or 0),
+        payload=payload,
+    )
+
+
 def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     # Successful login path
     session.clear()  # mitigate session fixation
@@ -4070,7 +4138,11 @@ def admin_ops_login():
 
 @admin_bp.route("/login", methods=["GET", "POST"], endpoint="admin_login")
 @admin_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("30 per minute")
+@limiter.limit(
+    "5 per minute",
+    methods=["POST"],
+    on_breach=_admin_auth_rate_limit_response,
+)
 def admin_login_legacy():
     """Legacy admin login endpoint kept for backward-compatible tests/clients."""
     next_candidate = (
@@ -4089,15 +4161,38 @@ def admin_login_legacy():
         locked, retry_after = _admin_login_is_locked(ip, username_norm, now)
         if locked:
             _log_admin_attempt(username=username_norm, ip=ip, success=False)
+            _audit_admin_auth_event(
+                "admin_login_failure",
+                route_context="login",
+                attempted_identifier=username_norm,
+                next_url=next_url,
+                extra_payload={"reason": "lockout", "retry_after_seconds": int(retry_after)},
+            )
             return _lockout_response(retry_after, next_url=next_url)
 
         password = request.form.get("password", "")
         user = _find_admin_user(username)
         if not _verify_admin_password(user, password):
             _log_admin_attempt(username=username_norm, ip=ip, success=False)
+            _audit_admin_auth_event(
+                "admin_login_failure",
+                route_context="login",
+                attempted_identifier=username_norm,
+                user=user,
+                next_url=next_url,
+                extra_payload={"reason": "invalid_credentials"},
+            )
             flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
         _log_admin_attempt(username=username_norm, ip=ip, success=True)
+        _audit_admin_auth_event(
+            "admin_login_success",
+            route_context="login",
+            attempted_identifier=username_norm,
+            user=user,
+            next_url=next_url,
+            extra_payload={"result": "success"},
+        )
         cleared_fails = _clear_recent_admin_login_failures(username_norm, ip, now)
         if cleared_fails > 0:
             log_security_event(
@@ -4138,6 +4233,11 @@ def admin_login_legacy():
 
 
 @admin_bp.route("/re-auth", methods=["GET", "POST"])
+@limiter.limit(
+    "5 per minute",
+    methods=["POST"],
+    on_breach=_admin_auth_rate_limit_response,
+)
 @login_required
 @admin_required
 def admin_reauth():
@@ -4153,6 +4253,14 @@ def admin_reauth():
             now = _utc_now()
             _touch_admin_last_seen(now)
             _touch_admin_auth_at(now)
+            _audit_admin_auth_event(
+                "admin_reauth_success",
+                route_context="re-auth",
+                attempted_identifier=getattr(user, "username", None),
+                user=user,
+                next_url=next_url,
+                extra_payload={"result": "success"},
+            )
             log_security_event(
                 "auth_admin_reauth_success",
                 actor_type="admin",
@@ -4176,6 +4284,14 @@ def admin_reauth():
                 url_for("admin.admin_requests"),
                 code=303,
             )
+        _audit_admin_auth_event(
+            "admin_reauth_failure",
+            route_context="re-auth",
+            attempted_identifier=getattr(user, "username", None),
+            user=user,
+            next_url=next_url,
+            extra_payload={"reason": "invalid_credentials"},
+        )
         log_security_event(
             "auth_admin_reauth_failed",
             actor_type="admin",
@@ -4297,6 +4413,11 @@ def admin_mfa_setup():
 
 
 @admin_bp.route("/mfa/verify", methods=["GET", "POST"])
+@limiter.limit(
+    "10 per minute",
+    methods=["POST"],
+    on_breach=_admin_auth_rate_limit_response,
+)
 @login_required
 def admin_mfa_verify():
     admin_required_404()
@@ -4336,6 +4457,17 @@ def admin_mfa_verify():
         )
 
     if locked:
+        _audit_admin_auth_event(
+            "admin_mfa_verify_failure",
+            route_context="mfa_verify",
+            attempted_identifier=getattr(current_user, "username", None),
+            user=current_user,
+            next_url=request.args.get("next") or "",
+            extra_payload={
+                "reason": "locked",
+                "retry_after_seconds": int(remaining or 0),
+            },
+        )
         flash(
             f"Твърде много опити. Опитай след {max(1, remaining // 60)} мин.", "danger"
         )
@@ -4375,6 +4507,17 @@ def admin_mfa_verify():
             message="Admin MFA verified",
             persist=True,
         )
+        _audit_admin_auth_event(
+            "admin_mfa_verify_success",
+            route_context="mfa_verify",
+            attempted_identifier=getattr(current_user, "username", None),
+            user=current_user,
+            next_url=request.args.get("next") or "",
+            extra_payload={
+                "method": "backup_code" if backup_ok and not totp_ok else "totp",
+                "result": "success",
+            },
+        )
         flash(_("MFA verified."), "success")
         return _redirect_to_safe_next(
             request.args.get("next"),
@@ -4383,6 +4526,18 @@ def admin_mfa_verify():
 
     _mfa_attempt_fail()
     locked, remaining = _mfa_lock_is_active()
+    _audit_admin_auth_event(
+        "admin_mfa_verify_failure",
+        route_context="mfa_verify",
+        attempted_identifier=getattr(current_user, "username", None),
+        user=current_user,
+        next_url=request.args.get("next") or "",
+        extra_payload={
+            "reason": "invalid_code",
+            "attempts": int(session.get("mfa_attempts", 0) or 0),
+            "locked": bool(locked),
+        },
+    )
     if locked:
         flash(_("Invalid code. Locked for about %(minutes)s min.", minutes=max(1, remaining // 60)), "danger")
     else:

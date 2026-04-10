@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import timedelta
 from uuid import uuid4
 
+import pyotp
+
 from backend.models import AdminUser, Request, Structure, User, utc_now
 
 
@@ -183,6 +185,34 @@ def test_ops_login_without_mfa_redirects_to_operator_landing(client, session):
     response = _post_admin_login(client, username=admin.username)
     assert response.status_code in (302, 303)
     assert "/admin/operator" in (response.headers.get("Location", "") or "")
+
+
+def test_admin_login_with_mfa_enabled_continues_through_verify_flow(client, session):
+    structure = _default_structure(session)
+    secret = pyotp.random_base32()
+    admin = _make_admin(
+        session,
+        username="structure_admin_with_mfa",
+        email="structure_admin_with_mfa@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    admin.mfa_enabled = True
+    admin.totp_secret = secret
+    session.commit()
+
+    response = _post_admin_login(client, username=admin.username)
+    assert response.status_code in (302, 303)
+    verify_location = response.headers.get("Location", "") or ""
+    assert "/admin/mfa/verify" in verify_location
+
+    verify_response = client.post(
+        "/admin/mfa/verify",
+        data={"code": pyotp.TOTP(secret).now()},
+        follow_redirects=False,
+    )
+    assert verify_response.status_code in (302, 303)
+    assert "/admin/mfa/verify" not in (verify_response.headers.get("Location", "") or "")
 
 
 def test_structure_level_admin_is_scoped_in_admin_requests(client, session):

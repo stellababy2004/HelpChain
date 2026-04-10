@@ -49,6 +49,49 @@ def test_admin_login_success_writes_audit_event(client, session):
         "admin_ops_login",
     }
 
+    auth_event = (
+        session.query(AdminAuditEvent)
+        .filter(
+            AdminAuditEvent.action == "admin_login_success",
+            AdminAuditEvent.target_type == "AdminUser",
+            AdminAuditEvent.target_id == int(admin.id),
+        )
+        .order_by(AdminAuditEvent.id.desc())
+        .first()
+    )
+    assert auth_event is not None
+    assert (auth_event.payload or {}).get("route") == "login"
+    assert (auth_event.payload or {}).get("attempted_identifier") == admin.username
+
+
+def test_admin_login_failure_writes_audit_event(client, session):
+    client.application.config["EMAIL_2FA_ENABLED"] = False
+    admin = _ensure_admin_user(session, "audit_failed_login_admin", TEST_ADMIN_PASSWORD)
+    session.query(AdminAuditEvent).delete()
+    session.commit()
+
+    resp = client.post(
+        "/admin/login",
+        data={"username": admin.username, "password": "WrongPassword1"},
+        follow_redirects=False,
+    )
+    assert resp.status_code in (302, 303)
+
+    event = (
+        session.query(AdminAuditEvent)
+        .filter(
+            AdminAuditEvent.action == "admin_login_failure",
+            AdminAuditEvent.target_type == "AdminUser",
+            AdminAuditEvent.target_id == int(admin.id),
+        )
+        .order_by(AdminAuditEvent.id.desc())
+        .first()
+    )
+    assert event is not None
+    assert (event.payload or {}).get("route") == "login"
+    assert (event.payload or {}).get("attempted_identifier") == admin.username
+    assert (event.payload or {}).get("reason") == "invalid_credentials"
+
 
 def test_admin_logout_writes_audit_event(authenticated_admin_client, session):
     client = authenticated_admin_client
