@@ -105,6 +105,18 @@ from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
+from ..services.demo_data import (
+    get_demo_case_signals,
+    get_demo_cases,
+    get_demo_kpis,
+    get_demo_notification_channels,
+    get_demo_notification_summary,
+    get_demo_notifications,
+    get_demo_ops_priority_levels,
+    get_demo_queue_reasons,
+    get_demo_requests,
+    get_demo_sla_payload,
+)
 from ..services.geocoding import request_address_display_text
 from ..services.ops_priority import compute_ops_priority
 from ..security_logging import log_security_event
@@ -3529,6 +3541,21 @@ def ops_workspace():
 
 
 def _render_operator_dashboard():
+    if current_app.config.get("DEMO_MODE"):
+        demo_kpis = get_demo_kpis()
+        return render_template(
+            "admin/operator_dashboard.html",
+            urgent_count=demo_kpis["critical"],
+            unassigned_count=demo_kpis["unassigned"],
+            followup_count=demo_kpis["relance"],
+            updated_today_count=demo_kpis["updated_today"],
+            failed_notif_count=demo_kpis["notifications_failed"],
+            retry_notif_count=1,
+            queue_rows=get_demo_requests(),
+            queue_reasons=get_demo_queue_reasons(),
+            ops_priority_levels=get_demo_ops_priority_levels(),
+        )
+
     base_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
     try:
         base_query = base_query.filter(Request.is_archived.is_(False))
@@ -6276,6 +6303,22 @@ def admin_sla_breakdown():
     days = _normalize_sla_days(request.args.get("days", 30))
     limit = max(1, min(int(request.args.get("limit", 200) or 200), 1000))
 
+    if current_app.config.get("DEMO_MODE"):
+        demo = get_demo_sla_payload()
+        return render_template(
+            "admin/sla.html",
+            breach_label=demo["breach_label"],
+            breach_type=breach_type,
+            days=days,
+            sort=sort,
+            limit=limit,
+            resolve_count=demo["resolve_count"],
+            owner_assign_count=demo["owner_assign_count"],
+            volunteer_assign_count=demo["volunteer_assign_count"],
+            prediction_counts=demo["prediction_counts"],
+            rows=demo["rows"],
+        )
+
     now = datetime.now(UTC).replace(tzinfo=None)
     q = _sla_base_window_query(_scope_requests(Request.query), days=days, now=now)
 
@@ -6724,6 +6767,27 @@ def _apply_cases_risk_filter(query, risk_value: str):
 
 
 def _render_cases_list():
+    if current_app.config.get("DEMO_MODE"):
+        return render_template(
+            "admin/cases.html",
+            cases=get_demo_cases(),
+            status="",
+            priority="",
+            owner="",
+            category="",
+            risk="",
+            stale=False,
+            statuses=list(CATEGORY_CASE_STATUSES),
+            priorities=list(CASE_PRIORITIES),
+            owners=[(1, "Marie Dupont"), (2, "Nadia Bernard")],
+            critical_count=2,
+            attention_count=1,
+            no_owner_count=2,
+            stale_count=1,
+            case_signals=get_demo_case_signals(),
+            ops_priority_levels={201: "critique", 202: "élevé", 203: "critique"},
+        )
+
     if not _cases_enabled():
         flash("Case system tables are not available yet. Run migrations first.", "warning")
         return render_template(
@@ -6873,6 +6937,18 @@ def _render_cases_list():
 
 
 def _render_notifications_list():
+    if current_app.config.get("DEMO_MODE"):
+        return render_template(
+            "admin/notifications_operational.html",
+            jobs=get_demo_notifications(),
+            status="",
+            channel="",
+            event_type="",
+            recipient="",
+            summary=get_demo_notification_summary(),
+            channels=get_demo_notification_channels(),
+        )
+
     if not _table_exists("notification_jobs"):
         flash("Notification jobs table is not available yet. Run migrations first.", "warning")
         return render_template(

@@ -360,6 +360,14 @@ def create_app(config_object=None) -> Flask:
     except Exception:
         pass
 
+    app.config["DEMO_MODE"] = (
+        str(app.config.get("DEMO_MODE", os.getenv("DEMO_MODE", "false"))).lower()
+        == "true"
+    )
+    app.config["DEMO_SCENARIO"] = os.getenv(
+        "DEMO_SCENARIO", "pilot_ccas"
+    ).strip().lower()
+
     explicit_require_admin_mfa = isinstance(config_object, dict) and (
         "REQUIRE_ADMIN_MFA" in config_object
     )
