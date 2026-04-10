@@ -9,6 +9,7 @@
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
+        <div class="hc-admin-kicker">Console opérateur</div>
         <h1 class="hc-admin-title">Notifications</h1>
         <div class="hc-muted">Suivi opérationnel des notifications en file d'attente.</div>
       </div>
@@ -16,6 +17,12 @@
   </div>
 
   <div class="hc-card mb-3 p-3 hc-ops-toolbar-card">
+    <div class="hc-section-intro">
+      <div>
+        <h2 class="hc-section-title">État du pipeline</h2>
+        <p class="hc-section-subtitle">Surveillez les files d’envoi, les relances et les échecs avant de traiter les éléments bloqués.</p>
+      </div>
+    </div>
     <div class="hc-notify-summary mb-3">
       <div class="hc-notify-summary__item">
         <div class="hc-notify-summary__label">En attente</div>
@@ -67,6 +74,10 @@
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(notifications_endpoint) }}">Réinitialiser</a>
       </div>
     </form>
+    <div class="hc-section-thread" aria-label="Continuité notifications">
+      <span class="hc-section-thread__label">Pour approfondir l’état opérationnel</span>
+      <a class="hc-section-thread__link" href="{{ url_for('admin.admin_security') }}">Voir la console de sécurité</a>
+    </div>
   </div>
 
   <div class="hc-card hc-admin-table-shell hc-ops-table-shell">

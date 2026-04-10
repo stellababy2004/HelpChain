@@ -7,8 +7,9 @@
   <div class="hc-card mb-3 hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">{{ _('Audit trail') }}</h1>
-        <div class="hc-muted">{{ _('Who changed what and when') }}</div>
+        <div class="hc-admin-kicker">Traçabilité administrative</div>
+        <h1 class="hc-admin-title">Audit des actions</h1>
+        <div class="hc-muted">Historique exploitable des actions administratives, de leurs cibles et des changements associés.</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
@@ -55,8 +56,8 @@
 
   <div class="hc-card hc-admin-table-shell hc-table-shell">
     <div class="hc-card__section hc-card__section--header hc-audit-tableHeader">
-      <strong>{{ _('Recent events') }}</strong>
-      <span class="hc-muted small">{{ _('Traceability log for admin actions, targets and payload changes.') }}</span>
+      <strong>Événements récents</strong>
+      <span class="hc-muted small">Console de traçabilité pour les actions, cibles et changements de charge utile.</span>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-table hc-audit-table mb-0">
@@ -135,6 +136,10 @@
         </ul>
       </nav>
     </div>
+  </div>
+  <div class="hc-section-thread" aria-label="Continuité audit">
+    <span class="hc-section-thread__label">Pour prolonger l’analyse</span>
+    <a class="hc-section-thread__link" href="{{ url_for('admin.admin_security') }}">Voir la console de sécurité</a>
   </div>
 </div>
 {% endblock %}

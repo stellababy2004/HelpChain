@@ -4,11 +4,11 @@
 
 {% block admin_content %}
 <div class="hc-admin-wrap">
-  <div class="hc-card mb-3">
+  <div class="hc-card mb-3 hc-page-hero">
     <div class="d-flex align-items-end justify-content-between gap-3 flex-wrap">
     <div>
-      <div class="hc-muted small">{{ _('Operational control') }}</div>
-      <h1 class="hc-admin-title">{{ _('SLA Breakdown') }}</h1>
+      <div class="hc-admin-kicker">Pilotage opérationnel</div>
+      <h1 class="hc-admin-title">Vue des délais et dépassements SLA</h1>
       <div class="text-muted small mt-1">{{ breach_label }} • {{ _('Window:') }} {{ days }} {{ _('days') }}</div>
       <div class="text-muted small mt-1">{{ _('This page shows only requests with SLA breaches.') }}</div>
       <div class="text-muted small mt-1">{{ _('Alerte préventive SLA') }} • {{ _('Risque de dépassement SLA') }}</div>
@@ -39,7 +39,7 @@
   <div class="row g-3 mb-4">
     <div class="col-md-4">
       <a class="text-decoration-none text-reset d-block" href="{{ safe_url_for('admin.admin_requests', queue='sla', sla_kind='resolution_overdue', sla_days=days) }}">
-        <div class="hc-card h-100">
+        <div class="hc-card h-100 hc-sla-kpi">
           <div class="card-body">
             <div class="text-muted small">{{ _('SLA resolution overdue') }}</div>
             <div class="display-6 fw-semibold">{{ resolve_count }}</div>
@@ -50,7 +50,7 @@
     </div>
     <div class="col-md-4">
       <a class="text-decoration-none text-reset d-block" href="{{ safe_url_for('admin.admin_requests', queue='sla', sla_kind='owner_assignment_overdue', sla_days=days) }}">
-        <div class="hc-card h-100">
+        <div class="hc-card h-100 hc-sla-kpi">
           <div class="card-body">
             <div class="text-muted small">{{ _('SLA owner assignment overdue') }}</div>
             <div class="display-6 fw-semibold">{{ owner_assign_count }}</div>
@@ -61,7 +61,7 @@
     </div>
     <div class="col-md-4">
       <a class="text-decoration-none text-reset d-block" href="{{ safe_url_for('admin.admin_requests', queue='sla', sla_kind='volunteer_assignment_overdue', sla_days=days) }}">
-        <div class="hc-card h-100">
+        <div class="hc-card h-100 hc-sla-kpi">
           <div class="card-body">
             <div class="text-muted small">{{ _('Volunteer assignment overdue') }}</div>
             <div class="display-6 fw-semibold">{{ volunteer_assign_count }}</div>
@@ -128,6 +128,10 @@
         </table>
       </div>
     </div>
+  </div>
+  <div class="hc-section-thread" aria-label="Continuité SLA">
+    <span class="hc-section-thread__label">Pour structurer le traitement</span>
+    <a class="hc-section-thread__link" href="{{ url_for('ops.ops_workspace') }}">Découvrir le cadre de déploiement</a>
   </div>
 </div>
 {% endblock %}

@@ -8,14 +8,21 @@
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
+        <div class="hc-admin-kicker">Console opérateur</div>
         <h1 class="hc-admin-title">Cas</h1>
-        <div class="hc-muted">Suivi opérationnel des cas liés aux demandes.</div>
+        <div class="hc-muted">Suivi opérationnel des cas liés aux demandes, avec priorisation, responsabilité et délais.</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
   </div>
 
   <div class="hc-card mb-3 p-3 hc-cases-toolbar-card hc-ops-toolbar-card">
+    <div class="hc-section-intro">
+      <div>
+        <h2 class="hc-section-title">Repères de priorisation</h2>
+        <p class="hc-section-subtitle">Repérez les situations critiques, non attribuées ou sans action récente avant de filtrer la file.</p>
+      </div>
+    </div>
     <div class="hc-risk-overview mb-3">
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None) }}">
         <span class="hc-risk-overview__label">Situations critiques</span>
@@ -91,6 +98,10 @@
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint) }}">Réinitialiser</a>
       </div>
     </form>
+    <div class="hc-section-thread" aria-label="Continuité cases">
+      <span class="hc-section-thread__label">Besoin d’une vue de déploiement structurée</span>
+      <a class="hc-section-thread__link" href="{{ url_for('ops.ops_workspace') if request.path.startswith('/ops') else url_for('admin.admin_sla_breakdown') }}">Échanger sur un déploiement pilote</a>
+    </div>
   </div>
 
   <div class="hc-card hc-admin-table-shell hc-cases-table-shell hc-ops-table-shell">

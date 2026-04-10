@@ -7,16 +7,27 @@
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">Centre de commandement risques</h1>
+        <div class="hc-admin-kicker">Console opérateur</div>
+        <h1 class="hc-admin-title">Centre de pilotage opérationnel</h1>
         <div class="hc-muted">Surface opérationnelle — priorités, blocages, relances.</div>
+      </div>
+      <div class="hc-admin-actions">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir sécurité</a>
       </div>
     </div>
   </div>
 
   <div class="hc-card mb-3 p-3 hc-ops-toolbar-card">
+    <div class="hc-section-intro">
+      <div>
+        <h2 class="hc-section-title">Signaux exécutifs</h2>
+        <p class="hc-section-subtitle">Lecture immédiate de la charge opérationnelle et des points de vigilance à traiter.</p>
+      </div>
+    </div>
     <div class="hc-ops-summary mb-3">
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Situations urgentes</div>
+        <div class="hc-ops-summary__label">Situations critiques</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
       </div>
       <div class="hc-ops-summary__item">
@@ -37,6 +48,12 @@
       </div>
     </div>
 
+    <div class="hc-section-intro hc-section-intro--tight">
+      <div>
+        <h2 class="hc-section-title">Accès rapides</h2>
+        <p class="hc-section-subtitle">Basculez directement vers les files qui nécessitent une action.</p>
+      </div>
+    </div>
     <div class="hc-ops-actions">
       <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', owner='none') }}">Voir non assignés</a>
@@ -133,6 +150,29 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <div class="hc-admin-grid hc-ops-secondary-grid mt-3">
+    <a class="hc-card hc-admin-linkcard" href="{{ url_for('admin.admin_security') }}">
+      <div class="hc-admin-linkcard__kicker">Sécurité</div>
+      <div class="hc-admin-linkcard__title">Vue sécurité</div>
+      <div class="hc-admin-linkcard__text">Suivre les alertes d’authentification, les IP suspectes et les anomalies récentes.</div>
+    </a>
+    <a class="hc-card hc-admin-linkcard" href="{{ url_for('admin.admin_sla_breakdown') }}">
+      <div class="hc-admin-linkcard__kicker">SLA</div>
+      <div class="hc-admin-linkcard__title">Retards et priorités</div>
+      <div class="hc-admin-linkcard__text">Analyser les situations en dépassement et les signaux de retard opérationnel.</div>
+    </a>
+    <a class="hc-card hc-admin-linkcard" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">
+      <div class="hc-admin-linkcard__kicker">Notifications</div>
+      <div class="hc-admin-linkcard__title">Santé du pipeline</div>
+      <div class="hc-admin-linkcard__text">Examiner les échecs, les relances en attente et les flux à sécuriser.</div>
+    </a>
+    <a class="hc-card hc-admin-linkcard" href="{{ url_for('admin.admin_audit') }}">
+      <div class="hc-admin-linkcard__kicker">Audit</div>
+      <div class="hc-admin-linkcard__title">Traçabilité récente</div>
+      <div class="hc-admin-linkcard__text">Ouvrir la console d’audit pour vérifier les actions administratives et les changements récents.</div>
+    </a>
   </div>
 
   {% if retry_notif_count %}

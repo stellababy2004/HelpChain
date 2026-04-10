@@ -13,6 +13,23 @@
 
 {% block content %}
   <div class="hc-admin-workspace__content">
+    {% set current_path = request.path or '' %}
+    <div class="hc-admin-shellbar">
+      <div class="hc-admin-shellbar__inner">
+        <div class="hc-admin-shellbar__brand">
+          <span class="hc-admin-shellbar__eyebrow">HelpChain</span>
+          <span class="hc-admin-shellbar__title">Centre de pilotage opérationnel</span>
+        </div>
+        <nav class="hc-admin-shellnav" aria-label="Navigation administration">
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/workspace') or current_path == '/ops' else '' }}" href="{{ url_for('ops.ops_workspace') }}">Workspace</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/cases') else '' }}" href="{{ url_for('ops.ops_cases_list') }}">Cas</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/notifications') else '' }}" href="{{ url_for('ops.ops_notifications_list') }}">Notifications</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/sla') else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">Sécurité</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/structures') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') or current_path.startswith('/admin/professional-leads/demo') else '' }}" href="{{ url_for('admin.admin_structures') }}">Plateforme</a>
+        </nav>
+      </div>
+    </div>
     {% block admin_content %}{% endblock %}
   </div>
 {% endblock %}
