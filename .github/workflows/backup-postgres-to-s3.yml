@@ -1,0 +1,87 @@
+name: Backup Postgres to S3
+
+on:
+  schedule:
+    # Every day at 03:17 UTC
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        run: |
+          test -n "$AWS_REGION" || (echo "Missing AWS_REGION" && exit 1)
+          test -n "$S3_BUCKET" || (echo "Missing S3_BUCKET" && exit 1)
+          test -n "$DATABASE_URL" || (echo "Missing DATABASE_URL" && exit 1)
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client gzip
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Create backup filename
+        id: meta
+        run: |
+          TS="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
+          DAY="$(date -u +'%Y/%m/%d')"
+          FILE="helpchain-postgres-${TS}.sql"
+          ARCHIVE="${FILE}.gz"
+          KEY="postgres/${DAY}/${ARCHIVE}"
+
+          echo "ts=$TS" >> "$GITHUB_OUTPUT"
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          echo "archive=$ARCHIVE" >> "$GITHUB_OUTPUT"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Run pg_dump
+        env:
+          PGSSLMODE: require
+        run: |
+          pg_dump \
+            --dbname="$DATABASE_URL" \
+            --format=plain \
+            --no-owner \
+            --no-privileges \
+            --verbose \
+            --file="${{ steps.meta.outputs.file }}"
+
+      - name: Compress backup
+        run: |
+          gzip -9 "${{ steps.meta.outputs.file }}"
+
+      - name: Upload backup to S3
+        run: |
+          aws s3 cp \
+            "${{ steps.meta.outputs.archive }}" \
+            "s3://${S3_BUCKET}/${{ steps.meta.outputs.key }}"
+
+      - name: Verify uploaded object exists
+        run: |
+          aws s3 ls "s3://${S3_BUCKET}/${{ steps.meta.outputs.key }}"
+
+      - name: Cleanup local archive
+        if: always()
+        run: |
+          rm -f "${{ steps.meta.outputs.archive }}"
