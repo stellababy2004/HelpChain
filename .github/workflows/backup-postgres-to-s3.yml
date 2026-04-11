@@ -51,7 +51,7 @@ jobs:
       - name: Dump PostgreSQL
         run: |
           TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
-          FILE="backup_$TIMESTAMP.sql"
+          FILE="backup_${TIMESTAMP}_${GITHUB_SHA}.sql"
           /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" > "$FILE"
           gzip "$FILE"
           echo "BACKUP_FILE=$FILE.gz" >> "$GITHUB_ENV"
