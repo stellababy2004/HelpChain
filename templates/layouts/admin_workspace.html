@@ -14,7 +14,7 @@
 {% block content %}
   <div class="hc-admin-workspace__content">
     {% if config.DEMO_MODE %}
-      <div class="demo-badge">DEMO MODE</div>
+      <div class="demo-badge">DEMO MODE · {{ (config.DEMO_SCENARIO or 'pilot_ccas')|replace('_', ' ')|title }}</div>
     {% endif %}
     {% set current_path = request.path or '' %}
     <div class="hc-admin-shellbar">

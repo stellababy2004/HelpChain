@@ -142,14 +142,18 @@
               <td class="hc-notify-col-error" title="{{ j.last_error or '-' }}">{{ (j.last_error or '-')|truncate(80, True) }}</td>
               <td>
                 {% if j.status == 'failed' %}
-                  <form method="post" action="{{ url_for(retry_endpoint, job_id=j.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="status" value="{{ status }}">
-                    <input type="hidden" name="channel" value="{{ channel }}">
-                    <input type="hidden" name="event_type" value="{{ event_type }}">
-                    <input type="hidden" name="recipient" value="{{ recipient }}">
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">Relancer</button>
-                  </form>
+                  {% if config.DEMO_MODE %}
+                    <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Action démo</span>
+                  {% else %}
+                    <form method="post" action="{{ url_for(retry_endpoint, job_id=j.id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="status" value="{{ status }}">
+                      <input type="hidden" name="channel" value="{{ channel }}">
+                      <input type="hidden" name="event_type" value="{{ event_type }}">
+                      <input type="hidden" name="recipient" value="{{ recipient }}">
+                      <button type="submit" class="btn btn-outline-secondary btn-sm">Relancer</button>
+                    </form>
+                  {% endif %}
                 {% else %}
                   <span class="small text-muted">-</span>
                 {% endif %}

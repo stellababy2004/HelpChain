@@ -262,7 +262,11 @@
                   <td class="small">
                     {{ row.target_type }} #{{ row.target_id }}
                     {% if row.target_type == "Request" %}
-                      <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=row.target_id) }}">{{ _('view') }}</a>
+                      {% if config.DEMO_MODE %}
+                        <span class="btn btn-sm btn-outline-secondary disabled ms-2" aria-disabled="true">Aperçu</span>
+                      {% else %}
+                        <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=row.target_id) }}">{{ _('view') }}</a>
+                      {% endif %}
                     {% endif %}
                   </td>
                 </tr>
@@ -330,7 +334,11 @@
                   <td class="small">
                     {{ row.target_type }} #{{ row.target_id }}
                     {% if row.target_type == "Request" %}
-                      <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=row.target_id) }}">{{ _('view') }}</a>
+                      {% if config.DEMO_MODE %}
+                        <span class="btn btn-sm btn-outline-secondary disabled ms-2" aria-disabled="true">Aperçu</span>
+                      {% else %}
+                        <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=row.target_id) }}">{{ _('view') }}</a>
+                      {% endif %}
                     {% endif %}
                   </td>
                 </tr>

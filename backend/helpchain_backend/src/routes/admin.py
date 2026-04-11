@@ -110,6 +110,7 @@ from ..services.demo_data import (
     get_demo_cases,
     get_demo_kpis,
     get_demo_notification_channels,
+    get_demo_payload,
     get_demo_notification_summary,
     get_demo_notifications,
     get_demo_ops_priority_levels,
@@ -3542,7 +3543,9 @@ def ops_workspace():
 
 def _render_operator_dashboard():
     if current_app.config.get("DEMO_MODE"):
-        demo_kpis = get_demo_kpis()
+        demo = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
+        demo_kpis = demo["workspace_kpis"]
+        scenario_meta = demo["scenario_meta"]
         return render_template(
             "admin/operator_dashboard.html",
             urgent_count=demo_kpis["critical"],
@@ -3550,10 +3553,12 @@ def _render_operator_dashboard():
             followup_count=demo_kpis["relance"],
             updated_today_count=demo_kpis["updated_today"],
             failed_notif_count=demo_kpis["notifications_failed"],
-            retry_notif_count=1,
-            queue_rows=get_demo_requests(),
-            queue_reasons=get_demo_queue_reasons(),
-            ops_priority_levels=get_demo_ops_priority_levels(),
+            retry_notif_count=demo_kpis.get("retry_notifications", 0),
+            queue_rows=demo["workspace_rows"],
+            queue_reasons=demo["workspace_queue_reasons"],
+            ops_priority_levels=demo["workspace_priority_levels"],
+            scenario_label=scenario_meta["label"],
+            scenario_description=scenario_meta["short_description"],
         )
 
     base_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
@@ -6304,7 +6309,9 @@ def admin_sla_breakdown():
     limit = max(1, min(int(request.args.get("limit", 200) or 200), 1000))
 
     if current_app.config.get("DEMO_MODE"):
-        demo = get_demo_sla_payload()
+        payload = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
+        demo = payload["sla_kpis"]
+        scenario_meta = payload["scenario_meta"]
         return render_template(
             "admin/sla.html",
             breach_label=demo["breach_label"],
@@ -6316,7 +6323,9 @@ def admin_sla_breakdown():
             owner_assign_count=demo["owner_assign_count"],
             volunteer_assign_count=demo["volunteer_assign_count"],
             prediction_counts=demo["prediction_counts"],
-            rows=demo["rows"],
+            rows=payload["sla_rows"],
+            scenario_label=scenario_meta["label"],
+            scenario_description=scenario_meta["short_description"],
         )
 
     now = datetime.now(UTC).replace(tzinfo=None)
@@ -6768,9 +6777,12 @@ def _apply_cases_risk_filter(query, risk_value: str):
 
 def _render_cases_list():
     if current_app.config.get("DEMO_MODE"):
+        demo = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
+        case_kpis = demo["cases_kpis"]
+        scenario_meta = demo["scenario_meta"]
         return render_template(
             "admin/cases.html",
-            cases=get_demo_cases(),
+            cases=demo["cases_rows"],
             status="",
             priority="",
             owner="",
@@ -6780,11 +6792,11 @@ def _render_cases_list():
             statuses=list(CATEGORY_CASE_STATUSES),
             priorities=list(CASE_PRIORITIES),
             owners=[(1, "Marie Dupont"), (2, "Nadia Bernard")],
-            critical_count=2,
-            attention_count=1,
-            no_owner_count=2,
-            stale_count=1,
-            case_signals=get_demo_case_signals(),
+            critical_count=case_kpis["critical"],
+            attention_count=case_kpis["attention"],
+            no_owner_count=case_kpis["no_owner"],
+            stale_count=case_kpis["stale"],
+            case_signals=demo["cases_signals"],
             ops_priority_levels={201: "critique", 202: "élevé", 203: "critique"},
         )
 
@@ -6938,15 +6950,19 @@ def _render_cases_list():
 
 def _render_notifications_list():
     if current_app.config.get("DEMO_MODE"):
+        demo = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
+        scenario_meta = demo["scenario_meta"]
         return render_template(
             "admin/notifications_operational.html",
-            jobs=get_demo_notifications(),
+            jobs=demo["notification_rows"],
             status="",
             channel="",
             event_type="",
             recipient="",
-            summary=get_demo_notification_summary(),
-            channels=get_demo_notification_channels(),
+            summary=demo["notifications_kpis"],
+            channels=demo["notification_channels"],
+            scenario_label=scenario_meta["label"],
+            scenario_description=scenario_meta["short_description"],
         )
 
     if not _table_exists("notification_jobs"):
@@ -8070,6 +8086,23 @@ def admin_pro_access_list():
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_audit():
     _require_global_admin()
+    if current_app.config.get("DEMO_MODE"):
+        payload = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
+        scenario_meta = payload["scenario_meta"]
+        return (
+            render_template(
+                "admin/audit.html",
+                events=payload["audit_rows"],
+                pagination=payload["audit_pagination"],
+                filters=payload["audit_filters"],
+                actions=payload["audit_actions"],
+                target_types=payload["audit_target_types"],
+                scenario_label=scenario_meta["label"],
+                scenario_description=scenario_meta["short_description"],
+            ),
+            200,
+        )
+
     if not _table_exists("admin_audit_events"):
         return (
             render_template(
@@ -8179,6 +8212,30 @@ def admin_audit():
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_security():
     _require_global_admin()
+    if current_app.config.get("DEMO_MODE"):
+        payload = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
+        scenario_meta = payload["scenario_meta"]
+        security_recent = payload["security_recent_attempts"]
+        return (
+            render_template(
+                "admin/security.html",
+                kpis=payload["security_kpis"],
+                recent_logins=security_recent["recent_logins"],
+                recent_risky=security_recent["recent_risky"],
+                recent_denied=security_recent["recent_denied"],
+                recent_sensitive=security_recent["recent_sensitive"],
+                top_ips=security_recent["top_ips"],
+                top_usernames=security_recent["top_usernames"],
+                top_denied_ips=security_recent["top_denied_ips"],
+                top_denied_usernames=security_recent["top_denied_usernames"],
+                anomalies=payload["security_anomalies"],
+                risky_actions=security_recent["risky_actions"],
+                scenario_label=scenario_meta["label"],
+                scenario_description=scenario_meta["short_description"],
+            ),
+            200,
+        )
+
     now = datetime.now(timezone.utc)
     since_24h = now - timedelta(hours=24)
     since_1h = now - timedelta(hours=1)

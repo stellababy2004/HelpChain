@@ -89,7 +89,11 @@
             <td class="small hc-audit-target">
               <div class="hc-audit-targetMain">{{ e.target_type }} #{{ e.target_id }}</div>
               {% if e.target_type == "Request" and e.action != "security.denied_action" %}
-                <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ _('view') }}</a>
+                {% if config.DEMO_MODE %}
+                  <span class="btn btn-sm btn-outline-secondary disabled ms-2" aria-disabled="true">Aperçu</span>
+                {% else %}
+                  <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ _('view') }}</a>
+                {% endif %}
               {% endif %}
             </td>
             <td class="small hc-audit-change change-cell">

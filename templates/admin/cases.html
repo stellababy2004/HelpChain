@@ -131,7 +131,7 @@
               <td class="request-col">
                 <div class="fw-semibold">
                   {% if config.DEMO_MODE %}
-                    <a href="{{ url_for('admin.admin_requests') }}">#{{ c.request_id }}</a>
+                    <span class="text-muted">#{{ c.request_id }}</span>
                   {% else %}
                     <a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a>
                   {% endif %}
