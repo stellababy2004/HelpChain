@@ -2,8 +2,7 @@ name: Backup Postgres to S3
 
 on:
   schedule:
-    # Every day at 03:17 UTC
-    - cron: "17 3 * * *"
+    - cron: "17 3 * * *" # всеки ден в 03:17 UTC
   workflow_dispatch:
 
 permissions:
@@ -20,68 +19,39 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate required secrets
-        run: |
-          test -n "$AWS_REGION" || (echo "Missing AWS_REGION" && exit 1)
-          test -n "$S3_BUCKET" || (echo "Missing S3_BUCKET" && exit 1)
-          test -n "$DATABASE_URL" || (echo "Missing DATABASE_URL" && exit 1)
-
       - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Install AWS CLI
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client gzip
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Create backup filename
-        id: meta
+      - name: Export DB connection
         run: |
-          TS="$(date -u +'%Y-%m-%dT%H-%M-%SZ')"
-          DAY="$(date -u +'%Y/%m/%d')"
-          FILE="helpchain-postgres-${TS}.sql"
-          ARCHIVE="${FILE}.gz"
-          KEY="postgres/${DAY}/${ARCHIVE}"
+          echo "$DATABASE_URL" > db_url.txt
 
-          echo "ts=$TS" >> "$GITHUB_OUTPUT"
-          echo "file=$FILE" >> "$GITHUB_OUTPUT"
-          echo "archive=$ARCHIVE" >> "$GITHUB_OUTPUT"
-          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+      - name: Dump PostgreSQL
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+          FILE="backup_$TIMESTAMP.sql"
 
-      - name: Run pg_dump
+          pg_dump "$DATABASE_URL" > $FILE
+
+          gzip $FILE
+
+          echo "BACKUP_FILE=$FILE.gz" >> $GITHUB_ENV
+
+      - name: Upload to S3
         env:
-          PGSSLMODE: require
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          pg_dump \
-            --dbname="$DATABASE_URL" \
-            --format=plain \
-            --no-owner \
-            --no-privileges \
-            --verbose \
-            --file="${{ steps.meta.outputs.file }}"
+          aws s3 cp $BACKUP_FILE s3://$S3_BUCKET/postgres/$BACKUP_FILE
 
-      - name: Compress backup
-        run: |
-          gzip -9 "${{ steps.meta.outputs.file }}"
-
-      - name: Upload backup to S3
-        run: |
-          aws s3 cp \
-            "${{ steps.meta.outputs.archive }}" \
-            "s3://${S3_BUCKET}/${{ steps.meta.outputs.key }}"
-
-      - name: Verify uploaded object exists
-        run: |
-          aws s3 ls "s3://${S3_BUCKET}/${{ steps.meta.outputs.key }}"
-
-      - name: Cleanup local archive
-        if: always()
-        run: |
-          rm -f "${{ steps.meta.outputs.archive }}"
+      - name: Done
+        run: echo "Backup uploaded successfully"
