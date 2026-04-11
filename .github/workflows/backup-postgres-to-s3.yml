@@ -36,8 +36,9 @@ jobs:
         run: |
           /usr/lib/postgresql/17/bin/pg_dump --version
 
-          - name: Check AWS CLI
-        run: aws --version
+      - name: Check AWS CLI
+        run: |
+          aws --version
 
       - name: Debug AWS identity
         env:
@@ -55,7 +56,7 @@ jobs:
           gzip "$FILE"
           echo "BACKUP_FILE=$FILE.gz" >> "$GITHUB_ENV"
 
-            - name: Upload to S3
+      - name: Upload to S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -64,4 +65,5 @@ jobs:
           aws s3 cp "$BACKUP_FILE" "s3://$S3_BUCKET/postgres/$BACKUP_FILE" --region "$AWS_REGION"
 
       - name: Done
-        run: echo "Backup uploaded successfully"
+        run: |
+          echo "Backup uploaded successfully"
