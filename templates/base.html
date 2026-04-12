@@ -22,6 +22,8 @@
       'main.comment_ca_marche',
       'main.collectivites_associations',
       'main.cas_usage',
+      'main.deploiement',
+      'main.offre',
       'main.pilotage_indicateurs',
       'main.partenariats',
       'main.pourquoi_helpchain',
@@ -414,6 +416,8 @@
       'main.comment_ca_marche',
       'main.collectivites_associations',
       'main.cas_usage',
+      'main.deploiement',
+      'main.offre',
       'main.pilotage_indicateurs',
       'main.partenariats',
       'main.faq',
@@ -423,6 +427,8 @@
       'main.architecture',
       'main.gouvernance',
       'main.contact',
+      'main.deploiement',
+      'main.offre',
       'main.mentions_legales',
       'main.confidentialite',
       'main.conditions_utilisation'
@@ -541,6 +547,16 @@
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.offre') else '' }}" href="{{ url_for('main.offre') }}" {% if ep.startswith('main.offre') %}aria-current="page"{% endif %}>
+                {{ _('Offre') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.deploiement') else '' }}" href="{{ url_for('main.deploiement') }}" {% if ep.startswith('main.deploiement') %}aria-current="page"{% endif %}>
+                {{ _('Déploiement') }}
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
                 {{ _('Pilotage') }}
               </a>
@@ -574,6 +590,16 @@
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
                 {{ _('Collectivités') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.offre') else '' }}" href="{{ url_for('main.offre') }}" {% if ep.startswith('main.offre') %}aria-current="page"{% endif %}>
+                {{ _('Offre') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if ep.startswith('main.deploiement') else '' }}" href="{{ url_for('main.deploiement') }}" {% if ep.startswith('main.deploiement') %}aria-current="page"{% endif %}>
+                {{ _('Déploiement') }}
               </a>
             </li>
             <li class="nav-item">
@@ -787,6 +813,8 @@
           {% set public_eps = [
             'main.index', 'main.orienter', 'main.about', 'main.professionnels',
             'main.pour_les_structures',
+            'main.offre',
+            'main.deploiement',
             'main.become_volunteer', 'main.volunteer_login', 'main.faq', 'main.contact'
           ] %}
           {% set show_nav_chrome = ep.startswith('admin.') or ep.startswith('main.volunteer_') or (ep not in public_eps) %}
@@ -853,6 +881,12 @@
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if mobile_ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if mobile_ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>{{ _('Collectivités') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.offre') else '' }}" href="{{ url_for('main.offre') }}" {% if mobile_ep.startswith('main.offre') %}aria-current="page"{% endif %}>{{ _('Offre') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if mobile_ep.startswith('main.deploiement') else '' }}" href="{{ url_for('main.deploiement') }}" {% if mobile_ep.startswith('main.deploiement') %}aria-current="page"{% endif %}>{{ _('Déploiement') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if mobile_ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if mobile_ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>{{ _('Pilotage') }}</a>

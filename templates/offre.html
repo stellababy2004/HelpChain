@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Offre et mise en engagement") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Présentation de l’offre HelpChain : démonstration, cadrage, pilote et déploiement progressif pour les structures, collectivités et partenaires territoriaux.") }}{% endblock %}
+{% block og_title %}{{ _("Offre et mise en engagement") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Aperçu de la page Offre et mise en engagement") }}{% endblock %}
+
+{% block content %}
+<div class="container hc-doc-page">
+  <header class="hc-doc-intro">
+    <p class="hc-doc-intro__label">{{ _("Offre") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Offre et mise en engagement") }}</h1>
+    <p class="hc-doc-intro__lead">
+      {{ _("HelpChain peut être déployé progressivement, à partir d’un besoin concret, dans un cadre structuré et adapté aux réalités opérationnelles de votre organisation.") }}
+    </p>
+    <p class="hc-doc-intro__lead">
+      {{ _("L’objectif n’est pas d’imposer une transformation lourde, mais de partir d’un besoin réel de coordination afin de construire un cadre de travail utilisable, lisible et pilotable.") }}
+    </p>
+  </header>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Une mise en place progressive") }}</h2>
+      <p class="mb-3">
+        {{ _("HelpChain peut démarrer sur un périmètre opérationnel ciblé, avant une extension plus large si le cadre d’usage se confirme dans votre structure.") }}
+      </p>
+
+      <h3 class="h6 mb-2">{{ _("Démonstration") }}</h3>
+      <p class="mb-3">
+        {{ _("Présentation de la plateforme, illustration d’un cas d’usage concret et premier échange sur votre contexte, vos contraintes et vos besoins de coordination.") }}
+      </p>
+
+      <h3 class="h6 mb-2">{{ _("Cadrage") }}</h3>
+      <p class="mb-3">
+        {{ _("Définition du périmètre de départ, identification des profils concernés, des types de situations à structurer et des besoins de coordination à couvrir.") }}
+      </p>
+
+      <h3 class="h6 mb-2">{{ _("Pilote") }}</h3>
+      <p class="mb-3">
+        {{ _("Mise en place sur un périmètre limité, usage sur des situations réelles, observation des pratiques et ajustements progressifs avec les équipes impliquées.") }}
+      </p>
+
+      <h3 class="h6 mb-2">{{ _("Déploiement progressif") }}</h3>
+      <p class="mb-0">
+        {{ _("Extension à davantage d’équipes concernées ou de situations, stabilisation des routines de travail et structuration progressive des usages à l’échelle de l’organisation.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Ce qu’un pilote peut inclure") }}</h2>
+      <ul class="mb-0">
+        <li>{{ _("cadrage du périmètre initial") }}</li>
+        <li>{{ _("accès pour les profils concernés") }}</li>
+        <li>{{ _("structuration des rôles et responsabilités") }}</li>
+        <li>{{ _("suivi des situations dans un cadre commun") }}</li>
+        <li>{{ _("visibilité sur les actions engagées") }}</li>
+        <li>{{ _("échanges de retour terrain avec les équipes") }}</li>
+        <li>{{ _("ajustements progressifs selon les usages observés") }}</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Pour quelles structures") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain peut être envisagé par des associations, des collectivités, des structures sociales, des partenaires territoriaux et des professionnels habilités impliqués dans la coordination de situations.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Le périmètre initial varie selon la réalité de chaque organisation: taille de l’équipe, territoire concerné, types de situations suivies et mode de coordination existant.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Modalités d’engagement") }}</h2>
+      <p class="mb-2">
+        {{ _("L’engagement peut commencer par un échange de cadrage puis par un pilote défini sur un périmètre réaliste et utile pour la structure.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("Le périmètre, les conditions de mise en place et le rythme de déploiement sont définis en fonction du contexte organisationnel et territorial.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("L’accompagnement est ajusté à la structure afin de permettre une adoption progressive, sans imposer d’élargissement prématuré du dispositif.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Échanger sur un pilote adapté à votre structure") }}</h2>
+      <p class="mb-3">
+        {{ _("Nous pouvons définir avec vous un périmètre de départ réaliste, adapté à votre territoire, à vos équipes et à vos besoins de coordination.") }}
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="/demo" class="hc-btn hc-btn--primary">{{ _("Planifier une démo") }}</a>
+        <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost">{{ _("Nous contacter") }}</a>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

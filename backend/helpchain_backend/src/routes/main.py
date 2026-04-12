@@ -4707,6 +4707,16 @@ def cas_usage():
     return render_template("cas_usage.html")
 
 
+@main_bp.get("/deploiement")
+def deploiement():
+    return render_template("deploiement.html")
+
+
+@main_bp.get("/offre")
+def offre():
+    return render_template("offre.html")
+
+
 @main_bp.get("/pilotage-indicateurs")
 @main_bp.get("/pilotage_indicateurs")
 def pilotage_indicateurs():
