@@ -3,7 +3,9 @@ from __future__ import annotations
 import json
 import os
 import threading
+from datetime import UTC, datetime
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, make_response, render_template, request, session
@@ -34,6 +36,7 @@ _DOTENV_CANDIDATES = (
     os.path.join(PROJECT_ROOT, ".env"),
     os.path.join(PROJECT_ROOT, "backend", ".env"),
 )
+PARIS_TZ = ZoneInfo("Europe/Paris")
 
 
 def _load_runtime_dotenv(*, override: bool = False) -> list[str]:
@@ -615,6 +618,30 @@ def create_app(config_object=None) -> Flask:
             return json.loads(value)
         except Exception:
             return []
+
+    @app.template_filter("format_datetime_fr")
+    def format_datetime_fr(value, style: str = "datetime"):
+        if not value:
+            return "—"
+        try:
+            if isinstance(value, str):
+                raw_value = value.strip()
+                if not raw_value:
+                    return "—"
+                value = datetime.fromisoformat(raw_value.replace("Z", "+00:00"))
+            if not isinstance(value, datetime):
+                return str(value)
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=UTC)
+            local_dt = value.astimezone(PARIS_TZ)
+            style_key = (style or "datetime").strip().lower()
+            if style_key == "date":
+                return local_dt.strftime("%d/%m/%Y")
+            if style_key == "time":
+                return local_dt.strftime("%H:%M")
+            return local_dt.strftime("%d/%m/%Y %H:%M")
+        except Exception:
+            return str(value)
 
     def db_t(
         key: str,

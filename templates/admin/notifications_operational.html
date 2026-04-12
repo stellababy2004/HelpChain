@@ -119,29 +119,29 @@
           {% for j in jobs %}
             <tr>
               <td class="text-muted">#{{ j.id }}</td>
-              <td class="small text-muted">{{ j.created_at.strftime('%Y-%m-%d %H:%M') if j.created_at else '-' }}</td>
+              <td class="small text-muted">{{ j.created_at|format_datetime_fr }}</td>
               <td>{{ j.channel or '-' }}</td>
               <td>{{ j.event_type or '-' }}</td>
               <td class="hc-notify-col-recipient" title="{{ j.recipient }}">{{ j.recipient }}</td>
               <td>
-                {% if j.status == 'sent' %}
-                  <span class="badge text-bg-success">envoyée</span>
-                {% elif j.status == 'retry' %}
-                  <span class="badge text-bg-warning text-dark">relance</span>
-                {% elif j.status == 'failed' %}
-                  <span class="badge text-bg-danger">échec</span>
-                {% elif j.status == 'processing' %}
+                {% if j.ui_status_bucket == 'sent' %}
+                  <span class="badge text-bg-success">{{ j.ui_status_label }}</span>
+                {% elif j.ui_status_bucket == 'retry' %}
+                  <span class="badge text-bg-warning text-dark">{{ j.ui_status_label }}</span>
+                {% elif j.ui_status_bucket == 'failed' %}
+                  <span class="badge text-bg-danger">{{ j.ui_status_label }}</span>
+                {% elif j.ui_status_bucket == 'processing' %}
                   <span class="badge text-bg-info text-dark">en cours</span>
                 {% else %}
                   <span class="badge text-bg-secondary">en attente</span>
                 {% endif %}
               </td>
               <td>{{ j.attempts or 0 }}/{{ j.max_attempts or 0 }}</td>
-              <td class="small text-muted">{{ j.next_retry_at.strftime('%Y-%m-%d %H:%M') if j.next_retry_at else '-' }}</td>
-              <td class="small text-muted">{{ j.sent_at.strftime('%Y-%m-%d %H:%M') if j.sent_at else '-' }}</td>
+              <td class="small text-muted">{{ j.next_retry_at|format_datetime_fr }}</td>
+              <td class="small text-muted">{{ j.sent_at|format_datetime_fr }}</td>
               <td class="hc-notify-col-error" title="{{ j.last_error or '-' }}">{{ (j.last_error or '-')|truncate(80, True) }}</td>
               <td>
-                {% if j.status == 'failed' %}
+                {% if j.ui_status_bucket == 'failed' %}
                   {% if config.DEMO_MODE %}
                     <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Action démo</span>
                   {% else %}

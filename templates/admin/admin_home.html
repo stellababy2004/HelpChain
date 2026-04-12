@@ -79,7 +79,7 @@
               </td>
               <td class="small text-muted">{{ r.city or r.location_text or '—' }}</td>
               <td><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
-              <td class="small text-muted">{{ activity_ref or '—' }}</td>
+              <td class="small text-muted">{{ activity_ref|format_datetime_fr }}</td>
               <td class="text-end">
                 <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
               </td>

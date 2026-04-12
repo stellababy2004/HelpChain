@@ -1095,6 +1095,7 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
     base_query = _scope_requests(base_query)
     status = (request_args.get("status") or "").strip()
     q = (request_args.get("q") or "").strip()
+    city = (request_args.get("city") or "").strip()
     category = normalize_request_category((request_args.get("category") or "").strip())
     risk = (request_args.get("risk") or "").strip().lower()
     risk_level = (request_args.get("risk_level") or "").strip().lower()
@@ -1124,6 +1125,15 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
                 Request.email.ilike(like),
                 Request.phone.ilike(like),
                 Request.description.ilike(like),
+            )
+        )
+    if city:
+        city_like = f"%{city.lower()}%"
+        base_query = base_query.filter(
+            or_(
+                func.lower(func.coalesce(Request.city, "")).like(city_like),
+                func.lower(func.coalesce(Request.location_text, "")).like(city_like),
+                func.lower(func.coalesce(Request.address_line, "")).like(city_like),
             )
         )
     if category:

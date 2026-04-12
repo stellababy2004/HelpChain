@@ -36,7 +36,7 @@
           </div>
           <div class="hc-case-overview-item">
             <span>Ouvert le</span>
-            <strong>{{ case_row.opened_at or case_row.created_at or '—' }}</strong>
+            <strong>{{ (case_row.opened_at or case_row.created_at)|format_datetime_fr }}</strong>
           </div>
         </div>
       </section>
@@ -221,7 +221,7 @@
                     <div class="small text-muted mt-1">{{ event_context }}</div>
                   {% endif %}
                 </div>
-                <div class="small text-muted text-nowrap">{{ ev.created_at.strftime('%H:%M') if ev.created_at and ev.created_at.strftime else ev.created_at }}</div>
+                <div class="small text-muted text-nowrap">{{ ev.created_at|format_datetime_fr }}</div>
               </div>
             </div>
           {% else %}
@@ -255,7 +255,7 @@
                     {% elif p.external_name %}{{ p.external_name }}
                     {% else %}—{% endif %}
                   </td>
-                  <td>{{ p.added_at }}</td>
+                  <td>{{ p.added_at|format_datetime_fr }}</td>
                 </tr>
               {% else %}
                 <tr><td colspan="5" class="text-muted">Aucun participant pour le moment.</td></tr>
@@ -294,14 +294,14 @@
         {% set case_activity_ref = case_row.last_activity_at or case_row.updated_at or case_row.created_at %}
         <div class="small text-muted mb-3">
           <div><strong>Risk score:</strong> {{ case_row.risk_score if case_row.risk_score is not none else '—' }}</div>
-          <div><strong>Opened:</strong> {{ case_row.opened_at or '—' }}</div>
-          <div><strong>Assigned:</strong> {{ case_row.assigned_at or '—' }}</div>
-          <div><strong>Resolved:</strong> {{ case_row.resolved_at or '—' }}</div>
-          <div><strong>Closed:</strong> {{ case_row.closed_at or '—' }}</div>
+          <div><strong>Opened:</strong> {{ case_row.opened_at|format_datetime_fr }}</div>
+          <div><strong>Assigned:</strong> {{ case_row.assigned_at|format_datetime_fr }}</div>
+          <div><strong>Resolved:</strong> {{ case_row.resolved_at|format_datetime_fr }}</div>
+          <div><strong>Closed:</strong> {{ case_row.closed_at|format_datetime_fr }}</div>
           <div>
             <strong>Dernière activité :</strong>
             <span class="hc-elapsed hc-elapsed--{{ elapsed_tone(case_activity_ref) }}">{{ format_elapsed_compact(case_activity_ref) }}</span>
-            <span title="{{ case_activity_ref or '—' }}">{{ case_activity_ref or '—' }}</span>
+            <span title="{{ case_activity_ref|format_datetime_fr }}">{{ case_activity_ref|format_datetime_fr }}</span>
           </div>
         </div>
 

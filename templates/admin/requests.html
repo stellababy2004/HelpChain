@@ -157,31 +157,37 @@
 
   <div class="hc-requests-toolbar mb-3 hc-admin-stickybar hc-requests-toolbar--wide" id="hcRequestsToolbar">
   <div class="hc-risk-overview mb-2 hc-requests-toolbar__overview">
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical') }}">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
       <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
     </a>
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high') }}">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
       <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
     </a>
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none') }}">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
       <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
     </a>
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1') }}">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
       <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
     </a>
   </div>
 
   <div class="hc-risk-filters mb-2 hc-requests-toolbar__shortcuts">
-    <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical') }}">{{ _('Critique') }}</a>
-    <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention') }}">{{ _('Attention') }}</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1') }}">{{ _('Sans responsable') }}</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1') }}">{{ _('Sans action 72h') }}</a>
+    <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical', city=request.args.get('city') or None) }}">{{ _('Critique') }}</a>
+    <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention', city=request.args.get('city') or None) }}">{{ _('Attention') }}</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1', city=request.args.get('city') or None) }}">{{ _('Sans responsable') }}</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}">{{ _('Sans action 72h') }}</a>
     <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Réinitialiser les filtres</a>
   </div>
+
+  {% if request.args.get('city') %}
+  <div class="mb-2">
+    <span class="badge text-bg-light border hc-context-badge">Zone active: {{ request.args.get('city') }}</span>
+  </div>
+  {% endif %}
 
   {% set selected_category = normalize_request_category(request.args.get('category') or '') %}
   <form class="row g-2 align-items-end mb-2 hc-requests-toolbar__search" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
@@ -199,6 +205,7 @@
       {% if no_owner %}<input type="hidden" name="no_owner" value="1">{% endif %}
       {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
       {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+      {% if request.args.get('city') %}<input type="hidden" name="city" value="{{ request.args.get('city') }}">{% endif %}
     </div>
     <div class="col-6 col-md-3 col-xl-2">
       <select class="form-select" id="hcFilterCity" aria-label="Filtrer par ville">
@@ -328,6 +335,7 @@
       {% if no_owner %}<input type="hidden" name="no_owner" value="1">{% endif %}
       {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
       {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+      {% if request.args.get('city') %}<input type="hidden" name="city" value="{{ request.args.get('city') }}">{% endif %}
     </form>
   </div>
 

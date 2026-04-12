@@ -98,6 +98,7 @@
               <td class="text-muted hc-ops-cell-id">#{{ r.id }}</td>
               <td class="hc-ops-cell-request">
                 <span class="hc-ops-title" title="{{ r.title }}">{{ r.title or '—' }}</span>
+                <span class="hc-ops-description" title="{{ r.description or r.message }}">{{ (r.description or r.message or '—')|truncate(110, True) }}</span>
                 <span class="hc-ops-meta" title="{{ request_category_label(r.category) }}">{{ request_category_label(r.category) }}</span>
                 {% set reasons = queue_reasons.get(r.id, []) %}
                 {% if reasons %}
@@ -131,7 +132,7 @@
               <td class="hc-ops-cell-owner">{% if r.owner %}{{ r.owner.username }}{% else %}—{% endif %}</td>
               <td class="hc-ops-cell-activity">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
-                <div class="small text-muted hc-ops-activity-meta">{{ activity_ref or '—' }}</div>
+                <div class="small text-muted hc-ops-activity-meta">{{ activity_ref|format_datetime_fr }}</div>
               </td>
               <td class="text-end hc-ops-cell-action">
                 {% if config.DEMO_MODE %}
