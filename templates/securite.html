@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Sécurité & conformité") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : infrastructure sécurisée, protection maîtrisée des données, contrôle des accès et supervision opérationnelle.") }}{% endblock %}
+{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : accès selon les rôles, protection maîtrisée des données, traçabilité et environnement adapté aux attentes institutionnelles.") }}{% endblock %}
 {% block og_title %}{{ _("Sécurité & conformité") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Sécurité et conformité") }}{% endblock %}
@@ -13,13 +13,19 @@
     <p class="hc-doc-intro__lead">
       {{ _("HelpChain est opéré comme une infrastructure de coordination de situations sociales sensibles, avec un cadre de sécurité et de conformité conçu pour des usages institutionnels, associatifs et professionnels.") }}
     </p>
+    <p class="hc-doc-intro__lead">
+      {{ _("La plateforme est pensée pour un usage dans un cadre organisationnel maîtrisé, avec une gouvernance des accès, une traçabilité des actions et une visibilité adaptée aux responsabilités de chaque acteur autorisé.") }}
+    </p>
   </header>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
-      <p class="mb-0">
+      <p class="mb-2">
         {{ _("La plateforme est exploitée avec des exigences de continuité, de traçabilité et de maîtrise des accès. Les choix d’architecture et d’exploitation visent à protéger les données personnelles et à maintenir un service stable dans un cadre compatible avec les attentes européennes en matière de conformité.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Pour une structure, l’enjeu n’est pas seulement la sécurité technique: il s’agit aussi de disposer d’un cadre fiable pour limiter les accès, organiser les responsabilités et conserver une lecture claire des actions engagées.") }}
       </p>
     </div>
   </section>
@@ -31,7 +37,10 @@
         {{ _("HelpChain s’appuie sur une infrastructure cloud sécurisée adaptée à un usage professionnel, avec une exploitation conçue pour la continuité de service, la traçabilité et la maîtrise des accès.") }}
       </p>
       <p class="mb-2">
-        {{ _("L’organisation des environnements, leur supervision et leur séparation répondent à une logique de maîtrise opérationnelle attendue par les acteurs publics, associatifs et professionnels.") }}
+        {{ _("L’organisation des environnements, leur supervision et leur séparation répondent à une logique de maîtrise opérationnelle attendue par les structures publiques, associatives et professionnelles.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("Le cadre d’hébergement et d’exploitation est conçu pour répondre à des attentes institutionnelles de stabilité, de lisibilité et de maîtrise, sans complexifier inutilement l’usage pour les équipes.") }}
       </p>
       <ul class="mb-0">
         <li>{{ _("Infrastructure technique supervisée et administrée") }}</li>
@@ -43,9 +52,33 @@
 
   <section class="card mb-3">
     <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Accès, rôles et visibilité") }}</h2>
+      <p class="mb-2">
+        {{ _("Les accès à la plateforme sont organisés selon les rôles, les responsabilités et le périmètre d’intervention de chaque utilisateur.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("La visibilité sur les situations n’a pas vocation à être générale: elle est limitée aux personnes autorisées dans le cadre défini pour leur usage.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("Cette organisation permet à une structure de cadrer plus finement qui accède à quoi, dans quel contexte et pour quelle responsabilité opérationnelle.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("HelpChain peut également être utilisé pour structurer la coordination entre plusieurs structures ou partenaires, dans un cadre maîtrisé. La circulation de l’information s’organise selon les rôles, les responsabilités et le périmètre défini pour les structures et professionnels habilités impliqués, sans ouvrir un accès généralisé aux situations ou aux données.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Ce cadre permet d’organiser une coordination inter-structures sans remettre en cause la maîtrise organisationnelle de chaque acteur impliqué.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Protection des données") }}</h2>
       <p class="mb-2">
         {{ _("Le traitement des données personnelles est encadré selon des principes de nécessité, de finalité et de proportionnalité. HelpChain cherche à limiter les données mobilisées à ce qui est utile au traitement et au suivi des situations.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("Les données ne sont pas présentées comme une ressource exploitée en dehors du fonctionnement du service, de la sécurité de la plateforme et des besoins liés au traitement opérationnel des situations.") }}
       </p>
       <ul class="mb-0">
         <li>{{ _("Collecte limitée aux informations nécessaires au service") }}</li>
@@ -53,6 +86,36 @@
         <li>{{ _("Journalisation des actions sensibles et des consultations critiques") }}</li>
         <li>{{ _("Traçabilité des opérations de pilotage et d’administration") }}</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Contrôle des données par la structure") }}</h2>
+      <p class="mb-2">
+        {{ _("Chaque structure conserve la maîtrise de son propre cadre d’usage, de son organisation interne et du périmètre dans lequel la plateforme est mobilisée.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("L’outil a vocation à soutenir le traitement et le suivi dans ce cadre, sans se substituer aux décisions, aux responsabilités et aux règles de fonctionnement de la structure utilisatrice.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Cette logique permet de conserver un pilotage organisationnel clair, avec une maîtrise du périmètre de travail et des personnes autorisées à intervenir.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Traçabilité et continuité de suivi") }}</h2>
+      <p class="mb-2">
+        {{ _("La traçabilité des actions, des changements de statut et des opérations de pilotage constitue un élément important du cadre d’usage institutionnel de HelpChain.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("Elle contribue à la continuité du suivi, à la relecture des situations et à une meilleure lisibilité des responsabilités dans le temps.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("Dans un environnement multi-acteurs, cette capacité à conserver un historique exploitable soutient à la fois la responsabilité opérationnelle et la qualité de coordination.") }}
+      </p>
     </div>
   </section>
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Questions fréquentes") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Questions fréquentes sur le fonctionnement de la plateforme HelpChain pour citoyens, intervenants, associations et collectivités.") }}{% endblock %}
+{% block meta_description %}{{ _("Questions fréquentes sur le fonctionnement de HelpChain pour les structures, collectivités, associations et professionnels impliqués dans la coordination des situations.") }}{% endblock %}
 {% block og_title %}{{ _("Questions fréquentes") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Questions fréquentes") }}{% endblock %}
@@ -19,10 +19,10 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Qu’est-ce que HelpChain ?") }}</h2>
       <p class="mb-2">
-        {{ _("HelpChain est une infrastructure numérique destinée à faciliter la coordination entre personnes concernées, intervenants et acteurs associatifs.") }}
+        {{ _("HelpChain est une infrastructure numérique de coordination conçue pour les structures, collectivités, associations et professionnels impliqués dans le traitement organisé des situations sociales.") }}
       </p>
       <p class="mb-0">
-        {{ _("Elle permet d’organiser plus facilement certaines demandes et de structurer la coordination entre les personnes concernées.") }}
+        {{ _("Elle permet de structurer l’orientation, le suivi et le pilotage des situations dans un cadre opérationnel partagé.") }}
       </p>
     </div>
   </section>
@@ -30,15 +30,20 @@
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Qui peut utiliser la plateforme ?") }}</h2>
-      <p class="mb-2">{{ _("La plateforme peut être utilisée par :") }}</p>
+      <p class="mb-2">
+        {{ _("HelpChain s’adresse en priorité aux structures, associations, collectivités et professionnels habilités qui doivent coordonner des situations dans un cadre structuré.") }}
+      </p>
       <ul class="mb-2">
-        <li>{{ _("des citoyens") }}</li>
-        <li>{{ _("des intervenants") }}</li>
-        <li>{{ _("des associations") }}</li>
-        <li>{{ _("des structures locales") }}</li>
+        <li>{{ _("collectivités et services publics locaux") }}</li>
+        <li>{{ _("associations et structures sociales") }}</li>
+        <li>{{ _("professionnels habilités") }}</li>
+        <li>{{ _("structures locales impliquées dans la coordination") }}</li>
       </ul>
+      <p class="mb-2">
+        {{ _("Selon l’organisation mise en place, des citoyens ou des partenaires externes peuvent aussi faire partie du circuit de signalement ou d’entrée de la demande.") }}
+      </p>
       <p class="mb-0">
-        {{ _("L’objectif est de faciliter la coopération entre différents acteurs impliqués dans le suivi des situations sociales.") }}
+        {{ _("La finalité principale reste la coordination structurée, le suivi et la visibilité opérationnelle pour les organisations qui portent le traitement.") }}
       </p>
     </div>
   </section>
@@ -48,7 +53,7 @@
       <h2 class="h5 mb-3">{{ _("La plateforme remplace-t-elle les structures existantes ?") }}</h2>
       <p class="mb-2"><strong>{{ _("Non.") }}</strong></p>
       <p class="mb-0">
-        {{ _("HelpChain ne remplace pas les structures existantes. La plateforme agit comme un outil complémentaire permettant de faciliter la coordination entre différents acteurs.") }}
+        {{ _("HelpChain ne remplace pas les structures existantes. La plateforme agit comme un cadre complémentaire pour structurer la coordination, clarifier les responsabilités et améliorer le suivi entre acteurs autorisés.") }}
       </p>
     </div>
   </section>
@@ -80,7 +85,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Qui gère la plateforme ?") }}</h2>
       <p class="mb-0">
-        {{ _("La plateforme est développée et maintenue dans le cadre du projet HelpChain, avec pour objectif de soutenir la coordination opérationnelle entre acteurs locaux.") }}
+        {{ _("La plateforme est développée et maintenue dans le cadre du projet HelpChain, avec pour objectif de soutenir la coordination opérationnelle entre structures, collectivités, associations et professionnels habilités.") }}
       </p>
     </div>
   </section>

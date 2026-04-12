@@ -27,35 +27,50 @@
     <p class="hc-doc-intro__lead">
       {{ _("HelpChain repose sur une architecture conçue pour organiser le traitement des demandes, encadrer les accès et assurer le suivi des actions dans un cadre commun.") }}
     </p>
+    <p class="hc-doc-intro__lead">
+      {{ _("Cette architecture n’a pas seulement une logique technique: elle correspond à une organisation concrète du traitement, de l’orientation, du suivi et du pilotage dans une structure ou entre partenaires autorisés.") }}
+    </p>
   </header>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Architecture de coordination et de pilotage") }}</h2>
-      <p class="mb-3">{{ _("Chaque niveau répond à un rôle spécifique dans le traitement des situations.") }}</p>
+      <p class="mb-3">{{ _("Chaque niveau répond à un rôle spécifique dans le traitement des situations et dans la répartition des responsabilités entre structures impliquées et équipes habilitées.") }}</p>
       <ul class="mb-0">
-        <li><strong>{{ _("Interface publique") }}</strong><br>{{ _("Dépôt et orientation initiale des demandes") }}</li>
-        <li><strong>{{ _("Espace intervenants") }}</strong><br>{{ _("Coordination des actions, attribution et suivi des situations") }}</li>
-        <li><strong>{{ _("Outils administratifs") }}</strong><br>{{ _("Pilotage, supervision et gestion des responsabilités") }}</li>
-        <li><strong>{{ _("Infrastructure applicative") }}</strong><br>{{ _("Gestion des flux, des règles de traitement et des accès") }}</li>
+        <li><strong>{{ _("Entrée dans le dispositif") }}</strong><br>{{ _("Réception d’un signalement ou d’une demande, avec un premier niveau d’entrée dans le dispositif") }}</li>
+        <li><strong>{{ _("Espace des professionnels habilités") }}</strong><br>{{ _("Qualification, orientation, attribution et suivi des situations par les acteurs opérationnels") }}</li>
+        <li><strong>{{ _("Outils administratifs") }}</strong><br>{{ _("Pilotage, supervision, gestion des rôles et visibilité sur l’activité") }}</li>
+        <li><strong>{{ _("Infrastructure applicative") }}</strong><br>{{ _("Gestion des flux, des règles de traitement, des accès et du cadre de coordination") }}</li>
       </ul>
-      <p class="mt-3 mb-2">{{ _("Ces niveaux fonctionnent ensemble comme un système coordonné, dans lequel l’enregistrement, l’attribution, le suivi et le pilotage restent alignés.") }}</p>
-      <p class="mb-0">{{ _("Interface publique → Qualification → Attribution → Suivi → Pilotage") }}</p>
+      <p class="mt-3 mb-2">{{ _("Ces niveaux fonctionnent ensemble comme un système coordonné, dans lequel l’enregistrement, la qualification, l’attribution, le suivi et le pilotage restent alignés.") }}</p>
+      <p class="mb-0">{{ _("Entrée dans le dispositif → Qualification → Orientation / Attribution → Suivi → Pilotage") }}</p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Lecture opérationnelle") }}</h2>
+      <p class="mb-2">
+        {{ _("Dans une structure, une situation peut d’abord être signalée ou enregistrée, puis qualifiée par les équipes habilitées, orientée vers le bon service ou l’équipe concernée, suivie dans le temps et relue au niveau du pilotage.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("L’architecture organise cette progression pour éviter la dispersion des informations, clarifier qui agit et conserver une lecture commune de la situation.") }}
+      </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Séparation opérationnelle des usages") }}</h2>
-      <p class="mb-3">{{ _("La séparation des usages évite les confusions de rôle, sécurise les interventions et améliore la cohérence du traitement entre acteurs.") }}</p>
+      <p class="mb-3">{{ _("La séparation des usages évite les confusions de rôle, sécurise les interventions et améliore la cohérence du traitement entre acteurs autorisés.") }}</p>
       <ul class="mb-0">
-        <li>{{ _("Dépôt des demandes") }}</li>
-        <li>{{ _("Qualification des situations") }}</li>
-        <li>{{ _("Attribution des responsabilités") }}</li>
-        <li>{{ _("Coordination des actions") }}</li>
-        <li>{{ _("Suivi des situations") }}</li>
-        <li>{{ _("Accès professionnels et institutionnels") }}</li>
-        <li>{{ _("Pilotage de l’activité") }}</li>
+        <li>{{ _("Dépôt ou enregistrement initial des demandes") }}</li>
+        <li>{{ _("Qualification des situations par les équipes habilitées concernées") }}</li>
+        <li>{{ _("Attribution des responsabilités selon l’organisation") }}</li>
+        <li>{{ _("Coordination des actions dans un cadre défini") }}</li>
+        <li>{{ _("Suivi des situations dans la durée") }}</li>
+        <li>{{ _("Accès professionnels et institutionnels différenciés") }}</li>
+        <li>{{ _("Pilotage de l’activité et relecture des parcours") }}</li>
       </ul>
     </div>
   </section>
@@ -77,10 +92,25 @@
 
   <section class="card mb-3">
     <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Coordination entre structures et partenaires") }}</h2>
+      <p class="mb-2">
+        {{ _("HelpChain peut également soutenir la coordination entre plusieurs structures ou partenaires, dans un cadre défini et maîtrisé.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("La circulation de l’information s’organise selon les rôles, les responsabilités et le périmètre utile à la coordination.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("La visibilité partagée n’implique pas un accès généralisé aux données ou aux situations: elle reste encadrée par les règles d’usage et le cadre de coordination retenu.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Positionnement de l’architecture") }}</h2>
       <p class="mb-2">{{ _("HelpChain n’est pas une interface de mise en relation.") }}</p>
       <p class="mb-2">{{ _("C’est une infrastructure de coordination opérationnelle conçue pour des environnements structurés.") }}</p>
-      <p class="mb-2">{{ _("Le traitement des demandes, la répartition des responsabilités et le suivi de l’activité y restent lisibles, contrôlés et traçables.") }}</p>
+      <p class="mb-2">{{ _("Le traitement des demandes, la répartition des responsabilités, la visibilité sur les situations et le suivi de l’activité y restent lisibles, contrôlés et traçables.") }}</p>
       <p class="mb-0">{{ _("Elle permet de transformer un fonctionnement fragmenté en un système structuré et pilotable.") }}</p>
     </div>
   </section>
