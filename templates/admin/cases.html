@@ -11,12 +11,30 @@
         <div class="hc-admin-kicker">Console opérateur</div>
         <h1 class="hc-admin-title">Cas</h1>
         <div class="hc-muted">Suivi opérationnel des cas liés aux demandes, avec priorisation, responsabilité et délais.</div>
+        {% if city %}
+          <div class="mt-2">
+            <span class="badge text-bg-light border hc-context-badge">Zone active: {{ city }}</span>
+          </div>
+        {% endif %}
       </div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', city=city or None) }}">Retour aux demandes</a>
     </div>
   </div>
 
-  <div class="hc-card mb-3 p-3 hc-cases-toolbar-card hc-ops-toolbar-card">
+  {% if city %}
+  <div class="hc-card mb-3 p-3 hc-cases-zonebar">
+    <div class="hc-cases-zonebar__eyebrow">Vue territoriale active</div>
+    <div class="hc-cases-zonebar__row">
+      <div>
+        <div class="hc-cases-zonebar__title">Zone: {{ city }}</div>
+        <div class="hc-cases-zonebar__copy">Liste filtrée depuis la carte territoriale.</div>
+      </div>
+      <div class="hc-cases-zonebar__meta">Territoire actif: {{ city }} • {{ cases|length }} cas affichés</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="hc-card mb-3 p-3 hc-cases-toolbar-card hc-ops-toolbar-card{% if city %} hc-cases-toolbar-card--territorial{% endif %}">
     <div class="hc-section-intro">
       <div>
         <h2 class="hc-section-title">Repères de priorisation</h2>
@@ -24,24 +42,27 @@
       </div>
     </div>
     <div class="hc-risk-overview mb-3">
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None, city=city or None) }}">
         <span class="hc-risk-overview__label">Situations critiques</span>
         <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None, city=city or None) }}">
         <span class="hc-risk-overview__label">Situations à vérifier</span>
         <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None, city=city or None) }}">
         <span class="hc-risk-overview__label">Cas sans responsable</span>
         <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale='1') }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale='1', city=city or None) }}">
         <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
         <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
       </a>
     </div>
     <form method="get" class="row g-2 align-items-end hc-ops-filters">
+      {% if city %}
+        <input type="hidden" name="city" value="{{ city }}">
+      {% endif %}
       <div class="col-12 col-md-6 col-xl-2">
         <label class="form-label">Statut</label>
         <select name="status" class="form-select form-select-sm">
@@ -95,7 +116,7 @@
           <span class="form-check-label">Sans action 72h</span>
         </label>
         <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint) }}">Réinitialiser</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}">Réinitialiser</a>
       </div>
     </form>
     <div class="hc-section-thread" aria-label="Continuité cases">
@@ -104,10 +125,17 @@
     </div>
   </div>
 
-  <div class="hc-card hc-admin-table-shell hc-cases-table-shell hc-ops-table-shell">
+  <div class="hc-card hc-admin-table-shell hc-cases-table-shell hc-ops-table-shell{% if city %} hc-cases-table-shell--territorial{% endif %}">
     <div class="hc-card__header">
-      <h2 class="h6 mb-1">Suivi des cas</h2>
-      <div class="hc-muted">Vue filtrée des situations actives, avec priorité, responsable et dernière action.</div>
+      <div class="hc-section-intro">
+        <div>
+          <h2 class="hc-section-title">Suivi des cas</h2>
+          <p class="hc-section-subtitle">Vue filtrée des situations actives, avec priorité, responsable et dernière action.</p>
+          {% if city %}
+            <div class="hc-cases-section-meta">Territoire actif: {{ city }} • {{ cases|length }} cas affichés</div>
+          {% endif %}
+        </div>
+      </div>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-cases-table mb-0">
@@ -175,9 +203,9 @@
               </td>
               <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}">{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}</td>
               {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
-              <td class="activity-col" title="{{ activity_ref or '—' }}">
+              <td class="activity-col" title="{{ activity_ref|format_datetime_fr }}">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
-                <div class="small text-muted">{{ activity_ref or '—' }}</div>
+                <div class="small text-muted">{{ activity_ref|format_datetime_fr }}</div>
               </td>
               <td class="actions-col text-end">
                 {% if config.DEMO_MODE %}

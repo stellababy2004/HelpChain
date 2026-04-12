@@ -3676,7 +3676,42 @@ def ops_notifications_list():
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_risk_map():
     admin_required_404()
-    return render_template("admin/risk_map.html")
+    zone_city = "Boulogne-Billancourt"
+    active_case_count = 0
+    critical_queue_count = 0
+    try:
+        scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+        city_like = f"%{zone_city.lower()}%"
+        city_filter = or_(
+            func.lower(func.coalesce(Request.city, "")).like(city_like),
+            func.lower(func.coalesce(Request.location_text, "")).like(city_like),
+            func.lower(func.coalesce(Request.address_line, "")).like(city_like),
+        )
+        active_statuses = ("new", "triaged", "assigned", "in_progress", "resolved")
+        base_query = (
+            Case.query.join(Request, Case.request_id == Request.id)
+            .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
+            .filter(city_filter, Case.status.in_(active_statuses))
+        )
+        active_case_count = int(base_query.count() or 0)
+        critical_queue_count = int(
+            base_query.filter(
+                or_(
+                    Case.priority == "critical",
+                    func.coalesce(Case.risk_score, 0) >= 85,
+                )
+            ).count()
+            or 0
+        )
+    except Exception:
+        db.session.rollback()
+
+    return render_template(
+        "admin/risk_map.html",
+        zone_city=zone_city,
+        active_case_count=active_case_count,
+        critical_queue_count=critical_queue_count,
+    )
 
 
 def _attempted_action_label() -> str:
@@ -6775,6 +6810,54 @@ def _apply_cases_risk_filter(query, risk_value: str):
     return query
 
 
+def _notification_bucket_filter(bucket: str):
+    bucket_value = (bucket or "").strip().lower()
+    if bucket_value == "pending":
+        return and_(
+            NotificationJob.status == "pending",
+            func.coalesce(NotificationJob.attempts, 0) <= 0,
+        )
+    if bucket_value == "processing":
+        return NotificationJob.status == "processing"
+    if bucket_value == "retry":
+        return or_(
+            NotificationJob.status == "retry",
+            and_(
+                NotificationJob.status == "pending",
+                func.coalesce(NotificationJob.attempts, 0) > 0,
+            ),
+        )
+    if bucket_value == "failed":
+        return NotificationJob.status.in_(("dead_letter", "failed"))
+    if bucket_value == "sent":
+        return NotificationJob.status.in_(("done", "sent"))
+    return None
+
+
+def _notification_bucket_key(job) -> str:
+    status = ((getattr(job, "status", None) or "").strip().lower())
+    attempts = int(getattr(job, "attempts", 0) or 0)
+    if status in {"dead_letter", "failed"}:
+        return "failed"
+    if status in {"done", "sent"}:
+        return "sent"
+    if status == "processing":
+        return "processing"
+    if status == "retry" or (status == "pending" and attempts > 0):
+        return "retry"
+    return "pending"
+
+
+def _notification_bucket_label(bucket: str) -> str:
+    return {
+        "pending": "en attente",
+        "processing": "en cours",
+        "retry": "à relancer",
+        "failed": "en échec",
+        "sent": "envoyée",
+    }.get((bucket or "").strip().lower(), "en attente")
+
+
 def _render_cases_list():
     if current_app.config.get("DEMO_MODE"):
         demo = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
@@ -6825,6 +6908,7 @@ def _render_cases_list():
     owner = (request.args.get("owner") or "").strip()
     category = normalize_request_category((request.args.get("category") or "").strip())
     risk = (request.args.get("risk") or "").strip().lower()
+    city = (request.args.get("city") or "").strip()
     stale = (request.args.get("stale") or "").strip() == "1"
     owner_id = None
     owner_none = owner.lower() == "none"
@@ -6834,35 +6918,21 @@ def _render_cases_list():
         except Exception:
             owner_id = None
 
-    sid = _current_structure_id()
-    if sid:
-        collab_case_ids = (
-            CaseCollaborator.query.with_entities(CaseCollaborator.case_id)
-            .filter(CaseCollaborator.structure_id == sid)
-            .subquery()
-        )
-        query = (
-            Case.query.join(Request, Case.request_id == Request.id)
-            .filter(
-                (Request.structure_id == sid)
-                | (Case.id.in_(collab_case_ids))
-            )
-        )
-        counts_base = (
-            Case.query.join(Request, Case.request_id == Request.id)
-            .filter(
-                (Request.structure_id == sid)
-                | (Case.id.in_(collab_case_ids))
-            )
-        )
-    else:
-        scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
-        query = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
-        counts_base = Case.query.join(scoped_ids_subq, Case.request_id == scoped_ids_subq.c.id)
+    scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+    query = (
+        Case.query.join(Request, Case.request_id == Request.id)
+        .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
+    )
+    counts_base = (
+        Case.query.join(Request, Case.request_id == Request.id)
+        .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
+    )
     activity_expr = func.coalesce(Case.last_activity_at, Case.updated_at, Case.created_at)
     stale_threshold = _now_utc() - timedelta(hours=72)
     if status in CATEGORY_CASE_STATUSES:
         query = query.filter(Case.status == status)
+    else:
+        query = query.filter(Case.status.in_(("new", "triaged", "assigned", "in_progress", "resolved")))
     if priority in CASE_PRIORITIES:
         query = query.filter(Case.priority == priority)
     if category:
@@ -6871,6 +6941,15 @@ def _render_cases_list():
             if normalize_request_category(legacy_code) == category:
                 category_variants.add(legacy_code)
         query = query.filter(func.lower(func.coalesce(Request.category, "")).in_([c.lower() for c in category_variants]))
+    if city:
+        city_like = f"%{city.lower()}%"
+        city_filter = or_(
+            func.lower(func.coalesce(Request.city, "")).like(city_like),
+            func.lower(func.coalesce(Request.location_text, "")).like(city_like),
+            func.lower(func.coalesce(Request.address_line, "")).like(city_like),
+        )
+        query = query.filter(city_filter)
+        counts_base = counts_base.filter(city_filter)
     if owner_id:
         query = query.filter(Case.owner_user_id == owner_id)
     elif owner_none:
@@ -6905,6 +6984,17 @@ def _render_cases_list():
         .limit(300)
         .all()
     )
+    current_app.logger.warning(
+        "OPS_CASES_DEBUG rows=%s status=%s priority=%s owner=%s category=%s risk=%s stale=%s city=%s",
+        len(case_rows),
+        status,
+        priority,
+        owner,
+        category,
+        risk,
+        stale,
+        city,
+    )
 
     case_signals = {}
     ops_priority_levels = {}
@@ -6935,6 +7025,7 @@ def _render_cases_list():
         owner=owner,
         category=category,
         risk=risk,
+        city=city,
         stale=stale,
         statuses=list(CATEGORY_CASE_STATUSES),
         priorities=list(CASE_PRIORITIES),
@@ -7002,19 +7093,9 @@ def _render_notifications_list():
     except Exception:
         pass
 
-    if status in {"pending", "processing", "done", "dead_letter"}:
-        query = query.filter(NotificationJob.status == status)
-    elif status == "sent":
-        query = query.filter(NotificationJob.status.in_(("done", "sent")))
-    elif status == "failed":
-        query = query.filter(NotificationJob.status.in_(("dead_letter", "failed")))
-    elif status == "retry":
-        query = query.filter(
-            or_(
-                NotificationJob.status == "retry",
-                and_(NotificationJob.status == "pending", NotificationJob.attempts > 0),
-            )
-        )
+    bucket_filter = _notification_bucket_filter(status)
+    if bucket_filter is not None:
+        query = query.filter(bucket_filter)
     if channel:
         query = query.filter(NotificationJob.channel == channel)
     if event_type:
@@ -7040,6 +7121,10 @@ def _render_notifications_list():
         .limit(200)
         .all()
     )
+    for job in jobs:
+        bucket = _notification_bucket_key(job)
+        setattr(job, "ui_status_bucket", bucket)
+        setattr(job, "ui_status_label", _notification_bucket_label(bucket))
 
     counts_base = NotificationJob.query
     try:
@@ -7052,18 +7137,11 @@ def _render_notifications_list():
     except Exception:
         pass
 
-    pending_count = counts_base.filter(NotificationJob.status == "pending").count()
-    processing_count = counts_base.filter(NotificationJob.status == "processing").count()
-    done_count = counts_base.filter(NotificationJob.status.in_(("done", "sent"))).count()
-    dead_letter_count = counts_base.filter(
-        NotificationJob.status.in_(("dead_letter", "failed"))
-    ).count()
-    retry_compat_count = counts_base.filter(
-        or_(
-            NotificationJob.status == "retry",
-            and_(NotificationJob.status == "pending", NotificationJob.attempts > 0),
-        )
-    ).count()
+    pending_count = counts_base.filter(_notification_bucket_filter("pending")).count()
+    processing_count = counts_base.filter(_notification_bucket_filter("processing")).count()
+    done_count = counts_base.filter(_notification_bucket_filter("sent")).count()
+    dead_letter_count = counts_base.filter(_notification_bucket_filter("failed")).count()
+    retry_compat_count = counts_base.filter(_notification_bucket_filter("retry")).count()
 
     summary = {
         "pending": pending_count,
