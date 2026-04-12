@@ -541,6 +541,8 @@ class Intervenant(db.Model):
     email = Column(String(200), nullable=True)
     phone = Column(String(50), nullable=True)
     location = Column(String(200), nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True, server_default=db.true())
     created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
 
