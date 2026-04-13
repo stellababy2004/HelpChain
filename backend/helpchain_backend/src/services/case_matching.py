@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import re
 import unicodedata
@@ -205,6 +205,26 @@ def _score_lead(case_row, request_obj, lead: ProfessionalLead, triage: dict) -> 
 
 def suggest_professional_leads_for_case(case_row, request_obj, limit: int = 8) -> list[dict]:
     triage = score_request_risk(request_obj)
+
+    excluded_lead_ids: set[int] = set()
+
+    assigned_lead_id = getattr(case_row, "assigned_professional_lead_id", None)
+    if assigned_lead_id is not None:
+        try:
+            excluded_lead_ids.add(int(assigned_lead_id))
+        except Exception:
+            pass
+
+    for participant in getattr(case_row, "participants", []) or []:
+        participant_type = (getattr(participant, "participant_type", None) or "").strip().lower()
+        professional_lead_id = getattr(participant, "professional_lead_id", None)
+
+        if participant_type == "professional_lead" and professional_lead_id is not None:
+            try:
+                excluded_lead_ids.add(int(professional_lead_id))
+            except Exception:
+                pass
+
     leads = (
         ProfessionalLead.query.filter(
             or_(
@@ -219,6 +239,14 @@ def suggest_professional_leads_for_case(case_row, request_obj, limit: int = 8) -
 
     scored: list[dict] = []
     for lead in leads:
+        try:
+            lead_id = int(getattr(lead, "id", 0) or 0)
+        except Exception:
+            lead_id = 0
+
+        if lead_id and lead_id in excluded_lead_ids:
+            continue
+
         row = _score_lead(case_row, request_obj, lead, triage)
         if row["score"] <= 0:
             continue
@@ -235,3 +263,4 @@ def suggest_professional_leads_for_case(case_row, request_obj, limit: int = 8) -
         )
     )
     return scored[: max(1, int(limit or 8))]
+

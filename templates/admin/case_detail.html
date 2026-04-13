@@ -175,7 +175,14 @@
                 </tr>
               {% else %}
                 <tr>
-                  <td colspan="7" class="text-muted">Aucune suggestion exploitable pour ce case.</td>
+                  <td colspan="7" class="text-muted">
+  {% set has_assigned = case_row.assigned_professional_lead_id %}
+  {% if has_assigned %}
+    Tous les professionnels pertinents sont déjà associés à ce cas.
+  {% else %}
+    Aucun professionnel supplémentaire recommandé pour le moment.
+  {% endif %}
+</td>
                 </tr>
               {% endfor %}
             </tbody>
