@@ -1,22 +1,22 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}{{ _("Проверете имейла си") }} | HelpChain{% endblock %}
+{% block title %}{{ _("Vérifiez votre e-mail") }} | HelpChain{% endblock %}
 
 {% block content %}
 <section class="hc-section">
   <div class="hc-card hc-card--narrow">
     <header class="hc-card__header">
-      <h1 class="hc-h1">{{ _("Проверете имейла си") }}</h1>
+      <h1 class="hc-h1">{{ _("Vérifiez votre e-mail") }}</h1>
       <p class="hc-muted">
-        {{ _("Изпратихме линк за потвърждение на:") }}
+        {{ _("Nous avons envoyé un lien de confirmation à :") }}
         <strong>{{ masked_email }}</strong>
       </p>
     </header>
 
     <div class="hc-card__body">
       <ul class="hc-list">
-        <li>{{ _("Линкът е валиден 15 минути.") }}</li>
-        <li>{{ _("Проверете и папките Spam/Promotions.") }}</li>
+        <li>{{ _("Le lien est valide pendant 15 minutes.") }}</li>
+        <li>{{ _("Vérifiez aussi vos dossiers Spam / Promotions.") }}</li>
       </ul>
 
       <hr class="hc-hr" />
@@ -31,22 +31,22 @@
             id="resendBtn"
             aria-describedby="resendHint"
           >
-            {{ _("Изпрати отново") }}
+            {{ _("Renvoyer") }}
           </button>
 
           <p class="hc-muted hc-small" id="resendHint" style="margin-top:10px;">
-            {{ _("Ако адресът е валиден, ще изпратим нов линк.") }}
+            {{ _("Si l’adresse est valide, nous enverrons un nouveau lien.") }}
           </p>
 
           <p class="hc-muted hc-small" id="cooldownText" style="margin-top:6px; display:none;"></p>
         </form>
       {% else %}
-        <p class="hc-muted">{{ _("Сесията изтече. Моля, върнете се към формата.") }}</p>
+        <p class="hc-muted">{{ _("La session a expiré. Merci de revenir au formulaire.") }}</p>
       {% endif %}
 
       <div style="margin-top:16px;">
         <a class="hc-link" href="{{ url_for('main.submit_request') }}">
-          {{ _("Сгреших имейла / Подай заявката отново") }}
+          {{ _("J’ai saisi une mauvaise adresse e-mail / Soumettre la demande à nouveau") }}
         </a>
       </div>
     </div>
@@ -67,13 +67,13 @@
       btn.disabled = false;
       cd.style.display = "none";
       cd.textContent = "";
-      btn.textContent = "{{ _('Изпрати отново') }}";
+      btn.textContent = "{{ _('Renvoyer') }}";
       return;
     }
     btn.disabled = true;
     cd.style.display = "block";
-    cd.textContent = "{{ _('Можете да изпратите отново след') }} " + seconds + "s";
-    btn.textContent = "{{ _('Изпращане...') }} (" + seconds + "s)";
+    cd.textContent = "{{ _('Vous pourrez renvoyer dans') }} " + seconds + "s";
+    btn.textContent = "{{ _('Envoi en cours...') }} (" + seconds + "s)";
     seconds -= 1;
     window.setTimeout(tick, 1000);
   }
