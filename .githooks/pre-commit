@@ -1,6 +1,34 @@
 #!/usr/bin/env sh
 set -e
 
+staged_files="$(git diff --cached --name-only)"
+
+# Block committing local env
+echo "$staged_files" | grep -Eq '^\.env$' && {
+  echo "ERROR: .env must NOT be committed."
+  exit 1
+}
+
+# Block committing local sqlite/db files
+echo "$staged_files" | grep -Eq '\.db$' && {
+  echo "ERROR: Database files must NOT be committed."
+  exit 1
+}
+
+# Block committing env dumps
+echo "$staged_files" | grep -Eq '(^|/)env\.txt$' && {
+  echo "ERROR: env.txt must NOT be committed."
+  exit 1
+}
+
+# Block obvious real secrets inside backend/.env.example
+if echo "$staged_files" | grep -Eq '^backend/\.env\.example$'; then
+  if grep -Eq 'postgresql://|postgres://|npg_' backend/.env.example; then
+    echo "ERROR: backend/.env.example appears to contain real DB credentials."
+    exit 1
+  fi
+fi
+
 if [ -x ".venv/Scripts/python.exe" ]; then
   ./.venv/Scripts/python.exe -m pytest tests/test_auth_access_invariants.py -q
 elif [ -x ".venv/bin/python" ]; then
@@ -8,3 +36,5 @@ elif [ -x ".venv/bin/python" ]; then
 else
   python -m pytest tests/test_auth_access_invariants.py -q
 fi
+
+
