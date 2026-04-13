@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 set -e
 
+echo "Running pre-commit hook..."
+
 staged_files="$(git diff --cached --name-only)"
+echo "$staged_files"
 
 # Block committing local env
 echo "$staged_files" | grep -Eq '^\.env$' && {
@@ -29,6 +32,23 @@ if echo "$staged_files" | grep -Eq '^backend/\.env\.example$'; then
   fi
 fi
 
+# Migration guard
+models_changed=0
+migrations_changed=0
+
+echo "$staged_files" | grep -Eq '^backend/models\.py$' && models_changed=1
+echo "$staged_files" | grep -Eq '^backend/helpchain_backend/src/models/' && models_changed=1
+echo "$staged_files" | grep -Eq '^backend/.*/models/' && models_changed=1
+
+echo "$staged_files" | grep -Eq '^migrations/versions/' && migrations_changed=1
+echo "$staged_files" | grep -Eq '^alembic/versions/' && migrations_changed=1
+
+if [ "$models_changed" -eq 1 ] && [ "$migrations_changed" -eq 0 ]; then
+  echo "ERROR: Models changed but no Alembic migration found."
+  echo "Run: flask db revision -m 'your message'"
+  exit 1
+fi
+
 if [ -x ".venv/Scripts/python.exe" ]; then
   ./.venv/Scripts/python.exe -m pytest tests/test_auth_access_invariants.py -q
 elif [ -x ".venv/bin/python" ]; then
@@ -36,5 +56,3 @@ elif [ -x ".venv/bin/python" ]; then
 else
   python -m pytest tests/test_auth_access_invariants.py -q
 fi
-
-
