@@ -919,7 +919,13 @@ def is_request_matching_volunteer(
 
 
 def require_volunteer_login(fn):
-    """Minimal access control using session flag (non-Flask-Login)."""
+    """
+    Volunteer-only access control using the volunteer session family.
+
+    This guard is intentionally separate from Flask-Login admin auth.
+    Unauthenticated volunteer access is redirected to the canonical public
+    volunteer entry flow (`main.become_volunteer`), not to admin login.
+    """
 
     @wraps(fn)
     def wrapper(*args, **kwargs):
@@ -1705,7 +1711,16 @@ def achievements():
 @limiter.limit("20 per hour")
 @limiter.limit("3 per hour", key_func=email_or_ip_key, methods=["POST"])
 def volunteer_login():
-    # Legacy entrypoint: keep dev bypass support, but route real users to magic-link flow.
+    """
+    Legacy/dev volunteer login entrypoint.
+
+    Canonical public volunteer entry is `main.become_volunteer`.
+    This route exists to support controlled dev bypass behavior and must not
+    be treated as part of the admin auth family.
+    """
+
+    # Legacy volunteer entrypoint: keep dev bypass support, but route real
+    # users to the canonical volunteer magic-link flow via `become_volunteer`.
     if not current_app.config.get("VOLUNTEER_DEV_BYPASS_ENABLED"):
         current_app.logger.warning("[VOL-LOGIN] blocked (non-dev) ip=%s", _client_ip())
         return redirect(
@@ -1751,7 +1766,10 @@ def volunteer_login():
         if not email:
             flash(generic_msg, "info")
             return render_template("volunteer_login.html", minimal_page=True), 200
-        # Dev-only route: if bypass email is not used, keep anti-enumeration UX.
+
+        # This remains a dev-oriented surface. If the bypass email is not used,
+        # preserve anti-enumeration UX and do not turn this route into a second
+        # canonical volunteer auth system.
         flash(generic_msg, "info")
         return render_template("volunteer_login.html", minimal_page=True), 200
 

@@ -710,7 +710,7 @@ def create_app(config_object=None) -> Flask:
     # Login manager (admin UI)
     login_manager = LoginManager()
     login_manager.init_app(app)
-    login_manager.login_view = "admin.admin_login_legacy"
+    login_manager.login_view = "admin.admin_login"
     login_manager.login_message = None
 
     @login_manager.user_loader
