@@ -5,6 +5,8 @@ import json
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func, or_
+from collections import defaultdict
+from datetime import datetime, timezone
 
 from backend.extensions import db
 from ..models import (
@@ -41,6 +43,29 @@ from .admin import (
     admin_required_404,
     admin_role_required,
 )
+
+def _group_events_by_day(events):
+    groups = defaultdict(list)
+
+    now = datetime.now(timezone.utc).date()
+
+    for ev in events:
+        dt = ev.created_at
+        if not dt:
+            key = "Autre"
+        else:
+            d = dt.date()
+
+            if d == now:
+                key = "Aujourd’hui"
+            elif (now - d).days == 1:
+                key = "Hier"
+            else:
+                key = d.strftime("%d %B %Y")
+
+        groups[key].append(ev)
+
+    return dict(groups)
 
 # Legacy participant type labels that still resolve through the generic
 # `User` model (`users.id`). These names are historical and must not be
@@ -160,6 +185,8 @@ def admin_case_detail(case_id: int):
         .limit(200)
         .all()
     )
+    grouped_events = _group_events_by_day(events)
+   
     participants = (
         CaseParticipant.query.filter(CaseParticipant.case_id == case_row.id)
         .order_by(CaseParticipant.added_at.desc(), CaseParticipant.id.desc())
@@ -197,11 +224,13 @@ def admin_case_detail(case_id: int):
         .limit(300)
         .all()
     )
+
     return render_template(
         "admin/case_detail.html",
         case_row=case_row,
         req=req,
         events=events,
+        grouped_events=grouped_events,
         statuses=list(CATEGORY_CASE_STATUSES),
         priorities=list(CASE_PRIORITIES),
         participant_types=list(CASE_PARTICIPANT_TYPES),
@@ -216,8 +245,6 @@ def admin_case_detail(case_id: int):
         suggested_professionals=suggested_professionals,
         assistant_recommendation=assistant_recommendation,
     )
-
-
 @admin_bp.post("/cases/<int:case_id>/status")
 @admin_required
 @admin_role_required("ops", "superadmin")
@@ -314,11 +341,7 @@ def admin_case_assign_owner(case_id: int):
         now = _now_utc()
         case_row.owner_user_id = owner_id
         case_row.last_activity_at = now
-    if old_owner_id != owner_id:
-        now = _now_utc()
-        case_row.owner_user_id = owner_id
-        case_row.last_activity_at = now
-
+   
     if owner_id and not case_row.assigned_at:
         case_row.assigned_at = now
         if case_row.status in {"new", "triaged"}:
@@ -527,4 +550,48 @@ def admin_case_add_event(case_id: int):
     evaluate_case_alerts(case_row)
     db.session.commit()
     flash("Case event added.", "success")
+    
+@admin_bp.post("/cases/<int:case_id>/priority")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_set_priority(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+    new_priority = (request.form.get("priority") or "").strip().lower()
+
+    if new_priority not in CASE_PRIORITIES:
+        flash("Invalid case priority.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    old_priority = (case_row.priority or "").strip().lower()
+
+    if old_priority != new_priority:
+        PRIORITY_LABELS = {
+            "low": "Basse",
+            "standard": "Standard",
+            "medium": "Moyenne",
+            "high": "Haute",
+            "urgent": "Urgente",
+            "critical": "Critique",
+        }
+
+        old_label = PRIORITY_LABELS.get(old_priority, old_priority or "—")
+        new_label = PRIORITY_LABELS.get(new_priority, new_priority)
+
+        case_row.priority = new_priority
+        case_row.last_activity_at = _now_utc()
+
+        _append_case_event(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="priority_changed",
+            message=f"Priorité changée de {old_label} vers {new_label}",
+            metadata={"old_priority": old_priority, "new_priority": new_priority},
+        )
+
+        update_case_risk(case_row)
+        evaluate_case_alerts(case_row)
+        db.session.commit()
+        flash("Case priority updated.", "success")
+
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
