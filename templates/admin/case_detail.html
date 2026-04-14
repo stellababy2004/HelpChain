@@ -250,22 +250,43 @@
                 <th>Ajouté le</th>
               </tr>
             </thead>
-            <tbody>
+              <tbody>
               {% for p in participants %}
                 <tr>
-                  <td>{{ p.participant_type }}</td>
+                  <td>
+                    {% if p.admin_user %}
+                      <span class="badge bg-dark">Admin</span>
+                    {% elif p.professional_lead %}
+                      <span class="badge bg-primary">Professional</span>
+                    {% elif p.user %}
+                      <span class="badge bg-secondary">User</span>
+                    {% elif p.external_name %}
+                      <span class="badge bg-light text-dark">External</span>
+                    {% else %}
+                      <span class="badge bg-light text-dark">Unknown</span>
+                    {% endif %}
+                  </td>
                   <td>{{ p.role }}</td>
                   <td>{{ p.status }}</td>
                   <td>
-                    {% if p.professional_lead %}{{ p.professional_lead.full_name or ('Lead #' ~ p.professional_lead_id) }}
-                    {% elif p.user %}{{ p.user.username or p.user.email or ('User #' ~ p.user_id) }}
-                    {% elif p.external_name %}{{ p.external_name }}
-                    {% else %}—{% endif %}
+                    {% if p.admin_user %}
+                      {{ p.admin_user.username or p.admin_user.email or ('Admin #' ~ p.admin_user_id) }}
+                    {% elif p.professional_lead %}
+                      {{ p.professional_lead.full_name or p.professional_lead.email or ('Lead #' ~ p.professional_lead_id) }}
+                    {% elif p.user %}
+                      {{ p.user.username or p.user.email or ('User #' ~ p.user_id) }}
+                    {% elif p.external_name %}
+                      {{ p.external_name }}
+                    {% else %}
+                      —
+                    {% endif %}
                   </td>
                   <td>{{ p.added_at|format_datetime_fr }}</td>
                 </tr>
               {% else %}
-                <tr><td colspan="5" class="text-muted">Aucun participant pour le moment.</td></tr>
+                <tr>
+                  <td colspan="5" class="text-muted">Aucun participant pour le moment.</td>
+                </tr>
               {% endfor %}
             </tbody>
           </table>
