@@ -241,6 +241,14 @@
               <div class="small text-muted mt-1">{{ event_context }}</div>
             {% endif %}
 
+            <div class="small text-muted mt-2">
+              {% if ev.actor_user %}
+                Par admin {{ ev.actor_user.username or ev.actor_user.email or ('#' ~ ev.actor_user_id) }}
+              {% else %}
+                Par système
+              {% endif %}
+            </div>
+
             {% if ev.visibility %}
               <div class="small mt-2">
                 {% if ev.visibility == 'internal' %}
