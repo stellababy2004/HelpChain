@@ -87,14 +87,18 @@ def _upsert_case_participant(
     participant_type: str,
     role: str,
     user_id: int | None = None,
+    admin_user_id: int | None = None,
     professional_lead_id: int | None = None,
     external_name: str | None = None,
     status: str = "active",
 ) -> CaseParticipant:
     q = CaseParticipant.query.filter(CaseParticipant.case_id == int(case_id))
     q = q.filter(CaseParticipant.participant_type == participant_type)
+
     if user_id is not None:
         q = q.filter(CaseParticipant.user_id == int(user_id))
+    elif admin_user_id is not None:
+        q = q.filter(CaseParticipant.admin_user_id == int(admin_user_id))
     elif professional_lead_id is not None:
         q = q.filter(CaseParticipant.professional_lead_id == int(professional_lead_id))
     else:
@@ -112,6 +116,7 @@ def _upsert_case_participant(
         case_id=int(case_id),
         participant_type=participant_type,
         user_id=user_id,
+        admin_user_id=admin_user_id,
         professional_lead_id=professional_lead_id,
         external_name=(external_name or "").strip() or None,
         role=role,
