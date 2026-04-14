@@ -42,6 +42,11 @@ from .admin import (
     admin_role_required,
 )
 
+# Legacy participant type labels that still resolve through the generic
+# `User` model (`users.id`). These names are historical and must not be
+# interpreted as canonical auth families such as `AdminUser`.
+LEGACY_USER_PARTICIPANT_TYPES = {"admin_user", "professional_user"}
+
 
 def _safe_json_dict(raw: str | None) -> dict:
     txt = (raw or "").strip()
@@ -167,7 +172,7 @@ def admin_case_detail(case_id: int):
         .order_by(AdminUser.username.asc())
         .all()
     )
-    users = (
+    legacy_users = (
         User.query.with_entities(User.id, User.username, User.email)
         .order_by(User.username.asc())
         .limit(300)
@@ -197,7 +202,7 @@ def admin_case_detail(case_id: int):
         participant_types=list(CASE_PARTICIPANT_TYPES),
         participant_roles=list(CASE_PARTICIPANT_ROLES),
         owners=owners,
-        users=users,
+        users=legacy_users,
         professionals=professionals,
         participants=participants,
         collaborators=collaborators,
@@ -311,17 +316,19 @@ def admin_case_assign_owner(case_id: int):
         now = _now_utc()
         case_row.owner_user_id = owner_id
         case_row.last_activity_at = now
-        if owner_id and not case_row.assigned_at:
-            case_row.assigned_at = now
-            if case_row.status in {"new", "triaged"}:
-                case_row.status = "assigned"
-            _upsert_case_participant(
-                case_id=case_row.id,
-                participant_type="admin_user",
-                role="owner",
-                user_id=owner_id,
-                status="active",
-            )
+    if old_owner_id != owner_id:
+        now = _now_utc()
+        case_row.owner_user_id = owner_id
+        case_row.last_activity_at = now
+
+    if owner_id and not case_row.assigned_at:
+        case_row.assigned_at = now
+        if case_row.status in {"new", "triaged"}:
+            case_row.status = "assigned"
+
+        # NOTE: Do NOT upsert CaseParticipant for admin owner.
+        # owner_user_id references AdminUser, while CaseParticipant.user_id references User.
+        # Mixing them breaks identity semantics.
         _append_case_event(
             case_id=case_row.id,
             actor_user_id=getattr(current_user, "id", None),
@@ -427,18 +434,34 @@ def admin_case_add_participant(case_id: int):
             lead_id = None
 
     if user_id is not None and not db.session.get(User, user_id):
-        flash("Selected user does not exist.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        flash("Selected legacy user record does not exist.", "warning")
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id),
+            code=303,
+        )
     if lead_id is not None and not db.session.get(ProfessionalLead, lead_id):
         flash("Selected professional lead does not exist.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id),
+            code=303,
+        )
 
     if participant_type == "professional_lead" and not lead_id:
         flash("professional_lead participant requires professional_lead_id.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
-    if participant_type in {"admin_user", "professional_user"} and not user_id:
-        flash("Selected participant type requires user_id.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id),
+            code=303,
+        )
+
+    # Historical participant labels `admin_user` / `professional_user`
+    # are still backed by the generic `User` model (`users.id`), not by
+    # the canonical `AdminUser` auth family.
+    if participant_type in LEGACY_USER_PARTICIPANT_TYPES and not user_id:
+        flash("Selected legacy user-backed participant type requires user_id.", "warning")
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id),
+            code=303,
+        )
     if participant_type in {"association", "external_contact"} and not external_name:
         flash("External participant requires external name.", "warning")
         return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
