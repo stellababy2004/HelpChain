@@ -82,28 +82,6 @@ def compute_structure_health(structure_id: int | None) -> int:
     return max(score, 0)
 
 
-def _current_actor_user_id() -> int | None:
-    for key in ("user_id", "volunteer_user_id"):
-        candidate = _safe_int(session.get(key))
-        if candidate and db.session.get(User, candidate):
-            return candidate
-    return None
-
-
-def _current_actor_label() -> str:
-    admin_user_id = _safe_int(session.get("admin_user_id"))
-    if admin_user_id:
-        admin = db.session.get(AdminUser, admin_user_id)
-        if admin and getattr(admin, "username", None):
-            return f"admin:{admin.username}"
-    actor_user_id = _current_actor_user_id()
-    if actor_user_id:
-        u = db.session.get(User, actor_user_id)
-        if u:
-            return f"user:{u.email or u.username or u.id}"
-    return "system"
-
-
 def _audit_admin_event(action: str, request_id: int, payload: dict | None = None) -> None:
     try:
         admin_user_id = session.get("admin_user_id")
@@ -128,6 +106,46 @@ def _audit_admin_event(action: str, request_id: int, payload: dict | None = None
         # Never block business flow on audit write preparation errors.
         pass
 
+def _current_legacy_user_actor_id() -> int | None:
+    """
+    Resolve a legacy/general `User` actor id for social request compatibility.
+
+    This helper does NOT define a canonical authentication family.
+    It only supports legacy/domain-level actor lookups where social request
+    flows still reference the generic `User` model.
+    """
+    for key in ("user_id", "volunteer_user_id"):
+        candidate = _safe_int(session.get(key))
+        if candidate and db.session.get(User, candidate):
+            return candidate
+    return None
+
+
+def _current_actor_label() -> str:
+    """
+    Build a human-readable actor label for social request audit/use.
+
+    Resolution order:
+    1. explicit admin actor (`AdminUser`)
+    2. legacy/general `User` compatibility actor
+    3. system fallback
+
+    The legacy/general `User` path must not be interpreted as a canonical
+    authentication family.
+    """
+    admin_user_id = _safe_int(session.get("admin_user_id"))
+    if admin_user_id:
+        admin = db.session.get(AdminUser, admin_user_id)
+        if admin and getattr(admin, "username", None):
+            return f"admin:{admin.username}"
+
+    legacy_user_id = _current_legacy_user_actor_id()
+    if legacy_user_id:
+        u = db.session.get(User, legacy_user_id)
+        if u:
+            return f"legacy-user:{u.email or u.username or u.id}"
+
+    return "system"
 
 @bp.get("")
 @operator_required
@@ -457,7 +475,7 @@ def add_note(req_id: int):
         flash(_("Note is too long (max 2000)."), "danger")
         return redirect(url_for("social_requests.details", req_id=req_id))
 
-    actor_user_id = _current_actor_user_id()
+    actor_user_id = _current_legacy_user_actor_id()
     actor_label = _current_actor_label()
     db.session.add(
         SocialRequestEvent(
