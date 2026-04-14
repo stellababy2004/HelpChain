@@ -224,26 +224,31 @@ def admin_case_detail(case_id: int):
 def admin_case_set_status(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
+
     new_status = (request.form.get("status") or "").strip().lower()
     if new_status not in CATEGORY_CASE_STATUSES:
         flash("Invalid case status.", "warning")
         return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
     old_status = (case_row.status or "").strip().lower()
+
     if old_status != new_status:
         now = _now_utc()
         case_row.status = new_status
         case_row.last_activity_at = now
+
         if new_status == "assigned" and not case_row.assigned_at:
             case_row.assigned_at = now
+
         if new_status == "resolved":
             case_row.resolved_at = now
             _append_case_event(
                 case_id=case_row.id,
                 actor_user_id=getattr(current_user, "id", None),
                 event_type="case_resolved",
-                message="Case marked as resolved",
+                message="Dossier marqué comme résolu",
             )
+
         if new_status == "closed":
             case_row.closed_at = now
             if not case_row.resolved_at:
@@ -252,50 +257,38 @@ def admin_case_set_status(case_id: int):
                 case_id=case_row.id,
                 actor_user_id=getattr(current_user, "id", None),
                 event_type="case_closed",
-                message="Case marked as closed",
+                message="Dossier marqué comme clôturé",
             )
+
         if new_status == "cancelled" and not case_row.closed_at:
             case_row.closed_at = now
+
+        # ✅ STATUS LABELS
+        STATUS_LABELS = {
+            "new": "Nouveau",
+            "triaged": "Trié",
+            "assigned": "Assigné",
+            "resolved": "Résolu",
+            "closed": "Clôturé",
+            "cancelled": "Annulé",
+        }
+
+        old_label = STATUS_LABELS.get(old_status, old_status or "—")
+        new_label = STATUS_LABELS.get(new_status, new_status)
+
         _append_case_event(
             case_id=case_row.id,
             actor_user_id=getattr(current_user, "id", None),
             event_type="status_changed",
-            message=f"Status changed: {old_status or '-'} -> {new_status}",
+            message=f"Statut changé de {old_label} vers {new_label}",
             metadata={"old_status": old_status, "new_status": new_status},
         )
+
         update_case_risk(case_row)
         evaluate_case_alerts(case_row)
         db.session.commit()
         flash("Case status updated.", "success")
-    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
-
-@admin_bp.post("/cases/<int:case_id>/priority")
-@admin_required
-@admin_role_required("ops", "superadmin")
-def admin_case_set_priority(case_id: int):
-    admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
-    new_priority = (request.form.get("priority") or "").strip().lower()
-    if new_priority not in CASE_PRIORITIES:
-        flash("Invalid case priority.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
-
-    old_priority = (case_row.priority or "").strip().lower()
-    if old_priority != new_priority:
-        case_row.priority = new_priority
-        case_row.last_activity_at = _now_utc()
-        _append_case_event(
-            case_id=case_row.id,
-            actor_user_id=getattr(current_user, "id", None),
-            event_type="priority_changed",
-            message=f"Priority changed: {old_priority or '-'} -> {new_priority}",
-            metadata={"old_priority": old_priority, "new_priority": new_priority},
-        )
-        update_case_risk(case_row)
-        evaluate_case_alerts(case_row)
-        db.session.commit()
-        flash("Case priority updated.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
 
@@ -338,7 +331,7 @@ def admin_case_assign_owner(case_id: int):
             case_id=case_row.id,
             actor_user_id=getattr(current_user, "id", None),
             event_type="owner_assigned",
-            message=f"Owner changed: {old_owner_id or '-'} -> {owner_id or '-'}",
+            message="Responsable attribué ou mis à jour",
             metadata={"old_owner_user_id": old_owner_id, "new_owner_user_id": owner_id},
         )
         update_case_risk(case_row)
@@ -390,7 +383,7 @@ def admin_case_assign_professional(case_id: int):
             case_id=case_row.id,
             actor_user_id=getattr(current_user, "id", None),
             event_type="professional_assigned",
-            message=f"Primary professional lead changed: {old_lead_id or '-'} -> {lead_id or '-'}",
+            message="Professionnel principal attribué ou mis à jour",
             metadata={
                 "old_professional_lead_id": old_lead_id,
                 "new_professional_lead_id": lead_id,
@@ -485,7 +478,7 @@ def admin_case_add_participant(case_id: int):
         case_id=case_row.id,
         actor_user_id=getattr(current_user, "id", None),
         event_type="participant_added",
-        message="Participant added/updated",
+        message="Participant ajouté ou mis à jour",
         metadata={
             "participant_type": participant_type,
             "role": role,
