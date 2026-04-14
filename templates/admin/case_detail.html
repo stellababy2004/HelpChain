@@ -191,51 +191,77 @@
       </section>
 
       <section class="hc-card mb-3 p-3 hc-case-detail-card">
-        <h3 class="h6 mb-3">Chronologie</h3>
-        <div class="list-group list-group-flush">
-          {% for ev in events %}
-            {% set event_title = {
-              'triage_scored': 'Risque evalue',
-              'case_created': 'Dossier cree',
-              'professional_assigned': 'Professionnel assigne',
-              'owner_assigned': 'Responsable assigne',
-              'status_changed': 'Statut mis a jour',
-              'priority_changed': 'Priorite mise a jour',
-              'participant_added': 'Participant ajoute',
-              'note_added': 'Note ajoutee',
-              'case_resolved': 'Dossier resolu',
-              'case_closed': 'Dossier cloture'
-            }.get(ev.event_type, (ev.event_type or 'Activite')|replace('_', ' ')|title) %}
-            {% set event_context = '' %}
-            {% if ev.event_type == 'triage_scored' %}
-              {% set event_context = 'Niveau de risque evalue pour orientation operationnelle.' %}
-            {% elif ev.event_type == 'case_created' %}
-              {% set event_context = 'Dossier cree a partir de la demande #' ~ req.id %}
-            {% elif ev.event_type == 'professional_assigned' %}
-              {% set event_context = 'Un professionnel a ete rattache au dossier.' %}
-            {% elif ev.event_type == 'owner_assigned' %}
-              {% set event_context = 'Le pilotage du dossier a ete attribue.' %}
-            {% elif ev.event_type == 'participant_added' %}
-              {% set event_context = 'Un intervenant supplementaire a ete ajoute au suivi.' %}
+  <h3 class="h6 mb-3">Chronologie</h3>
+  <div class="list-group list-group-flush">
+    {% for ev in events %}
+      {% set event_title = {
+        'triage_scored': 'Évaluation du risque',
+        'case_created': 'Dossier créé',
+        'professional_assigned': 'Professionnel assigné',
+        'owner_assigned': 'Responsable assigné',
+        'status_changed': 'Statut mis à jour',
+        'priority_changed': 'Priorité mise à jour',
+        'participant_added': 'Participant ajouté',
+        'note_added': 'Note interne ajoutée',
+        'case_resolved': 'Dossier résolu',
+        'case_closed': 'Dossier clôturé'
+      }.get(ev.event_type, (ev.event_type or 'Activité')|replace('_', ' ')|title) %}
+
+      {% set event_context = '' %}
+      {% if ev.event_type == 'triage_scored' %}
+        {% set event_context = 'Niveau de risque évalué pour l’orientation opérationnelle.' %}
+      {% elif ev.event_type == 'case_created' %}
+        {% set event_context = 'Dossier créé à partir de la demande #' ~ req.id %}
+      {% elif ev.event_type == 'professional_assigned' %}
+        {% set event_context = 'Un professionnel principal a été rattaché au dossier.' %}
+      {% elif ev.event_type == 'owner_assigned' %}
+        {% set event_context = 'Le pilotage du dossier a été attribué à un responsable.' %}
+      {% elif ev.event_type == 'participant_added' %}
+        {% set event_context = 'Un participant supplémentaire a été ajouté au suivi.' %}
+      {% elif ev.event_type == 'priority_changed' %}
+        {% set event_context = 'Le niveau de priorité du dossier a été modifié.' %}
+      {% elif ev.event_type == 'status_changed' %}
+        {% set event_context = 'Le statut opérationnel du dossier a été mis à jour.' %}
+      {% elif ev.event_type == 'case_resolved' %}
+        {% set event_context = 'Le dossier a été marqué comme résolu.' %}
+      {% elif ev.event_type == 'case_closed' %}
+        {% set event_context = 'Le dossier a été clôturé.' %}
+      {% elif ev.event_type == 'note_added' %}
+        {% set event_context = 'Une note interne a été ajoutée au dossier.' %}
+      {% endif %}
+
+      <div class="list-group-item px-0">
+        <div class="d-flex justify-content-between gap-3">
+          <div class="flex-grow-1">
+            <div class="fw-semibold">{{ event_title }}</div>
+
+            {% if ev.message and ev.message != event_title %}
+              <div class="small text-muted mt-1">{{ ev.message }}</div>
+            {% elif event_context %}
+              <div class="small text-muted mt-1">{{ event_context }}</div>
             {% endif %}
-            <div class="list-group-item px-0">
-              <div class="d-flex justify-content-between gap-3">
-                <div class="flex-grow-1">
-                  <div><strong>{{ event_title }}</strong></div>
-                  {% if ev.message and ev.message != event_title %}
-                    <div class="small text-muted mt-1">{{ ev.message }}</div>
-                  {% elif event_context %}
-                    <div class="small text-muted mt-1">{{ event_context }}</div>
-                  {% endif %}
-                </div>
-                <div class="small text-muted text-nowrap">{{ ev.created_at|format_datetime_fr }}</div>
+
+            {% if ev.visibility %}
+              <div class="small mt-2">
+                {% if ev.visibility == 'internal' %}
+                  <span class="badge bg-light text-dark">Interne</span>
+                {% elif ev.visibility == 'public' %}
+                  <span class="badge bg-success-subtle text-success-emphasis">Public</span>
+                {% endif %}
               </div>
-            </div>
-          {% else %}
-            <div class="text-muted">Aucun événement pour le moment.</div>
-          {% endfor %}
+            {% endif %}
+          </div>
+
+          <div class="small text-muted text-nowrap">
+            {{ ev.created_at|format_datetime_fr }}
+          </div>
         </div>
-      </section>
+      </div>
+    {% else %}
+      <div class="text-muted">Aucun événement pour le moment.</div>
+    {% endfor %}
+  </div>
+</section>
 
       <section class="hc-card mb-3 p-3 hc-case-detail-card">
         <h3 class="h6 mb-3">Participants supplémentaires</h3>
