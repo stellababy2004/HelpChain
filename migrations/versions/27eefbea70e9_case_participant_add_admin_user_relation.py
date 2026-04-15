@@ -31,29 +31,61 @@ def _has_fk(table_name: str, fk_name: str) -> bool:
 
 
 def upgrade():
-    if not _has_column("case_participants", "admin_user_id"):
-        op.add_column(
-            "case_participants",
-            sa.Column("admin_user_id", sa.Integer(), nullable=True),
-        )
+    bind = op.get_bind()
+    dialect = bind.dialect.name
 
-    if not _has_fk("case_participants", "fk_case_participants_admin_user_id"):
-        op.create_foreign_key(
-            "fk_case_participants_admin_user_id",
-            "case_participants",
-            "admin_users",
-            ["admin_user_id"],
-            ["id"],
-        )
+    if dialect == "sqlite":
+        with op.batch_alter_table("case_participants") as batch_op:
+            if not _has_column("case_participants", "admin_user_id"):
+                batch_op.add_column(
+                    sa.Column("admin_user_id", sa.Integer(), nullable=True)
+                )
+
+            if not _has_fk("case_participants", "fk_case_participants_admin_user_id"):
+                batch_op.create_foreign_key(
+                    "fk_case_participants_admin_user_id",
+                    "admin_users",
+                    ["admin_user_id"],
+                    ["id"],
+                )
+    else:
+        if not _has_column("case_participants", "admin_user_id"):
+            op.add_column(
+                "case_participants",
+                sa.Column("admin_user_id", sa.Integer(), nullable=True),
+            )
+
+        if not _has_fk("case_participants", "fk_case_participants_admin_user_id"):
+            op.create_foreign_key(
+                "fk_case_participants_admin_user_id",
+                "case_participants",
+                "admin_users",
+                ["admin_user_id"],
+                ["id"],
+            )
 
 
 def downgrade():
-    if _has_fk("case_participants", "fk_case_participants_admin_user_id"):
-        op.drop_constraint(
-            "fk_case_participants_admin_user_id",
-            "case_participants",
-            type_="foreignkey",
-        )
+    bind = op.get_bind()
+    dialect = bind.dialect.name
 
-    if _has_column("case_participants", "admin_user_id"):
-        op.drop_column("case_participants", "admin_user_id")
+    if dialect == "sqlite":
+        with op.batch_alter_table("case_participants") as batch_op:
+            if _has_fk("case_participants", "fk_case_participants_admin_user_id"):
+                batch_op.drop_constraint(
+                    "fk_case_participants_admin_user_id",
+                    type_="foreignkey",
+                )
+
+            if _has_column("case_participants", "admin_user_id"):
+                batch_op.drop_column("admin_user_id")
+    else:
+        if _has_fk("case_participants", "fk_case_participants_admin_user_id"):
+            op.drop_constraint(
+                "fk_case_participants_admin_user_id",
+                "case_participants",
+                type_="foreignkey",
+            )
+
+        if _has_column("case_participants", "admin_user_id"):
+            op.drop_column("case_participants", "admin_user_id")
