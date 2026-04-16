@@ -229,3 +229,13 @@ tests/visual/last-compare-report.json
 data/
 esante_import_*.json
 .tmp_probe/
+
+_backup_20260415_123402/
+
+_backup_*/
+
+_backup_before_encoding_fix_*/
+
+_safety_before_full_restore_*/
+
+*.bak_*
