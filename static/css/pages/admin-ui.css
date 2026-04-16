@@ -5159,6 +5159,346 @@ body.hc-admin-risk-map-page .hc-risk-map-hero .hc-row{
   padding-bottom: 2px;
 }
 
+/* ==========================================================================
+   Unified institutional admin pass
+   ========================================================================== */
+body[data-hc-page^="/admin"],
+body[data-hc-page^="/ops"] {
+  background: #f4f7fb;
+}
+
+.hc-admin-workspace__content{
+  background: #f4f7fb;
+}
+
+.hc-admin-shellbar{
+  top: 10px;
+  margin: 0 0 20px;
+}
+
+.hc-admin-shellbar__inner{
+  align-items: flex-start;
+  padding: 16px 18px;
+  border: 1px solid #d8e1ec;
+  border-radius: 14px;
+  background: rgba(255,255,255,.97);
+  box-shadow: 0 10px 24px rgba(15,23,42,.06);
+  backdrop-filter: none;
+}
+
+.hc-admin-shellbar__brand{
+  gap: 4px;
+}
+
+.hc-admin-shellbar__eyebrow{
+  color: #5b6b7c;
+}
+
+.hc-admin-shellbar__title{
+  font-size: 1.05rem;
+  color: #142338;
+}
+
+.hc-admin-shellbar__subtitle{
+  max-width: 42rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #5b6b7c;
+}
+
+.hc-admin-shellnav{
+  gap: 10px;
+}
+
+.hc-admin-shellnav__link{
+  min-height: 40px;
+  padding: 0.62rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #d8e1ec;
+  background: #fff;
+  color: #31465d;
+  box-shadow: none;
+  transform: none;
+}
+
+.hc-admin-shellnav__link:hover,
+.hc-admin-shellnav__link:focus-visible{
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background: #f8fbff;
+  box-shadow: 0 8px 18px rgba(37,99,235,.08);
+}
+
+.hc-admin-shellnav__link.is-active{
+  color: #1d4ed8;
+  border-color: #93c5fd;
+  background: #eaf2ff;
+  box-shadow: inset 0 0 0 1px rgba(37,99,235,.06);
+}
+
+body[data-hc-page^="/admin"] .hc-card,
+body[data-hc-page^="/admin"] .hc-admin-table-shell,
+body[data-hc-page^="/admin"] .hc-admin-filterbar,
+body[data-hc-page^="/admin"] .hc-structure-metric,
+body[data-hc-page^="/ops"] .hc-card{
+  border-color: #d8e1ec !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: 0 10px 24px rgba(15,23,42,.05) !important;
+}
+
+body[data-hc-page^="/admin"] .hc-page-hero,
+body[data-hc-page^="/admin"] .hc-admin-headerCard,
+body[data-hc-page^="/ops"] .hc-page-hero{
+  padding: 20px 22px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-title,
+body[data-hc-page^="/ops"] .hc-admin-title{
+  font-size: clamp(1.55rem, 2vw, 1.9rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: #142338;
+}
+
+body[data-hc-page^="/admin"] .hc-muted,
+body[data-hc-page^="/admin"] .text-muted,
+body[data-hc-page^="/ops"] .hc-muted,
+body[data-hc-page^="/ops"] .text-muted{
+  color: #5b6b7c !important;
+}
+
+body[data-hc-page^="/admin"] .hc-kpi,
+body[data-hc-page^="/admin"] .hc-kpi-card,
+body[data-hc-page^="/admin"] .hc-risk-overview__item,
+body[data-hc-page^="/admin"] .hc-pilotage-card,
+body[data-hc-page^="/admin"] .hc-vigilance-card,
+body[data-hc-page^="/admin"] .hc-quick-access-card,
+body[data-hc-page^="/admin"] .hc-action-item,
+body[data-hc-page^="/ops"] .hc-kpi,
+body[data-hc-page^="/ops"] .hc-kpi-card{
+  border: 1px solid #d8e1ec;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(15,23,42,.04);
+}
+
+body[data-hc-page^="/admin"] .hc-kpi,
+body[data-hc-page^="/admin"] .hc-kpi-card{
+  min-height: 118px;
+  padding: 14px 15px;
+}
+
+body[data-hc-page^="/admin"] .hc-kpi__label,
+body[data-hc-page^="/admin"] .hc-kpi-label{
+  color: #5b6b7c;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+body[data-hc-page^="/admin"] .hc-kpi__value,
+body[data-hc-page^="/admin"] .hc-kpi-value{
+  color: #142338;
+  font-size: clamp(1.45rem, 2vw, 1.85rem);
+}
+
+.hc-admin-stickybar,
+.hc-requests-toolbar{
+  background: #fff !important;
+  border: 1px solid #d8e1ec;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(15,23,42,.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+body[data-hc-page^="/admin"] :is(.form-control, .form-select, .hc-input),
+body[data-hc-page^="/ops"] :is(.form-control, .form-select, .hc-input){
+  min-height: 44px;
+  border: 1px solid #cfd8e3;
+  border-radius: 8px;
+  background: #fff;
+  color: #142338;
+  box-shadow: none;
+}
+
+body[data-hc-page^="/admin"] :is(.form-control, .form-select, .hc-input):focus,
+body[data-hc-page^="/ops"] :is(.form-control, .form-select, .hc-input):focus{
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+
+body[data-hc-page^="/admin"] .btn,
+body[data-hc-page^="/ops"] .btn{
+  min-height: 40px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+body[data-hc-page^="/admin"] .btn-primary,
+body[data-hc-page^="/ops"] .btn-primary{
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+body[data-hc-page^="/admin"] .btn-primary:hover,
+body[data-hc-page^="/ops"] .btn-primary:hover{
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  box-shadow: 0 10px 20px rgba(37,99,235,.16);
+}
+
+body[data-hc-page^="/admin"] :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-danger, .btn-outline-warning),
+body[data-hc-page^="/ops"] :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-danger, .btn-outline-warning){
+  background: #fff;
+}
+
+body[data-hc-page^="/admin"] .table,
+body[data-hc-page^="/ops"] .table{
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: #f8fbff;
+  --bs-table-hover-bg: #eef5ff;
+  --bs-table-border-color: #e2e8f0;
+}
+
+body[data-hc-page^="/admin"] .table thead th,
+body[data-hc-page^="/ops"] .table thead th{
+  background: #f7f9fc;
+  color: #526172;
+  border-bottom-width: 1px;
+}
+
+body[data-hc-page^="/admin"] .table tbody td,
+body[data-hc-page^="/ops"] .table tbody td{
+  color: #1f2f44;
+}
+
+body[data-hc-page^="/admin"] .badge,
+body[data-hc-page^="/ops"] .badge{
+  padding: 0.38rem 0.62rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+body[data-hc-page^="/admin"] .text-bg-light.border,
+body[data-hc-page^="/ops"] .text-bg-light.border{
+  background: #f8fbff !important;
+  color: #31465d !important;
+  border-color: #d8e1ec !important;
+}
+
+body[data-hc-page^="/admin"] .text-bg-warning,
+body[data-hc-page^="/ops"] .text-bg-warning{
+  background: #fff7ed !important;
+  color: #b45309 !important;
+}
+
+body[data-hc-page^="/admin"] .text-bg-danger,
+body[data-hc-page^="/ops"] .text-bg-danger{
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+}
+
+body[data-hc-page^="/admin"] .text-bg-success,
+body[data-hc-page^="/ops"] .text-bg-success{
+  background: #eefbf3 !important;
+  color: #166534 !important;
+}
+
+.hc-action-queue{
+  display: grid;
+  gap: 12px;
+}
+
+.hc-action-item{
+  padding: 15px 16px;
+}
+
+.hc-action-item__domain{
+  color: #5b6b7c;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hc-action-item__title{
+  margin-top: 4px;
+  font-size: 1rem;
+  line-height: 1.35;
+  font-weight: 700;
+  color: #142338;
+}
+
+.hc-action-item__hint{
+  margin-top: 8px;
+  color: #5b6b7c;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.hc-status-pill{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid #d8e1ec;
+  background: #f8fbff;
+  color: #31465d;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.hc-status-pill--warning{
+  background: #fff7ed;
+  color: #b45309;
+  border-color: #fed7aa;
+}
+
+.hc-status-pill--danger{
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.hc-status-pill--success{
+  background: #eefbf3;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.hc-vigilance-card,
+.hc-quick-access-card{
+  display: grid;
+  gap: 10px;
+  padding: 15px 16px;
+}
+
+.hc-vigilance-card__value{
+  font-size: clamp(1.5rem, 2vw, 1.95rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #142338;
+}
+
+.hc-vigilance-card__cta,
+.hc-quick-access-card__cta{
+  color: #1d4ed8;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+body[data-hc-page^="/admin"] .hc-empty-state,
+body[data-hc-page^="/ops"] .hc-empty-state{
+  border: 1px dashed #c6d4e4;
+  background: linear-gradient(180deg, #fbfdff 0%, #f7fafe 100%);
+}
+
 body.hc-admin-risk-map-page .hc-risk-map-toolbar-card,
 body.hc-admin-risk-map-page .hc-risk-map-card{
   border-radius: 20px;

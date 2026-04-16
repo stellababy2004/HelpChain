@@ -35,8 +35,8 @@
 
 .hc-admin-structures-page .hc-card.hc-admin-table-shell > .d-flex{
   padding: 14px 18px 12px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,250,251,.94));
+  border-bottom: 1px solid #e2e8f0;
+  background: #fbfdff;
 }
 
 .hc-admin-structures-page .hc-admin-tablewrap{
@@ -95,9 +95,9 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.045em;
-  color: rgba(15, 23, 42, 0.66);
-  background: rgba(248, 250, 252, 0.96);
-  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+  color: #526172;
+  background: #f7f9fc;
+  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.08);
   padding-top: 0.82rem;
   padding-bottom: 0.72rem;
 }
@@ -110,11 +110,11 @@
 }
 
 .hc-admin-structures-page .hc-admin-table tbody tr:nth-child(even) td{
-  background: rgba(248, 250, 252, 0.72);
+  background: #fbfdff;
 }
 
 .hc-admin-structures-page .hc-admin-table tbody tr:hover td{
-  background: rgba(239, 246, 255, 0.78);
+  background: #eef5ff;
 }
 
 .hc-admin-structures-page .hc-admin-table th:first-child,
@@ -157,7 +157,7 @@
   white-space: nowrap;
   min-width: 72px;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .02em;
   padding: .38rem .62rem;
@@ -180,9 +180,9 @@
 
 .hc-admin-structures-page .row.g-3.mb-3 > .col-12 > .card{
   border-radius: 14px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  box-shadow: 0 8px 22px rgba(2, 6, 23, 0.05);
-  background: rgba(255,255,255,.94);
+  border: 1px solid #d8e1ec;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  background: #fff;
 }
 
 .hc-admin-structures-page .hc-structure-metric{

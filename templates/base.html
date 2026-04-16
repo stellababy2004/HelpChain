@@ -441,7 +441,7 @@
       if ((request.endpoint or '') in hc_institutional_public_eps and not is_any_logged_in)
       else hc_languages_all
     ) %}
-    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
+    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-navbar--institutional hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
@@ -933,7 +933,7 @@
 
     <!-- Main Content -->
 
-    <main id="main-content" class="hc-main-content">{% block content %}{% endblock %}</main>
+    <main id="main-content" class="hc-main-content hc-main-content--app">{% block content %}{% endblock %}</main>
 
     {% if not disable_a11y %}
     <button

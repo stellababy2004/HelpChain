@@ -10,6 +10,7 @@
   <div class="hc-card hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
+        <div class="hc-admin-kicker">Administration plateforme</div>
         <h1 class="hc-admin-title">Structures</h1>
         <div class="hc-muted">Organisations utilisant la plateforme</div>
         <div class="small text-muted mt-1">{{ structures|length }} structure{% if structures|length != 1 %}s{% endif %} visible{% if structures|length != 1 %}s{% endif %}</div>
@@ -52,7 +53,7 @@
     </div>
     <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
       <div class="input-group hc-structures-search">
-        <span class="input-group-text">🔎</span>
+        <span class="input-group-text"><i class="fas fa-search" aria-hidden="true"></i></span>
         <input type="text" class="form-control" placeholder="Rechercher une structure..." aria-label="Rechercher une structure">
       </div>
     </div>
@@ -70,9 +71,9 @@
           <tr>
             <th scope="col">Structure</th>
             <th scope="col">Slug</th>
-            <th scope="col" class="text-center">Users</th>
-            <th scope="col" class="text-center">Requests</th>
-            <th scope="col" class="text-center">Status</th>
+            <th scope="col" class="text-center">Utilisateurs</th>
+            <th scope="col" class="text-center">Cas</th>
+            <th scope="col" class="text-center">Statut</th>
             <th scope="col" class="text-end">Actions</th>
           </tr>
         </thead>

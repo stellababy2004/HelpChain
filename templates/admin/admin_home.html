@@ -1,8 +1,127 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Admin dashboard | HelpChain{% endblock %}
+{% block title %}Pilotage opérationnel | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
 {% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="hc-admin-kicker">Centre de pilotage opérationnel</div>
+        <h1 class="hc-admin-title">Pilotage opérationnel</h1>
+        <div class="hc-muted">Vue priorisée des cas, alertes, retards et points de vigilance à traiter.</div>
+        {% if scope_label %}
+          <div class="small text-muted mt-1">{{ scope_label }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <section class="mb-3" aria-label="Indicateurs opérationnels">
+    <div class="row g-3">
+      {% for item in kpis %}
+        <div class="col-12 col-md-6 col-xl">
+          <a class="text-decoration-none text-reset d-block h-100" href="{{ item.href }}">
+            <div class="hc-card h-100">
+              <div class="small text-muted">{{ item.label }}</div>
+              <div class="display-6 fw-semibold mt-2 mb-1">{{ item.value or 0 }}</div>
+              <div class="small text-muted">{{ item.hint }}</div>
+              <div class="small mt-3 fw-semibold text-primary">{{ item.cta_label }}</div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="hc-card mb-3">
+    <div class="hc-section-intro">
+      <div>
+        <h2 class="h5 mb-1">À traiter maintenant</h2>
+        <div class="hc-muted">File priorisée des sujets nécessitant une action opérateur immédiate.</div>
+      </div>
+    </div>
+
+    {% if action_queue %}
+      <div class="hc-action-queue">
+        {% for item in action_queue %}
+          <div class="hc-action-item">
+            <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+              <div>
+                <div class="hc-action-item__domain">{{ item.domain }}</div>
+                <div class="hc-action-item__title">{{ item.title }}</div>
+                <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                  <span class="badge {% if item.tone == 'danger' %}text-bg-danger{% elif item.tone == 'warning' %}text-bg-warning text-dark{% else %}text-bg-light border{% endif %}">{{ item.status }}</span>
+                  <span class="small text-muted">Motif: {{ item.reason }}</span>
+                </div>
+                {% if item.hint %}
+                  <div class="hc-action-item__hint">{{ item.hint }}</div>
+                {% endif %}
+              </div>
+              <a class="btn btn-outline-primary btn-sm" href="{{ item.href }}">{{ item.cta_label }}</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="hc-empty-state">
+        <div class="hc-empty-state__title">Aucun point critique immédiat</div>
+        <div class="hc-empty-state__text">Les éléments prioritaires sont actuellement sous contrôle.</div>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="hc-card mb-3">
+    <div class="hc-section-intro hc-section-intro--tight">
+      <h2 class="h5 mb-1">Points de vigilance</h2>
+      <div class="hc-muted">Signaux secondaires à surveiller avant qu’ils ne deviennent bloquants.</div>
+    </div>
+
+    {% if vigilance_items %}
+      <div class="row g-3">
+        {% for item in vigilance_items %}
+          <div class="col-12 col-md-6 col-xl-4">
+            <a class="hc-admin-linkcard text-decoration-none text-reset d-block h-100" href="{{ item.href }}">
+              <div class="hc-vigilance-card h-100">
+                <div class="small text-muted">{{ item.label }}</div>
+                <div class="hc-vigilance-card__value">{{ item.count }}</div>
+                <div class="small text-muted">{{ item.detail }}</div>
+                <div class="hc-vigilance-card__cta">{{ item.cta_label }}</div>
+              </div>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="hc-empty-state">
+        <div class="hc-empty-state__title">Aucun dépassement détecté actuellement</div>
+        <div class="hc-empty-state__text">Aucun signal secondaire ne nécessite de surveillance renforcée pour le moment.</div>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="hc-card">
+    <div class="hc-section-intro hc-section-intro--tight">
+      <h2 class="h5 mb-1">Accès rapides</h2>
+      <div class="hc-muted">Accès direct aux modules de gestion déjà en place.</div>
+    </div>
+
+    <div class="row g-3">
+      {% for item in quick_access %}
+        <div class="col-12 col-sm-6 col-xl-3">
+          <a class="hc-admin-linkcard text-decoration-none text-reset d-block h-100" href="{{ item.href }}">
+            <div class="hc-quick-access-card h-100">
+              <div class="fw-semibold">{{ item.label }}</div>
+              <div class="small text-muted mt-2">{{ item.description }}</div>
+              <div class="small mt-3 fw-semibold text-primary">Accéder au module</div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% if false %}
 <div class="hc-admin-wrap hc-admin-wrap--wide">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
@@ -99,4 +218,5 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}

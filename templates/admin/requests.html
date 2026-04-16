@@ -21,23 +21,23 @@
   <div class="hc-card mb-3 hc-admin-headerCard hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
+        <h1 class="hc-admin-title">Demandes</h1>
         <div class="hc-muted">Pilotage opérationnel des situations par priorité, service et responsable</div>
         {% if scope_label %}
         <div class="text-muted small">{{ scope_label }}</div>
         {% endif %}
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.index') }}">
-        {{ _('Home') }}
+        Accueil
       </a>
     </div>
     <div class="hc-tabs">
-      <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">{{ _('All') }}</button>
-      <button type="button" class="hc-tab" data-hc-tab="NEW">{{ _('New') }}</button>
-      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">{{ _('Assigned') }}</button>
-      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">{{ _('In progress') }}</button>
-      <button type="button" class="hc-tab" data-hc-tab="COMPLETED">{{ _('Completed') }}</button>
-      <button type="button" class="hc-tab" data-hc-tab="CLOSED">{{ _('Closed') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">Toutes</button>
+      <button type="button" class="hc-tab" data-hc-tab="NEW">Nouvelles</button>
+      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">Affectees</button>
+      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">En cours</button>
+      <button type="button" class="hc-tab" data-hc-tab="COMPLETED">Terminees</button>
+      <button type="button" class="hc-tab" data-hc-tab="CLOSED">Cloturees</button>
       <button type="button" class="hc-tab" id="hcToggleActionable">Actions prioritaires</button>
       <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
         <span aria-hidden="true"></span>
@@ -69,7 +69,7 @@
   {% if active_sla_queue %}
   <div class="alert alert-info d-flex align-items-center justify-content-between mb-3" role="status">
     <div>
-      <strong>{{ _('SLA queue:') }}</strong> {{ _(active_sla_filter_label) }}{% if sla_days %} • {{ sla_days }}{{ _('d') }}{% endif %}
+      <strong>File SLA :</strong> {{ _(active_sla_filter_label) }}{% if sla_days %} • {{ sla_days }}{{ _('d') }}{% endif %}
     </div>
     <a class="btn btn-sm btn-outline-primary"
        href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, category=request.args.get('category') or None) }}">
@@ -220,10 +220,10 @@
     <div class="col-6 col-md-3 col-xl-1">
       <select class="form-select" id="hcFilterPriority" aria-label="Filtrer par priorité">
         <option value="">Priorité</option>
-        <option value="CRITICAL">Critical</option>
-        <option value="HIGH">High</option>
-        <option value="MEDIUM">Medium</option>
-        <option value="LOW">Low</option>
+          <option value="CRITICAL">Critique</option>
+          <option value="HIGH">Elevee</option>
+          <option value="MEDIUM">Moyenne</option>
+          <option value="LOW">Faible</option>
       </select>
     </div>
     <div class="col-6 col-md-3 col-xl-2">
