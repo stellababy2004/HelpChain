@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 import math
 import os
 import re
@@ -3874,6 +3874,7 @@ def faq():
     return render_template("faq.html")
 
 
+@main_bp.route("/admin/analytics", methods=["GET"], endpoint="admin_analytics_redirect")
 @main_bp.route("/admin_analytics", methods=["GET"], endpoint="admin_analytics")
 def admin_analytics_legacy():
     """
@@ -4899,3 +4900,4 @@ def category_help(category: str):
 def service_worker():
     # Serve /sw.js from src/static/sw.js
     return send_from_directory(current_app.static_folder, "sw.js")
+
