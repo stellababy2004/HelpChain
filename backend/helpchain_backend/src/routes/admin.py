@@ -1174,7 +1174,7 @@ def _default_admin_landing_url(user: AdminUser | None = None) -> str:
     if role == "superadmin":
         return url_for("admin.admin_home")
     if role == "admin":
-        return url_for("admin.admin_pilotage")
+        return url_for("admin.admin_home")
     if role == "ops":
         return url_for("admin.admin_operator_dashboard")
     if role == "readonly":
@@ -5560,236 +5560,7 @@ def admin_create_structure():
 @admin_required
 def admin_dashboard():
     admin_required_404()
-    """Админ панел"""
-
-    import logging
-
-    logging.warning(
-        f"[DEBUG] admin_dashboard: is_authenticated={getattr(current_user, 'is_authenticated', None)}, is_admin={getattr(current_user, 'is_admin', None)}, id={getattr(current_user, 'id', None)}, username={getattr(current_user, 'username', None)}"
-    )
-    if not current_user.is_admin:
-        flash(_("You do not have access to the admin panel."), "error")
-        return redirect(url_for("main.dashboard"))
-
-    requests = _scope_requests(Request.query).all()
-    logs = RequestLog.query.all()
-    volunteers = Volunteer.query.all()
-    logs_dict = {}
-    for log in logs:
-        if log.request_id not in logs_dict:
-            logs_dict[log.request_id] = []
-        logs_dict[log.request_id].append(log)
-
-    requests_dict = []
-    for r in requests:
-        loc = (
-            getattr(r, "location_text", None)
-            or ", ".join(
-                [
-                    val
-                    for val in (getattr(r, "city", None), getattr(r, "region", None))
-                    if val
-                ]
-            )
-            or ""
-        )
-        requests_dict.append(
-            {
-                "id": r.id,
-                "name": r.name,
-                "phone": r.phone,
-                "email": r.email,
-                "location": loc,
-                "category": r.category,
-                "description": r.description,
-                "status": r.status,
-                "urgency": getattr(r, "urgency", None) or getattr(r, "priority", None),
-            }
-        )
-
-    volunteers_dict = [
-        {
-            "id": v.id,
-            "name": v.name,
-            "email": v.email,
-            "phone": v.phone,
-            "location": v.location,
-            "skills": v.skills,
-        }
-        for v in volunteers
-    ]
-
-    try:
-        total_requests = len(requests) if requests is not None else 0
-    except Exception:
-        total_requests = 0
-    try:
-        pending_requests = sum(
-            1
-            for r in requests
-            if getattr(r, "status", None) not in ("completed", "done", None)
-        )
-    except Exception:
-        pending_requests = 0
-    try:
-        total_volunteers = len(volunteers) if volunteers is not None else 0
-    except Exception:
-        total_volunteers = 0
-
-    stats = {
-        "total_requests": total_requests,
-        "pending_requests": pending_requests,
-        "total_volunteers": total_volunteers,
-    }
-
-    try:
-        now = utc_now()
-        week_ago = now - timedelta(days=7)
-
-        total_requests_cnt = db.session.query(func.count(Request.id)).scalar() or 0
-
-        open_requests_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.notin_(["done", "rejected"]))
-            .scalar()
-            or 0
-        )
-
-        closed_requests_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.in_(["done", "rejected"]))
-            .scalar()
-            or 0
-        )
-
-        closed_last_7d_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.completed_at.isnot(None), Request.completed_at >= week_ago)
-            .scalar()
-            or 0
-        )
-
-        avg_resolution_hours = (
-            db.session.query(
-                func.avg(
-                    func.julianday(Request.completed_at)
-                    - func.julianday(Request.created_at)
-                )
-                * 24.0
-            )
-            .filter(Request.completed_at.isnot(None), Request.created_at.isnot(None))
-            .scalar()
-        )
-        avg_resolution_hours = (
-            float(avg_resolution_hours) if avg_resolution_hours is not None else None
-        )
-
-        unassigned_over_2d_cnt = (
-            db.session.query(func.count(Request.id))
-            .filter(
-                Request.owner_id.is_(None),
-                Request.status.notin_(["done", "rejected"]),
-                Request.created_at <= (now - timedelta(days=2)),
-            )
-            .scalar()
-            or 0
-        )
-
-        high_open_count = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.notin_(["done", "rejected"]))
-            .filter(Request.priority == "high")
-            .scalar()
-            or 0
-        )
-
-        stale_open_count = (
-            db.session.query(func.count(Request.id))
-            .filter(Request.status.notin_(["done", "rejected"]))
-            .filter(Request.created_at <= (now - timedelta(days=7)))
-            .scalar()
-            or 0
-        )
-
-        since_dt = now - timedelta(days=14)
-        rows = (
-            db.session.query(func.date(Request.created_at), func.count(Request.id))
-            .filter(Request.created_at.isnot(None))
-            .filter(Request.created_at >= since_dt)
-            .group_by(func.date(Request.created_at))
-            .order_by(func.date(Request.created_at))
-            .all()
-        )
-        impact_dates = [str(r[0]) for r in rows]
-        impact_counts = [int(r[1]) for r in rows]
-
-        cat_rows = (
-            db.session.query(Request.category, func.count(Request.id))
-            .group_by(Request.category)
-            .order_by(func.count(Request.id).desc())
-            .all()
-        )
-        impact_cat_labels = [r[0] or "unknown" for r in cat_rows]
-        impact_cat_counts = [int(r[1]) for r in cat_rows]
-
-        impact = {
-            "total": total_requests_cnt,
-            "open": open_requests_cnt,
-            "closed": closed_requests_cnt,
-            "closed_last_7d": closed_last_7d_cnt,
-            "avg_resolution_hours": avg_resolution_hours,
-            "unassigned_over_2d": unassigned_over_2d_cnt,
-            "open_requests": int(open_requests_cnt or 0),
-            "unassigned_48h": int(unassigned_over_2d_cnt or 0),
-            "requests_dates": impact_dates,
-            "requests_counts": impact_counts,
-            "cat_labels": impact_cat_labels,
-            "cat_counts": impact_cat_counts,
-            "high_open": int(high_open_count or 0),
-            "stale_open": int(stale_open_count or 0),
-        }
-    except Exception:
-        impact = {
-            "total": 0,
-            "open": 0,
-            "closed": 0,
-            "closed_last_7d": 0,
-            "avg_resolution_hours": None,
-            "unassigned_over_2d": 0,
-            "open_requests": 0,
-            "unassigned_48h": 0,
-            "requests_dates": [],
-            "requests_counts": [],
-            "cat_labels": [],
-            "cat_counts": [],
-            "high_open": 0,
-            "stale_open": 0,
-        }
-
-    try:
-        import logging as _logging
-
-        _log = _logging.getLogger(__name__)
-        _log.info(
-            "admin_dashboard rendering: stats=%s, requests_items=%s, volunteers=%s",
-            stats,
-            total_requests,
-            total_volunteers,
-        )
-    except Exception:
-        pass
-
-    return render_template(
-        "admin_dashboard.html",
-        requests={"items": requests},
-        logs_dict=logs_dict,
-        requests_json=requests_dict,
-        volunteers=volunteers,
-        volunteers_json=volunteers_dict,
-        stats=stats,
-        impact=impact,
-        STATUS_LABELS=STATUS_LABELS,
-    )
+    return admin_home()
 
 
 @admin_bp.route("/home")
@@ -5810,31 +5581,100 @@ def admin_home():
     actionable_statuses = ("new", "open", "in_progress", "approved", "pending")
     actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
     activity_expr = func.coalesce(Request.updated_at, Request.created_at)
-    stale_threshold = _now_utc() - timedelta(hours=72)
-    urgent_filter = or_(
-        func.lower(func.coalesce(Request.priority, "")).in_(["high", "critical"]),
-        func.coalesce(Request.risk_score, 0) >= 85,
-    )
+    stale_threshold_aware = _now_utc() - timedelta(hours=72)
+    stale_threshold = stale_threshold_aware.replace(tzinfo=None)
     unassigned_filter = Request.owner_id.is_(None)
     stale_filter = activity_expr <= stale_threshold
-    attention_filter = or_(urgent_filter, unassigned_filter, stale_filter)
 
-    attention_count = base_query.filter(actionable_filter, attention_filter).count()
-    unassigned_count = base_query.filter(actionable_filter, unassigned_filter).count()
-    followup_count = base_query.filter(actionable_filter, stale_filter).count()
-    stale_count = followup_count
-
-    attention_rows = (
-        base_query.filter(actionable_filter, attention_filter)
+    active_requests = (
+        base_query.filter(actionable_filter)
         .options(joinedload(Request.owner))
-        .order_by(
-            case((urgent_filter, 0), (unassigned_filter, 1), (stale_filter, 2), else_=3),
-            activity_expr.asc().nullslast(),
-            Request.created_at.desc().nullslast(),
-            Request.id.desc(),
-        )
-        .limit(5)
+        .order_by(Request.created_at.desc().nullslast(), Request.id.desc())
         .all()
+    )
+
+    open_cases_count = len(active_requests)
+    pending_assignment_count = sum(
+        1 for req in active_requests if getattr(req, "owner_id", None) is None
+    )
+    stale_count = 0
+    now_naive = datetime.now(UTC).replace(tzinfo=None)
+
+    def _request_title(req: Request) -> str:
+        return (
+            getattr(req, "title", None)
+            or getattr(req, "name", None)
+            or f"Cas #{getattr(req, 'id', '—')}"
+        )
+
+    def _request_status_label(raw_status: str | None) -> str:
+        status_map = {
+            "new": "Nouveau",
+            "open": "Ouvert",
+            "pending": "En attente",
+            "approved": "Approuvé",
+            "in_progress": "En cours",
+            "done": "Traité",
+            "completed": "Traité",
+            "rejected": "Rejeté",
+            "cancelled": "Annulé",
+        }
+        key = ((raw_status or "").strip().lower() or "")
+        if key in status_map:
+            return status_map[key]
+        if not key:
+            return "À qualifier"
+        return key.replace("_", " ").capitalize()
+
+    request_action_queue: list[dict[str, object]] = []
+    sla_overdue_count = 0
+    for req in active_requests:
+        activity_ref = _to_utc_naive(
+            getattr(req, "updated_at", None) or getattr(req, "created_at", None)
+        )
+        is_stale = bool(activity_ref and activity_ref <= stale_threshold)
+        if is_stale:
+            stale_count += 1
+
+        overdue_by_kind = _sla_overdue_hours_by_kind(req, now=now_naive)
+        overdue_max = max(overdue_by_kind.values()) if overdue_by_kind else 0.0
+        if overdue_by_kind:
+            sla_overdue_count += 1
+
+        if overdue_by_kind:
+            reason = "SLA dépassé"
+            priority_rank = 0 if getattr(req, "owner_id", None) is None else 1
+        elif getattr(req, "owner_id", None) is None:
+            reason = "Aucun responsable assigné"
+            priority_rank = 2
+        elif is_stale:
+            reason = "Cas sans activité récente"
+            priority_rank = 3
+        else:
+            continue
+
+        request_action_queue.append(
+            {
+                "rank": priority_rank,
+                "domain": "Cas",
+                "title": _request_title(req),
+                "status": _request_status_label(getattr(req, "status", None)),
+                "reason": reason,
+                "hint": request_category_label(getattr(req, "category", None)),
+                "href": url_for("admin.admin_request_details", req_id=req.id),
+                "cta_label": "Ouvrir",
+                "tone": "danger" if priority_rank <= 1 else "warning",
+                "sort_activity": activity_ref.timestamp() if activity_ref else 0.0,
+                "sort_overdue": float(overdue_max),
+            }
+        )
+
+    request_action_queue.sort(
+        key=lambda item: (
+            int(item.get("rank") or 99),
+            -float(item.get("sort_overdue") or 0.0),
+            float(item.get("sort_activity") or 0.0),
+        )
     )
 
     queue_summary = {
@@ -5870,6 +5710,51 @@ def admin_home():
             "failed": 0,
         }
         queue_summary["failed"] = queue_summary["dead_letter"]
+
+    notifications_failed_count = int(queue_summary.get("failed") or 0)
+    notifications_retry_count = int(queue_summary.get("retry") or 0)
+
+    notification_action_queue: list[dict[str, object]] = []
+    if notifications_failed_count and _table_exists("notification_jobs"):
+        notif_query = NotificationJob.query.filter(
+            NotificationJob.status.in_(("dead_letter", "failed"))
+        )
+        try:
+            if not _is_global_admin():
+                sid = _current_structure_id()
+                notif_query = notif_query.filter(
+                    (NotificationJob.structure_id == sid)
+                    | (NotificationJob.structure_id.is_(None))
+                )
+        except Exception:
+            pass
+        failed_jobs = (
+            notif_query.order_by(
+                NotificationJob.created_at.desc().nullslast(),
+                NotificationJob.id.desc(),
+            )
+            .limit(2)
+            .all()
+        )
+        for job in failed_jobs:
+            notification_action_queue.append(
+                {
+                    "rank": 1,
+                    "domain": "Notifications",
+                    "title": getattr(job, "event_type", None)
+                    or f"Job #{getattr(job, 'id', '—')}",
+                    "status": "Échec",
+                    "reason": "Notification en échec",
+                    "hint": getattr(job, "recipient", None) or getattr(job, "channel", None),
+                    "href": url_for("admin.admin_notifications_list", status="failed"),
+                    "cta_label": "Contrôler",
+                    "tone": "danger",
+                    "sort_activity": _to_utc_naive(getattr(job, "created_at", None)).timestamp()
+                    if _to_utc_naive(getattr(job, "created_at", None))
+                    else 0.0,
+                    "sort_overdue": 0.0,
+                }
+            )
 
     security_summary = {
         "failed_logins_24h": 0,
@@ -5918,14 +5803,314 @@ def admin_home():
                 "available": True,
             }
 
+    security_signal_count = 0
+    if security_summary["available"]:
+        security_signal_count = int(
+            (security_summary.get("failed_logins_24h") or 0)
+            + (security_summary.get("denied_actions_24h") or 0)
+            + (security_summary.get("risky_actions_24h") or 0)
+        )
+
+    security_action_queue: list[dict[str, object]] = []
+    if security_summary["available"] and security_signal_count:
+        security_action_queue.append(
+            {
+                "rank": 1,
+                "domain": "Sécurité",
+                "title": "Surveillance administrative",
+                "status": "À vérifier",
+                "reason": "Signal de sécurité à vérifier",
+                "hint": f"{security_summary['failed_logins_24h']} échecs, {security_summary['denied_actions_24h']} refus, {security_summary['risky_actions_24h']} actions sensibles",
+                "href": url_for("admin.admin_security"),
+                "cta_label": "Contrôler",
+                "tone": "danger",
+                "sort_activity": 0.0,
+                "sort_overdue": 0.0,
+            }
+        )
+
+    leads_followup_count = 0
+    lead_action_queue: list[dict[str, object]] = []
+    if _table_exists("professional_leads"):
+        leads_query = _professional_lead_list_query(ProfessionalLead.query).filter(
+            or_(
+                ProfessionalLead.status.is_(None),
+                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+            )
+        )
+        candidate_leads = (
+            leads_query.order_by(
+                ProfessionalLead.created_at.desc().nullslast(),
+                ProfessionalLead.id.desc(),
+            )
+            .all()
+        )
+        for lead in candidate_leads:
+            if getattr(lead, "status", None) and (
+                (str(getattr(lead, "status", None)).strip().lower() == "qualified")
+            ):
+                continue
+            is_unassigned = not getattr(lead, "owner_admin_id", None)
+            is_stale = _demo_lead_is_stale(lead, threshold_hours=48)
+            if not (is_unassigned or is_stale):
+                continue
+            leads_followup_count += 1
+            if len(lead_action_queue) >= 2:
+                continue
+            lead_action_queue.append(
+                {
+                    "rank": 4 if is_stale else 3,
+                    "domain": "Leads",
+                    "title": getattr(lead, "full_name", None)
+                    or getattr(lead, "organization", None)
+                    or getattr(lead, "email", None)
+                    or f"Lead #{getattr(lead, 'id', '—')}",
+                    "status": (
+                        ((getattr(lead, "status", None) or "new").replace("_", " ").capitalize())
+                    ),
+                    "reason": (
+                        "Suivi commercial en attente"
+                        if is_stale
+                        else "Aucun responsable assigné"
+                    ),
+                    "hint": getattr(lead, "profession", None) or getattr(lead, "city", None),
+                    "href": url_for(
+                        "admin.admin_professional_lead_detail", lead_id=lead.id
+                    ),
+                    "cta_label": "Suivre",
+                    "tone": "warning",
+                    "sort_activity": _to_utc_naive(
+                        getattr(lead, "last_touched_at", None)
+                        or getattr(lead, "created_at", None)
+                    ).timestamp()
+                    if _to_utc_naive(
+                        getattr(lead, "last_touched_at", None)
+                        or getattr(lead, "created_at", None)
+                    )
+                    else 0.0,
+                    "sort_overdue": 0.0,
+                }
+            )
+
+    action_queue = (
+        request_action_queue[:6]
+        + notification_action_queue
+        + security_action_queue
+        + lead_action_queue
+    )
+    action_queue.sort(
+        key=lambda item: (
+            int(item.get("rank") or 99),
+            -float(item.get("sort_overdue") or 0.0),
+            float(item.get("sort_activity") or 0.0),
+        )
+    )
+    action_queue = action_queue[:8]
+
+    scope_label = "Vue globale"
+    if not _is_global_admin():
+        try:
+            sid = _current_structure_id()
+            active_structure = db.session.get(Structure, sid)
+            if active_structure and active_structure.name:
+                scope_label = f"Structure active : {active_structure.name}"
+            else:
+                scope_label = f"Structure active : #{sid}"
+        except Exception:
+            scope_label = "Structure active : —"
+
+    kpis = [
+        {
+            "label": "Cas ouverts",
+            "value": open_cases_count,
+            "hint": "Demandes encore en traitement.",
+            "href": url_for("admin.admin_requests"),
+            "cta_label": "Voir les cas",
+            "tone": "primary",
+        },
+        {
+            "label": "Affectation en attente",
+            "value": pending_assignment_count,
+            "hint": "Cas sans responsable assigné.",
+            "href": url_for("admin.admin_requests", no_owner="1"),
+            "cta_label": "Affecter",
+            "tone": "warning",
+        },
+        {
+            "label": "SLA en dépassement",
+            "value": sla_overdue_count,
+            "hint": "Cas hors délai de traitement.",
+            "href": url_for("admin.admin_sla_breakdown"),
+            "cta_label": "Voir le SLA",
+            "tone": "danger",
+        },
+        {
+            "label": "Notifications en échec",
+            "value": notifications_failed_count,
+            "hint": "Échecs ou dead letters à reprendre.",
+            "href": url_for("admin.admin_notifications_list", status="failed"),
+            "cta_label": "Contrôler",
+            "tone": "danger",
+        },
+    ]
+    if security_summary["available"]:
+        kpis.append(
+            {
+                "label": "Signaux de sécurité récents",
+                "value": security_signal_count,
+                "hint": "Échecs de connexion, refus d’accès et actions sensibles.",
+                "href": url_for("admin.admin_security"),
+                "cta_label": "Ouvrir la sécurité",
+                "tone": "danger",
+            }
+        )
+    else:
+        kpis.append(
+            {
+                "label": "Leads à suivre",
+                "value": leads_followup_count,
+                "hint": "Prospects sans reprise récente ou sans responsable.",
+                "href": url_for("admin.admin_professional_leads"),
+                "cta_label": "Suivre les leads",
+                "tone": "warning",
+            }
+        )
+
+    notifications_vigilance_href = url_for("admin.admin_notifications_list")
+    if notifications_failed_count:
+        notifications_vigilance_href = url_for(
+            "admin.admin_notifications_list", status="failed"
+        )
+    elif notifications_retry_count:
+        notifications_vigilance_href = url_for(
+            "admin.admin_notifications_list", status="retry"
+        )
+
+    vigilance_items = []
+    if stale_count:
+        vigilance_items.append(
+            {
+                "label": "Cas sans activité récente",
+                "count": stale_count,
+                "detail": "Dernière activité au-delà de 72 heures.",
+                "href": url_for("admin.admin_requests", not_seen_72h="1"),
+                "cta_label": "Voir les cas",
+            }
+        )
+    if pending_assignment_count:
+        vigilance_items.append(
+            {
+                "label": "Demandes non affectées",
+                "count": pending_assignment_count,
+                "detail": "Responsable manquant sur la file active.",
+                "href": url_for("admin.admin_requests", no_owner="1"),
+                "cta_label": "Affecter",
+            }
+        )
+    if sla_overdue_count:
+        vigilance_items.append(
+            {
+                "label": "Dépassements SLA",
+                "count": sla_overdue_count,
+                "detail": "Cas en retard sur les délais de traitement.",
+                "href": url_for("admin.admin_sla_breakdown"),
+                "cta_label": "Voir le SLA",
+            }
+        )
+    if notifications_failed_count or notifications_retry_count:
+        vigilance_items.append(
+            {
+                "label": "Notifications à reprendre",
+                "count": notifications_failed_count + notifications_retry_count,
+                "detail": "Échecs et relances nécessitant un contrôle.",
+                "href": notifications_vigilance_href,
+                "cta_label": "Contrôler",
+            }
+        )
+    if leads_followup_count:
+        vigilance_items.append(
+            {
+                "label": "Leads sans suivi",
+                "count": leads_followup_count,
+                "detail": "Relance commerciale ou assignation attendue.",
+                "href": url_for("admin.admin_professional_leads"),
+                "cta_label": "Suivre",
+            }
+        )
+    if security_summary["available"] and security_summary["failed_logins_24h"]:
+        vigilance_items.append(
+            {
+                "label": "Tentatives de connexion en échec",
+                "count": int(security_summary["failed_logins_24h"]),
+                "detail": "Activité observée sur les dernières 24 heures.",
+                "href": url_for("admin.admin_security"),
+                "cta_label": "Contrôler",
+            }
+        )
+
+    quick_access = [
+        {
+            "label": "Cas",
+            "href": url_for("admin.admin_requests"),
+            "description": "Traitement des demandes",
+        },
+        {
+            "label": "Intervenants",
+            "href": url_for("admin.admin_intervenants"),
+            "description": "Capacité opérationnelle",
+        },
+        {
+            "label": "Structures",
+            "href": url_for("admin.admin_structures"),
+            "description": "Périmètre et organisations",
+        },
+        {
+            "label": "Notifications",
+            "href": url_for("admin.admin_notifications_list"),
+            "description": "Diffusion et incidents",
+        },
+        {
+            "label": "SLA",
+            "href": url_for("admin.admin_sla_breakdown"),
+            "description": "Délais et dépassements",
+        },
+        {
+            "label": "Leads",
+            "href": url_for("admin.admin_professional_leads"),
+            "description": "Suivi commercial",
+        },
+    ]
+    if security_summary["available"]:
+        quick_access.extend(
+            [
+                {
+                    "label": "Sécurité",
+                    "href": url_for("admin.admin_security"),
+                    "description": "Anomalies et contrôles",
+                },
+                {
+                    "label": "Audit",
+                    "href": url_for("admin.admin_audit"),
+                    "description": "Traçabilité administrative",
+                },
+            ]
+        )
+
     return render_template(
         "admin/admin_home.html",
-        attention_count=attention_count,
-        unassigned_count=unassigned_count,
-        followup_count=followup_count,
+        scope_label=scope_label,
+        kpis=kpis,
+        action_queue=action_queue,
+        vigilance_items=vigilance_items,
+        quick_access=quick_access,
+        notifications_retry_count=notifications_retry_count,
+        leads_followup_count=leads_followup_count,
+        security_signal_count=security_signal_count,
+        open_cases_count=open_cases_count,
+        pending_assignment_count=pending_assignment_count,
+        sla_overdue_count=sla_overdue_count,
+        notifications_failed_count=notifications_failed_count,
         stale_count=stale_count,
-        attention_rows=attention_rows,
-        queue_summary=queue_summary,
         security_summary=security_summary,
     )
 

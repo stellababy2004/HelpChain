@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from sqlalchemy import inspect as sa_inspect
+
 
 def _prepare_import_path() -> None:
     this_file = Path(__file__).resolve()
@@ -25,6 +27,8 @@ from backend.appy import app
 from backend.extensions import db
 from backend.helpchain_backend.src.models import Case, CaseEvent, CaseParticipant, ProfessionalLead
 from backend.models import (
+    AdminAuditEvent,
+    AdminLoginAttempt,
     AdminUser,
     Intervenant,
     NotificationJob,
@@ -36,6 +40,7 @@ from backend.models import (
 
 
 DEMO_MARKER = "Demo Boulogne"
+DEMO_SECURITY_TAG = "seed-admin-operational-demo"
 NOW = datetime.now(UTC)
 DEMO_INTERVENANT_COORDS = {
     "15 Rue de Billancourt": (48.83291, 2.23928),
@@ -102,26 +107,81 @@ def _runtime_uri() -> str:
     return str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
 
 
-def _ensure_demo_branch() -> str:
-    uri = _runtime_uri().strip()
-    norm = uri.lower()
-    force_demo = (os.getenv("HC_ALLOW_DEMO_SEED") or "").strip().lower() in {
+def _is_production_env() -> bool:
+    markers = [
+        os.getenv("HC_ENV", ""),
+        os.getenv("FLASK_ENV", ""),
+        os.getenv("APP_ENV", ""),
+        os.getenv("ENV", ""),
+        str(app.config.get("ENV", "") or ""),
+        str(app.config.get("APP_ENV", "") or ""),
+    ]
+    normalized = [m.strip().lower() for m in markers if m]
+    return any(m in {"prod", "production"} for m in normalized)
+
+
+def _is_demo_seed_allowed() -> bool:
+    return (os.getenv("HC_ALLOW_DEMO_SEED") or "").strip().lower() in {
         "1",
         "true",
         "yes",
         "on",
     }
+
+
+def _sqlite_path_from_uri(uri: str) -> Path | None:
+    norm = (uri or "").strip().replace("\\", "/")
+    if not norm.lower().startswith("sqlite:"):
+        return None
+    raw_path = norm.replace("sqlite:///", "", 1).replace("sqlite://", "", 1)
+    if not raw_path:
+        return None
+    path = Path(raw_path)
+    if path.is_absolute():
+        return path.resolve()
+    return (Path(__file__).resolve().parents[2] / path).resolve()
+
+
+def _bump(summary: dict[str, int], key: str, amount: int = 1) -> None:
+    summary[key] = int(summary.get(key, 0) or 0) + int(amount)
+
+
+def _table_available(model: type[object]) -> bool:
+    try:
+        bind = db.session.get_bind()
+        if bind is None:
+            return False
+        return bool(sa_inspect(bind).has_table(model.__tablename__))
+    except Exception:
+        return False
+
+
+def _ensure_demo_branch() -> str:
+    uri = _runtime_uri().strip()
+    norm = uri.lower()
+    force_demo = _is_demo_seed_allowed()
     if not uri:
         raise RuntimeError("Refusing demo seed: runtime DB URL is empty.")
-    if norm.startswith("sqlite:"):
+    if _is_production_env():
+        raise RuntimeError("Refusing demo seed: production-like environment detected.")
+    if not force_demo:
         raise RuntimeError(
-            f"Refusing demo seed: sqlite target is not allowed. Actual={_mask_db_url(uri)}"
+            "Refusing demo seed: set HC_ALLOW_DEMO_SEED=1 to confirm local demo execution."
         )
+    if norm.startswith("sqlite:"):
+        sqlite_path = _sqlite_path_from_uri(uri)
+        repo_root = Path(__file__).resolve().parents[2]
+        if sqlite_path is None or repo_root not in sqlite_path.parents:
+            raise RuntimeError(
+                "Refusing demo seed: sqlite target must stay inside the local repo runtime. "
+                f"Actual={_mask_db_url(uri)}"
+            )
+        return uri
     if "-pooler" in norm:
         raise RuntimeError(
             f"Refusing demo seed: pooled Neon URL is not allowed. Actual={_mask_db_url(uri)}"
         )
-    if not force_demo and not norm.startswith(("postgresql://", "postgresql+psycopg://")):
+    if not norm.startswith(("postgresql://", "postgresql+psycopg://")):
         raise RuntimeError(
             "Refusing demo seed: unsupported DB URL for demo execution. "
             f"Actual={_mask_db_url(uri)}"
@@ -129,14 +189,20 @@ def _ensure_demo_branch() -> str:
     return uri
 
 
-def _get_or_create_structure(name: str, slug: str, *, status: str = "active") -> Structure:
+def _get_or_create_structure(
+    name: str, slug: str, *, status: str = "active", summary: dict[str, int] | None = None
+) -> Structure:
     row = Structure.query.filter_by(slug=slug).first()
     if row is None:
         row = Structure(name=name, slug=slug, status=status)
         db.session.add(row)
+        if summary is not None:
+            _bump(summary, "structures_created")
     else:
         row.name = name
         row.status = status
+        if summary is not None:
+            _bump(summary, "structures_reused")
     return row
 
 
@@ -155,8 +221,10 @@ def _get_or_create_admin(
     role: str,
     structure_id: int | None,
     password: str = "DemoBoulogne123!",
+    summary: dict[str, int] | None = None,
 ) -> AdminUser:
     row = AdminUser.query.filter_by(username=username).first()
+    created = row is None
     if row is None:
         row = AdminUser(username=username, email=email, role=role, is_active=True)
         _set_password_if_needed(row, password)
@@ -167,6 +235,8 @@ def _get_or_create_admin(
     row.structure_id = structure_id
     if not getattr(row, "password_hash", None):
         _set_password_if_needed(row, password)
+    if summary is not None:
+        _bump(summary, "admins_created" if created else "admins_reused")
     return row
 
 
@@ -177,8 +247,10 @@ def _get_or_create_user(
     structure_id: int | None,
     role: str = "requester",
     password: str = "DemoBoulogne123!",
+    summary: dict[str, int] | None = None,
 ) -> User:
     row = User.query.filter_by(username=username).first()
+    created = row is None
     if row is None:
         row = User(username=username, email=email, role=role, is_active=True)
         _set_password_if_needed(row, password)
@@ -189,6 +261,8 @@ def _get_or_create_user(
     row.structure_id = structure_id
     if not getattr(row, "password_hash", None):
         _set_password_if_needed(row, password)
+    if summary is not None:
+        _bump(summary, "users_created" if created else "users_reused")
     return row
 
 
@@ -205,8 +279,10 @@ def _get_or_create_intervenant(
     profession: str,
     address: str,
     city: str = "Boulogne-Billancourt",
+    summary: dict[str, int] | None = None,
 ) -> Intervenant:
     row = Intervenant.query.filter_by(email=email).first()
+    created = row is None
     if row is None:
         row = Intervenant(structure_id=structure_id)
         db.session.add(row)
@@ -221,6 +297,8 @@ def _get_or_create_intervenant(
         row.latitude = float(coords[0])
         row.longitude = float(coords[1])
     row.is_active = True
+    if summary is not None:
+        _bump(summary, "intervenants_created" if created else "intervenants_reused")
     return row
 
 
@@ -236,8 +314,10 @@ def _get_or_create_professional_lead(
     address: str,
     city: str = "Boulogne-Billancourt",
     status: str = "qualified",
+    summary: dict[str, int] | None = None,
 ) -> ProfessionalLead:
     row = ProfessionalLead.query.filter_by(email=email).first()
+    created = row is None
     if row is None:
         row = ProfessionalLead(email=email, profession=profession)
         db.session.add(row)
@@ -255,6 +335,8 @@ def _get_or_create_professional_lead(
     row.notes = f"{DEMO_MARKER} | adresse: {address}"
     row.last_touched_at = NOW
     row.last_touched_by_admin_id = owner_admin_id
+    if summary is not None:
+        _bump(summary, "leads_created" if created else "leads_reused")
     return row
 
 
@@ -264,8 +346,10 @@ def _upsert_request(
     structures: dict[str, Structure],
     admins: dict[str, AdminUser],
     users: dict[str, User],
+    summary: dict[str, int] | None = None,
 ) -> Request:
     row = Request.query.filter_by(title=seed.title).first()
+    created = row is None
     if row is None:
         row = Request(title=seed.title, user_id=users[seed.requester_username].id)
         db.session.add(row)
@@ -300,6 +384,8 @@ def _upsert_request(
     row.updated_at = updated_at
     row.is_archived = False
     row.deleted_at = None
+    if summary is not None:
+        _bump(summary, "requests_created" if created else "requests_reused")
     return row
 
 
@@ -437,9 +523,11 @@ def _upsert_notification_job(
     max_attempts: int,
     created_hours_ago: int,
     next_retry_hours_from_now: int | None = None,
+    summary: dict[str, int] | None = None,
 ) -> None:
     row = NotificationJob.query.filter_by(subject=subject, recipient=recipient).first()
     created_at = NOW - timedelta(hours=created_hours_ago)
+    created = row is None
     if row is None:
         row = NotificationJob(channel=channel, event_type=event_type, recipient=recipient, subject=subject)
         db.session.add(row)
@@ -458,6 +546,125 @@ def _upsert_notification_job(
     row.sent_at = created_at if status in {"done", "sent"} else None
     row.processed_at = created_at if status in {"done", "sent", "dead_letter", "failed"} else None
     row.last_error = "Relance API SMTP en attente" if status in {"retry", "dead_letter", "failed"} else None
+    if summary is not None:
+        _bump(summary, "notifications_created" if created else "notifications_reused")
+
+
+def _security_user_agent() -> str:
+    return f"{DEMO_SECURITY_TAG}/v1"
+
+
+def _reset_security_demo_rows(summary: dict[str, int]) -> None:
+    ua = _security_user_agent()
+    login_deleted = (
+        db.session.query(AdminLoginAttempt)
+        .filter(AdminLoginAttempt.user_agent == ua)
+        .delete(synchronize_session=False)
+    )
+    audit_deleted = (
+        db.session.query(AdminAuditEvent)
+        .filter(AdminAuditEvent.user_agent == ua)
+        .delete(synchronize_session=False)
+    )
+    _bump(summary, "security_signals_reused", int((login_deleted or 0) + (audit_deleted or 0)))
+
+
+def _seed_security_events(
+    *,
+    summary: dict[str, int],
+    admin_user: AdminUser,
+    ops_admin: AdminUser,
+    request_targets: dict[str, Request],
+) -> None:
+    ua = _security_user_agent()
+    now = datetime.now(UTC)
+    login_events = [
+        AdminLoginAttempt(
+            created_at=now - timedelta(minutes=18),
+            username=admin_user.username,
+            ip="127.0.0.1",
+            success=True,
+            user_agent=ua,
+        ),
+        AdminLoginAttempt(
+            created_at=now - timedelta(minutes=11),
+            username=admin_user.username,
+            ip="91.121.13.77",
+            success=False,
+            user_agent=ua,
+        ),
+        AdminLoginAttempt(
+            created_at=now - timedelta(minutes=9),
+            username=ops_admin.username,
+            ip="91.121.13.77",
+            success=False,
+            user_agent=ua,
+        ),
+        AdminLoginAttempt(
+            created_at=now - timedelta(minutes=6),
+            username="readonly.demo",
+            ip="77.88.99.11",
+            success=False,
+            user_agent=ua,
+        ),
+        AdminLoginAttempt(
+            created_at=now - timedelta(minutes=4),
+            username=ops_admin.username,
+            ip="127.0.0.1",
+            success=True,
+            user_agent=ua,
+        ),
+    ]
+    db.session.add_all(login_events)
+
+    audit_events = [
+        AdminAuditEvent(
+            created_at=now - timedelta(minutes=14),
+            admin_user_id=admin_user.id,
+            admin_username=admin_user.username,
+            action="request.assign_owner",
+            target_type="Request",
+            target_id=request_targets["r16"].id,
+            ip="127.0.0.1",
+            user_agent=ua,
+            payload={"marker": DEMO_MARKER, "new": {"owner": admin_user.username}},
+        ),
+        AdminAuditEvent(
+            created_at=now - timedelta(minutes=12),
+            admin_user_id=ops_admin.id,
+            admin_username=ops_admin.username,
+            action="security.denied_action",
+            target_type="Request",
+            target_id=request_targets["r3"].id,
+            ip="91.121.13.77",
+            user_agent=ua,
+            payload={"marker": DEMO_MARKER, "reason": "role_guard"},
+        ),
+        AdminAuditEvent(
+            created_at=now - timedelta(minutes=8),
+            admin_user_id=admin_user.id,
+            admin_username=admin_user.username,
+            action="request.unassign_owner",
+            target_type="Request",
+            target_id=request_targets["r1"].id,
+            ip="127.0.0.1",
+            user_agent=ua,
+            payload={"marker": DEMO_MARKER, "old": {"owner": ops_admin.username}},
+        ),
+        AdminAuditEvent(
+            created_at=now - timedelta(minutes=5),
+            admin_user_id=ops_admin.id,
+            admin_username=ops_admin.username,
+            action="interest.approve",
+            target_type="Request",
+            target_id=request_targets["r11"].id,
+            ip="127.0.0.1",
+            user_agent=ua,
+            payload={"marker": DEMO_MARKER, "source": "operational_demo"},
+        ),
+    ]
+    db.session.add_all(audit_events)
+    _bump(summary, "security_signals_created", len(login_events) + len(audit_events))
 
 
 def _request_seeds() -> list[RequestSeed]:
@@ -497,18 +704,55 @@ def _case_seeds() -> list[CaseSeed]:
     ]
 
 
-def seed() -> dict[str, int]:
+def seed() -> dict[str, object]:
     uri = _ensure_demo_branch()
     print(f"Seeding against {_mask_db_url(uri)}")
+    summary: dict[str, int] = {
+        "structures_created": 0,
+        "structures_reused": 0,
+        "admins_created": 0,
+        "admins_reused": 0,
+        "users_created": 0,
+        "users_reused": 0,
+        "intervenants_created": 0,
+        "intervenants_reused": 0,
+        "leads_created": 0,
+        "leads_reused": 0,
+        "requests_created": 0,
+        "requests_reused": 0,
+        "notifications_created": 0,
+        "notifications_reused": 0,
+        "security_signals_created": 0,
+        "security_signals_reused": 0,
+    }
+    demo_structure_slugs = [
+        "ccas-boulogne-demo",
+        "association-solidarite-92-demo-boulogne",
+        "reseau-sante-boulogne-demo",
+        "cellule-coordination-senior-demo-boulogne",
+        "plateforme-protection-familles-92-demo-boulogne",
+    ]
+    existing_structure_slugs = {
+        slug
+        for (slug,) in db.session.query(Structure.slug)
+        .filter(Structure.slug.in_(demo_structure_slugs))
+        .all()
+    }
 
     structures = {
-        "ccas-boulogne-demo": _get_or_create_structure("CCAS Boulogne-Billancourt - Demo Boulogne", "ccas-boulogne-demo"),
+        "ccas-boulogne-demo": _get_or_create_structure(
+            "CCAS Boulogne-Billancourt - Demo Boulogne",
+            "ccas-boulogne-demo",
+            summary=summary,
+        ),
         "association-solidarite-92-demo-boulogne": _get_or_create_structure("Association Solidarité 92 - Demo Boulogne", "association-solidarite-92-demo-boulogne"),
         "reseau-sante-boulogne-demo": _get_or_create_structure("Réseau Santé Boulogne - Demo Boulogne", "reseau-sante-boulogne-demo"),
         "cellule-coordination-senior-demo-boulogne": _get_or_create_structure("Cellule Coordination Senior - Demo Boulogne", "cellule-coordination-senior-demo-boulogne"),
         "plateforme-protection-familles-92-demo-boulogne": _get_or_create_structure("Plateforme Protection Familles 92 - Demo Boulogne", "plateforme-protection-familles-92-demo-boulogne"),
     }
     db.session.flush()
+    summary["structures_created"] = sum(1 for slug in demo_structure_slugs if slug not in existing_structure_slugs)
+    summary["structures_reused"] = len(demo_structure_slugs) - summary["structures_created"]
 
     existing_admin = AdminUser.query.filter_by(username="admin").first()
     if existing_admin is None:
@@ -517,6 +761,7 @@ def seed() -> dict[str, int]:
             email="admin.demo.boulogne@helpchain.demo",
             role="superadmin",
             structure_id=None,
+            summary=summary,
         )
     else:
         existing_admin.is_active = True
@@ -524,6 +769,7 @@ def seed() -> dict[str, int]:
             existing_admin.email = "admin.demo.boulogne@helpchain.demo"
         if not existing_admin.role:
             existing_admin.role = "superadmin"
+        _bump(summary, "admins_reused")
 
     admins = {
         "admin": existing_admin,
@@ -532,6 +778,7 @@ def seed() -> dict[str, int]:
             email="ops.boulogne.demo@helpchain.demo",
             role="ops",
             structure_id=structures["ccas-boulogne-demo"].id,
+            summary=summary,
         ),
     }
     db.session.flush()
@@ -542,12 +789,14 @@ def seed() -> dict[str, int]:
             email="admin.demo.boulogne@helpchain.demo",
             structure_id=structures["ccas-boulogne-demo"].id,
             role="superadmin",
+            summary=summary,
         ),
         "ops.boulogne.demo.user": _get_or_create_user(
             username="ops.boulogne.demo",
             email="ops.boulogne.demo@helpchain.demo",
             structure_id=structures["ccas-boulogne-demo"].id,
             role="admin",
+            summary=summary,
         ),
     }
     for seed in _request_seeds():
@@ -557,6 +806,7 @@ def seed() -> dict[str, int]:
                 email=f"{seed.requester_username}@helpchain.demo",
                 structure_id=structures[seed.structure_slug].id,
                 role="requester",
+                summary=summary,
             )
     db.session.flush()
 
@@ -576,6 +826,8 @@ def seed() -> dict[str, int]:
         ("Karim Bensaïd", "karim.bensaid.demo@sante.demo", "+33 6 11 20 30 53", "doctor", "5 Rue des 4 Cheminées", "reseau-sante-boulogne-demo"),
         ("Mélanie Faure", "melanie.faure.demo@familles.demo", "+33 6 11 20 30 54", "lawyer", "28 Rue de Clamart", "plateforme-protection-familles-92-demo-boulogne"),
     ]
+    if not _table_available(Intervenant):
+        intervenants_data = []
     for full_name, email, phone, profession, address, structure_slug in intervenants_data:
         _get_or_create_intervenant(
             structure_id=structures[structure_slug].id,
@@ -584,6 +836,7 @@ def seed() -> dict[str, int]:
             phone=phone,
             profession=profession,
             address=address,
+            summary=summary,
         )
 
     lead_specs = [
@@ -595,6 +848,8 @@ def seed() -> dict[str, int]:
         ("Camille Laurent", "camille.laurent.demo@boulogne.demo", "+33 6 21 31 41 56", "doctor", "Réseau Santé Boulogne - Demo Boulogne", "Cabinet disponible", "22 Rue de la Saussière"),
         ("Sophie Bernard", "sophie.bernard.demo@boulogne.demo", "+33 6 21 31 41 57", "nurse", "Réseau Santé Boulogne - Demo Boulogne", "Passage à domicile", "26 Avenue Victor Hugo"),
     ]
+    if not _table_available(ProfessionalLead):
+        lead_specs = []
     leads: dict[str, ProfessionalLead] = {}
     for full_name, email, phone, profession, organization, availability, address in lead_specs:
         leads[email] = _get_or_create_professional_lead(
@@ -606,6 +861,7 @@ def seed() -> dict[str, int]:
             organization=organization,
             availability=availability,
             address=address,
+            summary=summary,
         )
     db.session.flush()
 
@@ -616,6 +872,7 @@ def seed() -> dict[str, int]:
             structures=structures,
             admins=admins,
             users=user_lookup,
+            summary=summary,
         )
     db.session.flush()
 
@@ -647,32 +904,33 @@ def seed() -> dict[str, int]:
             )
 
     cases_map: dict[str, Case] = {}
-    for case_seed in _case_seeds():
-        case_row = _upsert_case(case_seed, requests_map=requests_map, admins=admins, leads=leads)
-        cases_map[case_seed.request_key] = case_row
-    db.session.flush()
+    if _table_available(Case) and _table_available(ProfessionalLead):
+        for case_seed in _case_seeds():
+            case_row = _upsert_case(case_seed, requests_map=requests_map, admins=admins, leads=leads)
+            cases_map[case_seed.request_key] = case_row
+        db.session.flush()
 
-    for case_seed in _case_seeds():
-        case_row = cases_map[case_seed.request_key]
-        for event_type, message, hours, visibility in case_seed.events:
-            actor_id = admins["admin"].id if case_seed.owner_username == "admin" else admins["ops.boulogne.demo"].id if case_seed.owner_username else None
-            _upsert_case_event(
-                case_row.id,
-                actor_user_id=actor_id,
-                event_type=event_type,
-                message=f"{message} ({DEMO_MARKER})",
-                visibility=visibility,
-                created_at=NOW - timedelta(hours=hours),
-            )
-        for participant_type, role, user_key, lead_email, external_name in case_seed.participants:
-            _upsert_case_participant(
-                case_row.id,
-                participant_type=participant_type,
-                role=role,
-                user_id=user_lookup[user_key].id if user_key else None,
-                professional_lead_id=leads[lead_email].id if lead_email else None,
-                external_name=external_name,
-            )
+        for case_seed in _case_seeds():
+            case_row = cases_map[case_seed.request_key]
+            for event_type, message, hours, visibility in case_seed.events:
+                actor_id = admins["admin"].id if case_seed.owner_username == "admin" else admins["ops.boulogne.demo"].id if case_seed.owner_username else None
+                _upsert_case_event(
+                    case_row.id,
+                    actor_user_id=actor_id,
+                    event_type=event_type,
+                    message=f"{message} ({DEMO_MARKER})",
+                    visibility=visibility,
+                    created_at=NOW - timedelta(hours=hours),
+                )
+            for participant_type, role, user_key, lead_email, external_name in case_seed.participants:
+                _upsert_case_participant(
+                    case_row.id,
+                    participant_type=participant_type,
+                    role=role,
+                    user_id=user_lookup[user_key].id if user_key else None,
+                    professional_lead_id=leads[lead_email].id if lead_email else None,
+                    external_name=external_name,
+                )
 
     notification_specs = [
         ("email", "request_sla_owner_reminder", "ops.boulogne.demo@helpchain.demo", f"{DEMO_MARKER} – relance responsable logement", "pending", 0, 5, 2, None, structures["association-solidarite-92-demo-boulogne"].id),
@@ -682,43 +940,83 @@ def seed() -> dict[str, int]:
         ("email", "owner_alert", "pilotage@boulogne.demo", f"{DEMO_MARKER} – alerte sans responsable", "pending", 1, 5, 1, 2, structures["ccas-boulogne-demo"].id),
         ("email", "closure_notice", "direction@solidarite92.demo", f"{DEMO_MARKER} – clôture orientation sociale", "sent", 1, 5, 12, None, structures["ccas-boulogne-demo"].id),
     ]
-    for channel, event_type, recipient, subject, status, attempts, max_attempts, created_hours_ago, next_retry_hours, structure_id in notification_specs:
-        _upsert_notification_job(
-            structure_id=structure_id,
-            channel=channel,
-            event_type=event_type,
-            recipient=recipient,
-            subject=subject,
-            status=status,
-            attempts=attempts,
-            max_attempts=max_attempts,
-            created_hours_ago=created_hours_ago,
-            next_retry_hours_from_now=next_retry_hours,
+    if _table_available(NotificationJob):
+        for channel, event_type, recipient, subject, status, attempts, max_attempts, created_hours_ago, next_retry_hours, structure_id in notification_specs:
+            _upsert_notification_job(
+                structure_id=structure_id,
+                channel=channel,
+                event_type=event_type,
+                recipient=recipient,
+                subject=subject,
+                status=status,
+                attempts=attempts,
+                max_attempts=max_attempts,
+                created_hours_ago=created_hours_ago,
+                next_retry_hours_from_now=next_retry_hours,
+                summary=summary,
+            )
+
+    if _table_available(AdminLoginAttempt) and _table_available(AdminAuditEvent):
+        _reset_security_demo_rows(summary)
+        _seed_security_events(
+            summary=summary,
+            admin_user=admins["admin"],
+            ops_admin=admins["ops.boulogne.demo"],
+            request_targets=requests_map,
         )
 
     db.session.commit()
 
     return {
-        "AdminUser": db.session.query(AdminUser).count(),
-        "Structure": db.session.query(Structure).count(),
-        "Intervenant": db.session.query(Intervenant).count(),
-        "ProfessionalLead": db.session.query(ProfessionalLead).count(),
-        "Request": db.session.query(Request).count(),
-        "Case": db.session.query(Case).count(),
-        "RequestActivity": db.session.query(RequestActivity).count(),
-        "CaseEvent": db.session.query(CaseEvent).count(),
-        "NotificationJob": db.session.query(NotificationJob).count(),
+        "marker": DEMO_MARKER,
+        "summary": {
+            "structures": {"created": summary["structures_created"], "reused": summary["structures_reused"]},
+            "requests": {"created": summary["requests_created"], "reused": summary["requests_reused"]},
+            "notifications": {"created": summary["notifications_created"], "reused": summary["notifications_reused"]},
+            "security_signals": {
+                "created": summary["security_signals_created"],
+                "reused": summary["security_signals_reused"],
+            },
+            "leads": {"created": summary["leads_created"], "reused": summary["leads_reused"]},
+            "intervenants": {
+                "created": summary["intervenants_created"],
+                "reused": summary["intervenants_reused"],
+            },
+        },
+        "totals": {
+            "AdminUser": db.session.query(AdminUser).count(),
+            "Structure": db.session.query(Structure).count(),
+            "Intervenant": db.session.query(Intervenant).count() if _table_available(Intervenant) else 0,
+            "ProfessionalLead": db.session.query(ProfessionalLead).count() if _table_available(ProfessionalLead) else 0,
+            "Request": db.session.query(Request).count(),
+            "Case": db.session.query(Case).count() if _table_available(Case) else 0,
+            "RequestActivity": db.session.query(RequestActivity).count(),
+            "CaseEvent": db.session.query(CaseEvent).count() if _table_available(CaseEvent) else 0,
+            "NotificationJob": db.session.query(NotificationJob).count() if _table_available(NotificationJob) else 0,
+            "AdminLoginAttempt": db.session.query(AdminLoginAttempt).count() if _table_available(AdminLoginAttempt) else 0,
+            "AdminAuditEvent": db.session.query(AdminAuditEvent).count() if _table_available(AdminAuditEvent) else 0,
+        },
+        "urls": [
+            "/admin/home",
+            "/admin/requests",
+            "/admin/notifications",
+            "/admin/security",
+            "/admin/audit",
+            "/admin/professional-leads/demo",
+            "/admin/structures",
+            "/admin/intervenants",
+        ],
     }
 
 
 def main() -> int:
     with app.app_context():
         try:
-            counts = seed()
+            result = seed()
         except Exception as exc:
             print(f"SEED_DEMO_BOULOGNE_ERROR: {exc}")
             return 1
-        print(json.dumps({"marker": DEMO_MARKER, "counts": counts}, ensure_ascii=False, indent=2))
+        print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
 
 
