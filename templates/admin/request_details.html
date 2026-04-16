@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _('Admin') }} - {{ _('Request') }} #{{ req.id }}{% endblock %}
 {% block body_class %}hc-admin-requests-page{% endblock %}
 {% block extra_css %}
@@ -189,7 +189,7 @@
           <p class="mb-1"><strong>Action recommandée:</strong></p>
           <p class="mb-2">{{ helpchain_recommendation.action if helpchain_recommendation else 'Maintenir le suivi courant' }}</p>
           <p class="mb-1"><strong>Raison:</strong></p>
-          <p class="mb-0">{{ helpchain_recommendation.reason if helpchain_recommendation else 'Aucune alerte spécifique détectée.' }}</p>
+          <p class="mb-0">{{ (helpchain_recommendation.reason if helpchain_recommendation else 'Aucune alerte spécifique détectée.') }}</p>
         </div>
       </section>
 
@@ -257,10 +257,10 @@
       {% endif %}
       <article class="hc-risk-summary-card">
         <h4>Synthèse opérationnelle</h4>
-        <p>{{ case_summary or 'Résumé non disponible pour cette situation.' }}</p>
+        <p>{{ (case_summary or 'Résumé non disponible pour cette situation.') }}</p>
         <p class="mb-1"><strong>Action recommandée:</strong></p>
-        <p class="mb-1">{{ helpchain_recommendation.action if helpchain_recommendation else 'Maintenir le suivi courant.' }}</p>
-        <p class="mb-0"><strong>Raison:</strong> {{ helpchain_recommendation.reason if helpchain_recommendation else 'Aucune alerte spécifique détectée.' }}</p>
+        <p class="mb-1">{{ (helpchain_recommendation.action if helpchain_recommendation else 'Maintenir le suivi courant.') }}</p>
+        <p class="mb-0"><strong>Raison:</strong> {{ (helpchain_recommendation.reason if helpchain_recommendation else 'Aucune alerte spécifique détectée.') }}</p>
       </article>
       {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
       <article class="hc-risk-summary-card">
@@ -280,7 +280,7 @@
       <section class="card border-0 shadow-sm mb-3 hc-card hc-case-section hc-summary-panel hc-main-block hc-main-block--summary">
         <div class="card-body">
           <h3 class="mb-2">Résumé de la situation</h3>
-          <p class="mb-0">{{ case_summary or 'Résumé non disponible pour cette situation.' }}</p>
+          <p class="mb-0">{{ (case_summary or 'Résumé non disponible pour cette situation.') }}</p>
         </div>
       </section>
 
@@ -433,7 +433,7 @@
               {% for ev in note_events[:8] %}
                 <div class="p-2 border rounded-3">
                   <div class="small text-muted">{{ ev.created_at|format_datetime_fr }}</div>
-                  <div>{{ ev.new_value or 'Note sans contenu.' }}</div>
+                  <div>{{ (ev.new_value or 'Note sans contenu.') }}</div>
                 </div>
               {% endfor %}
             </div>
