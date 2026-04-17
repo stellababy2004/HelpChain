@@ -114,13 +114,6 @@ def _resolve_configured_db_uri(
 ) -> tuple[str, str]:
     merged = _merged_env(env, root)
 
-    raw_path = (merged.get("HC_DB_PATH") or "").strip()
-    if raw_path:
-        path = Path(os.path.expandvars(raw_path))
-        if not path.is_absolute():
-            path = (root / path).resolve()
-        return _sqlite_uri_for_path(path), "HC_DB_PATH"
-
     raw_url = (merged.get("DATABASE_URL") or "").strip()
     if raw_url:
         url = os.path.expandvars(raw_url)
@@ -138,6 +131,13 @@ def _resolve_configured_db_uri(
         if "://" not in url:
             return _sqlite_uri_for_path((root / url).resolve()), "SQLALCHEMY_DATABASE_URI"
         return normalize_uri(url), "SQLALCHEMY_DATABASE_URI"
+
+    raw_path = (merged.get("HC_DB_PATH") or "").strip()
+    if raw_path:
+        path = Path(os.path.expandvars(raw_path))
+        if not path.is_absolute():
+            path = (root / path).resolve()
+        return _sqlite_uri_for_path(path), "HC_DB_PATH"
 
     return PRIMARY_LOCAL_DB_URI, "default_primary"
 
@@ -287,6 +287,20 @@ def select_local_runtime_db(
             selected_uri=configured_uri,
             selected_label="configured",
             reason="test environment; local runtime DB contract not applied",
+            configured_uri=configured_uri,
+            configured_path=configured_path,
+            configured_source=configured_source,
+            primary=primary,
+            fallback=fallback,
+        )
+
+    if configured_source == "DATABASE_URL":
+        return LocalRuntimeDbSelection(
+            apply_contract=False,
+            selected_path=configured_path,
+            selected_uri=configured_uri,
+            selected_label="configured",
+            reason="explicit DATABASE_URL configured; local sqlite contract not applied",
             configured_uri=configured_uri,
             configured_path=configured_path,
             configured_source=configured_source,

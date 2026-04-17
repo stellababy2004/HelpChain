@@ -62,8 +62,8 @@ class Config:
     if _db_path_env:
         _db_path_env = os.path.expandvars(_db_path_env).replace("\\", "/")
     SQLALCHEMY_DATABASE_URI = (
-        (f"sqlite:///{_db_path_env}" if _db_path_env else None)
-        or _db_url_env
+        _db_url_env
+        or (f"sqlite:///{_db_path_env}" if _db_path_env else None)
         or f"sqlite:///{DEFAULT_SQLITE_PATH}"
     )
 
