@@ -14,21 +14,22 @@
 {% block content %}
   <div class="hc-admin-workspace__content">
     {% if config.DEMO_MODE %}
-      <div class="demo-badge">DEMO MODE · {{ (config.DEMO_SCENARIO or 'pilot_ccas')|replace('_', ' ')|title }}</div>
+      <div class="demo-badge">DEMO MODE &middot; {{ (config.DEMO_SCENARIO or 'pilot_ccas')|replace('_', ' ')|title }}</div>
     {% endif %}
     {% set current_path = request.path or '' %}
     <div class="hc-admin-shellbar">
       <div class="hc-admin-shellbar__inner">
         <div class="hc-admin-shellbar__brand">
           <span class="hc-admin-shellbar__eyebrow">HelpChain</span>
-          <span class="hc-admin-shellbar__title">Centre de pilotage opérationnel</span>
+          <span class="hc-admin-shellbar__title">Centre de pilotage op&eacute;rationnel</span>
+          <span class="hc-admin-shellbar__subtitle">Vue de travail unifiee pour le pilotage, les files actives et la supervision de la plateforme.</span>
         </div>
         <nav class="hc-admin-shellnav" aria-label="Navigation administration">
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/workspace') or current_path == '/ops' else '' }}" href="{{ url_for('ops.ops_workspace') }}">Workspace</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/cases') else '' }}" href="{{ url_for('ops.ops_cases_list') }}">Cas</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/notifications') else '' }}" href="{{ url_for('ops.ops_notifications_list') }}">Notifications</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path == '/admin/' or current_path.startswith('/admin/home') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/sla') else '' }}" href="{{ url_for('admin.admin_home') }}">Pilotage</a>
-          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">Sécurité</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">S&eacute;curit&eacute;</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/structures') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') or current_path.startswith('/admin/professional-leads/demo') else '' }}" href="{{ url_for('admin.admin_structures') }}">Plateforme</a>
         </nav>
       </div>

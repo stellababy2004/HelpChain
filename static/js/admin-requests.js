@@ -19,6 +19,57 @@
   window.addEventListener("resize", syncToolbarHeightVar);
   window.addEventListener("load", syncToolbarHeightVar);
 
+  const exportDropdown = document.querySelector("[data-hc-export-dropdown]");
+  const exportToggle = exportDropdown?.querySelector("[data-hc-export-toggle]");
+  const exportMenu = exportDropdown?.querySelector("[data-hc-export-menu]");
+
+  function closeExportDropdown() {
+    if (!exportDropdown || !exportToggle || !exportMenu) return;
+    exportDropdown.classList.remove("is-open");
+    exportToggle.setAttribute("aria-expanded", "false");
+    exportMenu.hidden = true;
+  }
+
+  function openExportDropdown() {
+    if (!exportDropdown || !exportToggle || !exportMenu) return;
+    exportDropdown.classList.add("is-open");
+    exportToggle.setAttribute("aria-expanded", "true");
+    exportMenu.hidden = false;
+  }
+
+  if (exportDropdown && exportToggle && exportMenu) {
+    exportToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (exportDropdown.classList.contains("is-open")) closeExportDropdown();
+      else openExportDropdown();
+    });
+
+    exportMenu.addEventListener("click", (e) => {
+      const item = e.target.closest("a, button");
+      if (!item) return;
+      closeExportDropdown();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (e.target.closest("[data-hc-export-dropdown]")) return;
+      closeExportDropdown();
+    });
+
+    document.addEventListener(
+      "scroll",
+      () => {
+        closeExportDropdown();
+      },
+      true,
+    );
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      closeExportDropdown();
+    });
+  }
+
   if (form && statusEl && searchEl) {
     const saveFilters = () => {
       try {

@@ -244,13 +244,13 @@
       Filtres
     </button>
 
-    <div class="dropdown">
-      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <div class="dropdown hc-export-dropdown" data-hc-export-dropdown>
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle hc-export-dropdown__toggle" type="button" aria-expanded="false" data-hc-export-toggle>
         {{ _('Export') }}
       </button>
-      <ul class="dropdown-menu">
+      <ul class="dropdown-menu hc-export-dropdown__menu" hidden data-hc-export-menu>
         <li>
-          <a class="dropdown-item"
+          <a class="dropdown-item hc-export-dropdown__item"
              href="{{ url_for('admin.admin_requests_export_csv') }}"
              data-action="confirmSubmit"
              data-confirm="{{ export_confirm|e }}">
@@ -258,7 +258,7 @@
           </a>
         </li>
         <li>
-          <a class="dropdown-item"
+          <a class="dropdown-item hc-export-dropdown__item"
              href="{{ url_for('admin.admin_requests_export_xlsx') }}"
              data-action="confirmSubmit"
              data-confirm="{{ export_confirm|e }}">
@@ -267,7 +267,7 @@
         </li>
         <li><hr class="dropdown-divider"></li>
         <li>
-          <a class="dropdown-item"
+          <a class="dropdown-item hc-export-dropdown__item"
              href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
              data-action="confirmSubmit"
              data-confirm="{{ export_confirm|e }}">
@@ -275,7 +275,7 @@
           </a>
         </li>
         <li>
-          <a class="dropdown-item"
+          <a class="dropdown-item hc-export-dropdown__item"
              href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
              data-action="confirmSubmit"
              data-confirm="{{ export_confirm|e }}">
@@ -284,7 +284,7 @@
         </li>
         <li><hr class="dropdown-divider"></li>
         <li>
-          <a class="dropdown-item" href="{{ url_for('admin.admin_audit', entity='export') }}">
+          <a class="dropdown-item hc-export-dropdown__item" href="{{ url_for('admin.admin_audit', entity='export') }}">
             {{ _('View export logs') }}
           </a>
         </li>
@@ -695,7 +695,7 @@
     </table>
   </div>
 
-  <div class="hc-card hc-live-card hc-fold" style="margin-top:12px;">
+  <div class="hc-card hc-live-card hc-live-card--spaced hc-fold">
     <button
       type="button"
       class="hc-live-header hc-fold__head"

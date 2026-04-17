@@ -220,3 +220,55 @@
     min-width: 860px;
   }
 }
+
+.hc-admin-structures-page .hc-page-hero{
+  padding: 22px 24px;
+}
+
+.hc-admin-structures-page .hc-page-hero__actions{
+  align-items: flex-end;
+}
+
+.hc-admin-structures-page .hc-structure-metrics{
+  align-items: stretch;
+}
+
+.hc-admin-structures-page .hc-structure-metric{
+  min-height: 108px;
+  border-color: #d8e1ec;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.hc-admin-structures-page .hc-structures-tableShell{
+  border-radius: 16px;
+}
+
+.hc-admin-structures-page .hc-structures-toolbar{
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fbfdff;
+}
+
+.hc-admin-structures-page .hc-structures-toolbar__intro{
+  display: grid;
+  gap: 3px;
+}
+
+.hc-admin-structures-page .hc-structures-toolbar__intro strong{
+  font-size: 1rem;
+  color: #142338;
+}
+
+.hc-admin-structures-page .hc-structures-search .input-group-text{
+  background: #fff;
+  border-color: #cfd8e3;
+}
+
+.hc-admin-structures-page .hc-admin-table tbody td{
+  padding-top: 0.82rem;
+  padding-bottom: 0.82rem;
+}
+
+.hc-admin-structures-page .hc-admin-table td.hc-structure-name{
+  font-size: 0.96rem;
+}

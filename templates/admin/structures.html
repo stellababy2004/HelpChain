@@ -1,5 +1,5 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} • Structures | HelpChain{% endblock %}
+{% block title %}{{ _('Admin') }} - Structures | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-structures-page hc-density-compact{% endblock %}
 {% block admin_workspace_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-structures.css') }}">
@@ -7,19 +7,24 @@
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
-  <div class="hc-card hc-admin-headerCard">
+  <div class="hc-card hc-admin-headerCard hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
-      <div>
+      <div class="hc-page-hero__main">
         <div class="hc-admin-kicker">Administration plateforme</div>
         <h1 class="hc-admin-title">Structures</h1>
-        <div class="hc-muted">Organisations utilisant la plateforme</div>
-        <div class="small text-muted mt-1">{{ structures|length }} structure{% if structures|length != 1 %}s{% endif %} visible{% if structures|length != 1 %}s{% endif %}</div>
+        <div class="hc-muted">Vue globale des organisations utilisant la plateforme.</div>
+        <div class="hc-page-hero__meta">
+          <span class="hc-status-pill">{{ structures|length }} structure{% if structures|length != 1 %}s{% endif %}</span>
+        </div>
       </div>
-      <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_structure_new') }}">Créer</a>
+      <div class="hc-page-hero__actions">
+        <div class="hc-page-hero__sideText">Suivi institutionnel des structures, de leur identite technique et de leur statut dans la plateforme.</div>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_structure_new') }}">Creer</a>
+      </div>
     </div>
   </div>
 
-  <div class="row g-3 mb-3">
+  <div class="row g-3 mb-3 hc-structure-metrics">
     <div class="col-12 col-md-3">
       <div class="hc-card hc-structure-metric h-100">
         <div class="text-muted small">Structures</div>
@@ -29,33 +34,37 @@
     <div class="col-12 col-md-3">
       <div class="hc-card hc-structure-metric h-100">
         <div class="text-muted small">Utilisateurs</div>
-        <div class="h4 mb-0">—</div>
+        <div class="h4 mb-0">&mdash;</div>
       </div>
     </div>
     <div class="col-12 col-md-3">
       <div class="hc-card hc-structure-metric h-100">
         <div class="text-muted small">Demandes</div>
-        <div class="h4 mb-0">—</div>
+        <div class="h4 mb-0">&mdash;</div>
       </div>
     </div>
     <div class="col-12 col-md-3">
       <div class="hc-card hc-structure-metric h-100">
-        <div class="text-muted small">Dernière activité</div>
-        <div class="h4 mb-0">—</div>
+        <div class="text-muted small">Derniere activite</div>
+        <div class="h4 mb-0">&mdash;</div>
       </div>
     </div>
   </div>
 
-  <div class="hc-card hc-admin-table-shell">
+  <div class="hc-card hc-admin-table-shell hc-structures-tableShell">
     <div class="hc-card__section hc-card__section--header hc-structures-tableHeader">
-      <strong>Liste des structures</strong>
-      <span class="hc-muted small">Vue globale des organisations, identifiants et statut.</span>
+      <div class="hc-structures-toolbar__intro">
+        <strong>Liste des structures</strong>
+        <span class="hc-muted small">Organisation, slug, volume visible et acces detaille par structure.</span>
+      </div>
+      <span class="hc-status-pill">Referentiel plateforme</span>
     </div>
-    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3 hc-structures-toolbar">
       <div class="input-group hc-structures-search">
         <span class="input-group-text"><i class="fas fa-search" aria-hidden="true"></i></span>
-        <input type="text" class="form-control" placeholder="Rechercher une structure..." aria-label="Rechercher une structure">
+        <input type="text" class="form-control" placeholder="Rechercher une structure" aria-label="Rechercher une structure">
       </div>
+      <div class="hc-muted small">Lecture seule pour la liste globale. Ouvrez une structure pour gerer son detail.</div>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table mb-0">
@@ -82,8 +91,8 @@
           <tr>
             <td class="hc-structure-name" title="{{ st.name }}">{{ st.name }}</td>
             <td class="hc-structure-slug text-muted" title="{{ st.slug }}">{{ st.slug }}</td>
-            <td class="text-center text-muted">—</td>
-            <td class="text-center text-muted">—</td>
+            <td class="text-center text-muted">&mdash;</td>
+            <td class="text-center text-muted">&mdash;</td>
             <td class="text-center">
               <span class="badge text-bg-success hc-structure-status">Actif</span>
             </td>
@@ -97,7 +106,7 @@
             <td colspan="6">
               <div class="hc-empty-state">
                 <div class="hc-empty-state__title">Aucune structure</div>
-                <div class="hc-empty-state__text">Aucune organisation n’est encore enregistrée dans cet espace d’administration.</div>
+                <div class="hc-empty-state__text">Aucune organisation n'est encore enregistree dans cet espace d'administration.</div>
               </div>
             </td>
           </tr>

@@ -5996,4 +5996,325 @@ body.hc-admin-risk-map-page .leaflet-popup-content{
     width: 100%;
   }
 }
-.
+/* Enterprise admin workspace pass */
+body[data-hc-page^="/admin"],
+body[data-hc-page^="/ops"]{
+  --hc-admin-surface: #ffffff;
+  --hc-admin-border: #d8e1ec;
+  --hc-admin-text: #142338;
+  --hc-admin-muted: #5b6b7c;
+}
+
+.hc-admin-workspace__content{
+  padding-top: 20px;
+  padding-bottom: 44px;
+}
+
+.hc-admin-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5b6b7c;
+}
+
+.hc-admin-kicker::before{
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(147, 197, 253, 0.22);
+}
+
+.hc-admin-shellbar{
+  margin-bottom: 20px;
+  border-radius: 16px;
+  border-color: var(--hc-admin-border);
+  background: var(--hc-admin-surface);
+  box-shadow: 0 10px 24px rgba(15,23,42,.05);
+}
+
+.hc-admin-shellbar__inner{
+  align-items: flex-start;
+  gap: 18px 24px;
+}
+
+.hc-admin-shellbar__brand{
+  display: grid;
+  gap: 2px;
+}
+
+.hc-admin-shellbar__title{
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--hc-admin-text);
+}
+
+.hc-admin-shellbar__subtitle{
+  max-width: 48rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--hc-admin-muted);
+}
+
+.hc-admin-shellnav__link.is-active{
+  background: #edf4ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.hc-page-hero{
+  padding: 24px 26px;
+  border-radius: 16px;
+}
+
+.hc-page-hero__top{
+  align-items: flex-start;
+}
+
+.hc-page-hero__main{
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hc-page-hero__meta{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.hc-page-hero__side,
+.hc-page-hero__actions{
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+  max-width: 22rem;
+}
+
+.hc-page-hero__sideLabel{
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7c90;
+}
+
+.hc-page-hero__sideText{
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--hc-admin-muted);
+  text-align: right;
+}
+
+.hc-section-intro{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.hc-kpi-strip .hc-card,
+.hc-kpi-card--link{
+  min-height: 152px;
+}
+
+.hc-kpi-strip .hc-admin-linkcard:hover .hc-card,
+.hc-admin-linkcard:hover .hc-vigilance-card,
+.hc-admin-linkcard:hover .hc-quick-access-card{
+  border-color: #bfd4ec;
+  box-shadow: 0 14px 28px rgba(15,23,42,.07);
+}
+
+.hc-action-item{
+  padding: 16px 18px;
+  border-radius: 14px;
+}
+
+.hc-action-item__cta{
+  min-width: 132px;
+}
+
+.hc-vigilance-card,
+.hc-quick-access-card{
+  min-height: 172px;
+  align-content: start;
+}
+
+.hc-empty-state{
+  padding: 24px 22px;
+}
+
+.hc-empty-state__title{
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.hc-requests-toolbar{
+  padding: 16px 18px;
+}
+
+.hc-requests-toolbar > * + *{
+  border-top: 1px solid #e8eef5;
+  padding-top: 12px;
+}
+
+.hc-admin-requests-page .hc-export-dropdown{
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.hc-admin-requests-page .hc-export-dropdown__toggle{
+  position: relative;
+  z-index: 1;
+}
+
+.hc-admin-requests-page .hc-export-dropdown__menu{
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  min-width: 220px;
+  max-width: min(280px, calc(100vw - 24px));
+  margin: 0;
+  padding: 6px;
+  border: 1px solid rgba(15,23,42,.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,.99);
+  box-shadow: 0 12px 24px rgba(15,23,42,.08);
+  z-index: 70;
+  inset-inline-start: auto;
+  transform: none !important;
+}
+
+.hc-admin-requests-page .hc-export-dropdown:not(.is-open) .hc-export-dropdown__menu{
+  display: none;
+}
+
+.hc-admin-requests-page .hc-export-dropdown.is-open .hc-export-dropdown__toggle{
+  background: rgba(241,245,249,.95);
+  border-color: rgba(15,23,42,.16);
+}
+
+.hc-admin-requests-page .hc-export-dropdown__item{
+  border-radius: 6px;
+  padding: .38rem .68rem;
+  color: #111827;
+}
+
+.hc-admin-requests-page .hc-export-dropdown__item:hover,
+.hc-admin-requests-page .hc-export-dropdown__item:focus{
+  background: #f3f6f9;
+  color: #0f172a;
+}
+
+.hc-admin-requests-page .hc-export-dropdown__menu .dropdown-divider{
+  margin: 4px 0;
+  border-top-color: rgba(15,23,42,.08);
+}
+
+@media (max-width: 575.98px){
+  .hc-admin-requests-page .hc-export-dropdown{
+    max-width: 100%;
+  }
+
+  .hc-admin-requests-page .hc-export-dropdown__menu{
+    min-width: 200px;
+    max-width: min(240px, calc(100vw - 24px));
+  }
+}
+
+.hc-risk-overview{
+  gap: 10px;
+}
+
+.hc-risk-overview__item{
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+
+.hc-risk-overview__value{
+  margin-top: 4px;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #142338;
+}
+
+.hc-live-card--spaced{
+  margin-top: 12px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-tablewrap{
+  border: 1px solid #d8e1ec;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 10px 22px rgba(15,23,42,.04);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table{
+  margin-bottom: 0;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table thead th{
+  background: #f7f9fc;
+  color: #607084;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table tbody td{
+  padding-top: 0.88rem;
+  padding-bottom: 0.88rem;
+  border-color: #e8eef5;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table tbody tr:hover td{
+  background: #f8fbff;
+}
+
+.hc-admin-requests-page .hc-page-hero .hc-tabs,
+.hc-admin-requests-page .hc-page-hero #hcAdminKpis{
+  margin-top: 14px;
+}
+
+.hc-admin-requests-page .hc-requests-list .hc-admin-table .hc-prio{
+  min-width: 78px;
+  justify-content: center;
+}
+
+.hc-admin-requests-page .hc-statusmenu__summary{
+  border-radius: 999px;
+  min-height: 30px;
+}
+
+.hc-admin-requests-page .hc-statusmenu__list{
+  border: 1px solid #d8e1ec;
+  box-shadow: 0 12px 24px rgba(15,23,42,.08);
+}
+
+@media (max-width: 991.98px){
+  .hc-page-hero__top,
+  .hc-section-intro{
+    flex-direction: column;
+  }
+
+  .hc-page-hero__side,
+  .hc-page-hero__actions{
+    max-width: none;
+    justify-items: start;
+  }
+
+  .hc-page-hero__sideText{
+    text-align: left;
+  }
+
+  .hc-admin-shellbar__inner{
+    flex-direction: column;
+  }
+}
