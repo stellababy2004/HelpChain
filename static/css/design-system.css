@@ -7863,3 +7863,12 @@ body.hc-page-home .hc-hero-trust-strip__item:not(:last-child)::after {
     margin-left: 10px;
   }
 }
+
+.hero-description {
+  max-width: 720px;
+  margin: 20px auto 0 auto;
+  text-align: center;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #5f6b7a;
+}
