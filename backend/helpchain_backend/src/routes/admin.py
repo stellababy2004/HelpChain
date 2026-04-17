@@ -1938,6 +1938,32 @@ from ..utils.mfa import (
 admin_bp = Blueprint(
     "admin", __name__, url_prefix="/admin"
 )  # single templates path via app.py
+
+
+@admin_bp.route("/dev/bootstrap", methods=["POST"])
+def admin_dev_bootstrap():
+    import os
+    import subprocess
+    import sys
+
+    is_ajax = True
+    current_app.logger.warning(f"BOOTSTRAP HEADERS: {dict(request.headers)}")
+    current_app.logger.warning(f"IS_AJAX = {is_ajax}")
+
+    try:
+        env = os.environ.copy()
+        env["HC_ALLOW_DEMO_SEED"] = "1"
+        subprocess.run(
+            [sys.executable, "backend/scripts/seed_demo_boulogne.py"],
+            check=True,
+            env=env,
+        )
+        return jsonify({"ok": True, "message": "Bootstrap completed"}), 200
+    except Exception as exc:
+        current_app.logger.exception("Admin dev bootstrap failed")
+        return jsonify({"ok": False, "error": str(exc)}), 500
+
+
 ops_bp = Blueprint("ops", __name__, url_prefix="/ops")
 
 
