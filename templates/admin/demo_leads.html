@@ -1,8 +1,8 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Demo leads') }} | {{ _('Admin') }}{% endblock %}
-{% block body_class %}hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Pipeline commercial | {{ _('Admin') }}{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page hc-admin-table-page hc-admin-list-page hc-admin-proleads-page{% endblock %}
 {% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+  {{ super() }}
   <style>
     .hc-demo-leads-workspace {
       width: min(1760px, calc(100vw - 2rem));
@@ -681,10 +681,10 @@
   </style>
 {% endblock %}
 
-{% block content %}
+{% block admin_content %}
 {% macro lead_aging_summary(lead, current_status) -%}
   <div class="hc-demo-leads-aging-line">
-    <span class="hc-demo-leads-aging-line__status">{{ current_status }}</span>
+    <span class="hc-demo-leads-aging-line__status">{{ status_labels.get(current_status, current_status) }}</span>
     <span class="hc-demo-leads-aging-line__sep">&middot;</span>
     <span class="hc-demo-leads-aging-line__time">{{ lead.age_label }}</span>
   </div>
@@ -693,12 +693,12 @@
   {% if lead.first_followup_sent_at or lead.second_followup_sent_at %}
     <div class="hc-demo-leads-followups">
       {% if lead.first_followup_sent_at %}
-        <span class="hc-demo-leads-followup-pill" title="Follow-up 1 sent">
+        <span class="hc-demo-leads-followup-pill" title="Relance 1 envoyée">
           F1 · {{ lead.first_followup_sent_at.strftime('%Y-%m-%d') }}
         </span>
       {% endif %}
       {% if lead.second_followup_sent_at %}
-        <span class="hc-demo-leads-followup-pill" title="Follow-up 2 sent">
+        <span class="hc-demo-leads-followup-pill" title="Relance 2 envoyée">
           F2 · {{ lead.second_followup_sent_at.strftime('%Y-%m-%d') }}
         </span>
       {% endif %}
@@ -708,15 +708,15 @@
 {% macro lead_touch_preview(lead) -%}
   {% if lead.last_touch_label %}
     <div class="hc-demo-leads-touch">
-      <span class="hc-demo-leads-touch__label">{{ _('Last touch') }}</span>
+      <span class="hc-demo-leads-touch__label">Dernier contact</span>
       <span class="hc-demo-leads-touch__value">
         {{ lead.last_touch_label }}{% if lead.last_touch_admin_label %} &middot; {{ lead.last_touch_admin_label }}{% endif %}
       </span>
     </div>
   {% elif lead.status != 'closed' %}
     <div class="hc-demo-leads-touch">
-      <span class="hc-demo-leads-touch__label">{{ _('Last touch') }}</span>
-      <span class="hc-demo-leads-touch__value">{{ lead.age_label }} &middot; {{ _('no activity') }}</span>
+      <span class="hc-demo-leads-touch__label">Dernier contact</span>
+      <span class="hc-demo-leads-touch__value">{{ lead.age_label }} &middot; aucune activité</span>
     </div>
   {% endif %}
   {% if lead.activity_preview %}
@@ -729,25 +729,80 @@
     </div>
   {% endif %}
 {%- endmacro %}
-<section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell hc-demo-leads-workspace">
+{% set status_labels = {
+  'new': 'Nouveau',
+  'contacted': 'Contacté',
+  'demo_scheduled': 'Démo prévue',
+  'pilot_discussion': 'Pilote',
+  'closed': 'Gagné',
+  'invalid': 'Perdu',
+  'spam': 'Perdu'
+} %}
+{% set pipeline_counts = namespace(new=0, contacted=0, demo_scheduled=0, pilot=0, negotiation=0, won=0, lost=0) %}
+{% set cockpit_lists = namespace(today=[], upcoming=[], overdue=[]) %}
+{% set alert_counts = namespace(due=0, demo_tomorrow=0, no_response=0) %}
+{% set source_labels = {
+  'demo_page': '/demo',
+  'outbound': 'outbound',
+  'referral': 'referral'
+} %}
+{% for lead in leads %}
+  {% set status_key = ((lead.status or 'new')|lower) %}
+  {% if status_key == 'new' %}
+    {% set pipeline_counts.new = pipeline_counts.new + 1 %}
+  {% elif status_key == 'contacted' %}
+    {% set pipeline_counts.contacted = pipeline_counts.contacted + 1 %}
+  {% elif status_key == 'demo_scheduled' %}
+    {% set pipeline_counts.demo_scheduled = pipeline_counts.demo_scheduled + 1 %}
+  {% elif status_key == 'pilot_discussion' %}
+    {% set pipeline_counts.pilot = pipeline_counts.pilot + 1 %}
+  {% elif status_key == 'closed' %}
+    {% set pipeline_counts.won = pipeline_counts.won + 1 %}
+  {% elif status_key in ['invalid', 'spam'] %}
+    {% set pipeline_counts.lost = pipeline_counts.lost + 1 %}
+  {% endif %}
+  {% if status_key not in ['closed', 'invalid', 'spam'] and (lead.urgency == 'overdue' or lead.sla_state == 'late') %}
+    {% set alert_counts.due = alert_counts.due + 1 %}
+  {% endif %}
+  {% if status_key == 'demo_scheduled' and lead.sla_state == 'due_soon' %}
+    {% set alert_counts.demo_tomorrow = alert_counts.demo_tomorrow + 1 %}
+  {% endif %}
+  {% if status_key == 'new' and not lead.last_touch_label %}
+    {% set alert_counts.no_response = alert_counts.no_response + 1 %}
+  {% endif %}
+  {% if cockpit_lists.today|length < 4 and status_key not in ['closed', 'invalid', 'spam'] and (lead.next_action or not lead.owner_admin_id or status_key == 'new') %}
+    {% set cockpit_lists.today = cockpit_lists.today + [lead] %}
+  {% endif %}
+  {% if cockpit_lists.upcoming|length < 4 and status_key not in ['closed', 'invalid', 'spam'] and (lead.sla_state == 'due_soon' or (lead.next_action and lead.urgency != 'overdue')) %}
+    {% set cockpit_lists.upcoming = cockpit_lists.upcoming + [lead] %}
+  {% endif %}
+  {% if cockpit_lists.overdue|length < 4 and status_key not in ['closed', 'invalid', 'spam'] and (lead.urgency == 'overdue' or lead.sla_state == 'late') %}
+    {% set cockpit_lists.overdue = cockpit_lists.overdue + [lead] %}
+  {% endif %}
+{% endfor %}
+{% set response_base = leads|length %}
+{% set response_count = pipeline_counts.contacted + pipeline_counts.demo_scheduled + pipeline_counts.pilot + pipeline_counts.won %}
+{% set response_rate = ((response_count * 100) / response_base) if response_base else none %}
+{% set won_rate = ((pipeline_counts.won * 100) / response_base) if response_base else none %}
+<section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell hc-admin-list-shell hc-demo-leads-workspace">
   <header class="hc-admin-toolbar">
     <div>
-      <h1 class="hc-admin-title mb-1">{{ _('Demo leads') }}</h1>
-      <p class="hc-muted mb-0">{{ _('Latest leads captured via /demo.') }}</p>
+      <h1 class="hc-admin-title mb-1">Pipeline commercial</h1>
+      <p class="hc-muted mb-0">Suivi des démonstrations, pilotes et conversions.</p>
     </div>
   </header>
 
   <form method="GET" class="hc-card hc-admin-filterbar">
     <div class="hc-admin-filtergrid">
       <div class="hc-admin-filtergrid__item hc-admin-filtergrid__item--grow">
-        <label class="hc-muted" for="q">{{ _('Search') }}</label>
-        <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="{{ _('Email, name, organisation...') }}" />
+        <label class="hc-muted" for="q">Recherche</label>
+        <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="Email, nom, organisation..." />
       </div>
 
       <div class="hc-admin-filtergrid__item">
-        <label class="hc-muted" for="profession">{{ _('Profession') }}</label>
+        <label class="hc-muted" for="profession">Fonction</label>
         <select id="profession" name="profession" class="hc-input">
-          <option value="">{{ _('All') }}</option>
+          <option value="">Toutes</option>
           {% for p in professions %}
             <option value="{{ p }}" {% if p == profession %}selected{% endif %}>{{ p }}</option>
           {% endfor %}
@@ -755,33 +810,98 @@
       </div>
 
       <div class="hc-admin-filtergrid__item">
-        <label class="hc-muted" for="city">{{ _('City') }}</label>
-        <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="{{ _('City') }}" />
+        <label class="hc-muted" for="city">Ville</label>
+        <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="Ville" />
       </div>
 
       <div class="hc-admin-filtergrid__item">
-        <label class="hc-muted" for="status">{{ _('Status') }}</label>
+        <label class="hc-muted" for="status">Étape</label>
         <select id="status" name="status" class="hc-input">
-          <option value="">{{ _('All') }}</option>
+          <option value="">Toutes</option>
           {% for s in status_choices %}
-            <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>
+            <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ status_labels.get(s, s) }}</option>
           {% endfor %}
         </select>
       </div>
     </div>
 
     <div class="hc-admin-actions">
-      <button class="btn btn-primary btn-sm" type="submit">{{ _('Filter') }}</button>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_demo_leads') }}">{{ _('Reset') }}</a>
+      <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_demo_leads') }}">Réinitialiser</a>
     </div>
   </form>
 
-  <div class="hc-demo-leads-queues" aria-label="{{ _('Demo lead queues') }}">
+  <section class="hc-demo-cockpit-metrics" aria-label="Indicateurs du pipeline commercial">
+    <article class="hc-demo-cockpit-metric hc-demo-cockpit-metric--new">
+      <span class="hc-demo-cockpit-metric__label">Nouveaux leads</span>
+      <strong class="hc-demo-cockpit-metric__value">{{ kpi_counts.get('new', 0) }}</strong>
+    </article>
+    <article class="hc-demo-cockpit-metric hc-demo-cockpit-metric--contacted">
+      <span class="hc-demo-cockpit-metric__label">Taux de réponse</span>
+      <strong class="hc-demo-cockpit-metric__value">{% if response_rate is not none %}{{ response_rate|round(0)|int }} %{% else %}—{% endif %}</strong>
+    </article>
+    <article class="hc-demo-cockpit-metric hc-demo-cockpit-metric--demo-scheduled">
+      <span class="hc-demo-cockpit-metric__label">Démos planifiées</span>
+      <strong class="hc-demo-cockpit-metric__value">{{ kpi_counts.get('demo_scheduled', 0) }}</strong>
+    </article>
+    <article class="hc-demo-cockpit-metric hc-demo-cockpit-metric--pilot-discussion">
+      <span class="hc-demo-cockpit-metric__label">Pilotes en discussion</span>
+      <strong class="hc-demo-cockpit-metric__value">{{ kpi_counts.get('pilot_discussion', 0) }}</strong>
+    </article>
+    <article class="hc-demo-cockpit-metric hc-demo-cockpit-metric--closed">
+      <span class="hc-demo-cockpit-metric__label">MRR signé</span>
+      <strong class="hc-demo-cockpit-metric__value">—</strong>
+    </article>
+    <article class="hc-demo-cockpit-metric hc-demo-cockpit-metric--overdue">
+      <span class="hc-demo-cockpit-metric__label">Relances en retard</span>
+      <strong class="hc-demo-cockpit-metric__value">{{ kpi_counts.get('overdue', 0) }}</strong>
+    </article>
+  </section>
+
+  <section class="hc-demo-cockpit-board" aria-label="Étapes du pipeline">
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--new">
+      <span class="hc-demo-cockpit-board__label">Nouveau</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.new }}</strong>
+      <span class="hc-demo-cockpit-board__meta">{% if response_base %}{{ ((pipeline_counts.new * 100) / response_base)|round(0)|int }} % du volume{% else %}&mdash;{% endif %}</span>
+    </article>
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--contacted">
+      <span class="hc-demo-cockpit-board__label">Contacté</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.contacted }}</strong>
+      <span class="hc-demo-cockpit-board__meta">{% if response_base %}{{ ((pipeline_counts.contacted * 100) / response_base)|round(0)|int }} % du volume{% else %}&mdash;{% endif %}</span>
+    </article>
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--demo">
+      <span class="hc-demo-cockpit-board__label">Démo prévue</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.demo_scheduled }}</strong>
+      <span class="hc-demo-cockpit-board__meta">{% if response_base %}{{ ((pipeline_counts.demo_scheduled * 100) / response_base)|round(0)|int }} % du volume{% else %}&mdash;{% endif %}</span>
+    </article>
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--pilot">
+      <span class="hc-demo-cockpit-board__label">Pilote</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.pilot }}</strong>
+      <span class="hc-demo-cockpit-board__meta">{% if response_base %}{{ ((pipeline_counts.pilot * 100) / response_base)|round(0)|int }} % du volume{% else %}&mdash;{% endif %}</span>
+    </article>
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--negotiation">
+      <span class="hc-demo-cockpit-board__label">Négociation</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.negotiation }}</strong>
+      <span class="hc-demo-cockpit-board__meta">&mdash;</span>
+    </article>
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--won">
+      <span class="hc-demo-cockpit-board__label">Gagné</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.won }}</strong>
+      <span class="hc-demo-cockpit-board__meta">{% if won_rate is not none %}{{ won_rate|round(0)|int }} % de conversion{% else %}&mdash;{% endif %}</span>
+    </article>
+    <article class="hc-demo-cockpit-board__column hc-demo-cockpit-board__column--lost">
+      <span class="hc-demo-cockpit-board__label">Perdu</span>
+      <strong class="hc-demo-cockpit-board__value">{{ pipeline_counts.lost }}</strong>
+      <span class="hc-demo-cockpit-board__meta">{% if response_base %}{{ ((pipeline_counts.lost * 100) / response_base)|round(0)|int }} % du volume{% else %}&mdash;{% endif %}</span>
+    </article>
+  </section>
+
+  <div class="hc-demo-leads-queues" aria-label="Vues de file">
     {% set queue_labels = {
-      'needs_action': _('Needs action'),
-      'waiting': _('Waiting'),
-      'active': _('Active'),
-      'done': _('Done')
+      'needs_action': 'À traiter',
+      'waiting': 'En attente',
+      'active': 'En cours',
+      'done': 'Clôturé'
     } %}
     {% for queue_key in queue_choices %}
       <a
@@ -797,59 +917,35 @@
         class="hc-demo-leads-queue-chip"
         href="{{ url_for('admin.admin_demo_leads', q=q, profession=profession, city=city, status=status) }}"
       >
-        <span>{{ _('All leads') }}</span>
+        <span>Tous les leads</span>
       </a>
     {% endif %}
   </div>
 
-  <section class="hc-demo-leads-kpis" aria-label="{{ _('Demo lead funnel summary') }}">
-    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--new">
-      <span class="hc-demo-leads-kpi__label">new</span>
-      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('new', 0) }}</strong>
-    </article>
-    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--contacted">
-      <span class="hc-demo-leads-kpi__label">contacted</span>
-      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('contacted', 0) }}</strong>
-    </article>
-    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--demo_scheduled">
-      <span class="hc-demo-leads-kpi__label">demo_scheduled</span>
-      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('demo_scheduled', 0) }}</strong>
-    </article>
-    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--pilot_discussion">
-      <span class="hc-demo-leads-kpi__label">pilot_discussion</span>
-      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('pilot_discussion', 0) }}</strong>
-    </article>
-    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--closed">
-      <span class="hc-demo-leads-kpi__label">closed</span>
-      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('closed', 0) }}</strong>
-    </article>
-    <article class="hc-demo-leads-kpi hc-demo-leads-kpi--overdue">
-      <span class="hc-demo-leads-kpi__label">overdue</span>
-      <strong class="hc-demo-leads-kpi__value">{{ kpi_counts.get('overdue', 0) }}</strong>
-    </article>
-  </section>
-
+  <div class="hc-demo-cockpit-layout">
   <div class="hc-card hc-admin-table-shell hc-demo-leads-desktop">
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-demo-leads-table mb-0">
         <colgroup>
-          <col style="width: 172px;">
-          <col style="width: 500px;">
-          <col style="width: 132px;">
+          <col style="width: 320px;">
+          <col style="width: 210px;">
+          <col style="width: 150px;">
           <col style="width: 132px;">
           <col style="width: 210px;">
-          <col style="width: 172px;">
-          <col style="width: 280px;">
+          <col style="width: 178px;">
+          <col style="width: 250px;">
+          <col style="width: 250px;">
         </colgroup>
         <thead>
           <tr>
-            <th class="hc-demo-leads-col-created">{{ _('Created') }}</th>
-            <th class="hc-demo-leads-col-contact">{{ _('Contact') }}</th>
-            <th class="hc-demo-leads-col-profession">{{ _('Profession') }}</th>
-            <th class="hc-demo-leads-col-city">{{ _('City') }}</th>
-            <th class="hc-demo-leads-col-context">{{ _('Context') }}</th>
-            <th class="hc-demo-leads-col-age">{{ _('Follow-up') }}</th>
-            <th class="hc-demo-leads-col-status">{{ _('Status') }}</th>
+            <th>Contact</th>
+            <th>Organisation</th>
+            <th>Fonction</th>
+            <th>Ville</th>
+            <th>Étape</th>
+            <th>Dernier contact</th>
+            <th>Prochaine action</th>
+            <th>Responsable</th>
           </tr>
         </thead>
         <tbody>
@@ -861,150 +957,144 @@
             {% set is_overdue = lead.urgency == 'overdue' %}
             {% set is_no_activity = not lead.last_touch_label and not is_terminal %}
             {% set is_stale = (is_no_activity or 'd' in (lead.last_touch_label or '')) and not is_terminal %}
+            {% set source_key = (lead.source or '')|lower %}
+            {% set source_label = source_labels.get(source_key, source_key or 'manuel') %}
+            {% set score_label = 'Cold' %}
+            {% if lead.priority_level == 'high' or current_status in ['demo_scheduled', 'pilot_discussion'] or is_overdue %}
+              {% set score_label = 'Hot' %}
+            {% elif current_status in ['contacted'] or lead.priority_level in ['medium', 'normal'] %}
+              {% set score_label = 'Warm' %}
+            {% endif %}
+            {% set followup_due_label = '&Agrave; planifier' %}
+            {% if is_overdue or lead.sla_state == 'late' %}
+              {% set followup_due_label = 'Aujourd&rsquo;hui' %}
+            {% elif current_status == 'demo_scheduled' and lead.sla_state == 'due_soon' %}
+              {% set followup_due_label = 'Demain' %}
+            {% elif lead.sla_state == 'due_soon' %}
+              {% set followup_due_label = 'Sous 24 h' %}
+            {% elif lead.next_action %}
+              {% set followup_due_label = 'Sous 48 h' %}
+            {% endif %}
             <tr class="{% if is_overdue %}hc-demo-leads-row--overdue {% endif %}{% if is_unassigned %}hc-demo-leads-row--unassigned {% endif %}{% if is_stale %}hc-demo-leads-row--stale{% endif %}">
-              <td class="small text-muted hc-demo-leads-col-created">
-                {% if lead.created_at %}
-                  <div class="hc-demo-leads-created">
-                    <span class="hc-demo-leads-created__date">{{ lead.created_at.strftime('%Y-%m-%d') }}</span>
-                    <span class="hc-demo-leads-created__time">{{ lead.created_at.strftime('%H:%M') }}</span>
-                  </div>
-                {% else %}
-                  -
-                {% endif %}
-              </td>
               <td class="hc-demo-leads-col-contact">
                 <div class="hc-demo-leads-contact">
                   <div class="hc-demo-leads-identity">
                     {% if lead.full_name %}
                       <span class="hc-demo-leads-name" title="{{ lead.full_name }}">{{ lead.full_name }}</span>
                     {% endif %}
-                    {% if lead.organization %}
-                      <span class="hc-demo-leads-org" title="{{ lead.organization }}">{{ lead.organization }}</span>
-                    {% endif %}
+                  </div>
+                  <div class="hc-demo-leads-inline-signals">
+                    <span class="hc-demo-leads-score hc-demo-leads-score--{{ score_label|lower }}">{{ score_label }}</span>
+                    <span class="hc-demo-leads-source">{{ source_label }}</span>
                   </div>
                   <a class="hc-demo-leads-email" href="mailto:{{ lead.email }}" title="{{ lead.email }}">{{ lead.email }}</a>
                   {% if lead.phone %}<span class="hc-demo-leads-phone" title="{{ lead.phone }}">{{ lead.phone }}</span>{% endif %}
                 </div>
               </td>
+              <td>
+                <div class="hc-demo-leads-org" title="{{ lead.organization or '—' }}">{{ lead.organization or '—' }}</div>
+              </td>
               <td class="hc-demo-leads-col-profession">
-                <div>{{ lead.profession or '-' }}</div>
+                <div>{{ lead.profession or '—' }}</div>
               </td>
               <td class="hc-demo-leads-col-city">
-                <div>{{ lead.city or '-' }}</div>
+                <div>{{ lead.city or '—' }}</div>
               </td>
-              <td class="hc-demo-leads-col-context">
-                <div class="hc-demo-leads-context" title="{{ lead.message or lead.availability or '-' }}">
-                  {{ (lead.message or lead.availability or '-')|truncate(100, True) }}
+              <td>
+                <div class="d-inline-flex align-items-center gap-2">
+                  <span class="hc-demo-leads-priority-dot hc-demo-leads-priority-dot--{{ lead.priority_level }}" title="{{ lead.priority_level }}"></span>
+                  <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">
+                    {{ status_labels.get(current_status, current_status) }}
+                  </span>
+                </div>
+                <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_status', lead_id=lead.id) }}" class="hc-demo-leads-status-form mt-2">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="q" value="{{ q }}">
+                  <input type="hidden" name="profession" value="{{ profession }}">
+                  <input type="hidden" name="city" value="{{ city }}">
+                  <input type="hidden" name="status" value="{{ status }}">
+                  <input type="hidden" name="queue" value="{{ queue }}">
+                  <select name="lead_status" class="hc-input hc-input-sm" aria-label="Étape du lead">
+                    {% for option in status_choices %}
+                      <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ status_labels.get(option, option) }}</option>
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-primary btn-sm">Mettre à jour</button>
+                </form>
+              </td>
+              <td>
+                <div class="hc-demo-leads-created">
+                  {% if lead.last_touch_label %}
+                    <span class="hc-demo-leads-created__date">{{ lead.last_touch_label }}</span>
+                    <span class="hc-demo-leads-created__time">{{ lead.last_touch_admin_label or 'Suivi enregistré' }}</span>
+                  {% elif lead.contacted_at %}
+                    <span class="hc-demo-leads-created__date">{{ lead.contacted_at.strftime('%Y-%m-%d') }}</span>
+                    <span class="hc-demo-leads-created__time">{{ lead.contacted_at.strftime('%H:%M') }}</span>
+                  {% elif lead.created_at %}
+                    <span class="hc-demo-leads-created__date">{{ lead.created_at.strftime('%Y-%m-%d') }}</span>
+                    <span class="hc-demo-leads-created__time">{{ lead.created_at.strftime('%H:%M') }}</span>
+                  {% else %}
+                    <span class="hc-demo-leads-created__date">—</span>
+                  {% endif %}
                 </div>
               </td>
-              <td class="hc-demo-leads-col-age">
-                <div class="hc-demo-leads-followup-block">
-                  {{ lead_aging_summary(lead, current_status) }}
-                  <div class="hc-demo-leads-age">
-                    <span class="hc-demo-leads-age__value hc-demo-leads-age__value--{{ lead.urgency }}">{{ lead.age_label }}</span>
-                    <span class="hc-demo-leads-urgency-badge hc-demo-leads-urgency-badge--{{ lead.urgency }}">
-                      {{ lead.urgency }}
-                    </span>
-                  </div>
-                  <div class="hc-demo-leads-meta-flags">
-                    {% if is_overdue %}
-                      <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--overdue">{{ _('Overdue') }}</span>
-                    {% endif %}
-                    {% if is_unassigned %}
-                      <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--unassigned">{{ _('Unassigned') }}</span>
-                    {% endif %}
-                    {% if is_stale and not is_overdue %}
-                      <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--stale">
-                        {{ _('No activity') if is_no_activity else _('Stale') }}
-                      </span>
-                    {% endif %}
-                    {% if lead.next_action %}
-                      <span class="hc-demo-leads-next-action">{{ lead.next_action }}</span>
-                    {% endif %}
-                    {% if lead.sla_state %}
-                      <span class="hc-demo-leads-sla-badge hc-demo-leads-sla-badge--{{ lead.sla_state }}">
-                        {% if lead.sla_state == 'on_time' %}{{ _('On time') }}{% elif lead.sla_state == 'due_soon' %}{{ _('Due soon') }}{% else %}{{ _('Late') }}{% endif %}
-                      </span>
-                    {% endif %}
-                  </div>
-                  {{ followup_history(lead) }}
-                  {{ lead_touch_preview(lead) }}
+              <td>
+                <div class="hc-demo-leads-context" title="{{ lead.next_action or lead.message or lead.availability or '—' }}">
+                  {{ lead.next_action or (lead.message or lead.availability or '—')|truncate(90, True) }}
                 </div>
+                <div class="small text-muted mt-2">Suivi d&ucirc; : {{ followup_due_label|safe }}</div>
+                <div class="hc-demo-leads-meta-flags mt-2">
+                  {% if is_overdue %}
+                    <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--overdue">En retard</span>
+                  {% endif %}
+                  {% if is_unassigned %}
+                    <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--unassigned">Non attribué</span>
+                  {% endif %}
+                  {% if is_stale and not is_overdue %}
+                    <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--stale">
+                      {{ 'Aucune activité' if is_no_activity else 'À relancer' }}
+                    </span>
+                  {% endif %}
+                </div>
+                {% if lead.notes %}
+                  <div class="small text-muted mt-2">{{ lead.notes|truncate(90, True) }}</div>
+                {% endif %}
               </td>
-              <td class="hc-demo-leads-col-status">
-                <div class="hc-demo-leads-status-stack">
-                  <div class="d-inline-flex align-items-center gap-2">
-                    <span class="hc-demo-leads-priority-dot hc-demo-leads-priority-dot--{{ lead.priority_level }}" title="{{ lead.priority_level }}"></span>
-                    <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">
-                      {{ current_status_meta.label }}
-                    </span>
+              <td>
+                <span class="hc-demo-leads-owner-label">
+                  {{ owner_labels.get(lead.owner_admin_id) if lead.owner_admin_id else 'Non attribué' }}
+                </span>
+                <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_owner', lead_id=lead.id) }}" class="hc-demo-leads-owner-form mt-2">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="q" value="{{ q }}">
+                  <input type="hidden" name="profession" value="{{ profession }}">
+                  <input type="hidden" name="city" value="{{ city }}">
+                  <input type="hidden" name="status" value="{{ status }}">
+                  <input type="hidden" name="queue" value="{{ queue }}">
+                  <div class="hc-demo-leads-owner-actions">
+                    <select name="owner_admin_id" class="hc-input hc-input-sm" aria-label="Responsable du lead">
+                      <option value="">Non attribué</option>
+                      {% for owner in owners %}
+                        <option value="{{ owner[0] }}" {% if lead.owner_admin_id == owner[0] %}selected{% endif %}>{{ owner[1] }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Attribuer</button>
                   </div>
-                  <div class="hc-demo-leads-control-group hc-demo-leads-control-group--inline">
-                    <span class="hc-demo-leads-control-label">{{ _('Owner') }}</span>
-                    <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_owner', lead_id=lead.id) }}" class="hc-demo-leads-owner-form">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="q" value="{{ q }}">
-                    <input type="hidden" name="profession" value="{{ profession }}">
-                    <input type="hidden" name="city" value="{{ city }}">
-                    <input type="hidden" name="status" value="{{ status }}">
-                    <input type="hidden" name="queue" value="{{ queue }}">
-                    <span class="hc-demo-leads-owner-label">
-                      {{ owner_labels.get(lead.owner_admin_id) if lead.owner_admin_id else _('Unassigned') }}
-                    </span>
-                      <div class="hc-demo-leads-owner-actions">
-                        <select name="owner_admin_id" class="hc-input hc-input-sm" aria-label="{{ _('Lead owner') }}">
-                          <option value="">{{ _('Unassigned') }}</option>
-                          {% for owner in owners %}
-                            <option value="{{ owner[0] }}" {% if lead.owner_admin_id == owner[0] %}selected{% endif %}>{{ owner[1] }}</option>
-                          {% endfor %}
-                        </select>
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Assign') }}</button>
-                      </div>
-                    </form>
-                  </div>
-                  <div class="hc-demo-leads-control-group hc-demo-leads-control-group--inline">
-                    <span class="hc-demo-leads-control-label">{{ _('Status') }}</span>
-                    <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_status', lead_id=lead.id) }}" class="hc-demo-leads-status-form">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="q" value="{{ q }}">
-                    <input type="hidden" name="profession" value="{{ profession }}">
-                    <input type="hidden" name="city" value="{{ city }}">
-                    <input type="hidden" name="status" value="{{ status }}">
-                    <input type="hidden" name="queue" value="{{ queue }}">
-                    <select name="lead_status" class="hc-input hc-input-sm" aria-label="{{ _('Lead status') }}">
-                        {% for option in status_choices %}
-                          <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ option }}</option>
-                        {% endfor %}
-                      </select>
-                      <button type="submit" class="btn btn-primary btn-sm">{{ _('Update') }}</button>
-                    </form>
-                  </div>
-                  <div class="hc-demo-leads-control-group">
-                    <span class="hc-demo-leads-control-label">{{ _('Notes') }}</span>
-                    <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_notes', lead_id=lead.id) }}" class="hc-demo-leads-notes-form">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="q" value="{{ q }}">
-                      <input type="hidden" name="profession" value="{{ profession }}">
-                      <input type="hidden" name="city" value="{{ city }}">
-                      <input type="hidden" name="status" value="{{ status }}">
-                      <input type="hidden" name="queue" value="{{ queue }}">
-                      <textarea
-                        name="notes"
-                        class="hc-input hc-input-sm hc-demo-leads-notes-input"
-                        rows="2"
-                        placeholder="{{ _('Internal notes') }}"
-                      >{{ lead.notes or '' }}</textarea>
-                      <div class="hc-demo-leads-notes-actions">
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Save') }}</button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
+                </form>
               </td>
             </tr>
           {% else %}
             <tr>
-              <td colspan="7" class="text-center text-muted py-4">{{ _('No demo leads yet.') }}</td>
+              <td colspan="8" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun lead actif</div>
+                  <div class="hc-empty-state__text">Ajoutez un lead ou captez la demande via la page démo.</div>
+                  <div class="hc-empty-state__actions">
+                    <a class="btn btn-primary btn-sm" href="{{ url_for('main.professionnels_pilote') }}">Ajouter un lead</a>
+                    <a class="btn btn-outline-secondary btn-sm" href="/demo">Ouvrir la page démo</a>
+                  </div>
+                </div>
+              </td>
             </tr>
           {% endfor %}
         </tbody>
@@ -1012,14 +1102,95 @@
     </div>
   </div>
 
+  <aside class="hc-demo-cockpit-sidebar">
+    <section class="hc-demo-cockpit-panel hc-demo-cockpit-panel--alerts">
+      <h2 class="hc-demo-cockpit-panel__title">Alertes</h2>
+      <div class="hc-demo-cockpit-alerts">
+        <article class="hc-demo-cockpit-alert">
+          <strong>{{ alert_counts.due }}</strong>
+          <span>relances dues</span>
+        </article>
+        <article class="hc-demo-cockpit-alert">
+          <strong>{{ alert_counts.demo_tomorrow }}</strong>
+          <span>d&eacute;mo demain</span>
+        </article>
+        <article class="hc-demo-cockpit-alert">
+          <strong>{{ alert_counts.no_response }}</strong>
+          <span>leads sans r&eacute;ponse</span>
+        </article>
+      </div>
+    </section>
+    <section class="hc-demo-cockpit-panel">
+      <h2 class="hc-demo-cockpit-panel__title">Actions du jour</h2>
+      <div class="hc-demo-cockpit-panel__list">
+        {% for lead in cockpit_lists.today %}
+          <article class="hc-demo-cockpit-panel__item">
+            <strong>{{ lead.full_name or lead.email }}</strong>
+            <span>{{ lead.organization or 'Organisation non renseignée' }}</span>
+            <small>{{ lead.next_action or 'Qualification ou prise de contact à engager.' }}</small>
+          </article>
+        {% else %}
+          <div class="hc-demo-cockpit-panel__empty">Aucune action prioritaire aujourd’hui.</div>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="hc-demo-cockpit-panel">
+      <h2 class="hc-demo-cockpit-panel__title">Relances prévues</h2>
+      <div class="hc-demo-cockpit-panel__list">
+        {% for lead in cockpit_lists.upcoming %}
+          <article class="hc-demo-cockpit-panel__item">
+            <strong>{{ lead.full_name or lead.email }}</strong>
+            <span>{{ lead.next_action or 'Relance planifiée' }}</span>
+            <small>{{ lead.age_label }}{% if lead.last_touch_label %} • {{ lead.last_touch_label }}{% endif %}</small>
+          </article>
+        {% else %}
+          <div class="hc-demo-cockpit-panel__empty">Aucune relance proche à signaler.</div>
+        {% endfor %}
+      </div>
+    </section>
+    <section class="hc-demo-cockpit-panel">
+      <h2 class="hc-demo-cockpit-panel__title">Retards</h2>
+      <div class="hc-demo-cockpit-panel__list">
+        {% for lead in cockpit_lists.overdue %}
+          <article class="hc-demo-cockpit-panel__item hc-demo-cockpit-panel__item--alert">
+            <strong>{{ lead.full_name or lead.email }}</strong>
+            <span>{{ lead.organization or 'Organisation non renseignée' }}</span>
+            <small>{{ lead.next_action or 'Relance en attente' }} • {{ lead.age_label }}</small>
+          </article>
+        {% else %}
+          <div class="hc-demo-cockpit-panel__empty">Aucun retard critique détecté.</div>
+        {% endfor %}
+      </div>
+    </section>
+  </aside>
+  </div>
+
   <div class="hc-demo-leads-mobile">
     {% for lead in leads %}
       {% set current_status = (lead.status or 'new') %}
       {% set current_status_meta = professional_lead_status_meta(current_status) %}
+      {% set source_key = (lead.source or '')|lower %}
+      {% set source_label = source_labels.get(source_key, source_key or 'manuel') %}
+      {% set score_label = 'Cold' %}
+      {% if lead.priority_level == 'high' or current_status in ['demo_scheduled', 'pilot_discussion'] or lead.urgency == 'overdue' %}
+        {% set score_label = 'Hot' %}
+      {% elif current_status in ['contacted'] or lead.priority_level in ['medium', 'normal'] %}
+        {% set score_label = 'Warm' %}
+      {% endif %}
+      {% set followup_due_label = '&Agrave; planifier' %}
+      {% if lead.urgency == 'overdue' or lead.sla_state == 'late' %}
+        {% set followup_due_label = 'Aujourd&rsquo;hui' %}
+      {% elif current_status == 'demo_scheduled' and lead.sla_state == 'due_soon' %}
+        {% set followup_due_label = 'Demain' %}
+      {% elif lead.sla_state == 'due_soon' %}
+        {% set followup_due_label = 'Sous 24 h' %}
+      {% elif lead.next_action %}
+        {% set followup_due_label = 'Sous 48 h' %}
+      {% endif %}
       <article class="hc-card hc-demo-leads-card">
         <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
           <div class="small text-muted">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') if lead.created_at else '-' }}</div>
-          <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">{{ current_status_meta.label }}</span>
+          <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">{{ status_labels.get(current_status, current_status) }}</span>
         </div>
         <div class="hc-demo-leads-contact mb-2">
           <div class="hc-demo-leads-identity">
@@ -1030,26 +1201,31 @@
               <span class="hc-demo-leads-org" title="{{ lead.organization }}">{{ lead.organization }}</span>
             {% endif %}
           </div>
+          <div class="hc-demo-leads-inline-signals">
+            <span class="hc-demo-leads-score hc-demo-leads-score--{{ score_label|lower }}">{{ score_label }}</span>
+            <span class="hc-demo-leads-source">{{ source_label }}</span>
+          </div>
           <a class="hc-demo-leads-email" href="mailto:{{ lead.email }}" title="{{ lead.email }}">{{ lead.email }}</a>
           {% if lead.phone %}<span class="hc-demo-leads-phone" title="{{ lead.phone }}">{{ lead.phone }}</span>{% endif %}
         </div>
         <div class="hc-demo-leads-card__meta">
           <div>
-            <span class="hc-demo-leads-card__label">{{ _('Profession') }}</span>
+            <span class="hc-demo-leads-card__label">Fonction</span>
             <div>{{ lead.profession or '-' }}</div>
           </div>
           <div>
-            <span class="hc-demo-leads-card__label">{{ _('City') }}</span>
+            <span class="hc-demo-leads-card__label">Ville</span>
             <div>{{ lead.city or '-' }}</div>
           </div>
           <div>
-            <span class="hc-demo-leads-card__label">{{ _('Context') }}</span>
+            <span class="hc-demo-leads-card__label">Prochaine action</span>
             <div title="{{ lead.message or lead.availability or '-' }}">
-              {{ (lead.message or lead.availability or '-')|truncate(120, True) }}
+              {{ lead.next_action or (lead.message or lead.availability or '-')|truncate(120, True) }}
             </div>
+            <div class="small text-muted mt-2">Suivi d&ucirc; : {{ followup_due_label|safe }}</div>
           </div>
           <div>
-            <span class="hc-demo-leads-card__label">{{ _('Follow-up') }}</span>
+            <span class="hc-demo-leads-card__label">Dernier contact</span>
             <div class="d-flex flex-wrap gap-2 align-items-center">
               <span class="hc-demo-leads-age__value">{{ lead.age_label }}</span>
               <span class="hc-demo-leads-urgency-badge hc-demo-leads-urgency-badge--{{ lead.urgency }}">{{ lead.urgency }}</span>
@@ -1067,16 +1243,16 @@
             <input type="hidden" name="status" value="{{ status }}">
             <input type="hidden" name="queue" value="{{ queue }}">
             <span class="hc-demo-leads-owner-label">
-              {{ owner_labels.get(lead.owner_admin_id) if lead.owner_admin_id else _('Unassigned') }}
+              {{ owner_labels.get(lead.owner_admin_id) if lead.owner_admin_id else 'Non attribué' }}
             </span>
             <div class="hc-demo-leads-owner-actions">
-              <select name="owner_admin_id" class="hc-input hc-input-sm" aria-label="{{ _('Lead owner') }}">
-                <option value="">{{ _('Unassigned') }}</option>
+              <select name="owner_admin_id" class="hc-input hc-input-sm" aria-label="Responsable du lead">
+                <option value="">Non attribué</option>
                 {% for owner in owners %}
                   <option value="{{ owner[0] }}" {% if lead.owner_admin_id == owner[0] %}selected{% endif %}>{{ owner[1] }}</option>
                 {% endfor %}
               </select>
-              <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Assign') }}</button>
+              <button type="submit" class="btn btn-outline-secondary btn-sm">Attribuer</button>
             </div>
           </form>
           <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_status', lead_id=lead.id) }}" class="hc-demo-leads-status-form">
@@ -1086,12 +1262,12 @@
             <input type="hidden" name="city" value="{{ city }}">
             <input type="hidden" name="status" value="{{ status }}">
             <input type="hidden" name="queue" value="{{ queue }}">
-            <select name="lead_status" class="hc-input hc-input-sm" aria-label="{{ _('Lead status') }}">
+            <select name="lead_status" class="hc-input hc-input-sm" aria-label="Étape du lead">
               {% for option in status_choices %}
-                <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ option }}</option>
+                <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ status_labels.get(option, option) }}</option>
               {% endfor %}
             </select>
-            <button type="submit" class="btn btn-primary btn-sm">{{ _('Update') }}</button>
+            <button type="submit" class="btn btn-primary btn-sm">Mettre à jour</button>
           </form>
           <form method="POST" action="{{ url_for('admin.admin_professional_lead_update_notes', lead_id=lead.id) }}" class="hc-demo-leads-notes-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -1104,16 +1280,23 @@
               name="notes"
               class="hc-input hc-input-sm hc-demo-leads-notes-input"
               rows="2"
-              placeholder="{{ _('Internal notes') }}"
+              placeholder="Notes internes"
             >{{ lead.notes or '' }}</textarea>
             <div class="hc-demo-leads-notes-actions">
-              <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Save') }}</button>
+              <button type="submit" class="btn btn-outline-secondary btn-sm">Enregistrer</button>
             </div>
           </form>
         </div>
       </article>
     {% else %}
-      <div class="hc-card text-center text-muted py-4">{{ _('No demo leads yet.') }}</div>
+      <div class="hc-empty-state">
+        <div class="hc-empty-state__title">Aucun lead actif</div>
+        <div class="hc-empty-state__text">Ajoutez un lead ou captez la demande via la page démo.</div>
+        <div class="hc-empty-state__actions">
+          <a class="btn btn-primary btn-sm" href="{{ url_for('main.professionnels_pilote') }}">Ajouter un lead</a>
+          <a class="btn btn-outline-secondary btn-sm" href="/demo">Ouvrir la page démo</a>
+        </div>
+      </div>
     {% endfor %}
   </div>
 </section>
