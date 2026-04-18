@@ -3545,6 +3545,7 @@ def _render_operator_dashboard():
     if current_app.config.get("DEMO_MODE"):
         demo = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
         demo_kpis = demo["workspace_kpis"]
+        demo_rows = list(demo["workspace_rows"] or [])
         scenario_meta = demo["scenario_meta"]
         return render_template(
             "admin/operator_dashboard.html",
@@ -3554,7 +3555,8 @@ def _render_operator_dashboard():
             updated_today_count=demo_kpis["updated_today"],
             failed_notif_count=demo_kpis["notifications_failed"],
             retry_notif_count=demo_kpis.get("retry_notifications", 0),
-            queue_rows=demo["workspace_rows"],
+            queue_rows=demo_rows[:5],
+            queue_hidden_count=max(len(demo_rows) - 5, 0),
             queue_reasons=demo["workspace_queue_reasons"],
             ops_priority_levels=demo["workspace_priority_levels"],
             scenario_label=scenario_meta["label"],
@@ -3580,13 +3582,20 @@ def _render_operator_dashboard():
         func.coalesce(Request.risk_score, 0) >= 85,
     )
     unassigned_filter = Request.owner_id.is_(None)
+    updated_today_filter = activity_expr >= today_start
+    priority_filter = or_(
+        urgent_filter,
+        unassigned_filter,
+        activity_expr <= stale_threshold,
+        updated_today_filter,
+    )
 
-    urgent_count = base_query.filter(actionable_filter, urgent_filter).count()
-    unassigned_count = base_query.filter(actionable_filter, unassigned_filter).count()
-    followup_count = base_query.filter(
-        actionable_filter, activity_expr <= stale_threshold
-    ).count()
-    updated_today_count = base_query.filter(activity_expr >= today_start).count()
+    workspace_query = base_query.filter(actionable_filter, priority_filter)
+
+    urgent_count = workspace_query.filter(urgent_filter).count()
+    unassigned_count = workspace_query.filter(unassigned_filter).count()
+    followup_count = workspace_query.filter(activity_expr <= stale_threshold).count()
+    updated_today_count = workspace_query.filter(updated_today_filter).count()
 
     failed_notif_count = 0
     retry_notif_count = 0
@@ -3614,20 +3623,17 @@ def _render_operator_dashboard():
             )
         ).count()
 
-    queue_query = (
-        base_query.filter(actionable_filter)
-        .filter(or_(urgent_filter, unassigned_filter, activity_expr <= stale_threshold))
-        .options(joinedload(Request.owner))
-    )
+    workspace_total_count = workspace_query.count()
     queue_rows = (
-        queue_query.order_by(
+        workspace_query.options(joinedload(Request.owner))
+        .order_by(
             case((urgent_filter, 0), else_=1).asc(),
             case((unassigned_filter, 0), else_=1).asc(),
             case((activity_expr <= stale_threshold, 0), else_=1).asc(),
+            case((updated_today_filter, 0), else_=1).asc(),
             activity_expr.desc().nullslast(),
             Request.id.desc(),
         )
-        .limit(20)
         .all()
     )
 
@@ -3638,10 +3644,10 @@ def _render_operator_dashboard():
         result = compute_ops_priority(request_row=r, now=now_utc)
         scored_rows.append((int(result.get("ops_priority_score") or 0), r, result))
     scored_rows.sort(key=lambda row: row[0], reverse=True)
-    scored_rows = scored_rows[:10]
-    queue_rows = [row[1] for row in scored_rows]
+    top_scored_rows = scored_rows[:5]
+    queue_rows = [row[1] for row in top_scored_rows]
     ops_priority_levels = {}
-    for _, row, result in scored_rows:
+    for _, row, result in top_scored_rows:
         queue_reasons[int(row.id)] = result.get("ops_priority_reasons") or []
         ops_priority_levels[int(row.id)] = result.get("ops_priority_level") or "normal"
 
@@ -3654,6 +3660,7 @@ def _render_operator_dashboard():
         failed_notif_count=failed_notif_count,
         retry_notif_count=retry_notif_count,
         queue_rows=queue_rows,
+        queue_hidden_count=max(workspace_total_count - len(queue_rows), 0),
         queue_reasons=queue_reasons,
         ops_priority_levels=ops_priority_levels,
     )

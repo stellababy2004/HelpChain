@@ -1,6 +1,6 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Centre de commandement risques | Admin{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page hc-ops-workspace-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page hc-admin-table-page hc-admin-list-page hc-ops-workspace-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases hc-ops-console-shell">
@@ -67,6 +67,9 @@
       <h2 class="h6 mb-1">À traiter maintenant</h2>
       <div class="hc-muted">Priorités critiques, non assignées, sans action récente.</div>
     </div>
+    {% if queue_hidden_count %}
+      <div class="px-3 pb-2 small text-muted text-end">+{{ queue_hidden_count }} autres</div>
+    {% endif %}
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-ops-queue mb-0">
         <colgroup>
