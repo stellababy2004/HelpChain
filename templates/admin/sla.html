@@ -115,7 +115,7 @@
                       <span class="btn btn-sm btn-primary disabled" aria-disabled="true">Assignation démo</span>
                     {% endif %}
                   {% else %}
-                    <a class="btn btn-sm btn-outline-primary" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}">Voir</a>
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_cases_list') }}#request-{{ r.id }}">Voir</a>
                     {% if not r.owner_id %}
                       <form method="post" action="{{ safe_url_for('admin.admin_request_assign', req_id=r.id) }}" class="d-inline">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
