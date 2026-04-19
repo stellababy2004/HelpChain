@@ -5248,7 +5248,7 @@ body.hc-page-admin.hc-admin-list-page .hc-admin-table tbody td{
   padding-bottom: 0.88rem;
   background: var(--hc-admin-list-row);
   border-top: 1px solid var(--hc-admin-list-divider);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   word-break: normal;
 }
 
@@ -6597,6 +6597,243 @@ body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-action.hc-td-
 
 body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-action.hc-td-action .btn{
   min-width: 88px;
+}
+
+/* Shared stable admin/operator table pattern */
+body[data-hc-page^="/admin"] .admin-table-wrap,
+body[data-hc-page^="/ops"] .admin-table-wrap{
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table{
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(th, td),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(th, td){
+  padding: 12px 14px;
+  vertical-align: middle;
+  text-align: left;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table thead th{
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody td,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody td{
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody tr:hover td,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody tr:hover td{
+  background: rgba(59,130,246,.04);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-col-id, .case-col, .hc-ops-col-id),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-col-id, .case-col, .hc-ops-col-id){
+  width: 70px;
+  min-width: 70px;
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.col-request, .hc-col-request, .request-col, .hc-col-title, .hc-ops-col-request),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.col-request, .hc-col-request, .request-col, .hc-col-title, .hc-ops-col-request){
+  min-width: 280px;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.col-city, .hc-col-city, .city-col, .hc-ops-col-city),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.col-city, .hc-col-city, .city-col, .hc-ops-col-city){
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.col-status, .hc-col-status, .status-col, .hc-ops-col-status),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.col-status, .hc-col-status, .status-col, .hc-ops-col-status){
+  min-width: 130px;
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.col-activity, .hc-col-activity, .activity-col, .hc-ops-col-activity),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.col-activity, .hc-col-activity, .activity-col, .hc-ops-col-activity){
+  min-width: 170px;
+  white-space: nowrap;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.col-action, .hc-col-action, .actions-col, .hc-col-actions, .hc-ops-col-action, .hc-td-action, .hc-ops-cell-action),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.col-action, .hc-col-action, .actions-col, .hc-col-actions, .hc-ops-col-action, .hc-td-action, .hc-ops-cell-action){
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-admin-home-attention__title, .hc-ops-title),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-admin-home-attention__title, .hc-ops-title){
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-admin-home-attention__meta, .hc-cases-request-sub, .hc-ops-description, .hc-ops-meta),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-admin-home-attention__meta, .hc-cases-request-sub, .hc-ops-description, .hc-ops-meta){
+  max-width: 100%;
+}
+
+/* Premium B2B SaaS polish for admin/operator tables */
+body[data-hc-page^="/admin"] :is(.hc-admin-table-shell, .hc-admin-table-card),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card){
+  border: 1px solid rgba(198, 210, 224, .92);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(248,251,255,.97));
+  box-shadow: 0 14px 34px rgba(15,23,42,.05), inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+body[data-hc-page^="/admin"] :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader){
+  padding: 17px 20px 14px;
+  border-bottom: 1px solid rgba(208, 218, 230, .92);
+  background: linear-gradient(180deg, rgba(249,252,255,.98), rgba(244,248,252,.96));
+}
+
+body[data-hc-page^="/admin"] .hc-admin-tablewrap,
+body[data-hc-page^="/ops"] .hc-admin-tablewrap{
+  background: rgba(251, 253, 255, .94);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table{
+  color: #17304d;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table thead th{
+  padding-top: .88rem;
+  padding-bottom: .88rem;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  line-height: 1.15;
+  color: rgba(70, 84, 106, .96);
+  background: linear-gradient(180deg, rgba(248,251,255,.99), rgba(242,247,252,.97));
+  border-bottom: 1px solid rgba(205, 215, 228, .94);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.72);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody td,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody td{
+  padding-top: .78rem;
+  padding-bottom: .78rem;
+  border-top: 1px solid rgba(220, 228, 238, .92);
+  color: #17304d;
+  background: rgba(255,255,255,.96);
+  line-height: 1.38;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody tr:nth-child(even) td,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody tr:nth-child(even) td{
+  background: rgba(248, 251, 255, .94);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody tr:hover td,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody tr:hover td,
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody tr:focus-within td,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody tr:focus-within td{
+  background: linear-gradient(180deg, rgba(244,248,253,.99), rgba(237,244,250,.97));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.62), inset 0 -1px 0 rgba(218,227,238,.72);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody td .small,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody td .small,
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody td .text-muted,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody td .text-muted{
+  color: rgba(78, 95, 122, .82) !important;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table tbody td :is(.badge, .hc-pill, .hc-chip),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table tbody td :is(.badge, .hc-pill, .hc-chip){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  gap: 6px;
+  min-height: 1.58rem;
+  padding-inline: .58rem;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child) :is(.btn, .btn-sm),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child) :is(.btn, .btn-sm){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: .42rem .8rem;
+  border-radius: 10px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(15,23,42,.05);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child) :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-success),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child) :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-success){
+  background: rgba(255,255,255,.92);
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child){
+  text-align: right;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child) > :is(.btn, .btn-sm, form, .btn-group),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-td-action, td:last-child) > :is(.btn, .btn-sm, form, .btn-group){
+  vertical-align: middle;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-admin-home-attention__title, .hc-ops-title, .hc-req__title),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-admin-home-attention__title, .hc-ops-title, .hc-req__title){
+  color: #132a43;
+  font-weight: 700;
+  line-height: 1.32;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table td:first-child,
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table td:first-child{
+  font-variant-numeric: tabular-nums;
+}
+
+body[data-hc-page^="/admin"] .hc-admin-table.admin-table :is(.hc-elapsed, .hc-audit-time, .hc-demo-leads-created),
+body[data-hc-page^="/ops"] .hc-admin-table.admin-table :is(.hc-elapsed, .hc-audit-time, .hc-demo-leads-created){
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px){
+  body[data-hc-page^="/admin"] .hc-admin-table.admin-table,
+  body[data-hc-page^="/ops"] .hc-admin-table.admin-table{
+    min-width: 980px;
+  }
 }
 
 @media (max-width: 1399.98px){

@@ -70,8 +70,8 @@
     {% if queue_hidden_count %}
       <div class="px-3 pb-2 small text-muted text-end">+{{ queue_hidden_count }} autres</div>
     {% endif %}
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-ops-queue mb-0">
+    <div class="table-responsive hc-admin-tablewrap admin-table-wrap">
+      <table class="table table-hover align-middle hc-admin-table admin-table hc-ops-queue mb-0">
         <colgroup>
           <col class="hc-ops-col-id">
           <col class="hc-ops-col-request">
@@ -85,13 +85,13 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Demande</th>
-            <th>Ville</th>
+            <th class="col-request">Demande</th>
+            <th class="col-city">Ville</th>
             <th>Priorité</th>
-            <th>Statut</th>
+            <th class="col-status">Statut</th>
             <th>Responsable</th>
-            <th>Dernière activité</th>
-            <th class="text-end">Action</th>
+            <th class="col-activity">Dernière activité</th>
+            <th class="col-action text-end">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -99,7 +99,7 @@
             {% set activity_ref = r.updated_at or r.created_at %}
             <tr>
               <td class="text-muted hc-ops-cell-id">#{{ r.id }}</td>
-              <td class="hc-ops-cell-request">
+              <td class="hc-ops-cell-request col-request">
                 <span class="hc-ops-title" title="{{ r.title }}">{{ r.title or '—' }}</span>
                 <span class="hc-ops-description" title="{{ r.description or r.message }}">{{ (r.description or r.message or '—')|truncate(110, True) }}</span>
                 <span class="hc-ops-meta" title="{{ request_category_label(r.category) }}">{{ request_category_label(r.category) }}</span>
@@ -120,7 +120,7 @@
                   </div>
                 {% endif %}
               </td>
-              <td class="small text-muted hc-ops-cell-city">{{ r.city or '—' }}</td>
+              <td class="small text-muted hc-ops-cell-city col-city">{{ r.city or '—' }}</td>
               <td class="hc-ops-cell-priority">
                 {% set ops_level = (ops_priority_levels.get(r.id) or 'normal') %}
                 {% if ops_level == 'critique' %}
@@ -131,17 +131,17 @@
                   <span class="badge text-bg-secondary">Normal</span>
                 {% endif %}
               </td>
-              <td class="hc-ops-cell-status"><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
+              <td class="hc-ops-cell-status col-status"><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
               <td class="hc-ops-cell-owner">{% if r.owner %}{{ r.owner.username }}{% else %}—{% endif %}</td>
-              <td class="hc-ops-cell-activity">
+              <td class="hc-ops-cell-activity col-activity">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
                 <div class="small text-muted hc-ops-activity-meta">{{ activity_ref|format_datetime_fr }}</div>
               </td>
-              <td class="text-end hc-ops-cell-action">
+              <td class="text-end hc-ops-cell-action col-action">
                 {% if config.DEMO_MODE %}
                   <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Aperçu</span>
                 {% else %}
-                  <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
+                  <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_cases_list') }}#request-{{ r.id }}">Ouvrir</a>
                 {% endif %}
               </td>
             </tr>

@@ -137,31 +137,31 @@
         </div>
       </div>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-cases-table mb-0">
+    <div class="table-responsive hc-admin-tablewrap admin-table-wrap">
+      <table class="table table-hover align-middle hc-admin-table admin-table hc-cases-table mb-0">
         <thead>
           <tr>
             <th class="case-col">Case</th>
-            <th class="request-col">Demande</th>
+            <th class="request-col col-request">Demande</th>
             <th class="priority-col">Priorité</th>
             <th class="owner-col">Responsable</th>
-            <th class="activity-col">Dernière action</th>
-            <th class="actions-col text-end">Action</th>
+            <th class="activity-col col-activity">Dernière action</th>
+            <th class="actions-col col-action text-end">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for c in cases %}
-            <tr>
+            <tr id="request-{{ c.request_id }}">
               <td class="case-col">
                 <div>#{{ c.id }}</div>
                 <div class="small mt-1"><span class="badge text-bg-light border">{{ c.status }}</span></div>
               </td>
-              <td class="request-col">
+              <td class="request-col col-request">
                 <div class="fw-semibold">
                   {% if config.DEMO_MODE %}
                     <span class="text-muted">#{{ c.request_id }}</span>
                   {% else %}
-                    <a href="{{ url_for('admin.admin_request_details', req_id=c.request_id) }}">#{{ c.request_id }}</a>
+                    <a href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">#{{ c.request_id }}</a>
                   {% endif %}
                   <span class="ms-1">{{ c.request.title if c.request else '—' }}</span>
                 </div>
@@ -203,11 +203,11 @@
               </td>
               <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}">{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}</td>
               {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
-              <td class="activity-col" title="{{ activity_ref|format_datetime_fr }}">
+              <td class="activity-col col-activity" title="{{ activity_ref|format_datetime_fr }}">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
                 <div class="small text-muted">{{ activity_ref|format_datetime_fr }}</div>
               </td>
-              <td class="actions-col text-end">
+              <td class="actions-col col-action text-end">
                 {% if config.DEMO_MODE %}
                   <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Aperçu</span>
                 {% else %}
