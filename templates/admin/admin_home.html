@@ -57,30 +57,38 @@
       <div class="hc-muted">Demandes urgentes, non assign&eacute;es ou sans action r&eacute;cente.</div>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table mb-0">
+      <table class="table table-hover align-middle hc-admin-table hc-admin-home-attention-table mb-0">
+        <colgroup>
+          <col class="hc-col-id">
+          <col class="hc-col-request">
+          <col class="hc-col-city">
+          <col class="hc-col-status">
+          <col class="hc-col-activity">
+          <col class="hc-col-action">
+        </colgroup>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Demande</th>
-            <th>Ville</th>
-            <th>Statut</th>
-            <th>Derni&egrave;re activit&eacute;</th>
-            <th class="text-end">Action</th>
+            <th class="hc-col-id">ID</th>
+            <th class="hc-col-request">Demande</th>
+            <th class="hc-col-city">Ville</th>
+            <th class="hc-col-status">Statut</th>
+            <th class="hc-col-activity">Derni&egrave;re activit&eacute;</th>
+            <th class="hc-col-action text-end">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for r in attention_rows %}
             {% set activity_ref = r.updated_at or r.created_at %}
             <tr>
-              <td class="text-muted">#{{ r.id }}</td>
-              <td>
-                <div class="fw-semibold">{{ r.title or r.name or 'Demande' }}</div>
-                <div class="small text-muted">{{ request_category_label(r.category) }}</div>
+              <td class="hc-col-id text-muted">#{{ r.id }}</td>
+              <td class="hc-col-request">
+                <div class="hc-admin-home-attention__title" title="{{ r.title or r.name or 'Demande' }}">{{ r.title or r.name or 'Demande' }}</div>
+                <div class="hc-admin-home-attention__meta" title="{{ request_category_label(r.category) }}">{{ request_category_label(r.category) }}</div>
               </td>
-              <td class="small text-muted">{{ r.city or r.location_text or '—' }}</td>
-              <td><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
-              <td class="small text-muted">{{ activity_ref|format_datetime_fr }}</td>
-              <td class="text-end">
+              <td class="hc-col-city small text-muted" title="{{ r.city or r.location_text or '—' }}">{{ r.city or r.location_text or '—' }}</td>
+              <td class="hc-col-status"><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
+              <td class="hc-col-activity small text-muted">{{ activity_ref|format_datetime_fr }}</td>
+              <td class="hc-col-action text-end hc-td-action">
                 <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}">Ouvrir</a>
               </td>
             </tr>

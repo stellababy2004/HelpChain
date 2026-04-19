@@ -6510,6 +6510,95 @@ body.hc-page-admin.hc-admin-list-page .hc-empty-state__actions{
   margin-top: 4px;
 }
 
+body[data-hc-page="/admin"] .hc-admin-home-attention-table{
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1070px;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table th,
+body[data-hc-page="/admin"] .hc-admin-home-attention-table td{
+  vertical-align: middle;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-id{
+  width: 70px;
+  min-width: 70px;
+  max-width: 70px;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-city{
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-status{
+  width: 130px;
+  min-width: 130px;
+  max-width: 130px;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-activity{
+  width: 170px;
+  min-width: 170px;
+  max-width: 170px;
+  white-space: nowrap;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-action{
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-request{
+  width: auto;
+  min-width: 0;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table tbody td{
+  padding-top: .56rem;
+  padding-bottom: .56rem;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention__title{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention__meta{
+  display: block;
+  margin-top: 4px;
+  color: rgba(15, 23, 42, .62);
+  font-size: 12px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-action.hc-td-action{
+  text-align: right;
+}
+
+body[data-hc-page="/admin"] .hc-admin-home-attention-table .hc-col-action.hc-td-action .btn{
+  min-width: 88px;
+}
+
 @media (max-width: 1399.98px){
   body.hc-page-admin.hc-admin-list-page .hc-demo-cockpit-metrics{
     grid-template-columns: repeat(3, minmax(0, 1fr));
