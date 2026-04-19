@@ -1,5 +1,5 @@
-﻿{% extends "base.html" %}
-{% block title %}{{ _('Phase pilote | Professionnels â€” HelpChain') }}{% endblock %}
+{% extends "base.html" %}
+{% block title %}{{ _('Phase pilote | Professionnels — HelpChain') }}{% endblock %}
 
 {% block content %}
 {% set form_data = form_data or {} %}
@@ -10,23 +10,23 @@
       <header class="hc-pagehead">
         <div class="hc-become-head">
           <div class="hc-become-titleblock">
-            <h1 class="hc-title">{{ _('Phase pilote â€” Professionnels') }}</h1>
+            <h1 class="hc-title">{{ _('Phase pilote — Professionnels') }}</h1>
             <p class="hc-subtitle">
               {{ _('Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.') }}
             </p>
           </div>
 
-          <aside class="hc-trust-card" aria-label="{{ _('Confiance et confidentialitÃ©') }}">
+          <aside class="hc-trust-card" aria-label="{{ _('Confiance et confidentialité') }}">
             <ul class="hc-trust-list">
-              <li>{{ _('AccÃ¨s rÃ©servÃ© aux intervenants autorisÃ©s') }}</li>
-              <li>{{ _('Processus simple, traÃ§able et responsable') }}</li>
-              <li>{{ _('DonnÃ©es minimales, respect RGPD') }}</li>
+              <li>{{ _('Accès réservé aux intervenants autorisés') }}</li>
+              <li>{{ _('Processus simple, traçable et responsable') }}</li>
+              <li>{{ _('Données minimales, respect RGPD') }}</li>
             </ul>
           </aside>
         </div>
       </header>
 
-        <div class="hc-card hc-vol-join__card">
+      <div class="hc-card hc-vol-join__card">
         <div class="hc-card__head">
           <h2 class="hc-card__title">{{ _('Rejoindre le pilote') }}</h2>
           <p class="hc-card__hint">{{ _('Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.') }}</p>
@@ -40,8 +40,8 @@
           </div>
 
           <div class="hc-field">
-            <label class="hc-label" for="profession">{{ _('Votre mÃ©tier') }} <span class="hc-req">*</span></label>
-            <input class="hc-input" id="profession" name="profession" value="{{ form_data.get('profession', '') }}" required placeholder="{{ _('Psychologue, avocat, mÃ©decin, assistant social...') }}">
+            <label class="hc-label" for="profession">{{ _('Votre métier') }} <span class="hc-req">*</span></label>
+            <input class="hc-input" id="profession" name="profession" value="{{ form_data.get('profession', '') }}" required placeholder="{{ _('Psychologue, avocat, médecin, assistant social...') }}">
           </div>
 
           <div class="hc-field">
@@ -52,10 +52,10 @@
           <div class="hc-grid-2">
             <div class="hc-field">
               <label class="hc-label" for="full_name">{{ _('Nom (optionnel)') }}</label>
-              <input class="hc-input" id="full_name" name="full_name" value="{{ form_data.get('full_name', '') }}" autocomplete="name" placeholder="{{ _('Nom PrÃ©nom') }}">
+              <input class="hc-input" id="full_name" name="full_name" value="{{ form_data.get('full_name', '') }}" autocomplete="name" placeholder="{{ _('Nom Prénom') }}">
             </div>
             <div class="hc-field">
-              <label class="hc-label" for="phone">{{ _('TÃ©lÃ©phone (optionnel)') }}</label>
+              <label class="hc-label" for="phone">{{ _('Téléphone (optionnel)') }}</label>
               <input class="hc-input" id="phone" name="phone" value="{{ form_data.get('phone', '') }}" autocomplete="tel" placeholder="{{ _('+33...') }}">
             </div>
           </div>
@@ -72,13 +72,13 @@
           </div>
 
           <div class="hc-field">
-            <label class="hc-label" for="availability">{{ _('DisponibilitÃ© (optionnel)') }}</label>
+            <label class="hc-label" for="availability">{{ _('Disponibilité (optionnel)') }}</label>
             <input class="hc-input" id="availability" name="availability" value="{{ form_data.get('availability', '') }}" placeholder="{{ _('Ex: 2h/semaine, soirs, urgences...') }}">
           </div>
 
           <div class="hc-field">
             <label class="hc-label" for="message">{{ _('Message (optionnel)') }}</label>
-            <textarea class="hc-input" id="message" name="message" rows="4" placeholder="{{ _('Type de demandes, conditions, pÃ©rimÃ¨tre...') }}">{{ form_data.get('message', '') }}</textarea>
+            <textarea class="hc-input" id="message" name="message" rows="4" placeholder="{{ _('Type de demandes, conditions, périmètre...') }}">{{ form_data.get('message', '') }}</textarea>
           </div>
 
           {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
@@ -94,7 +94,7 @@
           </div>
 
           <p class="hc-help">
-            {{ _('DonnÃ©es minimales') }} â€¢ {{ _('RGPD') }} â€¢ {{ _('Pas de spam.') }}
+            {{ _('Données minimales') }} • {{ _('RGPD') }} • {{ _('Pas de spam.') }}
           </p>
         </form>
       </div>
@@ -110,4 +110,3 @@
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   {% endif %}
 {% endblock %}
-
