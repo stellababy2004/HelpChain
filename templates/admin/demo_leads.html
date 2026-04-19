@@ -742,9 +742,9 @@
 {% set cockpit_lists = namespace(today=[], upcoming=[], overdue=[]) %}
 {% set alert_counts = namespace(due=0, demo_tomorrow=0, no_response=0) %}
 {% set source_labels = {
-  'demo_page': '/demo',
-  'outbound': 'outbound',
-  'referral': 'referral'
+  'demo_page': 'Démo publique',
+  'outbound': 'Outbound',
+  'referral': 'Recommandation'
 } %}
 {% for lead in leads %}
   {% set status_key = ((lead.status or 'new')|lower) %}
@@ -959,11 +959,11 @@
             {% set is_stale = (is_no_activity or 'd' in (lead.last_touch_label or '')) and not is_terminal %}
             {% set source_key = (lead.source or '')|lower %}
             {% set source_label = source_labels.get(source_key, source_key or 'manuel') %}
-            {% set score_label = 'Cold' %}
+            {% set score_label = 'Froid' %}
             {% if lead.priority_level == 'high' or current_status in ['demo_scheduled', 'pilot_discussion'] or is_overdue %}
-              {% set score_label = 'Hot' %}
+              {% set score_label = 'Chaud' %}
             {% elif current_status in ['contacted'] or lead.priority_level in ['medium', 'normal'] %}
-              {% set score_label = 'Warm' %}
+              {% set score_label = 'Tiède' %}
             {% endif %}
             {% set followup_due_label = '&Agrave; planifier' %}
             {% if is_overdue or lead.sla_state == 'late' %}
@@ -1171,11 +1171,11 @@
       {% set current_status_meta = professional_lead_status_meta(current_status) %}
       {% set source_key = (lead.source or '')|lower %}
       {% set source_label = source_labels.get(source_key, source_key or 'manuel') %}
-      {% set score_label = 'Cold' %}
+      {% set score_label = 'Froid' %}
       {% if lead.priority_level == 'high' or current_status in ['demo_scheduled', 'pilot_discussion'] or lead.urgency == 'overdue' %}
-        {% set score_label = 'Hot' %}
+        {% set score_label = 'Chaud' %}
       {% elif current_status in ['contacted'] or lead.priority_level in ['medium', 'normal'] %}
-        {% set score_label = 'Warm' %}
+        {% set score_label = 'Tiède' %}
       {% endif %}
       {% set followup_due_label = '&Agrave; planifier' %}
       {% if lead.urgency == 'overdue' or lead.sla_state == 'late' %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ _('Pros') }} - {{ _('Leads') }} | {{ _('Admin') }}{% endblock %}
+{% block title %}Leads professionnels | {{ _('Admin') }}{% endblock %}
 {% block body_class %}hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
@@ -93,14 +93,14 @@
 {% macro urgency_badge(lead) -%}
   {% set urgency_text = ((lead.availability or '') ~ ' ' ~ (lead.message or ''))|lower %}
   {% set is_urgent = 'urgence' in urgency_text or 'urgent' in urgency_text or 'asap' in urgency_text %}
-  <span class="badge {{ 'text-bg-danger' if is_urgent else 'text-bg-light border' }}">{{ _('Urgent') if is_urgent else _('Normal') }}</span>
+  <span class="badge {{ 'text-bg-danger' if is_urgent else 'text-bg-light border' }}">{{ 'Urgent' if is_urgent else 'Normal' }}</span>
 {%- endmacro %}
 {% macro lead_status_badge(status) -%}
   {% set meta = professional_lead_status_meta(status) %}
   <span class="{{ meta.badge_class }}">{{ meta.label }}</span>
 {%- endmacro %}
-{% set page_title = page_title|default(_('Professional leads')) %}
-{% set page_intro = page_intro|default(_('Latest leads captured via /professionnels/pilote.')) %}
+{% set page_title = page_title|default('Leads professionnels') %}
+{% set page_intro = page_intro|default('Derniers leads captés via /professionnels/pilote.') %}
 {% set reset_endpoint = reset_endpoint|default('admin.admin_professional_leads') %}
 
 <section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell">
@@ -114,14 +114,14 @@
   <form method="GET" class="hc-card hc-admin-filterbar">
     <div class="hc-admin-filtergrid">
       <div class="hc-admin-filtergrid__item hc-admin-filtergrid__item--grow">
-      <label class="hc-muted" for="q">{{ _('Email contains') }}</label>
-      <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="{{ _('e.g. orange.fr') }}" />
+      <label class="hc-muted" for="q">L’e-mail contient</label>
+      <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="ex. orange.fr" />
     </div>
 
       <div class="hc-admin-filtergrid__item">
-      <label class="hc-muted" for="profession">{{ _('Profession') }}</label>
+      <label class="hc-muted" for="profession">Profession</label>
       <select id="profession" name="profession" class="hc-input">
-        <option value="">{{ _('All') }}</option>
+        <option value="">Toutes</option>
         {% for p in professions %}
           <option value="{{ p }}" {% if p == profession %}selected{% endif %}>{{ p }}</option>
         {% endfor %}
@@ -129,14 +129,14 @@
     </div>
 
       <div class="hc-admin-filtergrid__item">
-      <label class="hc-muted" for="city">{{ _('City') }}</label>
-      <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="{{ _('City') }}" />
+      <label class="hc-muted" for="city">Ville</label>
+      <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="Ville" />
     </div>
 
       <div class="hc-admin-filtergrid__item">
-      <label class="hc-muted" for="status">{{ _('Status') }}</label>
+      <label class="hc-muted" for="status">Statut</label>
       <select id="status" name="status" class="hc-input">
-        <option value="">{{ _('All') }}</option>
+        <option value="">Tous</option>
         {% for s in status_choices %}
           <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
@@ -145,8 +145,8 @@
     </div>
 
     <div class="hc-admin-actions">
-      <button class="btn btn-primary btn-sm" type="submit">{{ _('Filter') }}</button>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(reset_endpoint) }}">{{ _('Reset') }}</a>
+      <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(reset_endpoint) }}">Réinitialiser</a>
     </div>
   </form>
 
@@ -155,14 +155,14 @@
       <table class="table table-hover align-middle hc-admin-table hc-proleads-table mb-0">
         <thead>
           <tr>
-            <th>{{ _('ID') }}</th>
-            <th class="hc-proleads-col-contact">{{ _('Contact') }}</th>
-            <th>{{ _('Professionnels') }}</th>
-            <th>{{ _('Citoyens') }}</th>
-            <th>{{ _('Créé le') }}</th>
-            <th>{{ _('Statut') }}</th>
-            <th>{{ _('Urgence') }}</th>
-            <th class="text-end hc-proleads-col-actions">{{ _('Actions') }}</th>
+            <th>ID</th>
+            <th class="hc-proleads-col-contact">Contact</th>
+            <th>Professionnels</th>
+            <th>Citoyens</th>
+            <th>Créé le</th>
+            <th>Statut</th>
+            <th>Urgence</th>
+            <th class="text-end hc-proleads-col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -182,7 +182,7 @@
                   {% set email_lower = (l.email or '')|lower %}
                   {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
                   {% if is_synthetic_email %}
-                    <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">{{ _('Email indisponible') }}</span>
+                    <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">Email indisponible</span>
                   {% else %}
                     <a class="hc-proleads-email" href="mailto:{{ l.email }}" title="{{ l.email }}">{{ l.email }}</a>
                   {% endif %}
@@ -204,15 +204,15 @@
                 <div class="d-inline-flex flex-wrap justify-content-end gap-1">
                   <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Contact') }}</button>
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">Contacter</button>
                   </form>
-                  <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
+                  <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">Ouvrir</a>
                 </div>
               </td>
             </tr>
           {% else %}
             <tr>
-              <td colspan="8" class="text-center text-muted py-4">{{ _('No leads yet.') }}</td>
+              <td colspan="8" class="text-center text-muted py-4">Aucun lead pour le moment.</td>
             </tr>
           {% endfor %}
         </tbody>
@@ -239,7 +239,7 @@
           {% set email_lower = (l.email or '')|lower %}
           {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
           {% if is_synthetic_email %}
-            <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">{{ _('Email indisponible') }}</span>
+            <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">Email indisponible</span>
           {% else %}
             <a class="hc-proleads-email" href="mailto:{{ l.email }}" title="{{ l.email }}">{{ l.email }}</a>
           {% endif %}
@@ -247,32 +247,32 @@
         </div>
         <div class="hc-proleads-card__meta mb-2">
           <div>
-            <span class="hc-proleads-card__label">{{ _('Profession / Ville') }}</span>
+            <span class="hc-proleads-card__label">Profession / Ville</span>
             <div>{{ l.profession or "—" }}{% if l.city %} • {{ l.city }}{% endif %}</div>
           </div>
           <div>
-            <span class="hc-proleads-card__label">{{ _('Créé le') }}</span>
+            <span class="hc-proleads-card__label">Créé le</span>
             <div>{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "—" }}</div>
           </div>
           <div>
-            <span class="hc-proleads-card__label">{{ _('Source') }}</span>
+            <span class="hc-proleads-card__label">Source</span>
             <div>{{ l.source or "—" }}</div>
           </div>
           <div>
-            <span class="hc-proleads-card__label">{{ _('Urgence') }}</span>
+            <span class="hc-proleads-card__label">Urgence</span>
             <div>{{ urgency_badge(l) }}</div>
           </div>
         </div>
         <div class="d-flex flex-wrap gap-1">
           <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Contact') }}</button>
+            <button class="btn btn-outline-secondary btn-sm" type="submit">Contacter</button>
           </form>
-          <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">{{ _('Edit') }}</a>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_professional_lead_detail', lead_id=l.id) }}">Ouvrir</a>
         </div>
       </article>
     {% else %}
-      <div class="hc-card text-center text-muted py-4">{{ _('No leads yet.') }}</div>
+      <div class="hc-card text-center text-muted py-4">Aucun lead pour le moment.</div>
     {% endfor %}
   </div>
 </section>

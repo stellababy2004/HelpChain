@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ _('Admin login') }} - HelpChain</title>
+    <title>{{ _('Connexion administrateur') }} - HelpChain</title>
     <link
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
@@ -253,9 +253,9 @@
       <div class="hc-auth-layout">
         <section class="hc-auth-intro" aria-label="HelpChain">
           <div class="hc-auth-brand">HelpChain</div>
-          <h1 class="hc-auth-title">{{ _('Admin login') }}</h1>
+          <h1 class="hc-auth-title">{{ _('Connexion administrateur') }}</h1>
           <p class="hc-auth-subtitle">
-            Accès sécurisé à l’espace de coordination et de pilotage. Réservé aux équipes autorisées.
+            Accès sécurisé réservé aux équipes habilitées.
           </p>
           <ul class="hc-auth-trust" aria-label="Cadre d’accès">
             <li>Accès structuré</li>
@@ -264,10 +264,10 @@
           </ul>
         </section>
 
-        <section class="hc-auth-panel" aria-label="{{ _('Admin login') }}">
+        <section class="hc-auth-panel" aria-label="{{ _('Connexion administrateur') }}">
           <header class="hc-auth-panel__header">
             <p class="hc-auth-panel__eyebrow">Espace administration</p>
-            <h2 class="hc-auth-panel__title">{{ _('Admin login') }}</h2>
+            <h2 class="hc-auth-panel__title">{{ _('Connexion administrateur') }}</h2>
             <p class="hc-auth-panel__copy">
               Utilisez vos identifiants d’administration pour accéder au suivi opérationnel.
             </p>
@@ -293,7 +293,7 @@
 
               <div class="mb-3">
                 <label for="username" class="form-label">
-                  {{ _('Username') }}
+                  {{ _('Identifiant') }}
                 </label>
                 <input
                   type="text"
@@ -302,14 +302,14 @@
                   name="username"
                   required
                   autocomplete="off"
-                  aria-label="{{ _('Username') }}"
-                  placeholder="{{ _('Username') }}"
+                  aria-label="{{ _('Identifiant') }}"
+                  placeholder="{{ _('Identifiant') }}"
                 />
               </div>
 
               <div class="mb-3">
                 <label for="password" class="form-label">
-                  {{ _('Password') }}
+                  {{ _('Mot de passe') }}
                 </label>
                 <input
                   type="password"
@@ -318,18 +318,18 @@
                   name="password"
                   required
                   autocomplete="off"
-                  aria-label="{{ _('Password') }}"
-                  placeholder="{{ _('Password') }}"
+                  aria-label="{{ _('Mot de passe') }}"
+                  placeholder="{{ _('Mot de passe') }}"
                 />
               </div>
 
               <button type="submit" class="btn hc-auth-submit w-100">
-                {{ _('Sign in as admin') }}
+                {{ _('Se connecter') }}
               </button>
             </form>
 
             <div class="hc-auth-back text-center">
-              <a href="{{ url_for('main.index') }}">{{ _('Back to site') }}</a>
+              <a href="{{ url_for('main.index') }}">{{ _('Retour au site') }}</a>
             </div>
           </div>
         </section>
@@ -338,5 +338,3 @@
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
   </body>
 </html>
-
-

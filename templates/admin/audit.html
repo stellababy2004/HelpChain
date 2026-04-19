@@ -1,5 +1,5 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} • {{ _('Audit trail') }} | HelpChain{% endblock %}
+{% block title %}{{ _('Admin') }} • Audit des actions | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-audit-page hc-admin-table-page{% endblock %}
 
 {% block admin_content %}
@@ -18,7 +18,7 @@
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">{{ _('Action') }}</label>
         <select class="form-select" name="action">
-          <option value="">{{ _('All') }}</option>
+          <option value="">Tous</option>
           {% for a in actions %}
             <option value="{{ a }}" {% if filters.action == a %}selected{% endif %}>{{ a }}</option>
           {% endfor %}
@@ -26,22 +26,22 @@
       </div>
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">{{ _('Admin') }}</label>
-        <input class="form-control" name="admin" value="{{ filters.admin }}" placeholder="{{ _('Username') }}">
+        <input class="form-control" name="admin" value="{{ filters.admin }}" placeholder="Identifiant">
       </div>
       <div class="col-12 col-md-3">
         <label class="form-label mb-1">{{ _('Target') }}</label>
         <div class="d-flex gap-2">
           <select class="form-select" name="target_type">
-            <option value="">{{ _('All') }}</option>
+            <option value="">Tous</option>
             {% for t in target_types %}
               <option value="{{ t }}" {% if filters.target_type == t %}selected{% endif %}>{{ t }}</option>
             {% endfor %}
           </select>
-          <input class="form-control" name="target_id" value="{{ filters.target_id }}" placeholder="{{ _('ID') }}">
+          <input class="form-control" name="target_id" value="{{ filters.target_id }}" placeholder="ID">
         </div>
       </div>
       <div class="col-8 col-md-2">
-        <label class="form-label mb-1">{{ _('Days') }}</label>
+        <label class="form-label mb-1">Jours</label>
         <select class="form-select" name="days">
           {% for d in ["1","7","14","30","90","365"] %}
             <option value="{{ d }}" {% if filters.days == d %}selected{% endif %}>{{ d }}</option>
@@ -49,7 +49,7 @@
         </select>
       </div>
       <div class="col-4 col-md-1 d-grid">
-        <button class="btn btn-primary" type="submit">{{ _('Filter') }}</button>
+        <button class="btn btn-primary" type="submit">Filtrer</button>
       </div>
     </form>
   </div>
@@ -75,8 +75,8 @@
             <th class="hc-col-action">{{ _('Action') }}</th>
             <th class="hc-col-admin">{{ _('Admin') }}</th>
             <th class="hc-col-target">{{ _('Target') }}</th>
-            <th class="hc-col-change">{{ _('Change') }}</th>
-            <th class="hc-col-ip">{{ _('IP') }}</th>
+            <th class="hc-col-change">Changement</th>
+            <th class="hc-col-ip">IP</th>
           </tr>
         </thead>
         <tbody>
@@ -92,15 +92,15 @@
                 {% if config.DEMO_MODE %}
                   <span class="btn btn-sm btn-outline-secondary disabled ms-2" aria-disabled="true">Aperçu</span>
                 {% else %}
-                  <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ _('view') }}</a>
+                  <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">Voir</a>
                 {% endif %}
               {% endif %}
             </td>
             <td class="small hc-audit-change change-cell">
               {% if e.payload and e.payload.old and e.payload.new %}
                 <div class="audit-diff">
-                  <div><span class="text-muted">{{ _('old:') }}</span> <code>{{ e.payload.old }}</code></div>
-                  <div><span class="text-muted">{{ _('new:') }}</span> <code>{{ e.payload.new }}</code></div>
+                  <div><span class="text-muted">avant :</span> <code>{{ e.payload.old }}</code></div>
+                  <div><span class="text-muted">après :</span> <code>{{ e.payload.new }}</code></div>
                 </div>
               {% elif e.payload %}
                 <code>{{ e.payload }}</code>
@@ -115,8 +115,8 @@
           <tr>
             <td colspan="6" class="py-0">
               <div class="hc-empty-state">
-                <div class="hc-empty-state__title">{{ _('No audit events') }}</div>
-                <div class="hc-empty-state__text">{{ _('No audit events for selected filters.') }}</div>
+                <div class="hc-empty-state__title">Aucun événement d’audit</div>
+                <div class="hc-empty-state__text">Aucun événement ne correspond aux filtres sélectionnés.</div>
               </div>
             </td>
           </tr>
@@ -127,15 +127,15 @@
 
     <div class="hc-row mt-2 hc-audit-pagination">
       <div class="hc-muted small">
-        {{ _('Page') }} {{ pagination.page }} / {{ pagination.pages or 1 }} · {{ pagination.total }} {{ _('events') }}
+        Page {{ pagination.page }} / {{ pagination.pages or 1 }} · {{ pagination.total }} événements
       </div>
       <nav>
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-            <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page-1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">{{ _('Prev') }}</a>
+            <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page-1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">Précédent</a>
           </li>
           <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-            <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page+1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">{{ _('Next') }}</a>
+            <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page+1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">Suivant</a>
           </li>
         </ul>
       </nav>
@@ -147,4 +147,3 @@
   </div>
 </div>
 {% endblock %}
-
