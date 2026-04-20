@@ -55,33 +55,113 @@
         </div>
       </div>
 
-                  <aside class="hc-home-premium__preview" aria-label="{{ _('Aperçu produit HelpChain') }}" style="max-width:460px;margin-left:auto;display:block;">
-        <div class="hc-hero-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:22px;background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,250,253,0.99));border:1px solid rgba(214,224,235,0.96);border-radius:28px;box-shadow:0 28px 60px rgba(15,23,42,0.08),0 10px 24px rgba(37,99,235,0.08);">
-          <div class="hc-stat-card" style="background:#ffffff;border:1px solid #e6edf7;border-top:3px solid rgba(37,99,235,.55);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(20,40,90,.06);">
-            <strong style="display:block;font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;line-height:1.1;">98%</strong>
-            <span style="display:block;font-size:14px;color:#64748b;line-height:1.45;">{{ _('SLA respecté') }}</span>
+      <aside class="hc-home-premium__preview" aria-label="{{ _('AperÃ§u produit HelpChain') }}">
+        <article class="hc-home-premium__app-shell">
+          <div class="hc-home-premium__app-topbar">
+            <div class="hc-home-premium__window-controls" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="hc-home-premium__app-title">{{ _('Centre opÃ©rationnel HelpChain') }}</div>
+            <div class="hc-home-premium__app-meta">{{ _('Structure pilote') }}</div>
           </div>
 
-          <div class="hc-stat-card" style="background:#ffffff;border:1px solid #e6edf7;border-top:3px solid rgba(16,185,129,.55);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(20,40,90,.06);">
-            <strong style="display:block;font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;line-height:1.1;">12</strong>
-            <span style="display:block;font-size:14px;color:#64748b;line-height:1.45;">{{ _('Structures connectées') }}</span>
+          <div class="hc-home-premium__app-kpis">
+            <article>
+              <strong>{{ active_count or 184 }}</strong>
+              <span>{{ _('demandes actives') }}</span>
+            </article>
+            <article>
+              <strong>98%</strong>
+              <span>{{ _('dossiers Ã  temps') }}</span>
+            </article>
+            <article>
+              <strong>14 j</strong>
+              <span>{{ _('dÃ©ploiement type') }}</span>
+            </article>
           </div>
 
-          <div class="hc-stat-card" style="background:#ffffff;border:1px solid #e6edf7;border-top:3px solid rgba(99,102,241,.5);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(20,40,90,.06);">
-            <strong style="display:block;font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;line-height:1.1;">{{ _('Actif') }}</strong>
-            <span style="display:block;font-size:14px;color:#64748b;line-height:1.45;">{{ _('Journal d’audit') }}</span>
-          </div>
+          <div class="hc-home-premium__app-grid">
+            <section class="hc-home-premium__panel hc-home-premium__panel--queue">
+              <div class="hc-home-premium__panel-head">
+                <h2>{{ _('File des demandes') }}</h2>
+                <span>{{ _('France') }}</span>
+              </div>
+              <div class="hc-home-premium__queue-table" role="table" aria-label="{{ _('Requests queue') }}">
+                <div class="hc-home-premium__queue-head" role="row">
+                  <span>{{ _('Ville') }}</span>
+                  <span>{{ _('Flux') }}</span>
+                  <span>{{ _('PrioritÃ©') }}</span>
+                  <span>{{ _('Statut') }}</span>
+                </div>
+                {% if latest_requests %}
+                  {% for req in latest_requests[:3] %}
+                    <div class="hc-home-premium__queue-row" role="row">
+                      <span>{{ req.city|default('Boulogne-Billancourt', true) }}</span>
+                      <span>{{ req.category|default(req.request_type, true)|default('Demande sociale', true) }}</span>
+                      <span><em class="hc-home-premium__badge hc-home-premium__badge--priority">{{ _('PrioritÃ©') }}</em></span>
+                      <span><em class="hc-home-premium__badge">{{ _('Ã€ qualifier') }}</em></span>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  {% for row in default_queue %}
+                    <div class="hc-home-premium__queue-row" role="row">
+                      <span>{{ row.city }}</span>
+                      <span>{{ row.type }}</span>
+                      <span><em class="hc-home-premium__badge hc-home-premium__badge--priority">{{ row.priority }}</em></span>
+                      <span><em class="hc-home-premium__badge">{{ row.status }}</em></span>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              </div>
+            </section>
 
-          <div class="hc-stat-card" style="background:#ffffff;border:1px solid #e6edf7;border-top:3px solid rgba(245,158,11,.52);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(20,40,90,.06);">
-            <strong style="display:block;font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;line-height:1.1;">&lt; 14j</strong>
-            <span style="display:block;font-size:14px;color:#64748b;line-height:1.45;">{{ _('Déploiement') }}</span>
-          </div>
+            <section class="hc-home-premium__panel hc-home-premium__panel--case">
+              <div class="hc-home-premium__panel-head">
+                <h2>{{ _('Dossier coordonnÃ©') }}</h2>
+                <span>{{ _('Audit actif') }}</span>
+              </div>
+              <ul class="hc-home-premium__case-list">
+                <li>
+                  <strong>{{ _('Bordeaux / CCAS centre') }}</strong>
+                  <span>{{ _('Assignation rÃ©fÃ©rent validÃ©e') }}</span>
+                </li>
+                <li>
+                  <strong>{{ _('Marseille / aide alimentaire') }}</strong>
+                  <span>{{ _('PrioritÃ© revue, dossier relancÃ©') }}</span>
+                </li>
+                <li>
+                  <strong>{{ _('Lyon / suivi inter-structure') }}</strong>
+                  <span>{{ _('TraÃ§abilitÃ© complÃ¨te disponible') }}</span>
+                </li>
+              </ul>
+            </section>
 
-          <div class="hc-stat-card" style="grid-column:1 / -1;background:#ffffff;border:1px solid #e6edf7;border-top:3px solid rgba(14,165,233,.5);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(20,40,90,.06);">
-            <strong style="display:block;font-size:28px;font-weight:800;color:#0f172a;margin-bottom:6px;line-height:1.1;">{{ _('France') }}</strong>
-            <span style="display:block;font-size:14px;color:#64748b;line-height:1.45;">{{ _('Hosted / RGPD') }}</span>
+            <section class="hc-home-premium__panel hc-home-premium__panel--timeline">
+              <div class="hc-home-premium__panel-head">
+                <h2>{{ _('Journal dâ€™activitÃ©') }}</h2>
+                <span>{{ _('Conforme RGPD') }}</span>
+              </div>
+              <ul class="hc-home-premium__timeline">
+                <li><strong>08:42</strong><span>{{ _('CrÃ©ation du dossier - Boulogne-Billancourt') }}</span></li>
+                <li><strong>09:10</strong><span>{{ _('ContrÃ´le permissions et routage vers la structure') }}</span></li>
+                <li><strong>09:36</strong><span>{{ _('Mise Ã  jour du suivi et journal dâ€™audit horodatÃ©') }}</span></li>
+              </ul>
+            </section>
+
+            <section class="hc-home-premium__panel hc-home-premium__panel--security">
+              <div class="hc-home-premium__panel-head">
+                <h2>{{ _('Couche de sÃ©curitÃ©') }}</h2>
+                <span>{{ _('Mission critique') }}</span>
+              </div>
+              <div class="hc-home-premium__security-grid">
+                <span>{{ _('MFA') }}</span>
+                <span>{{ _('RÃ´les') }}</span>
+                <span>{{ _('Journal') }}</span>
+                <span>{{ _('Sauvegardes') }}</span>
+              </div>
+            </section>
           </div>
-        </div>
+        </article>
       </aside>
     </div>
   </section>
@@ -212,6 +292,4 @@
   </section>
 </main>
 {% endblock %}
-
-
 

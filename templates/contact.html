@@ -4,7 +4,7 @@
 {% block og_title %}{{ _('Demande d’échange') }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _('Aperçu de la page Demande d’échange') }}{% endblock %}
-{% block body_class %}{% if is_demo %}hc-page-demo{% endif %}{% endblock %}
+{% block body_class %}hc-page-trust hc-page-intake {% if is_demo %}hc-page-demo{% else %}hc-page-contact{% endif %}{% endblock %}
 
 {% block extra_css %}
   {{ super() }}
@@ -465,6 +465,250 @@
 {% endblock %}
 
 {% block content %}
+<main class="hc-trust-page">
+  {% if not submitted %}
+    {% if is_demo %}
+      <section class="hc-trust-page__hero">
+        <div class="hc-trust-page__shell hc-trust-page__hero-grid">
+          <div class="hc-trust-page__hero-copy">
+            <p class="hc-trust-page__eyebrow">{{ _('DÉMO') }}</p>
+            <h1>{{ _('Planifier une démonstration HelpChain') }}</h1>
+            <p class="hc-trust-page__lead">
+              {{ _('30 minutes pour comprendre si HelpChain correspond à votre organisation.') }}
+            </p>
+            <div class="hc-trust-page__actions">
+              <a href="#intake-form" class="hc-btn hc-btn--primary btn btn-primary">{{ _('Planifier une démo') }}</a>
+              <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _('Échanger sur un pilote') }}</a>
+            </div>
+            <ul class="hc-trust-page__chips">
+              <li>{{ _('Cas d’usage concrets') }}</li>
+              <li>{{ _('Questions réponses') }}</li>
+              <li>{{ _('Vue produit') }}</li>
+              <li>{{ _('Discussion sur un pilote possible') }}</li>
+            </ul>
+          </div>
+
+          <aside class="hc-trust-page__hero-panel">
+            <div class="hc-trust-page__panel-card">
+              <div class="hc-trust-page__panel-head">
+                <span>{{ _('Repères de démo') }}</span>
+                <strong>{{ _('Un échange court, ciblé et sans engagement') }}</strong>
+              </div>
+              <ul class="hc-trust-page__panel-list">
+                <li><strong>{{ _('30 minutes') }}</strong><span>{{ _('Un format resserré pour comprendre le cadre, les usages et le niveau d’adéquation.') }}</span></li>
+                <li><strong>{{ _('Réponse sous 24h') }}</strong><span>{{ _('Nous revenons vers vous rapidement pour organiser le bon échange.') }}</span></li>
+                <li><strong>{{ _('Sans engagement') }}</strong><span>{{ _('La démonstration sert d’abord à vérifier si un pilote réaliste a du sens.') }}</span></li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+            <p>{{ _('Profils concernés') }}</p>
+            <h2>{{ _('Une démonstration utile selon votre cadre d’intervention') }}</h2>
+          </div>
+          <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
+            <article class="hc-trust-page__card">
+              <span>{{ _('Secteur public') }}</span>
+              <h3>{{ _('Pour collectivités') }}</h3>
+              <p>{{ _('Pour cadrer les demandes, les dossiers et la coordination entre services, CCAS et partenaires habilités.') }}</p>
+            </article>
+            <article class="hc-trust-page__card">
+              <span>{{ _('Associatif') }}</span>
+              <h3>{{ _('Pour associations') }}</h3>
+              <p>{{ _('Pour structurer les flux entrants, le suivi et les priorités sans dépendre d’outils dispersés.') }}</p>
+            </article>
+            <article class="hc-trust-page__card">
+              <span>{{ _('Établissements') }}</span>
+              <h3>{{ _('Pour établissements') }}</h3>
+              <p>{{ _('Pour fiabiliser les circuits internes, les habilitations et la continuité de prise en charge.') }}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section hc-trust-page__section--soft">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+            <p>{{ _('Pourquoi maintenant') }}</p>
+            <h2>{{ _('Pourquoi les structures nous contactent') }}</h2>
+          </div>
+          <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
+            <article class="hc-trust-page__card">
+              <span>{{ _('Pilotage') }}</span>
+              <h3>{{ _('Pilotage fragmenté') }}</h3>
+              <p>{{ _('Demandes, emails et tableaux restent dispersés, ce qui fragilise la continuité de traitement.') }}</p>
+            </article>
+            <article class="hc-trust-page__card">
+              <span>{{ _('Traçabilité') }}</span>
+              <h3>{{ _('Besoin de traçabilité') }}</h3>
+              <p>{{ _('Les équipes veulent savoir qui a fait quoi, quand, et où en est réellement le dossier.') }}</p>
+            </article>
+            <article class="hc-trust-page__card">
+              <span>{{ _('Coordination') }}</span>
+              <h3>{{ _('Coordination multi-acteurs') }}</h3>
+              <p>{{ _('Services, équipes et partenaires ont besoin d’un cadre commun pour intervenir sans se perdre.') }}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+            <p>{{ _('Déroulé') }}</p>
+            <h2>{{ _('Comment se déroule la démonstration') }}</h2>
+          </div>
+          <div class="hc-trust-page__timeline-grid">
+            <article class="hc-trust-page__timeline-step">
+              <span>{{ _('01') }}</span>
+              <h3>{{ _('Choisissez un créneau / contactez-nous') }}</h3>
+              <p>{{ _('Vous nous transmettez vos repères de base et le type de structure concerné.') }}</p>
+            </article>
+            <article class="hc-trust-page__timeline-step">
+              <span>{{ _('02') }}</span>
+              <h3>{{ _('Nous comprenons votre contexte') }}</h3>
+              <p>{{ _('Nous préparons l’échange à partir de vos enjeux de coordination et de vos contraintes réelles.') }}</p>
+            </article>
+            <article class="hc-trust-page__timeline-step">
+              <span>{{ _('03') }}</span>
+              <h3>{{ _('Démo ciblée') }}</h3>
+              <p>{{ _('Nous montrons le produit à partir de cas d’usage utiles, sans surcharge ni jargon inutile.') }}</p>
+            </article>
+            <article class="hc-trust-page__timeline-step">
+              <span>{{ _('04') }}</span>
+              <h3>{{ _('Prochaine étape si pertinent') }}</h3>
+              <p>{{ _('Si le cadre est adapté, nous échangeons sur un pilote réaliste et progressif.') }}</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section hc-trust-page__section--soft">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__control-layout">
+            <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+              <p>{{ _('Cadre pilote') }}</p>
+              <h2>{{ _('Un pilote réaliste peut commencer petit') }}</h2>
+              <p>{{ _('Le point de départ peut rester limité pour vérifier l’adéquation avec vos pratiques avant tout élargissement.') }}</p>
+            </div>
+            <div class="hc-trust-page__control-card">
+              <ul class="hc-trust-page__control-list">
+                <li>{{ _('Un service') }}</li>
+                <li>{{ _('Une équipe') }}</li>
+                <li>{{ _('Un territoire limité') }}</li>
+                <li>{{ _('Un type de demandes') }}</li>
+              </ul>
+              <p>{{ _('Le déploiement peut ensuite s’étendre lorsque les usages, le rythme et la gouvernance sont validés par la structure.') }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+            <p>{{ _('Pertinence') }}</p>
+            <h2>{{ _('HelpChain est généralement pertinent pour') }}</h2>
+          </div>
+          <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
+            <article class="hc-trust-page__card"><h3>{{ _('Collectivités locales') }}</h3><p>{{ _('Traitement de demandes, suivi de dossiers et coordination entre services.') }}</p></article>
+            <article class="hc-trust-page__card"><h3>{{ _('CCAS / action sociale') }}</h3><p>{{ _('Organisation des flux, priorisation et continuité de prise en charge.') }}</p></article>
+            <article class="hc-trust-page__card"><h3>{{ _('Associations structurées') }}</h3><p>{{ _('Cadre commun pour équipes, intervenants et pilotage opérationnel.') }}</p></article>
+            <article class="hc-trust-page__card"><h3>{{ _('Établissements avec coordination interne') }}</h3><p>{{ _('Visibilité claire sur les rôles, les étapes et l’historique des actions.') }}</p></article>
+            <article class="hc-trust-page__card"><h3>{{ _('Réseaux multi-sites') }}</h3><p>{{ _('Déploiement progressif avec gouvernance et suivi consolidé.') }}</p></article>
+            <article class="hc-trust-page__card"><h3>{{ _('Dispositifs territoriaux') }}</h3><p>{{ _('Cadre partagé pour travailler avec plusieurs acteurs habilités.') }}</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section hc-trust-page__section--cta-light">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__cta-card">
+            <div>
+              <p>{{ _('Prochaine étape') }}</p>
+              <h2>{{ _('Présentez votre contexte, nous préparons la bonne démonstration') }}</h2>
+              <p>{{ _('Vous pouvez commencer par une démonstration ciblée, puis décider sereinement si un pilote mérite d’être cadré.') }}</p>
+            </div>
+            <div class="hc-trust-page__actions hc-trust-page__actions--stacked">
+              <a href="#intake-form" class="hc-btn hc-btn--primary btn btn-primary">{{ _('Planifier une démo') }}</a>
+              <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _('Échanger sur un pilote') }}</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    {% else %}
+      <section class="hc-trust-page__hero">
+        <div class="hc-trust-page__shell hc-trust-page__hero-grid">
+          <div class="hc-trust-page__hero-copy">
+            <p class="hc-trust-page__eyebrow">{{ _('CONTACT') }}</p>
+            <h1>{{ _('Parlons de votre contexte') }}</h1>
+            <p class="hc-trust-page__lead">
+              {{ _('Nous échangeons sur vos besoins, votre organisation et la meilleure manière de structurer un pilote réaliste.') }}
+            </p>
+            <div class="hc-trust-page__actions">
+              <a href="#intake-form" class="hc-btn hc-btn--primary btn btn-primary">{{ _('Nous contacter') }}</a>
+              <a href="/demo" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _('Planifier une démo') }}</a>
+            </div>
+            <ul class="hc-trust-page__chips">
+              <li>{{ _('Réponse sérieuse') }}</li>
+              <li>{{ _('Cadre adapté') }}</li>
+              <li>{{ _('Sans pression commerciale inutile') }}</li>
+            </ul>
+          </div>
+
+          <aside class="hc-trust-page__hero-panel">
+            <div class="hc-trust-page__panel-card">
+              <div class="hc-trust-page__panel-head">
+                <span>{{ _('Point de contact') }}</span>
+                <strong>{{ _('Un échange cadré, avant toute proposition') }}</strong>
+              </div>
+              <ul class="hc-trust-page__panel-list">
+                <li><strong>{{ _('Nouveau projet') }}</strong><span>{{ _('Vous cherchez un cadre simple pour démarrer utilement.') }}</span></li>
+                <li><strong>{{ _('Besoin de coordination') }}</strong><span>{{ _('Vous devez mieux suivre demandes, dossiers et responsabilités.') }}</span></li>
+                <li><strong>{{ _('Pilotage réaliste') }}</strong><span>{{ _('Vous voulez vérifier ce qui peut commencer sans rupture opérationnelle.') }}</span></li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__card-grid hc-trust-page__card-grid--four">
+            <article class="hc-trust-page__card"><span>{{ _('Projet') }}</span><h3>{{ _('Nouveau projet') }}</h3><p>{{ _('Vous cherchez un cadre crédible pour démarrer une coordination plus structurée.') }}</p></article>
+            <article class="hc-trust-page__card"><span>{{ _('Coordination') }}</span><h3>{{ _('Besoin de coordination') }}</h3><p>{{ _('Demandes, tableaux et échanges informels rendent le suivi difficile au quotidien.') }}</p></article>
+            <article class="hc-trust-page__card"><span>{{ _('Modernisation') }}</span><h3>{{ _('Modernisation d’un fonctionnement existant') }}</h3><p>{{ _('Vous souhaitez consolider un dispositif déjà en place sans tout remettre à plat.') }}</p></article>
+            <article class="hc-trust-page__card"><span>{{ _('Territorial') }}</span><h3>{{ _('Multi-structure / territorial') }}</h3><p>{{ _('Vous devez travailler entre services, sites ou partenaires dans un cadre commun.') }}</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="hc-trust-page__section hc-trust-page__section--soft">
+        <div class="hc-trust-page__shell">
+          <div class="hc-trust-page__control-layout">
+            <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+              <p>{{ _('Cadre d’échange') }}</p>
+              <h2>{{ _('Réponse sérieuse, cadrée, sans pression commerciale inutile') }}</h2>
+              <p>{{ _('Nous regardons d’abord votre organisation, votre périmètre et vos contraintes avant de recommander une démonstration, un pilote ou un déploiement plus large.') }}</p>
+            </div>
+            <div class="hc-trust-page__control-card">
+              <ul class="hc-trust-page__control-list">
+                <li>{{ _('Analyse du besoin réel') }}</li>
+                <li>{{ _('Cadrage adapté à la structure') }}</li>
+                <li>{{ _('Orientation vers la bonne prochaine étape') }}</li>
+              </ul>
+              <p>{{ _('L’objectif est de vous faire gagner du temps, pas de forcer un dispositif standard qui ne correspondrait pas à vos usages.') }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    {% endif %}
+  {% endif %}
+
 <section class="hc-intake">
   <div class="hc-intake__shell{% if is_demo and submitted %} hc-intake__shell--demo-success{% elif is_demo %} hc-intake__shell--demo{% endif %}">
     {% if submitted %}
@@ -532,16 +776,16 @@
             </div>
             <p class="hc-intake__progress-label">{{ _('Étape 1 sur 3') }}</p>
           </div>
-          <h1 class="hc-intake__title">{{ _('Planifier une démonstration') }}</h1>
-          <p class="hc-intake__subtitle">{{ _('Démonstration institutionnelle pour collectivités, associations et réseaux professionnels') }}</p>
+          <h1 class="hc-intake__title">{{ _('Préparer votre démonstration') }}</h1>
+          <p class="hc-intake__subtitle">{{ _('Quelques éléments suffisent pour organiser un échange utile et ciblé') }}</p>
           <p class="hc-intake__intro">
-            {{ _('Renseignez les éléments utiles à l’organisation d’une démonstration adaptée à votre structure et à votre contexte de coordination.') }}
+            {{ _('Renseignez les repères utiles à l’organisation d’une démonstration adaptée à votre structure et à votre contexte de coordination.') }}
           </p>
         {% else %}
-          <h1 class="hc-intake__title">{{ _('Demande d’échange') }}</h1>
-          <p class="hc-intake__subtitle">{{ _('Échange de cadrage pour collectivités, associations et partenaires') }}</p>
+          <h1 class="hc-intake__title">{{ _('Préparer votre demande') }}</h1>
+          <p class="hc-intake__subtitle">{{ _('Quelques informations pour cadrer le bon échange') }}</p>
           <p class="hc-intake__intro">
-            {{ _('Vous souhaitez échanger avec l’équipe HelpChain au sujet d’un besoin de coordination, d’un cadre pilote ou d’un usage territorial ? Déposez votre demande. Nous vous recontacterons pour un échange de cadrage adapté à votre structure.') }}
+            {{ _('Déposez votre demande avec les éléments utiles. Nous revenons vers vous avec une réponse adaptée à votre structure et à votre contexte.') }}
           </p>
         {% endif %}
       </header>
@@ -562,7 +806,7 @@
       </section>
       {% endif %}
 
-      <article class="hc-intake__card hc-form-container">
+      <article id="intake-form" class="hc-intake__card hc-form-container">
         {% if is_demo %}
         <form class="hc-form" method="post" action="/demo" novalidate>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -661,7 +905,7 @@
           <div class="hc-intake__actions hc-intake__demo-actions">
             <p class="hc-intake__urgency">{{ _('Créneaux disponibles cette semaine') }}</p>
             <div class="hc-intake__cta-wrap">
-              <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Planifier ma démonstration') }}</button>
+              <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Planifier une démo') }}</button>
             </div>
           </div>
 
@@ -755,7 +999,7 @@
           {% endif %}
 
           <div class="hc-intake__actions">
-            <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Envoyer la demande') }}</button>
+            <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Nous contacter') }}</button>
           </div>
 
           <p class="hc-intake__trust">
@@ -769,6 +1013,7 @@
     {% endif %}
   </div>
 </section>
+</main>
 {% endblock %}
 
 {% block scripts %}

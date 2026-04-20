@@ -8314,3 +8314,22 @@ body.hc-page-demo .hc-intake__btn--ghost {
     padding-bottom: 3rem;
   }
 }
+
+/* =========================================================
+   Homepage premium tokens
+   ========================================================= */
+:root {
+  --hc-navy: #123a72;
+  --hc-blue: #2e5bff;
+  --hc-teal: #0f766e;
+  --hc-warm-surface: #f3f4f6;
+}
+
+body.hc-page-home {
+  --hc-bg: #f8fafc;
+  --hc-border: #e5e7eb;
+  --hc-text: #0f172a;
+  --hc-muted: #64748b;
+  --hc-radius-xl: 20px;
+  --hc-shadow-home: 0 18px 48px rgba(15, 23, 42, 0.08);
+}

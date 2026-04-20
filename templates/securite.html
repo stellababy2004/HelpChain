@@ -1,147 +1,144 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Sécurité & conformité") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : accès selon les rôles, protection maîtrisée des données, traçabilité et environnement adapté aux attentes institutionnelles.") }}{% endblock %}
+{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : accès selon les rôles, journal d'audit, RGPD, hébergement France / UE, sauvegardes et disponibilité pour des usages institutionnels.") }}{% endblock %}
 {% block og_title %}{{ _("Sécurité & conformité") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Sécurité et conformité") }}{% endblock %}
+{% block body_class %}hc-page-trust hc-page-securite{% endblock %}
 
 {% block content %}
-<div class="container hc-doc-page public-page-shell">
-  <header class="hc-doc-intro public-page-hero public-page-hero--trust">
-    <p class="hc-doc-intro__label">{{ _("Conformité") }}</p>
-    <h1 class="hc-doc-intro__title">{{ _("Sécurité & conformité") }}</h1>
-    <p class="hc-doc-intro__lead">
-      {{ _("HelpChain est opéré comme une infrastructure de coordination de situations sociales sensibles, avec un cadre de sécurité et de conformité conçu pour des usages institutionnels, associatifs et professionnels.") }}
-    </p>
-    <p class="hc-doc-intro__lead">
-      {{ _("La plateforme est pensée pour un usage dans un cadre organisationnel maîtrisé, avec une gouvernance des accès, une traçabilité des actions et une visibilité adaptée aux responsabilités de chaque acteur autorisé.") }}
-    </p>
-  </header>
+<main class="hc-trust-page">
+  <section class="hc-trust-page__hero">
+    <div class="hc-trust-page__shell hc-trust-page__hero-grid">
+      <div class="hc-trust-page__hero-copy">
+        <p class="hc-trust-page__eyebrow">{{ _("Sécurité & gouvernance") }}</p>
+        <h1>{{ _("Sécurité conçue pour les structures publiques et associatives") }}</h1>
+        <p class="hc-trust-page__lead">
+          {{ _("HelpChain structure la coordination sociale dans un environnement maîtrisé, traçable et compatible avec les exigences de gouvernance des structures locales.") }}
+        </p>
+        <div class="hc-trust-page__actions">
+          <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
+          <a href="{{ url_for('main.architecture') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Voir l’architecture") }}</a>
+        </div>
+        <ul class="hc-trust-page__chips">
+          <li>{{ _("Cadre RGPD") }}</li>
+          <li>{{ _("Hébergement France / UE") }}</li>
+          <li>{{ _("Traçabilité complète") }}</li>
+          <li>{{ _("Accès par rôles") }}</li>
+        </ul>
+      </div>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Introduction") }}</h2>
-      <p class="mb-2">
-        {{ _("La plateforme est exploitée avec des exigences de continuité, de traçabilité et de maîtrise des accès. Les choix d’architecture et d’exploitation visent à protéger les données personnelles et à maintenir un service stable dans un cadre compatible avec les attentes européennes en matière de conformité.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Pour une structure, l’enjeu n’est pas seulement la sécurité technique: il s’agit aussi de disposer d’un cadre fiable pour limiter les accès, organiser les responsabilités et conserver une lecture claire des actions engagées.") }}
-      </p>
+      <aside class="hc-trust-page__hero-panel">
+        <div class="hc-trust-page__panel-card">
+          <div class="hc-trust-page__panel-head">
+            <span>{{ _("Contrôle institutionnel") }}</span>
+            <strong>{{ _("Cadre de supervision structuré") }}</strong>
+          </div>
+          <ul class="hc-trust-page__panel-list">
+            <li>
+              <strong>{{ _("Journal d’audit") }}</strong>
+              <span>{{ _("Historique des accès, changements de statut et actions sensibles.") }}</span>
+            </li>
+            <li>
+              <strong>{{ _("Permissions") }}</strong>
+              <span>{{ _("Visibilité cadrée par structure, rôle et périmètre d’intervention.") }}</span>
+            </li>
+            <li>
+              <strong>{{ _("Continuité") }}</strong>
+              <span>{{ _("Sauvegardes régulières et processus de restauration documentés.") }}</span>
+            </li>
+          </ul>
+        </div>
+      </aside>
     </div>
   </section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Hébergement et infrastructure") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain s’appuie sur une infrastructure cloud sécurisée adaptée à un usage professionnel, avec une exploitation conçue pour la continuité de service, la traçabilité et la maîtrise des accès.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("L’organisation des environnements, leur supervision et leur séparation répondent à une logique de maîtrise opérationnelle attendue par les structures publiques, associatives et professionnelles.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Le cadre d’hébergement et d’exploitation est conçu pour répondre à des attentes institutionnelles de stabilité, de lisibilité et de maîtrise, sans complexifier inutilement l’usage pour les équipes.") }}
-      </p>
-      <ul class="mb-0">
-        <li>{{ _("Infrastructure technique supervisée et administrée") }}</li>
-        <li>{{ _("Séparation des environnements et contrôle des accès") }}</li>
-        <li>{{ _("Cadre d’exploitation aligné sur les exigences de protection des données") }}</li>
-      </ul>
+  <section class="hc-trust-page__section hc-trust-page__section--soft">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__section-head">
+        <p>{{ _("Cadre de sécurité") }}</p>
+        <h2>{{ _("Des garanties lisibles pour les structures publiques et associatives") }}</h2>
+        <p>{{ _("La plateforme est conçue pour soutenir des usages sensibles sans alourdir les équipes, avec un niveau de contrôle compatible avec un déploiement institutionnel.") }}</p>
+      </div>
+
+      <div class="hc-trust-page__card-grid">
+        <article class="hc-trust-page__card">
+          <span>{{ _("Audit") }}</span>
+          <h3>{{ _("Journal d’audit") }}</h3>
+          <p>{{ _("Chaque action structurante reste retraçable pour sécuriser le suivi, la relecture et la responsabilité opérationnelle.") }}</p>
+        </article>
+
+        <article class="hc-trust-page__card">
+          <span>{{ _("Accès") }}</span>
+          <h3>{{ _("Rôles & permissions") }}</h3>
+          <p>{{ _("Les accès sont organisés selon les responsabilités réelles des équipes, avec une visibilité adaptée au périmètre autorisé.") }}</p>
+        </article>
+
+        <article class="hc-trust-page__card">
+          <span>{{ _("Conformité") }}</span>
+          <h3>{{ _("RGPD") }}</h3>
+          <p>{{ _("Le cadre d’usage privilégie nécessité, finalité et proportionnalité pour limiter l’exposition des données personnelles.") }}</p>
+        </article>
+
+        <article class="hc-trust-page__card">
+          <span>{{ _("Infrastructure") }}</span>
+          <h3>{{ _("Hébergement France / UE") }}</h3>
+          <p>{{ _("L’exploitation s’inscrit dans un cadre européen lisible, compatible avec les attentes de souveraineté et de maîtrise institutionnelle.") }}</p>
+        </article>
+
+        <article class="hc-trust-page__card">
+          <span>{{ _("Résilience") }}</span>
+          <h3>{{ _("Sauvegardes") }}</h3>
+          <p>{{ _("Les données critiques bénéficient d’une politique de sauvegarde pensée pour la continuité de service et la restauration encadrée.") }}</p>
+        </article>
+
+        <article class="hc-trust-page__card">
+          <span>{{ _("Disponibilité") }}</span>
+          <h3>{{ _("Continuité d’exploitation") }}</h3>
+          <p>{{ _("Supervision, organisation des environnements et procédures d’exploitation visent un service stable dans la durée.") }}</p>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Accès, rôles et visibilité") }}</h2>
-      <p class="mb-2">
-        {{ _("Les accès à la plateforme sont organisés selon les rôles, les responsabilités et le périmètre d’intervention de chaque utilisateur.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("La visibilité sur les situations n’a pas vocation à être générale: elle est limitée aux personnes autorisées dans le cadre défini pour leur usage.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Cette organisation permet à une structure de cadrer plus finement qui accède à quoi, dans quel contexte et pour quelle responsabilité opérationnelle.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("HelpChain peut également être utilisé pour structurer la coordination entre plusieurs structures ou partenaires, dans un cadre maîtrisé. La circulation de l’information s’organise selon les rôles, les responsabilités et le périmètre défini pour les structures et professionnels habilités impliqués, sans ouvrir un accès généralisé aux situations ou aux données.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Ce cadre permet d’organiser une coordination inter-structures sans remettre en cause la maîtrise organisationnelle de chaque acteur impliqué.") }}
-      </p>
+  <section class="hc-trust-page__section">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+        <p>{{ _("Approche") }}</p>
+        <h2>{{ _("Une sécurité conçue pour l’exploitation réelle") }}</h2>
+      </div>
+
+      <div class="hc-trust-page__reassurance-grid">
+        <article class="hc-trust-page__reassurance">
+          <h3>{{ _("Responsabilités lisibles") }}</h3>
+          <p>{{ _("Les structures conservent la maîtrise de leur cadre d’usage, de leurs accès et de leur organisation interne.") }}</p>
+        </article>
+        <article class="hc-trust-page__reassurance">
+          <h3>{{ _("Coordination multi-acteurs maîtrisée") }}</h3>
+          <p>{{ _("Le partage d’information s’organise entre acteurs habilités sans ouvrir un accès généralisé aux situations.") }}</p>
+        </article>
+        <article class="hc-trust-page__reassurance">
+          <h3>{{ _("Cadre documentable") }}</h3>
+          <p>{{ _("Les équipes disposent d’éléments concrets pour instruire un pilote, une validation interne ou un échange avec leur DPO.") }}</p>
+        </article>
+      </div>
     </div>
   </section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Protection des données") }}</h2>
-      <p class="mb-2">
-        {{ _("Le traitement des données personnelles est encadré selon des principes de nécessité, de finalité et de proportionnalité. HelpChain cherche à limiter les données mobilisées à ce qui est utile au traitement et au suivi des situations.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Les données ne sont pas présentées comme une ressource exploitée en dehors du fonctionnement du service, de la sécurité de la plateforme et des besoins liés au traitement opérationnel des situations.") }}
-      </p>
-      <ul class="mb-0">
-        <li>{{ _("Collecte limitée aux informations nécessaires au service") }}</li>
-        <li>{{ _("Accès réservés aux personnes autorisées selon leur rôle") }}</li>
-        <li>{{ _("Journalisation des actions sensibles et des consultations critiques") }}</li>
-        <li>{{ _("Traçabilité des opérations de pilotage et d’administration") }}</li>
-      </ul>
+  <section class="hc-trust-page__section hc-trust-page__section--cta-strong">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__cta-card hc-trust-page__cta-card--strong">
+        <div>
+          <p>{{ _("Validation institutionnelle") }}</p>
+          <h2>{{ _("Validez le cadre de confiance avant le pilote") }}</h2>
+          <p>{{ _("Nous présentons l’architecture, les garanties de sécurité et le périmètre de conformité adapté à votre structure.") }}</p>
+        </div>
+        <div class="hc-trust-page__actions hc-trust-page__actions--stacked">
+          <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
+          <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Nous contacter") }}</a>
+        </div>
+      </div>
     </div>
   </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Contrôle des données par la structure") }}</h2>
-      <p class="mb-2">
-        {{ _("Chaque structure conserve la maîtrise de son propre cadre d’usage, de son organisation interne et du périmètre dans lequel la plateforme est mobilisée.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("L’outil a vocation à soutenir le traitement et le suivi dans ce cadre, sans se substituer aux décisions, aux responsabilités et aux règles de fonctionnement de la structure utilisatrice.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Cette logique permet de conserver un pilotage organisationnel clair, avec une maîtrise du périmètre de travail et des personnes autorisées à intervenir.") }}
-      </p>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Traçabilité et continuité de suivi") }}</h2>
-      <p class="mb-2">
-        {{ _("La traçabilité des actions, des changements de statut et des opérations de pilotage constitue un élément important du cadre d’usage institutionnel de HelpChain.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Elle contribue à la continuité du suivi, à la relecture des situations et à une meilleure lisibilité des responsabilités dans le temps.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Dans un environnement multi-acteurs, cette capacité à conserver un historique exploitable soutient à la fois la responsabilité opérationnelle et la qualité de coordination.") }}
-      </p>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Sécurité opérationnelle") }}</h2>
-      <p class="mb-2">
-        {{ _("La sécurité opérationnelle repose sur des mesures techniques et organisationnelles destinées à préserver la confidentialité des informations, à détecter les anomalies et à soutenir la continuité du service.") }}
-      </p>
-      <ul class="mb-0">
-        <li>{{ _("Protection des accès et confidentialité des informations traitées") }}</li>
-        <li>{{ _("Stabilité du service et continuité d’exploitation") }}</li>
-        <li>{{ _("Supervision technique et détection d’anomalies") }}</li>
-        <li>{{ _("Sauvegardes régulières avec logique de restauration") }}</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Contact sécurité") }}</h2>
-      <p class="mb-2">
-        {{ _("Toute question relative à la sécurité, à la protection des données ou au cadre de conformité de la plateforme peut être adressée à l’équipe HelpChain via le point de contact dédié.") }}
-      </p>
-      <p class="mb-0"><a href="mailto:contact@helpchain.live">contact@helpchain.live</a></p>
-    </div>
-  </section>
-</div>
+</main>
 {% endblock %}

@@ -11557,9 +11557,6 @@ body.hc-page-home .hc-home-premium__ops-strip{
 
 
 
-
-
-
 /* ===================================================
    HELPCHAIN HERO STATS PANEL START
    =================================================== */
@@ -11662,18 +11659,3 @@ body.hc-page-home .hc-stat-card:nth-child(5){
 /* ===================================================
    HELPCHAIN HERO STATS PANEL END
    =================================================== */
-
-/* V8.1 kill preview overlay */
-body.hc-page-home .hc-home-premium__preview::before,
-body.hc-page-home .hc-home-premium__preview::after{
-  display:none !important;
-  content:none !important;
-}
-
-body.hc-page-home .hc-hero-stats{
-  position:relative !important;
-  z-index:5 !important;
-}
-
-
-

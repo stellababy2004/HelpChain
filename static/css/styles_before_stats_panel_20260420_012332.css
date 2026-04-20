@@ -1552,7 +1552,7 @@ body.hc-page-home .hc-home__card h3 i {
   box-shadow: 0 0 0 4px rgba(34,197,94,.12);
 }
 .hc-match-card--new::after{
-  content:"";
+  content:"ÐÐžÐ’Ðž";
   position:absolute;
   top:12px; right:12px;
   font-size:.75rem;
@@ -2839,7 +2839,7 @@ body.hc-page-home .hc-home__card h3 i {
 }
 
 .hc-card--smart::before {
-  content:"";
+  content: "";
   display: block;
   height: 4px;
   background: linear-gradient(90deg, #2563eb, #3b82f6);
@@ -3391,7 +3391,7 @@ body.hc-page-home .hc-home__card h3 i {
 }
 
 .hc-a11y-tab.is-active::after {
-  content:"";
+  content: "";
   position: absolute;
   left: 10%;
   right: 10%;
@@ -3981,7 +3981,7 @@ body.hc-page-home .hc-home__card h3 i {
 }
 
 .hc-a11y-toggle::after {
-  content:"";
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;
@@ -4761,7 +4761,7 @@ body.hc-page-home .hc-hero {
 }
 
 body.hc-page-home .hc-hero::before {
-  content:"";
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -4934,7 +4934,7 @@ body.hc-page-home .hc-navbar .btn {
 /* Ultra subtle top highlight */
 body.hc-page-home .navbar::before,
 body.hc-page-home .hc-navbar::before {
-  content:"";
+  content: "";
   position: absolute;
   left: 0;
   right: 0;
@@ -4973,7 +4973,7 @@ body.hc-page-home .hc-hero {
 
 /* animated veil */
 body.hc-page-home .hc-hero::before {
-  content:"";
+  content: "";
   position: absolute;
   inset: -30%;
   pointer-events: none;
@@ -5015,7 +5015,7 @@ body.hc-page-home {
 }
 
 body.hc-page-home::before {
-  content:"";
+  content: "";
   position: fixed;
   inset: -25%;
   pointer-events: none;
@@ -5404,7 +5404,7 @@ body.hc-page-home .hc-hero {
 
 /* overlay that gives "air" but doesn't kill contrast */
 body.hc-page-home .hc-hero::before {
-  content:"";
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -5639,7 +5639,7 @@ body.hc-page-home .hc-hero {
 }
 
 body.hc-page-home .hc-hero::before {
-  content:"";
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 0; /* behind content */
@@ -5708,7 +5708,7 @@ body.hc-page-home .btn-primary{
 }
 
 body.hc-page-home .btn-primary::after{
-  content:"";
+  content: "";
   position: absolute;
   inset: -6px -10px -8px -10px;
   border-radius: 20px;
@@ -8235,7 +8235,7 @@ body.hc-page-home .public-governance-section {
 }
 
 body.hc-page-home .public-governance-section::before {
-  content:"";
+  content: "";
   position: absolute;
   inset: 0 auto auto 0;
   width: 100%;
@@ -10022,7 +10022,7 @@ body.hc-page-home [class*="eyebrow"] {
 body.hc-page-home .hc-home-premium__eyebrow::before,
 body.hc-page-home .hc-doc-intro__label::before,
 body.hc-page-home [class*="eyebrow"]::before {
-  content:"";
+  content: "";
   width: 18px;
   height: 2px;
   border-radius: 999px;
@@ -10290,7 +10290,7 @@ body.hc-page-home [class*="eyebrow"] {
 body.hc-page-home .hc-home-premium__eyebrow::before,
 body.hc-page-home .hc-doc-intro__label::before,
 body.hc-page-home [class*="eyebrow"]::before {
-  content:"";
+  content: "";
   width: 18px;
   height: 2px;
   border-radius: 999px;
@@ -10578,7 +10578,7 @@ body.hc-page-home .hc-home-premium__hero {
 }
 
 body.hc-page-home .hc-home-premium__hero::after {
-  content:"";
+  content: "";
   position: absolute;
   inset: auto 0 0 0;
   height: 110px;
@@ -10810,7 +10810,7 @@ body.hc-page-home .hc-home-premium__app-shell {
 
 /* top chrome / product header */
 body.hc-page-home .hc-home-premium__app-shell::before {
-  content:"";
+  content: "";
   display: block;
   height: 54px;
   background:
@@ -11092,7 +11092,7 @@ body.hc-page-home .hc-home-premium__app-shell{
 
 /* floating stat cards */
 body.hc-page-home .hc-home-premium__preview::before{
-  content:"";
+  content:"98% SLA";
   position:absolute;
   top:42px;
   right:-18px;
@@ -11106,7 +11106,7 @@ body.hc-page-home .hc-home-premium__preview::before{
 }
 
 body.hc-page-home .hc-home-premium__preview::after{
-  content:"";
+  content:"+42 structures";
   position:absolute;
   left:-22px;
   bottom:48px;
@@ -11435,245 +11435,3 @@ body.hc-page-home .hc-home-premium__preview::before{
 body.hc-page-home .hc-home-premium__hero{
   padding-bottom:18px !important;
 }
-
-/* ===================================================
-   HELPCHAIN HERO V8 STATS PANEL START
-   =================================================== */
-
-body.hc-page-home .hc-home-premium__preview{
-  position: relative !important;
-  max-width: 420px !important;
-  min-height: 420px !important;
-  margin-left: auto !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-body.hc-page-home .hc-home-premium__app-shell{
-  display: none !important;
-}
-
-body.hc-page-home .hc-home-premium__preview::before{
-  content:"";
-  white-space: pre-line;
-  position: absolute;
-  inset: 0;
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,250,253,0.99));
-  border: 1px solid rgba(214,224,235,0.96);
-  box-shadow:
-    0 28px 60px rgba(15,23,42,0.08),
-    0 10px 24px rgba(37,99,235,0.08);
-  color: #0f172a;
-  font-size: 1.18rem;
-  font-weight: 800;
-  line-height: 1.45;
-  padding: 34px 32px 32px 32px;
-}
-
-body.hc-page-home .hc-home-premium__preview::after{
-  content:"";
-  white-space: pre-line;
-  position: absolute;
-  left: 32px;
-  right: 32px;
-  top: 118px;
-  bottom: 32px;
-  display: block;
-  color: #10213b;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 2.45;
-  padding: 18px 20px;
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg,
-      rgba(239,246,255,0.95) 0%,
-      rgba(239,246,255,0.95) 18%,
-      rgba(236,253,245,0.96) 18%,
-      rgba(236,253,245,0.96) 36%,
-      rgba(248,250,252,0.98) 36%,
-      rgba(248,250,252,0.98) 54%,
-      rgba(255,251,235,0.97) 54%,
-      rgba(255,251,235,0.97) 72%,
-      rgba(240,253,250,0.98) 72%,
-      rgba(240,253,250,0.98) 100%);
-  border: 1px solid rgba(226,232,240,0.95);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-}
-
-body.hc-page-home .hc-home-premium__hero-grid{
-  align-items: center !important;
-  gap: 40px !important;
-}
-
-body.hc-page-home .hc-home-premium,
-body.hc-page-home .hc-home-premium__hero{
-  padding-top: 52px !important;
-  padding-bottom: 28px !important;
-}
-
-body.hc-page-home .hc-home-premium h1{
-  max-width: 560px !important;
-}
-
-body.hc-page-home .hc-home-premium__ops-strip{
-  padding-top: 8px !important;
-}
-
-@media (max-width: 1199.98px){
-  body.hc-page-home .hc-home-premium__preview{
-    max-width: 100% !important;
-    min-height: 360px !important;
-    margin-top: 20px !important;
-  }
-
-  body.hc-page-home .hc-home-premium__preview::before{
-    padding: 28px 24px 24px 24px !important;
-    font-size: 1.05rem !important;
-  }
-
-  body.hc-page-home .hc-home-premium__preview::after{
-    left: 24px !important;
-    right: 24px !important;
-    top: 102px !important;
-    bottom: 24px !important;
-    font-size: 0.96rem !important;
-    line-height: 2.3 !important;
-  }
-}
-
-@media (max-width: 991.98px){
-  body.hc-page-home .hc-home-premium__preview{
-    min-height: 330px !important;
-  }
-}
-
-/* ===================================================
-   HELPCHAIN HERO V8 STATS PANEL END
-   =================================================== */
-
-
-
-
-
-
-/* ===================================================
-   HELPCHAIN HERO STATS PANEL START
-   =================================================== */
-
-body.hc-page-home .hc-home-premium__preview{
-  max-width: 460px !important;
-  margin-left: auto !important;
-  display: block !important;
-}
-
-body.hc-page-home .hc-home-premium__preview::before,
-body.hc-page-home .hc-home-premium__preview::after,
-body.hc-page-home .hc-home-premium__app-shell{
-  display: none !important;
-  content: none !important;
-}
-
-body.hc-page-home .hc-hero-stats{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  padding: 22px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,250,253,0.99));
-  border: 1px solid rgba(214,224,235,0.96);
-  border-radius: 28px;
-  box-shadow:
-    0 28px 60px rgba(15,23,42,0.08),
-    0 10px 24px rgba(37,99,235,0.08);
-}
-
-body.hc-page-home .hc-stat-card{
-  background: #ffffff;
-  border: 1px solid #e6edf7;
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 8px 24px rgba(20,40,90,.06);
-}
-
-body.hc-page-home .hc-stat-card--full{
-  grid-column: 1 / -1;
-}
-
-body.hc-page-home .hc-stat-card strong{
-  display: block;
-  font-size: 28px;
-  font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 6px;
-  line-height: 1.1;
-}
-
-body.hc-page-home .hc-stat-card span{
-  display: block;
-  font-size: 14px;
-  color: #64748b;
-  line-height: 1.45;
-}
-
-body.hc-page-home .hc-stat-card:nth-child(1){
-  border-top: 3px solid rgba(37,99,235,.55);
-}
-
-body.hc-page-home .hc-stat-card:nth-child(2){
-  border-top: 3px solid rgba(16,185,129,.55);
-}
-
-body.hc-page-home .hc-stat-card:nth-child(3){
-  border-top: 3px solid rgba(99,102,241,.5);
-}
-
-body.hc-page-home .hc-stat-card:nth-child(4){
-  border-top: 3px solid rgba(245,158,11,.52);
-}
-
-body.hc-page-home .hc-stat-card:nth-child(5){
-  border-top: 3px solid rgba(14,165,233,.5);
-}
-
-@media (max-width: 1199.98px){
-  body.hc-page-home .hc-home-premium__preview{
-    max-width: 100% !important;
-    margin-top: 20px !important;
-  }
-
-  body.hc-page-home .hc-hero-stats{
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 767.98px){
-  body.hc-page-home .hc-hero-stats{
-    grid-template-columns: 1fr;
-  }
-
-  body.hc-page-home .hc-stat-card--full{
-    grid-column: auto;
-  }
-}
-
-/* ===================================================
-   HELPCHAIN HERO STATS PANEL END
-   =================================================== */
-
-/* V8.1 kill preview overlay */
-body.hc-page-home .hc-home-premium__preview::before,
-body.hc-page-home .hc-home-premium__preview::after{
-  display:none !important;
-  content:none !important;
-}
-
-body.hc-page-home .hc-hero-stats{
-  position:relative !important;
-  z-index:5 !important;
-}
-
-
-

@@ -1,117 +1,174 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Déploiement et mise en place") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Présentation du déploiement de HelpChain : accès sécurisé, cadre pilote, mise en place progressive, accompagnement et contrôle des données pour les structures.") }}{% endblock %}
+{% block meta_description %}{{ _("Déploiement HelpChain : cadrage, paramétrage, formation, mise en production et accompagnement pour un déploiement institutionnel progressif.") }}{% endblock %}
 {% block og_title %}{{ _("Déploiement et mise en place") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Déploiement et mise en place") }}{% endblock %}
+{% block body_class %}hc-page-trust hc-page-deploiement{% endblock %}
 
 {% block content %}
-<div class="container hc-doc-page public-page-shell">
-  <header class="hc-doc-intro public-page-hero public-page-hero--trust">
-    <p class="hc-doc-intro__label">{{ _("Déploiement") }}</p>
-    <h1 class="hc-doc-intro__title">{{ _("Déploiement et mise en place") }}</h1>
-    <p class="hc-doc-intro__lead">
-      {{ _("HelpChain s’intègre progressivement dans les structures, avec un cadre de déploiement clair, sécurisé et adapté aux réalités opérationnelles.") }}
-    </p>
-    <p class="hc-doc-intro__lead">
-      {{ _("La plateforme est pensée pour une adoption structurée, avec un effort technique limité pour les équipes utilisatrices et un cadre de mise en place lisible pour les responsables opérationnels et institutionnels.") }}
-    </p>
-  </header>
+<main class="hc-trust-page">
+  <section class="hc-trust-page__hero">
+    <div class="hc-trust-page__shell hc-trust-page__hero-grid">
+      <div class="hc-trust-page__hero-copy">
+        <p class="hc-trust-page__eyebrow">{{ _("Déploiement") }}</p>
+        <h1>{{ _("Déploiement progressif, sans rupture opérationnelle") }}</h1>
+        <p class="hc-trust-page__lead">
+          {{ _("HelpChain se déploie de façon cadrée, progressive et accompagnée, sans imposer de rupture dans l’organisation des équipes.") }}
+        </p>
+        <div class="hc-trust-page__actions">
+          <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
+          <a href="{{ url_for('main.offre') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Voir l’offre") }}</a>
+        </div>
+        <ul class="hc-trust-page__chips">
+          <li>{{ _("Déploiement par étapes") }}</li>
+          <li>{{ _("Accompagnement structuré") }}</li>
+          <li>{{ _("Pilotage progressif") }}</li>
+          <li>{{ _("Effort technique limité") }}</li>
+        </ul>
+      </div>
 
-  <section class="card mb-3 public-cta-card">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Accès sécurisé (SaaS)") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain est accessible via un environnement en ligne sécurisé, sans installation locale lourde pour les équipes utilisatrices.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("L’accès se fait dans un cadre supervisé, adapté à un usage professionnel et institutionnel, avec une disponibilité continue du service.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("L’hébergement s’inscrit dans un cadre européen afin de répondre aux attentes des structures publiques, associatives et professionnelles.") }}
-      </p>
+      <aside class="hc-trust-page__hero-panel">
+        <div class="hc-trust-page__panel-card">
+          <div class="hc-trust-page__panel-head">
+            <span>{{ _("Mise en place") }}</span>
+            <strong>{{ _("Un déroulé simple, pilotable et sécurisé") }}</strong>
+          </div>
+          <ol class="hc-trust-page__timeline-mini">
+            <li><strong>{{ _("Audit rapide") }}</strong><span>{{ _("Identification du périmètre, des équipes et des priorités de départ.") }}</span></li>
+            <li><strong>{{ _("Paramétrage") }}</strong><span>{{ _("Configuration des rôles, dossiers, catégories et règles de traitement.") }}</span></li>
+            <li><strong>{{ _("Formation équipes") }}</strong><span>{{ _("Prise en main concrète pour les référents et les utilisateurs concernés.") }}</span></li>
+            <li><strong>{{ _("Mise en production") }}</strong><span>{{ _("Ouverture progressive avec suivi du démarrage et ajustements ciblés.") }}</span></li>
+          </ol>
+        </div>
+      </aside>
     </div>
   </section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Environnement dédié (option)") }}</h2>
-      <p class="mb-2">
-        {{ _("Pour certaines structures, un déploiement dans un environnement plus dédié peut être étudié afin de répondre à des contraintes particulières de gouvernance, d’exploitation ou d’intégration.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Cette option s’adresse aux organisations qui ont besoin d’un cadre plus contrôlé, sans changer la logique d’usage ni le fonctionnement opérationnel de la plateforme.") }}
-      </p>
-    </div>
-  </section>
+  <section class="hc-trust-page__section hc-trust-page__section--soft">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__section-head">
+        <p>{{ _("Déroulé") }}</p>
+        <h2>{{ _("Quatre étapes pour lancer sans désorganiser les équipes") }}</h2>
+        <p>{{ _("Chaque étape vise un démarrage concret, avec un niveau de risque limité et un rythme compatible avec le fonctionnement de la structure.") }}</p>
+      </div>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Processus de mise en place") }}</h2>
-
-      <h3 class="h6 mb-2">{{ _("1. Cadrage") }}</h3>
-      <p class="mb-3">
-        {{ _("Identification des besoins, définition du périmètre de départ, choix du territoire concerné et des types de situations à structurer dans l’outil.") }}
-      </p>
-
-      <h3 class="h6 mb-2">{{ _("2. Configuration") }}</h3>
-      <p class="mb-3">
-        {{ _("Paramétrage initial des rôles, des accès et des principaux repères de fonctionnement afin d’aligner la plateforme sur l’organisation de la structure.") }}
-      </p>
-
-      <h3 class="h6 mb-2">{{ _("3. Pilote") }}</h3>
-      <p class="mb-3">
-        {{ _("Mise en service sur un périmètre limité, traitement de situations réelles, observation des usages et ajustements progressifs avec les équipes concernées.") }}
-      </p>
-
-      <h3 class="h6 mb-2">{{ _("4. Déploiement progressif") }}</h3>
-      <p class="mb-0">
-        {{ _("Extension à davantage d’équipes habilitées, de situations ou de partenaires, avec consolidation des pratiques et stabilisation du fonctionnement dans le temps.") }}
-      </p>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Accompagnement") }}</h2>
-      <p class="mb-2">
-        {{ _("La mise en place ne se limite pas à l’ouverture d’un accès: elle comprend un accompagnement au démarrage, un cadrage des usages et un appui à l’appropriation progressive par les équipes.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("L’objectif est de permettre un usage clair, maîtrisé et adapté à l’organisation réelle de la structure, dès les premières situations suivies.") }}
-      </p>
-    </div>
-  </section>
-
-  <section class="card mb-4">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Contrôle des données") }}</h2>
-      <p class="mb-2">
-        {{ _("Les structures conservent la maîtrise de leurs données dans le cadre de leur propre usage de la plateforme.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Les accès sont organisés selon les rôles, les responsabilités et le périmètre d’intervention, afin de limiter la visibilité aux personnes autorisées.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Les données ne sont pas exploitées en dehors des finalités de fonctionnement, de sécurité et de suivi du service.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Le cadre de déploiement repose sur une séparation par structure et sur un pilotage des accès compatible avec des usages institutionnels et territoriaux.") }}
-      </p>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Mettre en place un pilote") }}</h2>
-      <p class="mb-3">
-        {{ _("Nous vous accompagnons dans la mise en place d’un pilote adapté à votre structure, à votre territoire et à vos besoins opérationnels.") }}
-      </p>
-      <div class="d-flex flex-wrap gap-2">
-        <a href="/demo" class="hc-btn hc-btn--primary">{{ _("Planifier une démo") }}</a>
-        <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost">{{ _("Échanger sur un pilote") }}</a>
+      <div class="hc-trust-page__timeline-grid">
+        <article class="hc-trust-page__timeline-step">
+          <span>{{ _("01") }}</span>
+          <h3>{{ _("Audit rapide") }}</h3>
+          <p>{{ _("Nous cadrons les usages prioritaires, les acteurs concernés et le premier périmètre de déploiement.") }}</p>
+        </article>
+        <article class="hc-trust-page__timeline-step">
+          <span>{{ _("02") }}</span>
+          <h3>{{ _("Paramétrage") }}</h3>
+          <p>{{ _("La plateforme est ajustée à votre organisation, à vos règles de suivi et à vos besoins de coordination.") }}</p>
+        </article>
+        <article class="hc-trust-page__timeline-step">
+          <span>{{ _("03") }}</span>
+          <h3>{{ _("Formation équipes") }}</h3>
+          <p>{{ _("Les équipes prennent en main les usages utiles, sans surcharge ni changement brutal des repères de travail.") }}</p>
+        </article>
+        <article class="hc-trust-page__timeline-step">
+          <span>{{ _("04") }}</span>
+          <h3>{{ _("Mise en production") }}</h3>
+          <p>{{ _("L’ouverture se fait progressivement, avec un accompagnement de démarrage et un suivi des premiers dossiers.") }}</p>
+        </article>
       </div>
     </div>
   </section>
-</div>
+
+  <section class="hc-trust-page__section hc-trust-page__section--compact">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__reassurance-strip">
+        <span>{{ _("Pas de migration brutale") }}</span>
+        <span>{{ _("Déploiement par étapes") }}</span>
+        <span>{{ _("Accompagnement structuré") }}</span>
+        <span>{{ _("Compatible avec vos habitudes de travail") }}</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-trust-page__section">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+        <p>{{ _("Configuration") }}</p>
+        <h2>{{ _("Ce que nous configurons ensemble") }}</h2>
+        <p>{{ _("Le paramétrage se fait avec vos équipes pour refléter votre organisation réelle et vos besoins de coordination.") }}</p>
+      </div>
+
+      <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
+        <article class="hc-trust-page__card">
+          <span>{{ _("Organisation") }}</span>
+          <h3>{{ _("Rôles") }}</h3>
+          <p>{{ _("Répartition des accès et des responsabilités selon les profils et les fonctions.") }}</p>
+        </article>
+        <article class="hc-trust-page__card">
+          <span>{{ _("Suivi") }}</span>
+          <h3>{{ _("Dossiers") }}</h3>
+          <p>{{ _("Structure des dossiers, informations utiles et repères de traitement adaptés au terrain.") }}</p>
+        </article>
+        <article class="hc-trust-page__card">
+          <span>{{ _("Accès") }}</span>
+          <h3>{{ _("Permissions") }}</h3>
+          <p>{{ _("Cadrage des habilitations pour limiter la visibilité aux personnes autorisées.") }}</p>
+        </article>
+        <article class="hc-trust-page__card">
+          <span>{{ _("Qualification") }}</span>
+          <h3>{{ _("Catégories") }}</h3>
+          <p>{{ _("Typologies, niveaux de priorité et regroupements utiles au suivi opérationnel.") }}</p>
+        </article>
+        <article class="hc-trust-page__card">
+          <span>{{ _("Coordination") }}</span>
+          <h3>{{ _("Workflows") }}</h3>
+          <p>{{ _("Étapes, statuts et règles de circulation pour organiser un traitement lisible et progressif.") }}</p>
+        </article>
+        <article class="hc-trust-page__card">
+          <span>{{ _("Pilotage") }}</span>
+          <h3>{{ _("Reporting") }}</h3>
+          <p>{{ _("Indicateurs et vues de pilotage pour suivre l’activité sans complexifier le quotidien des équipes.") }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-trust-page__section hc-trust-page__section--soft">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__control-layout">
+        <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+          <p>{{ _("Gouvernance") }}</p>
+          <h2>{{ _("Ce que votre structure garde sous contrôle") }}</h2>
+          <p>{{ _("Le déploiement ne retire pas la maîtrise à la structure. Il s’adapte à votre cadre de décision, à vos équipes et à votre rythme de mise en place.") }}</p>
+        </div>
+
+        <div class="hc-trust-page__control-card">
+          <ul class="hc-trust-page__control-list">
+            <li>{{ _("Organisation interne") }}</li>
+            <li>{{ _("Gouvernance") }}</li>
+            <li>{{ _("Habilitations") }}</li>
+            <li>{{ _("Rythme du pilote") }}</li>
+            <li>{{ _("Périmètre de déploiement") }}</li>
+          </ul>
+          <p>{{ _("HelpChain se met en place dans un cadre décidé avec vous, sans imposer un déploiement uniforme ni une transformation brutale des pratiques existantes.") }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-trust-page__section hc-trust-page__section--cta-light">
+    <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__cta-card">
+        <div>
+          <p>{{ _("Cadrage de déploiement") }}</p>
+          <h2>{{ _("Présentez votre contexte, nous cadrons le bon déploiement") }}</h2>
+          <p>{{ _("Nous préparons avec vous un scénario de mise en place progressif, réaliste et compatible avec votre organisation.") }}</p>
+        </div>
+        <div class="hc-trust-page__actions hc-trust-page__actions--stacked">
+          <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
+          <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Échanger sur un pilote") }}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
 {% endblock %}
