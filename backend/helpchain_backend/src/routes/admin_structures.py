@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import and_, func, or_
 
@@ -10,9 +10,7 @@ from backend.extensions import db
 from ..models import AdminUser, Request, Structure
 from .admin import (
     CLOSED_STATUSES,
-    _is_structure_admin,
     _require_global_admin,
-    _require_structure_admin_or_global,
     admin_bp,
     admin_required,
     admin_role_required,
@@ -184,11 +182,7 @@ def admin_structure_create():
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_detail(structure_id: int):
-    _require_structure_admin_or_global()
-    if _is_structure_admin() and int(getattr(current_user, "structure_id") or 0) != int(
-        structure_id
-    ):
-        abort(403)
+    _require_global_admin()
     structure = Structure.query.get_or_404(structure_id)
     users_count = AdminUser.query.filter(
         AdminUser.structure_id == structure_id

@@ -1,38 +1,107 @@
-{% extends "base.html" %}
-{% block title %}Admin • Cas #{{ case_row.id }} | HelpChain{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
-{% endblock %}
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Admin - Cas #{{ case_row.id }} | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page hc-admin-case-detail-page{% endblock %}
 
-{% block content %}
+{% macro event_label(ev) -%}
+  {{ {
+    'triage_scored': 'Evaluation du risque',
+    'case_created': 'Dossier cree',
+    'professional_assigned': 'Professionnel assigne',
+    'owner_assigned': 'Responsable assigne',
+    'status_changed': 'Statut mis a jour',
+    'priority_changed': 'Priorite mise a jour',
+    'participant_added': 'Participant ajoute',
+    'note_added': 'Note interne ajoutee',
+    'case_resolved': 'Dossier resolu',
+    'case_closed': 'Dossier cloture'
+  }.get(ev.event_type, (ev.event_type or 'Activite')|replace('_', ' ')|title) }}
+{%- endmacro %}
+
+{% macro event_context(ev) -%}
+  {% if ev.event_type == 'triage_scored' %}
+    Niveau de risque evalue pour l'orientation operationnelle.
+  {% elif ev.event_type == 'case_created' %}
+    Dossier cree a partir de la demande #{{ req.id }}.
+  {% elif ev.event_type == 'professional_assigned' %}
+    Un professionnel principal a ete rattache au dossier.
+  {% elif ev.event_type == 'owner_assigned' %}
+    Le pilotage du dossier a ete attribue a un responsable.
+  {% elif ev.event_type == 'participant_added' %}
+    Un participant supplementaire a ete ajoute au suivi.
+  {% elif ev.event_type == 'priority_changed' %}
+    Le niveau de priorite du dossier a ete modifie.
+  {% elif ev.event_type == 'status_changed' %}
+    Le statut operationnel du dossier a ete mis a jour.
+  {% elif ev.event_type == 'case_resolved' %}
+    Le dossier a ete marque comme resolu.
+  {% elif ev.event_type == 'case_closed' %}
+    Le dossier a ete cloture.
+  {% elif ev.event_type == 'note_added' %}
+    Une note interne a ete ajoutee au dossier.
+  {% endif %}
+{%- endmacro %}
+
+{% block admin_content %}
+{% set case_sla = case_sla_snapshot(case_row) %}
+{% set case_activity_ref = case_row.last_activity_at or case_row.updated_at or case_row.created_at %}
+{% set status_display_labels = {
+  'new': 'Nouveau',
+  'open': 'Ouvert',
+  'triaged': 'Orienté',
+  'assigned': 'Assigné',
+  'in_progress': 'En cours',
+  'in-progress': 'En cours',
+  'resolved': 'Résolu',
+  'done': 'Terminé',
+  'closed': 'Clôturé',
+  'blocked': 'Bloqué',
+  'cancelled': 'Annulé',
+  'canceled': 'Annulé'
+} %}
+{% set case_status_key = (case_row.status or 'open')|replace('_', '-')|lower %}
+{% set case_status_label = status_display_labels.get((case_row.status or '')|lower, (case_row.status or '-')|replace('_', ' ')|title) %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--case-detail">
-  <div class="hc-card mb-3 hc-page-hero hc-case-detail-hero">
+  <div class="hc-card hc-page-hero hc-case-detail-hero">
     <div class="hc-row hc-admin-headerTop">
       <div class="hc-case-detail-hero__copy">
+        <div class="hc-admin-kicker">Dossier operationnel</div>
         <h1 class="hc-admin-title">Cas #{{ case_row.id }}</h1>
-        <div class="hc-muted">Demande liée : <a href="{{ url_for('admin.admin_cases_list') }}#request-{{ req.id }}">#{{ req.id }}</a></div>
+        <div class="hc-muted">
+          Demande liee:
+          <a href="{{ url_for('admin.admin_cases_list') }}#request-{{ req.id }}">#{{ req.id }}</a>
+          <span class="hc-dot">/</span>
+          {{ req.title or ('Demande #' ~ req.id) }}
+        </div>
       </div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">Retour aux cas</a>
+      <div class="hc-case-detail-hero__actions">
+        <span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">Retour aux cas</a>
+      </div>
     </div>
   </div>
 
-  <div class="hc-admin-grid">
-    <main>
-      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--header">
-        <h3 class="h6 mb-3">En-tête du cas</h3>
+  <div class="hc-admin-grid hc-case-detail-layout">
+    <main class="hc-case-detail-mainstack">
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--header">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Synthese</div>
+            <h2 class="hc-section-title">En-tete du cas</h2>
+          </div>
+          <span class="hc-elapsed hc-elapsed--{{ elapsed_tone(case_activity_ref) }}">{{ format_elapsed_compact(case_activity_ref) }}</span>
+        </div>
         <div class="hc-case-overview-grid">
           <div class="hc-case-overview-item">
             <span>Statut</span>
-            <strong>{{ case_row.status }}</strong>
+            <strong><span class="hc-case-status-badge hc-status-pill--{{ case_status_key }}" title="{{ case_row.status }}">{{ case_status_label }}</span></strong>
           </div>
           <div class="hc-case-overview-item">
-            <span>Priorité</span>
+            <span>Priorite</span>
             <strong>{{ case_row.priority }}</strong>
           </div>
           <div class="hc-case-overview-item">
             <span>Score de risque</span>
-            <strong>{{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (case_row.risk_score if case_row.risk_score is not none else '—') }}</strong>
+            <strong>{{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (case_row.risk_score if case_row.risk_score is not none else '-') }}</strong>
           </div>
           <div class="hc-case-overview-item">
             <span>Ouvert le</span>
@@ -41,8 +110,13 @@
         </div>
       </section>
 
-      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--summary">
-        <h3 class="h6 mb-3">Résumé de la demande</h3>
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--summary">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Demande</div>
+            <h2 class="hc-section-title">Resume et contexte</h2>
+          </div>
+        </div>
         {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
           <div class="hc-risk-emergency-alert mb-3" aria-label="Alerte prioritaire">
             <div class="hc-risk-emergency-alert__eyebrow">Alerte prioritaire</div>
@@ -57,42 +131,43 @@
             <strong>{{ req.title or ('Demande #' ~ req.id) }}</strong>
           </div>
           <div class="hc-case-summary-item">
-            <span>Catégorie</span>
+            <span>Categorie</span>
             <strong>{{ request_category_label(req.category) }}</strong>
           </div>
           <div class="hc-case-summary-item">
             <span>Ville / territoire</span>
-            <strong>{{ req.city or '—' }}</strong>
+            <strong>{{ req.city or req.location_text or '-' }}</strong>
           </div>
         </div>
         {% if risk_ai_suggestion and risk_ai_suggestion.has_suggestion %}
-          <p class="mb-1"><strong>Suggestion de catégorie:</strong> {{ risk_ai_suggestion.suggested_category_label }}</p>
-          {% if risk_ai_suggestion.matched_rules %}
-            <div class="small text-muted mb-1">Signaux détectés</div>
-            <div class="d-flex flex-wrap gap-1 mb-1">
-              {% for rule in risk_ai_suggestion.matched_rules[:4] %}
-                <span class="badge text-bg-light border">{{ (rule.label or '')|replace('_', ' ')|replace(':', ' · ') }}</span>
-              {% endfor %}
-            </div>
-          {% endif %}
+          <div class="hc-case-signal-panel">
+            <strong>Suggestion de categorie:</strong> {{ risk_ai_suggestion.suggested_category_label }}
+            {% if risk_ai_suggestion.matched_rules %}
+              <div class="hc-case-chiprow mt-2">
+                {% for rule in risk_ai_suggestion.matched_rules[:4] %}
+                  <span class="badge text-bg-light border">{{ (rule.label or '')|replace('_', ' ')|replace(':', ' / ') }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
         {% endif %}
-        {% if risk_ai_suggestion and risk_ai_suggestion.emergency_detected %}
-          <p class="mb-1"><strong>Escalade critique:</strong> {{ risk_ai_suggestion.emergency_reason_summary }}</p>
-        {% endif %}
-        <div class="hc-case-description mt-3">
+        <div class="hc-case-description">
           <div class="small text-muted mb-1">Description</div>
-          <p class="mb-0">{{ req.description or req.message or '—' }}</p>
+          <p class="mb-0">{{ req.description or req.message or '-' }}</p>
         </div>
       </section>
 
-      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--assistant">
-        <h3 class="h6 mb-3">Assistant opérationnel</h3>
-        <div class="small text-muted mb-2">Suggestion de prochaine action</div>
-        <p class="mb-1"><strong>Action recommandée:</strong> {{ assistant_recommendation.action_label }}</p>
-        <p class="mb-1"><strong>Priorité d'action:</strong> {{ assistant_recommendation.urgency }}</p>
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--assistant">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Decision support</div>
+            <h2 class="hc-section-title">Assistant operationnel</h2>
+          </div>
+          <span class="badge text-bg-light border">{{ assistant_recommendation.urgency }}</span>
+        </div>
+        <p class="mb-1"><strong>Action recommandee:</strong> {{ assistant_recommendation.action_label }}</p>
         {% if assistant_recommendation.reason_tags %}
-          <div class="small text-muted mb-1">Pourquoi</div>
-          <div class="d-flex flex-wrap gap-1 mb-2">
+          <div class="hc-case-chiprow my-2">
             {% for tag in assistant_recommendation.reason_tags %}
               <span class="badge text-bg-light border">{{ tag }}</span>
             {% endfor %}
@@ -101,11 +176,16 @@
         <p class="mb-0">{{ assistant_recommendation.operator_summary }}</p>
       </section>
 
-      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--blockages">
-        <h3 class="h6 mb-2">Blocages opérationnels détectés</h3>
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--blockages">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Risques de traitement</div>
+            <h2 class="hc-section-title">Blocages operationnels detectes</h2>
+          </div>
+        </div>
         {% if operational_blockages and operational_blockages.has_blockage %}
           {% if operational_blockages.count > 1 %}
-            <div class="small text-muted mb-2">{{ operational_blockages.count }} blocages détectés</div>
+            <div class="small text-muted mb-2">{{ operational_blockages.count }} blocages detectes</div>
           {% endif %}
           <ul class="hc-blockage-list mb-0">
             {% for item in operational_blockages['items'] %}
@@ -113,499 +193,354 @@
             {% endfor %}
           </ul>
         {% else %}
-          <p class="mb-0 text-muted">Aucun blocage critique détecté.</p>
+          <p class="mb-0 text-muted">Aucun blocage critique detecte.</p>
         {% endif %}
       </section>
 
-      <section class="hc-card mb-3 p-3 hc-case-detail-card hc-case-detail-card--matches">
-        <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-          <h3 class="h6 mb-0">Professionnels suggérés</h3>
-          <span class="small text-muted">Matching explicable</span>
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--matches">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Matching explicable</div>
+            <h2 class="hc-section-title">Professionnels suggeres</h2>
+          </div>
+          <span class="small text-muted">{{ suggested_professionals|length }} options</span>
         </div>
-        <div class="table-responsive hc-case-suggestions-tablewrap">
-          <table class="table table-sm align-middle mb-0 hc-case-suggestions-table">
-            <thead>
-              <tr>
-                <th>Score</th>
-                <th>Professionnel</th>
-                <th>Ville</th>
-                <th>Profession</th>
-                <th>Contact</th>
-                <th>Motifs</th>
-                <th class="text-end">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in suggested_professionals %}
-                {% set lead = item.lead %}
-                <tr>
-                  <td><span class="badge text-bg-light border">{{ item.score }}</span></td>
-                  <td>
-                    <div>{{ lead.full_name or ('Lead #' ~ lead.id) }}</div>
-                    <div class="small text-muted">{{ lead.organization or '—' }}</div>
-                  </td>
-                  <td>{{ lead.city or '—' }}</td>
-                  <td>{{ lead.profession or '—' }}</td>
-                  <td>
-                    {% if lead.phone %}
-                      <div class="small">{{ lead.phone }}</div>
-                    {% endif %}
-                    {% if lead.email and not lead.email.endswith('@esante-fhir.local') %}
-                      <div class="small text-muted" title="{{ lead.email }}">{{ lead.email }}</div>
-                    {% elif lead.phone %}
-                      <div class="small text-muted">Contact telephonique</div>
-                    {% else %}
-                      <div class="small text-muted">Contact limite</div>
-                    {% endif %}
-                  </td>
-                  <td>
-                    <div class="d-flex flex-wrap gap-1">
-                      {% for tag in item.reason_tags %}
-                        <span class="badge text-bg-light border">{{ tag }}</span>
-                      {% endfor %}
-                    </div>
-                  </td>
-                  <td class="text-end">
-                    <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="assigned_professional_lead_id" value="{{ lead.id }}">
-                      <button class="btn btn-outline-primary btn-sm" type="submit">Assigner</button>
-                    </form>
-                  </td>
-                </tr>
-              {% else %}
-                <tr>
-                  <td colspan="7" class="text-muted">
-  {% set has_assigned = case_row.assigned_professional_lead_id %}
-  {% if has_assigned %}
-    Tous les professionnels pertinents sont déjà associés à ce cas.
-  {% else %}
-    Aucun professionnel supplémentaire recommandé pour le moment.
-  {% endif %}
-</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="hc-case-pro-grid">
+          {% for item in suggested_professionals %}
+            {% set lead = item.lead %}
+            <article class="hc-case-pro-card">
+              <div class="hc-case-pro-card__score">
+                <span>Score</span>
+                <strong>{{ item.score }}</strong>
+              </div>
+              <div class="hc-case-pro-card__body">
+                <div class="hc-case-pro-card__name">{{ lead.full_name or ('Lead #' ~ lead.id) }}</div>
+                <div class="hc-case-pro-card__meta">{{ lead.organization or '-' }} / {{ lead.city or '-' }} / {{ lead.profession or '-' }}</div>
+                <div class="hc-case-pro-card__contact">
+                  {% if lead.phone %}
+                    <span>{{ lead.phone }}</span>
+                  {% endif %}
+                  {% if lead.email and not lead.email.endswith('@esante-fhir.local') %}
+                    <span title="{{ lead.email }}">{{ lead.email }}</span>
+                  {% elif not lead.phone %}
+                    <span>Contact limite</span>
+                  {% endif %}
+                </div>
+                {% if item.reason_tags %}
+                  <div class="hc-case-chiprow mt-2">
+                    {% for tag in item.reason_tags %}
+                      <span class="badge text-bg-light border">{{ tag }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="assigned_professional_lead_id" value="{{ lead.id }}">
+                <button class="btn btn-outline-primary btn-sm" type="submit">Assigner</button>
+              </form>
+            </article>
+          {% else %}
+            <div class="hc-empty-state hc-empty-state--compact">
+              <div class="hc-empty-state__title">
+                {% if case_row.assigned_professional_lead_id %}
+                  Tous les professionnels pertinents sont deja associes a ce cas.
+                {% else %}
+                  Aucun professionnel supplementaire recommande pour le moment.
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
         </div>
       </section>
 
-  <section class="hc-card mb-3 p-3 hc-case-detail-card">
-  <h3 class="h6 mb-3">Chronologie</h3>
-
-  <div class="hc-timeline-track">
-    {% for group_label, group_items in grouped_events.items() %}
-      <div class="hc-timeline-group">
-        <div class="hc-timeline-date">{{ group_label }}</div>
-
-        {% for ev in group_items %}
-          {% set event_title = {
-            'triage_scored': 'Évaluation du risque',
-            'case_created': 'Dossier créé',
-            'professional_assigned': 'Professionnel assigné',
-            'owner_assigned': 'Responsable assigné',
-            'status_changed': 'Statut mis à jour',
-            'priority_changed': 'Priorité mise à jour',
-            'participant_added': 'Participant ajouté',
-            'note_added': 'Note interne ajoutée',
-            'case_resolved': 'Dossier résolu',
-            'case_closed': 'Dossier clôturé'
-          }.get(ev.event_type, (ev.event_type or 'Activité')|replace('_', ' ')|title) %}
-
-          {% set event_context = '' %}
-          {% if ev.event_type == 'triage_scored' %}
-            {% set event_context = 'Niveau de risque évalué pour l’orientation opérationnelle.' %}
-          {% elif ev.event_type == 'case_created' %}
-            {% set event_context = 'Dossier créé à partir de la demande #' ~ req.id %}
-          {% elif ev.event_type == 'professional_assigned' %}
-            {% set event_context = 'Un professionnel principal a été rattaché au dossier.' %}
-          {% elif ev.event_type == 'owner_assigned' %}
-            {% set event_context = 'Le pilotage du dossier a été attribué à un responsable.' %}
-          {% elif ev.event_type == 'participant_added' %}
-            {% set event_context = 'Un participant supplémentaire a été ajouté au suivi.' %}
-          {% elif ev.event_type == 'priority_changed' %}
-            {% set event_context = 'Le niveau de priorité du dossier a été modifié.' %}
-          {% elif ev.event_type == 'status_changed' %}
-            {% set event_context = 'Le statut opérationnel du dossier a été mis à jour.' %}
-          {% elif ev.event_type == 'case_resolved' %}
-            {% set event_context = 'Le dossier a été marqué comme résolu.' %}
-          {% elif ev.event_type == 'case_closed' %}
-            {% set event_context = 'Le dossier a été clôturé.' %}
-          {% elif ev.event_type == 'note_added' %}
-            {% set event_context = 'Une note interne a été ajoutée au dossier.' %}
-          {% endif %}
-
-          <div class="hc-timeline-item">
-            <div class="hc-timeline-item__marker"></div>
-
-            <div class="flex-grow-1">
-              <div class="fw-semibold">{{ event_title }}</div>
-
-              {% if ev.message and ev.message != event_title %}
-                <div class="small text-muted mt-1">{{ ev.message }}</div>
-              {% elif event_context %}
-                <div class="small text-muted mt-1">{{ event_context }}</div>
-              {% endif %}
-
-              <div class="hc-timeline-meta">
-                {% if ev.actor_user %}
-                  Par administrateur · {{ ev.actor_user.username or ev.actor_user.email or ('#' ~ ev.actor_user_id) }}
-                {% else %}
-                  Par système
-                {% endif %}
-                {% if ev.visibility %}
-                  ·
-                  {% if ev.visibility == 'internal' %}
-                    Interne
-                  {% elif ev.visibility == 'public' %}
-                    Public
-                  {% else %}
-                    {{ ev.visibility }}
-                  {% endif %}
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="small text-muted text-nowrap">
-              {{ ev.created_at|format_datetime_fr }}
-            </div>
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--participants">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Coordination</div>
+            <h2 class="hc-section-title">Participants supplementaires</h2>
           </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="text-muted">Aucun événement pour le moment.</div>
-    {% endfor %}
-  </div>
-</section>
-
-<h3 class="h6 mb-3">Chronologie</h3>
-  <div class="list-group list-group-flush">
-    {% for ev in events %}
-      {% set event_title = {
-        'triage_scored': 'Évaluation du risque',
-        'case_created': 'Dossier créé',
-        'professional_assigned': 'Professionnel assigné',
-        'owner_assigned': 'Responsable assigné',
-        'status_changed': 'Statut mis à jour',
-        'priority_changed': 'Priorité mise à jour',
-        'participant_added': 'Participant ajouté',
-        'note_added': 'Note interne ajoutée',
-        'case_resolved': 'Dossier résolu',
-        'case_closed': 'Dossier clôturé'
-      }.get(ev.event_type, (ev.event_type or 'Activité')|replace('_', ' ')|title) %}
-
-      {% set event_context = '' %}
-      {% if ev.event_type == 'triage_scored' %}
-        {% set event_context = 'Niveau de risque évalué pour l’orientation opérationnelle.' %}
-      {% elif ev.event_type == 'case_created' %}
-        {% set event_context = 'Dossier créé à partir de la demande #' ~ req.id %}
-      {% elif ev.event_type == 'professional_assigned' %}
-        {% set event_context = 'Un professionnel principal a été rattaché au dossier.' %}
-      {% elif ev.event_type == 'owner_assigned' %}
-        {% set event_context = 'Le pilotage du dossier a été attribué à un responsable.' %}
-      {% elif ev.event_type == 'participant_added' %}
-        {% set event_context = 'Un participant supplémentaire a été ajouté au suivi.' %}
-      {% elif ev.event_type == 'priority_changed' %}
-        {% set event_context = 'Le niveau de priorité du dossier a été modifié.' %}
-      {% elif ev.event_type == 'status_changed' %}
-        {% set event_context = 'Le statut opérationnel du dossier a été mis à jour.' %}
-      {% elif ev.event_type == 'case_resolved' %}
-        {% set event_context = 'Le dossier a été marqué comme résolu.' %}
-      {% elif ev.event_type == 'case_closed' %}
-        {% set event_context = 'Le dossier a été clôturé.' %}
-      {% elif ev.event_type == 'note_added' %}
-        {% set event_context = 'Une note interne a été ajoutée au dossier.' %}
-      {% endif %}
-
-      <div class="list-group-item px-0">
-        <div class="d-flex justify-content-between gap-3">
-          <div class="flex-grow-1">
-            <div class="fw-semibold">{{ event_title }}</div>
-
-            {% if ev.message and ev.message != event_title %}
-              <div class="small text-muted mt-1">{{ ev.message }}</div>
-            {% elif event_context %}
-              <div class="small text-muted mt-1">{{ event_context }}</div>
-            {% endif %}
-
-            <div class="small text-muted mt-2">
-              {% if ev.actor_user %}
-                Par admin {{ ev.actor_user.username or ev.actor_user.email or ('#' ~ ev.actor_user_id) }}
-              {% else %}
-                Par système
-              {% endif %}
-            </div>
-
-            {% if ev.visibility %}
-              <div class="small mt-2">
-                {% if ev.visibility == 'internal' %}
-                  <span class="badge bg-light text-dark">Interne</span>
-                {% elif ev.visibility == 'public' %}
-                  <span class="badge bg-success-subtle text-success-emphasis">Public</span>
-                {% endif %}
-              </div>
-            {% endif %}
-          </div>
-
-          <div class="small text-muted text-nowrap">
-            {{ ev.created_at|format_datetime_fr }}
-          </div>
+          <span class="small text-muted">{{ participants|length }} participants</span>
         </div>
-      </div>
-    {% else %}
-      <div class="text-muted">Aucun événement pour le moment.</div>
-    {% endfor %}
-  </div>
-</section>
+        <div class="hc-participant-grid">
+          {% for p in participants %}
+            <article class="hc-participant-card">
+              <div>
+                {% if p.admin_user %}
+                  <span class="badge bg-dark">Admin</span>
+                {% elif p.professional_lead %}
+                  <span class="badge bg-primary">Professional</span>
+                {% elif p.user %}
+                  <span class="badge bg-secondary">User</span>
+                {% elif p.external_name %}
+                  <span class="badge bg-light text-dark">External</span>
+                {% else %}
+                  <span class="badge bg-light text-dark">Unknown</span>
+                {% endif %}
+              </div>
+              <div class="hc-participant-card__body">
+                <strong>
+                  {% if p.admin_user %}
+                    {{ p.admin_user.username or p.admin_user.email or ('Admin #' ~ p.admin_user_id) }}
+                  {% elif p.professional_lead %}
+                    {{ p.professional_lead.full_name or p.professional_lead.email or ('Lead #' ~ p.professional_lead_id) }}
+                  {% elif p.user %}
+                    {{ p.user.username or p.user.email or ('User #' ~ p.user_id) }}
+                  {% elif p.external_name %}
+                    {{ p.external_name }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </strong>
+                <span>{{ p.role }} / {{ p.status }}</span>
+                <small>{{ p.added_at|format_datetime_fr }}</small>
+              </div>
+            </article>
+          {% else %}
+            <div class="text-muted">Aucun participant pour le moment.</div>
+          {% endfor %}
+        </div>
+      </section>
 
-      <section class="hc-card mb-3 p-3 hc-case-detail-card">
-        <h3 class="h6 mb-3">Participants supplémentaires</h3>
-        <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Rôle</th>
-                <th>Statut</th>
-                <th>Participant</th>
-                <th>Ajouté le</th>
-              </tr>
-            </thead>
-              <tbody>
-              {% for p in participants %}
-                <tr>
-                  <td>
-                    {% if p.admin_user %}
-                      <span class="badge bg-dark">Admin</span>
-                    {% elif p.professional_lead %}
-                      <span class="badge bg-primary">Professional</span>
-                    {% elif p.user %}
-                      <span class="badge bg-secondary">User</span>
-                    {% elif p.external_name %}
-                      <span class="badge bg-light text-dark">External</span>
-                    {% else %}
-                      <span class="badge bg-light text-dark">Unknown</span>
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--timeline">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Journal</div>
+            <h2 class="hc-section-title">Chronologie</h2>
+          </div>
+          <span class="small text-muted">{{ events|length }} evenements</span>
+        </div>
+        <div class="hc-timeline-track">
+          {% for group_label, group_items in grouped_events.items() %}
+            <div class="hc-timeline-group">
+              <div class="hc-timeline-date">{{ group_label }}</div>
+              {% for ev in group_items %}
+                {% set label = event_label(ev)|trim %}
+                {% set context = event_context(ev)|trim %}
+                <div class="hc-timeline-item hc-timeline-item--{{ (ev.event_type or 'activity')|replace('_', '-')|lower }}">
+                  <div class="hc-timeline-item__marker"></div>
+                  <div class="hc-timeline-item__body">
+                    <div class="hc-timeline-item__title">{{ label }}</div>
+                    {% if ev.message and ev.message != label %}
+                      <div class="hc-timeline-item__message">{{ ev.message }}</div>
+                    {% elif context %}
+                      <div class="hc-timeline-item__message">{{ context }}</div>
                     {% endif %}
-                  </td>
-                  <td>{{ p.role }}</td>
-                  <td>{{ p.status }}</td>
-                  <td>
-                    {% if p.admin_user %}
-                      {{ p.admin_user.username or p.admin_user.email or ('Admin #' ~ p.admin_user_id) }}
-                    {% elif p.professional_lead %}
-                      {{ p.professional_lead.full_name or p.professional_lead.email or ('Lead #' ~ p.professional_lead_id) }}
-                    {% elif p.user %}
-                      {{ p.user.username or p.user.email or ('User #' ~ p.user_id) }}
-                    {% elif p.external_name %}
-                      {{ p.external_name }}
-                    {% else %}
-                      —
-                    {% endif %}
-                  </td>
-                  <td>{{ p.added_at|format_datetime_fr }}</td>
-                </tr>
-              {% else %}
-                <tr>
-                  <td colspan="5" class="text-muted">Aucun participant pour le moment.</td>
-                </tr>
+                    <div class="hc-timeline-meta">
+                      {% if ev.actor_user %}
+                        Par administrateur / {{ ev.actor_user.username or ev.actor_user.email or ('#' ~ ev.actor_user_id) }}
+                      {% else %}
+                        Par systeme
+                      {% endif %}
+                      {% if ev.visibility %}
+                        / {{ 'Interne' if ev.visibility == 'internal' else ('Public' if ev.visibility == 'public' else ev.visibility) }}
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="hc-timeline-item__time">{{ ev.created_at|format_datetime_fr }}</div>
+                </div>
               {% endfor %}
-            </tbody>
-          </table>
+            </div>
+          {% else %}
+            <div class="text-muted">Aucun evenement pour le moment.</div>
+          {% endfor %}
         </div>
       </section>
     </main>
 
     <aside class="hc-case-detail-aside">
-      {% set case_sla = case_sla_snapshot(case_row) %}
-      <section class="hc-card mb-3 p-3 hc-case-detail-card">
-        <h3 class="h6 mb-2">Délai cible</h3>
-        <p class="mb-1"><strong>Cible:</strong> {{ case_sla.target_label }}</p>
-        <p class="mb-1"><strong>État:</strong> <span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span></p>
-        <p class="mb-0" title="{{ case_sla.deadline or '—' }}">{{ case_sla.detail }}</p>
-      </section>
-
-      <section class="hc-card mb-3 p-3 hc-case-detail-card">
-        <h3 class="h6 mb-3">Structures associées</h3>
-        <ul class="list-unstyled mb-0">
-          {% for name, role in collaborators %}
-            <li class="d-flex justify-content-between">
-              <span>{{ name }}</span>
-              <span class="text-muted">{{ role }}</span>
-            </li>
-          {% else %}
-            <li class="text-muted">Aucune structure associée.</li>
-          {% endfor %}
-        </ul>
-      </section>
-
-      <section class="hc-card mb-3 p-3 hc-case-detail-card">
-        <h3 class="h6 mb-3">Contrôles du cas</h3>
-        {% set case_activity_ref = case_row.last_activity_at or case_row.updated_at or case_row.created_at %}
-        <div class="small text-muted mb-3">
-          <div><strong>Risk score:</strong> {{ case_row.risk_score if case_row.risk_score is not none else '—' }}</div>
-          <div><strong>Opened:</strong> {{ case_row.opened_at|format_datetime_fr }}</div>
-          <div><strong>Assigned:</strong> {{ case_row.assigned_at|format_datetime_fr }}</div>
-          <div><strong>Resolved:</strong> {{ case_row.resolved_at|format_datetime_fr }}</div>
-          <div><strong>Closed:</strong> {{ case_row.closed_at|format_datetime_fr }}</div>
-          <div>
-            <strong>Dernière activité :</strong>
-            <span class="hc-elapsed hc-elapsed--{{ elapsed_tone(case_activity_ref) }}">{{ format_elapsed_compact(case_activity_ref) }}</span>
-            <span title="{{ case_activity_ref|format_datetime_fr }}">{{ case_activity_ref|format_datetime_fr }}</span>
+      <div class="hc-case-action-rail">
+        <section class="hc-card hc-case-detail-card hc-case-detail-card--sla">
+          <h2 class="hc-section-title">Delai cible</h2>
+          <div class="hc-case-rail-metric">
+            <span>Cible</span>
+            <strong>{{ case_sla.target_label }}</strong>
           </div>
-        </div>
-
-        <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}" class="mb-3">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <label class="form-label">Statut</label>
-          <div class="d-flex gap-2">
-            <select name="status" class="form-select form-select-sm">
-              {% for s in statuses %}
-                <option value="{{ s }}" {% if case_row.status == s %}selected{% endif %}>{{ s }}</option>
-              {% endfor %}
-            </select>
-            <button class="btn btn-primary btn-sm" type="submit">Mettre à jour</button>
+          <div class="hc-case-rail-metric">
+            <span>Etat</span>
+            <strong><span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span></strong>
           </div>
-        </form>
+          <p class="mb-0 small text-muted" title="{{ case_sla.deadline or '-' }}">{{ case_sla.detail }}</p>
+        </section>
 
-        <form method="post" action="{{ url_for('admin.admin_case_set_priority', case_id=case_row.id) }}" class="mb-3">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <label class="form-label">Priorité</label>
-          <div class="d-flex gap-2">
-            <select name="priority" class="form-select form-select-sm">
-              {% for p in priorities %}
-                <option value="{{ p }}" {% if case_row.priority == p %}selected{% endif %}>{{ p }}</option>
-              {% endfor %}
-            </select>
-            <button class="btn btn-primary btn-sm" type="submit">Mettre à jour</button>
+        <section class="hc-card hc-case-detail-card hc-case-detail-card--controls">
+          <h2 class="hc-section-title">Controles du cas</h2>
+          <div class="hc-case-control-meta">
+            <div><strong>Risk score:</strong> {{ case_row.risk_score if case_row.risk_score is not none else '-' }}</div>
+            <div><strong>Opened:</strong> {{ case_row.opened_at|format_datetime_fr }}</div>
+            <div><strong>Assigned:</strong> {{ case_row.assigned_at|format_datetime_fr }}</div>
+            <div><strong>Resolved:</strong> {{ case_row.resolved_at|format_datetime_fr }}</div>
+            <div><strong>Closed:</strong> {{ case_row.closed_at|format_datetime_fr }}</div>
+            <div><strong>Derniere activite:</strong> <span title="{{ case_activity_ref|format_datetime_fr }}">{{ case_activity_ref|format_datetime_fr }}</span></div>
           </div>
-        </form>
 
-        <form method="post" action="{{ url_for('admin.admin_case_assign_owner', case_id=case_row.id) }}" class="mb-3">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <label class="form-label">Responsable</label>
-          <div class="d-flex gap-2">
-            <select name="owner_user_id" class="form-select form-select-sm">
-              <option value="">Non attribué</option>
-              {% for o in owners %}
-                <option value="{{ o[0] }}" {% if case_row.owner_user_id == o[0] %}selected{% endif %}>{{ o[1] }}</option>
-              {% endfor %}
-            </select>
-            <button class="btn btn-primary btn-sm" type="submit">Attribuer</button>
-          </div>
-        </form>
-
-        <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <label class="form-label">Référent professionnel principal</label>
-          <div class="d-flex gap-2">
-            <select name="assigned_professional_lead_id" class="form-select form-select-sm">
-              <option value="">Non attribué</option>
-              {% for lead in professionals %}
-                <option value="{{ lead.id }}" {% if case_row.assigned_professional_lead_id == lead.id %}selected{% endif %}>
-                  #{{ lead.id }} - {{ lead.full_name or lead.email }}
-                </option>
-              {% endfor %}
-            </select>
-            <button class="btn btn-primary btn-sm" type="submit">Attribuer</button>
-          </div>
-        </form>
-      </section>
-
-      <section class="hc-card p-3 mb-3 hc-case-detail-card">
-        <h3 class="h6 mb-3">Actions rapides</h3>
-        <div class="d-flex flex-wrap gap-2">
-          <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}">
+          <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}" class="hc-case-control-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="status" value="resolved">
-            <button class="btn btn-outline-success btn-sm" type="submit">Marquer comme résolu</button>
-          </form>
-          <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="status" value="closed">
-            <button class="btn btn-outline-secondary btn-sm" type="submit">Clôturer le cas</button>
-          </form>
-        </div>
-      </section>
-
-      <section class="hc-card p-3 hc-case-detail-card">
-        <h3 class="h6 mb-3">Ajouter un participant</h3>
-        <form method="post" action="{{ url_for('admin.admin_case_add_participant', case_id=case_row.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="mb-2">
-            <label class="form-label">Type de participant</label>
-            <select name="participant_type" class="form-select form-select-sm">
-              {% for t in participant_types %}
-                <option value="{{ t }}">{{ t }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Rôle</label>
-            <select name="role" class="form-select form-select-sm">
-              {% for r in participant_roles %}
-                <option value="{{ r }}">{{ r }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Utilisateur (facultatif)</label>
-            <select name="user_id" class="form-select form-select-sm">
-              <option value="">—</option>
-              {% for u in users %}
-                <option value="{{ u[0] }}">#{{ u[0] }} - {{ u[1] or u[2] }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Référent professionnel (facultatif)</label>
-            <select name="professional_lead_id" class="form-select form-select-sm">
-              <option value="">—</option>
-              {% for lead in professionals %}
-                <option value="{{ lead.id }}">#{{ lead.id }} - {{ lead.full_name or lead.email }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Nom externe (facultatif)</label>
-            <input type="text" name="external_name" class="form-control form-control-sm" placeholder="Association / contact externe">
-          </div>
-          <div class="mb-3">
             <label class="form-label">Statut</label>
-            <select name="status" class="form-select form-select-sm">
-              <option value="active">actif</option>
-              <option value="inactive">inactif</option>
-            </select>
-          </div>
-          <button class="btn btn-primary btn-sm" type="submit">Ajouter le participant</button>
-        </form>
-      </section>
+            <div class="hc-case-control-row">
+              <select name="status" class="form-select form-select-sm">
+                {% for s in statuses %}
+                  <option value="{{ s }}" {% if case_row.status == s %}selected{% endif %}>{{ status_display_labels.get(s, s|replace('_', ' ')|title) }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-primary btn-sm" type="submit">Mettre a jour</button>
+            </div>
+          </form>
 
-      <section class="hc-card p-3">
-        <h3 class="h6 mb-3">Ajouter un événement / une note</h3>
-        <form method="post" action="{{ url_for('admin.admin_case_add_event', case_id=case_row.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="mb-2">
-            <label class="form-label">Type d'événement</label>
-            <input type="text" name="event_type" class="form-control form-control-sm" value="note_added">
+          <form method="post" action="{{ url_for('admin.admin_case_set_priority', case_id=case_row.id) }}" class="hc-case-control-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="form-label">Priorite</label>
+            <div class="hc-case-control-row">
+              <select name="priority" class="form-select form-select-sm">
+                {% for p in priorities %}
+                  <option value="{{ p }}" {% if case_row.priority == p %}selected{% endif %}>{{ p }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-primary btn-sm" type="submit">Mettre a jour</button>
+            </div>
+          </form>
+
+          <form method="post" action="{{ url_for('admin.admin_case_assign_owner', case_id=case_row.id) }}" class="hc-case-control-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="form-label">Responsable</label>
+            <div class="hc-case-control-row">
+              <select name="owner_user_id" class="form-select form-select-sm">
+                <option value="">Non attribue</option>
+                {% for o in owners %}
+                  <option value="{{ o[0] }}" {% if case_row.owner_user_id == o[0] %}selected{% endif %}>{{ o[1] }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-primary btn-sm" type="submit">Attribuer</button>
+            </div>
+          </form>
+
+          <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}" class="hc-case-control-form mb-0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="form-label">Referent professionnel principal</label>
+            <div class="hc-case-control-row">
+              <select name="assigned_professional_lead_id" class="form-select form-select-sm">
+                <option value="">Non attribue</option>
+                {% for lead in professionals %}
+                  <option value="{{ lead.id }}" {% if case_row.assigned_professional_lead_id == lead.id %}selected{% endif %}>
+                    #{{ lead.id }} - {{ lead.full_name or lead.email }}
+                  </option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-primary btn-sm" type="submit">Attribuer</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="hc-card hc-case-detail-card hc-case-detail-card--quick">
+          <h2 class="hc-section-title">Actions rapides</h2>
+          <div class="hc-case-quick-actions">
+            <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="status" value="resolved">
+              <button class="btn btn-outline-success btn-sm" type="submit">Marquer comme resolu</button>
+            </form>
+            <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="status" value="closed">
+              <button class="btn btn-outline-secondary btn-sm" type="submit">Cloturer le cas</button>
+            </form>
           </div>
-          <div class="mb-2">
-            <label class="form-label">Message</label>
-            <textarea name="message" rows="3" class="form-control form-control-sm" placeholder="Internal note"></textarea>
-          </div>
-          <div class="mb-2">
-            <label class="form-label">Métadonnées JSON (facultatif)</label>
-            <textarea name="metadata_json" rows="3" class="form-control form-control-sm" placeholder='{"key":"value"}'></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Visibilité</label>
-            <select name="visibility" class="form-select form-select-sm">
-              <option value="internal">interne</option>
-              <option value="public">publique</option>
-            </select>
-          </div>
-          <button class="btn btn-primary btn-sm" type="submit">Ajouter l'événement</button>
-        </form>
-      </section>
+        </section>
+
+        <section class="hc-card hc-case-detail-card hc-case-detail-card--structures">
+          <h2 class="hc-section-title">Structures associees</h2>
+          <ul class="hc-case-structure-list">
+            {% for name, role in collaborators %}
+              <li>
+                <span>{{ name }}</span>
+                <strong>{{ role }}</strong>
+              </li>
+            {% else %}
+              <li class="text-muted">Aucune structure associee.</li>
+            {% endfor %}
+          </ul>
+        </section>
+
+        <section class="hc-card hc-case-detail-card hc-case-detail-card--add-participant">
+          <h2 class="hc-section-title">Ajouter un participant</h2>
+          <form method="post" action="{{ url_for('admin.admin_case_add_participant', case_id=case_row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-2">
+              <label class="form-label">Type de participant</label>
+              <select name="participant_type" class="form-select form-select-sm">
+                {% for t in participant_types %}
+                  <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Role</label>
+              <select name="role" class="form-select form-select-sm">
+                {% for r in participant_roles %}
+                  <option value="{{ r }}">{{ r }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Utilisateur (facultatif)</label>
+              <select name="user_id" class="form-select form-select-sm">
+                <option value="">-</option>
+                {% for u in users %}
+                  <option value="{{ u[0] }}">#{{ u[0] }} - {{ u[1] or u[2] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Referent professionnel (facultatif)</label>
+              <select name="professional_lead_id" class="form-select form-select-sm">
+                <option value="">-</option>
+                {% for lead in professionals %}
+                  <option value="{{ lead.id }}">#{{ lead.id }} - {{ lead.full_name or lead.email }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Nom externe (facultatif)</label>
+              <input type="text" name="external_name" class="form-control form-control-sm" placeholder="Association / contact externe">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Statut</label>
+              <select name="status" class="form-select form-select-sm">
+                <option value="active">actif</option>
+                <option value="inactive">inactif</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Ajouter le participant</button>
+          </form>
+        </section>
+
+        <section class="hc-card hc-case-detail-card hc-case-detail-card--note">
+          <h2 class="hc-section-title">Ajouter un evenement / une note</h2>
+          <form method="post" action="{{ url_for('admin.admin_case_add_event', case_id=case_row.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-2">
+              <label class="form-label">Type d'evenement</label>
+              <input type="text" name="event_type" class="form-control form-control-sm" value="note_added">
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Message</label>
+              <textarea name="message" rows="3" class="form-control form-control-sm" placeholder="Internal note"></textarea>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Metadonnees JSON (facultatif)</label>
+              <textarea name="metadata_json" rows="3" class="form-control form-control-sm" placeholder='{"key":"value"}'></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Visibilite</label>
+              <select name="visibility" class="form-select form-select-sm">
+                <option value="internal">interne</option>
+                <option value="public">publique</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" type="submit">Ajouter l'evenement</button>
+          </form>
+        </section>
+      </div>
     </aside>
   </div>
 </div>

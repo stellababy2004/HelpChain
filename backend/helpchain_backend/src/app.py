@@ -707,7 +707,7 @@ def create_app(config_object=None) -> Flask:
 
     app.jinja_env.globals["t"] = db_t
 
-    # Login manager (admin UI)
+        # Login manager (admin UI)
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = "admin.admin_login"
@@ -722,17 +722,24 @@ def create_app(config_object=None) -> Flask:
 
     @app.before_request
     def inject_structure_context():
+        if (
+            request.path.startswith("/admin")
+            or request.path.startswith("/static/")
+            or request.path.startswith("/favicon")
+        ):
+            return
+
         try:
             current_structure_id()
         except (OperationalError, ProgrammingError):
-            # DB not ready yet (e.g., fresh instance without migrations).
-            # Allow request handling to proceed; routes will handle DB errors.
             try:
                 app.logger.warning(
                     "[TENANT] structure resolution skipped: DB schema unavailable."
                 )
             except Exception:
                 pass
+
+    # Blueprints
 
     # Blueprints
     try:
@@ -810,6 +817,8 @@ def create_app(config_object=None) -> Flask:
         app.register_blueprint(admin_command_bp)
     except Exception as e:
         app.logger.info("admin_command blueprint not loaded: %s", e)
+
+        
 
     try:
         from .routes.risk_map import risk_map_bp

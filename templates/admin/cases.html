@@ -1,16 +1,30 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Admin • Cas | HelpChain{% endblock %}
+{% block title %}Admin - Cas | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
 {% block admin_content %}
 {% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
+{% set status_display_labels = {
+  'new': 'Nouveau',
+  'open': 'Ouvert',
+  'triaged': 'Orienté',
+  'assigned': 'Assigné',
+  'in_progress': 'En cours',
+  'in-progress': 'En cours',
+  'resolved': 'Résolu',
+  'done': 'Terminé',
+  'closed': 'Clôturé',
+  'blocked': 'Bloqué',
+  'cancelled': 'Annulé',
+  'canceled': 'Annulé'
+} %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <div class="hc-admin-kicker">Console opérateur</div>
+        <div class="hc-admin-kicker">Console operateur</div>
         <h1 class="hc-admin-title">Cas</h1>
-        <div class="hc-muted">Suivi opérationnel des cas liés aux demandes, avec priorisation, responsabilité et délais.</div>
+        <div class="hc-muted">File operationnelle des demandes converties en cas, priorisee par risque, responsabilite et derniere activite.</div>
         {% if city %}
           <div class="mt-2">
             <span class="badge text-bg-light border hc-context-badge">Zone active: {{ city }}</span>
@@ -27,9 +41,9 @@
     <div class="hc-cases-zonebar__row">
       <div>
         <div class="hc-cases-zonebar__title">Zone: {{ city }}</div>
-        <div class="hc-cases-zonebar__copy">Liste filtrée depuis la carte territoriale.</div>
+        <div class="hc-cases-zonebar__copy">Liste filtree depuis la carte territoriale.</div>
       </div>
-      <div class="hc-cases-zonebar__meta">Territoire actif: {{ city }} • {{ cases|length }} cas affichés</div>
+      <div class="hc-cases-zonebar__meta">Territoire actif: {{ city }} / {{ cases|length }} cas affiches</div>
     </div>
   </div>
   {% endif %}
@@ -37,8 +51,8 @@
   <div class="hc-card mb-3 p-3 hc-cases-toolbar-card hc-ops-toolbar-card{% if city %} hc-cases-toolbar-card--territorial{% endif %}">
     <div class="hc-section-intro">
       <div>
-        <h2 class="hc-section-title">Repères de priorisation</h2>
-        <p class="hc-section-subtitle">Repérez les situations critiques, non attribuées ou sans action récente avant de filtrer la file.</p>
+        <h2 class="hc-section-title">Reperes de priorisation</h2>
+        <p class="hc-section-subtitle">Reperez les situations critiques, non attribuees ou sans action recente avant de filtrer la file.</p>
       </div>
     </div>
     <div class="hc-risk-overview mb-3">
@@ -47,7 +61,7 @@
         <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
       </a>
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None, city=city or None) }}">
-        <span class="hc-risk-overview__label">Situations à vérifier</span>
+        <span class="hc-risk-overview__label">Situations a verifier</span>
         <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
       </a>
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None, city=city or None) }}">
@@ -68,12 +82,12 @@
         <select name="status" class="form-select form-select-sm">
           <option value="">Tous</option>
           {% for s in statuses %}
-            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>
+            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ status_display_labels.get(s, s|replace('_', ' ')|title) }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-12 col-md-6 col-xl-2">
-        <label class="form-label">Priorité</label>
+        <label class="form-label">Priorite</label>
         <select name="priority" class="form-select form-select-sm">
           <option value="">Toutes</option>
           {% for p in priorities %}
@@ -85,14 +99,14 @@
         <label class="form-label">Responsable</label>
         <select name="owner" class="form-select form-select-sm">
           <option value="">Tous</option>
-          <option value="none" {% if owner == 'none' %}selected{% endif %}>Non attribué</option>
+          <option value="none" {% if owner == 'none' %}selected{% endif %}>Non attribue</option>
           {% for o in owners %}
             <option value="{{ o[0] }}" {% if owner == (o[0]|string) %}selected{% endif %}>{{ o[1] }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-12 col-md-6 col-xl-2">
-        <label class="form-label">Catégorie</label>
+        <label class="form-label">Categorie</label>
         <select name="category" class="form-select form-select-sm">
           <option value="">Toutes</option>
           {% for code, label in REQUEST_CATEGORY_CHOICES %}
@@ -105,7 +119,7 @@
         <select name="risk" class="form-select form-select-sm">
           <option value="">Tous</option>
           <option value="critical" {% if risk == 'critical' %}selected{% endif %}>Critique</option>
-          <option value="high" {% if risk == 'high' %}selected{% endif %}>Élevé</option>
+          <option value="high" {% if risk == 'high' %}selected{% endif %}>Eleve</option>
           <option value="normal" {% if risk == 'normal' %}selected{% endif %}>Normal</option>
           <option value="low" {% if risk == 'low' %}selected{% endif %}>Faible</option>
         </select>
@@ -116,12 +130,12 @@
           <span class="form-check-label">Sans action 72h</span>
         </label>
         <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}">Réinitialiser</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}">Reinitialiser</a>
       </div>
     </form>
-    <div class="hc-section-thread" aria-label="Continuité cases">
-      <span class="hc-section-thread__label">Besoin d’une vue de déploiement structurée</span>
-      <a class="hc-section-thread__link" href="{{ url_for('ops.ops_workspace') if request.path.startswith('/ops') else url_for('admin.admin_sla_breakdown') }}">Échanger sur un déploiement pilote</a>
+    <div class="hc-section-thread" aria-label="Continuite cases">
+      <span class="hc-section-thread__label">Besoin d'une vue de deploiement structuree</span>
+      <a class="hc-section-thread__link" href="{{ url_for('ops.ops_workspace') if request.path.startswith('/ops') else url_for('admin.admin_sla_breakdown') }}">Echanger sur un deploiement pilote</a>
     </div>
   </div>
 
@@ -130,9 +144,9 @@
       <div class="hc-section-intro">
         <div>
           <h2 class="hc-section-title">Suivi des cas</h2>
-          <p class="hc-section-subtitle">Vue filtrée des situations actives, avec priorité, responsable et dernière action.</p>
+          <p class="hc-section-subtitle">Vue filtree des situations actives, avec identifiant, territoire, responsable et derniere action.</p>
           {% if city %}
-            <div class="hc-cases-section-meta">Territoire actif: {{ city }} • {{ cases|length }} cas affichés</div>
+            <div class="hc-cases-section-meta">Territoire actif: {{ city }} / {{ cases|length }} cas affiches</div>
           {% endif %}
         </div>
       </div>
@@ -141,41 +155,48 @@
       <table class="table table-hover align-middle hc-admin-table admin-table hc-cases-table mb-0">
         <thead>
           <tr>
-            <th class="case-col">Case</th>
-            <th class="request-col col-request">Demande</th>
-            <th class="priority-col">Priorité</th>
+            <th class="case-col">ID</th>
+            <th class="request-col col-request">Titre</th>
+            <th class="city-col col-city">Ville</th>
+            <th class="status-col col-status">Statut</th>
+            <th class="priority-col">Priorite</th>
             <th class="owner-col">Responsable</th>
-            <th class="activity-col col-activity">Dernière action</th>
+            <th class="activity-col col-activity">Derniere action</th>
             <th class="actions-col col-action text-end">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for c in cases %}
-            <tr id="request-{{ c.request_id }}">
+            {% set ops_level = (ops_priority_levels.get(c.id) or 'normal') %}
+            {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
+            {% set case_sla = case_sla_snapshot(c) %}
+            {% set status_key = (c.status or 'open')|replace('_', '-')|lower %}
+            {% set status_label = status_display_labels.get((c.status or '')|lower, (c.status or '-')|replace('_', ' ')|title) %}
+            <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'Ã©levÃ©', 'ÃƒÂ©levÃƒÂ©'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}">
               <td class="case-col">
-                <div>#{{ c.id }}</div>
-                <div class="small mt-1"><span class="badge text-bg-light border">{{ c.status }}</span></div>
+                <div class="hc-case-id">#{{ c.id }}</div>
+                <div class="small text-muted">Req #{{ c.request_id }}</div>
               </td>
               <td class="request-col col-request">
-                <div class="fw-semibold">
+                <div class="hc-case-title">
                   {% if config.DEMO_MODE %}
                     <span class="text-muted">#{{ c.request_id }}</span>
                   {% else %}
                     <a href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">#{{ c.request_id }}</a>
                   {% endif %}
-                  <span class="ms-1">{{ c.request.title if c.request else '—' }}</span>
+                  <span class="ms-1">{{ c.request.title if c.request else '-' }}</span>
                 </div>
-                <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }} · {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}">
-                  {{ request_category_label(c.request.category if c.request else '') }} · {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '—' }}
+                <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }}">
+                  {{ request_category_label(c.request.category if c.request else '') }}
                 </div>
                 {% set signals = case_signals.get(c.id, []) %}
                 {% if signals %}
                   <div class="mt-1 d-flex flex-wrap gap-1">
                     {% for sig in signals %}
                       {% set sig_upper = sig|upper %}
-                      {% if sig_upper in ['URGENT', 'CRITIQUE', 'NOTIF. ÉCHEC'] %}
+                      {% if sig_upper in ['URGENT', 'CRITIQUE', 'NOTIF. ECHEC'] %}
                         {% set chip_class = 'hc-reason-chip--critical' %}
-                      {% elif sig_upper in ['NON ASSIGNÉ', 'RISQUE ÉLEVÉ', 'À VÉRIFIER'] %}
+                      {% elif sig_upper in ['NON ASSIGNE', 'RISQUE ELEVE', 'A VERIFIER'] %}
                         {% set chip_class = 'hc-reason-chip--warning' %}
                       {% else %}
                         {% set chip_class = 'hc-reason-chip--neutral' %}
@@ -185,31 +206,42 @@
                   </div>
                 {% endif %}
               </td>
+              <td class="city-col col-city" title="{{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '-' }}">
+                {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '-' }}
+              </td>
+              <td class="status-col col-status">
+                <span class="badge text-bg-light border hc-case-status-badge hc-status-pill--{{ status_key }}" title="{{ c.status }}">{{ status_label }}</span>
+              </td>
               <td class="priority-col">
-                {% set ops_level = (ops_priority_levels.get(c.id) or 'normal') %}
                 {% if ops_level == 'critique' %}
                   <span class="badge text-bg-danger">Critique</span>
-                {% elif ops_level == 'élevé' %}
+                {% elif ops_level == 'eleve' or ops_level == 'Ã©levÃ©' %}
                   <span class="badge text-bg-warning text-dark">Élevé</span>
                 {% else %}
                   <span class="badge text-bg-secondary">Normal</span>
                 {% endif %}
-                {% set case_sla = case_sla_snapshot(c) %}
                 <div class="small mt-1">
-                  <span class="hc-sla hc-sla--{{ case_sla.state }}" title="Délai cible {{ case_sla.target_label }} · {{ case_sla.deadline or '—' }}">
+                  <span class="hc-sla hc-sla--{{ case_sla.state }}" title="Delai cible {{ case_sla.target_label }} / {{ case_sla.deadline or '-' }}">
                     {{ case_sla.state_label }}
                   </span>
                 </div>
               </td>
-              <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}">{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}—{% endif %}</td>
-              {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
+              <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}Non attribue{% endif %}">
+                {% if c.owner_user %}
+                  {{ c.owner_user.username }}
+                {% elif c.owner_user_id %}
+                  #{{ c.owner_user_id }}
+                {% else %}
+                  <span class="hc-owner-empty">Non attribue</span>
+                {% endif %}
+              </td>
               <td class="activity-col col-activity" title="{{ activity_ref|format_datetime_fr }}">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
                 <div class="small text-muted">{{ activity_ref|format_datetime_fr }}</div>
               </td>
               <td class="actions-col col-action text-end">
                 {% if config.DEMO_MODE %}
-                  <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Aperçu</span>
+                  <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Apercu</span>
                 {% else %}
                   <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Ouvrir</a>
                 {% endif %}
@@ -217,10 +249,10 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="6" class="py-4">
+              <td colspan="8" class="py-4">
                 <div class="hc-empty-state">
-                  <div class="hc-empty-state__title">Aucun cas à afficher</div>
-                  <div class="hc-empty-state__text">Aucune situation ne correspond actuellement aux filtres actifs dans la console opérateur.</div>
+                  <div class="hc-empty-state__title">Aucun cas a afficher</div>
+                  <div class="hc-empty-state__text">Aucune situation ne correspond actuellement aux filtres actifs dans la console operateur.</div>
                 </div>
               </td>
             </tr>
