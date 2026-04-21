@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Pilotage des situations sociales{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block body_class %}hc-page-admin hc-admin-workspace hc-admin-requests-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
@@ -54,10 +54,15 @@
     </div>
   </section>
 
-  <section class="hc-pilotage-card mb-3">
-    <h3>Situations à traiter en priorité</h3>
-    <div class="table-responsive">
-      <table class="table table-sm align-middle hc-pilotage-table mb-0">
+  <section class="hc-pilotage-card hc-admin-table-shell mb-3">
+    <div class="hc-card__header hc-admin-table-toolbar">
+      <div>
+        <h3>Situations à traiter en priorité</h3>
+        <div class="hc-section-subtitle">Lecture rapide des dossiers à reprendre ou à orienter.</div>
+      </div>
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-sm align-middle hc-admin-table hc-pilotage-table mb-0">
         <thead>
           <tr>
             <th>Identifiant</th>
@@ -84,7 +89,14 @@
               </td>
             </tr>
           {% else %}
-            <tr><td colspan="5" class="text-muted">Aucune situation prioritaire.</td></tr>
+            <tr>
+              <td colspan="5" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucune situation prioritaire</div>
+                  <div class="hc-empty-state__text">Les indicateurs ne signalent pas de dossier à reprendre immédiatement.</div>
+                </div>
+              </td>
+            </tr>
           {% endfor %}
         </tbody>
       </table>

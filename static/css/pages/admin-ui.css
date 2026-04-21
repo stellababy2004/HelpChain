@@ -1956,6 +1956,111 @@ body[data-hc-page^="/admin"] .hc-admin-wrap{
   padding-right: clamp(8px, 1vw, 16px);
 }
 
+.hc-admin-security-page #main-content{
+  overflow: visible !important;
+}
+
+.hc-admin-security-page .container,
+.hc-admin-security-page .container-fluid{
+  max-width: 100%;
+}
+
+.hc-admin-security-page .hc-admin-wrap--security{
+  max-width: none;
+  width: 100%;
+  padding-left: clamp(8px, 1vw, 16px);
+  padding-right: clamp(8px, 1vw, 16px);
+}
+
+.hc-admin-security-page .hc-security-kpis{
+  --bs-gutter-x: 0;
+  --bs-gutter-y: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.hc-admin-security-page .hc-security-kpis > [class*="col-"]{
+  width: auto;
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.hc-admin-security-page .hc-security-kpis .hc-card{
+  height: 100%;
+  min-height: 96px;
+}
+
+.hc-admin-security-page .hc-security-events-grid .hc-security-login-col{
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-card,
+.hc-admin-security-page .hc-security-login-col .hc-admin-tablewrap,
+.hc-admin-security-page .hc-security-login-col .hc-admin-table{
+  width: 100%;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table{
+  table-layout: fixed;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table :is(th, td){
+  position: static !important;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table :is(th, td):nth-child(1){
+  width: 220px;
+  white-space: nowrap;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table :is(th, td):nth-child(2){
+  width: auto;
+  min-width: 220px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table :is(th, td):nth-child(3){
+  width: 150px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table :is(th, td):nth-child(4){
+  width: 132px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hc-admin-security-page .hc-security-login-col .hc-admin-table td:nth-child(4) .badge{
+  display: inline-flex;
+  min-width: 82px;
+  justify-content: center;
+}
+
+@media (max-width: 768px){
+  .hc-admin-security-page .hc-security-kpis{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hc-admin-security-page .hc-security-login-col .hc-admin-table{
+    min-width: 720px;
+  }
+}
+
+@media (max-width: 520px){
+  .hc-admin-security-page .hc-security-kpis{
+    grid-template-columns: 1fr;
+  }
+}
+
 body[data-hc-page^="/admin"] .hc-card,
 body[data-hc-page^="/admin"] .card{
   border-color: var(--hc-admin-border);
@@ -8223,6 +8328,1475 @@ body[data-hc-page^="/ops/notifications"] .hc-notify-summary__value{
   }
 }
 
+/* Admin v5 terminal lock: keep the premium pass above legacy final cascades. */
+body.hc-page-admin :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-security-panel, .hc-pilotage-card, .hc-command-panel),
+body[data-hc-page^="/ops"] :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-command-panel){
+  border-radius: var(--hc-v5-radius-card, 14px) !important;
+  border-color: var(--hc-v5-border-soft, rgba(205, 216, 229, .88)) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.995), rgba(248,251,254,.965)) !important;
+  box-shadow: var(--hc-v5-shadow-card, 0 16px 34px rgba(15, 23, 42, .075), 0 2px 8px rgba(15, 23, 42, .035)), inset 0 1px 0 rgba(255,255,255,.88) !important;
+}
+
+body.hc-page-admin .hc-admin-table-toolbar,
+body[data-hc-page^="/ops"] .hc-admin-table-toolbar{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid rgba(205, 216, 229, .88);
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,250,253,.9));
+}
+
+body.hc-page-admin .hc-admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table{
+  min-width: 860px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.hc-page-admin .hc-admin-table :is(th, td),
+body[data-hc-page^="/ops"] .hc-admin-table :is(th, td){
+  position: static !important;
+  display: table-cell;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  transform: none !important;
+}
+
+body.hc-page-admin .hc-admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table thead th{
+  color: #43576f !important;
+  background: linear-gradient(180deg, #f8fbfe, #eef4fa) !important;
+  font-size: .71rem;
+  font-weight: 860;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table tbody td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody td{
+  padding: .74rem .86rem;
+  color: #26384d;
+  border-top: 1px solid rgba(220, 228, 238, .86);
+  background: rgba(255,255,255,.96);
+  line-height: 1.35;
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:hover td,
+body.hc-page-admin .hc-admin-table tbody tr:focus-within td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:hover td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:focus-within td{
+  background: rgba(239,247,255,.96);
+  border-top-color: rgba(165, 190, 218, .86);
+  box-shadow: inset 3px 0 0 rgba(36, 91, 159, .24);
+}
+
+body.hc-page-admin :is(.hc-admin-empty, .hc-empty-state),
+body[data-hc-page^="/ops"] :is(.hc-admin-empty, .hc-empty-state){
+  padding: 18px;
+  border: 1px dashed rgba(146, 164, 188, .62);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(247,250,253,.86));
+  color: var(--hc-v5-muted, #66758a);
+  text-align: center;
+}
+
+body.hc-admin-security-page .hc-security-command-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+body.hc-admin-security-page .hc-security-anomaly-matrix{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+@media (max-width: 1199.98px){
+  body.hc-admin-security-page .hc-security-command-grid,
+  body.hc-admin-security-page .hc-security-anomaly-matrix{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-admin-security-page .hc-security-command-grid,
+  body.hc-admin-security-page .hc-security-anomaly-matrix{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-admin .hc-admin-table,
+  body[data-hc-page^="/ops"] .hc-admin-table{
+    min-width: 760px;
+  }
+}
+
+/* Admin v5 - enterprise operational control center cascade */
+body.hc-page-admin,
+body[data-hc-page^="/ops"]{
+  --hc-v5-bg: #eef3f8;
+  --hc-v5-surface: #ffffff;
+  --hc-v5-surface-soft: #f7fafc;
+  --hc-v5-surface-strong: #edf3f9;
+  --hc-v5-ink: #102033;
+  --hc-v5-text: #26384d;
+  --hc-v5-muted: #66758a;
+  --hc-v5-border: rgba(164, 181, 202, .72);
+  --hc-v5-border-soft: rgba(205, 216, 229, .88);
+  --hc-v5-blue: #245b9f;
+  --hc-v5-blue-dark: #164b83;
+  --hc-v5-green: #147a52;
+  --hc-v5-red: #a13636;
+  --hc-v5-amber: #a86612;
+  --hc-v5-radius-card: 14px;
+  --hc-v5-radius-control: 10px;
+  --hc-v5-shadow-card: 0 16px 34px rgba(15, 23, 42, .075), 0 2px 8px rgba(15, 23, 42, .035);
+  --hc-v5-shadow-quiet: 0 10px 24px rgba(15, 23, 42, .055);
+  color: var(--hc-v5-text);
+}
+
+body.hc-page-admin .hc-admin-workspace__content,
+body[data-hc-page^="/ops"] .hc-admin-workspace__content{
+  min-height: 100vh;
+  padding: 18px 20px 44px;
+  background:
+    linear-gradient(180deg, #f8fbfe 0, var(--hc-v5-bg) 220px, #eef3f8 100%);
+}
+
+body.hc-page-admin .hc-admin-shellbar,
+body[data-hc-page^="/ops"] .hc-admin-shellbar{
+  position: sticky;
+  top: 10px;
+  z-index: 90;
+  margin: 0 auto 16px;
+  width: min(1680px, calc(100vw - 40px));
+  filter: none;
+}
+
+body.hc-page-admin .hc-admin-shellbar__inner,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 58px;
+  padding: 10px 12px 10px 16px;
+  border: 1px solid rgba(148, 166, 188, .78);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,253,.95));
+  box-shadow: 0 18px 38px rgba(15, 23, 42, .09), inset 0 1px 0 rgba(255,255,255,.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-page-admin .hc-admin-shellbar__brand,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__brand{
+  display: grid;
+  gap: 1px;
+  min-width: 220px;
+}
+
+body.hc-page-admin .hc-admin-shellbar__eyebrow,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__eyebrow{
+  color: var(--hc-v5-blue);
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin .hc-admin-shellbar__title,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__title{
+  color: var(--hc-v5-ink);
+  font-size: .98rem;
+  font-weight: 840;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+body.hc-page-admin .hc-admin-shellnav,
+body[data-hc-page^="/ops"] .hc-admin-shellnav{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+body.hc-page-admin .hc-admin-shellnav__link,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link{
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #475a70;
+  font-size: .82rem;
+  font-weight: 760;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-shellnav__link:hover,
+body.hc-page-admin .hc-admin-shellnav__link:focus-visible,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link:hover,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link:focus-visible{
+  border-color: rgba(152, 174, 201, .8);
+  background: rgba(255,255,255,.9);
+  color: #153f6d;
+}
+
+body.hc-page-admin .hc-admin-shellnav__link.is-active,
+body.hc-page-admin .hc-admin-shellnav__link[aria-current="page"],
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link.is-active,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link[aria-current="page"]{
+  border-color: rgba(36, 91, 159, .28);
+  background: linear-gradient(180deg, rgba(232,241,251,.98), rgba(218,232,247,.92));
+  color: #123f72;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.74), 0 8px 18px rgba(36, 91, 159, .10);
+}
+
+body.hc-page-admin .hc-admin-wrap,
+body[data-hc-page^="/ops"] .hc-admin-wrap{
+  width: min(1680px, calc(100vw - 40px));
+  max-width: min(1680px, calc(100vw - 40px)) !important;
+  margin: 0 auto;
+  padding: 0 0 30px;
+  display: grid;
+  gap: 14px;
+}
+
+body.hc-page-admin .hc-admin-wrap--request-detail,
+body.hc-page-admin .hc-admin-wrap--case-detail,
+body.hc-page-admin .hc-admin-wrap--wide,
+body.hc-page-admin .hc-admin-wrap--requests,
+body.hc-page-admin .hc-admin-wrap--security,
+body[data-hc-page^="/ops"] .hc-admin-wrap--wide{
+  max-width: min(1720px, calc(100vw - 32px)) !important;
+  width: min(1720px, calc(100vw - 32px));
+}
+
+body.hc-page-admin :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-security-intro, .hc-security-anomalies, .hc-riskcard, .hc-case-detail-card, .hc-case-pro-card, .hc-participant-card, .hc-sla-kpi, .hc-risk-overview__item, .hc-ops-summary__item, .hc-notify-summary__item, .hc-kpi, .hc-kpi-card),
+body[data-hc-page^="/ops"] :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-case-detail-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-kpi, .hc-kpi-card){
+  border: 1px solid var(--hc-v5-border-soft) !important;
+  border-radius: var(--hc-v5-radius-card) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.995), rgba(248,251,254,.965)) !important;
+  box-shadow: var(--hc-v5-shadow-card), inset 0 1px 0 rgba(255,255,255,.88) !important;
+}
+
+body.hc-page-admin .hc-page-hero,
+body[data-hc-page^="/ops"] .hc-page-hero{
+  position: relative;
+  overflow: hidden;
+  padding: 18px 20px !important;
+  border-color: rgba(143, 164, 190, .86) !important;
+  background:
+    linear-gradient(90deg, rgba(36, 91, 159, .14), rgba(36, 91, 159, .045) 38%, rgba(20, 122, 82, .035) 100%),
+    linear-gradient(180deg, #ffffff, #f7fafc) !important;
+  box-shadow: 0 20px 44px rgba(36, 91, 159, .10), 0 2px 10px rgba(15, 23, 42, .04), inset 0 1px 0 rgba(255,255,255,.94) !important;
+}
+
+body.hc-page-admin .hc-page-hero::before,
+body[data-hc-page^="/ops"] .hc-page-hero::before{
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--hc-v5-blue), #4d55a6 48%, var(--hc-v5-green));
+}
+
+body.hc-page-admin .hc-admin-headerTop,
+body[data-hc-page^="/ops"] .hc-admin-headerTop{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+}
+
+body.hc-page-admin .hc-admin-title,
+body.hc-page-admin .hc-page-title,
+body[data-hc-page^="/ops"] .hc-admin-title,
+body[data-hc-page^="/ops"] .hc-page-title{
+  color: var(--hc-v5-ink);
+  font-size: 1.42rem;
+  font-weight: 880;
+  line-height: 1.08;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+body.hc-page-admin :is(.hc-admin-kicker, .hc-section-kicker, .hc-eyebrow, .hc-kpi__label, .hc-kpi-label, .hc-ops-summary__label, .hc-notify-summary__label, .hc-risk-overview__label),
+body[data-hc-page^="/ops"] :is(.hc-admin-kicker, .hc-section-kicker, .hc-eyebrow, .hc-kpi__label, .hc-kpi-label, .hc-ops-summary__label, .hc-notify-summary__label){
+  color: #3c638d;
+  font-size: .7rem;
+  font-weight: 860;
+  letter-spacing: .07em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin :is(.hc-muted, .text-muted, .form-text, .hc-section-subtitle, .hc-card__subtitle),
+body[data-hc-page^="/ops"] :is(.hc-muted, .text-muted, .form-text, .hc-section-subtitle, .hc-card__subtitle){
+  color: var(--hc-v5-muted) !important;
+}
+
+body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary){
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body.hc-page-admin .hc-security-kpis{
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)) !important;
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item),
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item){
+  min-height: 94px;
+  padding: 14px 15px !important;
+  align-content: start;
+}
+
+body.hc-page-admin :is(.hc-kpi__value, .hc-kpi-value, .hc-ops-summary__value, .hc-notify-summary__value, .hc-risk-overview__value),
+body[data-hc-page^="/ops"] :is(.hc-kpi__value, .hc-kpi-value, .hc-ops-summary__value, .hc-notify-summary__value){
+  color: var(--hc-v5-ink);
+  font-size: 1.76rem;
+  font-weight: 880;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin :is(.hc-ops-summary__value.is-alert, .hc-kpi-card--alert .hc-kpi-value),
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__value.is-alert, .hc-kpi-card--alert .hc-kpi-value){
+  color: var(--hc-v5-red);
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-admin-table-card),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card){
+  overflow: hidden;
+}
+
+body.hc-page-admin .hc-admin-tablewrap,
+body[data-hc-page^="/ops"] .hc-admin-tablewrap{
+  width: 100%;
+  overflow-x: auto;
+  background: rgba(255,255,255,.78);
+  scrollbar-gutter: stable;
+}
+
+body.hc-page-admin .hc-admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table{
+  width: 100%;
+  min-width: 860px;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.hc-page-admin .hc-admin-table :is(th, td),
+body[data-hc-page^="/ops"] .hc-admin-table :is(th, td){
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: auto !important;
+  display: table-cell;
+  vertical-align: middle;
+  transform: none !important;
+}
+
+body.hc-page-admin .hc-admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table thead th{
+  padding: .82rem .86rem;
+  color: #4d6077;
+  border-bottom: 1px solid rgba(186, 201, 219, .94);
+  background: linear-gradient(180deg, #f8fbfe, #eef4fa);
+  font-size: .71rem;
+  font-weight: 850;
+  letter-spacing: .055em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table tbody td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody td{
+  padding: .74rem .86rem;
+  color: #26384d;
+  border-top: 1px solid rgba(220, 228, 238, .86);
+  background: rgba(255,255,255,.96);
+  line-height: 1.35;
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:first-child td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:first-child td{
+  border-top: 0;
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:nth-child(even) td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:nth-child(even) td{
+  background: rgba(249,251,254,.88);
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:hover td,
+body.hc-page-admin .hc-admin-table tbody tr:focus-within td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:hover td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:focus-within td{
+  background: rgba(239,247,255,.96);
+  border-top-color: rgba(165, 190, 218, .86);
+  box-shadow: inset 3px 0 0 rgba(36, 91, 159, .24);
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-elapsed, .hc-audit-time, .hc-demo-leads-created, .hc-col-created, .activity-col, .hc-col-activity, td:first-child),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-elapsed, .hc-audit-time, .hc-demo-leads-created, .hc-col-created, .activity-col, .hc-col-activity, td:first-child){
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-td-action, .actions-col, .hc-col-action, td:last-child),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-td-action, .actions-col, .hc-col-action, td:last-child){
+  white-space: nowrap;
+}
+
+body.hc-page-admin :is(.badge, .hc-pill, .hc-chip, .hc-sla, .hc-case-status-badge, .hc-prio),
+body[data-hc-page^="/ops"] :is(.badge, .hc-pill, .hc-chip, .hc-sla, .hc-case-status-badge, .hc-prio){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 24px;
+  border-radius: 999px;
+  font-weight: 760;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body.hc-page-admin :is(.btn, .btn-sm, .form-control, .form-select, .hc-input),
+body[data-hc-page^="/ops"] :is(.btn, .btn-sm, .form-control, .form-select, .hc-input){
+  border-radius: var(--hc-v5-radius-control);
+}
+
+body.hc-page-admin :is(.btn-primary, .hc-btn-primary),
+body[data-hc-page^="/ops"] :is(.btn-primary, .hc-btn-primary){
+  border-color: var(--hc-v5-blue-dark);
+  background: linear-gradient(180deg, #2f6ead, #1d548f);
+  box-shadow: 0 9px 18px rgba(36, 91, 159, .20), inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+body.hc-page-admin :is(.hc-admin-filterbar, .hc-admin-stickybar, .hc-requests-toolbar, .hc-ops-toolbar-card, .hc-cases-toolbar-card),
+body[data-hc-page^="/ops"] :is(.hc-admin-filterbar, .hc-admin-stickybar, .hc-requests-toolbar, .hc-ops-toolbar-card, .hc-cases-toolbar-card){
+  border: 1px solid rgba(188, 202, 220, .88) !important;
+  border-radius: var(--hc-v5-radius-card) !important;
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: var(--hc-v5-shadow-quiet), inset 0 1px 0 rgba(255,255,255,.86) !important;
+}
+
+body.hc-page-admin .hc-sticky,
+body.hc-page-admin .hc-admin-stickybar,
+body[data-hc-page^="/ops"] .hc-sticky,
+body[data-hc-page^="/ops"] .hc-admin-stickybar{
+  top: 90px;
+}
+
+body.hc-page-admin .hc-control-panel,
+body[data-hc-page^="/ops"] .hc-control-panel{
+  top: 92px;
+}
+
+@media (max-width: 1199.98px){
+  body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+  body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary){
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__inner,
+  body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.hc-page-admin .hc-admin-shellnav,
+  body[data-hc-page^="/ops"] .hc-admin-shellnav{
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-page-admin .hc-admin-workspace__content,
+  body[data-hc-page^="/ops"] .hc-admin-workspace__content{
+    padding: 12px 10px 32px;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar,
+  body.hc-page-admin .hc-admin-wrap,
+  body.hc-page-admin .hc-admin-wrap--wide,
+  body.hc-page-admin .hc-admin-wrap--requests,
+  body.hc-page-admin .hc-admin-wrap--security,
+  body[data-hc-page^="/ops"] .hc-admin-shellbar,
+  body[data-hc-page^="/ops"] .hc-admin-wrap{
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+  body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary){
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-admin .hc-admin-headerTop,
+  body[data-hc-page^="/ops"] .hc-admin-headerTop{
+    flex-direction: column;
+  }
+
+  body.hc-page-admin .hc-admin-table,
+  body[data-hc-page^="/ops"] .hc-admin-table{
+    min-width: 760px;
+  }
+}
+
+/* Admin v5 - page structure sequence */
+body.hc-page-admin .hc-admin-wrap > :is(.hc-page-hero, .hc-admin-headerCard, .hc-admin-toolbar, .hc-case-header, header.hc-card, header.card),
+body[data-hc-page^="/ops"] .hc-admin-wrap > :is(.hc-page-hero, .hc-admin-headerCard, .hc-admin-toolbar, .hc-case-header, header.hc-card, header.card){
+  order: 10;
+}
+
+body.hc-page-admin .hc-admin-wrap > :is(.hc-ops-toolbar-card, .hc-cases-toolbar-card, .hc-security-intro, .hc-risk-overview, .hc-pilotage-grid, .hc-card:has(.hc-ops-summary), .hc-card:has(.hc-kpis), .hc-card:has(.hc-risk-overview)),
+body[data-hc-page^="/ops"] .hc-admin-wrap > :is(.hc-ops-toolbar-card, .hc-cases-toolbar-card, .hc-card:has(.hc-ops-summary), .hc-card:has(.hc-kpis)){
+  order: 20;
+}
+
+body.hc-page-admin .hc-admin-wrap > :is(.hc-admin-filterbar, .hc-admin-stickybar, form.hc-card, .hc-cases-zonebar, .alert),
+body[data-hc-page^="/ops"] .hc-admin-wrap > :is(.hc-admin-filterbar, .hc-admin-stickybar, form.hc-card, .hc-cases-zonebar, .alert){
+  order: 30;
+}
+
+body.hc-page-admin .hc-admin-wrap > :is(.hc-admin-table-shell, .hc-admin-table-card, .hc-proleads-desktop, .hc-ops-table-shell),
+body[data-hc-page^="/ops"] .hc-admin-wrap > :is(.hc-admin-table-shell, .hc-admin-table-card, .hc-ops-table-shell){
+  order: 40;
+}
+
+body.hc-page-admin .hc-admin-wrap > :is(.hc-section-thread, .hc-proleads-mobile),
+body[data-hc-page^="/ops"] .hc-admin-wrap > :is(.hc-section-thread){
+  order: 60;
+}
+
+body.hc-page-admin .hc-admin-toolbar,
+body[data-hc-page^="/ops"] .hc-admin-toolbar{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(143, 164, 190, .86);
+  border-radius: var(--hc-v5-radius-card);
+  background:
+    linear-gradient(90deg, rgba(36, 91, 159, .12), rgba(36, 91, 159, .035) 42%, rgba(20, 122, 82, .03)),
+    linear-gradient(180deg, #ffffff, #f7fafc);
+  box-shadow: 0 18px 38px rgba(36, 91, 159, .085), 0 2px 8px rgba(15, 23, 42, .035), inset 0 1px 0 rgba(255,255,255,.92);
+}
+
+body.hc-page-admin .hc-admin-toolbar :is(h1, .h4, .h5),
+body[data-hc-page^="/ops"] .hc-admin-toolbar :is(h1, .h4, .h5){
+  margin: 0;
+  color: var(--hc-v5-ink);
+  font-size: 1.42rem;
+  font-weight: 880;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+body.hc-page-admin .hc-admin-toolbar p,
+body[data-hc-page^="/ops"] .hc-admin-toolbar p{
+  margin: 5px 0 0;
+  max-width: 74ch;
+}
+
+body.hc-page-admin .hc-section-intro,
+body[data-hc-page^="/ops"] .hc-section-intro{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+body.hc-page-admin .hc-section-title,
+body[data-hc-page^="/ops"] .hc-section-title{
+  margin: 0;
+  color: var(--hc-v5-ink);
+  font-size: .98rem;
+  font-weight: 830;
+  line-height: 1.2;
+}
+
+body.hc-page-admin .hc-section-subtitle,
+body[data-hc-page^="/ops"] .hc-section-subtitle{
+  margin: 4px 0 0;
+  max-width: 82ch;
+}
+
+body.hc-page-admin :is(.hc-admin-filterbar, .hc-admin-stickybar, .hc-ops-filters, .hc-admin-filters),
+body[data-hc-page^="/ops"] :is(.hc-admin-filterbar, .hc-admin-stickybar, .hc-ops-filters, .hc-admin-filters){
+  gap: 12px;
+}
+
+body.hc-page-admin :is(.hc-admin-filtergrid, .hc-ops-filters),
+body[data-hc-page^="/ops"] :is(.hc-admin-filtergrid, .hc-ops-filters){
+  align-items: end;
+}
+
+body.hc-page-admin :is(.hc-admin-actions, .hc-ops-actions, .hc-ops-filters__actions),
+body[data-hc-page^="/ops"] :is(.hc-admin-actions, .hc-ops-actions, .hc-ops-filters__actions){
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader){
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 18px;
+  border-bottom: 1px solid rgba(203, 215, 230, .9);
+  background: linear-gradient(180deg, rgba(252,254,255,.98), rgba(246,249,253,.95));
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader) :is(h2, h3, strong),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader) :is(h2, h3, strong){
+  margin: 0;
+  color: var(--hc-v5-ink);
+  font-size: .95rem;
+  font-weight: 840;
+  line-height: 1.2;
+}
+
+body.hc-page-admin .hc-empty-row td,
+body[data-hc-page^="/ops"] .hc-empty-row td{
+  padding: 22px !important;
+}
+
+body.hc-page-admin .hc-empty-state,
+body[data-hc-page^="/ops"] .hc-empty-state{
+  display: grid;
+  gap: 7px;
+  place-items: center;
+  min-height: 142px;
+  padding: 28px 22px;
+  border: 1px dashed rgba(145, 164, 188, .7);
+  border-radius: var(--hc-v5-radius-card);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.88), rgba(246,250,253,.78));
+  color: var(--hc-v5-muted);
+  text-align: center;
+}
+
+body.hc-page-admin .hc-empty-state__title,
+body[data-hc-page^="/ops"] .hc-empty-state__title{
+  color: var(--hc-v5-ink);
+  font-size: .98rem;
+  font-weight: 840;
+}
+
+body.hc-page-admin .hc-empty-state__text,
+body[data-hc-page^="/ops"] .hc-empty-state__text{
+  max-width: 58ch;
+  color: var(--hc-v5-muted);
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+body.hc-page-admin .hc-pilotage-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body.hc-page-admin .hc-pilotage-card{
+  border: 1px solid var(--hc-v5-border-soft);
+  border-radius: var(--hc-v5-radius-card);
+  background: linear-gradient(180deg, rgba(255,255,255,.995), rgba(248,251,254,.965));
+  box-shadow: var(--hc-v5-shadow-card);
+  padding: 16px;
+}
+
+body.hc-page-admin .hc-pilotage-card h3{
+  color: var(--hc-v5-ink);
+  font-size: .98rem;
+  font-weight: 830;
+}
+
+body.hc-page-admin .hc-pilotage-card--link{
+  color: inherit;
+  text-decoration: none;
+}
+
+body.hc-page-admin .hc-pilotage-table{
+  width: 100%;
+  min-width: 820px;
+}
+
+/* Admin v5 - KPI dashboards */
+body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview, .hc-perf-kpi-row),
+body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview){
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard, .hc-sla-kpi, .hc-perf-kpi, .hc-structure-metric, .hc-risk-map-kpi),
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard){
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-content: start;
+  gap: 6px;
+  min-height: 106px;
+  padding: 14px 15px 13px !important;
+  overflow: hidden;
+  border: 1px solid rgba(190, 204, 222, .88) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.99), rgba(247,250,253,.96)) !important;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, .062), 0 2px 6px rgba(15, 23, 42, .03), inset 0 1px 0 rgba(255,255,255,.86) !important;
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard, .hc-sla-kpi, .hc-perf-kpi, .hc-structure-metric, .hc-risk-map-kpi)::before,
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard)::before{
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, rgba(36,91,159,.84), rgba(36,91,159,.28));
+}
+
+body.hc-page-admin :is(.hc-kpi__label, .hc-kpi-label, .hc-ops-summary__label, .hc-notify-summary__label, .hc-risk-overview__label, .hc-riskcard__label, .hc-perf-kpi__label, .hc-risk-map-kpi__label, .hc-structure-metric .text-muted.small),
+body[data-hc-page^="/ops"] :is(.hc-kpi__label, .hc-kpi-label, .hc-ops-summary__label, .hc-notify-summary__label, .hc-risk-overview__label, .hc-riskcard__label){
+  color: #52677f !important;
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .06em;
+  line-height: 1.18;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin :is(.hc-kpi__value, .hc-kpi-value, .hc-ops-summary__value, .hc-notify-summary__value, .hc-risk-overview__value, .hc-riskcard__value, .hc-perf-kpi__value, .hc-risk-map-kpi__value, .hc-sla-kpi .display-6, .hc-structure-metric .h4, .hc-security-kpis .h3),
+body[data-hc-page^="/ops"] :is(.hc-kpi__value, .hc-kpi-value, .hc-ops-summary__value, .hc-notify-summary__value, .hc-risk-overview__value, .hc-riskcard__value){
+  color: #0f2439;
+  font-size: clamp(1.62rem, 1.36rem + .52vw, 2.12rem);
+  font-weight: 880;
+  line-height: .98;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin :is(.hc-kpi__context, .hc-kpi-sub, .hc-ops-summary__context, .hc-notify-summary__context, .hc-risk-overview__context, .hc-riskcard__sub, .hc-perf-hint, .hc-risk-map-kpi__hint, .hc-sla-kpi .text-muted.small),
+body[data-hc-page^="/ops"] :is(.hc-kpi__context, .hc-kpi-sub, .hc-ops-summary__context, .hc-notify-summary__context, .hc-risk-overview__context, .hc-riskcard__sub){
+  align-self: end;
+  color: #68798d !important;
+  font-size: .78rem;
+  font-weight: 620;
+  line-height: 1.25;
+}
+
+body.hc-page-admin :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red),
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert),
+body.hc-page-admin .hc-risk-overview__item:nth-child(1),
+body[data-hc-page^="/ops"] :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red),
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert),
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(1){
+  border-color: rgba(171, 74, 74, .34) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.995), rgba(255,247,247,.96)) !important;
+  box-shadow: 0 14px 28px rgba(127, 29, 29, .085), 0 2px 7px rgba(15, 23, 42, .03), inset 0 1px 0 rgba(255,255,255,.86) !important;
+}
+
+body.hc-page-admin :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red)::before,
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert)::before,
+body.hc-page-admin .hc-risk-overview__item:nth-child(1)::before,
+body[data-hc-page^="/ops"] :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red)::before,
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert)::before,
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(1)::before{
+  background: linear-gradient(180deg, rgba(161,54,54,.95), rgba(161,54,54,.36));
+}
+
+body.hc-page-admin :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red) :is(.hc-kpi__value, .hc-kpi-value, .hc-riskcard__value),
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert) :is(.hc-ops-summary__value, .hc-notify-summary__value),
+body.hc-page-admin .hc-risk-overview__item:nth-child(1) .hc-risk-overview__value,
+body[data-hc-page^="/ops"] :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red) :is(.hc-kpi__value, .hc-kpi-value, .hc-riskcard__value),
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert) :is(.hc-ops-summary__value, .hc-notify-summary__value),
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(1) .hc-risk-overview__value{
+  color: #8f2929;
+}
+
+body.hc-page-admin :is(.hc-riskcard--amber, .hc-riskcard--yellow, .hc-kpi-card--warning, .hc-kpi--warning),
+body.hc-page-admin .hc-risk-overview__item:nth-child(2),
+body.hc-page-admin .hc-risk-overview__item:nth-child(3),
+body[data-hc-page^="/ops"] :is(.hc-riskcard--amber, .hc-riskcard--yellow, .hc-kpi-card--warning, .hc-kpi--warning),
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(2),
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(3){
+  border-color: rgba(168, 102, 18, .30) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.995), rgba(255,250,242,.96)) !important;
+}
+
+body.hc-page-admin :is(.hc-riskcard--amber, .hc-riskcard--yellow, .hc-kpi-card--warning, .hc-kpi--warning)::before,
+body.hc-page-admin .hc-risk-overview__item:nth-child(2)::before,
+body.hc-page-admin .hc-risk-overview__item:nth-child(3)::before,
+body[data-hc-page^="/ops"] :is(.hc-riskcard--amber, .hc-riskcard--yellow, .hc-kpi-card--warning, .hc-kpi--warning)::before,
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(2)::before,
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(3)::before{
+  background: linear-gradient(180deg, rgba(168,102,18,.92), rgba(168,102,18,.32));
+}
+
+body.hc-page-admin :is(.hc-riskcard--blue, .hc-kpi-card--analytics, .hc-kpi--analytics, .hc-kpi-card--active, .hc-kpi--active)::before,
+body.hc-page-admin .hc-risk-overview__item:nth-child(4)::before,
+body[data-hc-page^="/ops"] :is(.hc-riskcard--blue, .hc-kpi-card--analytics, .hc-kpi--analytics, .hc-kpi-card--active, .hc-kpi--active)::before,
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(4)::before{
+  background: linear-gradient(180deg, rgba(36,91,159,.92), rgba(36,91,159,.30));
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard, .hc-sla-kpi, .hc-perf-kpi, .hc-structure-metric, .hc-risk-map-kpi):hover,
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard):hover{
+  border-color: rgba(36, 91, 159, .32) !important;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, .085), 0 3px 10px rgba(36, 91, 159, .05), inset 0 1px 0 rgba(255,255,255,.9) !important;
+}
+
+body.hc-page-admin .hc-kpi-card--wide{
+  grid-column: span 2;
+  min-height: 106px;
+}
+
+body.hc-page-admin .hc-kpi-list{
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  color: #68798d;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+/* Admin v5 - command center scanning layer */
+body.hc-page-admin .hc-command-grid,
+body[data-hc-page^="/ops"] .hc-command-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+body.hc-page-admin .hc-command-panel,
+body[data-hc-page^="/ops"] .hc-command-panel{
+  position: relative;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-height: 180px;
+  padding: 16px !important;
+  overflow: hidden;
+}
+
+body.hc-page-admin .hc-command-panel::before,
+body[data-hc-page^="/ops"] .hc-command-panel::before{
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(36,91,159,.88), rgba(20,122,82,.58));
+}
+
+body.hc-page-admin .hc-command-panel--attention,
+body[data-hc-page^="/ops"] .hc-command-panel--attention{
+  border-color: rgba(161, 54, 54, .28) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.995), rgba(255,248,248,.955)) !important;
+}
+
+body.hc-page-admin .hc-command-panel--attention::before,
+body[data-hc-page^="/ops"] .hc-command-panel--attention::before{
+  background: linear-gradient(90deg, rgba(161,54,54,.90), rgba(168,102,18,.68));
+}
+
+body.hc-page-admin .hc-command-panel__kicker,
+body[data-hc-page^="/ops"] .hc-command-panel__kicker{
+  color: #3c638d;
+  font-size: .68rem;
+  font-weight: 860;
+  letter-spacing: .07em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin .hc-command-panel__title,
+body[data-hc-page^="/ops"] .hc-command-panel__title{
+  margin: 0;
+  color: var(--hc-v5-ink);
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+body.hc-page-admin .hc-command-panel__body,
+body[data-hc-page^="/ops"] .hc-command-panel__body{
+  display: grid;
+  gap: 7px;
+}
+
+body.hc-page-admin .hc-command-action,
+body[data-hc-page^="/ops"] .hc-command-action{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid rgba(207, 218, 231, .92);
+  border-radius: 10px;
+  background: rgba(255,255,255,.78);
+  color: inherit;
+  text-decoration: none;
+}
+
+body.hc-page-admin .hc-command-action:hover,
+body[data-hc-page^="/ops"] .hc-command-action:hover{
+  border-color: rgba(36, 91, 159, .30);
+  background: rgba(239,247,255,.88);
+}
+
+body.hc-page-admin .hc-command-action__label,
+body[data-hc-page^="/ops"] .hc-command-action__label{
+  color: #5c6e83;
+  font-size: .8rem;
+  font-weight: 690;
+  line-height: 1.2;
+}
+
+body.hc-page-admin .hc-command-action strong,
+body[data-hc-page^="/ops"] .hc-command-action strong{
+  color: var(--hc-v5-ink);
+  font-size: 1rem;
+  font-weight: 880;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-command-list,
+body[data-hc-page^="/ops"] .hc-command-list{
+  display: grid;
+  gap: 7px;
+}
+
+body.hc-page-admin .hc-command-list a,
+body[data-hc-page^="/ops"] .hc-command-list a{
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 8px 10px;
+  border: 1px solid rgba(207, 218, 231, .92);
+  border-radius: 10px;
+  background: rgba(255,255,255,.78);
+  color: #1f4f86;
+  font-size: .82rem;
+  font-weight: 720;
+  text-decoration: none;
+}
+
+body.hc-page-admin .hc-command-list a:hover,
+body[data-hc-page^="/ops"] .hc-command-list a:hover{
+  border-color: rgba(36, 91, 159, .30);
+  background: rgba(239,247,255,.88);
+}
+
+body.hc-page-admin .hc-admin-linkcard,
+body[data-hc-page^="/ops"] .hc-admin-linkcard{
+  display: grid;
+  gap: 6px;
+  min-height: 132px;
+  padding: 16px !important;
+  color: inherit;
+  text-decoration: none;
+}
+
+body.hc-page-admin .hc-admin-linkcard__kicker,
+body[data-hc-page^="/ops"] .hc-admin-linkcard__kicker{
+  color: #3c638d;
+  font-size: .68rem;
+  font-weight: 860;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin .hc-admin-linkcard__title,
+body[data-hc-page^="/ops"] .hc-admin-linkcard__title{
+  color: var(--hc-v5-ink);
+  font-size: 1rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+body.hc-page-admin .hc-admin-linkcard__text,
+body[data-hc-page^="/ops"] .hc-admin-linkcard__text{
+  color: var(--hc-v5-muted);
+  font-size: .86rem;
+  line-height: 1.4;
+}
+
+body.hc-page-admin .hc-ops-callout,
+body[data-hc-page^="/ops"] .hc-ops-callout{
+  border-color: rgba(168, 102, 18, .28) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.99), rgba(255,250,242,.94)) !important;
+}
+
+@media (max-width: 991.98px){
+  body.hc-page-admin .hc-admin-toolbar,
+  body[data-hc-page^="/ops"] .hc-admin-toolbar,
+  body.hc-page-admin .hc-section-intro,
+  body[data-hc-page^="/ops"] .hc-section-intro,
+  body.hc-page-admin :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader),
+  body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader){
+    flex-direction: column;
+  }
+
+  body.hc-page-admin .hc-pilotage-grid{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-admin .hc-kpi-card--wide{
+    grid-column: span 1;
+  }
+
+  body.hc-page-admin .hc-command-grid,
+  body[data-hc-page^="/ops"] .hc-command-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px){
+  body.hc-page-admin .hc-command-grid,
+  body[data-hc-page^="/ops"] .hc-command-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Admin v5 - workflow pages, hardened data grids, and dark ops foundation */
+body.hc-page-admin,
+body[data-hc-page^="/ops"]{
+  --hc-admin-surface-danger: #fff5f5;
+  --hc-admin-surface-warning: #fff8ed;
+  --hc-admin-surface-success: #f0f9f5;
+  --hc-admin-surface-info: #eef7ff;
+  --hc-admin-table-row-height: 48px;
+  --hc-admin-table-cell-x: .86rem;
+  --hc-admin-sticky-offset: 92px;
+}
+
+body.hc-page-admin .hc-admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table{
+  table-layout: fixed;
+}
+
+body.hc-page-admin .hc-admin-table th,
+body.hc-page-admin .hc-admin-table td,
+body[data-hc-page^="/ops"] .hc-admin-table th,
+body[data-hc-page^="/ops"] .hc-admin-table td{
+  min-height: var(--hc-admin-table-row-height);
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hc-page-admin .hc-admin-table :is(td, th) > :is(.text-truncate, .hc-cell-truncate, .hc-ops-title, .hc-admin-home-attention__title, .hc-cases-request-title, .hc-proleads-name, .hc-proleads-email),
+body[data-hc-page^="/ops"] .hc-admin-table :is(td, th) > :is(.text-truncate, .hc-cell-truncate, .hc-ops-title, .hc-admin-home-attention__title, .hc-cases-request-title){
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-time, .hc-col-created, .hc-col-activity, .activity-col, .hc-audit-time, .hc-elapsed, .hc-security-col-time, .hc-notify-col-created, .hc-notify-col-next-retry, .hc-notify-col-sent-at),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-time, .hc-col-created, .hc-col-activity, .activity-col, .hc-audit-time, .hc-elapsed, .hc-security-col-time, .hc-notify-col-created, .hc-notify-col-next-retry, .hc-notify-col-sent-at){
+  width: 168px;
+  max-width: 168px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-id, .case-col, .hc-ops-col-id, .hc-notify-col-id, td:first-child),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-id, .case-col, .hc-ops-col-id, .hc-notify-col-id, td:first-child){
+  width: 88px;
+  max-width: 100px;
+  white-space: nowrap;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-ip, .hc-security-col-ip),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-ip, .hc-security-col-ip){
+  width: 148px;
+  max-width: 148px;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: .78rem;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-status, .status-col, .hc-ops-col-status, .hc-security-col-status, .hc-notify-col-status),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-status, .status-col, .hc-ops-col-status, .hc-security-col-status, .hc-notify-col-status){
+  width: 132px;
+  max-width: 148px;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-actions, .hc-col-action, .actions-col, .col-action, .hc-td-action, .hc-ops-col-action, .hc-security-col-actions, td:last-child),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-actions, .hc-col-action, .actions-col, .col-action, .hc-td-action, .hc-ops-col-action, .hc-security-col-actions, td:last-child){
+  width: 132px;
+  max-width: 180px;
+  white-space: nowrap;
+  text-align: right;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-user, .hc-security-col-user, .hc-notify-col-recipient-col, .hc-proleads-col-contact),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-user, .hc-security-col-user, .hc-notify-col-recipient-col){
+  width: 220px;
+  min-width: 0;
+}
+
+body.hc-page-admin .hc-admin-table :is(.col-request, .hc-col-request, .request-col, .hc-ops-col-request, .hc-col-title),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.col-request, .hc-col-request, .request-col, .hc-ops-col-request, .hc-col-title){
+  width: auto;
+  min-width: 260px;
+  white-space: normal;
+}
+
+body.hc-page-admin .hc-admin-table :is(.badge, .hc-pill, .hc-chip, .btn, .btn-sm),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.badge, .hc-pill, .hc-chip, .btn, .btn-sm){
+  max-width: 100%;
+}
+
+body.hc-page-admin .hc-admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table thead th{
+  position: sticky !important;
+  top: var(--hc-admin-sticky-offset);
+  z-index: 4;
+}
+
+body.hc-page-admin .hc-admin-tablewrap,
+body[data-hc-page^="/ops"] .hc-admin-tablewrap{
+  border-radius: 0 0 var(--hc-v5-radius-card) var(--hc-v5-radius-card);
+}
+
+body.hc-page-admin .hc-workflow-table{
+  min-width: 900px;
+}
+
+body.hc-page-admin .hc-workflow-table th:first-child,
+body.hc-page-admin .hc-workflow-table td:first-child{
+  width: auto;
+  max-width: 280px;
+}
+
+body.hc-admin-case-detail-page .hc-case-detail-layout,
+body.hc-page-admin .hc-case-workspace{
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+  gap: 16px;
+}
+
+body.hc-admin-case-detail-page .hc-case-detail-mainstack,
+body.hc-page-admin .hc-case-workspace__main{
+  display: grid;
+  gap: 14px;
+}
+
+body.hc-admin-case-detail-page .hc-case-detail-hero,
+body.hc-page-admin .hc-case-header{
+  border-color: rgba(132, 156, 185, .86) !important;
+}
+
+body.hc-admin-case-detail-page .hc-case-detail-hero__actions,
+body.hc-page-admin .hc-case-header__commands,
+body.hc-admin-case-detail-page .hc-case-control-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+body.hc-admin-case-detail-page .hc-case-overview-grid,
+body.hc-page-admin .hc-case-header__meta{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+body.hc-admin-case-detail-page .hc-case-overview-item,
+body.hc-page-admin .hc-case-header__meta-item,
+body.hc-admin-case-detail-page .hc-case-summary-item{
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid rgba(204, 216, 230, .88);
+  border-radius: 12px;
+  background: rgba(248, 251, 254, .78);
+}
+
+body.hc-admin-case-detail-page .hc-case-overview-item span,
+body.hc-page-admin .hc-case-header__meta-item span,
+body.hc-admin-case-detail-page .hc-case-summary-item span{
+  display: block;
+  color: #61738a;
+  font-size: .68rem;
+  font-weight: 820;
+  letter-spacing: .06em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+body.hc-admin-case-detail-page .hc-case-overview-item strong,
+body.hc-page-admin .hc-case-header__meta-item strong,
+body.hc-admin-case-detail-page .hc-case-summary-item strong{
+  display: block;
+  min-width: 0;
+  margin-top: 4px;
+  color: var(--hc-v5-ink);
+  font-size: .91rem;
+  font-weight: 820;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.hc-admin-case-detail-page .hc-case-section-head{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+body.hc-admin-case-detail-page .hc-timeline-track,
+body.hc-page-admin .hc-timeline-track{
+  display: grid;
+  gap: 14px;
+}
+
+body.hc-admin-case-detail-page .hc-timeline-item,
+body.hc-page-admin .hc-timeline-item{
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px 14px 12px 20px;
+  border: 1px solid rgba(207, 218, 231, .9);
+  border-radius: 12px;
+  background: rgba(255,255,255,.88);
+}
+
+body.hc-admin-case-detail-page .hc-timeline-item__marker,
+body.hc-page-admin .hc-timeline-item__marker{
+  position: absolute;
+  left: 8px;
+  top: 17px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--hc-v5-blue);
+  box-shadow: 0 0 0 4px rgba(36, 91, 159, .10);
+}
+
+body.hc-admin-case-detail-page .hc-timeline-item__title,
+body.hc-page-admin .hc-timeline-item__title{
+  color: var(--hc-v5-ink);
+  font-weight: 820;
+}
+
+body.hc-admin-case-detail-page .hc-timeline-item__message,
+body.hc-page-admin .hc-timeline-item__message,
+body.hc-admin-case-detail-page .hc-timeline-meta,
+body.hc-page-admin .hc-timeline-meta{
+  color: var(--hc-v5-muted);
+  font-size: .84rem;
+  line-height: 1.35;
+}
+
+body.hc-admin-case-detail-page .hc-timeline-item__time,
+body.hc-page-admin .hc-timeline-item__time{
+  color: #5c6e83;
+  font-size: .78rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-security-anomalies{
+  border-color: rgba(161, 54, 54, .24) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.995), rgba(255,248,248,.955)) !important;
+}
+
+body.hc-page-admin .hc-security-anomalies .badge.text-bg-danger{
+  box-shadow: 0 0 0 3px rgba(161,54,54,.08), inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+body.hc-page-admin .hc-security-signal-grid,
+body.hc-page-admin .hc-security-refusal-grid,
+body.hc-page-admin .hc-security-events-grid{
+  margin-left: 0;
+  margin-right: 0;
+}
+
+body.hc-page-admin .hc-security-signal-grid > [class*="col-"],
+body.hc-page-admin .hc-security-refusal-grid > [class*="col-"],
+body.hc-page-admin .hc-security-events-grid > [class*="col-"]{
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+body.hc-page-admin .hc-security-signal-table,
+body.hc-page-admin .hc-security-activity-table,
+body.hc-page-admin .hc-security-login-table{
+  min-width: 620px;
+}
+
+body.hc-page-admin .hc-security-signal-table td:first-child,
+body.hc-page-admin .hc-security-signal-table th:first-child{
+  width: auto;
+  max-width: none;
+  text-align: left;
+}
+
+body.hc-page-admin .hc-security-signal-table td:last-child,
+body.hc-page-admin .hc-security-signal-table th:last-child{
+  width: 104px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-security-activity-table th:nth-child(1),
+body.hc-page-admin .hc-security-activity-table td:nth-child(1),
+body.hc-page-admin .hc-security-login-table th:nth-child(1),
+body.hc-page-admin .hc-security-login-table td:nth-child(1){
+  width: 190px;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-security-activity-table th:nth-child(2),
+body.hc-page-admin .hc-security-activity-table td:nth-child(2),
+body.hc-page-admin .hc-security-login-table th:nth-child(2),
+body.hc-page-admin .hc-security-login-table td:nth-child(2){
+  width: 210px;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-security-activity-table th:nth-child(3),
+body.hc-page-admin .hc-security-activity-table td:nth-child(3){
+  width: 240px;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-security-activity-table th:nth-child(4),
+body.hc-page-admin .hc-security-activity-table td:nth-child(4){
+  width: auto;
+  min-width: 180px;
+}
+
+body.hc-page-admin .hc-security-login-table th:nth-child(3),
+body.hc-page-admin .hc-security-login-table td:nth-child(3){
+  width: 150px;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-security-login-table th:nth-child(4),
+body.hc-page-admin .hc-security-login-table td:nth-child(4){
+  width: 130px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+body.hc-admin-dark,
+body.hc-admin-dark[data-hc-page^="/admin"],
+body.hc-admin-dark[data-hc-page^="/ops"],
+body[data-admin-theme="dark"].hc-page-admin,
+body[data-admin-theme="dark"][data-hc-page^="/ops"]{
+  --hc-v5-bg: #0e1623;
+  --hc-v5-surface: #121d2d;
+  --hc-v5-surface-soft: #172335;
+  --hc-v5-surface-strong: #1d2b40;
+  --hc-v5-ink: #f2f7fb;
+  --hc-v5-text: #d7e2ee;
+  --hc-v5-muted: #96a8bd;
+  --hc-v5-border: rgba(110, 132, 158, .48);
+  --hc-v5-border-soft: rgba(97, 119, 145, .42);
+  --hc-admin-surface-danger: #2b171a;
+  --hc-admin-surface-warning: #2b2214;
+  --hc-admin-surface-success: #14271f;
+  --hc-admin-surface-info: #142436;
+  background: #0e1623;
+  color: var(--hc-v5-text);
+}
+
+body.hc-admin-dark .hc-admin-workspace__content,
+body[data-admin-theme="dark"].hc-page-admin .hc-admin-workspace__content{
+  background:
+    linear-gradient(180deg, #111d2c 0, #0e1623 260px, #0b121d 100%);
+}
+
+body.hc-admin-dark :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-page-hero),
+body[data-admin-theme="dark"].hc-page-admin :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-page-hero){
+  border-color: var(--hc-v5-border-soft) !important;
+  background: linear-gradient(180deg, rgba(18,29,45,.98), rgba(15,24,38,.96)) !important;
+  box-shadow: 0 18px 38px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+body.hc-admin-dark .hc-admin-table tbody td,
+body[data-admin-theme="dark"].hc-page-admin .hc-admin-table tbody td{
+  color: var(--hc-v5-text);
+  border-top-color: rgba(97,119,145,.34);
+  background: rgba(18,29,45,.94);
+}
+
+body.hc-admin-dark .hc-admin-table thead th,
+body[data-admin-theme="dark"].hc-page-admin .hc-admin-table thead th{
+  color: #b8c8d9;
+  border-bottom-color: rgba(119,142,170,.44);
+  background: linear-gradient(180deg, #1a283b, #142235);
+}
+
+@media (max-width: 991.98px){
+  body.hc-admin-case-detail-page .hc-case-detail-layout,
+  body.hc-page-admin .hc-case-workspace{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-admin-case-detail-page .hc-timeline-item,
+  body.hc-page-admin .hc-timeline-item{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-admin-case-detail-page .hc-timeline-item__time,
+  body.hc-page-admin .hc-timeline-item__time{
+    justify-self: start;
+  }
+}
+
 /* Admin v4 phase 4A final cascade lock */
 body.hc-page-admin{
   background:
@@ -8330,6 +9904,545 @@ body.hc-ops-workspace-page .hc-ops-summary{
   body[data-hc-page^="/admin/notifications"] .hc-notify-summary,
   body[data-hc-page^="/ops/notifications"] .hc-notify-summary{
     grid-template-columns: 1fr;
+  }
+}
+
+/* Admin v5 true terminal lock: placed after legacy cascade guards. */
+body.hc-page-admin :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-security-panel, .hc-pilotage-card, .hc-command-panel),
+body[data-hc-page^="/ops"] :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-command-panel){
+  border-radius: var(--hc-v5-radius-card, 14px) !important;
+  border-color: var(--hc-v5-border-soft, rgba(205, 216, 229, .88)) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.995), rgba(248,251,254,.965)) !important;
+  box-shadow: var(--hc-v5-shadow-card, 0 16px 34px rgba(15, 23, 42, .075), 0 2px 8px rgba(15, 23, 42, .035)), inset 0 1px 0 rgba(255,255,255,.88) !important;
+}
+
+body.hc-page-admin .hc-admin-table-toolbar,
+body[data-hc-page^="/ops"] .hc-admin-table-toolbar{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid rgba(205, 216, 229, .88);
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,250,253,.9));
+}
+
+body.hc-page-admin .hc-admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table{
+  min-width: 860px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.hc-page-admin .hc-admin-table :is(th, td),
+body[data-hc-page^="/ops"] .hc-admin-table :is(th, td){
+  position: static !important;
+  display: table-cell;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  transform: none !important;
+}
+
+body.hc-page-admin .hc-admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table thead th{
+  color: #43576f !important;
+  background: linear-gradient(180deg, #f8fbfe, #eef4fa) !important;
+  font-size: .71rem;
+  font-weight: 860;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table tbody td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody td{
+  padding: .74rem .86rem;
+  color: #26384d;
+  border-top: 1px solid rgba(220, 228, 238, .86);
+  background: rgba(255,255,255,.96);
+  line-height: 1.35;
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:hover td,
+body.hc-page-admin .hc-admin-table tbody tr:focus-within td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:hover td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:focus-within td{
+  background: rgba(239,247,255,.96);
+  border-top-color: rgba(165, 190, 218, .86);
+  box-shadow: inset 3px 0 0 rgba(36, 91, 159, .24);
+}
+
+body.hc-page-admin :is(.hc-admin-empty, .hc-empty-state),
+body[data-hc-page^="/ops"] :is(.hc-admin-empty, .hc-empty-state){
+  padding: 18px;
+  border: 1px dashed rgba(146, 164, 188, .62);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(247,250,253,.86));
+  color: var(--hc-v5-muted, #66758a);
+  text-align: center;
+}
+
+body.hc-admin-security-page .hc-security-command-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+body.hc-admin-security-page .hc-security-anomaly-matrix{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+@media (max-width: 1199.98px){
+  body.hc-admin-security-page .hc-security-command-grid,
+  body.hc-admin-security-page .hc-security-anomaly-matrix{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-admin-security-page .hc-security-command-grid,
+  body.hc-admin-security-page .hc-security-anomaly-matrix{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-admin .hc-admin-table,
+  body[data-hc-page^="/ops"] .hc-admin-table{
+    min-width: 760px;
+  }
+}
+
+/* Admin v5 final premium pass: security console and enterprise data grids */
+body.hc-page-admin,
+body[data-hc-page^="/ops"]{
+  --hc-v5-bg: #eef3f8;
+  --hc-v5-surface: #ffffff;
+  --hc-v5-surface-soft: #f7fafc;
+  --hc-v5-ink: #102033;
+  --hc-v5-text: #26384d;
+  --hc-v5-muted: #66758a;
+  --hc-v5-border: rgba(164, 181, 202, .72);
+  --hc-v5-border-soft: rgba(205, 216, 229, .88);
+  --hc-v5-blue: #245b9f;
+  --hc-v5-green: #147a52;
+  --hc-v5-red: #a13636;
+  --hc-v5-amber: #a86612;
+  --hc-v5-radius-card: 14px;
+  --hc-v5-radius-control: 10px;
+  --hc-v5-shadow-card: 0 16px 34px rgba(15, 23, 42, .075), 0 2px 8px rgba(15, 23, 42, .035);
+  color: var(--hc-v5-text);
+}
+
+body.hc-page-admin .hc-admin-workspace__content,
+body[data-hc-page^="/ops"] .hc-admin-workspace__content{
+  background: linear-gradient(180deg, #f8fbfe 0, var(--hc-v5-bg) 220px, #eef3f8 100%);
+}
+
+body.hc-page-admin .hc-admin-wrap,
+body[data-hc-page^="/ops"] .hc-admin-wrap{
+  gap: 14px;
+}
+
+body.hc-page-admin :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-security-panel, .hc-pilotage-card, .hc-command-panel),
+body[data-hc-page^="/ops"] :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-command-panel){
+  border: 1px solid var(--hc-v5-border-soft) !important;
+  border-radius: var(--hc-v5-radius-card) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.995), rgba(248,251,254,.965)) !important;
+  box-shadow: var(--hc-v5-shadow-card), inset 0 1px 0 rgba(255,255,255,.88) !important;
+}
+
+body.hc-page-admin .hc-page-hero,
+body[data-hc-page^="/ops"] .hc-page-hero{
+  padding: 18px 20px !important;
+  border-color: rgba(143, 164, 190, .86) !important;
+  background:
+    linear-gradient(90deg, rgba(36, 91, 159, .14), rgba(36, 91, 159, .045) 38%, rgba(20, 122, 82, .035) 100%),
+    linear-gradient(180deg, #ffffff, #f7fafc) !important;
+}
+
+body.hc-page-admin :is(.hc-admin-title, .hc-page-title),
+body[data-hc-page^="/ops"] :is(.hc-admin-title, .hc-page-title){
+  color: var(--hc-v5-ink);
+  font-size: 1.42rem;
+  font-weight: 880;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview){
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item),
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item){
+  position: relative;
+  display: grid;
+  gap: 5px;
+  min-height: 94px;
+  padding: 14px 15px !important;
+  overflow: hidden;
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item)::before,
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item)::before{
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: linear-gradient(180deg, rgba(36,91,159,.86), rgba(36,91,159,.24));
+}
+
+body.hc-page-admin :is(.hc-ops-summary__value, .hc-notify-summary__value, .hc-risk-overview__value, .hc-kpi__value, .hc-kpi-value),
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__value, .hc-notify-summary__value, .hc-risk-overview__value, .hc-kpi__value, .hc-kpi-value){
+  color: var(--hc-v5-ink);
+  font-size: 1.76rem;
+  font-weight: 880;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin :is(.hc-kpi__context, .hc-ops-summary__context, .hc-notify-summary__context, .hc-risk-overview__context),
+body[data-hc-page^="/ops"] :is(.hc-kpi__context, .hc-ops-summary__context, .hc-notify-summary__context, .hc-risk-overview__context){
+  color: var(--hc-v5-muted);
+  font-size: .78rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+body.hc-page-admin .hc-admin-table-shell,
+body.hc-page-admin .hc-admin-table-card,
+body[data-hc-page^="/ops"] .hc-admin-table-shell,
+body[data-hc-page^="/ops"] .hc-admin-table-card{
+  overflow: hidden;
+}
+
+body.hc-page-admin .hc-admin-table-toolbar,
+body[data-hc-page^="/ops"] .hc-admin-table-toolbar{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid rgba(205, 216, 229, .88);
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,250,253,.9));
+}
+
+body.hc-page-admin .hc-admin-tablewrap,
+body[data-hc-page^="/ops"] .hc-admin-tablewrap{
+  width: 100%;
+  overflow-x: auto;
+  background: rgba(255,255,255,.78);
+  scrollbar-gutter: stable;
+}
+
+body.hc-page-admin .hc-admin-table,
+body[data-hc-page^="/ops"] .hc-admin-table{
+  width: 100%;
+  min-width: 860px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body.hc-page-admin .hc-admin-table :is(th, td),
+body[data-hc-page^="/ops"] .hc-admin-table :is(th, td){
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  display: table-cell;
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  transform: none !important;
+}
+
+body.hc-page-admin .hc-admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table thead th{
+  padding: .82rem .86rem;
+  color: #43576f !important;
+  border-bottom: 1px solid rgba(186, 201, 219, .94);
+  background: linear-gradient(180deg, #f8fbfe, #eef4fa) !important;
+  font-size: .71rem;
+  font-weight: 860;
+  letter-spacing: .055em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table tbody td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody td{
+  padding: .74rem .86rem;
+  color: #26384d;
+  border-top: 1px solid rgba(220, 228, 238, .86);
+  background: rgba(255,255,255,.96);
+  line-height: 1.35;
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:nth-child(even) td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:nth-child(even) td{
+  background: rgba(249,251,254,.88);
+}
+
+body.hc-page-admin .hc-admin-table tbody tr:hover td,
+body.hc-page-admin .hc-admin-table tbody tr:focus-within td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:hover td,
+body[data-hc-page^="/ops"] .hc-admin-table tbody tr:focus-within td{
+  background: rgba(239,247,255,.96);
+  border-top-color: rgba(165, 190, 218, .86);
+  box-shadow: inset 3px 0 0 rgba(36, 91, 159, .24);
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-id, .case-col, .hc-ops-col-id, .hc-notify-col-id, td:first-child),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-id, .case-col, .hc-ops-col-id, .hc-notify-col-id, td:first-child){
+  width: 88px;
+  max-width: 104px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-time, .hc-col-created, .hc-col-created-context, .hc-col-activity, .activity-col, .hc-audit-time, .hc-elapsed, .hc-notify-col-created, .hc-notify-col-next-retry, .hc-notify-col-sent-at),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-time, .hc-col-created, .hc-col-created-context, .hc-col-activity, .activity-col, .hc-audit-time, .hc-elapsed, .hc-notify-col-created, .hc-notify-col-next-retry, .hc-notify-col-sent-at){
+  width: 168px;
+  max-width: 168px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-status, .status-col, .hc-ops-col-status, .hc-notify-col-status),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-status, .status-col, .hc-ops-col-status, .hc-notify-col-status){
+  width: 132px;
+  max-width: 148px;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table :is(.hc-col-actions, .hc-col-action, .actions-col, .col-action, .hc-td-action, .hc-ops-col-action, td:last-child),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.hc-col-actions, .hc-col-action, .actions-col, .col-action, .hc-td-action, .hc-ops-col-action, td:last-child){
+  width: 132px;
+  max-width: 180px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+body.hc-page-admin .hc-admin-table :is(.col-request, .hc-col-request, .request-col, .hc-ops-col-request, .hc-col-title),
+body[data-hc-page^="/ops"] .hc-admin-table :is(.col-request, .hc-col-request, .request-col, .hc-ops-col-request, .hc-col-title){
+  width: auto;
+  min-width: 260px;
+  white-space: normal;
+}
+
+body.hc-page-admin :is(.hc-cell-truncate, .hc-cell-primary, .hc-admin-cell-primary, .hc-ops-title, .hc-admin-home-attention__title, .hc-cases-request-title, .hc-proleads-name, .hc-proleads-email),
+body[data-hc-page^="/ops"] :is(.hc-cell-truncate, .hc-cell-primary, .hc-admin-cell-primary, .hc-ops-title, .hc-admin-home-attention__title, .hc-cases-request-title){
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.hc-page-admin :is(.hc-admin-cell-secondary, .hc-cell-secondary, .hc-cell-meta, .hc-admin-cell-meta, .hc-ops-description, .hc-ops-meta, .hc-cases-request-sub),
+body[data-hc-page^="/ops"] :is(.hc-admin-cell-secondary, .hc-cell-secondary, .hc-cell-meta, .hc-admin-cell-meta, .hc-ops-description, .hc-ops-meta, .hc-cases-request-sub){
+  color: var(--hc-v5-muted);
+  font-size: .8rem;
+  line-height: 1.25;
+}
+
+body.hc-page-admin :is(.hc-admin-empty, .hc-empty-state),
+body[data-hc-page^="/ops"] :is(.hc-admin-empty, .hc-empty-state){
+  padding: 18px;
+  border: 1px dashed rgba(146, 164, 188, .62);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.88), rgba(247,250,253,.86));
+  color: var(--hc-v5-muted);
+  text-align: center;
+}
+
+body.hc-page-admin :is(.badge, .hc-pill, .hc-chip, .hc-admin-chip, .hc-sla, .hc-case-status-badge, .hc-prio),
+body[data-hc-page^="/ops"] :is(.badge, .hc-pill, .hc-chip, .hc-admin-chip, .hc-sla, .hc-case-status-badge, .hc-prio){
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  border-radius: 999px;
+  font-weight: 760;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+body.hc-admin-security-page .hc-security-command-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+body.hc-admin-security-page .hc-security-command-card{
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid rgba(205, 216, 229, .88);
+  border-radius: 12px;
+  background: rgba(255,255,255,.78);
+}
+
+body.hc-admin-security-page .hc-security-command-card--risk{
+  border-color: rgba(168, 102, 18, .28);
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,248,237,.78));
+}
+
+body.hc-admin-security-page .hc-security-command-card--control{
+  border-color: rgba(36, 91, 159, .28);
+}
+
+body.hc-admin-security-page .hc-security-command-card__label,
+body.hc-admin-security-page .hc-security-anomaly-matrix span{
+  color: #3c638d;
+  font-size: .68rem;
+  font-weight: 860;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+body.hc-admin-security-page .hc-security-command-card strong{
+  min-width: 0;
+  color: var(--hc-v5-ink);
+  font-size: 1rem;
+  font-weight: 860;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.hc-admin-security-page .hc-security-command-card span:last-child,
+body.hc-admin-security-page .hc-security-anomaly-matrix small{
+  color: var(--hc-v5-muted);
+  font-size: .78rem;
+  line-height: 1.3;
+}
+
+body.hc-admin-security-page .hc-security-anomaly-matrix{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+body.hc-admin-security-page .hc-security-anomaly-matrix > div{
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid rgba(212, 222, 234, .88);
+  border-radius: 10px;
+  background: rgba(255,255,255,.78);
+}
+
+body.hc-admin-security-page .hc-security-anomaly-matrix strong{
+  min-width: 0;
+  color: var(--hc-v5-ink);
+  font-size: .94rem;
+  font-weight: 830;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.hc-admin-security-page .hc-security-login-table{
+  min-width: 760px;
+}
+
+body.hc-admin-security-page .hc-security-activity-table{
+  min-width: 860px;
+}
+
+body.hc-admin-security-page .hc-security-signal-table{
+  min-width: 520px;
+}
+
+body.hc-admin-security-page .hc-security-login-table :is(th, td):nth-child(1),
+body.hc-admin-security-page .hc-security-activity-table :is(th, td):nth-child(1){
+  width: 190px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-security-page .hc-security-login-table :is(th, td):nth-child(3){
+  width: 150px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: .78rem;
+  white-space: nowrap;
+}
+
+body.hc-admin-security-page .hc-security-signal-table :is(th, td):last-child{
+  width: 104px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-dark,
+body[data-admin-theme="dark"].hc-page-admin,
+body[data-admin-theme="dark"][data-hc-page^="/ops"]{
+  --hc-v5-bg: #0e1623;
+  --hc-v5-surface: #121d2d;
+  --hc-v5-surface-soft: #172335;
+  --hc-v5-ink: #f2f7fb;
+  --hc-v5-text: #d7e2ee;
+  --hc-v5-muted: #96a8bd;
+  --hc-v5-border: rgba(110, 132, 158, .48);
+  --hc-v5-border-soft: rgba(97, 119, 145, .42);
+  background: #0e1623;
+  color: var(--hc-v5-text);
+}
+
+body.hc-admin-dark .hc-admin-table tbody td,
+body[data-admin-theme="dark"].hc-page-admin .hc-admin-table tbody td{
+  color: var(--hc-v5-text);
+  border-top-color: rgba(97,119,145,.34);
+  background: rgba(18,29,45,.94);
+}
+
+body.hc-admin-dark .hc-admin-table thead th,
+body[data-admin-theme="dark"].hc-page-admin .hc-admin-table thead th{
+  color: #b8c8d9 !important;
+  border-bottom-color: rgba(119,142,170,.44);
+  background: linear-gradient(180deg, #1a283b, #142235) !important;
+}
+
+@media (max-width: 1199.98px){
+  body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+  body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+  body.hc-admin-security-page .hc-security-command-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.hc-admin-security-page .hc-security-anomaly-matrix{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-page-admin :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+  body[data-hc-page^="/ops"] :is(.hc-kpis, .hc-ops-summary, .hc-notify-summary, .hc-risk-overview),
+  body.hc-admin-security-page .hc-security-command-grid,
+  body.hc-admin-security-page .hc-security-anomaly-matrix{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-admin .hc-admin-table,
+  body[data-hc-page^="/ops"] .hc-admin-table{
+    min-width: 760px;
   }
 }
 

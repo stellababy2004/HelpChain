@@ -322,6 +322,24 @@ def select_local_runtime_db(
             fallback=fallback,
         )
 
+    if (
+        _truthy(merged.get("HC_FORCE_CONFIGURED_LOCAL_DB"))
+        and configured_uri
+        and normalize_uri(configured_uri).lower().startswith("sqlite:")
+    ):
+        return LocalRuntimeDbSelection(
+            apply_contract=True,
+            selected_path=configured_path,
+            selected_uri=configured_uri,
+            selected_label="configured",
+            reason="HC_FORCE_CONFIGURED_LOCAL_DB enabled; honoring configured local sqlite DB",
+            configured_uri=configured_uri,
+            configured_path=configured_path,
+            configured_source=configured_source,
+            primary=primary,
+            fallback=fallback,
+        )
+
     if primary.healthy:
         return LocalRuntimeDbSelection(
             apply_contract=True,

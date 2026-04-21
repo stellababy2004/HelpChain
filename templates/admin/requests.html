@@ -50,18 +50,22 @@
       <div class="hc-kpi" data-kpi="NEW">
         <div class="hc-kpi__label">Nouvelles</div>
         <div class="hc-kpi__value">0</div>
+        <div class="hc-kpi__context">Entrées à qualifier</div>
       </div>
       <div class="hc-kpi" data-kpi="IN_PROGRESS">
         <div class="hc-kpi__label">En traitement</div>
         <div class="hc-kpi__value">0</div>
+        <div class="hc-kpi__context">Situations actives</div>
       </div>
       <div class="hc-kpi" data-kpi="URGENT">
         <div class="hc-kpi__label">Urgentes</div>
         <div class="hc-kpi__value">0</div>
+        <div class="hc-kpi__context">Action prioritaire</div>
       </div>
       <div class="hc-kpi" data-kpi="COMPLETED">
         <div class="hc-kpi__label">Situations clôturées</div>
         <div class="hc-kpi__value">0</div>
+        <div class="hc-kpi__context">Cycle terminé</div>
       </div>
     </div>
   </div>
@@ -160,18 +164,22 @@
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
       <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
+      <span class="hc-risk-overview__context">À traiter en premier</span>
     </a>
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
       <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
+      <span class="hc-risk-overview__context">Vigilance renforcée</span>
     </a>
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
       <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
+      <span class="hc-risk-overview__context">Affectation attendue</span>
     </a>
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
       <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
+      <span class="hc-risk-overview__context">Relance nécessaire</span>
     </a>
   </div>
 
@@ -378,6 +386,14 @@
     <button type="button" class="hc-quickchip hc-quickchip--ghost" data-quick-filter="clear">{{ _('Clear quick filters') }}</button>
   </div>
   </div>
+
+  <div class="hc-card hc-admin-table-shell hc-requests-table-shell">
+    <div class="hc-card__header hc-admin-table-toolbar">
+      <div>
+        <h2 class="hc-section-title mb-1">File des demandes</h2>
+        <div class="hc-section-subtitle">Vue consolidée des demandes, risques, signaux et actions prioritaires.</div>
+      </div>
+    </div>
   <div class="table-responsive hc-admin-tablewrap admin-table-wrap hc-requests-list">
     <table class="table table-hover align-middle hc-admin-table admin-table">
       <thead>
@@ -693,6 +709,7 @@
         {% endfor %}
       </tbody>
     </table>
+  </div>
   </div>
 
   <div class="hc-card hc-live-card hc-fold" style="margin-top:12px;">

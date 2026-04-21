@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Leads professionnels | {{ _('Admin') }}{% endblock %}
-{% block body_class %}hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
+{% block body_class %}hc-page-admin hc-admin-workspace hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
   <style>
@@ -151,6 +151,12 @@
   </form>
 
   <div class="hc-card hc-admin-table-shell hc-proleads-desktop">
+    <div class="hc-card__header hc-admin-table-toolbar">
+      <div>
+        <h2 class="hc-section-title mb-1">Pipeline professionnels</h2>
+        <div class="hc-section-subtitle">Contacts, statut, urgence et prochaine action de qualification.</div>
+      </div>
+    </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-proleads-table mb-0">
         <thead>
@@ -212,7 +218,12 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="8" class="text-center text-muted py-4">Aucun lead pour le moment.</td>
+              <td colspan="8" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun lead pour le moment</div>
+                  <div class="hc-empty-state__text">Les leads professionnels apparaîtront ici dès qu’ils seront captés ou importés.</div>
+                </div>
+              </td>
             </tr>
           {% endfor %}
         </tbody>

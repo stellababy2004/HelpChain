@@ -19,18 +19,22 @@
       <div class="hc-notify-summary__item">
         <div class="hc-notify-summary__label">En attente</div>
         <div class="hc-notify-summary__value">{{ summary.pending or 0 }}</div>
+        <div class="hc-notify-summary__context">File active</div>
       </div>
       <div class="hc-notify-summary__item">
         <div class="hc-notify-summary__label">À relancer</div>
         <div class="hc-notify-summary__value">{{ summary.retry or 0 }}</div>
+        <div class="hc-notify-summary__context">Nouvelle tentative</div>
       </div>
       <div class="hc-notify-summary__item">
         <div class="hc-notify-summary__label">En échec</div>
         <div class="hc-notify-summary__value">{{ summary.failed or 0 }}</div>
+        <div class="hc-notify-summary__context">À diagnostiquer</div>
       </div>
       <div class="hc-notify-summary__item">
         <div class="hc-notify-summary__label">Envoyées</div>
         <div class="hc-notify-summary__value">{{ summary.sent or 0 }}</div>
+        <div class="hc-notify-summary__context">Diffusion terminée</div>
       </div>
     </div>
 

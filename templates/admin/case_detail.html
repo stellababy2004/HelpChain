@@ -60,6 +60,18 @@
 } %}
 {% set case_status_key = (case_row.status or 'open')|replace('_', '-')|lower %}
 {% set case_status_label = status_display_labels.get((case_row.status or '')|lower, (case_row.status or '-')|replace('_', ' ')|title) %}
+{% set owner_ns = namespace(label='Non attribue') %}
+{% for o in owners %}
+  {% if case_row.owner_user_id == o[0] %}
+    {% set owner_ns.label = o[1] %}
+  {% endif %}
+{% endfor %}
+{% set pro_ns = namespace(label='Non attribue') %}
+{% for lead in professionals %}
+  {% if case_row.assigned_professional_lead_id == lead.id %}
+    {% set pro_ns.label = lead.full_name or lead.email or ('Lead #' ~ lead.id) %}
+  {% endif %}
+{% endfor %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--case-detail">
   <div class="hc-card hc-page-hero hc-case-detail-hero">
     <div class="hc-row hc-admin-headerTop">
@@ -98,6 +110,22 @@
           <div class="hc-case-overview-item">
             <span>Priorite</span>
             <strong>{{ case_row.priority }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>Responsable</span>
+            <strong>{{ owner_ns.label }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>Professionnel</span>
+            <strong>{{ pro_ns.label }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>Structure</span>
+            <strong>{{ req.structure.name if req.structure else (req.structure_id or '-') }}</strong>
+          </div>
+          <div class="hc-case-overview-item">
+            <span>SLA</span>
+            <strong><span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span></strong>
           </div>
           <div class="hc-case-overview-item">
             <span>Score de risque</span>

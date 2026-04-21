@@ -1,6 +1,6 @@
 ﻿{% extends "base.html" %}
 {% block title %}{{ _('Admin') }} - {{ _('Request') }} #{{ req.id }}{% endblock %}
-{% block body_class %}hc-admin-requests-page{% endblock %}
+{% block body_class %}hc-page-admin hc-admin-workspace hc-admin-requests-page{% endblock %}
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
 {% endblock %}
@@ -763,8 +763,8 @@
           {% set csrf = '' %}
         {% endif %}
         {% if matched_volunteers %}
-          <div class="table-responsive">
-            <table class="table align-middle">
+          <div class="table-responsive hc-admin-tablewrap">
+            <table class="table align-middle hc-admin-table hc-workflow-table">
               <thead>
                 <tr>
                   <th>Bénévole</th>
@@ -871,8 +871,8 @@
           </div>
         {% endif %}
         {% if volunteer_signals %}
-          <div class="table-responsive">
-            <table class="table align-middle">
+          <div class="table-responsive hc-admin-tablewrap">
+            <table class="table align-middle hc-admin-table hc-workflow-table">
               <thead>
                 <tr>
                   <th>Bénévole</th>
@@ -964,8 +964,8 @@
           </div>
         {% endif %}
 
-        <div class="table-responsive mt-3">
-          <table class="table table-sm align-middle">
+        <div class="table-responsive hc-admin-tablewrap mt-3">
+          <table class="table table-sm align-middle hc-admin-table hc-workflow-table">
             <thead>
               <tr>
                 <th>{{ _('ID') }}</th>

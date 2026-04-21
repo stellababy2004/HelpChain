@@ -16,22 +16,22 @@
   <div class="hc-card mb-3 p-3">
     <div class="hc-ops-summary mb-3">
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Needs attention</div>
+        <div class="hc-ops-summary__label">Points à traiter</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if attention_count }}">{{ attention_count or 0 }}</div>
         <div class="hc-muted small">{{ unassigned_count or 0 }} non assign&eacute;es, {{ followup_count or 0 }} &agrave; relancer</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Requests backlog</div>
+        <div class="hc-ops-summary__label">Demandes en file</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}">{{ unassigned_count or 0 }}</div>
         <div class="hc-muted small">{{ stale_count or 0 }} sans action r&eacute;cente</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Notification queue</div>
+        <div class="hc-ops-summary__label">File notifications</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if queue_summary.dead_letter or queue_summary.retry }}">{{ queue_summary.pending or 0 }}</div>
         <div class="hc-muted small">{{ queue_summary.processing or 0 }} processing, {{ queue_summary.failed or 0 }} failed</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Security 24h</div>
+        <div class="hc-ops-summary__label">Sécurité 24h</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if security_summary.available and (security_summary.failed_logins_24h or security_summary.denied_actions_24h or security_summary.risky_actions_24h) }}">{{ security_summary.failed_logins_24h if security_summary.available else "—" }}</div>
         <div class="hc-muted small">
           {% if security_summary.available %}
@@ -49,6 +49,75 @@
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir la s&eacute;curit&eacute;</a>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_roles') }}">G&eacute;rer les r&ocirc;les</a>
     </div>
+  </div>
+
+  <div class="hc-command-grid mb-3" aria-label="Command center">
+    <section class="hc-card hc-command-panel hc-command-panel--attention">
+      <div class="hc-command-panel__kicker">Points à traiter</div>
+      <h2 class="hc-command-panel__title">O&ugrave; regarder maintenant</h2>
+      <div class="hc-command-panel__body">
+        <a class="hc-command-action" href="{{ url_for('admin.admin_requests') }}">
+          <span class="hc-command-action__label">Non assign&eacute;es</span>
+          <strong>{{ unassigned_count or 0 }}</strong>
+        </a>
+        <a class="hc-command-action" href="{{ url_for('admin.admin_requests') }}">
+          <span class="hc-command-action__label">&Agrave; relancer</span>
+          <strong>{{ followup_count or 0 }}</strong>
+        </a>
+        <a class="hc-command-action" href="{{ url_for('admin.admin_requests') }}">
+          <span class="hc-command-action__label">Sans action r&eacute;cente</span>
+          <strong>{{ stale_count or 0 }}</strong>
+        </a>
+      </div>
+    </section>
+
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">File de diffusion</div>
+      <h2 class="hc-command-panel__title">Pipeline notifications</h2>
+      <div class="hc-command-panel__body">
+        <a class="hc-command-action" href="{{ url_for('admin.admin_notifications_list') }}">
+          <span class="hc-command-action__label">En attente</span>
+          <strong>{{ queue_summary.pending or 0 }}</strong>
+        </a>
+        <a class="hc-command-action" href="{{ url_for('admin.admin_notifications_list', status='retry') }}">
+          <span class="hc-command-action__label">Relance</span>
+          <strong>{{ queue_summary.retry or 0 }}</strong>
+        </a>
+        <a class="hc-command-action" href="{{ url_for('admin.admin_notifications_list', status='failed') }}">
+          <span class="hc-command-action__label">Échec</span>
+          <strong>{{ queue_summary.failed or 0 }}</strong>
+        </a>
+      </div>
+    </section>
+
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">Sécurité</div>
+      <h2 class="hc-command-panel__title">Signaux sensibles</h2>
+      <div class="hc-command-panel__body">
+        <a class="hc-command-action" href="{{ url_for('admin.admin_security') }}">
+          <span class="hc-command-action__label">Connexions échouées</span>
+          <strong>{{ security_summary.failed_logins_24h if security_summary.available else "—" }}</strong>
+        </a>
+        <a class="hc-command-action" href="{{ url_for('admin.admin_security') }}">
+          <span class="hc-command-action__label">Actions refusées</span>
+          <strong>{{ security_summary.denied_actions_24h if security_summary.available else "—" }}</strong>
+        </a>
+        <a class="hc-command-action" href="{{ url_for('admin.admin_security') }}">
+          <span class="hc-command-action__label">Actions sensibles</span>
+          <strong>{{ security_summary.risky_actions_24h if security_summary.available else "—" }}</strong>
+        </a>
+      </div>
+    </section>
+
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">Prochaines actions</div>
+      <h2 class="hc-command-panel__title">Raccourcis op&eacute;rationnels</h2>
+      <div class="hc-command-list">
+        <a href="{{ url_for('admin.admin_requests') }}">Qualifier les demandes ouvertes</a>
+        <a href="{{ url_for('admin.admin_notifications_list', status='failed') }}">Diagnostiquer les notifications en &eacute;chec</a>
+        <a href="{{ url_for('admin.admin_security') }}">Contr&ocirc;ler les anomalies s&eacute;curit&eacute;</a>
+      </div>
+    </section>
   </div>
 
   <div class="hc-card hc-admin-table-shell">

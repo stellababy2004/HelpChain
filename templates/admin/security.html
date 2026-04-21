@@ -1,9 +1,9 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • Sécurité administrative | HelpChain{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+{% block admin_body_class %} hc-admin-security-page{% endblock %}
 
 {% block admin_content %}
-<div class="hc-admin-wrap">
+<div class="hc-admin-wrap hc-admin-wrap--security">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
@@ -11,7 +11,7 @@
         <h1 class="hc-admin-title">Sécurité administrative</h1>
         <div class="hc-muted">Pilotage des authentifications, anomalies et actions sensibles observées sur les dernières 24 heures.</div>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 hc-admin-actions">
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_audit') }}">Ouvrir l’audit</a>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
       </div>
@@ -25,47 +25,76 @@
         <p class="hc-section-subtitle">Vue de synthèse des authentifications, refus d’accès et signaux faibles à surveiller.</p>
       </div>
     </div>
-  <div class="row g-3 mb-3">
+    <div class="hc-security-command-grid" aria-label="Résumé sécurité opérationnel">
+      <div class="hc-security-command-card hc-security-command-card--control">
+        <span class="hc-security-command-card__label">Posture</span>
+        <strong>{{ 'Sous surveillance' if anomalies.spike_failed_logins or anomalies.denied_spike or anomalies.repeated_denied else 'Stable' }}</strong>
+        <span>Dernière heure: {{ anomalies.failed_1h }} échecs / {{ anomalies.denied_1h }} refus</span>
+      </div>
+      <div class="hc-security-command-card hc-security-command-card--risk">
+        <span class="hc-security-command-card__label">Exposition</span>
+        <strong>{{ anomalies.top_ip or '—' }}</strong>
+        <span>{{ anomalies.top_ip_fails }} échecs depuis la source la plus active</span>
+      </div>
+      <div class="hc-security-command-card">
+        <span class="hc-security-command-card__label">Traçabilité</span>
+        <strong>{{ kpis.risky_actions_24h }}</strong>
+        <span>actions sensibles observées sur 24h</span>
+      </div>
+      <div class="hc-security-command-card">
+        <span class="hc-security-command-card__label">Contrôle</span>
+        <strong>{{ kpis.denied_24h }}</strong>
+        <span>actions refusées, à corréler avec l’audit si hausse</span>
+      </div>
+    </div>
+  <div class="row g-3 mb-3 hc-security-kpis">
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">Connexions réussies (24h)</div>
-        <div class="h3 mb-0">{{ kpis.success_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card">
+        <div class="hc-kpi__label">Connexions réussies (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.success_24h }}</div>
+        <div class="hc-kpi__context">Accès validés</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">Échecs de connexion (24h)</div>
-        <div class="h3 mb-0">{{ kpis.failed_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card hc-security-kpi-card--warning">
+        <div class="hc-kpi__label">Échecs de connexion (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.failed_24h }}</div>
+        <div class="hc-kpi__context">Tentatives bloquées</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">IP suspectes (24h)</div>
-        <div class="h3 mb-0">{{ kpis.distinct_failed_ips_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card hc-security-kpi-card--warning">
+        <div class="hc-kpi__label">IP suspectes (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.distinct_failed_ips_24h }}</div>
+        <div class="hc-kpi__context">Sources distinctes</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">Identifiants suspects (24h)</div>
-        <div class="h3 mb-0">{{ kpis.distinct_failed_usernames_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card hc-security-kpi-card--warning">
+        <div class="hc-kpi__label">Identifiants suspects (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.distinct_failed_usernames_24h }}</div>
+        <div class="hc-kpi__context">Comptes ciblés</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">Actions refusées (24h)</div>
-        <div class="h3 mb-0">{{ kpis.denied_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card hc-security-kpi-card--danger">
+        <div class="hc-kpi__label">Actions refusées (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.denied_24h }}</div>
+        <div class="hc-kpi__context">Accès non autorisés</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">Actions sensibles (24h)</div>
-        <div class="h3 mb-0">{{ kpis.risky_actions_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card">
+        <div class="hc-kpi__label">Actions sensibles (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.risky_actions_24h }}</div>
+        <div class="hc-kpi__context">Événements surveillés</div>
       </div>
     </div>
     <div class="col-12 col-md-6 col-xl-3">
-      <div class="hc-card p-3">
-        <div class="hc-muted small">Verrous de sécurité (24h)</div>
-        <div class="h3 mb-0">{{ kpis.lockout_buckets_24h }}</div>
+      <div class="hc-card p-3 hc-security-kpi-card hc-security-kpi-card--danger">
+        <div class="hc-kpi__label">Verrous de sécurité (24h)</div>
+        <div class="hc-kpi__value">{{ kpis.lockout_buckets_24h }}</div>
+        <div class="hc-kpi__context">Seuils déclenchés</div>
       </div>
     </div>
   </div>
@@ -96,35 +125,25 @@
         Refus répétés : {{ 'Oui' if anomalies.repeated_denied else 'Non' }}
       </span>
     </div>
-    <div class="mt-2 small text-muted">
-      Pic observé : {{ anomalies.failed_1h }} sur la dernière heure, contre {{ anomalies.avg_hourly }}/h en moyenne (seuil {{ anomalies.spike_threshold }})
-    </div>
-    <div class="small text-muted">
-      IP la plus exposée : {{ anomalies.top_ip or '—' }} • {{ anomalies.top_ip_fails }} échecs
-    </div>
-    <div class="small text-muted">
-      Identifiant le plus exposé : {{ anomalies.top_username or '—' }} • {{ anomalies.top_username_fails }} échecs
-    </div>
-    <div class="small text-muted">
-      Actions refusées : {{ anomalies.denied_1h }} sur la dernière heure, contre {{ anomalies.avg_denied_hourly }}/h en moyenne
-    </div>
-    <div class="small text-muted">
-      IP la plus refusée : {{ anomalies.top_denied_ip or '—' }} • {{ anomalies.top_denied_ip_count }} refus
-    </div>
-    <div class="small text-muted">
-      Identifiant le plus refusé : {{ anomalies.top_denied_username or '—' }} • {{ anomalies.top_denied_username_count }} refus
+    <div class="hc-security-anomaly-matrix">
+      <div><span>Pic observé</span><strong>{{ anomalies.failed_1h }}</strong><small>vs {{ anomalies.avg_hourly }}/h, seuil {{ anomalies.spike_threshold }}</small></div>
+      <div><span>IP la plus exposée</span><strong>{{ anomalies.top_ip or '—' }}</strong><small>{{ anomalies.top_ip_fails }} échecs</small></div>
+      <div><span>Identifiant exposé</span><strong>{{ anomalies.top_username or '—' }}</strong><small>{{ anomalies.top_username_fails }} échecs</small></div>
+      <div><span>Refus dernière heure</span><strong>{{ anomalies.denied_1h }}</strong><small>moyenne {{ anomalies.avg_denied_hourly }}/h</small></div>
+      <div><span>IP la plus refusée</span><strong>{{ anomalies.top_denied_ip or '—' }}</strong><small>{{ anomalies.top_denied_ip_count }} refus</small></div>
+      <div><span>Identifiant refusé</span><strong>{{ anomalies.top_denied_username or '—' }}</strong><small>{{ anomalies.top_denied_username_count }} refus</small></div>
     </div>
     <div class="mt-3 small text-muted">
       Actions sensibles surveillées : {{ risky_actions|join(', ') }}
     </div>
   </div>
 
-  <div class="row g-3 mb-3">
+  <div class="row g-3 mb-3 hc-security-signal-grid">
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>IP avec le plus d’échecs (24h)</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>IP avec le plus d’échecs (24h)</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-signal-table mb-0">
             <thead>
               <tr><th>IP</th><th>Échecs</th></tr>
             </thead>
@@ -133,7 +152,7 @@
                 <tr><td class="small">{{ ip or '—' }}</td><td>{{ fails }}</td></tr>
               {% endfor %}
               {% if top_ips|length == 0 %}
-                <tr><td colspan="2" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="2" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -141,10 +160,10 @@
       </div>
     </div>
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>Identifiants avec le plus d’échecs (24h)</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>Identifiants avec le plus d’échecs (24h)</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-signal-table mb-0">
             <thead>
               <tr><th>Identifiant</th><th>Échecs</th></tr>
             </thead>
@@ -153,7 +172,7 @@
                 <tr><td class="small">{{ username or '—' }}</td><td>{{ fails }}</td></tr>
               {% endfor %}
               {% if top_usernames|length == 0 %}
-                <tr><td colspan="2" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="2" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -162,12 +181,12 @@
     </div>
   </div>
 
-  <div class="row g-3 mb-3">
+  <div class="row g-3 mb-3 hc-security-refusal-grid">
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>IP avec le plus d’actions refusées (24h)</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>IP avec le plus d’actions refusées (24h)</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-signal-table mb-0">
             <thead>
               <tr><th>IP</th><th>Refus</th></tr>
             </thead>
@@ -176,7 +195,7 @@
                 <tr><td class="small">{{ ip }}</td><td>{{ cnt }}</td></tr>
               {% endfor %}
               {% if top_denied_ips|length == 0 %}
-                <tr><td colspan="2" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="2" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -184,10 +203,10 @@
       </div>
     </div>
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>Identifiants avec le plus d’actions refusées (24h)</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>Identifiants avec le plus d’actions refusées (24h)</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-signal-table mb-0">
             <thead>
               <tr><th>Identifiant</th><th>Refus</th></tr>
             </thead>
@@ -196,7 +215,7 @@
                 <tr><td class="small">{{ username }}</td><td>{{ cnt }}</td></tr>
               {% endfor %}
               {% if top_denied_usernames|length == 0 %}
-                <tr><td colspan="2" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="2" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -205,12 +224,12 @@
     </div>
   </div>
 
-  <div class="row g-3">
-    <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>Tentatives de connexion récentes</strong></div>
+  <div class="row g-3 hc-security-events-grid">
+    <div class="col-12 hc-security-login-col">
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>Tentatives de connexion récentes</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-login-table mb-0">
             <thead>
               <tr>
                 <th>{{ _('Time') }}</th>
@@ -233,7 +252,7 @@
                 </tr>
               {% endfor %}
               {% if recent_logins|length == 0 %}
-                <tr><td colspan="4" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="4" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -241,10 +260,10 @@
       </div>
     </div>
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>Actions sensibles récentes</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>Actions sensibles récentes</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-activity-table mb-0">
             <thead>
               <tr>
                 <th>{{ _('Time') }}</th>
@@ -272,7 +291,7 @@
                 </tr>
               {% endfor %}
               {% if recent_risky|length == 0 %}
-                <tr><td colspan="4" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="4" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -283,10 +302,10 @@
 
   <div class="row g-3 mt-1">
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>Actions refusées récentes</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>Actions refusées récentes</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-activity-table mb-0">
             <thead>
               <tr>
                 <th>{{ _('Time') }}</th>
@@ -305,7 +324,7 @@
                 </tr>
               {% endfor %}
               {% if recent_denied|length == 0 %}
-                <tr><td colspan="4" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="4" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -313,10 +332,10 @@
       </div>
     </div>
     <div class="col-12 col-xl-6">
-      <div class="hc-card">
-        <div class="p-3 border-bottom"><strong>Événements administratifs sensibles récents</strong></div>
+      <div class="hc-card hc-admin-table-shell hc-security-panel">
+        <div class="hc-card__header hc-admin-table-toolbar"><strong>Événements administratifs sensibles récents</strong></div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-security-activity-table mb-0">
             <thead>
               <tr>
                 <th>{{ _('Time') }}</th>
@@ -344,7 +363,7 @@
                 </tr>
               {% endfor %}
               {% if recent_sensitive|length == 0 %}
-                <tr><td colspan="4" class="text-muted text-center py-3">Aucune donnée</td></tr>
+                <tr><td colspan="4" class="py-3"><div class="hc-admin-empty">Aucune donnée</div></td></tr>
               {% endif %}
             </tbody>
           </table>

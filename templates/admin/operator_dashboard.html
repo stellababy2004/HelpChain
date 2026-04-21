@@ -29,22 +29,27 @@
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Situations critiques</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
+        <div class="hc-ops-summary__context">Priorité immédiate</div>
       </div>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Demandes non assignées</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}"> {{ unassigned_count or 0 }}</div>
+        <div class="hc-ops-summary__context">À affecter</div>
       </div>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Relances à faire</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
+        <div class="hc-ops-summary__context">Suivi attendu</div>
       </div>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Notifications en échec</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if failed_notif_count }}"> {{ failed_notif_count or 0 }}</div>
+        <div class="hc-ops-summary__context">Canal à vérifier</div>
       </div>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Demandes mises à jour aujourd’hui</div>
         <div class="hc-ops-summary__value"> {{ updated_today_count or 0 }}</div>
+        <div class="hc-ops-summary__context">Activité du jour</div>
       </div>
     </div>
 
