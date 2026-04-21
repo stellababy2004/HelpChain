@@ -472,19 +472,20 @@
         <div class="hc-trust-page__shell hc-trust-page__hero-grid">
           <div class="hc-trust-page__hero-copy">
             <p class="hc-trust-page__eyebrow">{{ _('DÉMO') }}</p>
-            <h1>{{ _('Planifier une démonstration HelpChain') }}</h1>
+            <h1>{{ _('Voyons si HelpChain correspond à votre organisation') }}</h1>
             <p class="hc-trust-page__lead">
-              {{ _('30 minutes pour comprendre si HelpChain correspond à votre organisation.') }}
+              {{ _('En 20 minutes, nous cadrons votre contexte, vos flux et la pertinence d’un pilote.') }}
             </p>
             <div class="hc-trust-page__actions">
-              <a href="#intake-form" class="hc-btn hc-btn--primary btn btn-primary">{{ _('Planifier une démo') }}</a>
+              <a href="#intake-form" class="hc-btn hc-btn--primary btn btn-primary">{{ _('Demander une démo personnalisée') }}</a>
               <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _('Échanger sur un pilote') }}</a>
             </div>
+            <p class="hc-home-premium__hero-demo-note">{{ _('20 min · Sans engagement · Réponse sous 24h') }}</p>
             <ul class="hc-trust-page__chips">
               <li>{{ _('Cas d’usage concrets') }}</li>
-              <li>{{ _('Questions réponses') }}</li>
+              <li>{{ _('Questions-réponses') }}</li>
               <li>{{ _('Vue produit') }}</li>
-              <li>{{ _('Discussion sur un pilote possible') }}</li>
+              <li>{{ _('Échange adapté à votre structure') }}</li>
             </ul>
           </div>
 
@@ -807,31 +808,39 @@
       {% endif %}
 
       <article id="intake-form" class="hc-intake__card hc-form-container">
-        {% if is_demo %}
-        <form class="hc-form" method="post" action="/demo" novalidate>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="form_type" value="demo">
-          <input type="hidden" name="source" value="demo_page">
-          <div class="hc-honeypot" aria-hidden="true">
-            <label for="website-demo">Website</label>
-            <input id="website-demo" name="website" type="text" tabindex="-1" autocomplete="off">
-          </div>
+  {% if is_demo %}
+    <div class="hc-intake__intro">
+      <p class="hc-intake__eyebrow">{{ _('DÉMO PERSONNALISÉE') }}</p>
+      <h2>{{ _('Parlez-nous de votre structure') }}</h2>
+      <p>{{ _('Quelques informations suffisent pour préparer une démo personnalisée et utile.') }}</p>
+    </div>
 
-          <section class="hc-intake__section hc-intake__section--light" aria-labelledby="demo-section-1">
-            <h2 id="demo-section-1" class="hc-intake__section-title hc-intake__section-title--light">{{ _('Votre structure') }}</h2>
-            <div class="hc-intake__field hc-form-group">
-              <label class="hc-intake__label" for="structure_type">{{ _('Type de structure') }}</label>
-              <select class="hc-intake__select{% if form_errors.get('structure_type') %} is-invalid{% endif %}" id="structure_type" name="structure_type" {% if form_errors.get('structure_type') %}aria-invalid="true"{% endif %}>
-                <option value="">{{ _('Sélectionner') }}</option>
-                {% set _dst = form_data.get('structure_type','') %}
-                <option value="Collectivité territoriale" {% if _dst == 'Collectivité territoriale' %}selected{% endif %}>{{ _('Collectivité territoriale') }}</option>
-                <option value="CCAS / CIAS" {% if _dst == 'CCAS / CIAS' %}selected{% endif %}>{{ _('CCAS / CIAS') }}</option>
-                <option value="Association" {% if _dst == 'Association' %}selected{% endif %}>{{ _('Association') }}</option>
-                <option value="Réseau professionnel" {% if _dst == 'Réseau professionnel' %}selected{% endif %}>{{ _('Réseau professionnel') }}</option>
-                <option value="Autre structure" {% if _dst == 'Autre structure' %}selected{% endif %}>{{ _('Autre structure') }}</option>
-              </select>
-              {% if form_errors.get('structure_type') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('structure_type') }}</p>{% endif %}
-            </div>
+    <form class="hc-form" method="post" action="/demo" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="form_type" value="demo">
+      <input type="hidden" name="source" value="demo_page">
+
+      <div class="hc-honeypot" aria-hidden="true">
+        <label for="website-demo">Website</label>
+        <input id="website-demo" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <section class="hc-intake__section hc-intake__section--light" aria-labelledby="demo-section-1">
+        <h2 id="demo-section-1" class="hc-intake__section-title hc-intake__section-title--light">{{ _('Votre structure') }}</h2>
+
+        <div class="hc-intake__field hc-form-group">
+          <label class="hc-intake__label" for="structure_type">{{ _('Type de structure') }}</label>
+          <select class="hc-intake__select{% if form_errors.get('structure_type') %} is-invalid{% endif %}" id="structure_type" name="structure_type" {% if form_errors.get('structure_type') %}aria-invalid="true"{% endif %}>
+            <option value="">{{ _('Sélectionner') }}</option>
+            {% set _dst = form_data.get('structure_type','') %}
+            <option value="Collectivité territoriale" {% if _dst == 'Collectivité territoriale' %}selected{% endif %}>{{ _('Collectivité territoriale') }}</option>
+            <option value="CCAS / CIAS" {% if _dst == 'CCAS / CIAS' %}selected{% endif %}>{{ _('CCAS / CIAS') }}</option>
+            <option value="Association" {% if _dst == 'Association' %}selected{% endif %}>{{ _('Association') }}</option>
+            <option value="Réseau professionnel" {% if _dst == 'Réseau professionnel' %}selected{% endif %}>{{ _('Réseau professionnel') }}</option>
+            <option value="Autre structure" {% if _dst == 'Autre structure' %}selected{% endif %}>{{ _('Autre structure') }}</option>
+          </select>
+          {% if form_errors.get('structure_type') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('structure_type') }}</p>{% endif %}
+        </div>
 
             <div class="hc-intake__field hc-form-group">
               <label class="hc-intake__label" for="organization_size">{{ _('Taille') }}</label>
@@ -861,63 +870,73 @@
             </div>
           </section>
 
-          <section class="hc-intake__section" aria-labelledby="demo-section-2">
-            <h2 id="demo-section-2" class="hc-intake__section-title hc-intake__section-title--primary">{{ _('Coordonnées') }}</h2>
-            <div class="hc-intake__field hc-form-group">
-              <label class="hc-intake__label" for="full_name">{{ _('Nom') }}</label>
-              <input class="hc-intake__input{% if form_errors.get('full_name') %} is-invalid{% endif %}" id="full_name" name="full_name" value="{{ form_data.get('full_name','') }}" autocomplete="name" {% if form_errors.get('full_name') %}aria-invalid="true"{% endif %}>
-              {% if form_errors.get('full_name') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('full_name') }}</p>{% endif %}
-            </div>
+      <section class="hc-intake__section" aria-labelledby="demo-section-2">
+        <h2 id="demo-section-2" class="hc-intake__section-title hc-intake__section-title--primary">{{ _('Coordonnées') }}</h2>
 
-            <div class="hc-intake__field hc-form-group">
-              <label class="hc-intake__label" for="email">{{ _('Email professionnel (réponse sous 24h)') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input{% if form_errors.get('email') %} is-invalid{% endif %}" id="email" name="email" type="email" value="{{ form_data.get('email','') }}" autocomplete="email" autofocus required {% if form_errors.get('email') %}aria-invalid="true"{% endif %}>
-              {% if form_errors.get('email') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('email') }}</p>{% endif %}
-            </div>
+        <div class="hc-intake__field hc-form-group">
+          <label class="hc-intake__label" for="full_name">{{ _('Nom et prénom') }}</label>
+          <input class="hc-intake__input{% if form_errors.get('full_name') %} is-invalid{% endif %}" id="full_name" name="full_name" value="{{ form_data.get('full_name','') }}" autocomplete="name" {% if form_errors.get('full_name') %}aria-invalid="true"{% endif %}>
+          {% if form_errors.get('full_name') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('full_name') }}</p>{% endif %}
+        </div>
 
-            <div class="hc-intake__field hc-form-group">
-              <label class="hc-intake__label" for="organisation">{{ _('Organisation') }} <span class="hc-intake__req">*</span></label>
-              <input class="hc-intake__input{% if form_errors.get('organisation') %} is-invalid{% endif %}" id="organisation" name="organisation" value="{{ form_data.get('organisation','') }}" autocomplete="organization" required {% if form_errors.get('organisation') %}aria-invalid="true"{% endif %}>
-              {% if form_errors.get('organisation') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('organisation') }}</p>{% endif %}
-            </div>
+        <div class="hc-intake__field hc-form-group">
+          <label class="hc-intake__label" for="email">{{ _('Email professionnel') }} <span class="hc-intake__req">*</span></label>
+          <input class="hc-intake__input{% if form_errors.get('email') %} is-invalid{% endif %}" id="email" name="email" type="email" value="{{ form_data.get('email','') }}" autocomplete="email" autofocus required {% if form_errors.get('email') %}aria-invalid="true"{% endif %}>
+          {% if form_errors.get('email') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('email') }}</p>{% endif %}
+        </div>
 
-            <div class="hc-intake__field hc-form-group">
-              <label class="hc-intake__label" for="phone">{{ _('Téléphone') }}</label>
-              <input class="hc-intake__input" id="phone" name="phone" value="{{ form_data.get('phone','') }}" autocomplete="tel">
-            </div>
-          </section>
+        <div class="hc-intake__field hc-form-group">
+          <label class="hc-intake__label" for="organisation">{{ _('Organisation') }} <span class="hc-intake__req">*</span></label>
+          <input class="hc-intake__input{% if form_errors.get('organisation') %} is-invalid{% endif %}" id="organisation" name="organisation" value="{{ form_data.get('organisation','') }}" autocomplete="organization" required {% if form_errors.get('organisation') %}aria-invalid="true"{% endif %}>
+          {% if form_errors.get('organisation') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('organisation') }}</p>{% endif %}
+        </div>
 
-          <section class="hc-intake__section" aria-labelledby="demo-section-3">
-            <h2 id="demo-section-3" class="hc-intake__section-title">{{ _('Votre contexte') }}</h2>
-            <div class="hc-intake__field hc-form-group" style="margin-bottom:0;">
-              <label class="hc-intake__label" for="message">{{ _('Contexte') }}</label>
-              <textarea class="hc-intake__textarea{% if form_errors.get('message') %} is-invalid{% endif %}" id="message" name="message" placeholder="{{ _('Ex : suivi des demandes, coordination entre services, pilotage territorial…') }}" {% if form_errors.get('message') %}aria-invalid="true"{% endif %}>{{ form_data.get('message','') }}</textarea>
-              {% if form_errors.get('message') %}<p class="hc-intake__error" role="alert">{{ form_errors.get('message') }}</p>{% endif %}
-            </div>
-          </section>
+        <div class="hc-intake__field hc-form-group">
+          <label class="hc-intake__label" for="phone">{{ _('Téléphone') }}</label>
+          <input class="hc-intake__input" id="phone" name="phone" value="{{ form_data.get('phone','') }}" autocomplete="tel">
+        </div>
+      </section>
 
-          {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
-            <div class="hc-intake__field hc-form-group">
-              <div class="cf-turnstile" data-sitekey="{{ HC_TURNSTILE_SITE_KEY }}"></div>
-            </div>
+         <section class="hc-intake__section" aria-labelledby="demo-section-3">
+        <h2 id="demo-section-3" class="hc-intake__section-title">{{ _('Votre contexte') }}</h2>
+        <div class="hc-intake__field hc-form-group" style="margin-bottom:0;">
+          <label class="hc-intake__label" for="message">{{ _('Décrivez brièvement votre besoin') }}</label>
+          <textarea class="hc-intake__textarea{% if form_errors.get('message') %} is-invalid{% endif %}" id="message" name="message" placeholder="{{ _('Ex : coordination entre services, suivi des demandes, pilotage territorial, besoin de visibilité sur les responsabilités…') }}" {% if form_errors.get('message') %}aria-invalid="true"{% endif %}>{{ form_data.get('message','') }}</textarea>
+          {% if form_errors.get('message') %}
+            <p class="hc-intake__error" role="alert">{{ form_errors.get('message') }}</p>
           {% endif %}
+        </div>
+      </section>
 
-          <div class="hc-intake__actions hc-intake__demo-actions">
-            <p class="hc-intake__urgency">{{ _('Créneaux disponibles cette semaine') }}</p>
-            <div class="hc-intake__cta-wrap">
-              <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Planifier une démo') }}</button>
-            </div>
-          </div>
+      {% if HC_TURNSTILE_ENABLED and HC_TURNSTILE_SITE_KEY %}
+        <div class="hc-intake__field hc-form-group">
+          <div class="cf-turnstile" data-sitekey="{{ HC_TURNSTILE_SITE_KEY }}"></div>
+        </div>
+      {% endif %}
 
-          <p class="hc-intake__trust">{{ _('Aucun engagement') }} <span aria-hidden="true">•</span> {{ _('Réponse sous 24h') }}</p>
-        </form>
-        {% else %}
-        <form class="hc-form" method="post" action="{{ url_for('main.contact') }}" novalidate>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="hc-honeypot" aria-hidden="true">
-            <label for="website-contact">Website</label>
-            <input id="website-contact" name="website" type="text" tabindex="-1" autocomplete="off">
-          </div>
+      <div class="hc-intake__actions hc-intake__demo-actions">
+        <p class="hc-intake__urgency">{{ _('20 min · Sans engagement · Réponse sous 24h') }}</p>
+        <div class="hc-intake__cta-wrap">
+          <button class="hc-intake__btn hc-form-submit" type="submit">{{ _('Demander une démo personnalisée') }}</button>
+        </div>
+      </div>
+    </form>
+
+  {% else %}
+
+    <p class="hc-intake__trust">
+      {{ _('Aucun engagement') }}
+      <span aria-hidden="true">•</span>
+      {{ _('Réponse sous 24h') }}
+    </p>
+
+    <form class="hc-form" method="post" action="{{ url_for('main.contact') }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="hc-honeypot" aria-hidden="true">
+        <label for="website-contact">Website</label>
+        <input id="website-contact" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
 
           <div class="hc-intake__grid">
             <div class="hc-intake__field hc-form-group">

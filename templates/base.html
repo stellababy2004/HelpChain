@@ -441,6 +441,7 @@
       if ((request.endpoint or '') in hc_institutional_public_eps and not is_any_logged_in)
       else hc_languages_all
     ) %}
+    {% if not disable_nav_chrome %}
     <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
@@ -880,6 +881,7 @@
         </ul>
       </aside>
     </div>
+    {% endif %}
     {% endif %}
 
     <div
