@@ -341,11 +341,11 @@ def admin_case_assign_owner(case_id: int):
         now = _now_utc()
         case_row.owner_user_id = owner_id
         case_row.last_activity_at = now
-   
-    if owner_id and not case_row.assigned_at:
-        case_row.assigned_at = now
-        if case_row.status in {"new", "triaged"}:
-            case_row.status = "assigned"
+
+        if owner_id and not case_row.assigned_at:
+            case_row.assigned_at = now
+            if case_row.status in {"new", "triaged"}:
+                case_row.status = "assigned"
 
         # NOTE: Do NOT upsert CaseParticipant for admin owner.
         # owner_user_id references AdminUser, while CaseParticipant.user_id references User.
@@ -550,6 +550,7 @@ def admin_case_add_event(case_id: int):
     evaluate_case_alerts(case_row)
     db.session.commit()
     flash("Case event added.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
     
 @admin_bp.post("/cases/<int:case_id>/priority")
 @admin_required
