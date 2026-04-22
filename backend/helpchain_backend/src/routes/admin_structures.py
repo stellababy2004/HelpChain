@@ -7,7 +7,7 @@ from flask_login import current_user
 from sqlalchemy import and_, func, or_
 
 from backend.extensions import db
-from ..models import AdminUser, Request, Structure
+from ..models import AdminUser, OrganizationAccessRequest, Request, Structure
 from .admin import (
     CLOSED_STATUSES,
     _require_global_admin,
@@ -106,6 +106,28 @@ def admin_structures():
         render_template(
             "admin/structures.html",
             structures=rows,
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/organizations/requests")
+@admin_required
+@admin_role_required("superadmin")
+def admin_organization_access_requests():
+    _require_global_admin()
+    rows = (
+        OrganizationAccessRequest.query.order_by(
+            OrganizationAccessRequest.created_at.desc(),
+            OrganizationAccessRequest.id.desc(),
+        )
+        .limit(200)
+        .all()
+    )
+    return (
+        render_template(
+            "admin/organization_access_requests.html",
+            access_requests=rows,
         ),
         200,
     )

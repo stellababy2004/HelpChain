@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Demander un acces | HelpChain{% endblock %}
+
+{% block content %}
+{% set form_data = form_data or {} %}
+{% set form_errors = form_errors or {} %}
+
+<section class="hc-vol-join">
+  <div class="hc-shell">
+    <div class="hc-narrow">
+      <header class="hc-pagehead">
+        <div class="hc-become-head">
+          <div class="hc-become-titleblock">
+            <h1 class="hc-title">Demander un acces</h1>
+            <p class="hc-subtitle">
+              Pour les CCAS, associations, mairies, services sociaux et structures institutionnelles
+              qui souhaitent organiser un echange de decouverte ou rejoindre un pilote HelpChain.
+            </p>
+          </div>
+          <aside class="hc-trust-card" aria-label="Cadre de la demande">
+            <ul class="hc-trust-list">
+              <li>Demande reservee aux structures institutionnelles</li>
+              <li>Qualification manuelle avant tout acces</li>
+              <li>Aucune creation automatique d'espace ou de compte</li>
+            </ul>
+          </aside>
+        </div>
+      </header>
+
+      <div class="hc-card hc-vol-join__card">
+        {% if submitted %}
+          <div class="hc-card__head">
+            <h2 class="hc-card__title">Demande recue</h2>
+            <p class="hc-card__hint">
+              Votre demande a bien ete transmise. L'equipe HelpChain vous recontactera apres verification.
+            </p>
+          </div>
+          <div style="display:flex; justify-content:center; margin-top:1rem;">
+            <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour a l'accueil</a>
+          </div>
+        {% else %}
+          <div class="hc-card__head">
+            <h2 class="hc-card__title">Acces institutionnel</h2>
+            <p class="hc-card__hint">
+              Decrivez brievement votre structure et le besoin envisage. Cette demande ne cree pas encore de compte.
+            </p>
+          </div>
+
+          <form method="POST" class="hc-form" autocomplete="on" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="hc-field">
+              <label class="hc-label" for="organization_name">Nom de la structure <span class="hc-req">*</span></label>
+              <input
+                class="hc-input"
+                id="organization_name"
+                name="organization_name"
+                value="{{ form_data.get('organization_name', '') }}"
+                autocomplete="organization"
+                required
+                aria-invalid="{{ 'true' if form_errors.get('organization_name') else 'false' }}"
+              >
+              {% if form_errors.get('organization_name') %}<div class="hc-help">{{ form_errors.get('organization_name') }}</div>{% endif %}
+            </div>
+
+            <div class="hc-grid-2">
+              <div class="hc-field">
+                <label class="hc-label" for="contact_name">Nom du contact <span class="hc-req">*</span></label>
+                <input
+                  class="hc-input"
+                  id="contact_name"
+                  name="contact_name"
+                  value="{{ form_data.get('contact_name', '') }}"
+                  autocomplete="name"
+                  required
+                  aria-invalid="{{ 'true' if form_errors.get('contact_name') else 'false' }}"
+                >
+                {% if form_errors.get('contact_name') %}<div class="hc-help">{{ form_errors.get('contact_name') }}</div>{% endif %}
+              </div>
+
+              <div class="hc-field">
+                <label class="hc-label" for="email">Email professionnel <span class="hc-req">*</span></label>
+                <input
+                  class="hc-input"
+                  id="email"
+                  type="email"
+                  name="email"
+                  value="{{ form_data.get('email', '') }}"
+                  autocomplete="email"
+                  required
+                  aria-invalid="{{ 'true' if form_errors.get('email') else 'false' }}"
+                >
+                {% if form_errors.get('email') %}<div class="hc-help">{{ form_errors.get('email') }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="hc-grid-2">
+              <div class="hc-field">
+                <label class="hc-label" for="phone">Telephone</label>
+                <input class="hc-input" id="phone" name="phone" value="{{ form_data.get('phone', '') }}" autocomplete="tel">
+              </div>
+
+              <div class="hc-field">
+                <label class="hc-label" for="city">Ville</label>
+                <input class="hc-input" id="city" name="city" value="{{ form_data.get('city', '') }}" autocomplete="address-level2">
+              </div>
+            </div>
+
+            <div class="hc-grid-2">
+              <div class="hc-field">
+                <label class="hc-label" for="org_type">Type de structure</label>
+                <select class="hc-input" id="org_type" name="org_type" aria-invalid="{{ 'true' if form_errors.get('org_type') else 'false' }}">
+                  <option value="">Selectionner</option>
+                  {% for choice in org_type_choices %}
+                    <option value="{{ choice }}" {% if form_data.get('org_type') == choice %}selected{% endif %}>{{ choice }}</option>
+                  {% endfor %}
+                </select>
+                {% if form_errors.get('org_type') %}<div class="hc-help">{{ form_errors.get('org_type') }}</div>{% endif %}
+              </div>
+
+              <div class="hc-field">
+                <label class="hc-label" for="estimated_users">Nombre estime d'utilisateurs</label>
+                <input
+                  class="hc-input"
+                  id="estimated_users"
+                  name="estimated_users"
+                  inputmode="numeric"
+                  value="{{ form_data.get('estimated_users', '') }}"
+                  aria-invalid="{{ 'true' if form_errors.get('estimated_users') else 'false' }}"
+                >
+                {% if form_errors.get('estimated_users') %}<div class="hc-help">{{ form_errors.get('estimated_users') }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="hc-field">
+              <label class="hc-label" for="message">Message / Contexte / Besoin</label>
+              <textarea class="hc-input" id="message" name="message" rows="5">{{ form_data.get('message', '') }}</textarea>
+            </div>
+
+            <button class="hc-btn hc-btn--primary hc-btn--full" type="submit">Transmettre la demande</button>
+            <p class="hc-help">
+              Les informations transmises servent uniquement a qualifier la demande d'acces institutionnel.
+            </p>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

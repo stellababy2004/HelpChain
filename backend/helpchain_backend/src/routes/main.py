@@ -54,6 +54,7 @@ from ..category_data import ALIASES, CATEGORIES, COMMON
 from ..extensions import csrf, limiter, mail
 from ..models import (
     Notification,
+    OrganizationAccessRequest,
     ProfessionalLead,
     Request,
     RequestActivity,
@@ -4263,6 +4264,107 @@ def professionnels_pilote():
         ), 502
 
     return render_template("professionnels_pilote_thanks.html", lead=lead), 200
+
+
+def _optional_form_value(field_name: str) -> str | None:
+    value = (request.form.get(field_name) or "").strip()
+    return value or None
+
+
+@main_bp.route("/demander-acces", methods=["GET", "POST"])
+def demander_acces():
+    org_type_choices = ("CCAS", "Association", "Mairie", "Service social", "Autre")
+
+    if request.method == "GET":
+        return (
+            render_template(
+                "demander_acces.html",
+                form_data={},
+                form_errors={},
+                org_type_choices=org_type_choices,
+                submitted=request.args.get("envoye") == "1",
+            ),
+            200,
+        )
+
+    organization_name = (request.form.get("organization_name") or "").strip()
+    contact_name = (request.form.get("contact_name") or "").strip()
+    email = (request.form.get("email") or "").strip().lower()
+    phone = _optional_form_value("phone")
+    city = _optional_form_value("city")
+    org_type = _optional_form_value("org_type")
+    estimated_users_raw = (request.form.get("estimated_users") or "").strip()
+    message = _optional_form_value("message")
+
+    form_data = {
+        "organization_name": organization_name,
+        "contact_name": contact_name,
+        "email": email,
+        "phone": phone or "",
+        "city": city or "",
+        "org_type": org_type or "",
+        "estimated_users": estimated_users_raw,
+        "message": message or "",
+    }
+    form_errors: dict[str, str] = {}
+
+    if not organization_name:
+        form_errors["organization_name"] = "Le nom de la structure est requis."
+    if not contact_name:
+        form_errors["contact_name"] = "Le nom du contact est requis."
+    if not email:
+        form_errors["email"] = "L'e-mail professionnel est requis."
+    elif "@" not in email or email.startswith("@") or email.endswith("@"):
+        form_errors["email"] = "Merci d'indiquer un e-mail professionnel valide."
+    if org_type and org_type not in org_type_choices:
+        form_errors["org_type"] = "Merci de choisir un type de structure valide."
+
+    estimated_users = None
+    if estimated_users_raw:
+        try:
+            estimated_users = int(estimated_users_raw)
+            if estimated_users < 0:
+                raise ValueError
+        except ValueError:
+            form_errors["estimated_users"] = (
+                "Le nombre estime d'utilisateurs doit etre un nombre entier."
+            )
+
+    if form_errors:
+        for msg in form_errors.values():
+            flash(msg, "danger")
+        return (
+            render_template(
+                "demander_acces.html",
+                form_data=form_data,
+                form_errors=form_errors,
+                org_type_choices=org_type_choices,
+                submitted=False,
+            ),
+            400,
+        )
+
+    row = OrganizationAccessRequest(
+        organization_name=organization_name,
+        contact_name=contact_name,
+        email=email,
+        phone=phone,
+        city=city,
+        org_type=org_type,
+        estimated_users=estimated_users,
+        message=message,
+        status="new",
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
+    )
+    db.session.add(row)
+    db.session.commit()
+
+    flash(
+        "Votre demande d'acces a bien ete transmise. L'equipe HelpChain vous recontactera apres verification.",
+        "success",
+    )
+    return redirect(url_for("main.demander_acces", envoye="1"), code=303)
 
 
 @main_bp.route("/success_stories")
