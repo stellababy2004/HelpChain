@@ -33,6 +33,7 @@ from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
 from markupsafe import Markup, escape
 from sqlalchemy import desc, func, or_
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
 
@@ -81,6 +82,21 @@ from ..statuses import normalize_request_status
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
 main_bp = Blueprint("main", __name__)
+
+_SCHEMA_TABLE_EXISTS_CACHE: dict[str, bool] = {}
+
+
+def _table_exists(table_name: str) -> bool:
+    cached = _SCHEMA_TABLE_EXISTS_CACHE.get(table_name)
+    if cached is not None:
+        return cached
+    try:
+        inspector = sa_inspect(db.session.get_bind())
+        exists = bool(inspector.has_table(table_name))
+    except Exception:
+        exists = False
+    _SCHEMA_TABLE_EXISTS_CACHE[table_name] = exists
+    return exists
 
 
 def _allowed_locales() -> set[str]:
@@ -306,8 +322,6 @@ def _screen_professional_lead_submission(
     user_agent: str | None,
 ) -> tuple[str | None, list[str]]:
     website = (form_data.get("website") or "").strip()
-    if website:
-        return "discard", ["honeypot:website"]
 
     email = ((form_data.get("email") or "").strip().lower())
     _local_part, _sep, domain = email.partition("@")
@@ -320,6 +334,12 @@ def _screen_professional_lead_submission(
         invalid_reasons.append(f"email_domain:{domain}")
     elif domain in PRO_LEAD_SPAM_EMAIL_DOMAINS:
         spam_reasons.append(f"email_domain:{domain}")
+
+    if website:
+        spam_reasons.append("honeypot:website")
+        website_l = website.lower()
+        if "@" in website_l or (email and website_l == email):
+            spam_reasons.append("honeypot:possible_autofill")
 
     phone = (form_data.get("phone") or "").strip()
     if phone and not _phone_has_basic_sanity(phone):
@@ -362,7 +382,10 @@ def _screen_professional_lead_submission(
     if len(dummy_fields) >= 2:
         invalid_reasons.append(f"dummy_fields:{','.join(dummy_fields)}")
     elif _lead_field_looks_dummy(form_data.get("message")):
-        invalid_reasons.append("dummy_fields:message")
+        current_app.logger.info(
+            "[PRO-LEAD] message-only dummy signal ignored for screening email_domain=%s",
+            domain or "-",
+        )
 
     if spam_reasons:
         return "spam", spam_reasons
@@ -4008,7 +4031,12 @@ def volunteer_register_legacy():
 @main_bp.route("/professionnels/pilote", methods=["GET", "POST"])
 def professionnels_pilote():
     if request.method == "GET":
-        return render_template("professionnels_pilote.html", form_data={}), 200
+        return render_template(
+            "professionnels_pilote.html",
+            form_data={},
+            notification_failed=False,
+            screened_acknowledged=False,
+        ), 200
 
     email = (request.form.get("email") or "").strip().lower()
     full_name = (request.form.get("full_name") or "").strip()
@@ -4033,7 +4061,12 @@ def professionnels_pilote():
 
     if not email or "@" not in email or not profession:
         flash(_("Please provide at least your email and your role."), "error")
-        return render_template("professionnels_pilote.html", form_data=form_data), 400
+        return render_template(
+            "professionnels_pilote.html",
+            form_data=form_data,
+            notification_failed=False,
+            screened_acknowledged=False,
+        ), 400
 
     screening_status, screening_reasons = _screen_professional_lead_submission(
         {
@@ -4062,7 +4095,30 @@ def professionnels_pilote():
 
     if not _verify_turnstile_token(remote_ip=_client_ip()):
         flash(_("Bot verification failed. Please try again."), "warning")
-        return render_template("professionnels_pilote.html", form_data=form_data), 400
+        return render_template(
+            "professionnels_pilote.html",
+            form_data=form_data,
+            notification_failed=False,
+            screened_acknowledged=False,
+        ), 400
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.error(
+            "[PRO-LEAD] submission blocked: professional_leads table missing"
+        )
+        flash(
+            _(
+                "Le service d’inscription est temporairement indisponible. "
+                "Merci de réessayer dans quelques instants."
+            ),
+            "warning",
+        )
+        return render_template(
+            "professionnels_pilote.html",
+            form_data=form_data,
+            notification_failed=False,
+            screened_acknowledged=False,
+        ), 503
 
     existing = (
         ProfessionalLead.query.filter(ProfessionalLead.email == email)
@@ -4093,6 +4149,19 @@ def professionnels_pilote():
             existing.id,
             existing.created_at,
         )
+        if screening_status in {"invalid", "spam"}:
+            current_app.logger.info(
+                "[PRO-LEAD] screened dedup lead id=%s status=%s reasons=%s",
+                existing.id,
+                screening_status,
+                ",".join(screening_reasons),
+            )
+            return render_template(
+                "professionnels_pilote.html",
+                form_data={},
+                notification_failed=False,
+                screened_acknowledged=True,
+            ), 200
         # Same UX either way: return success without inserting duplicate lead.
         return render_template("professionnels_pilote_thanks.html", lead=existing), 200
 
@@ -4127,8 +4196,14 @@ def professionnels_pilote():
             screening_status,
             ",".join(screening_reasons),
         )
-        return render_template("professionnels_pilote_thanks.html", lead=lead), 200
+        return render_template(
+            "professionnels_pilote.html",
+            form_data={},
+            notification_failed=False,
+            screened_acknowledged=True,
+        ), 200
 
+    notify_ok = True
     try:
         from backend.mail_service import send_notification_email
 
@@ -4155,18 +4230,37 @@ def professionnels_pilote():
         }
         if admin_to:
             subject = "[HelpChain] Nouveau lead professionnel"
-            send_notification_email(
-                admin_to,
-                subject,
-                "emails/professional_lead_notify.html",
-                ctx,
+            notify_ok = bool(
+                send_notification_email(
+                    admin_to,
+                    subject,
+                    "emails/professional_lead_notify.html",
+                    ctx,
+                )
             )
         else:
+            notify_ok = False
             current_app.logger.info("[PRO-LEAD] notify skipped: no PRO_LEADS_NOTIFY_TO")
     except Exception:
+        notify_ok = False
         current_app.logger.exception(
             "[PRO-LEAD] notify email failed lead_id=%s", lead.id
         )
+
+    if not notify_ok:
+        flash(
+            _(
+                "Votre demande a bien été enregistrée, mais une erreur technique a empêché "
+                "la notification de notre équipe. Merci de réessayer dans quelques instants."
+            ),
+            "warning",
+        )
+        return render_template(
+            "professionnels_pilote.html",
+            form_data=form_data,
+            notification_failed=True,
+            screened_acknowledged=False,
+        ), 502
 
     return render_template("professionnels_pilote_thanks.html", lead=lead), 200
 
@@ -4190,6 +4284,8 @@ def contact():
             is_demo=is_demo,
             form_data={},
             form_errors={},
+            notification_failed=False,
+            screened_acknowledged=False,
         ), 200
 
     demo_organisation = (
@@ -4264,6 +4360,8 @@ def contact():
             is_demo=is_demo,
             form_data=form_data,
             form_errors=form_errors,
+            notification_failed=False,
+            screened_acknowledged=False,
         ), 400
 
     screening_status, screening_reasons = _screen_professional_lead_submission(
@@ -4293,7 +4391,31 @@ def contact():
             is_demo=is_demo,
             form_data=form_data,
             form_errors={},
+            notification_failed=False,
+            screened_acknowledged=False,
         ), 400
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.error(
+            "[CONTACT] submission blocked: professional_leads table missing source=%s",
+            "demo_page" if is_demo else "contact_echange",
+        )
+        flash(
+            _(
+                "Le service de demande est temporairement indisponible. "
+                "Merci de réessayer dans quelques instants."
+            ),
+            "warning",
+        )
+        return render_template(
+            "contact.html",
+            submitted=False,
+            is_demo=is_demo,
+            form_data=form_data,
+            form_errors={},
+            notification_failed=False,
+            screened_acknowledged=False,
+        ), 503
 
     if is_demo:
         lead_message = (
@@ -4397,6 +4519,8 @@ def contact():
             is_demo=is_demo,
             form_data=form_data,
             form_errors={},
+            notification_failed=False,
+            screened_acknowledged=False,
         ), 500
 
     if screening_status in {"invalid", "spam"}:
@@ -4407,12 +4531,15 @@ def contact():
             ",".join(screening_reasons),
             lead.source,
         )
-        return redirect(
-            url_for("main.demo_thanks")
-            if is_demo
-            else url_for("main.contact", sent="1"),
-            code=303,
-        )
+        return render_template(
+            "contact.html",
+            submitted=False,
+            is_demo=is_demo,
+            form_data={},
+            form_errors={},
+            notification_failed=False,
+            screened_acknowledged=True,
+        ), 200
 
     notify_ok = True
     try:
@@ -4655,11 +4782,20 @@ def contact():
     if not notify_ok:
         flash(
             _(
-                "Votre demande a été enregistrée, mais l’envoi de notification a échoué. "
-                "Merci de réessayer ou de nous contacter directement si besoin."
+                "Votre demande a bien été enregistrée, mais une erreur technique a empêché "
+                "la notification de notre équipe. Merci de réessayer dans quelques instants."
             ),
             "warning",
         )
+        return render_template(
+            "contact.html",
+            submitted=False,
+            is_demo=is_demo,
+            form_data=form_data,
+            form_errors={},
+            notification_failed=True,
+            screened_acknowledged=False,
+        ), 502
 
     return redirect(
         url_for("main.demo_thanks") if is_demo else url_for("main.contact", sent="1"),
@@ -4675,6 +4811,8 @@ def demo_thanks():
             is_demo=True,
             form_data={},
             form_errors={},
+            notification_failed=False,
+            screened_acknowledged=False,
         ),
         200,
     )

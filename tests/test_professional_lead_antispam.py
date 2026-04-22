@@ -43,15 +43,41 @@ def _extract_demo_kpi_counts(html: str) -> dict[str, int]:
     return {label.strip(): int(value) for label, value in matches}
 
 
-def test_contact_honeypot_submission_is_silently_discarded(client, db_session):
+def test_contact_honeypot_submission_is_saved_as_screened_spam(
+    client,
+    db_session,
+    monkeypatch,
+):
+    mock_send = MagicMock()
+    monkeypatch.setattr("backend.mail_service.send_notification_email", mock_send)
+
     response = client.post(
         "/contact",
         data=_contact_payload(website="https://spam.example"),
     )
 
+    assert response.status_code == 200
+    lead = ProfessionalLead.query.one()
+    assert lead.status == "spam"
+    assert "honeypot:website" in (lead.notes or "")
+    assert mock_send.call_count == 0
+
+
+def test_contact_message_only_dummy_signal_does_not_invalidate_lead(
+    client,
+    db_session,
+    monkeypatch,
+):
+    mock_send = MagicMock(return_value=True)
+    monkeypatch.setattr("backend.mail_service.send_notification_email", mock_send)
+
+    response = client.post("/contact", data=_contact_payload(message="test"))
+
     assert response.status_code == 303
-    assert response.headers["Location"].endswith("/contact?sent=1")
-    assert ProfessionalLead.query.count() == 0
+    lead = ProfessionalLead.query.one()
+    assert lead.status == "new"
+    assert "dummy_fields:message" not in (lead.notes or "")
+    assert mock_send.call_count == 1
 
 
 def test_contact_mailinator_submission_is_saved_as_spam_without_notification(

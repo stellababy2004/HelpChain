@@ -545,6 +545,11 @@
       border-color: rgba(220, 38, 38, .2);
       background: rgba(254, 242, 242, .94);
     }
+    .hc-demo-leads-flag-pill--screened {
+      color: #8a5a00;
+      border-color: rgba(217, 119, 6, .22);
+      background: rgba(255, 247, 237, .94);
+    }
     .hc-demo-leads-touch {
       display: flex;
       flex-direction: column;
@@ -954,6 +959,7 @@
             {% set current_status_meta = professional_lead_status_meta(current_status) %}
             {% set is_terminal = current_status in ['closed', 'invalid', 'spam'] %}
             {% set is_unassigned = not lead.owner_admin_id and not is_terminal %}
+            {% set is_screened = current_status in ['invalid', 'spam'] %}
             {% set is_overdue = lead.urgency == 'overdue' %}
             {% set is_no_activity = not lead.last_touch_label and not is_terminal %}
             {% set is_stale = (is_no_activity or 'd' in (lead.last_touch_label or '')) and not is_terminal %}
@@ -1044,6 +1050,9 @@
                 </div>
                 <div class="small text-muted mt-2">Suivi d&ucirc; : {{ followup_due_label|safe }}</div>
                 <div class="hc-demo-leads-meta-flags mt-2">
+                  {% if is_screened %}
+                    <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--screened" title="{{ lead.notes or 'Lead en vérification' }}">Vérification</span>
+                  {% endif %}
                   {% if is_overdue %}
                     <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--overdue">En retard</span>
                   {% endif %}
@@ -1169,6 +1178,7 @@
     {% for lead in leads %}
       {% set current_status = (lead.status or 'new') %}
       {% set current_status_meta = professional_lead_status_meta(current_status) %}
+      {% set is_screened = current_status in ['invalid', 'spam'] %}
       {% set source_key = (lead.source or '')|lower %}
       {% set source_label = source_labels.get(source_key, source_key or 'manuel') %}
       {% set score_label = 'Froid' %}
@@ -1222,6 +1232,11 @@
             <div title="{{ lead.message or lead.availability or '-' }}">
               {{ lead.next_action or (lead.message or lead.availability or '-')|truncate(120, True) }}
             </div>
+            {% if is_screened %}
+              <div class="hc-demo-leads-meta-flags mt-2">
+                <span class="hc-demo-leads-flag-pill hc-demo-leads-flag-pill--screened" title="{{ lead.notes or 'Lead en vérification' }}">Vérification</span>
+              </div>
+            {% endif %}
             <div class="small text-muted mt-2">Suivi d&ucirc; : {{ followup_due_label|safe }}</div>
           </div>
           <div>

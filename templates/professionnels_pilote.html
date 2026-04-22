@@ -27,12 +27,30 @@
       </header>
 
       <div class="hc-card hc-vol-join__card">
-        <div class="hc-card__head">
-          <h2 class="hc-card__title">{{ _('Rejoindre le pilote') }}</h2>
-          <p class="hc-card__hint">{{ _('Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.') }}</p>
-        </div>
+        {% if screened_acknowledged %}
+          <div class="hc-card__head">
+            <h2 class="hc-card__title">{{ _('Demande reçue') }}</h2>
+            <p class="hc-card__hint">{{ _('Votre demande a bien été reçue et est en cours de vérification.') }}</p>
+          </div>
+          <p class="hc-help">
+            {{ _('Si votre demande relève d’un besoin légitime, notre équipe pourra la traiter après vérification.') }}
+          </p>
+          <div style="display:flex; justify-content:center; margin-top:1rem;">
+            <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.professionnels') }}">{{ _('Retour') }}</a>
+          </div>
+        {% else %}
+          <div class="hc-card__head">
+            <h2 class="hc-card__title">{{ _('Rejoindre le pilote') }}</h2>
+            <p class="hc-card__hint">{{ _('Inscription gratuite pendant la phase pilote. On vous recontacte rapidement.') }}</p>
+          </div>
 
-        <form method="POST" class="hc-form" autocomplete="on">
+          {% if notification_failed %}
+            <div class="alert alert-warning" role="alert">
+              {{ _('Votre demande a bien été enregistrée, mais une erreur technique a empêché la notification de notre équipe. Merci de réessayer dans quelques instants.') }}
+            </div>
+          {% endif %}
+
+          <form method="POST" class="hc-form" autocomplete="on">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
             <label for="website">Website</label>
@@ -96,7 +114,8 @@
           <p class="hc-help">
             {{ _('Données minimales') }} • {{ _('RGPD') }} • {{ _('Pas de spam.') }}
           </p>
-        </form>
+          </form>
+        {% endif %}
       </div>
 
     </div>
