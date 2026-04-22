@@ -1,43 +1,329 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Offre et mise en engagement") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Présentation de l’offre HelpChain : pilote, déploiement progressif, accompagnement et cadrage commercial adapté aux structures locales.") }}{% endblock %}
+{% block meta_description %}{{ _("Présentation de l’offre HelpChain : pilote, offre professionnelle, cadre institutionnel et accompagnement adapté aux structures.") }}{% endblock %}
 {% block og_title %}{{ _("Offre et mise en engagement") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Offre et mise en engagement") }}{% endblock %}
 {% block body_class %}hc-page-trust hc-page-offre{% endblock %}
+
+{% block extra_css %}
+  {{ super() }}
+  <style>
+    body.hc-page-offre .hc-trust-page__shell {
+      width: min(100% - 2.5rem, 1240px);
+    }
+    body.hc-page-offre .hc-trust-page__hero-grid {
+      grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.82fr);
+      gap: clamp(2rem, 4vw, 3.5rem);
+      align-items: center;
+    }
+    body.hc-page-offre .hc-trust-page__hero-copy {
+      max-width: 820px;
+    }
+    body.hc-page-offre .hc-trust-page__hero-copy h1 {
+      max-width: 21ch;
+      font-size: clamp(2.75rem, 4.3vw, 4rem);
+      line-height: 1.07;
+    }
+    body.hc-page-offre .hc-trust-page__lead {
+      max-width: 68ch;
+    }
+    body.hc-page-offre .hc-trust-page__actions {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    body.hc-page-offre .hc-trust-page__actions .btn {
+      width: auto;
+      min-width: 0;
+      padding-inline: 1.15rem;
+      white-space: nowrap;
+    }
+    body.hc-page-offre .hc-trust-page__card-grid {
+      align-items: stretch;
+    }
+    body.hc-page-offre .hc-trust-page__card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    body.hc-page-offre .hc-trust-page__card p {
+      max-width: 62ch;
+    }
+    body.hc-page-offre .hc-trust-page__section-head {
+      max-width: 860px;
+    }
+    body.hc-page-offre .hc-trust-page__cta-card {
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.48fr);
+      gap: clamp(1.5rem, 3vw, 2.75rem);
+      align-items: center;
+    }
+    body.hc-page-offre .hc-trust-page__section--cta-light .hc-trust-page__cta-card {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.52fr);
+    }
+    body.hc-page-offre .hc-trust-page__section--cta-light .hc-trust-page__actions--stacked {
+      align-self: center;
+    }
+    body.hc-page-offre .hc-trust-page__cta-card > div:first-child {
+      min-width: 0;
+      max-width: 760px;
+    }
+    body.hc-page-offre .hc-trust-page__actions--stacked {
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .hc-offer-grid {
+      align-items: stretch;
+      row-gap: 1.25rem;
+    }
+    .hc-offer-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+      min-height: 100%;
+      padding-top: 1.45rem;
+      padding-bottom: 1.45rem;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+    .hc-offer-card--recommended {
+      border-color: rgba(47, 111, 237, 0.52);
+      background:
+        linear-gradient(180deg, rgba(232, 242, 255, 0.96), rgba(255, 255, 255, 0.98) 46%),
+        #fff;
+      box-shadow: 0 22px 52px rgba(24, 45, 88, 0.13);
+    }
+    .hc-offer-card__badge {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      border: 1px solid rgba(47, 111, 237, 0.16);
+      border-radius: 999px;
+      background: rgba(248, 251, 255, 0.94);
+      color: #29415f;
+      padding: 0.3rem 0.68rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .hc-offer-card--recommended .hc-offer-card__badge {
+      border-color: rgba(47, 111, 237, 0.34);
+      background: rgba(219, 235, 255, 0.8);
+      color: #153d7f;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    }
+    .hc-offer-card__label {
+      width: fit-content;
+      margin: -0.25rem 0 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(20, 40, 80, 0.62);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+    .hc-offer-card--recommended .hc-offer-card__label {
+      border: 1px solid rgba(47, 111, 237, 0.24);
+      background: rgba(255, 255, 255, 0.82);
+      color: #1b4c98;
+      padding: 0.3rem 0.6rem;
+    }
+    .hc-offer-card h3 {
+      margin-top: 0.1rem;
+    }
+    .hc-offer-card--recommended h3 {
+      color: #12284c;
+    }
+    .hc-offer-card__features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.1rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .hc-offer-card__features li {
+      border: 1px solid rgba(174, 190, 211, 0.58);
+      border-radius: 999px;
+      background: rgba(248, 251, 255, 0.72);
+      color: #29415f;
+      padding: 0.38rem 0.58rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .hc-offer-card--recommended .hc-offer-card__features li {
+      border-color: rgba(47, 111, 237, 0.22);
+      background: rgba(255, 255, 255, 0.82);
+    }
+    .hc-offer-card__cta {
+      margin-top: auto;
+      padding-top: 0.35rem;
+    }
+    .hc-offer-card__cta .hc-btn {
+      width: fit-content;
+    }
+    .hc-offer-card--recommended .hc-offer-card__cta {
+      padding-top: 0.55rem;
+    }
+    .hc-offer-card--recommended .hc-offer-card__cta .hc-btn {
+      box-shadow: 0 10px 22px rgba(24, 79, 168, 0.16);
+    }
+    .hc-offer-note {
+      max-width: 680px;
+      margin: 1.2rem auto 0;
+      color: rgba(20, 40, 80, 0.68);
+      font-size: 0.96rem;
+      font-weight: 650;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .hc-offer-qual-grid {
+      margin-top: 1.25rem;
+    }
+    .hc-offer-qual-card {
+      border-top: 3px solid rgba(47, 111, 237, 0.22);
+    }
+    .hc-offer-after-demo {
+      margin-top: 1.35rem;
+    }
+    .hc-offer-after-demo__cards {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+      align-self: stretch;
+    }
+    .hc-offer-after-demo__card {
+      display: block;
+      width: 100%;
+      min-height: 0;
+      padding: 1.15rem 1.2rem;
+      border: 1px solid rgba(226, 232, 240, 0.95);
+      border-radius: 16px;
+      background: rgba(248, 251, 255, 0.88);
+      text-align: left;
+    }
+    .hc-offer-after-demo__title {
+      display: block;
+      margin: 0 0 0.4rem;
+      color: #16273d;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .hc-offer-after-demo__body {
+      display: block;
+      margin: 0;
+      color: rgba(20, 40, 80, 0.68);
+      font-size: 0.94rem;
+      font-weight: 500;
+      line-height: 1.55;
+    }
+    .hc-offer-final-note {
+      width: 100%;
+      margin: 0.1rem 0 0;
+      color: rgba(20, 40, 80, 0.68);
+      font-size: 0.9rem;
+      font-weight: 650;
+      line-height: 1.45;
+      text-align: right;
+    }
+    .hc-offer-guidance {
+      margin-top: 1.35rem;
+      padding-top: 1.45rem;
+      padding-bottom: 1.45rem;
+      border-color: rgba(47, 111, 237, 0.14);
+      background: linear-gradient(180deg, rgba(248, 251, 255, 0.82), #fff);
+    }
+    @media (min-width: 900px) {
+      .hc-offer-grid {
+        margin-top: 0.35rem;
+      }
+      .hc-offer-card--recommended {
+        transform: translateY(-5px);
+      }
+      .hc-offer-guidance {
+        margin-top: 1.25rem;
+      }
+    }
+    @media (max-width: 991.98px) {
+      body.hc-page-offre .hc-trust-page__hero-grid,
+      body.hc-page-offre .hc-trust-page__cta-card,
+      body.hc-page-offre .hc-trust-page__section--cta-light .hc-trust-page__cta-card {
+        grid-template-columns: 1fr;
+      }
+      body.hc-page-offre .hc-trust-page__hero-copy h1 {
+        max-width: none;
+        font-size: clamp(2.3rem, 8vw, 3.35rem);
+      }
+      body.hc-page-offre .hc-trust-page__actions--stacked {
+        align-items: flex-start;
+      }
+    }
+    @media (max-width: 720px) {
+      body.hc-page-offre .hc-trust-page__shell {
+        width: min(100% - 1rem, 1240px);
+      }
+      body.hc-page-offre .hc-trust-page__actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      body.hc-page-offre .hc-trust-page__actions .btn {
+        width: 100%;
+        justify-content: center;
+        white-space: normal;
+      }
+      .hc-offer-card {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+      }
+      .hc-offer-card__cta .hc-btn {
+        width: 100%;
+      }
+      .hc-offer-note {
+        margin-top: 1rem;
+        text-align: left;
+      }
+      .hc-offer-final-note {
+        text-align: center;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block content %}
 <main class="hc-trust-page">
   <section class="hc-trust-page__hero">
     <div class="hc-trust-page__shell hc-trust-page__hero-grid">
       <div class="hc-trust-page__hero-copy">
-        <p class="hc-trust-page__eyebrow">{{ _("Offre") }}</p>
-        <h1>{{ _("Une offre adaptée aux structures locales") }}</h1>
+        <p class="hc-trust-page__eyebrow">{{ _("OFFRE") }}</p>
+        <h1>{{ _("Une offre claire pour structurer vos demandes, votre coordination et votre déploiement") }}</h1>
         <p class="hc-trust-page__lead">
-          {{ _("HelpChain propose un cadre de déploiement progressif, avec un niveau d’accompagnement et de pilotage ajusté à la réalité de votre structure.") }}
+          {{ _("HelpChain propose un cadre de démarrage progressif pour les structures qui veulent mieux organiser les demandes, clarifier les rôles et sécuriser la coordination opérationnelle. Le niveau d’accompagnement s’adapte à votre périmètre, à votre gouvernance et à vos usages réels.") }}
         </p>
         <div class="hc-trust-page__actions">
           <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
-          <a href="{{ url_for('main.deploiement') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Voir le déploiement") }}</a>
+          <a href="{{ url_for('main.deploiement') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Comprendre le déploiement") }}</a>
         </div>
         <ul class="hc-trust-page__chips">
           <li>{{ _("Déploiement progressif") }}</li>
           <li>{{ _("Cadre RGPD") }}</li>
-          <li>{{ _("Pilotage structuré") }}</li>
-          <li>{{ _("Accompagnement possible") }}</li>
+          <li>{{ _("Pensé pour les structures locales") }}</li>
+          <li>{{ _("Coordinations multi-acteurs") }}</li>
         </ul>
       </div>
 
       <aside class="hc-trust-page__hero-panel">
         <div class="hc-trust-page__panel-card">
           <div class="hc-trust-page__panel-head">
-            <span>{{ _("Cadre d’engagement") }}</span>
-            <strong>{{ _("Une offre sur devis, progressive et adaptable") }}</strong>
+            <span>{{ _("CADRE D’ENGAGEMENT") }}</span>
+            <strong>{{ _("Une offre sur mesure, structurée et sans déploiement forcé") }}</strong>
           </div>
           <ul class="hc-trust-page__panel-list">
-            <li><strong>{{ _("Sur devis") }}</strong><span>{{ _("Le cadrage dépend du périmètre, des usages et du niveau d’accompagnement attendu.") }}</span></li>
-            <li><strong>{{ _("Selon périmètre") }}</strong><span>{{ _("Le point de départ peut être limité à un pilote utile avant une extension plus large.") }}</span></li>
-            <li><strong>{{ _("Adapté à la structure") }}</strong><span>{{ _("Collectivités, associations et établissements n’ont pas les mêmes contraintes ni le même rythme.") }}</span></li>
+            <li><strong>{{ _("Selon votre périmètre") }}</strong><span>{{ _("Le point de départ dépend du nombre d’équipes concernées, du type de coordination à structurer et du niveau d’accompagnement attendu.") }}</span></li>
+            <li><strong>{{ _("Montée en charge progressive") }}</strong><span>{{ _("Une structure peut commencer par un périmètre ciblé, puis élargir l’usage lorsque les pratiques sont validées.") }}</span></li>
+            <li><strong>{{ _("Adaptée à votre organisation") }}</strong><span>{{ _("Collectivités, associations et établissements n’ont pas les mêmes contraintes, ni les mêmes rythmes de déploiement.") }}</span></li>
           </ul>
         </div>
       </aside>
@@ -46,69 +332,109 @@
 
   <section class="hc-trust-page__section hc-trust-page__section--soft">
     <div class="hc-trust-page__shell">
-      <div class="hc-trust-page__section-head">
-        <p>{{ _("Approche commerciale") }}</p>
-        <h2>{{ _("Une approche simple : commencer utile, structurer ensuite") }}</h2>
-        <p>{{ _("HelpChain n’est pas proposé comme un projet de transformation lourd dès le premier jour. Une structure peut commencer par un pilote cadré, valider l’adéquation avec ses usages, puis étendre le déploiement de façon progressive.") }}</p>
+      <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
+        <p>{{ _("ORIENTATION") }}</p>
+        <h2>{{ _("Comment savoir si HelpChain correspond à votre structure") }}</h2>
+      </div>
+
+      <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight hc-offer-qual-grid">
+        <article class="hc-trust-page__card hc-offer-qual-card">
+          <h3>{{ _("Vous avez plusieurs demandes à suivre") }}</h3>
+          <p>{{ _("Les informations circulent entre plusieurs personnes, supports ou étapes de traitement.") }}</p>
+        </article>
+        <article class="hc-trust-page__card hc-offer-qual-card">
+          <h3>{{ _("Vous avez besoin de mieux coordonner") }}</h3>
+          <p>{{ _("Les rôles, relais et responsabilités doivent être plus lisibles entre équipes ou partenaires.") }}</p>
+        </article>
+        <article class="hc-trust-page__card hc-offer-qual-card">
+          <h3>{{ _("Vous cherchez un point de départ réaliste") }}</h3>
+          <p>{{ _("Vous ne souhaitez pas un projet lourd, mais un cadre utile, progressif et pilotable.") }}</p>
+        </article>
       </div>
     </div>
   </section>
 
   <section class="hc-trust-page__section">
     <div class="hc-trust-page__shell">
+      <div class="hc-trust-page__section-head">
+        <p>{{ _("APPROCHE COMMERCIALE") }}</p>
+        <h2>{{ _("Commencer utile, structurer ensuite") }}</h2>
+        <p>{{ _("HelpChain n’est pas vendu comme un projet standard à imposer dès le premier jour. Une structure peut démarrer sur un périmètre concret, valider l’adéquation avec ses usages, puis élargir progressivement le cadre de coordination.") }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-trust-page__section hc-trust-page__section--soft">
+    <div class="hc-trust-page__shell">
       <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
-        <p>{{ _("Niveaux d’offre") }}</p>
-        <h2>{{ _("Trois cadres d’engagement selon votre périmètre") }}</h2>
+        <p>{{ _("NIVEAUX D’OFFRE") }}</p>
+        <h2>{{ _("Trois cadres d’engagement selon votre besoin") }}</h2>
       </div>
 
-      <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
-        <article class="hc-trust-page__card hc-trust-page__offer-card">
-          <div class="hc-trust-page__offer-head">
-            <span>{{ _("Pilote") }}</span>
-            <strong>{{ _("Sur devis") }}</strong>
-          </div>
-          <h3>{{ _("Pilote cadré") }}</h3>
-          <p>{{ _("Pour démarrer sur un périmètre limité, avec un cadre clair et un premier niveau d’accompagnement.") }}</p>
-          <ul class="hc-trust-page__offer-list">
-            <li>{{ _("Lancement sur un périmètre limité") }}</li>
+      <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight hc-offer-grid">
+        <article class="hc-trust-page__card hc-offer-card">
+          <span class="hc-offer-card__badge">{{ _("Pilote") }}</span>
+          <p class="hc-offer-card__label">{{ _("CADRAGE SIMPLE") }}</p>
+          <h3>{{ _("Offre Pilote") }}</h3>
+          <p>{{ _("Pour démarrer rapidement sur un périmètre limité, avec un cadre clair, une première configuration utile et un accompagnement de lancement.") }}</p>
+          <ul class="hc-offer-card__features">
+            <li>{{ _("Périmètre ciblé") }}</li>
             <li>{{ _("Cadrage initial") }}</li>
             <li>{{ _("Paramétrage de base") }}</li>
-            <li>{{ _("Accompagnement au démarrage") }}</li>
-            <li>{{ _("Point de validation") }}</li>
+            <li>{{ _("Premiers repères de suivi") }}</li>
+            <li>{{ _("Démarrage progressif") }}</li>
           </ul>
+          <div class="hc-offer-card__cta">
+            <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Échanger sur un pilote") }}</a>
+          </div>
         </article>
 
-        <article class="hc-trust-page__card hc-trust-page__offer-card hc-trust-page__offer-card--accent">
-          <div class="hc-trust-page__offer-head">
-            <span>{{ _("Déploiement") }}</span>
-            <strong>{{ _("Selon périmètre") }}</strong>
-          </div>
-          <h3>{{ _("Déploiement structuré") }}</h3>
-          <p>{{ _("Pour étendre l’usage à plusieurs équipes ou à plusieurs besoins de coordination, dans un cadre pilotable.") }}</p>
-          <ul class="hc-trust-page__offer-list">
-            <li>{{ _("Extension à plusieurs équipes / usages") }}</li>
+        <article class="hc-trust-page__card hc-offer-card hc-offer-card--recommended">
+          <span class="hc-offer-card__badge">{{ _("Professionnelle") }}</span>
+          <p class="hc-offer-card__label">{{ _("RECOMMANDÉ") }}</p>
+          <h3>{{ _("Offre Professionnelle") }}</h3>
+          <p>{{ _("Pour les structures qui souhaitent organiser durablement plusieurs usages, plusieurs équipes ou une activité de coordination déjà régulière.") }}</p>
+          <ul class="hc-offer-card__features">
+            <li>{{ _("Plusieurs équipes ou usages") }}</li>
+            <li>{{ _("Structuration opérationnelle") }}</li>
             <li>{{ _("Configuration avancée") }}</li>
-            <li>{{ _("Gouvernance des rôles") }}</li>
-            <li>{{ _("Vues de pilotage") }}</li>
-            <li>{{ _("Accompagnement de montée en charge") }}</li>
+            <li>{{ _("Pilotage plus lisible") }}</li>
+            <li>{{ _("Cadre de gouvernance plus clair") }}</li>
           </ul>
+          <div class="hc-offer-card__cta">
+            <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
+          </div>
         </article>
 
-        <article class="hc-trust-page__card hc-trust-page__offer-card">
-          <div class="hc-trust-page__offer-head">
-            <span>{{ _("Accompagnement") }}</span>
-            <strong>{{ _("Adapté à la structure") }}</strong>
-          </div>
-          <h3>{{ _("Accompagnement étendu") }}</h3>
-          <p>{{ _("Pour des cadres de déploiement plus complexes, multi-acteurs ou multi-structures, avec un accompagnement renforcé.") }}</p>
-          <ul class="hc-trust-page__offer-list">
+        <article class="hc-trust-page__card hc-offer-card">
+          <span class="hc-offer-card__badge">{{ _("Institutionnelle") }}</span>
+          <p class="hc-offer-card__label">{{ _("PÉRIMÈTRE ÉTENDU") }}</p>
+          <h3>{{ _("Offre Institutionnelle") }}</h3>
+          <p>{{ _("Pour les déploiements plus complexes, multi-sites, multi-acteurs ou impliquant un niveau d’accompagnement renforcé et une coordination plus large.") }}</p>
+          <ul class="hc-offer-card__features">
             <li>{{ _("Besoins plus complexes") }}</li>
-            <li>{{ _("Coordination multi-structure") }}</li>
+            <li>{{ _("Coordination multi-structures") }}</li>
             <li>{{ _("Cadrage renforcé") }}</li>
-            <li>{{ _("Logique de déploiement élargie") }}</li>
-            <li>{{ _("Accompagnement au changement") }}</li>
+            <li>{{ _("Déploiement élargi") }}</li>
+            <li>{{ _("Accompagnement dédié") }}</li>
           </ul>
+          <div class="hc-offer-card__cta">
+            <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Demander une proposition") }}</a>
+          </div>
         </article>
+      </div>
+
+      <p class="hc-offer-note">{{ _("La majorité des structures commencent par une base claire, puis élargissent le cadre selon leurs usages.") }}</p>
+
+      <div class="hc-trust-page__cta-card hc-offer-guidance">
+        <div>
+          <h2>{{ _("Vous hésitez entre plusieurs cadres ?") }}</h2>
+          <p>{{ _("Nous vous aidons à identifier le bon niveau d’engagement en fonction de votre organisation, de vos usages et du périmètre réellement utile.") }}</p>
+        </div>
+        <div class="hc-trust-page__actions hc-trust-page__actions--stacked">
+          <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
+          <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Parler de votre besoin") }}</a>
+        </div>
       </div>
     </div>
   </section>
@@ -116,41 +442,17 @@
   <section class="hc-trust-page__section hc-trust-page__section--soft">
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
-        <p>{{ _("Périmètre inclus") }}</p>
-        <h2>{{ _("Ce qui est inclus dans l’offre") }}</h2>
+        <p>{{ _("CE QUE VOUS OBTENEZ") }}</p>
+        <h2>{{ _("Un cadre opérationnel clair dès le départ") }}</h2>
       </div>
 
       <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
-        <article class="hc-trust-page__card">
-          <span>{{ _("Cadrage") }}</span>
-          <h3>{{ _("Cadrage") }}</h3>
-          <p>{{ _("Définition du périmètre, des équipes concernées et des premiers cas d’usage à structurer.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Paramétrage") }}</span>
-          <h3>{{ _("Paramétrage") }}</h3>
-          <p>{{ _("Configuration des rôles, catégories, dossiers et premiers repères de traitement.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Formation") }}</span>
-          <h3>{{ _("Formation initiale") }}</h3>
-          <p>{{ _("Prise en main des usages utiles pour les référents et les utilisateurs concernés.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Démarrage") }}</span>
-          <h3>{{ _("Support au démarrage") }}</h3>
-          <p>{{ _("Accompagnement des premières semaines pour sécuriser l’ouverture et traiter les ajustements utiles.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Pilotage") }}</span>
-          <h3>{{ _("Pilotage") }}</h3>
-          <p>{{ _("Points de suivi, validation du périmètre et appui à la montée en charge selon les besoins.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Références") }}</span>
-          <h3>{{ _("Documentation") }}</h3>
-          <p>{{ _("Repères d’usage, éléments de cadrage et documentation utile au démarrage des équipes.") }}</p>
-        </article>
+        <article class="hc-trust-page__card"><h3>{{ _("Visibilité sur les demandes") }}</h3><p>{{ _("Les demandes, dossiers et étapes de suivi sont centralisés dans un cadre commun plus lisible.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Coordination structurée") }}</h3><p>{{ _("Les rôles, relais et responsabilités peuvent être mieux répartis entre équipes et partenaires habilités.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Traçabilité des actions") }}</h3><p>{{ _("Les structures disposent d’un historique plus clair des actions engagées et du suivi réalisé.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Montée en charge progressive") }}</h3><p>{{ _("Le déploiement peut commencer petit puis évoluer lorsque les usages sont validés.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Cadre de pilotage") }}</h3><p>{{ _("Le suivi devient plus lisible pour les référents, responsables et équipes de coordination.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Accompagnement au démarrage") }}</h3><p>{{ _("Le lancement peut être sécurisé par un cadrage initial, un paramétrage adapté et un accompagnement utile.") }}</p></article>
       </div>
     </div>
   </section>
@@ -158,26 +460,17 @@
   <section class="hc-trust-page__section">
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
-        <p>{{ _("Public concerné") }}</p>
-        <h2>{{ _("Pour quels acteurs") }}</h2>
+        <p>{{ _("ACTEURS CONCERNÉS") }}</p>
+        <h2>{{ _("Pour quelles structures") }}</h2>
       </div>
 
       <div class="hc-trust-page__card-grid hc-trust-page__card-grid--three-tight">
-        <article class="hc-trust-page__card">
-          <span>{{ _("Territoire") }}</span>
-          <h3>{{ _("Collectivités") }}</h3>
-          <p>{{ _("Pour structurer le traitement de demandes locales, la coordination d’intervenants et le suivi de situations à l’échelle d’un service ou d’un territoire.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Action sociale") }}</span>
-          <h3>{{ _("Associations") }}</h3>
-          <p>{{ _("Pour organiser les demandes, les priorités, les affectations et la coordination entre équipes et partenaires.") }}</p>
-        </article>
-        <article class="hc-trust-page__card">
-          <span>{{ _("Établissements") }}</span>
-          <h3>{{ _("Établissements") }}</h3>
-          <p>{{ _("Pour cadrer les circuits internes, les habilitations et la continuité de suivi dans un environnement opérationnel partagé.") }}</p>
-        </article>
+        <article class="hc-trust-page__card"><h3>{{ _("Collectivités") }}</h3><p>{{ _("Pour structurer le traitement de demandes locales, la coordination d’intervenants et le suivi de situations à l’échelle d’un service ou d’un territoire.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Associations") }}</h3><p>{{ _("Pour organiser les demandes, les priorités, les affectations et la coordination entre équipes et partenaires.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Établissements") }}</h3><p>{{ _("Pour mieux cadrer les circuits internes, les habilitations et la continuité de suivi dans un environnement partagé.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("CCAS / action sociale") }}</h3><p>{{ _("Pour donner un cadre plus lisible au suivi, à l’orientation et à la coordination opérationnelle.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Réseaux multi-sites") }}</h3><p>{{ _("Pour déployer un cadre commun avec une gouvernance claire et une montée en charge progressive.") }}</p></article>
+        <article class="hc-trust-page__card"><h3>{{ _("Dispositifs territoriaux") }}</h3><p>{{ _("Pour coordonner plusieurs acteurs habilités autour d’un cadre partagé et traçable.") }}</p></article>
       </div>
     </div>
   </section>
@@ -185,31 +478,36 @@
   <section class="hc-trust-page__section hc-trust-page__section--soft">
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
-        <p>{{ _("Processus") }}</p>
-        <h2>{{ _("Comment l’engagement commercial se déroule") }}</h2>
+        <p>{{ _("PROCESSUS") }}</p>
+        <h2>{{ _("Comment l’échange commercial se déroule") }}</h2>
       </div>
 
       <div class="hc-trust-page__timeline-grid">
-        <article class="hc-trust-page__timeline-step">
-          <span>{{ _("01") }}</span>
-          <h3>{{ _("Échange initial") }}</h3>
-          <p>{{ _("Premier échange sur votre contexte, vos contraintes et le besoin opérationnel à traiter.") }}</p>
-        </article>
-        <article class="hc-trust-page__timeline-step">
-          <span>{{ _("02") }}</span>
-          <h3>{{ _("Cadrage du besoin") }}</h3>
-          <p>{{ _("Définition d’un périmètre réaliste, des acteurs concernés et du niveau d’accompagnement souhaité.") }}</p>
-        </article>
-        <article class="hc-trust-page__timeline-step">
-          <span>{{ _("03") }}</span>
-          <h3>{{ _("Proposition adaptée") }}</h3>
-          <p>{{ _("Formalisation d’une proposition sur devis, ajustée à la structure, au rythme et au périmètre retenus.") }}</p>
-        </article>
-        <article class="hc-trust-page__timeline-step">
-          <span>{{ _("04") }}</span>
-          <h3>{{ _("Lancement du pilote ou du déploiement") }}</h3>
-          <p>{{ _("Démarrage dans un cadre convenu, avec accompagnement et validation progressive des usages.") }}</p>
-        </article>
+        <article class="hc-trust-page__timeline-step"><span>{{ _("01") }}</span><h3>{{ _("Premier échange") }}</h3><p>{{ _("Nous comprenons votre contexte, vos contraintes et le besoin opérationnel à traiter.") }}</p></article>
+        <article class="hc-trust-page__timeline-step"><span>{{ _("02") }}</span><h3>{{ _("Cadrage du besoin") }}</h3><p>{{ _("Nous définissons un périmètre réaliste, les acteurs concernés et le niveau d’accompagnement souhaitable.") }}</p></article>
+        <article class="hc-trust-page__timeline-step"><span>{{ _("03") }}</span><h3>{{ _("Proposition adaptée") }}</h3><p>{{ _("Nous formalisons une proposition cohérente avec la structure, son rythme et son cadre de déploiement.") }}</p></article>
+        <article class="hc-trust-page__timeline-step"><span>{{ _("04") }}</span><h3>{{ _("Lancement du pilote ou du déploiement") }}</h3><p>{{ _("Le démarrage s’effectue dans un cadre convenu, avec validation progressive des usages.") }}</p></article>
+      </div>
+
+      <div class="hc-trust-page__cta-card hc-offer-after-demo">
+        <div>
+          <h2>{{ _("Après la démonstration, que se passe-t-il ?") }}</h2>
+          <p>{{ _("L’échange sert d’abord à vérifier l’adéquation et à définir un point de départ réaliste, sans engagement de déploiement forcé.") }}</p>
+        </div>
+        <div class="hc-offer-after-demo__cards">
+          <article class="hc-offer-after-demo__card">
+            <h3 class="hc-offer-after-demo__title">{{ _("Vérification d’adéquation") }}</h3>
+            <p class="hc-offer-after-demo__body">{{ _("Nous confirmons si le cadre correspond réellement à votre organisation et à vos usages.") }}</p>
+          </article>
+          <article class="hc-offer-after-demo__card">
+            <h3 class="hc-offer-after-demo__title">{{ _("Proposition adaptée") }}</h3>
+            <p class="hc-offer-after-demo__body">{{ _("Nous définissons un point de départ réaliste selon votre périmètre, vos équipes et votre niveau d’accompagnement.") }}</p>
+          </article>
+          <article class="hc-offer-after-demo__card">
+            <h3 class="hc-offer-after-demo__title">{{ _("Démarrage progressif si pertinent") }}</h3>
+            <p class="hc-offer-after-demo__body">{{ _("Le lancement peut rester limité au départ, puis évoluer lorsque les pratiques sont validées.") }}</p>
+          </article>
+        </div>
       </div>
     </div>
   </section>
@@ -218,7 +516,7 @@
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__control-layout">
         <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
-          <p>{{ _("Réassurance") }}</p>
+          <p>{{ _("RÉASSURANCE") }}</p>
           <h2>{{ _("Pas d’offre standard imposée, pas de déploiement forcé") }}</h2>
           <p>{{ _("L’offre est ajustée à la taille de la structure, à sa gouvernance, à sa réalité opérationnelle et à son rythme de déploiement.") }}</p>
         </div>
@@ -240,13 +538,14 @@
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__cta-card">
         <div>
-          <p>{{ _("Échange commercial") }}</p>
-          <h2>{{ _("Parlons de votre périmètre et du bon niveau d’accompagnement") }}</h2>
-          <p>{{ _("Nous vous aidons à définir un cadre de démarrage réaliste, progressif et adapté à votre organisation.") }}</p>
+          <p>{{ _("ÉCHANGE COMMERCIAL") }}</p>
+          <h2>{{ _("Parlons de votre contexte et du bon niveau d’engagement") }}</h2>
+          <p>{{ _("En 20 minutes, nous vous aidons à évaluer si HelpChain correspond à votre structure et quel point de départ serait le plus réaliste.") }}</p>
         </div>
         <div class="hc-trust-page__actions hc-trust-page__actions--stacked">
           <a href="/demo" class="hc-btn hc-btn--primary btn btn-primary">{{ _("Planifier une démo") }}</a>
           <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Échanger sur un pilote") }}</a>
+          <p class="hc-offer-final-note">{{ _("Sans engagement • Réponse rapide • Déploiement progressif") }}</p>
         </div>
       </div>
     </div>
