@@ -76,7 +76,12 @@
         <tbody>
           {% for row in audience.revenue_radar_rows %}
             <tr>
-              <td><code title="{{ row.session }}">{{ row.session_label }}</code></td>
+              <td>
+                <code title="{{ row.session }}">{{ row.session_label }}</code>
+                {% if row.captured_label %}
+                  <span class="badge text-bg-success ms-1">{{ row.captured_label }}</span>
+                {% endif %}
+              </td>
               <td class="text-end fw-semibold">{{ row.score }}</td>
               <td><span class="badge {{ row.temperature_class }}">{{ row.temperature }}</span></td>
               <td>{{ row.pages_count }} page{% if row.pages_count > 1 %}s{% endif %}</td>
