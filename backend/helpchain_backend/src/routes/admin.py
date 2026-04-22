@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import csv
 import json
 import math
@@ -8,6 +9,7 @@ import secrets
 import threading
 import time
 import re
+import unicodedata
 from types import SimpleNamespace
 from pathlib import Path
 from datetime import UTC, datetime, timedelta, timezone
@@ -184,6 +186,46 @@ PROFESSIONAL_LEAD_STATUS_CHOICES = [
     "invalid",
     "spam",
 ]
+
+AUDIENCE_INTENT_PATHS = (
+    "/demander-acces",
+    "/professionnels",
+    "/offre",
+    "/deploiement",
+    "/contact",
+)
+AUDIENCE_REVENUE_SCORE_CAP = 50
+AUDIENCE_REVENUE_PAGE_SCORES = (
+    ("/demander-acces", 12),
+    ("/contact", 8),
+    ("/deploiement", 7),
+    ("/offre", 6),
+    ("/collectivites", 5),
+    ("/professionnels", 4),
+    ("/", 1),
+)
+AUDIENCE_CITY_MARKERS = {
+    "paris": {"label": "Paris", "department": "Paris", "region": "Ile-de-France", "x": 285, "y": 135},
+    "boulogne billancourt": {"label": "Boulogne-Billancourt", "department": "Hauts-de-Seine", "region": "Ile-de-France", "x": 279, "y": 140},
+    "nanterre": {"label": "Nanterre", "department": "Hauts-de-Seine", "region": "Ile-de-France", "x": 276, "y": 137},
+    "versailles": {"label": "Versailles", "department": "Yvelines", "region": "Ile-de-France", "x": 272, "y": 146},
+    "lyon": {"label": "Lyon", "department": "Rhone", "region": "Auvergne-Rhone-Alpes", "x": 335, "y": 285},
+    "marseille": {"label": "Marseille", "department": "Bouches-du-Rhone", "region": "Provence-Alpes-Cote d'Azur", "x": 348, "y": 396},
+    "lille": {"label": "Lille", "department": "Nord", "region": "Hauts-de-France", "x": 295, "y": 55},
+    "nantes": {"label": "Nantes", "department": "Loire-Atlantique", "region": "Pays de la Loire", "x": 154, "y": 250},
+    "bordeaux": {"label": "Bordeaux", "department": "Gironde", "region": "Nouvelle-Aquitaine", "x": 188, "y": 355},
+    "toulouse": {"label": "Toulouse", "department": "Haute-Garonne", "region": "Occitanie", "x": 260, "y": 398},
+    "strasbourg": {"label": "Strasbourg", "department": "Bas-Rhin", "region": "Grand Est", "x": 440, "y": 164},
+    "rennes": {"label": "Rennes", "department": "Ille-et-Vilaine", "region": "Bretagne", "x": 146, "y": 202},
+    "montpellier": {"label": "Montpellier", "department": "Herault", "region": "Occitanie", "x": 312, "y": 395},
+    "nice": {"label": "Nice", "department": "Alpes-Maritimes", "region": "Provence-Alpes-Cote d'Azur", "x": 425, "y": 382},
+    "grenoble": {"label": "Grenoble", "department": "Isere", "region": "Auvergne-Rhone-Alpes", "x": 365, "y": 318},
+    "dijon": {"label": "Dijon", "department": "Cote-d'Or", "region": "Bourgogne-Franche-Comte", "x": 350, "y": 220},
+    "rouen": {"label": "Rouen", "department": "Seine-Maritime", "region": "Normandie", "x": 236, "y": 113},
+    "reims": {"label": "Reims", "department": "Marne", "region": "Grand Est", "x": 335, "y": 125},
+    "tours": {"label": "Tours", "department": "Indre-et-Loire", "region": "Centre-Val de Loire", "x": 236, "y": 226},
+    "orleans": {"label": "Orleans", "department": "Loiret", "region": "Centre-Val de Loire", "x": 275, "y": 190},
+}
 DEMO_LEAD_STATUS_CHOICES = [
     "new",
     "contacted",
@@ -7178,6 +7220,391 @@ def _render_notifications_list():
         recipient=recipient,
         summary=summary,
         channels=channels,
+    )
+
+
+def _audience_normalize_text(value: str | None) -> str:
+    text = (value or "").strip().lower()
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _audience_path(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    parsed = urlparse(raw)
+    return parsed.path or raw.split("?", 1)[0] or raw
+
+
+def _audience_label_page(value: str | None) -> str:
+    path = _audience_path(value)
+    return path or "/"
+
+
+def _audience_source_label(referrer: str | None) -> str:
+    raw = (referrer or "").strip()
+    if not raw:
+        return "Direct"
+    parsed = urlparse(raw)
+    domain = (parsed.netloc or raw).strip().lower()
+    domain = domain.split("@")[-1].split(":", 1)[0]
+    if domain.startswith("www."):
+        domain = domain[4:]
+    if not domain or domain in {"direct", "none", "-"}:
+        return "Direct"
+    if "google." in domain:
+        return "Google"
+    if domain.endswith("linkedin.com") or "linkedin." in domain:
+        return "LinkedIn"
+    if domain == "chat.openai.com" or domain.endswith(".openai.com"):
+        return "ChatGPT"
+    return domain
+
+
+def _audience_is_external_referrer(referrer: str | None) -> bool:
+    label = _audience_source_label(referrer)
+    return label != "Direct" and "helpchain" not in label.lower()
+
+
+def _audience_page_score(path: str | None) -> int:
+    normalized = _audience_label_page(path)
+    for prefix, score in AUDIENCE_REVENUE_PAGE_SCORES:
+        if prefix == "/" and normalized == "/":
+            return score
+        if prefix != "/" and normalized.startswith(prefix):
+            return score
+    return 0
+
+
+def _audience_score_session(
+    paths: list[str],
+    *,
+    page_count: int,
+    last_activity: datetime | None,
+    now: datetime,
+    has_external_referrer: bool,
+    repeated_same_day: bool,
+) -> int:
+    score = sum(_audience_page_score(path) for path in paths)
+    if repeated_same_day:
+        score += 6
+    if page_count >= 5:
+        score += 10
+    elif page_count >= 3:
+        score += 5
+    if last_activity and last_activity >= now - timedelta(hours=24):
+        score += 4
+    if has_external_referrer:
+        score += 3
+    if page_count == 1:
+        score -= 5
+    return max(0, min(AUDIENCE_REVENUE_SCORE_CAP, score))
+
+
+def _audience_temperature_for_score(score: int) -> dict:
+    if score >= 25:
+        return {"label": "Tres chaud", "class": "text-bg-danger", "action": "Priorite haute"}
+    if score >= 16:
+        return {"label": "Chaud", "class": "text-bg-warning text-dark", "action": "A suivre aujourd'hui"}
+    if score >= 8:
+        return {"label": "Tiede", "class": "text-bg-info text-dark", "action": "Nurture"}
+    return {"label": "Froid", "class": "text-bg-light border", "action": "Observation"}
+
+
+def _audience_relative_time(value: datetime | None, now: datetime) -> str:
+    if not value:
+        return "-"
+    delta = max(timedelta(), now - value)
+    minutes = int(delta.total_seconds() // 60)
+    if minutes < 1:
+        return "a l'instant"
+    if minutes < 60:
+        return f"il y a {minutes} min"
+    hours = minutes // 60
+    if hours < 24:
+        return f"il y a {hours} h"
+    days = hours // 24
+    return f"il y a {days} j"
+
+
+def _audience_session_label(session_id: str) -> str:
+    value = (session_id or "").strip()
+    if len(value) <= 16:
+        return value
+    return f"{value[:8]}...{value[-4:]}"
+
+
+def _audience_location_city(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    first = re.split(r"[,;/|]", raw, maxsplit=1)[0].strip()
+    return first or raw
+
+
+def _audience_import_models():
+    try:
+        from backend.models_with_analytics import AnalyticsEvent, UserBehavior
+
+        return AnalyticsEvent, UserBehavior
+    except Exception:
+        return None, None
+
+
+def _build_audience_map_context() -> dict:
+    now = datetime.now(UTC).replace(tzinfo=None)
+    since_24h = now - timedelta(hours=24)
+    since_7d = now - timedelta(days=7)
+    context = {
+        "analytics_available": False,
+        "geo_available": False,
+        "kpis": {
+            "visitors_24h": 0,
+            "visitors_7d": 0,
+            "active_cities": 0,
+            "key_pages": 0,
+            "intent_signals": 0,
+        },
+        "city_rows": [],
+        "department_rows": [],
+        "region_rows": [],
+        "page_rows": [],
+        "source_rows": [],
+        "repeat_rows": [],
+        "map_markers": [],
+        "unmapped_locations": [],
+        "founder_insights": [],
+        "revenue_radar_rows": [],
+        "revenue_radar_insights": [],
+    }
+    if not _table_exists("analytics_events"):
+        return context
+
+    AnalyticsEvent, UserBehavior = _audience_import_models()
+    if AnalyticsEvent is None:
+        return context
+
+    context["analytics_available"] = True
+    event_rows = (
+        db.session.query(
+            AnalyticsEvent.created_at,
+            AnalyticsEvent.user_session,
+            AnalyticsEvent.user_ip,
+            AnalyticsEvent.page_url,
+            AnalyticsEvent.referrer,
+        )
+        .filter(AnalyticsEvent.event_type == "page_view")
+        .filter(AnalyticsEvent.created_at >= since_7d)
+        .order_by(AnalyticsEvent.created_at.desc())
+        .limit(5000)
+        .all()
+    )
+
+    def visitor_key(row) -> str:
+        return (row.user_session or row.user_ip or f"event-{id(row)}").strip()
+
+    visitors_24h = {visitor_key(row) for row in event_rows if row.created_at and row.created_at >= since_24h}
+    visitors_7d = {visitor_key(row) for row in event_rows}
+    page_counts: Counter[str] = Counter()
+    source_counts: Counter[str] = Counter()
+    session_intent: Counter[str] = Counter()
+    key_page_set: set[str] = set()
+    session_events: dict[str, dict] = {}
+    for row in event_rows:
+        path = _audience_label_page(row.page_url)
+        session_id = visitor_key(row)
+        page_counts[path] += 1
+        if any(path.startswith(intent_path) for intent_path in AUDIENCE_INTENT_PATHS):
+            session_intent[session_id] += 1
+            key_page_set.add(path)
+        if _audience_is_external_referrer(row.referrer):
+            source_counts[_audience_source_label(row.referrer)] += 1
+        session_bucket = session_events.setdefault(
+            session_id,
+            {
+                "paths": [],
+                "referrers": Counter(),
+                "last_activity": None,
+                "day_counts": Counter(),
+                "has_external_referrer": False,
+            },
+        )
+        session_bucket["paths"].append(path)
+        if row.created_at:
+            session_bucket["day_counts"][row.created_at.date()] += 1
+            if session_bucket["last_activity"] is None or row.created_at > session_bucket["last_activity"]:
+                session_bucket["last_activity"] = row.created_at
+        source_label = _audience_source_label(row.referrer)
+        session_bucket["referrers"][source_label] += 1
+        if _audience_is_external_referrer(row.referrer):
+            session_bucket["has_external_referrer"] = True
+
+    location_counts: Counter[str] = Counter()
+    if UserBehavior is not None and _table_exists("user_behaviors"):
+        behavior_rows = (
+            db.session.query(UserBehavior.location, UserBehavior.session_id)
+            .filter(UserBehavior.session_start >= since_7d)
+            .filter(UserBehavior.location.isnot(None))
+            .filter(UserBehavior.location != "")
+            .limit(5000)
+            .all()
+        )
+        for location, _session_id in behavior_rows:
+            city = _audience_location_city(location)
+            if city:
+                location_counts[city] += 1
+
+    department_counts: Counter[str] = Counter()
+    region_counts: Counter[str] = Counter()
+    markers = []
+    unmapped = []
+    max_city_count = max(location_counts.values(), default=0)
+    for city, count in location_counts.most_common(12):
+        marker = AUDIENCE_CITY_MARKERS.get(_audience_normalize_text(city))
+        if marker:
+            department_counts[marker["department"]] += count
+            region_counts[marker["region"]] += count
+            intensity = 1 if max_city_count <= 0 else max(1, min(5, math.ceil((count / max_city_count) * 5)))
+            markers.append({**marker, "count": count, "intensity": intensity})
+        else:
+            unmapped.append({"label": city, "count": count})
+
+    context["geo_available"] = bool(markers or location_counts)
+    context["map_markers"] = markers
+    context["unmapped_locations"] = unmapped[:8]
+    context["city_rows"] = [
+        {"label": city, "count": count}
+        for city, count in location_counts.most_common(8)
+    ]
+    context["department_rows"] = [
+        {"label": dept, "count": count}
+        for dept, count in department_counts.most_common(6)
+    ]
+    context["region_rows"] = [
+        {"label": region, "count": count}
+        for region, count in region_counts.most_common(6)
+    ]
+    context["page_rows"] = [
+        {"label": page, "count": count}
+        for page, count in page_counts.most_common(8)
+    ]
+    context["source_rows"] = [
+        {"label": source, "count": count}
+        for source, count in source_counts.most_common(6)
+    ]
+    context["repeat_rows"] = [
+        {"label": session_id, "count": count}
+        for session_id, count in session_intent.most_common(6)
+        if count >= 2
+    ]
+    revenue_rows = []
+    sessions_repeated_today = 0
+    for session_id, bucket in session_events.items():
+        page_count = len(bucket["paths"])
+        repeated_same_day = any(count >= 2 for count in bucket["day_counts"].values())
+        if bucket["day_counts"].get(now.date(), 0) >= 2:
+            sessions_repeated_today += 1
+        score = _audience_score_session(
+            bucket["paths"],
+            page_count=page_count,
+            last_activity=bucket["last_activity"],
+            now=now,
+            has_external_referrer=bucket["has_external_referrer"],
+            repeated_same_day=repeated_same_day,
+        )
+        temperature = _audience_temperature_for_score(score)
+        source = "Direct"
+        for label, _count in bucket["referrers"].most_common():
+            if label != "Direct":
+                source = label
+                break
+        revenue_rows.append(
+            {
+                "session": session_id,
+                "session_label": _audience_session_label(session_id),
+                "score": score,
+                "temperature": temperature["label"],
+                "temperature_class": temperature["class"],
+                "pages_count": page_count,
+                "last_activity": bucket["last_activity"],
+                "last_activity_label": _audience_relative_time(bucket["last_activity"], now),
+                "source": source,
+                "action": temperature["action"],
+            }
+        )
+    revenue_rows.sort(key=lambda row: (row["score"], row["last_activity"] or datetime.min), reverse=True)
+    context["revenue_radar_rows"] = revenue_rows[:12]
+    context["kpis"] = {
+        "visitors_24h": len(visitors_24h),
+        "visitors_7d": len(visitors_7d),
+        "active_cities": len(location_counts),
+        "key_pages": len(key_page_set),
+        "intent_signals": sum(session_intent.values()),
+    }
+
+    if region_counts:
+        region, count = region_counts.most_common(1)[0]
+        context["founder_insights"].append(
+            f"Interet observe en {region}: {count} signal(s) territorial(aux) sur 7 jours."
+        )
+    if session_intent:
+        context["founder_insights"].append(
+            f"{sum(session_intent.values())} visite(s) sur des pages a forte intention."
+        )
+    if context["repeat_rows"]:
+        context["founder_insights"].append(
+            "Des sessions repetent des passages sur les pages d'intention."
+        )
+    hot_24h = [
+        row
+        for row in revenue_rows
+        if row["last_activity"] and row["last_activity"] >= since_24h and row["score"] >= 16
+    ]
+    if hot_24h:
+        context["revenue_radar_insights"].append(
+            f"{len(hot_24h)} visiteur(s) chaud(s) sur les 24 dernieres heures."
+        )
+    if page_counts.get("/demander-acces", 0):
+        context["revenue_radar_insights"].append(
+            f"Forte intention sur /demander-acces: {page_counts['/demander-acces']} vue(s)."
+        )
+    offre_24h = sum(
+        1
+        for row in event_rows
+        if row.created_at and row.created_at >= since_24h and _audience_label_page(row.page_url).startswith("/offre")
+    )
+    offre_previous_24h = sum(
+        1
+        for row in event_rows
+        if row.created_at
+        and since_24h > row.created_at >= now - timedelta(hours=48)
+        and _audience_label_page(row.page_url).startswith("/offre")
+    )
+    if offre_24h > 0 and offre_24h > offre_previous_24h:
+        context["revenue_radar_insights"].append(
+            "Le trafic /offre augmente sur les dernieres 24 heures."
+        )
+    if sessions_repeated_today:
+        context["revenue_radar_insights"].append(
+            f"{sessions_repeated_today} session(s) reviennent aujourd'hui."
+        )
+    return context
+
+
+@admin_bp.get("/audience-map")
+@login_required
+@admin_required
+@admin_role_required("superadmin")
+def admin_audience_map():
+    admin_required_404()
+    _require_global_admin()
+    return render_template(
+        "admin/audience_map.html",
+        audience=_build_audience_map_context(),
+        intent_paths=AUDIENCE_INTENT_PATHS,
     )
 
 

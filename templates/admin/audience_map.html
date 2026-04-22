@@ -1,0 +1,282 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Carte d'interet - France | {{ _('Admin') }}{% endblock %}
+{% block admin_body_class %} hc-admin-audience-page hc-density-compact{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--wide">
+  <div class="hc-card hc-admin-headerCard mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="hc-admin-kicker">Audience & prospection</div>
+        <h1 class="hc-admin-title mb-1">Carte d'interet - France</h1>
+        <div class="hc-muted">Vue operationnelle de la concentration d'audience, des pages consultees et des signaux territoriaux utiles au pilotage fondateur.</div>
+      </div>
+      <span class="badge text-bg-light border">7 derniers jours</span>
+    </div>
+  </div>
+
+  <div class="hc-kpis mb-3">
+    <div class="hc-kpi">
+      <div class="hc-kpi__label">Visiteurs 24h</div>
+      <div class="hc-kpi__value">{{ audience.kpis.visitors_24h }}</div>
+      <div class="hc-kpi__context">sessions ou IP distinctes</div>
+    </div>
+    <div class="hc-kpi">
+      <div class="hc-kpi__label">Visiteurs 7 jours</div>
+      <div class="hc-kpi__value">{{ audience.kpis.visitors_7d }}</div>
+      <div class="hc-kpi__context">audience recente</div>
+    </div>
+    <div class="hc-kpi">
+      <div class="hc-kpi__label">Villes actives</div>
+      <div class="hc-kpi__value">{{ audience.kpis.active_cities }}</div>
+      <div class="hc-kpi__context">si localisation disponible</div>
+    </div>
+    <div class="hc-kpi">
+      <div class="hc-kpi__label">Pages cles vues</div>
+      <div class="hc-kpi__value">{{ audience.kpis.key_pages }}</div>
+      <div class="hc-kpi__context">parcours institutionnels</div>
+    </div>
+    <div class="hc-kpi">
+      <div class="hc-kpi__label">Intentions detectees</div>
+      <div class="hc-kpi__value">{{ audience.kpis.intent_signals }}</div>
+      <div class="hc-kpi__context">vues sur pages a intention</div>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell mb-3">
+    <div class="hc-card__section hc-card__section--header">
+      <div>
+        <strong>Revenue Radar</strong>
+        <div class="hc-muted small">Sessions anonymes classees par intention commerciale probable.</div>
+      </div>
+      <span class="badge text-bg-light border">Score derive</span>
+    </div>
+    <div class="p-3 pb-0">
+      {% if audience.revenue_radar_insights %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          {% for insight in audience.revenue_radar_insights %}
+            <span class="badge text-bg-info text-dark">{{ insight }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="table-responsive hc-admin-tablewrap">
+      <table class="table table-hover align-middle hc-admin-table mb-0">
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th class="text-end">Score</th>
+            <th>Temperature</th>
+            <th>Pages vues</th>
+            <th>Derniere activite</th>
+            <th>Source</th>
+            <th>Action recommandee</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in audience.revenue_radar_rows %}
+            <tr>
+              <td><code title="{{ row.session }}">{{ row.session_label }}</code></td>
+              <td class="text-end fw-semibold">{{ row.score }}</td>
+              <td><span class="badge {{ row.temperature_class }}">{{ row.temperature }}</span></td>
+              <td>{{ row.pages_count }} page{% if row.pages_count > 1 %}s{% endif %}</td>
+              <td>{{ row.last_activity_label }}</td>
+              <td>{{ row.source }}</td>
+              <td><span class="badge text-bg-light border">{{ row.action }}</span></td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="7">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun signal revenue exploitable</div>
+                  <div class="hc-empty-state__text">Les sessions chaudes apparaitront ici lorsque les pages a forte intention recevront des visites qualifiees.</div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-8">
+      <div class="hc-card h-100">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Lecture territoriale France</strong>
+          <span class="hc-muted small">Visualisation SVG legere, basee uniquement sur les localisations captees.</span>
+        </div>
+        <div class="p-3">
+          <svg class="w-100" viewBox="0 0 520 460" role="img" aria-labelledby="audienceMapTitle audienceMapDesc">
+            <title id="audienceMapTitle">Carte d'interet France</title>
+            <desc id="audienceMapDesc">Vue schematique de la France avec marqueurs de villes actives quand la localisation est disponible.</desc>
+            <path d="M252 28 L312 50 L350 42 L392 92 L448 118 L430 178 L468 226 L430 278 L444 338 L386 410 L314 424 L270 392 L226 424 L154 394 L118 340 L72 316 L96 252 L66 206 L104 150 L96 92 L168 70 Z" fill="#eef4f8" stroke="#b9c8d3" stroke-width="2"></path>
+            <path d="M246 100 C280 100 318 120 342 151 C372 190 365 248 334 286 C305 322 257 335 218 318 C176 300 150 258 154 213 C158 164 196 108 246 100 Z" fill="#f8fbfd" stroke="#d5e0e8" stroke-width="1"></path>
+            <circle cx="285" cy="135" r="32" fill="#e7f0fb" stroke="#bfd5ec" stroke-width="1"></circle>
+            <text x="285" y="128" text-anchor="middle" fill="#476171" font-size="12" font-weight="700">IDF</text>
+            <text x="285" y="145" text-anchor="middle" fill="#607886" font-size="10">zone cible</text>
+            {% for marker in audience.map_markers %}
+              {% set radius = 6 + (marker.intensity * 2) %}
+              <circle cx="{{ marker.x }}" cy="{{ marker.y }}" r="{{ radius + 5 }}" fill="#dbeafe" opacity="0.55"></circle>
+              <circle cx="{{ marker.x }}" cy="{{ marker.y }}" r="{{ radius }}" fill="#2563eb" opacity="0.88"></circle>
+              <text x="{{ marker.x + 12 }}" y="{{ marker.y - 8 }}" fill="#1f3b4d" font-size="11" font-weight="700">{{ marker.label }}</text>
+              <text x="{{ marker.x + 12 }}" y="{{ marker.y + 6 }}" fill="#607886" font-size="10">{{ marker.count }} signal(s)</text>
+            {% endfor %}
+          </svg>
+
+          {% if not audience.analytics_available %}
+            <div class="hc-empty-state mt-3">
+              <div class="hc-empty-state__title">Aucune table d'analytics disponible</div>
+              <div class="hc-empty-state__text">La carte s'activera lorsque la table analytics_events sera disponible dans cet environnement.</div>
+            </div>
+          {% elif not audience.geo_available %}
+            <div class="hc-empty-state mt-3">
+              <div class="hc-empty-state__title">Geo enrichissement limite</div>
+              <div class="hc-empty-state__text">Les signaux territoriaux apparaitront ici des qu'un volume suffisant de visites qualifiees avec localisation sera observe.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-4">
+      <div class="hc-card h-100">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Signaux territoriaux</strong>
+          <span class="hc-muted small">Villes, departements et regions detectes.</span>
+        </div>
+        <div class="p-3">
+          <h2 class="h6 mb-2">Top villes</h2>
+          {% if audience.city_rows %}
+            <ol class="list-group list-group-numbered mb-3">
+              {% for row in audience.city_rows %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>{{ row.label }}</span>
+                  <span class="badge text-bg-primary rounded-pill">{{ row.count }}</span>
+                </li>
+              {% endfor %}
+            </ol>
+          {% else %}
+            <p class="hc-muted small mb-3">Aucune ville exploitable pour le moment.</p>
+          {% endif %}
+
+          <h2 class="h6 mb-2">Departements / regions</h2>
+          {% if audience.department_rows or audience.region_rows %}
+            <div class="d-flex flex-wrap gap-2">
+              {% for row in audience.department_rows %}
+                <span class="badge text-bg-light border">{{ row.label }} - {{ row.count }}</span>
+              {% endfor %}
+              {% for row in audience.region_rows %}
+                <span class="badge text-bg-light border">{{ row.label }} - {{ row.count }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="hc-muted small mb-0">Les departements seront renseignes lorsque les villes detectees seront reconnues.</p>
+          {% endif %}
+
+          {% if audience.unmapped_locations %}
+            <h2 class="h6 mt-3 mb-2">Localisations non cartographiees</h2>
+            <div class="d-flex flex-wrap gap-2">
+              {% for row in audience.unmapped_locations %}
+                <span class="badge text-bg-light border">{{ row.label }} - {{ row.count }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mt-0">
+    <div class="col-12 col-xl-7">
+      <div class="hc-card hc-admin-table-shell h-100">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Pages les plus consultees</strong>
+          <span class="hc-muted small">Traffic page_view recent.</span>
+        </div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th class="text-end">Vues</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in audience.page_rows %}
+                <tr>
+                  <td><code>{{ row.label }}</code></td>
+                  <td class="text-end fw-semibold">{{ row.count }}</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="2">
+                    <div class="hc-empty-state">
+                      <div class="hc-empty-state__title">Aucune page vue recente</div>
+                      <div class="hc-empty-state__text">Les pages consultees apparaitront ici des que le tracking page_view alimentera la table.</div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+      <div class="hc-card h-100">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Intelligence fondateur</strong>
+          <span class="hc-muted small">Lecture business basee sur les signaux reels.</span>
+        </div>
+        <div class="p-3">
+          {% if audience.founder_insights %}
+            <ul class="list-unstyled mb-3">
+              {% for insight in audience.founder_insights %}
+                <li class="mb-2">
+                  <span class="badge text-bg-info text-dark me-1">Signal</span>
+                  {{ insight }}
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="hc-empty-state mb-3">
+              <div class="hc-empty-state__title">Pas encore de lecture consolidée</div>
+              <div class="hc-empty-state__text">La carte s'enrichira a mesure que les visites sur les pages cles seront captees.</div>
+            </div>
+          {% endif %}
+
+          <h2 class="h6 mb-2">Sources principales</h2>
+          {% if audience.source_rows %}
+            <div class="list-group list-group-flush mb-3">
+              {% for row in audience.source_rows %}
+                <div class="list-group-item d-flex justify-content-between px-0">
+                  <span>{{ row.label }}</span>
+                  <strong>{{ row.count }}</strong>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="hc-muted small mb-3">Aucune source externe significative detectee.</p>
+          {% endif %}
+
+          <h2 class="h6 mb-2">Signaux repetes</h2>
+          {% if audience.repeat_rows %}
+            <div class="list-group list-group-flush">
+              {% for row in audience.repeat_rows %}
+                <div class="list-group-item d-flex justify-content-between px-0">
+                  <span class="text-truncate">{{ row.label }}</span>
+                  <strong>{{ row.count }}</strong>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="hc-muted small mb-0">Aucune session n'a encore repete plusieurs passages sur les pages a forte intention.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
