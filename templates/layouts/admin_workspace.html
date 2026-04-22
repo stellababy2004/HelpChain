@@ -32,9 +32,10 @@
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/requests') else '' }}" href="{{ url_for('admin.admin_requests') }}">Demandes</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/cases') or current_path.startswith('/admin/cases') else '' }}" href="{{ cases_href }}">Cas</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/notifications') or current_path.startswith('/admin/notifications') else '' }}" href="{{ notifications_href }}">Notifications</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/professional-leads') else '' }}" href="{{ url_for('admin.admin_professional_leads') }}">Leads</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/risk') else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">Sécurité</a>
-          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/structures') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') or current_path.startswith('/admin/professional-leads') else '' }}" href="{{ url_for('admin.admin_structures') }}">Plateforme</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/structures') or current_path.startswith('/admin/organizations') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') else '' }}" href="{{ url_for('admin.admin_structures') }}">Plateforme</a>
         </nav>
       </div>
     </div>

@@ -1,158 +1,316 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Leads professionnels | {{ _('Admin') }}{% endblock %}
-{% block body_class %}hc-page-admin hc-admin-workspace hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page{% endblock %}
-{% block extra_css %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
+{% block admin_body_class %} hc-admin-requests-page hc-admin-table-page hc-admin-proleads-page hc-density-compact{% endblock %}
+{% block admin_workspace_css %}
   <style>
-    .hc-proleads-col-contact { width: 360px; min-width: 320px; }
-    .hc-proleads-contact { min-width: 320px; max-width: 360px; }
-    .hc-proleads-contact a { word-break: normal; overflow-wrap: normal; }
-    .hc-proleads-identity { min-width: 0; }
-    .hc-proleads-name {
-      display: block;
+    .hc-proleads-hero {
+      padding: 1.05rem 1.15rem;
+      border: 1px solid rgba(15, 23, 42, .08);
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.94));
+    }
+    .hc-proleads-hero__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+      margin-top: .7rem;
+    }
+    .hc-proleads-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      border: 1px solid rgba(15, 23, 42, .1);
+      background: #fff;
+      color: rgba(15, 23, 42, .72);
+      border-radius: 999px;
+      padding: .26rem .55rem;
+      font-size: .78rem;
+      line-height: 1.1;
+    }
+    .hc-proleads-kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: .75rem;
+      margin: .85rem 0 1rem;
+    }
+    .hc-proleads-kpi {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-left: 4px solid #64748b;
+      background: #fff;
+      border-radius: 8px;
+      padding: .85rem .9rem;
+      min-width: 0;
+    }
+    .hc-proleads-kpi--new { border-left-color: #2563eb; }
+    .hc-proleads-kpi--qualify { border-left-color: #7c3aed; }
+    .hc-proleads-kpi--priority { border-left-color: #dc2626; }
+    .hc-proleads-kpi--followup { border-left-color: #d97706; }
+    .hc-proleads-kpi--qualified { border-left-color: #059669; }
+    .hc-proleads-kpi__label {
+      color: rgba(15, 23, 42, .62);
+      font-size: .78rem;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .hc-proleads-kpi__value {
+      display: block;
+      margin-top: .2rem;
+      font-size: 1.55rem;
+      line-height: 1;
+      font-weight: 750;
+      color: #0f172a;
+    }
+    .hc-proleads-kpi__hint {
+      margin-top: .35rem;
+      color: rgba(15, 23, 42, .55);
+      font-size: .8rem;
       line-height: 1.25;
     }
-    .hc-proleads-org {
+    .hc-proleads-filter-title {
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: .15rem;
+    }
+    .hc-proleads-filterbar {
+      padding: .9rem;
+    }
+    .hc-proleads-filterbar .hc-admin-filtergrid {
+      align-items: end;
+    }
+    .hc-proleads-table {
+      table-layout: fixed;
+      min-width: 1180px;
+    }
+    .hc-proleads-table th,
+    .hc-proleads-table td {
+      vertical-align: middle;
+    }
+    .hc-proleads-table td {
+      padding-top: .55rem;
+      padding-bottom: .55rem;
+    }
+    .hc-proleads-col-id { width: 72px; }
+    .hc-proleads-col-contact { width: 310px; }
+    .hc-proleads-col-org { width: 210px; }
+    .hc-proleads-col-city { width: 140px; }
+    .hc-proleads-col-status { width: 150px; }
+    .hc-proleads-col-urgency { width: 118px; }
+    .hc-proleads-col-created { width: 148px; }
+    .hc-proleads-col-next { width: 190px; }
+    .hc-proleads-col-actions { width: 142px; }
+    .hc-proleads-contact,
+    .hc-proleads-orgline,
+    .hc-proleads-cityline,
+    .hc-proleads-next {
+      min-width: 0;
+    }
+    .hc-proleads-name,
+    .hc-proleads-org,
+    .hc-proleads-email,
+    .hc-proleads-phone,
+    .hc-proleads-profession,
+    .hc-proleads-source,
+    .hc-proleads-next__main,
+    .hc-proleads-next__sub {
       display: block;
-      color: rgba(15, 23, 42, .68);
-      font-size: .84rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.2;
+      line-height: 1.24;
+    }
+    .hc-proleads-name {
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .hc-proleads-org,
+    .hc-proleads-phone,
+    .hc-proleads-source,
+    .hc-proleads-next__sub {
+      color: rgba(15, 23, 42, .58);
+      font-size: .8rem;
     }
     .hc-proleads-email {
-      display: block;
       max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.25;
+      color: #1d4ed8;
+      text-decoration: none;
+    }
+    .hc-proleads-email:hover {
+      text-decoration: underline;
     }
     .hc-proleads-email.is-synthetic {
-      color: rgba(15, 23, 42, .62);
+      color: rgba(15, 23, 42, .58);
       font-style: italic;
       text-decoration: none;
       cursor: help;
     }
-    .hc-proleads-phone {
-      display: block;
-      color: rgba(15, 23, 42, .66);
-      font-size: .82rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
+    .hc-proleads-priority {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 86px;
+      border-radius: 999px;
+      padding: .22rem .5rem;
+      font-size: .76rem;
+      font-weight: 700;
+      border: 1px solid rgba(15, 23, 42, .1);
+      background: #f8fafc;
+      color: #475569;
     }
-    .hc-admin-table .hc-td-action,
-    .hc-proleads-col-actions { white-space: nowrap; width: 1%; }
-    .hc-proleads-card + .hc-proleads-card { margin-top: .75rem; }
-    .hc-proleads-card__meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem .75rem; }
-    .hc-proleads-card__label { display: block; font-size: .75rem; color: rgba(15, 23, 42, .6); text-transform: uppercase; letter-spacing: .03em; }
-    .hc-proleads-table th,
-    .hc-proleads-table td { vertical-align: middle; }
-    .hc-proleads-table td { padding-top: .5rem; padding-bottom: .5rem; }
-    .hc-proleads-table th:nth-child(1),
-    .hc-proleads-table td:nth-child(1) { width: 72px; white-space: nowrap; }
-    .hc-proleads-table th:nth-child(5),
-    .hc-proleads-table td:nth-child(5),
-    .hc-proleads-table th:nth-child(6),
-    .hc-proleads-table td:nth-child(6),
-    .hc-proleads-table th:nth-child(7),
-    .hc-proleads-table td:nth-child(7) { white-space: nowrap; }
-    .hc-proleads-table th:last-child,
-    .hc-proleads-table td:last-child { width: 1%; white-space: nowrap; }
-    .hc-proleads-table td:nth-child(3),
-    .hc-proleads-table td:nth-child(4) { min-width: 0; }
-    .hc-proleads-table td:nth-child(3) > div:first-child,
-    .hc-proleads-table td:nth-child(4) > div:first-child {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.25;
+    .hc-proleads-priority--prioritaire {
+      background: #fef2f2;
+      border-color: rgba(220, 38, 38, .22);
+      color: #b91c1c;
     }
-    .hc-proleads-table .badge { vertical-align: middle; }
     .hc-proleads-screening {
       margin-top: .3rem;
       color: #8a5a00;
       font-size: .75rem;
       line-height: 1.25;
     }
-    .hc-proleads-col-actions .btn { line-height: 1.1; }
+    .hc-proleads-card + .hc-proleads-card {
+      margin-top: .75rem;
+    }
+    .hc-proleads-card__meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .5rem .75rem;
+    }
+    .hc-proleads-card__label {
+      display: block;
+      font-size: .74rem;
+      color: rgba(15, 23, 42, .58);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
     .hc-proleads-desktop { display: block; }
     .hc-proleads-mobile { display: none; }
-    @media (max-width: 767.98px){
+    @media (max-width: 1199.98px) {
+      .hc-proleads-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 767.98px) {
+      .hc-proleads-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .hc-proleads-desktop { display: none; }
       .hc-proleads-mobile { display: block; }
     }
-    @media (max-width: 575.98px){
+    @media (max-width: 575.98px) {
+      .hc-proleads-kpis { grid-template-columns: 1fr; }
       .hc-proleads-card__meta { grid-template-columns: 1fr; }
     }
   </style>
 {% endblock %}
 
-{% block content %}
-{% macro urgency_badge(lead) -%}
-  {% set urgency_text = ((lead.availability or '') ~ ' ' ~ (lead.message or ''))|lower %}
-  {% set is_urgent = 'urgence' in urgency_text or 'urgent' in urgency_text or 'asap' in urgency_text %}
-  <span class="badge {{ 'text-bg-danger' if is_urgent else 'text-bg-light border' }}">{{ 'Urgent' if is_urgent else 'Normal' }}</span>
-{%- endmacro %}
+{% block admin_content %}
 {% macro lead_status_badge(status) -%}
   {% set meta = professional_lead_status_meta(status) %}
   <span class="{{ meta.badge_class }}">{{ meta.label }}</span>
 {%- endmacro %}
+{% macro synthetic_email(email) -%}
+  {% set email_lower = (email or '')|lower %}
+  {{ email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') }}
+{%- endmacro %}
 {% set page_title = page_title|default('Leads professionnels') %}
-{% set page_intro = page_intro|default('Derniers leads captés via /professionnels/pilote.') %}
+{% set page_intro = page_intro|default('Pipeline de qualification des contacts professionnels, institutionnels et partenaires.') %}
 {% set reset_endpoint = reset_endpoint|default('admin.admin_professional_leads') %}
+{% set lead_metrics = lead_metrics or {} %}
+{% set lead_insights = lead_insights or {} %}
 
-<section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell">
-  <header class="hc-admin-toolbar">
-    <div>
-      <h1 class="hc-admin-title mb-1">{{ page_title }}</h1>
-      <p class="hc-muted mb-0">{{ page_intro }}</p>
+<section class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell hc-admin-list-shell">
+  <div class="hc-card hc-proleads-hero hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title mb-1">{{ page_title }}</h1>
+        <div class="hc-muted">{{ page_intro }}</div>
+        <div class="small text-muted mt-1">
+          Console de suivi pour qualification, premier contact, pilote et echanges professionnels.
+        </div>
+        <div class="hc-proleads-hero__meta" aria-label="Contexte du pipeline">
+          <span class="hc-proleads-chip">{{ lead_metrics.get('total', leads|length) }} lead{% if lead_metrics.get('total', leads|length) != 1 %}s{% endif %} visible{% if lead_metrics.get('total', leads|length) != 1 %}s{% endif %}</span>
+          <span class="hc-proleads-chip">Source: professionnels, contact, imports</span>
+          {% if active_filters %}<span class="hc-proleads-chip">Filtres actifs</span>{% endif %}
+        </div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_demo_leads') }}">Vue demo</a>
     </div>
-  </header>
+  </div>
 
-  <form method="GET" class="hc-card hc-admin-filterbar">
+  <section class="hc-proleads-kpis" aria-label="Indicateurs du pipeline leads">
+    <article class="hc-proleads-kpi hc-proleads-kpi--new">
+      <span class="hc-proleads-kpi__label">Nouveaux leads</span>
+      <strong class="hc-proleads-kpi__value">{{ lead_metrics.get('new', 0) }}</strong>
+      <div class="hc-proleads-kpi__hint">Entrants non traites</div>
+    </article>
+    <article class="hc-proleads-kpi hc-proleads-kpi--qualify">
+      <span class="hc-proleads-kpi__label">A qualifier</span>
+      <strong class="hc-proleads-kpi__value">{{ lead_metrics.get('to_qualify', 0) }}</strong>
+      <div class="hc-proleads-kpi__hint">Nouveaux ou importes</div>
+    </article>
+    <article class="hc-proleads-kpi hc-proleads-kpi--priority">
+      <span class="hc-proleads-kpi__label">Prioritaires</span>
+      <strong class="hc-proleads-kpi__value">{{ lead_metrics.get('priority', 0) }}</strong>
+      <div class="hc-proleads-kpi__hint">Urgence ou relance attendue</div>
+    </article>
+    <article class="hc-proleads-kpi hc-proleads-kpi--followup">
+      <span class="hc-proleads-kpi__label">A relancer</span>
+      <strong class="hc-proleads-kpi__value">{{ lead_metrics.get('followup_due', 0) }}</strong>
+      <div class="hc-proleads-kpi__hint">Suivi commercial prudent</div>
+    </article>
+    <article class="hc-proleads-kpi hc-proleads-kpi--qualified">
+      <span class="hc-proleads-kpi__label">Qualifies</span>
+      <strong class="hc-proleads-kpi__value">{{ lead_metrics.get('qualified', 0) }}</strong>
+      <div class="hc-proleads-kpi__hint">Prets pour echange</div>
+    </article>
+  </section>
+
+  <form method="GET" class="hc-card hc-admin-filterbar hc-proleads-filterbar">
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+      <div>
+        <div class="hc-proleads-filter-title">Filtrer le pipeline</div>
+        <div class="hc-muted small">Recherche operationnelle par contact, fonction, ville et statut.</div>
+      </div>
+      {% if active_filters %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(reset_endpoint) }}">Reinitialiser</a>
+      {% endif %}
+    </div>
+
     <div class="hc-admin-filtergrid">
       <div class="hc-admin-filtergrid__item hc-admin-filtergrid__item--grow">
-      <label class="hc-muted" for="q">L’e-mail contient</label>
-      <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="ex. orange.fr" />
-    </div>
+        <label class="hc-muted" for="q">L'e-mail contient</label>
+        <input id="q" name="q" value="{{ q }}" class="hc-input" placeholder="ex. collectivite.fr" />
+      </div>
 
       <div class="hc-admin-filtergrid__item">
-      <label class="hc-muted" for="profession">Profession</label>
-      <select id="profession" name="profession" class="hc-input">
-        <option value="">Toutes</option>
-        {% for p in professions %}
-          <option value="{{ p }}" {% if p == profession %}selected{% endif %}>{{ p }}</option>
-        {% endfor %}
-      </select>
-    </div>
+        <label class="hc-muted" for="profession">Profession</label>
+        <select id="profession" name="profession" class="hc-input">
+          <option value="">Toutes</option>
+          {% for p in professions %}
+            <option value="{{ p }}" {% if p == profession %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
       <div class="hc-admin-filtergrid__item">
-      <label class="hc-muted" for="city">Ville</label>
-      <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="Ville" />
-    </div>
+        <label class="hc-muted" for="city">Ville</label>
+        <input id="city" name="city" value="{{ city }}" class="hc-input" placeholder="Ville" />
+      </div>
 
       <div class="hc-admin-filtergrid__item">
-      <label class="hc-muted" for="status">Statut</label>
-      <select id="status" name="status" class="hc-input">
-        <option value="">Tous</option>
-        {% for s in status_choices %}
-          <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>
-        {% endfor %}
-      </select>
-    </div>
+        <label class="hc-muted" for="status">Statut</label>
+        <select id="status" name="status" class="hc-input">
+          <option value="">Tous</option>
+          {% for s in status_choices %}
+            {% set sm = professional_lead_status_meta(s) %}
+            <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ sm.label }}</option>
+          {% endfor %}
+        </select>
+      </div>
     </div>
 
     <div class="hc-admin-actions">
       <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(reset_endpoint) }}">Réinitialiser</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(reset_endpoint) }}">Reinitialiser</a>
     </div>
   </form>
 
@@ -160,41 +318,52 @@
     <div class="hc-card__header hc-admin-table-toolbar">
       <div>
         <h2 class="hc-section-title mb-1">Pipeline professionnels</h2>
-        <div class="hc-section-subtitle">Contacts, statut, urgence et prochaine action de qualification.</div>
+        <div class="hc-section-subtitle">Qualification, relances et prochaines actions sur les leads visibles.</div>
       </div>
+      <span class="badge text-bg-light border">{{ leads|length }} lignes</span>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table hc-proleads-table mb-0">
+        <colgroup>
+          <col class="hc-proleads-col-id">
+          <col class="hc-proleads-col-contact">
+          <col class="hc-proleads-col-org">
+          <col class="hc-proleads-col-city">
+          <col class="hc-proleads-col-status">
+          <col class="hc-proleads-col-urgency">
+          <col class="hc-proleads-col-created">
+          <col class="hc-proleads-col-next">
+          <col class="hc-proleads-col-actions">
+        </colgroup>
         <thead>
           <tr>
             <th>ID</th>
-            <th class="hc-proleads-col-contact">Contact</th>
-            <th>Professionnels</th>
-            <th>Citoyens</th>
-            <th>Créé le</th>
+            <th>Contact</th>
+            <th>Organisation / professionnel</th>
+            <th>Ville</th>
             <th>Statut</th>
             <th>Urgence</th>
-            <th class="text-end hc-proleads-col-actions">Actions</th>
+            <th>Cree le</th>
+            <th>Derniere activite / prochaine action</th>
+            <th class="text-end">Action</th>
           </tr>
         </thead>
         <tbody>
           {% for l in leads %}
             {% set lead_status = (l.status or 'new')|lower %}
             {% set is_screened = lead_status in ['invalid', 'spam'] %}
+            {% set insight = lead_insights.get(l.id, {}) %}
+            {% set email_lower = (l.email or '')|lower %}
+            {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
             <tr>
               <td class="small text-muted">#{{ l.id }}</td>
-              <td class="hc-proleads-col-contact">
+              <td>
                 <div class="hc-proleads-contact">
-                  <div class="hc-proleads-identity">
-                    {% if l.full_name %}
-                      <span class="hc-proleads-name" title="{{ l.full_name }}">{{ l.full_name }}</span>
-                    {% endif %}
-                    {% if l.organization %}
-                      <span class="hc-proleads-org" title="{{ l.organization }}">{{ l.organization }}</span>
-                    {% endif %}
-                  </div>
-                  {% set email_lower = (l.email or '')|lower %}
-                  {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
+                  {% if l.full_name %}
+                    <span class="hc-proleads-name" title="{{ l.full_name }}">{{ l.full_name }}</span>
+                  {% else %}
+                    <span class="hc-proleads-name text-muted">Contact non renseigne</span>
+                  {% endif %}
                   {% if is_synthetic_email %}
                     <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">Email indisponible</span>
                   {% else %}
@@ -204,24 +373,39 @@
                 </div>
               </td>
               <td>
-                <div>{{ l.profession or "—" }}</div>
-                {% if l.source %}<div class="hc-mutedSmall">{{ l.source }}</div>{% endif %}
+                <div class="hc-proleads-orgline">
+                  <span class="hc-proleads-profession" title="{{ l.profession or '' }}">{{ l.profession or "-" }}</span>
+                  <span class="hc-proleads-org" title="{{ l.organization or '' }}">{{ l.organization or "Organisation non renseignee" }}</span>
+                  {% if l.source %}<span class="hc-proleads-source">{{ l.source }}</span>{% endif %}
+                </div>
               </td>
               <td>
-                <div>{{ l.city or "—" }}</div>
-                {% if l.locale %}<div class="hc-mutedSmall">{{ l.locale|upper }}</div>{% endif %}
+                <div class="hc-proleads-cityline">
+                  <span>{{ l.city or "-" }}</span>
+                  {% if l.locale %}<span class="hc-proleads-source">{{ l.locale|upper }}</span>{% endif %}
+                </div>
               </td>
-              <td class="small text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "—" }}</td>
               <td>
                 {{ lead_status_badge(l.status) }}
                 {% if is_screened %}
                   <div class="hc-proleads-screening">
-                    Vérification{% if l.notes %} · {{ l.notes|truncate(80, True) }}{% endif %}
+                    Verification{% if l.notes %} · {{ l.notes|truncate(80, True) }}{% endif %}
                   </div>
                 {% endif %}
               </td>
-              <td>{{ urgency_badge(l) }}</td>
-              <td class="text-end hc-td-action hc-proleads-col-actions">
+              <td>
+                <span class="hc-proleads-priority hc-proleads-priority--{{ insight.get('urgency', 'standard') }}">
+                  {{ insight.get('urgency_label', 'Standard') }}
+                </span>
+              </td>
+              <td class="small text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "-" }}</td>
+              <td>
+                <div class="hc-proleads-next">
+                  <span class="hc-proleads-next__main">{{ insight.get('next_action', 'Ouvrir') }}</span>
+                  <span class="hc-proleads-next__sub">Derniere activite: {{ insight.get('last_activity_label', '-') }}</span>
+                </div>
+              </td>
+              <td class="text-end">
                 <div class="d-inline-flex flex-wrap justify-content-end gap-1">
                   <form method="POST" action="{{ url_for('admin.admin_professional_lead_mark_contacted', lead_id=l.id) }}" class="d-inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -233,10 +417,15 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="8" class="py-4">
+              <td colspan="9" class="py-5">
                 <div class="hc-empty-state">
-                  <div class="hc-empty-state__title">Aucun lead pour le moment</div>
-                  <div class="hc-empty-state__text">Les leads professionnels apparaîtront ici dès qu’ils seront captés ou importés.</div>
+                  <div class="hc-empty-state__title">Aucun lead professionnel pour le moment</div>
+                  <div class="hc-empty-state__text">
+                    Les contacts professionnels apparaitront ici lorsqu'ils seront collectes via les formulaires publics, les demandes de demonstration ou les imports.
+                  </div>
+                  <div class="mt-3">
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.professionnels') }}">Voir l'entree publique professionnels</a>
+                  </div>
                 </div>
               </td>
             </tr>
@@ -250,22 +439,18 @@
     {% for l in leads %}
       {% set lead_status = (l.status or 'new')|lower %}
       {% set is_screened = lead_status in ['invalid', 'spam'] %}
+      {% set insight = lead_insights.get(l.id, {}) %}
+      {% set email_lower = (l.email or '')|lower %}
+      {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
       <article class="hc-card hc-proleads-card">
         <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
           <div class="small text-muted">#{{ l.id }}</div>
           {{ lead_status_badge(l.status) }}
         </div>
         <div class="hc-proleads-contact mb-2">
-          <div class="hc-proleads-identity">
-            {% if l.full_name %}
-              <span class="hc-proleads-name" title="{{ l.full_name }}">{{ l.full_name }}</span>
-            {% endif %}
-            {% if l.organization %}
-              <span class="hc-proleads-org" title="{{ l.organization }}">{{ l.organization }}</span>
-            {% endif %}
-          </div>
-          {% set email_lower = (l.email or '')|lower %}
-          {% set is_synthetic_email = email_lower.startswith('no-email+') and email_lower.endswith('@esante-fhir.local') %}
+          {% if l.full_name %}
+            <span class="hc-proleads-name" title="{{ l.full_name }}">{{ l.full_name }}</span>
+          {% endif %}
           {% if is_synthetic_email %}
             <span class="hc-proleads-email is-synthetic" title="{{ l.email }}">Email indisponible</span>
           {% else %}
@@ -276,24 +461,32 @@
         <div class="hc-proleads-card__meta mb-2">
           <div>
             <span class="hc-proleads-card__label">Profession / Ville</span>
-            <div>{{ l.profession or "—" }}{% if l.city %} • {{ l.city }}{% endif %}</div>
-          </div>
-          <div>
-            <span class="hc-proleads-card__label">Créé le</span>
-            <div>{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "—" }}</div>
-          </div>
-          <div>
-            <span class="hc-proleads-card__label">Source</span>
-            <div>{{ l.source or "—" }}</div>
+            <div>{{ l.profession or "-" }}{% if l.city %} · {{ l.city }}{% endif %}</div>
           </div>
           <div>
             <span class="hc-proleads-card__label">Urgence</span>
-            <div>{{ urgency_badge(l) }}</div>
+            <div><span class="hc-proleads-priority hc-proleads-priority--{{ insight.get('urgency', 'standard') }}">{{ insight.get('urgency_label', 'Standard') }}</span></div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">Source</span>
+            <div>{{ l.source or "-" }}</div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">Prochaine action</span>
+            <div>{{ insight.get('next_action', 'Ouvrir') }}</div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">Cree le</span>
+            <div>{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "-" }}</div>
+          </div>
+          <div>
+            <span class="hc-proleads-card__label">Derniere activite</span>
+            <div>{{ insight.get('last_activity_label', '-') }}</div>
           </div>
           {% if is_screened %}
             <div>
-              <span class="hc-proleads-card__label">Vérification</span>
-              <div class="hc-proleads-screening">{{ l.notes|truncate(100, True) if l.notes else 'À revoir' }}</div>
+              <span class="hc-proleads-card__label">Verification</span>
+              <div class="hc-proleads-screening">{{ l.notes|truncate(100, True) if l.notes else 'A revoir' }}</div>
             </div>
           {% endif %}
         </div>
@@ -306,7 +499,12 @@
         </div>
       </article>
     {% else %}
-      <div class="hc-card text-center text-muted py-4">Aucun lead pour le moment.</div>
+      <div class="hc-card py-5">
+        <div class="hc-empty-state">
+          <div class="hc-empty-state__title">Aucun lead professionnel pour le moment</div>
+          <div class="hc-empty-state__text">Les contacts collectes ou importes apparaitront ici.</div>
+        </div>
+      </div>
     {% endfor %}
   </div>
 </section>

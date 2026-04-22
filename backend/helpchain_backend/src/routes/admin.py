@@ -7185,6 +7185,14 @@ def _render_notifications_list():
 @login_required
 @admin_required
 def admin_professional_leads():
+    empty_metrics = {
+        "total": 0,
+        "new": 0,
+        "to_qualify": 0,
+        "priority": 0,
+        "followup_due": 0,
+        "qualified": 0,
+    }
     if not _table_exists("professional_leads"):
         flash(
             "Professional leads table is not available in this environment yet.",
@@ -7200,6 +7208,9 @@ def admin_professional_leads():
                 status="",
                 status_choices=PROFESSIONAL_LEAD_STATUS_CHOICES,
                 professions=[],
+                lead_metrics=empty_metrics,
+                lead_insights={},
+                active_filters=False,
             ),
             200,
         )
@@ -7254,6 +7265,82 @@ def admin_professional_leads():
     )
     professions = [p[0] for p in professions if p and p[0]]
 
+    now_utc = datetime.now(UTC)
+    has_first_followup = _table_has_column("professional_leads", "first_followup_sent_at")
+    has_second_followup = _table_has_column("professional_leads", "second_followup_sent_at")
+    has_last_touched = _table_has_column("professional_leads", "last_touched_at")
+    lead_metrics = dict(empty_metrics)
+    lead_metrics["total"] = len(leads)
+    lead_insights = {}
+    for lead in leads:
+        status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+        created_at = _as_aware_utc(getattr(lead, "created_at", None))
+        contacted_at = _as_aware_utc(getattr(lead, "contacted_at", None))
+        last_touched_at = (
+            _as_aware_utc(getattr(lead, "last_touched_at", None))
+            if has_last_touched
+            else None
+        )
+        first_followup_sent_at = (
+            _as_aware_utc(getattr(lead, "first_followup_sent_at", None))
+            if has_first_followup
+            else None
+        )
+        second_followup_sent_at = (
+            _as_aware_utc(getattr(lead, "second_followup_sent_at", None))
+            if has_second_followup
+            else None
+        )
+        text_blob = " ".join(
+            str(getattr(lead, field_name, None) or "")
+            for field_name in ("availability", "message", "notes")
+        ).lower()
+        has_urgent_signal = any(
+            token in text_blob
+            for token in ("urgence", "urgent", "asap", "prioritaire", "critique")
+        )
+        is_uncontacted = contacted_at is None and status_key in {"new", "imported"}
+        is_followup_due = (
+            status_key == "new"
+            and created_at is not None
+            and created_at <= now_utc - timedelta(days=2)
+            and first_followup_sent_at is None
+        ) or (
+            status_key == "contacted"
+            and contacted_at is not None
+            and contacted_at <= now_utc - timedelta(days=3)
+            and second_followup_sent_at is None
+        )
+
+        if status_key == "new":
+            lead_metrics["new"] += 1
+        if status_key in {"new", "imported"}:
+            lead_metrics["to_qualify"] += 1
+        if status_key in {"qualified", "demo_scheduled", "pilot_discussion"}:
+            lead_metrics["qualified"] += 1
+        if has_urgent_signal or is_followup_due:
+            lead_metrics["priority"] += 1
+        if is_followup_due:
+            lead_metrics["followup_due"] += 1
+
+        last_activity_at = last_touched_at or contacted_at or created_at
+        lead_insights[int(lead.id)] = {
+            "urgency": "prioritaire" if has_urgent_signal or is_followup_due else "standard",
+            "urgency_label": "Prioritaire" if has_urgent_signal or is_followup_due else "Standard",
+            "next_action": (
+                "Relancer"
+                if is_followup_due
+                else "Qualifier"
+                if is_uncontacted
+                else "Suivre"
+                if status_key in {"contacted", "qualified"}
+                else "Archiver"
+                if status_key in {"rejected", "invalid", "spam"}
+                else "Ouvrir"
+            ),
+            "last_activity_label": _format_demo_touch_elapsed(last_activity_at),
+        }
+
     return (
         render_template(
             "admin/professional_leads.html",
@@ -7264,6 +7351,9 @@ def admin_professional_leads():
             status=status,
             status_choices=status_choices,
             professions=professions,
+            lead_metrics=lead_metrics,
+            lead_insights=lead_insights,
+            active_filters=bool(q or profession or city or status),
         ),
         200,
     )

@@ -624,7 +624,7 @@
                 {% set show_structure_admin = is_structure_admin %}
                 {% set show_ops_console = is_operator_role or is_structure_admin or is_global_admin %}
                 {% set ops_active = ep in ['ops.ops_workspace', 'ops.ops_cases_list', 'ops.ops_notifications_list', 'admin.admin_professionals_map', 'risk_api.professionals_map_page', 'admin.admin_risk_map'] or ep.startswith('social_requests.') %}
-                {% set platform_admin_active = ep in ['admin.admin_structures', 'admin.admin_volunteers', 'admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_security', 'admin.admin_system_health', 'admin.admin_demo_leads'] %}
+                {% set platform_admin_active = ep in ['admin.admin_structures', 'admin.admin_organization_access_requests', 'admin.admin_volunteers', 'admin.admin_roles', 'admin.admin_sla_breakdown', 'admin.admin_audit', 'admin.admin_security', 'admin.admin_system_health', 'admin.admin_demo_leads'] %}
                 {% set structure_admin_active = ep in ['admin.admin_requests', 'admin.admin_ops', 'admin.admin_risk_panel', 'admin.admin_system_health'] or ep.startswith('admin.admin_structure_') %}
 
                 {% if show_platform_admin %}
@@ -640,6 +640,7 @@
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminConsoleDropdown">
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_structures' or ep.startswith('admin.admin_structure_') else '' }}" href="{{ url_for('admin.admin_structures') }}">{{ _('Structures') }}</a></li>
+                    <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_organization_access_requests' else '' }}" href="{{ url_for('admin.admin_organization_access_requests') }}">{{ _('Demandes d acces') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep in ['admin.admin_intervenants', 'admin.admin_volunteers'] else '' }}" href="{{ url_for('admin.admin_intervenants') }}">{{ _('Intervenants') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_roles' else '' }}" href="{{ url_for('admin.admin_roles') }}">{{ _('Roles') }}</a></li>
                     <li><a class="dropdown-item {{ 'active' if ep == 'admin.admin_sla_breakdown' else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">{{ _('SLA') }}</a></li>
@@ -1476,6 +1477,7 @@
             <nav class="hc-footer__group" aria-label="{{ _('Collectivités et ressources') }}">
               <h3 class="hc-footer__title">{{ _('Ressources') }}</h3>
               <a class="hc-footer__link" href="{{ url_for('main.collectivites_associations') }}">{{ _('Pour les collectivités et associations') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.demander_acces') }}">{{ _('Demander un acces') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.cas_usage') }}">{{ _('Cas d’usage') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.pilotage_indicateurs') }}">{{ _('Pilotage & indicateurs') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.partenariats') }}">{{ _('Partenariats & déploiement territorial') }}</a>
