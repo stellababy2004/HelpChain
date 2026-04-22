@@ -122,6 +122,12 @@ from ..services.demo_data import (
 )
 from ..services.geocoding import request_address_display_text
 from ..services.ops_priority import compute_ops_priority
+from ..services.prospect_auto_capture import (
+    append_audience_context_to_notes,
+    captured_audience_session_targets,
+    extract_audience_context,
+    notes_without_audience_context,
+)
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 from ..services.risk_alerts import evaluate_case_alerts
@@ -7500,6 +7506,7 @@ def _build_audience_map_context() -> dict:
         for session_id, count in session_intent.most_common(6)
         if count >= 2
     ]
+    captured_sessions = captured_audience_session_targets()
     revenue_rows = []
     sessions_repeated_today = 0
     for session_id, bucket in session_events.items():
@@ -7533,6 +7540,7 @@ def _build_audience_map_context() -> dict:
                 "last_activity_label": _audience_relative_time(bucket["last_activity"], now),
                 "source": source,
                 "action": temperature["action"],
+                "captured_label": captured_sessions.get(session_id),
             }
         )
     revenue_rows.sort(key=lambda row: (row["score"], row["last_activity"] or datetime.min), reverse=True)
@@ -8481,6 +8489,10 @@ def admin_professional_lead_update_notes(lead_id: int):
     lead = ProfessionalLead.query.get_or_404(lead_id)
     old_notes = getattr(lead, "notes", None)
     new_notes = (request.form.get("notes") or "").strip() or None
+    new_notes = append_audience_context_to_notes(
+        new_notes,
+        extract_audience_context(old_notes),
+    )
 
     if old_notes != new_notes:
         lead.notes = new_notes
@@ -8612,7 +8624,10 @@ def admin_professional_lead_detail(lead_id: int):
             status = "new"
 
         lead.status = status
-        lead.notes = notes or None
+        lead.notes = append_audience_context_to_notes(
+            notes or None,
+            extract_audience_context(lead.notes),
+        )
         if status == "contacted" and not lead.contacted_at:
             lead.contacted_at = datetime.now(UTC)
         elif status != "contacted":
@@ -8629,6 +8644,8 @@ def admin_professional_lead_detail(lead_id: int):
             "admin/professional_lead_detail.html",
             lead=lead,
             status_choices=status_choices,
+            audience_context=extract_audience_context(lead.notes),
+            lead_notes=notes_without_audience_context(lead.notes),
         ),
         200,
     )

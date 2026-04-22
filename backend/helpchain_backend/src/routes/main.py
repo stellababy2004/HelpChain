@@ -78,6 +78,10 @@ from ..services.matching_v1 import dismiss_for as match_dismiss_for
 from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import mark_seen as match_mark_seen
 from ..services.geocoding import request_address_display_text
+from ..services.prospect_auto_capture import (
+    attach_session_intelligence_to_access_request,
+    attach_session_intelligence_to_professional_lead,
+)
 from ..statuses import normalize_request_status
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
@@ -4143,6 +4147,8 @@ def professionnels_pilote():
                 existing.notes,
                 _screening_note(screening_status, screening_reasons),
             )
+        else:
+            attach_session_intelligence_to_professional_lead(existing)
         db.session.commit()
         current_app.logger.info(
             "[PRO-LEAD] dedup hit email=%s existing_id=%s created_at=%s",
@@ -4188,6 +4194,8 @@ def professionnels_pilote():
         created_at=datetime.now(UTC),
     )
     db.session.add(lead)
+    if screening_status not in {"invalid", "spam"}:
+        attach_session_intelligence_to_professional_lead(lead)
     db.session.commit()
 
     if screening_status in {"invalid", "spam"}:
@@ -4358,6 +4366,7 @@ def demander_acces():
         updated_at=datetime.now(UTC),
     )
     db.session.add(row)
+    attach_session_intelligence_to_access_request(row)
     db.session.commit()
 
     flash(
@@ -4572,6 +4581,8 @@ def contact():
                     existing.notes,
                     _screening_note(screening_status, screening_reasons),
                 )
+            else:
+                attach_session_intelligence_to_professional_lead(existing)
             db.session.commit()
             lead = existing
         else:
@@ -4605,6 +4616,8 @@ def contact():
                 created_at=datetime.now(UTC),
             )
             db.session.add(lead)
+            if screening_status not in {"invalid", "spam"}:
+                attach_session_intelligence_to_professional_lead(lead)
             db.session.commit()
         if is_demo:
             current_app.logger.info("lead saved")

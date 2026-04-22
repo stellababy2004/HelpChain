@@ -16,6 +16,11 @@ from ..services.organization_onboarding import (
     mark_access_request_need_info,
     reject_access_request,
 )
+from ..services.prospect_auto_capture import (
+    append_audience_context_to_notes,
+    extract_audience_context,
+    notes_without_audience_context,
+)
 from .admin import (
     CLOSED_STATUSES,
     _require_global_admin,
@@ -151,6 +156,8 @@ def admin_organization_access_request_detail(req_id: int):
         render_template(
             "admin/organization_access_request_detail.html",
             access_request=row,
+            audience_context=extract_audience_context(row.internal_notes),
+            review_notes=notes_without_audience_context(row.internal_notes),
         ),
         200,
     )
@@ -163,9 +170,10 @@ def _reviewer_admin_id() -> int | None:
         return None
 
 
-def _review_notes() -> str | None:
+def _review_notes(row: OrganizationAccessRequest) -> str | None:
     notes = (request.form.get("internal_notes") or "").strip()
-    return notes or None
+    context = extract_audience_context(row.internal_notes)
+    return append_audience_context_to_notes(notes or None, context)
 
 
 @admin_bp.post("/organizations/requests/<int:req_id>/approve")
@@ -178,7 +186,7 @@ def admin_organization_access_request_approve(req_id: int):
         structure, admin_user = approve_access_request(
             row,
             reviewer_admin_id=_reviewer_admin_id(),
-            internal_notes=_review_notes(),
+            internal_notes=_review_notes(row),
         )
     except AccessRequestAlreadyApproved:
         flash("Cette demande a deja ete approuvee. Aucune structure supplementaire n'a ete creee.", "warning")
@@ -224,7 +232,7 @@ def admin_organization_access_request_reject(req_id: int):
         reject_access_request(
             row,
             reviewer_admin_id=_reviewer_admin_id(),
-            internal_notes=_review_notes(),
+            internal_notes=_review_notes(row),
         )
     except AccessRequestAlreadyApproved:
         flash("Cette demande est deja approuvee et ne peut plus etre rejetee.", "warning")
@@ -246,7 +254,7 @@ def admin_organization_access_request_need_info(req_id: int):
         mark_access_request_need_info(
             row,
             reviewer_admin_id=_reviewer_admin_id(),
-            internal_notes=_review_notes(),
+            internal_notes=_review_notes(row),
         )
     except AccessRequestAlreadyApproved:
         flash("Cette demande est deja approuvee et ne peut plus etre modifiee.", "warning")

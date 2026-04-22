@@ -89,6 +89,49 @@
     </div>
   </div>
 
+  {% if audience_context %}
+    <div class="hc-card mt-3">
+      <div class="hc-card__section hc-card__section--header">
+        <strong>Audience avant conversion</strong>
+        <span class="hc-muted small">Historique anonyme rattache apres soumission volontaire du formulaire.</span>
+      </div>
+      <div class="p-3">
+        <div class="row g-3">
+          <div class="col-6 col-lg-3">
+            <div class="hc-muted small">Score radar</div>
+            <div class="fw-semibold">{{ audience_context.score }} - {{ audience_context.temperature }}</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="hc-muted small">Pages vues</div>
+            <div class="fw-semibold">{{ audience_context.page_count }}</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="hc-muted small">Source</div>
+            <div class="fw-semibold">{{ audience_context.source or 'Direct' }}</div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="hc-muted small">Session repetee</div>
+            <div class="fw-semibold">{{ 'Oui' if audience_context.repeat_visit else 'Non' }}</div>
+          </div>
+        </div>
+        <dl class="row mt-3 mb-0">
+          <dt class="col-sm-3 text-muted">Premiere visite</dt>
+          <dd class="col-sm-9">{{ audience_context.first_seen_at or '-' }}</dd>
+          <dt class="col-sm-3 text-muted">Derniere visite</dt>
+          <dd class="col-sm-9">{{ audience_context.last_seen_at or '-' }}</dd>
+          <dt class="col-sm-3 text-muted">Pages consultees</dt>
+          <dd class="col-sm-9">
+            {% for page in audience_context.pages_viewed or [] %}
+              <code class="me-1">{{ page }}</code>
+            {% else %}
+              -
+            {% endfor %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  {% endif %}
+
   <div class="hc-card mt-3">
     <div class="hc-card__section hc-card__section--header">
       <strong>Revue interne</strong>
@@ -99,7 +142,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
           <label class="form-label" for="internal_notes">Notes internes</label>
-          <textarea class="form-control" id="internal_notes" name="internal_notes" rows="5" placeholder="Contexte de qualification, decision, points a verifier...">{{ access_request.internal_notes or '' }}</textarea>
+          <textarea class="form-control" id="internal_notes" name="internal_notes" rows="5" placeholder="Contexte de qualification, decision, points a verifier...">{{ review_notes or '' }}</textarea>
           <div class="form-text">Les notes sont enregistrees avec l'action choisie.</div>
         </div>
 
