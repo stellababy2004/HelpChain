@@ -596,6 +596,27 @@ def create_app(config_object=None) -> Flask:
             pass
         return resp
 
+    @app.after_request
+    def track_audience_page_view_feed(resp):
+        try:
+            from .services.audience_feed import (
+                should_track_audience_page_view,
+                track_audience_page_view,
+            )
+
+            if should_track_audience_page_view(
+                request.path,
+                request.method,
+                int(getattr(resp, "status_code", 500) or 500),
+            ):
+                track_audience_page_view()
+        except Exception as exc:
+            try:
+                app.logger.info("Audience feed skipped: %s", exc)
+            except Exception:
+                pass
+        return resp
+
     # Ensure models are imported so Alembic sees them
     with app.app_context():
         # Single canonical model import (avoid multiple MetaData instances)
