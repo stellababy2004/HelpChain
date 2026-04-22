@@ -8,6 +8,14 @@ from sqlalchemy import and_, func, or_
 
 from backend.extensions import db
 from ..models import AdminUser, OrganizationAccessRequest, Request, Structure
+from ..services.organization_onboarding import (
+    AccessRequestAlreadyApproved,
+    AccessRequestEmailAlreadyUsed,
+    AccessRequestNotApprovable,
+    approve_access_request,
+    mark_access_request_need_info,
+    reject_access_request,
+)
 from .admin import (
     CLOSED_STATUSES,
     _require_global_admin,
@@ -130,6 +138,123 @@ def admin_organization_access_requests():
             access_requests=rows,
         ),
         200,
+    )
+
+
+@admin_bp.get("/organizations/requests/<int:req_id>")
+@admin_required
+@admin_role_required("superadmin")
+def admin_organization_access_request_detail(req_id: int):
+    _require_global_admin()
+    row = OrganizationAccessRequest.query.get_or_404(req_id)
+    return (
+        render_template(
+            "admin/organization_access_request_detail.html",
+            access_request=row,
+        ),
+        200,
+    )
+
+
+def _reviewer_admin_id() -> int | None:
+    try:
+        return int(getattr(current_user, "id", None))
+    except (TypeError, ValueError):
+        return None
+
+
+def _review_notes() -> str | None:
+    notes = (request.form.get("internal_notes") or "").strip()
+    return notes or None
+
+
+@admin_bp.post("/organizations/requests/<int:req_id>/approve")
+@admin_required
+@admin_role_required("superadmin")
+def admin_organization_access_request_approve(req_id: int):
+    _require_global_admin()
+    row = OrganizationAccessRequest.query.get_or_404(req_id)
+    try:
+        structure, admin_user = approve_access_request(
+            row,
+            reviewer_admin_id=_reviewer_admin_id(),
+            internal_notes=_review_notes(),
+        )
+    except AccessRequestAlreadyApproved:
+        flash("Cette demande a deja ete approuvee. Aucune structure supplementaire n'a ete creee.", "warning")
+    except AccessRequestEmailAlreadyUsed:
+        flash("Un administrateur utilise deja cet email. Approbation interrompue.", "danger")
+    except AccessRequestNotApprovable:
+        flash("Cette demande ne peut pas etre approuvee dans son statut actuel.", "danger")
+    except Exception:
+        flash("L'approbation a echoue. Aucune creation partielle n'a ete conservee.", "danger")
+        raise
+    else:
+        audit_admin_action(
+            action="ORGANIZATION_ACCESS_APPROVED",
+            target_type="OrganizationAccessRequest",
+            target_id=row.id,
+            payload={
+                "structure": {
+                    "id": structure.id,
+                    "name": structure.name,
+                    "slug": structure.slug,
+                },
+                "admin_user_id": admin_user.id,
+                "actor": {
+                    "admin_user_id": getattr(current_user, "id", None),
+                    "username": getattr(current_user, "username", None),
+                },
+            },
+        )
+        flash("Demande approuvee. Structure et administrateur crees.", "success")
+    return redirect(
+        url_for("admin.admin_organization_access_request_detail", req_id=row.id),
+        code=303,
+    )
+
+
+@admin_bp.post("/organizations/requests/<int:req_id>/reject")
+@admin_required
+@admin_role_required("superadmin")
+def admin_organization_access_request_reject(req_id: int):
+    _require_global_admin()
+    row = OrganizationAccessRequest.query.get_or_404(req_id)
+    try:
+        reject_access_request(
+            row,
+            reviewer_admin_id=_reviewer_admin_id(),
+            internal_notes=_review_notes(),
+        )
+    except AccessRequestAlreadyApproved:
+        flash("Cette demande est deja approuvee et ne peut plus etre rejetee.", "warning")
+    else:
+        flash("Demande rejetee.", "success")
+    return redirect(
+        url_for("admin.admin_organization_access_request_detail", req_id=row.id),
+        code=303,
+    )
+
+
+@admin_bp.post("/organizations/requests/<int:req_id>/need-info")
+@admin_required
+@admin_role_required("superadmin")
+def admin_organization_access_request_need_info(req_id: int):
+    _require_global_admin()
+    row = OrganizationAccessRequest.query.get_or_404(req_id)
+    try:
+        mark_access_request_need_info(
+            row,
+            reviewer_admin_id=_reviewer_admin_id(),
+            internal_notes=_review_notes(),
+        )
+    except AccessRequestAlreadyApproved:
+        flash("Cette demande est deja approuvee et ne peut plus etre modifiee.", "warning")
+    else:
+        flash("Demande marquee comme information complementaire requise.", "success")
+    return redirect(
+        url_for("admin.admin_organization_access_request_detail", req_id=row.id),
+        code=303,
     )
 
 

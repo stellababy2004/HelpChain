@@ -1,0 +1,130 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Demande d'acces #{{ access_request.id }} | {{ _('Admin') }}{% endblock %}
+{% block admin_body_class %} hc-admin-structures-page hc-density-compact{% endblock %}
+
+{% block admin_content %}
+{% set status = (access_request.status or 'new')|lower %}
+{% set status_labels = {
+  'new': 'Nouveau',
+  'reviewed': 'Revu',
+  'approved': 'Approuve',
+  'rejected': 'Rejete',
+  'need_info': 'Information requise'
+} %}
+{% set status_classes = {
+  'new': 'text-bg-primary',
+  'reviewed': 'text-bg-info text-dark',
+  'approved': 'text-bg-success',
+  'rejected': 'text-bg-secondary',
+  'need_info': 'text-bg-warning text-dark'
+} %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--wide">
+  <div class="hc-card hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+          <h1 class="hc-admin-title mb-0">{{ access_request.organization_name }}</h1>
+          <span class="badge {{ status_classes.get(status, 'text-bg-light border') }}">{{ status_labels.get(status, status) }}</span>
+        </div>
+        <div class="hc-muted">Demande institutionnelle #{{ access_request.id }} recue via /demander-acces</div>
+        <div class="small text-muted mt-1">
+          Cree le {{ access_request.created_at.strftime('%Y-%m-%d %H:%M') if access_request.created_at else '-' }}
+          {% if access_request.reviewed_at %} - Revue le {{ access_request.reviewed_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+        </div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_organization_access_requests') }}">Retour</a>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12 col-xl-7">
+      <div class="hc-card h-100">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Informations de la structure</strong>
+          <span class="hc-muted small">Donnees transmises par le contact.</span>
+        </div>
+        <div class="p-3">
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted">Structure</dt>
+            <dd class="col-sm-8">{{ access_request.organization_name }}</dd>
+
+            <dt class="col-sm-4 text-muted">Type</dt>
+            <dd class="col-sm-8">{{ access_request.org_type or '-' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Ville</dt>
+            <dd class="col-sm-8">{{ access_request.city or '-' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Utilisateurs estimes</dt>
+            <dd class="col-sm-8">{{ access_request.estimated_users if access_request.estimated_users is not none else '-' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Contact</dt>
+            <dd class="col-sm-8">{{ access_request.contact_name }}</dd>
+
+            <dt class="col-sm-4 text-muted">Email</dt>
+            <dd class="col-sm-8"><a href="mailto:{{ access_request.email }}">{{ access_request.email }}</a></dd>
+
+            <dt class="col-sm-4 text-muted">Telephone</dt>
+            <dd class="col-sm-8">{{ access_request.phone or '-' }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+      <div class="hc-card h-100">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Contexte / besoin</strong>
+        </div>
+        <div class="p-3">
+          {% if access_request.message %}
+            <p class="mb-0">{{ access_request.message }}</p>
+          {% else %}
+            <div class="hc-empty-state">
+              <div class="hc-empty-state__title">Aucun message</div>
+              <div class="hc-empty-state__text">La demande ne contient pas de contexte detaille.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mt-3">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Revue interne</strong>
+      <span class="hc-muted small">Les notes restent internes a l'equipe HelpChain.</span>
+    </div>
+    <div class="p-3">
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label" for="internal_notes">Notes internes</label>
+          <textarea class="form-control" id="internal_notes" name="internal_notes" rows="5" placeholder="Contexte de qualification, decision, points a verifier...">{{ access_request.internal_notes or '' }}</textarea>
+          <div class="form-text">Les notes sont enregistrees avec l'action choisie.</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            class="btn btn-primary"
+            type="submit"
+            formaction="{{ url_for('admin.admin_organization_access_request_approve', req_id=access_request.id) }}"
+            {% if status == 'approved' %}disabled{% endif %}
+          >Approuver et creer la structure</button>
+          <button
+            class="btn btn-outline-warning"
+            type="submit"
+            formaction="{{ url_for('admin.admin_organization_access_request_need_info', req_id=access_request.id) }}"
+            {% if status == 'approved' %}disabled{% endif %}
+          >Demander des informations</button>
+          <button
+            class="btn btn-outline-secondary"
+            type="submit"
+            formaction="{{ url_for('admin.admin_organization_access_request_reject', req_id=access_request.id) }}"
+            {% if status == 'approved' %}disabled{% endif %}
+          >Rejeter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -18,7 +18,7 @@
   <div class="hc-card hc-admin-table-shell">
     <div class="hc-card__section hc-card__section--header">
       <strong>Demandes entrantes</strong>
-      <span class="hc-muted small">Vue de lecture seule. Les actions d'approbation seront ajoutees dans une phase ulterieure.</span>
+      <span class="hc-muted small">Vue de suivi des demandes institutionnelles et de leur statut de revue.</span>
     </div>
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-hover align-middle hc-admin-table mb-0">
@@ -32,6 +32,7 @@
             <th scope="col">Email</th>
             <th scope="col" class="text-center">Utilisateurs</th>
             <th scope="col" class="text-center">Statut</th>
+            <th scope="col" class="text-end">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -39,7 +40,7 @@
           <tr>
             <td class="small text-muted">{{ row.created_at.strftime('%Y-%m-%d %H:%M') if row.created_at else '-' }}</td>
             <td>
-              <strong>{{ row.organization_name }}</strong>
+              <a class="fw-semibold" href="{{ url_for('admin.admin_organization_access_request_detail', req_id=row.id) }}">{{ row.organization_name }}</a>
               {% if row.message %}
                 <div class="hc-mutedSmall">{{ row.message|truncate(90, True) }}</div>
               {% endif %}
@@ -55,10 +56,13 @@
                 {{ 'Nouveau' if status == 'new' else status }}
               </span>
             </td>
+            <td class="text-end">
+              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_organization_access_request_detail', req_id=row.id) }}">Ouvrir</a>
+            </td>
           </tr>
           {% else %}
           <tr>
-            <td colspan="8">
+            <td colspan="9">
               <div class="hc-empty-state">
                 <div class="hc-empty-state__title">Aucune demande d'acces</div>
                 <div class="hc-empty-state__text">Les demandes institutionnelles apparaitront ici des qu'elles seront transmises.</div>
