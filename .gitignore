@@ -239,3 +239,8 @@ _backup_before_encoding_fix_*/
 _safety_before_full_restore_*/
 
 *.bak_*
+
+# Local cleanup artifacts
+_archive/
+_inventory/
+
