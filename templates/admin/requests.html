@@ -423,20 +423,24 @@
         {% else %}
           {% set row_priority = 'LOW' %}
         {% endif %}
-        {% set row_status_raw = ((r.status or '')|upper) %}
-        {% if row_status_raw in ['NEW', 'OPEN', 'PENDING'] %}
-          {% set row_status = 'NEW' %}
-        {% elif row_status_raw in ['ASSIGNED'] %}
-          {% set row_status = 'ASSIGNED' %}
-        {% elif row_status_raw in ['IN_PROGRESS', 'IN PROGRESS', 'APPROVED'] %}
-          {% set row_status = 'IN_PROGRESS' %}
-        {% elif row_status_raw in ['COMPLETED', 'DONE'] %}
-          {% set row_status = 'COMPLETED' %}
-        {% elif row_status_raw in ['CLOSED', 'CANCELLED', 'CANCELED', 'REJECTED'] %}
-          {% set row_status = 'CLOSED' %}
+        {% set row_status_raw = ((r.status or '')|lower) %}
+        {% if row_status_raw in ['new', 'pending', 'open'] %}
+          {% set row_status = 'pending' %}
+        {% elif row_status_raw in ['approved', 'in_progress', 'in progress'] %}
+          {% set row_status = 'in_progress' %}
+        {% elif row_status_raw in ['done', 'completed'] %}
+          {% set row_status = 'done' %}
+        {% elif row_status_raw in ['rejected', 'cancelled', 'canceled', 'closed'] %}
+          {% set row_status = 'rejected' %}
         {% else %}
           {% set row_status = row_status_raw %}
         {% endif %}
+        {% set row_status_bucket = {
+          'pending': 'NEW',
+          'in_progress': 'IN_PROGRESS',
+          'done': 'COMPLETED',
+          'rejected': 'CLOSED'
+        }.get(row_status, row_status|upper) %}
         {% if not r.owner_id %}
           {% set owner_state = 'free' %}
         {% elif r.owner_id == current_user.id %}
@@ -457,7 +461,7 @@
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
             data-request-id="{{ r.id }}"
-            data-hc-status-row="{{ row_status }}"
+            data-hc-status-row="{{ row_status_bucket }}"
             data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
             data-owner-id="{{ r.owner_id or '' }}"
             data-owner-state="{{ owner_state }}"
@@ -499,35 +503,28 @@
             </div>
           </td>
           <td class="hc-col-status">
-          {% set status_key = (r.status or '')|lower %}
-          {% set status_norm = status_key %}
-          {% if status_norm in ['new', 'pending'] %}
-            {% set status_norm = 'open' %}
-          {% elif status_norm in ['approved'] %}
-            {% set status_norm = 'in_progress' %}
-          {% elif status_norm in ['done', 'completed'] %}
-            {% set status_norm = 'done' %}
-          {% elif status_norm in ['rejected', 'cancelled', 'canceled', 'closed'] %}
-            {% set status_norm = 'cancelled' %}
-          {% endif %}
+          {% set status_key = row_status %}
+          {% set status_norm = row_status %}
           {% set status_inline_label = {
-            'open': _('Open'),
+            'pending': _('New'),
             'in_progress': _('In progress'),
             'done': _('Completed'),
-            'cancelled': _('Rejected')
+            'rejected': _('Rejected')
           }.get(status_norm, _(STATUS_LABELS.get(r.status, r.status))) %}
           {% set status_class = {
               'new':'bg-primary',
               'pending':'bg-primary',
               'open':'bg-primary',
               'in_progress':'bg-warning text-dark',
+              'in progress':'bg-warning text-dark',
               'approved':'bg-warning text-dark',
               'done':'bg-success',
               'completed':'bg-success',
               'rejected':'bg-secondary',
               'cancelled':'bg-secondary',
+              'canceled':'bg-secondary',
               'closed':'bg-secondary'
-            }.get(status_key, 'bg-secondary') %}
+            }.get(status_norm, 'bg-secondary') %}
             <div class="hc-statusmenu-wrap" data-no-rowclick>
               <details class="hc-statusmenu" data-no-rowclick data-request-id="{{ r.id }}" data-csrf="{{ csrf_token() }}">
                 <summary class="badge {{ status_class }} hc-statusmenu__summary" data-no-rowclick>
@@ -535,11 +532,11 @@
                   <span class="hc-statusmenu__chev" aria-hidden="true">▾</span>
                 </summary>
                 <div class="hc-statusmenu__list" data-no-rowclick>
-                  <button type="button" class="hc-statusmenu__item" data-status-target="open" data-status-label="{{ _('New') }}" data-no-rowclick>{{ _('New') }}</button>
-                  <button type="button" class="hc-statusmenu__item" data-status-target="open" data-status-label="{{ _('Open') }}" data-no-rowclick>{{ _('Open') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('New') }}" data-no-rowclick>{{ _('New') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('Open') }}" data-no-rowclick>{{ _('Open') }}</button>
                   <button type="button" class="hc-statusmenu__item" data-status-target="in_progress" data-status-label="{{ _('In progress') }}" data-no-rowclick>{{ _('In progress') }}</button>
                   <button type="button" class="hc-statusmenu__item" data-status-target="done" data-status-label="{{ _('Completed') }}" data-no-rowclick>{{ _('Completed') }}</button>
-                  <button type="button" class="hc-statusmenu__item" data-status-target="cancelled" data-status-label="{{ _('Rejected') }}" data-no-rowclick>{{ _('Rejected') }}</button>
+                  <button type="button" class="hc-statusmenu__item" data-status-target="rejected" data-status-label="{{ _('Rejected') }}" data-no-rowclick>{{ _('Rejected') }}</button>
                 </div>
               </details>
               <span class="hc-statusmenu__flash small" aria-live="polite"></span>
