@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 $ErrorActionPreference = "Stop"
@@ -15,8 +15,8 @@ $env:FLASK_APP = "backend.appy:app"
 $env:FLASK_ENV = "development"
 $hostIp = "127.0.0.1"
 $port = 5005
-$expectedDbUri = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
-$expectedDbPath = "C:\dev\HelpChain.bg\backend\instance\app_clean.db"
+$expectedDbUri = "sqlite:///C:/dev/HelpChain/backend/instance/hc_local_dev.db"
+$expectedDbPath = "C:\dev\HelpChain\backend\instance\hc_local_dev.db"
 $env:SQLALCHEMY_DATABASE_URI = $expectedDbUri
 $env:HC_DB_PATH = $expectedDbPath
 

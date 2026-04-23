@@ -1,10 +1,10 @@
-Set-StrictMode -Version Latest
+﻿Set-StrictMode -Version Latest
 $ErrorActionPreference = "SilentlyContinue"
 
-$repo = "C:\dev\HelpChain.bg"
+$repo = "C:\dev\HelpChain"
 $python = Join-Path $repo ".venv\Scripts\python.exe"
-$dbPath = "C:\dev\HelpChain.bg\backend\instance\app_clean.db"
-$dbUri = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
+$dbPath = "C:\dev\HelpChain\backend\instance\hc_local_dev.db"
+$dbUri = "sqlite:///C:/dev/HelpChain/backend/instance/hc_local_dev.db"
 $port = 5000
 $healthUrl = "http://127.0.0.1:5000/admin/ops/login"
 $logDir = Join-Path $repo "tmp"

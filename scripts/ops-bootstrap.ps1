@@ -1,4 +1,4 @@
-param(
+﻿param(
   [string]$DatabaseUrl = $env:DATABASE_URL,
   [switch]$SkipVenv,
   [switch]$NoStart,
@@ -36,9 +36,9 @@ try {
 $py = Resolve-Python
 
 if (-not $DatabaseUrl) {
-  $DatabaseUrl = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
+  $DatabaseUrl = "sqlite:///C:/dev/HelpChain/backend/instance/hc_local_dev.db"
 }
-$canonicalDbUrl = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
+$canonicalDbUrl = "sqlite:///C:/dev/HelpChain/backend/instance/hc_local_dev.db"
 if ($DatabaseUrl -ne $canonicalDbUrl) {
   Write-Error "Refusing non-canonical DB target. Expected: $canonicalDbUrl ; Actual: $DatabaseUrl"
   exit 1

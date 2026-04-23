@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Username = "admin",
     [string]$Email = "admin@helpchain.live",
     [Parameter(Mandatory = $true)]
@@ -7,7 +7,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$Root = "c:\dev\HelpChain.bg"
+$Root = "C:\dev\HelpChain"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $InitAdmin = Join-Path $Root "init_admin.py"
 

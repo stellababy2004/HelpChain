@@ -1,11 +1,11 @@
-param(
+﻿param(
     [ValidateSet("start", "stop", "restart", "status", "logs", "serve")]
     [string]$Action = "serve"
 )
 
 $ErrorActionPreference = "Stop"
 
-$Root = "c:\dev\HelpChain.bg"
+$Root = "C:\dev\HelpChain"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $RunFile = Join-Path $Root "run.py"
 $TmpDir = Join-Path $Root "tmp"
@@ -14,7 +14,7 @@ $OutLog = Join-Path $TmpDir "server.out.log"
 $ErrLog = Join-Path $TmpDir "server.err.log"
 $Port = 5000
 $PreferredDb = Join-Path $Root "instance\hc_local_dev.db"
-$FallbackDb = Join-Path $Root "backend\instance\app_clean.db"
+$FallbackDb = Join-Path $Root "backend\instance\hc_local_dev.db"
 
 function Ensure-TmpDir {
     if (!(Test-Path $TmpDir)) {
@@ -52,7 +52,7 @@ function Set-HealthyDbEnv {
     }
     elseif (Test-HealthyDb $FallbackDb) {
         $selectedDb = $FallbackDb
-        Write-Output "Primary local DB is not initialized. Falling back to app_clean.db."
+        Write-Output "Primary local DB is not initialized. Falling back to hc_local_dev.db."
     }
     else {
         throw "No healthy local database found. Run: .\.venv\Scripts\python.exe scripts\db_guard.py migrate"

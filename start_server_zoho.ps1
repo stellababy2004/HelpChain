@@ -1,4 +1,4 @@
-Set-Location C:\dev\HelpChain.bg
+﻿Set-Location C:\dev\HelpChain
 
 # Optional: activate venv if present (keeps python/flask consistent).
 if (Test-Path ".\\.venv\\Scripts\\Activate.ps1") {
@@ -22,7 +22,7 @@ $env:MAIL_USERNAME = "contact@helpchain.live"
 $env:MAIL_DEFAULT_SENDER = "contact@helpchain.live"
 $env:PRO_LEADS_NOTIFY_TO = "contact@helpchain.live"
 $env:PUBLIC_BASE_URL = "http://127.0.0.1:5005"
-$env:HC_DB_PATH = "C:/dev/HelpChain.bg/instance/hc_run_canon.db"
+$env:HC_DB_PATH = "C:/dev/HelpChain/instance/hc_local_dev.db"
 # Ensure legacy DB env vars cannot override HC_DB_PATH.
 Remove-Item Env:SQLALCHEMY_DATABASE_URI -ErrorAction SilentlyContinue
 Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
@@ -34,7 +34,7 @@ $env:MAIL_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringBSTR(
 
 # Keep runtime DB stable and avoid corrupted legacy instance DB by using HC_DB_PATH.
 if (-not $env:HC_DB_PATH) {
-  $env:SQLALCHEMY_DATABASE_URI = "sqlite:///C:/dev/HelpChain.bg/instance/hc_run.db"
+  $env:SQLALCHEMY_DATABASE_URI = "sqlite:///C:/dev/HelpChain/instance/hc_local_dev.db"
 }
 
 $port = if ($env:PORT) { $env:PORT } else { "5005" }

@@ -1,4 +1,4 @@
-param()
+﻿param()
 
 $ErrorActionPreference = "Stop"
 
@@ -24,7 +24,7 @@ $appEntrypoint = "backend.appy:app"
 Write-Host "HELPCHAIN GO / NO-GO CHECK" -ForegroundColor Cyan
 Write-Host "Started: $startedAt"
 Write-Host "APP: $appEntrypoint"
-Write-Host "LOCAL DB CONTRACT: primary=instance/hc_local_dev.db fallback=backend/instance/app_clean.db"
+Write-Host "LOCAL DB CONTRACT: primary=instance/hc_local_dev.db fallback=instance/hc_local_dev.db"
 Write-Host ""
 
 Write-Host "Step 1/3 - Dev doctor" -ForegroundColor Cyan

@@ -1,4 +1,4 @@
-Set-Location C:\dev\HelpChain.bg
+﻿Set-Location C:\dev\HelpChain
 
 # Optional: activate local venv for consistent Python/Flask resolution.
 if (Test-Path ".\.venv\Scripts\Activate.ps1") {
@@ -8,7 +8,7 @@ if (Test-Path ".\.venv\Scripts\Activate.ps1") {
 $python = if (Test-Path ".\.venv\Scripts\python.exe") { ".\.venv\Scripts\python.exe" } else { "python" }
 $repoRoot = (Get-Location).Path
 $preferredDb = Join-Path $repoRoot "instance\hc_local_dev.db"
-$fallbackDb = Join-Path $repoRoot "backend\instance\app_clean.db"
+$fallbackDb = Join-Path $repoRoot "backend\instance\hc_local_dev.db"
 
 # Local/dev profile
 $env:FLASK_CONFIG = "dev"
@@ -58,7 +58,7 @@ if (Test-HealthyDb $preferredDb) {
   $selectedDb = $preferredDb
 } elseif (Test-HealthyDb $fallbackDb) {
   $selectedDb = $fallbackDb
-  Write-Host "Primary local DB is unhealthy or not initialized. Falling back to backend/instance/app_clean.db." -ForegroundColor Yellow
+  Write-Host "Primary local DB is unhealthy or not initialized. Falling back to backend/instance/hc_local_dev.db." -ForegroundColor Yellow
 } else {
   Write-Host "No healthy local database found." -ForegroundColor Red
   Write-Host "Run: .\.venv\Scripts\python.exe scripts\db_guard.py migrate" -ForegroundColor Yellow
