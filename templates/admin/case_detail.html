@@ -80,7 +80,7 @@
         <h1 class="hc-admin-title">Cas #{{ case_row.id }}</h1>
         <div class="hc-muted">
           Demande liee:
-          <a href="{{ url_for('admin.admin_cases_list') }}#request-{{ req.id }}">#{{ req.id }}</a>
+          <a href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">#{{ req.id }}</a>
           <span class="hc-dot">/</span>
           {{ req.title or ('Demande #' ~ req.id) }}
         </div>

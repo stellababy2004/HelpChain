@@ -1,33 +1,25 @@
 <!doctype html>
-<html lang="bg">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ _('HelpChain - Connecting people in need with volunteers') }}</title>
+    <title>{{ _('HelpChain - Infrastructure numérique de coordination') }}</title>
 
-    <!-- Bootstrap CSS -->
     <link
       href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}"
       rel="stylesheet"
     />
-
-    <!-- Font Awesome for icons -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}"
     />
-
-    <!-- Google Fonts -->
     <link
       href="{{ url_for('static', filename='vendor/fonts/inter.css') }}"
       rel="stylesheet"
     />
-
-    <!-- HelpChain Design System -->
-    <!-- Custom CSS -->
     <link
       rel="stylesheet"
-      href="{{ url_lang('static', filename='css/design-system.css') }}?v=20260115-hero"
+      href="{{ url_lang('static', filename='css/design-system.css') }}?v=20260115-home-b2b"
     />
     <link
       rel="stylesheet"
@@ -43,30 +35,411 @@
     />
     <link
       rel="stylesheet"
-      href="{{ url_lang('static', filename='css/user-feedback.css') }}"
-    />
-    <link
-      rel="stylesheet"
       href="{{ url_lang('static', filename='css/navigation-improvements.css') }}"
     />
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/dashboard.css') }}" />
-    </head>
+    <style>
+      :root {
+        --hc-b2b-ink: #11233c;
+        --hc-b2b-muted: #5a6c86;
+        --hc-b2b-line: rgba(17, 35, 60, 0.1);
+        --hc-b2b-surface: rgba(255, 255, 255, 0.84);
+        --hc-b2b-shadow: 0 24px 80px rgba(14, 27, 48, 0.08);
+        --hc-b2b-primary: #153b6f;
+        --hc-b2b-accent: #14746f;
+      }
 
-<body class="hc-page-home" data-theme="light">
-    <!-- Skip to main content -->
+      body.hc-page-home {
+        background:
+          radial-gradient(circle at top left, rgba(21, 59, 111, 0.16), transparent 32%),
+          radial-gradient(circle at top right, rgba(20, 116, 111, 0.12), transparent 26%),
+          linear-gradient(180deg, #f6f8fc 0%, #eef3f9 100%);
+        color: var(--hc-b2b-ink);
+      }
+
+      body.hc-page-home .main-nav {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: rgba(248, 250, 253, 0.9);
+        border-bottom: 1px solid var(--hc-b2b-line);
+        backdrop-filter: blur(18px);
+      }
+
+      body.hc-page-home .navbar-brand-light {
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      body.hc-page-home .nav-menu {
+        display: flex;
+        align-items: center;
+        gap: 1.4rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      body.hc-page-home .nav-link-light {
+        color: #324760;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      body.hc-page-home .nav-link-light:hover {
+        color: var(--hc-b2b-primary);
+      }
+
+      body.hc-page-home .hc-home {
+        overflow: hidden;
+      }
+
+      body.hc-page-home .hc-home__section {
+        padding: 88px 0;
+      }
+
+      body.hc-page-home .hc-home__eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.5rem 0.95rem;
+        border-radius: 999px;
+        border: 1px solid var(--hc-b2b-line);
+        background: rgba(255, 255, 255, 0.72);
+        color: #3d5471;
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.hc-page-home .hc-home__hero {
+        padding: 92px 0 56px;
+      }
+
+      body.hc-page-home .hc-home__hero-grid {
+        display: grid;
+        gap: 28px;
+        grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.95fr);
+        align-items: stretch;
+      }
+
+      body.hc-page-home .hc-home__hero-copy,
+      body.hc-page-home .hc-home__hero-panel,
+      body.hc-page-home .hc-home__card,
+      body.hc-page-home .hc-home__stat,
+      body.hc-page-home .hc-home__proof-item,
+      body.hc-page-home .hc-home__final {
+        border: 1px solid var(--hc-b2b-line);
+        background: var(--hc-b2b-surface);
+        box-shadow: var(--hc-b2b-shadow);
+      }
+
+      body.hc-page-home .hc-home__hero-copy {
+        padding: clamp(28px, 5vw, 56px);
+        border-radius: 32px;
+      }
+
+      body.hc-page-home .hc-home__hero-title {
+        max-width: 11ch;
+        margin: 1rem 0 1.15rem;
+        font-size: clamp(2.8rem, 5.6vw, 5.25rem);
+        line-height: 0.95;
+        letter-spacing: -0.055em;
+        font-weight: 800;
+      }
+
+      body.hc-page-home .hc-home__hero-subtitle {
+        max-width: 680px;
+        margin: 0;
+        color: var(--hc-b2b-muted);
+        font-size: 1.14rem;
+        line-height: 1.72;
+      }
+
+      body.hc-page-home .hc-home__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin: 2rem 0 1.5rem;
+      }
+
+      body.hc-page-home .hc-home__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        min-height: 52px;
+        padding: 0 1.3rem;
+        border-radius: 16px;
+        border: 1px solid transparent;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+      }
+
+      body.hc-page-home .hc-home__btn:hover {
+        transform: translateY(-1px);
+      }
+
+      body.hc-page-home .hc-home__btn--primary {
+        color: #fff;
+        background: linear-gradient(135deg, #11233c 0%, #1d4f91 100%);
+        box-shadow: 0 18px 36px rgba(17, 35, 60, 0.22);
+      }
+
+      body.hc-page-home .hc-home__btn--secondary {
+        color: var(--hc-b2b-ink);
+        background: rgba(255, 255, 255, 0.8);
+        border-color: rgba(17, 35, 60, 0.14);
+      }
+
+      body.hc-page-home .hc-home__trust {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      body.hc-page-home .hc-home__trust-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.72rem 0.92rem;
+        border-radius: 999px;
+        background: rgba(17, 35, 60, 0.06);
+        color: #274460;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      body.hc-page-home .hc-home__hero-panel {
+        padding: 24px;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at top right, rgba(67, 186, 176, 0.18), transparent 24%),
+          linear-gradient(180deg, rgba(12, 23, 43, 0.96), rgba(18, 39, 68, 0.94));
+        color: #f4f7fd;
+      }
+
+      body.hc-page-home .hc-home__panel-label {
+        color: rgba(244, 247, 253, 0.68);
+        font-size: 0.84rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      body.hc-page-home .hc-home__panel-value {
+        margin-top: 0.6rem;
+        font-size: clamp(2.1rem, 4vw, 3rem);
+        line-height: 1;
+        font-weight: 800;
+      }
+
+      body.hc-page-home .hc-home__panel-copy {
+        margin: 0.8rem 0 1.45rem;
+        color: rgba(244, 247, 253, 0.78);
+        line-height: 1.72;
+      }
+
+      body.hc-page-home .hc-home__panel-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      body.hc-page-home .hc-home__panel-item {
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      body.hc-page-home .hc-home__panel-item strong {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 1rem;
+      }
+
+      body.hc-page-home .hc-home__panel-item span {
+        color: rgba(244, 247, 253, 0.72);
+        font-size: 0.94rem;
+      }
+
+      body.hc-page-home .hc-home__section-head {
+        max-width: 760px;
+        margin: 0 auto 2.8rem;
+        text-align: center;
+      }
+
+      body.hc-page-home .hc-home__section-head h2 {
+        margin: 0.95rem 0 0.9rem;
+        font-size: clamp(2rem, 3.8vw, 3.15rem);
+        line-height: 1.05;
+        letter-spacing: -0.045em;
+      }
+
+      body.hc-page-home .hc-home__section-head p {
+        margin: 0;
+        color: var(--hc-b2b-muted);
+        font-size: 1.05rem;
+        line-height: 1.72;
+      }
+
+      body.hc-page-home .hc-home__grid {
+        display: grid;
+        gap: 22px;
+      }
+
+      body.hc-page-home .hc-home__grid--3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      body.hc-page-home .hc-home__card {
+        padding: 28px;
+        border-radius: 28px;
+      }
+
+      body.hc-page-home .hc-home__card-index {
+        display: inline-flex;
+        width: 42px;
+        height: 42px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(29, 79, 145, 0.14), rgba(20, 116, 111, 0.14));
+        color: #1c4f90;
+        font-weight: 800;
+      }
+
+      body.hc-page-home .hc-home__card h3 {
+        margin: 1rem 0 0.65rem;
+        font-size: 1.28rem;
+      }
+
+      body.hc-page-home .hc-home__card p {
+        margin: 0;
+        color: var(--hc-b2b-muted);
+        line-height: 1.75;
+      }
+
+      body.hc-page-home .hc-home__kpis {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      body.hc-page-home .hc-home__stat {
+        padding: 24px;
+        border-radius: 24px;
+      }
+
+      body.hc-page-home .hc-home__stat strong {
+        display: block;
+        margin-bottom: 0.45rem;
+        font-size: clamp(1.55rem, 3vw, 2.2rem);
+        line-height: 1.02;
+        color: var(--hc-b2b-ink);
+      }
+
+      body.hc-page-home .hc-home__stat span {
+        color: var(--hc-b2b-muted);
+        font-size: 0.96rem;
+      }
+
+      body.hc-page-home .hc-home__checklist {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      body.hc-page-home .hc-home__checklist li,
+      body.hc-page-home .hc-home__proof-item {
+        padding: 18px 20px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid var(--hc-b2b-line);
+        color: #233a59;
+        font-weight: 600;
+        box-shadow: 0 18px 42px rgba(17, 35, 61, 0.06);
+      }
+
+      body.hc-page-home .hc-home__checklist i,
+      body.hc-page-home .hc-home__proof-item i {
+        margin-right: 0.7rem;
+        color: var(--hc-b2b-accent);
+      }
+
+      body.hc-page-home .hc-home__proof-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      body.hc-page-home .hc-home__final {
+        padding: clamp(28px, 5vw, 52px);
+        border-radius: 32px;
+        background:
+          radial-gradient(circle at top right, rgba(20, 116, 111, 0.16), transparent 25%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(241, 246, 252, 0.94));
+        text-align: center;
+      }
+
+      body.hc-page-home .hc-home__final h2 {
+        margin: 0.95rem 0 1rem;
+        font-size: clamp(2rem, 4vw, 3.35rem);
+        line-height: 1.04;
+        letter-spacing: -0.045em;
+      }
+
+      body.hc-page-home .hc-home__final p {
+        max-width: 760px;
+        margin: 0 auto;
+        color: var(--hc-b2b-muted);
+        font-size: 1.08rem;
+        line-height: 1.75;
+      }
+
+      body.hc-page-home .hc-home__final .hc-home__actions {
+        justify-content: center;
+        margin-top: 1.9rem;
+      }
+
+      body.hc-page-home .footer {
+        margin-top: 0 !important;
+        background: #0d1b2f !important;
+      }
+
+      body.hc-page-home .footer a {
+        text-decoration: none;
+      }
+
+      @media (max-width: 991.98px) {
+        body.hc-page-home .hc-home__hero,
+        body.hc-page-home .hc-home__section {
+          padding: 64px 0;
+        }
+
+        body.hc-page-home .hc-home__hero-grid,
+        body.hc-page-home .hc-home__grid--3,
+        body.hc-page-home .hc-home__kpis,
+        body.hc-page-home .hc-home__checklist,
+        body.hc-page-home .hc-home__proof-grid {
+          grid-template-columns: 1fr;
+        }
+
+        body.hc-page-home .nav-menu {
+          flex-wrap: wrap;
+          gap: 0.8rem 1rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="hc-page-home" data-theme="light">
     <a href="#main-content" class="skip-link">{{ _('Skip to main content') }}</a>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
-      <div class="spinner-light"></div>
-    </div>
-
-    <!-- Navigation -->
-    <nav
-      class="navbar-light main-nav"
-      role="navigation"
-      aria-label="{{ _('Main navigation') }}"
-    >
+    <nav class="navbar-light main-nav" role="navigation" aria-label="{{ _('Main navigation') }}">
       <div class="container">
         <a class="navbar-brand-light" href="/">{{ _('HelpChain') }}</a>
 
@@ -83,655 +456,214 @@
         </button>
 
         <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
-          <ul class="nav-menu">
-            <li><a class="nav-link-light" href="#features">{{ _('Features') }}</a></li>
-            <li>
-              <a class="nav-link-light" href="{{ safe_url_for('main.orienter') }}"
-                >{{ _('Categories') }}</a
-              >
-            </li>
-            <li>
-              <a class="nav-link-light" href="{{ safe_url_for('main.faq') }}">{{ _('FAQ') }}</a>
-            </li>
-            <li>
-              <a class="nav-link-light" href="{{ safe_url_for('main.become_volunteer') }}"
-                >{{ _('Register') }}</a
-              >
-            </li>
-            <li>
-              <a class="nav-link-light" href="{{ url_for('main.become_volunteer', next='/volunteer/dashboard') }}"
-                >{{ _('Volunteer login') }}</a
-              >
-            </li>
-            <li>
-              <button
-                class="btn btn-sm ms-3 focus-visible"
-                id="themeToggle"
-                title="{{ _('Toggle theme') }}"
-                aria-label="{{ _('Switch between light and dark theme') }}"
-              >
-                <i class="fas fa-moon" aria-hidden="true"></i>
-              </button>
-            </li>
-            <li>
-              <button
-                class="btn btn-sm ms-2 focus-visible push-notifications"
-                id="pushNotifications"
-                title="{{ _('Manage push notifications') }}"
-                aria-label="{{ _('Manage push notifications') }}"
-              >
-                <i class="fas fa-bell" aria-hidden="true"></i>
-              </button>
-            </li>
+          <ul class="nav-menu ms-auto">
+            <li><a class="nav-link-light" href="#how-it-works">{{ _('Fonctionnement') }}</a></li>
+            <li><a class="nav-link-light" href="#pilotage">{{ _('Pilotage') }}</a></li>
+            <li><a class="nav-link-light" href="{{ url_for('main.securite') }}">{{ _('Sécurité') }}</a></li>
+            <li><a class="nav-link-light" href="{{ safe_url_for('main.faq') }}">{{ _('FAQ') }}</a></li>
+            <li><a class="nav-link-light" href="{{ url_for('main.contact') }}">{{ _('Contact') }}</a></li>
+            <li><a class="nav-link-light" href="/demo">{{ _('Planifier une démo') }}</a></li>
           </ul>
-        </div>
-
-        <!-- Search Container -->
-        <div class="search-container d-none d-md-block ms-3">
-          <div class="search-input-group">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="{{ _('Rechercher dans HelpChain...') }}"
-              aria-label="{{ _('Rechercher') }}"
-            />
-            <button class="search-button" aria-label="{{ _('Rechercher') }}">
-              <i class="fas fa-search" aria-hidden="true"></i>
-            </button>
-          </div>
         </div>
       </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-light" role="banner" aria-labelledby="hero-title">
-      <div class="hero-shapes" aria-hidden="true">
-        <div class="hero-shape"></div>
-        <div class="hero-shape"></div>
-        <div class="hero-shape"></div>
-      </div>
-
+    <section class="hc-home hc-home__hero" role="banner" aria-labelledby="hero-title">
       <div class="container">
-        <div class="hero-content text-center">
-          <h1 id="hero-title" class="hero-title">{{ _('Bienvenue sur HelpChain !') }}</h1>
-          <p class="hero-subtitle">
-            Свързваме нуждаещи се хора с доброволци за бърза и ефективна помощ.
-            Заедно можем да направим света по-добро място.
-          </p>
-
-          <div
-            class="hero-buttons d-flex justify-content-center gap-3 flex-wrap"
-          >
-            <a
-              class="btn-light btn-primary focus-visible"
-              href="{{ safe_url_for('main.submit_request') }}"
-            >
-              <i class="fas fa-plus-circle me-2" aria-hidden="true"></i>Подай
-              заявка за помощ
-            </a>
-            <a
-              class="btn-light btn-success focus-visible"
-              href="{{ safe_url_for('become_volunteer') }}"
-            >
-              <i class="fas fa-hand-holding-heart me-2" aria-hidden="true"></i
-              >Стани доброволец
-            </a>
-          </div>
-
-          <!-- Live Impact (public, no personal data) -->
-          <div class="hero-impact" aria-label="{{ _('Live impact') }}">
-            <span class="hero-impact-badge">
-              <strong id="heroActiveRequests">-</strong> активни заявки
-            </span>
-            <span class="hero-impact-badge">
-              <strong id="heroCompleted7d">-</strong> приключени (7 дни)
-            </span>
-            <span class="hero-impact-badge">
-              <strong id="heroMatched24h">-</strong> свързани (24 ч.)
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="hc-hero-trust-strip" aria-label="{{ _('Trust infrastructure indicators') }}">
-      <div class="container">
-        <ul class="hc-hero-trust-strip__list" role="list">
-          <li class="hc-hero-trust-strip__item">{{ _('Conçu et opéré depuis la France') }}</li>
-          <li class="hc-hero-trust-strip__item">{{ _('Infrastructure sécurisée') }}</li>
-          <li class="hc-hero-trust-strip__item">{{ _('Conformité RGPD') }}</li>
-          <li class="hc-hero-trust-strip__item">{{ _('Sécurité renforcée') }}</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- Main Content -->
-    <main
-      id="main-content"
-      class="main-content"
-      role="main"
-      aria-label="{{ _('Main content') }}"
-    >
-      <!-- Stats Section -->
-      <section class="stats-section">
-        <div class="container">
-          <div class="stats-grid">
-            <div class="stat-card-light">
-              <div class="stat-number-light" id="volunteersCount">
-                {{ volunteers_count }}
-              </div>
-              <div class="stat-label-light">{{ _('Active volunteers') }}</div>
-            </div>
-            <div class="stat-card-light">
-              <div class="stat-number-light" id="requestsCount">
-                {{ requests_count }}
-              </div>
-              <div class="stat-label-light">{{ _('People helped') }}</div>
-            </div>
-            <div class="stat-card-light">
-              <div class="stat-number-light" id="openRequestsCount">
-                {{ open_requests }}
-              </div>
-              <div class="stat-label-light">{{ _('Demandes ouvertes') }}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Features Section -->
-      <section class="features-section" id="features">
-        <div class="container">
-          <div class="text-center mb-5">
-            <h2 class="h1 mb-3">{{ _('Why choose HelpChain?') }}</h2>
-            <p class="lead text-muted">
-              Ние предлагаме модерна платформа за свързване на хората, които се
-              нуждаят от помощ, с тези, които искат да помогнат.
+        <div class="hc-home__hero-grid">
+          <div class="hc-home__hero-copy">
+            <span class="hc-home__eyebrow">{{ _('Coordination sociale et territoriale') }}</span>
+            <h1 id="hero-title" class="hc-home__hero-title">
+              {{ _('Infrastructure numérique de coordination pour structures sociales et territoriales') }}
+            </h1>
+            <p class="hc-home__hero-subtitle">
+              {{ _('Centralisez les demandes, orientez les situations, suivez les actions et pilotez l’activité dans un environnement sécurisé.') }}
             </p>
-          </div>
-
-          <div class="features-grid">
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-bolt"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Fast support') }}</h3>
-              <p class="feature-description-light">
-                Нашата платформа свързва нуждаещите се с доброволци в рамките на
-                минути, осигурявайки бърза и ефективна помощ.
-              </p>
+            <div class="hc-home__actions">
+              <a class="hc-home__btn hc-home__btn--primary" href="/demo">
+                <i class="fas fa-calendar-check" aria-hidden="true"></i>{{ _('Planifier une démo') }}
+              </a>
+              <a class="hc-home__btn hc-home__btn--secondary" href="{{ url_for('main.contact') }}">
+                <i class="fas fa-layer-group" aria-hidden="true"></i>{{ _('Lancer un pilote') }}
+              </a>
             </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Security') }}</h3>
-              <p class="feature-description-light">
-                Всички потребители преминават през верификация, а комуникацията
-                е защитена с най-съвременни технологии за сигурност.
-              </p>
-            </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-users"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Community') }}</h3>
-              <p class="feature-description-light">
-                Присъединете се към растящата общност от доброволци и хора,
-                които вярват, че заедно можем да направим света по-добро място.
-              </p>
-            </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-mobile-alt"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Mobile accessibility') }}</h3>
-              <p class="feature-description-light">
-                Нашата платформа работи перфектно на всички устройства - от
-                смартфони до десктоп компютри.
-              </p>
-            </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-clock"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('24/7 support') }}</h3>
-              <p class="feature-description-light">
-                Нашият екип е винаги на разположение да помогне. Независимо от
-                часа, можете да разчитате на нашата поддръжка.
-              </p>
-            </div>
-
-            <div class="feature-card-light">
-              <div class="feature-icon-light">
-                <i class="fas fa-heart"></i>
-              </div>
-              <h3 class="feature-title-light">{{ _('Free') }}</h3>
-              <p class="feature-description-light">
-                HelpChain е напълно безплатна платформа. Ние вярваме, че помощта
-                трябва да бъде достъпна за всички.
-              </p>
+            <div class="hc-home__trust" aria-label="{{ _('Repères de confiance') }}">
+              <span class="hc-home__trust-chip"><i class="fas fa-shield-alt" aria-hidden="true"></i>{{ _('RGPD Ready') }}</span>
+              <span class="hc-home__trust-chip"><i class="fas fa-server" aria-hidden="true"></i>{{ _('Hébergement UE') }}</span>
+              <span class="hc-home__trust-chip"><i class="fas fa-user-shield" aria-hidden="true"></i>{{ _('Accès par rôles') }}</span>
+              <span class="hc-home__trust-chip"><i class="fas fa-clipboard-check" aria-hidden="true"></i>{{ _('Journal d’audit') }}</span>
             </div>
           </div>
+
+          <aside class="hc-home__hero-panel" aria-label="{{ _('Vue pilotage') }}">
+            <div class="hc-home__panel-label">{{ _('Vue pilotage') }}</div>
+            <div class="hc-home__panel-value">{{ _('Suivi multi-structures') }}</div>
+            <p class="hc-home__panel-copy">
+              {{ _('Une infrastructure conçue pour fluidifier la coordination entre équipes, structures et territoires avec des règles d’orientation, des journaux d’activité et des indicateurs partagés.') }}
+            </p>
+            <div class="hc-home__panel-list">
+              <div class="hc-home__panel-item">
+                <strong>{{ _('Coordination') }}</strong>
+                <span>{{ _('Canal unique pour réception, qualification et suivi des demandes.') }}</span>
+              </div>
+              <div class="hc-home__panel-item">
+                <strong>{{ _('Traçabilité') }}</strong>
+                <span>{{ _('Historique des décisions, actions et changements de statut.') }}</span>
+              </div>
+              <div class="hc-home__panel-item">
+                <strong>{{ _('Gouvernance') }}</strong>
+                <span>{{ _('Accès structurés, pilotage opérationnel et vision consolidée.') }}</span>
+              </div>
+            </div>
+          </aside>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Live Impact (public, privacy-safe) -->
-      <section class="impact" id="impact">
-        <div class="impact-card">
-          <div class="impact-head">
-            <h2>{{ _('Live impact') }}</h2>
-            <p class="muted">{{ _('Anonymous aggregated data - no personal information.') }}</p>
-          </div>
+    <main id="main-content" class="main-content" role="main" aria-label="{{ _('Main content') }}">
+      <div class="hc-home">
+        <section class="hc-home__section" id="how-it-works">
+          <div class="container">
+            <div class="hc-home__section-head">
+              <span class="hc-home__eyebrow">{{ _('Comment ça fonctionne') }}</span>
+              <h2>{{ _('Une chaîne de coordination claire, de la réception au pilotage') }}</h2>
+              <p>{{ _('HelpChain structure le traitement des situations dans un cadre lisible pour les équipes terrain, les encadrants et les structures partenaires.') }}</p>
+            </div>
 
-          <div class="impact-grid">
-            <div class="kpi"><div class="k">{{ _('Active requests') }}</div><div class="v" id="kpiActive">-</div></div>
-            <div class="kpi"><div class="k">{{ _('New (24h)') }}</div><div class="v" id="kpiNew24h">-</div></div>
-            <div class="kpi"><div class="k">{{ _('Matched (24h)') }}</div><div class="v" id="kpiMatched24h">-</div></div>
-            <div class="kpi"><div class="k">{{ _('Completed (7 days)') }}</div><div class="v" id="kpiDone7d">-</div></div>
-          </div>
-
-          <div class="impact-sla">
-            <div><span class="muted">{{ _('Average time to first response (7 days):') }}</span> <b id="slaFirst">-</b></div>
-            <div><span class="muted">{{ _('Average time to resolution (30 days):') }}</span> <b id="slaResolution">-</b></div>
-          </div>
-
-          <div class="impact-cats">
-            <div class="muted">{{ _('Top categories (7 days)') }}</div>
-            <ul id="impactCats"></ul>
-          </div>
-
-            <div class="impact-foot muted">
-              <span id="impactUpdated">{{ _('Updated: -') }}</span>
-              <button type="button" class="impact-refresh" id="impactRefresh">
-                Обнови
-              </button>
+            <div class="hc-home__grid hc-home__grid--3">
+              <article class="hc-home__card">
+                <span class="hc-home__card-index">01</span>
+                <h3>{{ _('Réception des demandes') }}</h3>
+                <p>{{ _('Canal unique pour centraliser les sollicitations.') }}</p>
+              </article>
+              <article class="hc-home__card">
+                <span class="hc-home__card-index">02</span>
+                <h3>{{ _('Orientation intelligente') }}</h3>
+                <p>{{ _('Affectation claire selon règles, rôles et priorité.') }}</p>
+              </article>
+              <article class="hc-home__card">
+                <span class="hc-home__card-index">03</span>
+                <h3>{{ _('Suivi & pilotage') }}</h3>
+                <p>{{ _('Historique, indicateurs et vision temps réel.') }}</p>
+              </article>
             </div>
           </div>
         </section>
 
-      <!-- Footer -->
-      <footer
-        class="footer bg-dark text-light py-5 mt-5"
-        role="contentinfo"
-        aria-label="{{ _('Site information') }}"
-      >
-        <div class="container">
-          <div class="row">
-            <div class="col-md-4">
-              <h5>{{ _('HelpChain') }}</h5>
-              <p>{{ _('We connect people in need with volunteers for a better world.') }}</p>
+        <section class="hc-home__section" id="pilotage">
+          <div class="container">
+            <div class="hc-home__kpis" aria-label="{{ _('Indicateurs clés') }}">
+              <div class="hc-home__stat">
+                <strong>{{ _('+1200') }}</strong>
+                <span>{{ _('demandes traitées') }}</span>
+              </div>
+              <div class="hc-home__stat">
+                <strong>{{ _('99.9%') }}</strong>
+                <span>{{ _('disponibilité') }}</span>
+              </div>
+              <div class="hc-home__stat">
+                <strong>{{ _('Déploiement rapide') }}</strong>
+                <span>{{ _('temps de mise en place maîtrisé') }}</span>
+              </div>
+              <div class="hc-home__stat">
+                <strong>{{ _('Multi-structures') }}</strong>
+                <span>{{ _('pilotage mutualisé des équipes et territoires') }}</span>
+              </div>
             </div>
-            <div class="col-md-4">
-              <h5>{{ _('Quick links') }}</h5>
-              <ul class="list-unstyled">
-                <li>
-                  <a href="{{ safe_url_for('main.orienter') }}" class="text-light"
-                    >{{ _('Help categories') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ safe_url_for('main.faq') }}" class="text-light"
-                    >{{ _('Frequently asked questions') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.mentions_legales') }}" class="text-light"
-                    >{{ _('Legal notice') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.confidentialite') }}" class="text-light"
-                    >{{ _('Privacy') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.conditions_utilisation') }}" class="text-light"
-                    >{{ _('Terms of use') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.securite') }}" class="text-light"
-                    >{{ _('Sécurité & conformité') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.architecture') }}" class="text-light"
-                    >{{ _('Architecture de la plateforme') }}</a
-                  >
-                </li>
-                <li>
-                  <a href="{{ url_for('main.gouvernance') }}" class="text-light"
-                    >{{ _('Gouvernance de la plateforme') }}</a
-                  >
-                </li>
-              </ul>
+          </div>
+        </section>
+
+        <section class="hc-home__section">
+          <div class="container">
+            <div class="hc-home__section-head">
+              <span class="hc-home__eyebrow">{{ _('Pourquoi HelpChain') }}</span>
+              <h2>{{ _('Pourquoi les acheteurs choisissent HelpChain') }}</h2>
+              <p>{{ _('Une base opérationnelle pour structurer la coordination, sécuriser les flux et installer une gouvernance plus lisible de l’activité.') }}</p>
             </div>
-            <div class="col-md-4">
-              <h5>{{ _('Contact') }}</h5>
-              <p>
-                <i class="fas fa-envelope me-2" aria-hidden="true"></i
-                >contact@helpchain.live
-              </p>
-              <p>
-                <i class="fas fa-phone me-2" aria-hidden="true"></i>+359 XX XXX
-                XXX
-              </p>
-              <div class="social-links mt-3">
-                <a
-                  href="#"
-                  class="text-light me-3"
-                  title="{{ _('Facebook') }}"
-                  aria-label="{{ _('Visit us on Facebook') }}"
-                >
-                  <i class="fab fa-facebook-f" aria-hidden="true"></i>
+
+            <ul class="hc-home__checklist" role="list">
+              <li><i class="fas fa-check-circle" aria-hidden="true"></i>{{ _('Gain de temps opérationnel') }}</li>
+              <li><i class="fas fa-check-circle" aria-hidden="true"></i>{{ _('Réduction des emails dispersés') }}</li>
+              <li><i class="fas fa-check-circle" aria-hidden="true"></i>{{ _('Traçabilité des actions') }}</li>
+              <li><i class="fas fa-check-circle" aria-hidden="true"></i>{{ _('Vision consolidée') }}</li>
+              <li><i class="fas fa-check-circle" aria-hidden="true"></i>{{ _('Montée en charge maîtrisée') }}</li>
+              <li><i class="fas fa-check-circle" aria-hidden="true"></i>{{ _('Cadre partagé entre équipes, structures et partenaires') }}</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="hc-home__section">
+          <div class="container">
+            <div class="hc-home__section-head">
+              <span class="hc-home__eyebrow">{{ _('Conçu pour le terrain') }}</span>
+              <h2>{{ _('Conçu pour les structures qui coordonnent vraiment l’activité') }}</h2>
+              <p>{{ _('HelpChain s’adresse aux organisations qui ont besoin d’un cadre fiable de suivi, d’orientation et de pilotage sans multiplier les outils parallèles.') }}</p>
+            </div>
+
+            <div class="hc-home__proof-grid">
+              <div class="hc-home__proof-item"><i class="fas fa-building-columns" aria-hidden="true"></i>{{ _('Associations') }}</div>
+              <div class="hc-home__proof-item"><i class="fas fa-landmark" aria-hidden="true"></i>{{ _('Collectivités') }}</div>
+              <div class="hc-home__proof-item"><i class="fas fa-briefcase-medical" aria-hidden="true"></i>{{ _('Structures sociales') }}</div>
+              <div class="hc-home__proof-item"><i class="fas fa-network-wired" aria-hidden="true"></i>{{ _('Réseaux territoriaux') }}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="hc-home__section">
+          <div class="container">
+            <div class="hc-home__final">
+              <span class="hc-home__eyebrow">{{ _('Passer à l’échelle') }}</span>
+              <h2>{{ _('Passez d’une gestion dispersée à une coordination structurée.') }}</h2>
+              <p>{{ _('Donnez à vos équipes un environnement de suivi, de traçabilité et de gouvernance adapté aux exigences des structures sociales, médico-sociales et territoriales.') }}</p>
+              <div class="hc-home__actions">
+                <a class="hc-home__btn hc-home__btn--primary" href="/demo">
+                  <i class="fas fa-calendar-check" aria-hidden="true"></i>{{ _('Planifier une démo') }}
                 </a>
-                <a
-                  href="#"
-                  class="text-light me-3"
-                  title="{{ _('Twitter') }}"
-                  aria-label="{{ _('Visit us on Twitter') }}"
-                >
-                  <i class="fab fa-twitter" aria-hidden="true"></i>
-                </a>
-                <a
-                  href="#"
-                  class="text-light me-3"
-                  title="{{ _('Instagram') }}"
-                  aria-label="{{ _('Visit us on Instagram') }}"
-                >
-                  <i class="fab fa-instagram" aria-hidden="true"></i>
-                </a>
-                <a
-                  href="#"
-                  class="text-light"
-                  title="{{ _('LinkedIn') }}"
-                  aria-label="{{ _('Visit us on LinkedIn') }}"
-                >
-                  <i class="fab fa-linkedin-in" aria-hidden="true"></i>
+                <a class="hc-home__btn hc-home__btn--secondary" href="{{ url_for('main.contact') }}">
+                  <i class="fas fa-comments" aria-hidden="true"></i>{{ _('Échanger sur un pilote') }}
                 </a>
               </div>
             </div>
           </div>
+        </section>
+      </div>
+
+      <footer
+        class="footer bg-dark text-light py-5"
+        role="contentinfo"
+        aria-label="{{ _('Site information') }}"
+      >
+        <div class="container">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <h5>{{ _('HelpChain') }}</h5>
+              <p>{{ _('Infrastructure numérique de coordination pour le suivi, l’orientation et le pilotage de l’activité sociale et territoriale.') }}</p>
+            </div>
+            <div class="col-md-4">
+              <h5>{{ _('Accès rapides') }}</h5>
+              <ul class="list-unstyled">
+                <li><a href="/demo" class="text-light">{{ _('Planifier une démo') }}</a></li>
+                <li><a href="{{ url_for('main.contact') }}" class="text-light">{{ _('Échanger sur un pilote') }}</a></li>
+                <li><a href="{{ url_for('main.securite') }}" class="text-light">{{ _('Sécurité & conformité') }}</a></li>
+                <li><a href="{{ url_for('main.gouvernance') }}" class="text-light">{{ _('Gouvernance') }}</a></li>
+                <li><a href="{{ safe_url_for('main.faq') }}" class="text-light">{{ _('FAQ') }}</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4">
+              <h5>{{ _('Contact') }}</h5>
+              <p><i class="fas fa-envelope me-2" aria-hidden="true"></i>contact@helpchain.live</p>
+              <p><i class="fas fa-phone me-2" aria-hidden="true"></i>+359 XX XXX XXX</p>
+              <p class="mb-0">{{ _('Pour les CCAS, mairies, centres sociaux, associations et structures médico-sociales.') }}</p>
+            </div>
+          </div>
           <hr class="my-4" />
           <div class="text-center">
-            <p>{{ _('&copy; 2025 HelpChain. All rights reserved.') }}</p>
+            <p class="mb-0">{{ _('&copy; 2025 HelpChain. All rights reserved.') }}</p>
           </div>
         </div>
       </footer>
     </main>
 
-    <!-- Back to Top Button -->
-    <button
-      class="back-to-top"
-      aria-label="{{ _('Retour en haut de page') }}"
-      title="{{ _('Retour en haut') }}"
-    >
-      <i class="fas fa-arrow-up" aria-hidden="true"></i>
-    </button>
-
-    <!-- Bootstrap JS -->
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
-
-    <!-- Custom JavaScript -->
-    <script src="{{ url_lang('static', filename='js/feedback.js') }}"></script>
-    <script src="{{ url_lang('static', filename='js/navigation.js') }}"></script>
-    <script src="{{ url_lang('static', filename='js/notification_service.js') }}"></script>
-    <script>
-      (function () {
-        async function loadImpact() {
-          try {
-            const res = await fetch("/api/public/impact", {
-              headers: { Accept: "application/json" },
-            });
-            if (!res.ok) throw new Error("HTTP " + res.status);
-            const data = await res.json();
-
-            document.getElementById("kpiActive").textContent =
-              data.counts?.active_requests ?? "-";
-            document.getElementById("kpiNew24h").textContent =
-              data.counts?.new_last_24h ?? "-";
-            document.getElementById("kpiMatched24h").textContent =
-              data.counts?.matched_last_24h ?? "-";
-            document.getElementById("kpiDone7d").textContent =
-              data.counts?.completed_last_7d ?? "-";
-
-            const catLabel = (c) =>
-              ({
-                medical: "Медицинска",
-                admin: "Административна",
-                transport: "Транспорт",
-                food: "Храна",
-                other: "Друго",
-              }[c] || c);
-
-            const fr = data.sla?.avg_first_response_minutes_7d;
-            document.getElementById("slaFirst").textContent =
-              fr == null || fr === ""
-                ? "- (недостатъчно данни)"
-                : fr + " мин";
-
-            const rr = data.sla?.avg_resolution_hours_30d;
-            document.getElementById("slaResolution").textContent =
-              rr == null || rr === ""
-                ? "- (недостатъчно данни)"
-                : rr + " ч";
-
-            const ul = document.getElementById("impactCats");
-            if (ul) {
-              ul.innerHTML = "";
-              (data.categories_last_7d || []).forEach((c) => {
-                const li = document.createElement("li");
-                li.textContent = `${catLabel(c.category)}: ${c.count}`;
-                ul.appendChild(li);
-              });
-            }
-
-            const ts = data.generated_at ? new Date(data.generated_at) : null;
-            document.getElementById("impactUpdated").textContent =
-              "Обновено: " + (ts ? ts.toLocaleString() : "-");
-          } catch (e) {
-            console.error("Impact widget error:", e);
-          }
-        }
-
-        if (document.getElementById("impact")) {
-          loadImpact();
-          setInterval(loadImpact, 10 * 60 * 1000);
-        }
-      })();
-    </script>
-    <script>
-      // Initialize feedback system
-      let feedback = {
-        showToast: () => {},
-        showLoading: () => {},
-        hideLoading: () => {},
-      };
-      if (typeof window.HelpChainFeedback === "function") {
-        feedback = new window.HelpChainFeedback();
-      } else {
-        console.warn("HelpChainFeedback is not defined (skipping init).");
-      }
-
-      // Initialize push notifications
-      const notificationService = new NotificationService();
-
-      // Theme Toggle Functionality
-      const themeToggle = document.getElementById("themeToggle");
-      const html = document.documentElement;
-      const themeIcon = themeToggle.querySelector("i");
-
-      // Load saved theme
-      const savedTheme = localStorage.getItem("theme") || "light";
-      html.setAttribute("data-theme", savedTheme);
-      updateThemeIcon(savedTheme);
-
-      themeToggle.addEventListener("click", () => {
-        const currentTheme = html.getAttribute("data-theme");
-        const newTheme = currentTheme === "light" ? "dark" : "light";
-
-        html.setAttribute("data-theme", newTheme);
-        localStorage.setItem("theme", newTheme);
-        updateThemeIcon(newTheme);
-
-        // Show toast notification for theme change
-        feedback.showToast(
-          `Темата е превключена на ${
-            newTheme === "light" ? "светла" : "тъмна"
-          }`,
-          "success",
-          3000,
-        );
-      });
-
-      function updateThemeIcon(theme) {
-        themeIcon.className = theme === "light" ? "fas fa-moon" : "fas fa-sun";
-        themeToggle.setAttribute(
-          "aria-label",
-          `Превключи към ${theme === "light" ? "тъмна" : "светла"} тема`,
-        );
-      }
-
-      // Intercept all AJAX requests with loading states
-      const originalFetch = window.fetch;
-      window.fetch = function (...args) {
-        feedback.showLoading("Зареждане...");
-        return originalFetch
-          .apply(this, args)
-          .then((response) => {
-            feedback.hideLoading();
-            return response;
-          })
-          .catch((error) => {
-            feedback.hideLoading();
-            feedback.showToast(
-              "Възникна грешка при зареждането",
-              "error",
-              5000,
-            );
-            throw error;
-          });
-      };
-
-      // Smooth Scrolling with focus management
-      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-        anchor.addEventListener("click", function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-
-            // Focus the target element for keyboard navigation
-            target.focus({ preventScroll: true });
-          }
-        });
-      });
-
-      // Keyboard navigation improvements
-      document.addEventListener("keydown", function (e) {
-        // Close mobile menu with Escape key
-        if (e.key === "Escape") {
-          const navbarCollapse = document.getElementById("navbarNav");
-          if (navbarCollapse.classList.contains("show")) {
-            navbarCollapse.classList.remove("show");
-            themeToggle.focus();
-          }
-        }
-      });
-
-      // Initialize when DOM is loaded
-      document.addEventListener("DOMContentLoaded", function () {
-        // Add click animations to buttons with accessibility
-        document.querySelectorAll(".btn-light").forEach((btn) => {
-          btn.addEventListener("click", function (e) {
-            this.style.transform = "scale(0.95)";
-            setTimeout(() => {
-              this.style.transform = "";
-            }, 150);
-          });
-        });
-
-        // Push notification button handler
-        const pushNotificationsBtn =
-          document.getElementById("pushNotifications");
-        if (pushNotificationsBtn) {
-          pushNotificationsBtn.addEventListener("click", async () => {
-            try {
-              const result = await notificationService.init();
-              if (result) {
-                feedback.showToast(
-                  "Push известията са активирани!",
-                  "success",
-                  3000,
-                );
-              } else {
-                feedback.showToast(
-                  "Push известията са деактивирани.",
-                  "info",
-                  3000,
-                );
-              }
-            } catch (error) {
-              feedback.showToast(
-                "Грешка при настройката на push известия",
-                "error",
-                5000,
-              );
-            }
-          });
-        }
-
-        // Show welcome toast
-        setTimeout(() => {
-          feedback.showToast("Добре дошли в HelpChain! ", "info", 4000);
-        }, 1000);
-      });
-
-      // Handle reduced motion preference
-      if (
-        window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
-        // Disable smooth scrolling
-        document.documentElement.style.scrollBehavior = "auto";
-
-        // Disable animations
-        document.querySelectorAll("*").forEach((el) => {
-          el.style.animation = "none";
-          el.style.transition = "none";
-        });
-      }
-    </script>
-    <script>
-      // Debug: confirm template is the served one
-      console.log("IMPACT_DEBUG: index.html loaded", new Date().toISOString());
-    </script>
-    <script>
-      // Debug: force a fetch to /api/public/impact to see it in network/logs
-      (async () => {
-        try {
-          console.log("IMPACT_DEBUG: fetching /api/public/impact ...");
-          const r = await fetch("/api/public/impact", { cache: "no-store" });
-          console.log("IMPACT_DEBUG: status", r.status);
-          const data = await r.json();
-          console.log("IMPACT_DEBUG: data", data);
-        } catch (e) {
-          console.error("IMPACT_DEBUG: failed", e);
-        }
-      })();
-    </script>
-    <script src="{{ url_for('static', filename='js/nav-scroll.js') }}"></script>
   </body>
 </html>
-
-
-
-
-

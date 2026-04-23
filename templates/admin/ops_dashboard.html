@@ -40,7 +40,7 @@
 <script>
 async function loadOps() {
   try {
-    const res = await fetch("/admin/api/ops-metrics", { credentials: "same-origin" });
+    const res = await fetch("{{ url_for('admin.admin_ops_kpis') }}", { credentials: "same-origin" });
     if (!res.ok) return;
     const data = await res.json();
     document.getElementById("active_requests").innerText = data.active_requests ?? 0;

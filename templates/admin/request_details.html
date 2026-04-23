@@ -30,9 +30,18 @@
     <span>Demande #{{ req.id }}</span>
   </nav>
 
-  {% set sm = status_meta(req.status) %}
+  {% set req_status_raw = (req.status or '')|lower %}
+  {% set req_status_norm = req_status_raw %}
+  {% if req_status_norm in ['pending'] %}
+    {% set req_status_norm = 'open' %}
+  {% elif req_status_norm in ['approved'] %}
+    {% set req_status_norm = 'in_progress' %}
+  {% elif req_status_norm in ['rejected'] %}
+    {% set req_status_norm = 'cancelled' %}
+  {% endif %}
+  {% set sm = status_meta(req_status_norm) %}
   {% set _prio = (req.priority or 'medium')|lower %}
-  {% set is_closed_status = ((req.status or '')|upper == 'CLOSED') %}
+  {% set is_closed_status = (req_status_norm == 'cancelled') %}
 
   <header class="card border-0 shadow-sm mb-3 hc-case-header">
     <div class="card-body">
@@ -92,7 +101,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <select name="status" class="form-select form-select-sm" style="max-width: 170px;" id="headerStatusSelect">
               {% for s in REQUEST_STATUS_ORDER %}
-                <option value="{{ s }}" {% if (req.status == s) or ((req.status or '')|upper == s) %}selected{% endif %}>{{ status_meta(s).label }}</option>
+                <option value="{{ s }}" {% if req_status_norm == s %}selected{% endif %}>{{ status_meta(s).label }}</option>
               {% endfor %}
             </select>
             <div id="headerResolutionWrap" style="display:none; min-width: 220px;">
@@ -132,13 +141,13 @@
           const note = document.getElementById("headerResolutionNote");
           if (!form || !status || !wrap || !note) return;
           const toggle = () => {
-            const need = (status.value || "").toUpperCase() === "COMPLETED";
+            const need = (status.value || "").trim().toLowerCase() === "done";
             wrap.style.display = need ? "block" : "none";
             note.required = need;
           };
           status.addEventListener("change", toggle);
           form.addEventListener("submit", function (e) {
-            if ((status.value || "").toUpperCase() === "COMPLETED" && !note.value.trim()) {
+            if ((status.value || "").trim().toLowerCase() === "done" && !note.value.trim()) {
               e.preventDefault();
               note.focus();
             }
@@ -455,14 +464,14 @@
           </div>
           {% endif %}
 
-          {% if req.status == "IN_PROGRESS" %}
+          {% if req_status_norm == "in_progress" %}
           <div class="hc-activity-item">
             <p class="hc-activity-title">• En cours</p>
             <div class="hc-activity-meta">Mettre à jour le statut dès qu'une nouvelle information est disponible</div>
           </div>
           {% endif %}
 
-          {% if req.status == "COMPLETED" %}
+          {% if req_status_norm == "done" %}
           <div class="hc-activity-item">
             <p class="hc-activity-title">• Terminée</p>
             <div class="hc-activity-meta">Finaliser l'archivage ou la suppression sécurisée</div>
@@ -538,12 +547,12 @@
           <hr class="my-3" />
 
           {% if can_edit %}
-            {% set is_closed_status = ((req.status or '')|upper == 'CLOSED') %}
+            {% set is_closed_status = (req_status_norm == 'cancelled') %}
             <form method="post" action="{{ url_for('admin.update_status', req_id=req.id) }}" class="d-flex gap-2 align-items-center flex-wrap" id="statusForm">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <select name="status" class="form-select form-select-sm" style="max-width: 220px;" id="statusSelect">
                 {% for s in REQUEST_STATUS_ORDER %}
-                  <option value="{{ s }}" {% if (req.status == s) or ((req.status or '')|upper == s) %}selected{% endif %}>{{ status_meta(s).label }}</option>
+                  <option value="{{ s }}" {% if req_status_norm == s %}selected{% endif %}>{{ status_meta(s).label }}</option>
                 {% endfor %}
               </select>
               <div id="resolutionWrap" class="w-100 mt-2" style="display:none;">
@@ -573,13 +582,13 @@
                 const note = document.getElementById("resolutionNote");
                 if (!form || !status || !wrap || !note) return;
                 const toggle = () => {
-                  const need = (status.value || "").toUpperCase() === "COMPLETED";
+                  const need = (status.value || "").trim().toLowerCase() === "done";
                   wrap.style.display = need ? "block" : "none";
                   note.required = need;
                 };
                 status.addEventListener("change", toggle);
                 form.addEventListener("submit", function (e) {
-                  if ((status.value || "").toUpperCase() === "COMPLETED" && !note.value.trim()) {
+                  if ((status.value || "").trim().toLowerCase() === "done" && !note.value.trim()) {
                     e.preventDefault();
                     note.focus();
                   }
@@ -654,7 +663,7 @@
       <div class="card border-0 shadow-sm mt-3 hc-card" id="cloturer-situation">
         <div class="card-body">
           <div class="small text-muted mb-2">Clôture / suppression</div>
-          {% set can_delete = (((req.status or '')|upper == 'CLOSED') and req.is_archived) %}
+          {% set can_delete = ((req_status_norm == 'cancelled') and req.is_archived) %}
           <div class="fw-semibold mb-1">Suppression (masquage sécurisé)</div>
           <div class="text-muted small mb-3">
             Les demandes supprimées sont masquées des listes. Vous pouvez les restaurer ultérieurement.
@@ -676,9 +685,9 @@
               {% endif %}
             </div>
           {% else %}
-            {% if (req.status or '')|upper != 'CLOSED' %}
+            {% if req_status_norm != 'cancelled' %}
               <div class="alert alert-warning py-2 mb-3">
-                Définissez d’abord le statut sur Clôturée (CLOSED) pour activer la suppression.
+                Définissez d’abord le statut sur Annulée / clôturée pour activer la suppression.
               </div>
             {% elif not req.is_archived %}
               <div class="alert alert-warning py-2 mb-3">

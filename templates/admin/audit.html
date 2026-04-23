@@ -92,7 +92,7 @@
                 {% if config.DEMO_MODE %}
                   <span class="btn btn-sm btn-outline-secondary disabled ms-2" aria-disabled="true">Aperçu</span>
                 {% else %}
-                  <a class="ms-2 small" href="{{ url_for('admin.admin_cases_list') }}#request-{{ e.target_id }}">Voir</a>
+                  <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">Voir</a>
                 {% endif %}
               {% endif %}
             </td>

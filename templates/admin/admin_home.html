@@ -56,15 +56,15 @@
       <div class="hc-command-panel__kicker">Points à traiter</div>
       <h2 class="hc-command-panel__title">O&ugrave; regarder maintenant</h2>
       <div class="hc-command-panel__body">
-        <a class="hc-command-action" href="{{ url_for('admin.admin_requests') }}">
+        <a class="hc-command-action" href="{{ url_for('admin.admin_requests', status='open', no_owner='1') }}">
           <span class="hc-command-action__label">Non assign&eacute;es</span>
           <strong>{{ unassigned_count or 0 }}</strong>
         </a>
-        <a class="hc-command-action" href="{{ url_for('admin.admin_requests') }}">
+        <a class="hc-command-action" href="{{ url_for('admin.admin_requests', risk='notseen72') }}">
           <span class="hc-command-action__label">&Agrave; relancer</span>
           <strong>{{ followup_count or 0 }}</strong>
         </a>
-        <a class="hc-command-action" href="{{ url_for('admin.admin_requests') }}">
+        <a class="hc-command-action" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
           <span class="hc-command-action__label">Sans action r&eacute;cente</span>
           <strong>{{ stale_count or 0 }}</strong>
         </a>
