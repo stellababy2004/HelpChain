@@ -39,6 +39,8 @@ class ProfessionalLead(db.Model):
     last_touched_by_admin_id = db.Column(
         db.Integer, db.ForeignKey("admin_users.id"), nullable=True, index=True
     )
+    next_action_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    next_action_note = db.Column(db.String(255), nullable=True)
 
     created_at = db.Column(
         db.DateTime(timezone=True),

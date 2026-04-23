@@ -69,6 +69,7 @@ from ..models import (
     CaseCollaborator,
     Notification,
     NotificationJob,
+    OrganizationAccessRequest,
     ProfessionalLead,
     ProfessionalLeadActivity,
     Intervenant,
@@ -7600,6 +7601,575 @@ def _build_audience_map_context() -> dict:
             f"{sessions_repeated_today} session(s) reviennent aujourd'hui."
         )
     return context
+
+
+REVENUE_STAGE_ORDER = (
+    "new",
+    "contacted",
+    "qualified",
+    "demo_booked",
+    "demo_done",
+    "pilot_proposed",
+    "negotiation",
+    "won",
+    "lost",
+    "paused",
+)
+REVENUE_STAGE_WEIGHTS = {
+    "new": 0.05,
+    "contacted": 0.10,
+    "qualified": 0.20,
+    "demo_booked": 0.28,
+    "demo_done": 0.35,
+    "pilot_proposed": 0.55,
+    "negotiation": 0.75,
+    "won": 1.00,
+    "lost": 0.00,
+    "paused": 0.00,
+}
+
+
+def _revenue_has_followup_fields(table_name: str) -> bool:
+    return _table_has_column(table_name, "next_action_at") and _table_has_column(
+        table_name, "next_action_note"
+    )
+
+
+def _revenue_stage(raw_status: str | None, item_type: str) -> str:
+    status = ((raw_status or "").strip().lower() or "new")
+    if item_type == "access_request":
+        return {
+            "new": "new",
+            "reviewed": "qualified",
+            "need_info": "qualified",
+            "approved": "won",
+            "rejected": "lost",
+        }.get(status, "new")
+    return {
+        "new": "new",
+        "imported": "new",
+        "contacted": "contacted",
+        "qualified": "qualified",
+        "demo_scheduled": "demo_booked",
+        "pilot_discussion": "pilot_proposed",
+        "closed": "won",
+        "rejected": "lost",
+        "invalid": "lost",
+        "spam": "lost",
+        "paused": "paused",
+    }.get(status, status if status in REVENUE_STAGE_ORDER else "new")
+
+
+def _revenue_stage_label(stage: str) -> str:
+    return {
+        "new": "New",
+        "contacted": "Contacted",
+        "qualified": "Qualified",
+        "demo_booked": "Demo booked",
+        "demo_done": "Demo done",
+        "pilot_proposed": "Pilot proposed",
+        "negotiation": "Negotiation",
+        "won": "Won",
+        "lost": "Lost",
+        "paused": "Paused",
+    }.get(stage, stage.replace("_", " ").title())
+
+
+def _revenue_estimated_value(row, item_type: str, stage: str) -> int:
+    if stage == "won":
+        base = 750 if item_type == "access_request" else 500
+    elif item_type == "access_request":
+        estimated_users = getattr(row, "estimated_users", None) or 0
+        base = max(500, min(1500, int(estimated_users or 0) * 50)) if estimated_users else 750
+    else:
+        base = 400
+    return int(base)
+
+
+def _revenue_city_relevance(city: str | None) -> int:
+    normalized = _audience_normalize_text(city)
+    if not normalized:
+        return 0
+    if any(token in normalized for token in ("boulogne", "nanterre", "hauts de seine", "92")):
+        return 10
+    if "paris" in normalized or "ile de france" in normalized or "idf" in normalized:
+        return 8
+    if normalized in AUDIENCE_CITY_MARKERS:
+        return 4
+    return 0
+
+
+def _revenue_stage_score(stage: str) -> int:
+    return {
+        "new": 5,
+        "contacted": 12,
+        "qualified": 20,
+        "demo_booked": 28,
+        "demo_done": 35,
+        "pilot_proposed": 45,
+        "negotiation": 55,
+        "won": 65,
+        "lost": 0,
+        "paused": 5,
+    }.get(stage, 5)
+
+
+def _revenue_audience_score(notes: str | None) -> tuple[int, dict | None]:
+    context = extract_audience_context(notes)
+    if not context:
+        return 0, None
+    try:
+        raw = int(context.get("score") or 0)
+    except Exception:
+        raw = 0
+    return max(0, min(25, int(raw / 2))), context
+
+
+def _revenue_recent_activity_score(last_activity: datetime | None) -> int:
+    activity = _as_aware_utc(last_activity)
+    if not activity:
+        return 0
+    age = _now_utc() - activity
+    if age <= timedelta(hours=24):
+        return 10
+    if age <= timedelta(days=7):
+        return 6
+    if age <= timedelta(days=30):
+        return 2
+    return 0
+
+
+def _revenue_score_bucket(score: int) -> dict:
+    if score >= 80:
+        return {"label": "Very Hot", "class": "text-bg-danger"}
+    if score >= 60:
+        return {"label": "Hot", "class": "text-bg-warning text-dark"}
+    if score >= 35:
+        return {"label": "Warm", "class": "text-bg-info text-dark"}
+    return {"label": "Cold", "class": "text-bg-light border"}
+
+
+def _revenue_next_action_state(next_action_at: datetime | None) -> str:
+    due = _as_aware_utc(next_action_at)
+    if not due:
+        return "none"
+    now = _now_utc()
+    if due.date() <= now.date():
+        return "overdue"
+    if due <= now + timedelta(days=7):
+        return "this_week"
+    return "scheduled"
+
+
+def _revenue_next_action_label(next_action_at: datetime | None, note: str | None) -> str:
+    due = _as_aware_utc(next_action_at)
+    if not due:
+        return "No follow-up set"
+    date_label = due.strftime("%Y-%m-%d")
+    clean_note = (note or "").strip()
+    return f"{date_label} - {clean_note}" if clean_note else date_label
+
+
+def _revenue_last_activity(row, item_type: str) -> datetime | None:
+    if item_type == "professional_lead":
+        return (
+            getattr(row, "last_touched_at", None)
+            or getattr(row, "contacted_at", None)
+            or getattr(row, "created_at", None)
+        )
+    return (
+        getattr(row, "updated_at", None)
+        or getattr(row, "reviewed_at", None)
+        or getattr(row, "created_at", None)
+    )
+
+
+def _revenue_row_from_professional_lead(lead: ProfessionalLead) -> SimpleNamespace:
+    stage = _revenue_stage(getattr(lead, "status", None), "professional_lead")
+    audience_points, audience_context = _revenue_audience_score(getattr(lead, "notes", None))
+    last_activity = _revenue_last_activity(lead, "professional_lead")
+    score = min(
+        100,
+        20
+        + _revenue_stage_score(stage)
+        + audience_points
+        + _revenue_recent_activity_score(last_activity)
+        + _revenue_city_relevance(getattr(lead, "city", None)),
+    )
+    bucket = _revenue_score_bucket(score)
+    has_followup_fields = _revenue_has_followup_fields("professional_leads")
+    next_action_at = getattr(lead, "next_action_at", None) if has_followup_fields else None
+    next_action_note = getattr(lead, "next_action_note", None) if has_followup_fields else None
+    next_action_state = _revenue_next_action_state(next_action_at)
+    value = _revenue_estimated_value(lead, "professional_lead", stage)
+    organization = (getattr(lead, "organization", None) or getattr(lead, "profession", None) or "Professional lead").strip()
+    contact = (getattr(lead, "full_name", None) or getattr(lead, "email", None) or "-").strip()
+    reasons = []
+    if audience_context:
+        reasons.append(f"{audience_context.get('temperature', 'Audience')} audience")
+    if next_action_state == "overdue":
+        reasons.append("follow-up due")
+    if stage in {"qualified", "demo_booked", "demo_done", "pilot_proposed", "negotiation"}:
+        reasons.append(_revenue_stage_label(stage))
+    if not reasons:
+        reasons.append("new professional signal")
+    return SimpleNamespace(
+        id=int(lead.id),
+        uid=f"professional_lead:{lead.id}",
+        kind="professional_lead",
+        type_label="Lead",
+        organization=organization,
+        contact=contact,
+        city=getattr(lead, "city", None) or "-",
+        source=getattr(lead, "source", None) or "professional",
+        stage=stage,
+        stage_label=_revenue_stage_label(stage),
+        score=score,
+        score_bucket=bucket["label"],
+        score_class=bucket["class"],
+        last_activity=last_activity,
+        last_activity_label=_format_demo_touch_elapsed(last_activity),
+        next_action_at=next_action_at,
+        next_action_note=next_action_note,
+        next_action_state=next_action_state,
+        next_action_label=_revenue_next_action_label(next_action_at, next_action_note),
+        estimated_value=value,
+        weighted_value=int(value * REVENUE_STAGE_WEIGHTS.get(stage, 0.05)),
+        action_url=url_for("admin.admin_professional_lead_detail", lead_id=lead.id),
+        why_hot=", ".join(reasons),
+        next_best_action=(
+            "Follow up now"
+            if next_action_state == "overdue"
+            else "Book demo"
+            if stage in {"new", "contacted", "qualified"}
+            else "Push pilot decision"
+            if stage in {"demo_done", "pilot_proposed", "negotiation"}
+            else "Open"
+        ),
+    )
+
+
+def _revenue_row_from_access_request(row: OrganizationAccessRequest) -> SimpleNamespace:
+    stage = _revenue_stage(getattr(row, "status", None), "access_request")
+    audience_points, audience_context = _revenue_audience_score(getattr(row, "internal_notes", None))
+    last_activity = _revenue_last_activity(row, "access_request")
+    score = min(
+        100,
+        30
+        + _revenue_stage_score(stage)
+        + audience_points
+        + _revenue_recent_activity_score(last_activity)
+        + _revenue_city_relevance(getattr(row, "city", None)),
+    )
+    bucket = _revenue_score_bucket(score)
+    has_followup_fields = _revenue_has_followup_fields("organization_access_requests")
+    next_action_at = getattr(row, "next_action_at", None) if has_followup_fields else None
+    next_action_note = getattr(row, "next_action_note", None) if has_followup_fields else None
+    next_action_state = _revenue_next_action_state(next_action_at)
+    value = _revenue_estimated_value(row, "access_request", stage)
+    reasons = ["access request submitted"]
+    if audience_context:
+        reasons.append(f"{audience_context.get('temperature', 'Audience')} audience")
+    if next_action_state == "overdue":
+        reasons.append("follow-up due")
+    if stage == "won":
+        reasons.append("approved")
+    return SimpleNamespace(
+        id=int(row.id),
+        uid=f"access_request:{row.id}",
+        kind="access_request",
+        type_label="Access Request",
+        organization=getattr(row, "organization_name", None) or "Access request",
+        contact=getattr(row, "contact_name", None) or getattr(row, "email", None) or "-",
+        city=getattr(row, "city", None) or "-",
+        source="/demander-acces",
+        stage=stage,
+        stage_label=_revenue_stage_label(stage),
+        score=score,
+        score_bucket=bucket["label"],
+        score_class=bucket["class"],
+        last_activity=last_activity,
+        last_activity_label=_format_demo_touch_elapsed(last_activity),
+        next_action_at=next_action_at,
+        next_action_note=next_action_note,
+        next_action_state=next_action_state,
+        next_action_label=_revenue_next_action_label(next_action_at, next_action_note),
+        estimated_value=value,
+        weighted_value=int(value * REVENUE_STAGE_WEIGHTS.get(stage, 0.05)),
+        action_url=url_for("admin.admin_organization_access_request_detail", req_id=row.id),
+        why_hot=", ".join(reasons),
+        next_best_action=(
+            "Review and qualify"
+            if stage == "new"
+            else "Follow up now"
+            if next_action_state == "overdue"
+            else "Approve or request info"
+            if stage == "qualified"
+            else "Open"
+        ),
+    )
+
+
+def _build_revenue_pipeline_rows() -> list[SimpleNamespace]:
+    rows: list[SimpleNamespace] = []
+    if _table_exists("professional_leads"):
+        lead_fields = [
+            ProfessionalLead.id,
+            ProfessionalLead.email,
+            ProfessionalLead.full_name,
+            ProfessionalLead.city,
+            ProfessionalLead.profession,
+            ProfessionalLead.organization,
+            ProfessionalLead.source,
+            ProfessionalLead.status,
+            ProfessionalLead.notes,
+            ProfessionalLead.contacted_at,
+            ProfessionalLead.created_at,
+        ]
+        if _table_has_column("professional_leads", "last_touched_at"):
+            lead_fields.append(ProfessionalLead.last_touched_at)
+        if _table_has_column("professional_leads", "next_action_at"):
+            lead_fields.append(ProfessionalLead.next_action_at)
+        if _table_has_column("professional_leads", "next_action_note"):
+            lead_fields.append(ProfessionalLead.next_action_note)
+        query = (
+            ProfessionalLead.query.options(load_only(*lead_fields))
+            .order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
+            .limit(500)
+        )
+        for lead in query.all():
+            rows.append(_revenue_row_from_professional_lead(lead))
+    if _table_exists("organization_access_requests"):
+        request_fields = [
+            OrganizationAccessRequest.id,
+            OrganizationAccessRequest.organization_name,
+            OrganizationAccessRequest.contact_name,
+            OrganizationAccessRequest.email,
+            OrganizationAccessRequest.city,
+            OrganizationAccessRequest.org_type,
+            OrganizationAccessRequest.estimated_users,
+            OrganizationAccessRequest.status,
+            OrganizationAccessRequest.reviewed_at,
+            OrganizationAccessRequest.internal_notes,
+            OrganizationAccessRequest.created_at,
+            OrganizationAccessRequest.updated_at,
+        ]
+        if _table_has_column("organization_access_requests", "next_action_at"):
+            request_fields.append(OrganizationAccessRequest.next_action_at)
+        if _table_has_column("organization_access_requests", "next_action_note"):
+            request_fields.append(OrganizationAccessRequest.next_action_note)
+        query = (
+            OrganizationAccessRequest.query.options(load_only(*request_fields))
+            .order_by(
+                OrganizationAccessRequest.created_at.desc(),
+                OrganizationAccessRequest.id.desc(),
+            )
+            .limit(500)
+        )
+        for access_request in query.all():
+            rows.append(_revenue_row_from_access_request(access_request))
+    rows.sort(
+        key=lambda item: (
+            item.score,
+            1 if item.next_action_state == "overdue" else 0,
+            _as_aware_utc(item.last_activity) or datetime.min.replace(tzinfo=timezone.utc),
+        ),
+        reverse=True,
+    )
+    return rows
+
+
+def _filter_revenue_rows(rows: list[SimpleNamespace], filters: dict) -> list[SimpleNamespace]:
+    result = rows
+    if filters["type"]:
+        result = [row for row in result if row.kind == filters["type"]]
+    if filters["stage"]:
+        result = [row for row in result if row.stage == filters["stage"]]
+    if filters["city"]:
+        needle = filters["city"].lower()
+        result = [row for row in result if needle in (row.city or "").lower()]
+    if filters["score_bucket"]:
+        result = [
+            row
+            for row in result
+            if row.score_bucket.lower().replace(" ", "_") == filters["score_bucket"]
+        ]
+    if filters["followup"] == "overdue":
+        result = [row for row in result if row.next_action_state == "overdue"]
+    elif filters["followup"] == "this_week":
+        result = [row for row in result if row.next_action_state in {"overdue", "this_week"}]
+    elif filters["followup"] == "none":
+        result = [row for row in result if row.next_action_state == "none"]
+    if filters["active_week"]:
+        cutoff = _now_utc() - timedelta(days=7)
+        result = [
+            row
+            for row in result
+            if (_as_aware_utc(row.last_activity) or datetime.min.replace(tzinfo=timezone.utc)) >= cutoff
+        ]
+    if filters["q"]:
+        needle = filters["q"].lower()
+        result = [
+            row
+            for row in result
+            if needle in (row.organization or "").lower()
+            or needle in (row.contact or "").lower()
+        ]
+    return result
+
+
+def _revenue_metrics(rows: list[SimpleNamespace]) -> dict:
+    now = _now_utc()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    open_rows = [row for row in rows if row.stage not in {"won", "lost", "paused"}]
+    won_rows = [
+        row
+        for row in rows
+        if row.stage == "won"
+        and (_as_aware_utc(row.last_activity) or datetime.min.replace(tzinfo=timezone.utc)) >= month_start
+    ]
+    return {
+        "new_leads": sum(1 for row in rows if row.stage == "new"),
+        "hot_leads": sum(1 for row in rows if row.score_bucket in {"Hot", "Very Hot"} and row.stage not in {"won", "lost"}),
+        "overdue_followups": sum(1 for row in rows if row.next_action_state == "overdue"),
+        "demos_pending": sum(1 for row in rows if row.stage in {"demo_booked", "demo_done"}),
+        "active_pipeline": sum(row.estimated_value for row in open_rows),
+        "won_this_month": sum(row.estimated_value for row in won_rows),
+    }
+
+
+def _revenue_forecast(rows: list[SimpleNamespace]) -> dict:
+    now = _now_utc()
+    month_end = now + timedelta(days=30)
+    active_rows = [row for row in rows if row.stage not in {"lost", "paused"}]
+    likely_rows = [
+        row
+        for row in active_rows
+        if row.stage in {"pilot_proposed", "negotiation", "won"}
+        or (
+            row.next_action_at
+            and (_as_aware_utc(row.next_action_at) or now) <= month_end
+            and row.score >= 60
+        )
+    ]
+    return {
+        "weighted_pipeline": sum(row.weighted_value for row in active_rows),
+        "likely_this_month": sum(row.weighted_value for row in likely_rows),
+        "closed_won": sum(row.estimated_value for row in active_rows if row.stage == "won"),
+    }
+
+
+def _revenue_focus(rows: list[SimpleNamespace]) -> dict:
+    open_rows = [row for row in rows if row.stage not in {"won", "lost", "paused"}]
+    top = sorted(
+        open_rows,
+        key=lambda row: (
+            row.score,
+            1 if row.next_action_state == "overdue" else 0,
+            row.weighted_value,
+        ),
+        reverse=True,
+    )[:5]
+    stale_cutoff = _now_utc() - timedelta(days=10)
+    at_risk = [
+        row
+        for row in open_rows
+        if row.next_action_state == "overdue"
+        or (
+            row.stage in {"pilot_proposed", "negotiation", "demo_done"}
+            and (_as_aware_utc(row.last_activity) or stale_cutoff) <= stale_cutoff
+        )
+        or (row.score >= 60 and row.next_action_state == "none")
+    ][:5]
+    return {"top": top, "at_risk": at_risk}
+
+
+@admin_bp.get("/revenue")
+@login_required
+@admin_required
+@admin_role_required("superadmin")
+def admin_revenue():
+    _require_global_admin()
+    filters = {
+        "type": (request.args.get("type") or "").strip(),
+        "stage": (request.args.get("stage") or "").strip(),
+        "city": (request.args.get("city") or "").strip(),
+        "score_bucket": (request.args.get("score_bucket") or "").strip(),
+        "followup": (request.args.get("followup") or "").strip(),
+        "active_week": (request.args.get("active_week") or "").strip() == "1",
+        "q": (request.args.get("q") or "").strip(),
+    }
+    all_rows = _build_revenue_pipeline_rows()
+    filtered_rows = _filter_revenue_rows(all_rows, filters)
+    return (
+        render_template(
+            "admin/revenue_dashboard.html",
+            rows=filtered_rows[:250],
+            total_rows=len(all_rows),
+            metrics=_revenue_metrics(all_rows),
+            forecast=_revenue_forecast(all_rows),
+            focus=_revenue_focus(all_rows),
+            filters=filters,
+            stage_choices=REVENUE_STAGE_ORDER,
+            active_filters=any(filters.values()),
+            radar=_build_audience_map_context(),
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/revenue/<string:item_type>/<int:item_id>/quick-action")
+@login_required
+@admin_required
+@admin_role_required("superadmin")
+def admin_revenue_quick_action(item_type: str, item_id: int):
+    _require_global_admin()
+    action = (request.form.get("action") or "").strip().lower()
+    note = (request.form.get("note") or "").strip()
+    now = _now_utc()
+
+    if item_type == "professional_lead":
+        row = ProfessionalLead.query.get_or_404(item_id)
+        table_name = "professional_leads"
+        if action == "mark_contacted":
+            row.status = "contacted"
+            if not row.contacted_at:
+                row.contacted_at = now
+            _record_professional_lead_touch(row, action="revenue_mark_contacted")
+        elif action == "mark_lost":
+            row.status = "rejected"
+            _record_professional_lead_touch(row, action="revenue_mark_lost")
+        elif action in {"tomorrow", "next_week"}:
+            if _revenue_has_followup_fields(table_name):
+                row.next_action_at = now + (timedelta(days=1) if action == "tomorrow" else timedelta(days=7))
+                row.next_action_note = note or ("Follow up tomorrow" if action == "tomorrow" else "Follow up next week")
+            _record_professional_lead_touch(row, action=f"revenue_followup_{action}")
+        else:
+            flash("Unknown revenue action.", "warning")
+            return redirect(url_for("admin.admin_revenue"), code=303)
+    elif item_type == "access_request":
+        row = OrganizationAccessRequest.query.get_or_404(item_id)
+        table_name = "organization_access_requests"
+        if action == "mark_contacted":
+            if (row.status or "").lower() == "new":
+                row.status = "reviewed"
+            row.reviewed_at = row.reviewed_at or now
+        elif action == "mark_lost":
+            row.status = "rejected"
+            row.reviewed_at = row.reviewed_at or now
+        elif action in {"tomorrow", "next_week"}:
+            if _revenue_has_followup_fields(table_name):
+                row.next_action_at = now + (timedelta(days=1) if action == "tomorrow" else timedelta(days=7))
+                row.next_action_note = note or ("Follow up tomorrow" if action == "tomorrow" else "Follow up next week")
+        else:
+            flash("Unknown revenue action.", "warning")
+            return redirect(url_for("admin.admin_revenue"), code=303)
+    else:
+        abort(404)
+
+    db.session.commit()
+    flash("Revenue pipeline updated.", "success")
+    return redirect(url_for("admin.admin_revenue"), code=303)
 
 
 @admin_bp.get("/audience-map")

@@ -1,0 +1,432 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Revenue Control Center | {{ _('Admin') }}{% endblock %}
+{% block admin_body_class %} hc-admin-revenue-page hc-density-compact{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-revenue-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 14px;
+      align-items: start;
+    }
+    .hc-revenue-kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .hc-revenue-kpi {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-left: 4px solid #64748b;
+      background: #fff;
+      border-radius: 8px;
+      padding: .8rem .85rem;
+      min-width: 0;
+    }
+    .hc-revenue-kpi--hot { border-left-color: #dc2626; }
+    .hc-revenue-kpi--due { border-left-color: #d97706; }
+    .hc-revenue-kpi--demo { border-left-color: #2563eb; }
+    .hc-revenue-kpi--money { border-left-color: #059669; }
+    .hc-revenue-kpi__label {
+      color: rgba(15, 23, 42, .62);
+      font-size: .74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hc-revenue-kpi__value {
+      display: block;
+      margin-top: .22rem;
+      font-size: 1.35rem;
+      line-height: 1;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .hc-revenue-filterbar {
+      padding: .9rem;
+    }
+    .hc-revenue-filtergrid {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.4fr) repeat(5, minmax(130px, .8fr)) auto;
+      gap: .65rem;
+      align-items: end;
+    }
+    .hc-revenue-table {
+      table-layout: fixed;
+      min-width: 1320px;
+    }
+    .hc-revenue-table th,
+    .hc-revenue-table td {
+      vertical-align: middle;
+    }
+    .hc-revenue-col-type { width: 120px; }
+    .hc-revenue-col-org { width: 245px; }
+    .hc-revenue-col-contact { width: 190px; }
+    .hc-revenue-col-city { width: 145px; }
+    .hc-revenue-col-stage { width: 142px; }
+    .hc-revenue-col-score { width: 118px; }
+    .hc-revenue-col-activity { width: 132px; }
+    .hc-revenue-col-next { width: 220px; }
+    .hc-revenue-col-value { width: 120px; }
+    .hc-revenue-col-actions { width: 255px; }
+    .hc-revenue-line {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-revenue-org {
+      font-weight: 750;
+      color: #0f172a;
+    }
+    .hc-revenue-sub {
+      color: rgba(15, 23, 42, .56);
+      font-size: .78rem;
+    }
+    .hc-revenue-next--overdue {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+    .hc-revenue-next--none {
+      color: rgba(15, 23, 42, .48);
+      font-style: italic;
+    }
+    .hc-revenue-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: .25rem;
+    }
+    .hc-revenue-sidecard + .hc-revenue-sidecard {
+      margin-top: 12px;
+    }
+    .hc-revenue-focus {
+      display: grid;
+      gap: .65rem;
+    }
+    .hc-revenue-focus__item {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-radius: 8px;
+      padding: .75rem;
+      background: #fff;
+    }
+    .hc-revenue-forecast {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: .65rem;
+    }
+    .hc-revenue-forecast__item {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-radius: 8px;
+      padding: .75rem;
+      background: #f8fafc;
+    }
+    @media (max-width: 1399.98px) {
+      .hc-revenue-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .hc-revenue-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 991.98px) {
+      .hc-revenue-filtergrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 575.98px) {
+      .hc-revenue-kpis,
+      .hc-revenue-filtergrid,
+      .hc-revenue-forecast {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--wide">
+  <div class="hc-card hc-admin-headerCard mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="hc-admin-kicker">Founder revenue engine</div>
+        <h1 class="hc-admin-title mb-1">Revenue Control Center</h1>
+        <div class="hc-muted">Daily cockpit for leads, access requests, follow-ups, forecast, and founder focus.</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_audience_map') }}">Audience</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professional_leads') }}">Leads</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="hc-revenue-kpis mb-3" aria-label="Revenue KPIs">
+    <article class="hc-revenue-kpi">
+      <span class="hc-revenue-kpi__label">New Leads</span>
+      <strong class="hc-revenue-kpi__value">{{ metrics.new_leads }}</strong>
+    </article>
+    <article class="hc-revenue-kpi hc-revenue-kpi--hot">
+      <span class="hc-revenue-kpi__label">Hot Leads</span>
+      <strong class="hc-revenue-kpi__value">{{ metrics.hot_leads }}</strong>
+    </article>
+    <article class="hc-revenue-kpi hc-revenue-kpi--due">
+      <span class="hc-revenue-kpi__label">Overdue Follow-ups</span>
+      <strong class="hc-revenue-kpi__value">{{ metrics.overdue_followups }}</strong>
+    </article>
+    <article class="hc-revenue-kpi hc-revenue-kpi--demo">
+      <span class="hc-revenue-kpi__label">Demos Pending</span>
+      <strong class="hc-revenue-kpi__value">{{ metrics.demos_pending }}</strong>
+    </article>
+    <article class="hc-revenue-kpi hc-revenue-kpi--money">
+      <span class="hc-revenue-kpi__label">Active Pipeline EUR</span>
+      <strong class="hc-revenue-kpi__value">{{ metrics.active_pipeline }}</strong>
+    </article>
+    <article class="hc-revenue-kpi hc-revenue-kpi--money">
+      <span class="hc-revenue-kpi__label">Won This Month EUR</span>
+      <strong class="hc-revenue-kpi__value">{{ metrics.won_this_month }}</strong>
+    </article>
+  </section>
+
+  <div class="hc-revenue-grid">
+    <main>
+      <form method="GET" class="hc-card hc-revenue-filterbar mb-3">
+        <div class="hc-revenue-filtergrid">
+          <div>
+            <label class="hc-muted" for="q">Search</label>
+            <input id="q" name="q" value="{{ filters.q }}" class="hc-input" placeholder="Organization or contact" />
+          </div>
+          <div>
+            <label class="hc-muted" for="type">Type</label>
+            <select id="type" name="type" class="hc-input">
+              <option value="">All</option>
+              <option value="professional_lead" {% if filters.type == 'professional_lead' %}selected{% endif %}>Lead</option>
+              <option value="access_request" {% if filters.type == 'access_request' %}selected{% endif %}>Access Request</option>
+            </select>
+          </div>
+          <div>
+            <label class="hc-muted" for="stage">Stage</label>
+            <select id="stage" name="stage" class="hc-input">
+              <option value="">All</option>
+              {% for stage in stage_choices %}
+                <option value="{{ stage }}" {% if filters.stage == stage %}selected{% endif %}>{{ stage|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="hc-muted" for="city">City</label>
+            <input id="city" name="city" value="{{ filters.city }}" class="hc-input" placeholder="City" />
+          </div>
+          <div>
+            <label class="hc-muted" for="score_bucket">Score</label>
+            <select id="score_bucket" name="score_bucket" class="hc-input">
+              <option value="">All</option>
+              {% for bucket in ['cold', 'warm', 'hot', 'very_hot'] %}
+                <option value="{{ bucket }}" {% if filters.score_bucket == bucket %}selected{% endif %}>{{ bucket|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="hc-muted" for="followup">Follow-up</label>
+            <select id="followup" name="followup" class="hc-input">
+              <option value="">All</option>
+              <option value="overdue" {% if filters.followup == 'overdue' %}selected{% endif %}>Overdue today</option>
+              <option value="this_week" {% if filters.followup == 'this_week' %}selected{% endif %}>Due this week</option>
+              <option value="none" {% if filters.followup == 'none' %}selected{% endif %}>No follow-up set</option>
+            </select>
+          </div>
+          <div class="d-flex flex-wrap gap-1">
+            <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_revenue') }}">Reset</a>
+          </div>
+        </div>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" value="1" id="active_week_toggle" name="active_week" {% if filters.active_week %}checked{% endif %}>
+          <label class="form-check-label small text-muted" for="active_week_toggle">This week active</label>
+        </div>
+      </form>
+
+      <div class="hc-card hc-admin-table-shell">
+        <div class="hc-card__section hc-card__section--header">
+          <div>
+            <strong>Unified Pipeline</strong>
+            <div class="hc-muted small">{{ rows|length }} visible / {{ total_rows }} total revenue signal{% if total_rows != 1 %}s{% endif %}</div>
+          </div>
+          {% if active_filters %}<span class="badge text-bg-light border">Filters active</span>{% endif %}
+        </div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table hc-revenue-table mb-0">
+            <colgroup>
+              <col class="hc-revenue-col-type">
+              <col class="hc-revenue-col-org">
+              <col class="hc-revenue-col-contact">
+              <col class="hc-revenue-col-city">
+              <col class="hc-revenue-col-stage">
+              <col class="hc-revenue-col-score">
+              <col class="hc-revenue-col-activity">
+              <col class="hc-revenue-col-next">
+              <col class="hc-revenue-col-value">
+              <col class="hc-revenue-col-actions">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Organization</th>
+                <th>Contact</th>
+                <th>City</th>
+                <th>Stage</th>
+                <th>Score</th>
+                <th>Last Activity</th>
+                <th>Next Action</th>
+                <th class="text-end">Value</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+                <tr>
+                  <td><span class="badge text-bg-light border">{{ row.type_label }}</span></td>
+                  <td>
+                    <a class="hc-revenue-line hc-revenue-org" href="{{ row.action_url }}">{{ row.organization }}</a>
+                    <span class="hc-revenue-line hc-revenue-sub">{{ row.source }}</span>
+                  </td>
+                  <td><span class="hc-revenue-line">{{ row.contact }}</span></td>
+                  <td><span class="hc-revenue-line">{{ row.city }}</span></td>
+                  <td><span class="badge text-bg-light border">{{ row.stage_label }}</span></td>
+                  <td>
+                    <span class="badge {{ row.score_class }}">{{ row.score_bucket }}</span>
+                    <span class="hc-revenue-sub d-block">{{ row.score }}/100</span>
+                  </td>
+                  <td>{{ row.last_activity_label }}</td>
+                  <td>
+                    <span class="hc-revenue-line hc-revenue-next--{{ row.next_action_state }}">{{ row.next_action_label }}</span>
+                  </td>
+                  <td class="text-end fw-semibold">EUR {{ row.estimated_value }}</td>
+                  <td>
+                    <div class="hc-revenue-actions">
+                      <form method="POST" action="{{ url_for('admin.admin_revenue_quick_action', item_type=row.kind, item_id=row.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="tomorrow">
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">Tomorrow</button>
+                      </form>
+                      <form method="POST" action="{{ url_for('admin.admin_revenue_quick_action', item_type=row.kind, item_id=row.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="next_week">
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">Next week</button>
+                      </form>
+                      <form method="POST" action="{{ url_for('admin.admin_revenue_quick_action', item_type=row.kind, item_id=row.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="mark_contacted">
+                        <button class="btn btn-outline-primary btn-sm" type="submit">Contacted</button>
+                      </form>
+                      <form method="POST" action="{{ url_for('admin.admin_revenue_quick_action', item_type=row.kind, item_id=row.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="mark_lost">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Lost</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="10">
+                    <div class="hc-empty-state">
+                      <div class="hc-empty-state__title">No revenue signals yet</div>
+                      <div class="hc-empty-state__text">Professional leads and organization access requests will appear here when available.</div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="hc-card hc-revenue-sidecard">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Top 5 Opportunities Today</strong>
+        </div>
+        <div class="p-3 hc-revenue-focus">
+          {% for item in focus.top %}
+            <div class="hc-revenue-focus__item">
+              <div class="d-flex justify-content-between gap-2">
+                <strong class="text-truncate">{{ item.organization }}</strong>
+                <span class="badge {{ item.score_class }}">{{ item.score }}</span>
+              </div>
+              <div class="hc-muted small mt-1">{{ item.why_hot }}</div>
+              <div class="small mt-2"><strong>Next:</strong> {{ item.next_best_action }}</div>
+              <div class="small text-muted">Estimated value: EUR {{ item.estimated_value }}</div>
+            </div>
+          {% else %}
+            <div class="hc-empty-state">
+              <div class="hc-empty-state__title">No focus opportunities</div>
+              <div class="hc-empty-state__text">New access requests and leads will populate this panel.</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="hc-card hc-revenue-sidecard">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>At Risk Deals</strong>
+        </div>
+        <div class="p-3">
+          {% for item in focus.at_risk %}
+            <div class="border-bottom pb-2 mb-2">
+              <div class="fw-semibold">{{ item.organization }}</div>
+              <div class="hc-muted small">{{ item.next_action_label }} · {{ item.stage_label }}</div>
+            </div>
+          {% else %}
+            <p class="hc-muted small mb-0">No at-risk deals detected.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="hc-card hc-revenue-sidecard">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Revenue Forecast</strong>
+        </div>
+        <div class="p-3 hc-revenue-forecast">
+          <div class="hc-revenue-forecast__item">
+            <div class="hc-muted small">Weighted Pipeline</div>
+            <strong>EUR {{ forecast.weighted_pipeline }}</strong>
+          </div>
+          <div class="hc-revenue-forecast__item">
+            <div class="hc-muted small">Likely This Month</div>
+            <strong>EUR {{ forecast.likely_this_month }}</strong>
+          </div>
+          <div class="hc-revenue-forecast__item">
+            <div class="hc-muted small">Closed Won</div>
+            <strong>EUR {{ forecast.closed_won }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="hc-card hc-revenue-sidecard">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Revenue Radar Feed</strong>
+          <span class="badge text-bg-light border">{{ radar.revenue_radar_rows|length }}</span>
+        </div>
+        <div class="p-3">
+          {% for insight in radar.revenue_radar_insights %}
+            <div class="badge text-bg-info text-dark mb-1">{{ insight }}</div>
+          {% endfor %}
+          {% if radar.revenue_radar_rows %}
+            <div class="list-group list-group-flush mt-2">
+              {% for item in radar.revenue_radar_rows[:5] %}
+                <div class="list-group-item px-0">
+                  <div class="d-flex justify-content-between">
+                    <code>{{ item.session_label }}</code>
+                    <span class="badge {{ item.temperature_class }}">{{ item.temperature }}</span>
+                  </div>
+                  <div class="hc-muted small">{{ item.pages_count }} page(s) · {{ item.source }} · {{ item.action }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="hc-muted small mb-0">No hot anonymous sessions available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

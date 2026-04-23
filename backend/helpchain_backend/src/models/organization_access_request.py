@@ -31,6 +31,8 @@ class OrganizationAccessRequest(db.Model):
     )
     reviewed_at = db.Column(db.DateTime(timezone=True), nullable=True)
     internal_notes = db.Column(db.Text, nullable=True)
+    next_action_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
+    next_action_note = db.Column(db.String(255), nullable=True)
 
     created_at = db.Column(
         db.DateTime(timezone=True),

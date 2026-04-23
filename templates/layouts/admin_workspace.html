@@ -33,6 +33,7 @@
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/cases') or current_path.startswith('/admin/cases') else '' }}" href="{{ cases_href }}">Cas</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/ops/notifications') or current_path.startswith('/admin/notifications') else '' }}" href="{{ notifications_href }}">Notifications</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/professional-leads') else '' }}" href="{{ url_for('admin.admin_professional_leads') }}">Leads</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/revenue') else '' }}" href="{{ url_for('admin.admin_revenue') }}">Revenue</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/audience-map') else '' }}" href="{{ url_for('admin.admin_audience_map') }}">Audience</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/risk') else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">Sécurité</a>
