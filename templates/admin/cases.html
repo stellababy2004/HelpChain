@@ -176,6 +176,7 @@
             {% set case_sla = case_sla_snapshot(c) %}
             {% set status_key = (c.status or 'open')|replace('_', '-')|lower %}
             {% set status_label = status_display_labels.get((c.status or '')|lower, (c.status or '-')|replace('_', ' ')|title) %}
+            {% set case_detail_href = url_for('admin.admin_case_detail', case_id=c.id) %}
             <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'Ã©levÃ©', 'ÃƒÂ©levÃƒÂ©'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}">
               <td class="case-col">
                 <div class="hc-case-id">#{{ c.id }}</div>
@@ -186,7 +187,7 @@
                   {% if config.DEMO_MODE %}
                     <span class="text-muted">#{{ c.request_id }}</span>
                   {% else %}
-                    <a href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">#{{ c.request_id }}</a>
+                    <a href="{{ case_detail_href }}">#{{ c.request_id }}</a>
                   {% endif %}
                   <span class="ms-1">{{ c.request.title if c.request else '-' }}</span>
                 </div>
@@ -247,7 +248,7 @@
                 {% if config.DEMO_MODE %}
                   <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Apercu</span>
                 {% else %}
-                  <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_case_detail', case_id=c.id) }}">Ouvrir</a>
+                  <a class="btn btn-sm btn-primary" href="{{ case_detail_href }}" data-no-rowclick>Ouvrir</a>
                 {% endif %}
               </td>
             </tr>
@@ -266,4 +267,39 @@
     </div>
   </div>
 </div>
+<script>
+  (() => {
+    const rows = Array.from(document.querySelectorAll(".hc-case-row"));
+    if (!rows.length) return;
+
+    const isInteractive = (el) =>
+      !!el?.closest("a, button, input, select, textarea, label, form, [role='button'], [data-no-rowclick]");
+
+    const getRowHref = (row) => {
+      const detailLink = row.querySelector("a[href*='/cases/']");
+      return detailLink ? detailLink.getAttribute("href") : "";
+    };
+
+    rows.forEach((row) => {
+      const href = getRowHref(row);
+      if (!href) return;
+
+      row.style.cursor = "pointer";
+      row.tabIndex = 0;
+      row.setAttribute("role", "link");
+
+      row.addEventListener("click", (e) => {
+        if (isInteractive(e.target)) return;
+        window.location.href = href;
+      });
+
+      row.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        if (isInteractive(e.target)) return;
+        e.preventDefault();
+        window.location.href = href;
+      });
+    });
+  })();
+</script>
 {% endblock %}
