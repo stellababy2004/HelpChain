@@ -31,11 +31,13 @@ if _runtime_db.apply_contract and _runtime_db.selected_uri:
 
 from backend.extensions import db  # bound SQLAlchemy instance
 from backend.helpchain_backend.src.app import create_app
+from backend.routes.lead_capture import lead_capture_bp
 
 # --------------------------------------------------
 # Create Flask app
 # --------------------------------------------------
 app = create_app()
+app.register_blueprint(lead_capture_bp)
 
 
 # --------------------------------------------------
@@ -75,7 +77,6 @@ def send_email_2fa_code(code, ip_address=None, user_agent=None):
         return True if result is None else bool(result)
 
     except Exception as e:
-        # Never break auth flow because of email failure
         print(f"[MAIL ERROR] {e}")
         return False
 

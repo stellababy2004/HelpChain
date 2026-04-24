@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="{{ get_locale() }}">
   <head>
     <meta charset="UTF-8" />
@@ -15,6 +15,7 @@
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url" content="{% block og_url %}{{ request.base_url }}{% endblock %}">
     <link rel="canonical" href="{% block canonical_url %}{{ request.base_url }}{% endblock %}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/lead-capture.css') }}">
     {% set _seo_ep = (request.endpoint or '') %}
     {% set _hreflang_public_eps = [
       'main.index',
@@ -1547,13 +1548,13 @@
       src="{{ PLAUSIBLE_SCRIPT_URL }}"
     ></script>
     {% endif %}
-    <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/nav-scroll.js') }}" defer></script>
-    <script defer src="{{ url_for('static', filename='js/volunteer-actions-ui.js') }}"></script>
     <script src="{{ url_for('static', filename='js/public-mobile-nav.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/admin-top-nav.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/lead-capture.js') }}?v=5" defer></script>
+
     <script>
-      (function () {
+       (function () {
+      
         const el = document.getElementById("hcServerIndicator");
         const text = document.getElementById("hcServerIndicatorText");
         if (!el || !text) return;
@@ -1632,6 +1633,7 @@
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
     {% endif %}
+    <script src="{{ url_for('static', filename='js/lead-capture.js') }}" defer></script>
   </body>
 </html>
 
