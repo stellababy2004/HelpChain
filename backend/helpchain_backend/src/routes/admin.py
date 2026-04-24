@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from collections import Counter
 import csv
@@ -136,10 +136,10 @@ from ..services.risk_engine import update_case_risk
 from ..services.structure_service import create_structure_with_admin
 
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
-    "Identifiants invalides ou accès temporairement bloqué."
+    "Identifiants invalides ou accÃ¨s temporairement bloquÃ©."
 )
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
-    "Identifiants invalides ou accès temporairement bloqué."
+    "Identifiants invalides ou accÃ¨s temporairement bloquÃ©."
 )
 CATEGORY_CASE_STATUSES = (
     "new",
@@ -385,7 +385,7 @@ ACTIVE_ASSIGNMENT_STATUSES = {"active", "pending", "accepted", "in_progress"}
 
 def _normalize_intervenant_city_key(value: str | None) -> str:
     txt = _normalize_smart_assign_text(value)
-    return txt.replace("–", "-").replace("-", " ").strip()
+    return txt.replace("â€“", "-").replace("-", " ").strip()
 
 
 def _split_intervenant_location(value: str | None) -> tuple[str, str]:
@@ -617,7 +617,7 @@ def _as_aware_utc(dt_val: datetime | None) -> datetime | None:
 def _format_elapsed_compact(dt_val: datetime | None) -> str:
     dt_aware = _as_aware_utc(dt_val)
     if not dt_aware:
-        return "—"
+        return "â€”"
     delta = max(timedelta(0), _now_utc() - dt_aware)
     total_minutes = int(delta.total_seconds() // 60)
     if total_minutes < 1:
@@ -645,7 +645,7 @@ def _elapsed_tone(dt_val: datetime | None) -> str:
 
 def _format_duration_compact(delta: timedelta | None) -> str:
     if delta is None:
-        return "—"
+        return "â€”"
     total_minutes = max(0, int(delta.total_seconds() // 60))
     if total_minutes < 60:
         return f"{total_minutes} min"
@@ -659,11 +659,11 @@ def _format_duration_compact(delta: timedelta | None) -> str:
 def _case_sla_snapshot(case_row: Case | None) -> dict:
     if not case_row:
         return {
-            "target_label": "—",
+            "target_label": "â€”",
             "deadline": None,
             "state": "on_time",
-            "state_label": "À temps",
-            "detail": "—",
+            "state_label": "Ã€ temps",
+            "detail": "â€”",
         }
 
     priority = ((getattr(case_row, "priority", None) or "normal").strip().lower())
@@ -680,8 +680,8 @@ def _case_sla_snapshot(case_row: Case | None) -> dict:
             "target_label": _format_duration_compact(target_delta),
             "deadline": None,
             "state": "on_time",
-            "state_label": "À temps",
-            "detail": "—",
+            "state_label": "Ã€ temps",
+            "detail": "â€”",
         }
 
     deadline = opened_ref + target_delta
@@ -693,11 +693,11 @@ def _case_sla_snapshot(case_row: Case | None) -> dict:
         detail = f"En retard de {_format_duration_compact(abs(remaining))}"
     elif remaining <= soon_threshold:
         state = "due_soon"
-        state_label = "Échéance proche"
+        state_label = "Ã‰chÃ©ance proche"
         detail = f"Dans {_format_duration_compact(remaining)}"
     else:
         state = "on_time"
-        state_label = "À temps"
+        state_label = "Ã€ temps"
         detail = f"Dans {_format_duration_compact(remaining)}"
 
     return {
@@ -752,10 +752,10 @@ def _build_operational_blockages(
     has_professional = _case_has_professional(case_row)
 
     if not has_owner:
-        blockages.append("Aucun responsable assigné")
+        blockages.append("Aucun responsable assignÃ©")
 
     if case_row and not has_professional:
-        blockages.append("Aucun professionnel assigné")
+        blockages.append("Aucun professionnel assignÃ©")
 
     activity_ref = _as_aware_utc(
         (getattr(case_row, "last_activity_at", None) if case_row else None)
@@ -766,14 +766,14 @@ def _build_operational_blockages(
     if activity_ref:
         inactive_for = now - activity_ref
         if inactive_for >= timedelta(hours=72):
-            blockages.append(f"Dernière activité il y a {_format_elapsed_compact(activity_ref)}")
+            blockages.append(f"DerniÃ¨re activitÃ© il y a {_format_elapsed_compact(activity_ref)}")
 
     created_ref = _as_aware_utc(getattr(case_row, "created_at", None) if case_row else getattr(req, "created_at", None))
     if created_ref and status_val in {"new", "open", "pending"} and (now - created_ref) >= timedelta(hours=48):
         blockages.append("Dossier encore en statut initial depuis trop longtemps")
 
     if case_row and high_risk and not has_professional:
-        blockages.append("Risque élevé sans suivi professionnel concret")
+        blockages.append("Risque Ã©levÃ© sans suivi professionnel concret")
 
     return {
         "count": len(blockages),
@@ -927,7 +927,7 @@ def require_admin_fresh_auth(minutes: int = ADMIN_FRESH_AUTH_MIN):
             if _admin_fresh_auth_is_valid(now, minutes=minutes):
                 return fn(*args, **kwargs)
             nxt = request.full_path if request.query_string else request.path
-            flash("Veuillez confirmer votre identité pour continuer.", "warning")
+            flash("Veuillez confirmer votre identitÃ© pour continuer.", "warning")
             return redirect(url_for("admin.admin_reauth", next=nxt), code=303)
 
         return _wrapped
@@ -974,7 +974,7 @@ def _compute_case_signals(
             {
                 "code": "no_owner",
                 "level": "danger",
-                "title": "Aucun responsable assigné",
+                "title": "Aucun responsable assignÃ©",
                 "why": "Sans responsable, le dossier n'a pas de pilotage clair.",
                 "cta_label": "Assigner un responsable",
                 "cta_href": "#owner-actions",
@@ -988,8 +988,8 @@ def _compute_case_signals(
                 "code": "owner_idle",
                 "level": "warning",
                 "title": "Owner inactif",
-                "why": "Responsable assigné, mais pas d'activité récente.",
-                "cta_label": "Vérifier l'activité",
+                "why": "Responsable assignÃ©, mais pas d'activitÃ© rÃ©cente.",
+                "cta_label": "VÃ©rifier l'activitÃ©",
                 "cta_href": "#activity-timeline",
             }
         )
@@ -1127,7 +1127,7 @@ def _build_helpchain_recommendation(
     assigned_actor = (
         getattr(getattr(req, "owner", None), "username", None)
         or (f"#{req.owner_id}" if getattr(req, "owner_id", None) else "")
-        or "non assigné"
+        or "non assignÃ©"
     )
 
     last_activity = None
@@ -1148,18 +1148,18 @@ def _build_helpchain_recommendation(
             "priority": "Critique",
             "action": "Affecter un responsable territorial",
             "reason": (
-                "Niveau de risque critique et aucun acteur assigné. "
-                f"Dernière activité: {last_activity_label}."
+                "Niveau de risque critique et aucun acteur assignÃ©. "
+                f"DerniÃ¨re activitÃ©: {last_activity_label}."
             ),
         }
 
     if "not_seen_72h" in risk_signals:
         return {
-            "priority": "Élevée",
-            "action": "Vérifier la situation avec l’acteur assigné",
+            "priority": "Ã‰levÃ©e",
+            "action": "VÃ©rifier la situation avec lâ€™acteur assignÃ©",
             "reason": (
-                "Le signal not_seen_72h indique une absence d’action récente. "
-                f"Acteur assigné: {assigned_actor}. Dernière activité: {last_activity_label}."
+                "Le signal not_seen_72h indique une absence dâ€™action rÃ©cente. "
+                f"Acteur assignÃ©: {assigned_actor}. DerniÃ¨re activitÃ©: {last_activity_label}."
             ),
         }
 
@@ -1169,7 +1169,7 @@ def _build_helpchain_recommendation(
             "action": "Planifier un suivi",
             "reason": (
                 "Niveau de risque attention. "
-                f"Acteur assigné: {assigned_actor}. Dernière activité: {last_activity_label}."
+                f"Acteur assignÃ©: {assigned_actor}. DerniÃ¨re activitÃ©: {last_activity_label}."
             ),
         }
 
@@ -1177,8 +1177,8 @@ def _build_helpchain_recommendation(
         "priority": "Standard",
         "action": "Maintenir le suivi courant",
         "reason": (
-            f"Pas de déclencheur critique détecté. Acteur assigné: {assigned_actor}. "
-            f"Dernière activité: {last_activity_label}."
+            f"Pas de dÃ©clencheur critique dÃ©tectÃ©. Acteur assignÃ©: {assigned_actor}. "
+            f"DerniÃ¨re activitÃ©: {last_activity_label}."
         ),
     }
 
@@ -1780,32 +1780,32 @@ def _sla_overdue_hours_by_kind(req, *, now: datetime) -> dict[str, float]:
 def _sla_prediction_state(req, *, sla_kind: str, now: datetime) -> dict:
     created_at = _to_utc_naive(getattr(req, "created_at", None))
     if not created_at:
-        return {"state": "unknown", "remaining_hours": None, "label": "—"}
+        return {"state": "unknown", "remaining_hours": None, "label": "â€”"}
 
     if sla_kind == "resolution_overdue":
         if getattr(req, "completed_at", None) is not None:
-            return {"state": "ok", "remaining_hours": None, "label": "—"}
+            return {"state": "ok", "remaining_hours": None, "label": "â€”"}
         sla_hours = float(RESOLVE_SLA_DAYS * 24)
     elif sla_kind == "owner_assignment_overdue":
         if getattr(req, "owner_id", None) is not None:
-            return {"state": "ok", "remaining_hours": None, "label": "—"}
+            return {"state": "ok", "remaining_hours": None, "label": "â€”"}
         sla_hours = float(ASSIGN_SLA_HOURS)
     elif sla_kind == "volunteer_assignment_overdue":
         if getattr(req, "assigned_volunteer_id", None) is not None:
-            return {"state": "ok", "remaining_hours": None, "label": "—"}
+            return {"state": "ok", "remaining_hours": None, "label": "â€”"}
         sla_hours = float(VOLUNTEER_ASSIGN_SLA_HOURS)
     else:
-        return {"state": "unknown", "remaining_hours": None, "label": "—"}
+        return {"state": "unknown", "remaining_hours": None, "label": "â€”"}
 
     age_hours = max(0.0, (now - created_at).total_seconds() / 3600.0)
     remaining_hours = sla_hours - age_hours
     warn_threshold = min(4.0, max(1.0, sla_hours / 5.0))
 
     if remaining_hours < 0:
-        return {"state": "breached", "remaining_hours": remaining_hours, "label": "Dépassement"}
+        return {"state": "breached", "remaining_hours": remaining_hours, "label": "DÃ©passement"}
     if remaining_hours <= warn_threshold:
-        return {"state": "due_soon", "remaining_hours": remaining_hours, "label": "Échéance proche"}
-    return {"state": "ok", "remaining_hours": remaining_hours, "label": "À temps"}
+        return {"state": "due_soon", "remaining_hours": remaining_hours, "label": "Ã‰chÃ©ance proche"}
+    return {"state": "ok", "remaining_hours": remaining_hours, "label": "Ã€ temps"}
 
 
 def _delta_seconds(start: datetime | None, end: datetime | None) -> int | None:
@@ -2062,7 +2062,7 @@ def _admin_idle_timeout_guard():
             logout_user()
         except Exception:
             pass
-        flash("Votre session a expiré. Veuillez vous reconnecter.", "warning")
+        flash("Votre session a expirÃ©. Veuillez vous reconnecter.", "warning")
         return redirect(url_for("admin.admin_login_legacy"), code=303)
 
     _touch_admin_last_seen(now)
@@ -3198,7 +3198,7 @@ def _rules_suggest(key: str, locale: str, default: str, domain: str) -> list[dic
         base = t("dashboard", "Dashboard")
         reason_base = "Term: dashboard"
     elif "assign" in k or "claim" in k or "prendre_en_charge" in k:
-        base = t("assign", "Übernehmen" if locale == "de" else "Assign")
+        base = t("assign", "Ãœbernehmen" if locale == "de" else "Assign")
         reason_base = "Term: assign/claim"
     elif "status" in k:
         base = t("status", "Status")
@@ -3225,7 +3225,7 @@ def _rules_suggest(key: str, locale: str, default: str, domain: str) -> list[dic
 
     if kind == "title":
         v1 = base
-        v2 = f"{base} — {t('dashboard', 'Dashboard')}" if ("dashboard" not in k and len(base) <= 24) else base
+        v2 = f"{base} â€” {t('dashboard', 'Dashboard')}" if ("dashboard" not in k and len(base) <= 24) else base
         v3 = f"{base} ({locale.upper()})" if (is_admin and len(base) <= 24) else base
         return [
             {"text": v1, "reason": f"Title. {reason_base}"},
@@ -3636,7 +3636,6 @@ def _render_operator_dashboard():
         urgent_filter,
         unassigned_filter,
         activity_expr <= stale_threshold,
-        updated_today_filter,
     )
 
     workspace_query = base_query.filter(actionable_filter, priority_filter)
@@ -4066,7 +4065,7 @@ def enforce_admin_mfa():
     return redirect(url_for("admin.admin_mfa_verify", next=nxt))
 
 
-# API endpoint за заявки с филтри (status, date)
+# API endpoint Ð·Ð° Ð·Ð°ÑÐ²ÐºÐ¸ Ñ Ñ„Ð¸Ð»Ñ‚Ñ€Ð¸ (status, date)
 def api_requests():
     from flask import current_app, jsonify, request
 
@@ -4111,7 +4110,7 @@ def api_requests():
     return jsonify({"items": data})
 
 
-# API endpoint за всички доброволци (JSON)
+# API endpoint Ð·Ð° Ð²ÑÐ¸Ñ‡ÐºÐ¸ Ð´Ð¾Ð±Ñ€Ð¾Ð²Ð¾Ð»Ñ†Ð¸ (JSON)
 def api_volunteers():
     from flask import current_app, jsonify
 
@@ -4134,7 +4133,7 @@ def api_volunteers():
     return jsonify(data)
 
 
-# Детайли за доброволец
+# Ð”ÐµÑ‚Ð°Ð¹Ð»Ð¸ Ð·Ð° Ð´Ð¾Ð±Ñ€Ð¾Ð²Ð¾Ð»ÐµÑ†
 @admin_bp.route("/admin_volunteers/<int:id>")
 @admin_required
 def volunteer_detail(id):
@@ -4401,7 +4400,7 @@ def admin_reauth():
                     "ua": (request.headers.get("User-Agent") or "")[:256],
                 },
             )
-            flash("Vérification effectuée.", "success")
+            flash("VÃ©rification effectuÃ©e.", "success")
             return _redirect_to_safe_next(
                 next_url,
                 url_for("admin.admin_requests"),
@@ -4432,7 +4431,7 @@ def admin_reauth():
                     "ua": (request.headers.get("User-Agent") or "")[:256],
                 },
             )
-        flash("Veuillez confirmer votre identité pour continuer.", "danger")
+        flash("Veuillez confirmer votre identitÃ© pour continuer.", "danger")
 
     return render_template("admin/reauth.html", next=next_url)
 
@@ -4509,7 +4508,7 @@ def admin_mfa_setup():
 
         if not verify_totp_code(pending_secret, code):
             flash(
-                "Невалиден код. Провери часовника на телефона и опитай пак.", "danger"
+                "ÐÐµÐ²Ð°Ð»Ð¸Ð´ÐµÐ½ ÐºÐ¾Ð´. ÐŸÑ€Ð¾Ð²ÐµÑ€Ð¸ Ñ‡Ð°ÑÐ¾Ð²Ð½Ð¸ÐºÐ° Ð½Ð° Ñ‚ÐµÐ»ÐµÑ„Ð¾Ð½Ð° Ð¸ Ð¾Ð¿Ð¸Ñ‚Ð°Ð¹ Ð¿Ð°Ðº.", "danger"
             )
             return render_template(
                 "admin/mfa_setup.html",
@@ -4592,7 +4591,7 @@ def admin_mfa_verify():
             },
         )
         flash(
-            f"Твърде много опити. Опитай след {max(1, remaining // 60)} мин.", "danger"
+            f"Ð¢Ð²ÑŠÑ€Ð´Ðµ Ð¼Ð½Ð¾Ð³Ð¾ Ð¾Ð¿Ð¸Ñ‚Ð¸. ÐžÐ¿Ð¸Ñ‚Ð°Ð¹ ÑÐ»ÐµÐ´ {max(1, remaining // 60)} Ð¼Ð¸Ð½.", "danger"
         )
         return redirect(
             url_for("admin.admin_mfa_verify", next=request.args.get("next", ""))
@@ -4704,7 +4703,7 @@ def admin_mfa_backup_codes():
             },
         )
         flash(
-            "Backup кодовете са генерирани. Запази ги сега — няма да се покажат втори път.",
+            "Backup ÐºÐ¾Ð´Ð¾Ð²ÐµÑ‚Ðµ ÑÐ° Ð³ÐµÐ½ÐµÑ€Ð¸Ñ€Ð°Ð½Ð¸. Ð—Ð°Ð¿Ð°Ð·Ð¸ Ð³Ð¸ ÑÐµÐ³Ð° â€” Ð½ÑÐ¼Ð° Ð´Ð° ÑÐµ Ð¿Ð¾ÐºÐ°Ð¶Ð°Ñ‚ Ð²Ñ‚Ð¾Ñ€Ð¸ Ð¿ÑŠÑ‚.",
             "success",
         )
         return redirect(url_for("admin.admin_mfa_backup_codes"))
@@ -4724,7 +4723,7 @@ def admin_mfa_backup_codes():
 @admin_required
 def admin_2fa():
     admin_required_404()
-    """2FA верификация за админ"""
+    """2FA Ð²ÐµÑ€Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ Ð·Ð° Ð°Ð´Ð¼Ð¸Ð½"""
     user_id = session.get("pending_admin_user_id")
     if not user_id:
         return redirect(url_for("admin.admin_login_legacy"))
@@ -4769,7 +4768,7 @@ def admin_email_2fa():
 @admin_required
 def admin_2fa_setup():
     admin_required_404()
-    """Настройка на 2FA за админ"""
+    """ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ° Ð½Ð° 2FA Ð·Ð° Ð°Ð´Ð¼Ð¸Ð½"""
     if not isinstance(current_user, AdminUser):
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -4791,7 +4790,7 @@ def admin_2fa_setup():
 @admin_required
 def admin_2fa_disable():
     admin_required_404()
-    """Деактивиране на 2FA за админ"""
+    """Ð”ÐµÐ°ÐºÑ‚Ð¸Ð²Ð¸Ñ€Ð°Ð½Ðµ Ð½Ð° 2FA Ð·Ð° Ð°Ð´Ð¼Ð¸Ð½"""
     if not isinstance(current_user, AdminUser):
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -5393,7 +5392,7 @@ def admin_ops_kpis():
         .all()
     )
     by_category = [
-        {"category": (category or "—"), "count": int(count)}
+        {"category": (category or "â€”"), "count": int(count)}
         for category, count in by_category_rows
     ]
 
@@ -5406,7 +5405,7 @@ def admin_ops_kpis():
         .all()
     )
     by_status = [
-        {"status": (status or "—"), "count": int(count)}
+        {"status": (status or "â€”"), "count": int(count)}
         for status, count in by_status_rows
     ]
 
@@ -5616,7 +5615,7 @@ def admin_create_structure():
 @admin_required
 def admin_dashboard():
     admin_required_404()
-    """Админ панел"""
+    """ÐÐ´Ð¼Ð¸Ð½ Ð¿Ð°Ð½ÐµÐ»"""
 
     import logging
 
@@ -6053,8 +6052,8 @@ def admin_intervenants():
                 profession=_intervenant_profession(intervenant),
                 email=intervenant.email,
                 phone=intervenant.phone,
-                city=city or "—",
-                address=address or "—",
+                city=city or "â€”",
+                address=address or "â€”",
                 location=intervenant.location or "",
                 availability=_intervenant_availability(intervenant),
                 is_active=bool(getattr(intervenant, "is_active", False)),
@@ -6147,14 +6146,14 @@ def admin_intervenants_new():
                 try:
                     intervenant.latitude = float(lat_raw)
                 except Exception:
-                    flash("Latitude ignorée: valeur invalide.", "warning")
+                    flash("Latitude ignorÃ©e: valeur invalide.", "warning")
         if hasattr(intervenant, "longitude") and _table_has_column("intervenants", "longitude"):
             lng_raw = (request.form.get("longitude") or "").strip()
             if lng_raw:
                 try:
                     intervenant.longitude = float(lng_raw)
                 except Exception:
-                    flash("Longitude ignorée: valeur invalide.", "warning")
+                    flash("Longitude ignorÃ©e: valeur invalide.", "warning")
 
         db.session.add(intervenant)
         db.session.commit()
@@ -6163,7 +6162,7 @@ def admin_intervenants_new():
             intervenant.id,
             intervenant.structure_id,
         )
-        flash("Intervenant créé.", "success")
+        flash("Intervenant crÃ©Ã©.", "success")
         return redirect(url_for("admin.admin_intervenants"))
 
     return render_template(
@@ -6247,7 +6246,7 @@ def admin_volunteers_compat():
 @admin_required
 def add_volunteer():
     admin_required_404()
-    """Добавяне на доброволец"""
+    """Ð”Ð¾Ð±Ð°Ð²ÑÐ½Ðµ Ð½Ð° Ð´Ð¾Ð±Ñ€Ð¾Ð²Ð¾Ð»ÐµÑ†"""
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -6272,7 +6271,7 @@ def add_volunteer():
 @admin_required
 def delete_volunteer(id):
     admin_required_404()
-    """Изтриване на доброволец"""
+    """Ð˜Ð·Ñ‚Ñ€Ð¸Ð²Ð°Ð½Ðµ Ð½Ð° Ð´Ð¾Ð±Ñ€Ð¾Ð²Ð¾Ð»ÐµÑ†"""
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -6292,7 +6291,7 @@ def delete_volunteer(id):
 @admin_required
 def edit_volunteer(id):
     admin_required_404()
-    """Редактиране на доброволец"""
+    """Ð ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð°Ð½Ðµ Ð½Ð° Ð´Ð¾Ð±Ñ€Ð¾Ð²Ð¾Ð»ÐµÑ†"""
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -6329,7 +6328,7 @@ def edit_volunteer(id):
 @admin_required
 def export_volunteers():
     admin_required_404()
-    """Експорт на доброволци като CSV"""
+    """Ð•ÐºÑÐ¿Ð¾Ñ€Ñ‚ Ð½Ð° Ð´Ð¾Ð±Ñ€Ð¾Ð²Ð¾Ð»Ñ†Ð¸ ÐºÐ°Ñ‚Ð¾ CSV"""
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -6342,7 +6341,7 @@ def export_volunteers():
     volunteers = Volunteer.query.all()
     si = StringIO()
     cw = csv.writer(si)
-    cw.writerow(["Име", "Имейл", "Телефон", "Град/регион", "Умения"])
+    cw.writerow(["Ð˜Ð¼Ðµ", "Ð˜Ð¼ÐµÐ¹Ð»", "Ð¢ÐµÐ»ÐµÑ„Ð¾Ð½", "Ð“Ñ€Ð°Ð´/Ñ€ÐµÐ³Ð¸Ð¾Ð½", "Ð£Ð¼ÐµÐ½Ð¸Ñ"])
     for v in volunteers:
         cw.writerow([v.name, v.email, v.phone, v.location, v.skills])
 
@@ -6362,11 +6361,11 @@ from ..models import Request, RequestActivity, db
 ALLOWED_STATUSES = {"pending", "approved", "in_progress", "done", "rejected"}
 
 STATUS_LABELS_BG = {
-    "pending": "Чакащи",
-    "approved": "Одобрени",
-    "in_progress": "В процес",
-    "done": "Приключени",
-    "rejected": "Отхвърлени",
+    "pending": "Ð§Ð°ÐºÐ°Ñ‰Ð¸",
+    "approved": "ÐžÐ´Ð¾Ð±Ñ€ÐµÐ½Ð¸",
+    "in_progress": "Ð’ Ð¿Ñ€Ð¾Ñ†ÐµÑ",
+    "done": "ÐŸÑ€Ð¸ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸",
+    "rejected": "ÐžÑ‚Ñ…Ð²ÑŠÑ€Ð»ÐµÐ½Ð¸",
 }
 
 # Canonical EN msgids for status labels - passed to templates for localization
@@ -6423,11 +6422,11 @@ def admin_sla_breakdown():
     q = _sla_base_window_query(_scope_requests(Request.query), days=days, now=now)
 
     if breach_type == "resolve":
-        breach_label = "SLA résolution"
+        breach_label = "SLA rÃ©solution"
     elif breach_type == "owner_assign":
         breach_label = "SLA assignation owner"
     elif breach_type == "volunteer_assign":
-        breach_label = "Affectation bénévole"
+        breach_label = "Affectation bÃ©nÃ©vole"
     else:
         breach_label = "Toutes violations"
 
@@ -6680,10 +6679,10 @@ def admin_pilotage():
             indicator_label = "Sans action depuis 72 heures"
             rank_group = 1
         elif rec_action == "assign_immediately":
-            indicator_label = "Affectation immédiate recommandée"
+            indicator_label = "Affectation immÃ©diate recommandÃ©e"
             rank_group = 2
         elif rec_action == "manager_review_today":
-            indicator_label = "Revue managériale requise"
+            indicator_label = "Revue managÃ©riale requise"
             rank_group = 3
         elif risk_level_norm == "critical":
             indicator_label = "Niveau critique"
@@ -6751,8 +6750,8 @@ def admin_pilotage():
         mapping = {
             "housing": "logement",
             "logement": "logement",
-            "health": "santé",
-            "sante": "santé",
+            "health": "santÃ©",
+            "sante": "santÃ©",
             "food": "aide alimentaire",
             "emergency": "urgence",
             "social": "accompagnement social",
@@ -6785,10 +6784,10 @@ def admin_pilotage():
         break
     if top_category and top_category_count >= 2:
         category_trend_text = (
-            f"La catégorie la plus fréquente actuellement concerne {_category_label(top_category)}."
+            f"La catÃ©gorie la plus frÃ©quente actuellement concerne {_category_label(top_category)}."
         )
     else:
-        category_trend_text = "Aucune tendance catégorielle significative à ce stade."
+        category_trend_text = "Aucune tendance catÃ©gorielle significative Ã  ce stade."
 
     assignment_delay_hours: list[float] = []
     if has_created_at and has_owned_at:
@@ -6808,27 +6807,27 @@ def admin_pilotage():
     if len(assignment_delay_hours) >= 3:
         avg_hours = round(sum(assignment_delay_hours) / len(assignment_delay_hours))
         assignment_delay_text = (
-            f"Le délai moyen avant affectation est actuellement de {int(avg_hours)} heures."
+            f"Le dÃ©lai moyen avant affectation est actuellement de {int(avg_hours)} heures."
         )
     else:
         assignment_delay_text = (
-            "Données insuffisantes pour estimer le délai moyen avant affectation."
+            "DonnÃ©es insuffisantes pour estimer le dÃ©lai moyen avant affectation."
         )
 
     if int(critical_no_owner_count or 0) > 0:
         vigilance_text = (
-            "Les situations critiques sans responsable nécessitent une vigilance renforcée."
+            "Les situations critiques sans responsable nÃ©cessitent une vigilance renforcÃ©e."
         )
     elif int(not_seen_72h_count or 0) > 0:
         vigilance_text = (
-            "Les situations sans action récente nécessitent une vigilance renforcée."
+            "Les situations sans action rÃ©cente nÃ©cessitent une vigilance renforcÃ©e."
         )
     elif int(attention_count or 0) > int(critical_count or 0) and int(attention_count or 0) > 0:
         vigilance_text = (
-            "Une part importante des situations est au niveau attention et appelle un suivi rapproché."
+            "Une part importante des situations est au niveau attention et appelle un suivi rapprochÃ©."
         )
     else:
-        vigilance_text = "Aucun signal de vigilance particulier n’est identifié à ce stade."
+        vigilance_text = "Aucun signal de vigilance particulier nâ€™est identifiÃ© Ã  ce stade."
 
     return render_template(
         "admin/pilotage.html",
@@ -6908,9 +6907,9 @@ def _notification_bucket_label(bucket: str) -> str:
     return {
         "pending": "en attente",
         "processing": "en cours",
-        "retry": "à relancer",
-        "failed": "en échec",
-        "sent": "envoyée",
+        "retry": "Ã  relancer",
+        "failed": "en Ã©chec",
+        "sent": "envoyÃ©e",
     }.get((bucket or "").strip().lower(), "en attente")
 
 
@@ -6936,7 +6935,7 @@ def _render_cases_list():
             no_owner_count=case_kpis["no_owner"],
             stale_count=case_kpis["stale"],
             case_signals=demo["cases_signals"],
-            ops_priority_levels={201: "critique", 202: "élevé", 203: "critique"},
+            ops_priority_levels={201: "critique", 202: "Ã©levÃ©", 203: "critique"},
         )
 
     if not _cases_enabled():
@@ -9023,7 +9022,7 @@ def admin_professional_lead_update_status(lead_id: int):
         )
         db.session.commit()
         current_app.logger.info(
-            "Lead %s status changed from %s → %s",
+            "Lead %s status changed from %s â†’ %s",
             lead.id,
             old_status,
             new_status,
@@ -9948,3 +9947,4 @@ from . import admin_structures as _admin_structures  # noqa: F401
 
 build_requests_query = _admin_requests.build_requests_query
 get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
+

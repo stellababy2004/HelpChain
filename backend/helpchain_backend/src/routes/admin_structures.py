@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 
 from flask import flash, redirect, render_template, request, url_for
+from flask import abort
 from flask_login import current_user
 from sqlalchemy import and_, func, or_
 
@@ -23,6 +24,7 @@ from ..services.prospect_auto_capture import (
 )
 from .admin import (
     CLOSED_STATUSES,
+    _is_global_admin,
     _require_global_admin,
     admin_bp,
     admin_required,
@@ -38,7 +40,7 @@ def compute_structure_health(structure_id: int) -> int:
     # Requests without assigned operator/owner
     unassigned = (
         Request.query.filter(Request.structure_id == structure_id)
-        .filter(Request.owner_id.is_(None))
+        .filter(Request.owner_id.is_(None))                                
         .count()
     )
     if unassigned > 0:
@@ -337,7 +339,11 @@ def admin_structure_create():
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_detail(structure_id: int):
-    _require_global_admin()
+    if not _is_global_admin():
+        current_sid = getattr(current_user, "structure_id", None)
+        if current_sid is None or int(current_sid) != int(structure_id):
+            abort(403)
+
     structure = Structure.query.get_or_404(structure_id)
     users_count = AdminUser.query.filter(
         AdminUser.structure_id == structure_id
