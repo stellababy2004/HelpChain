@@ -86,3 +86,30 @@ form select.form-select {
 .table-responsive {
   overflow-x: auto;
 }
+
+/* Homepage hero product preview — desktop stability fix */
+.hc-hero-product-frame,
+.hc-product-frame,
+.hc-platform-preview {
+  transform: none !important;
+  rotate: 0deg !important;
+  scale: 1 !important;
+}
+
+.hc-hero-product-frame img,
+.hc-product-frame img,
+.hc-platform-preview img {
+  transform: none !important;
+  object-fit: cover;
+  object-position: center top;
+  image-rendering: auto;
+}
+
+@media (min-width: 992px) {
+  .hc-hero-product-frame,
+  .hc-product-frame,
+  .hc-platform-preview {
+    max-width: 680px;
+    width: 100%;
+  }
+}

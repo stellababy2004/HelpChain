@@ -11764,9 +11764,11 @@ body.hc-page-home .hc-hero-stats{
 }
 
 body.hc-page-home .hc-home-premium__preview {
-  max-width: 980px !important;
-  margin-left: auto !important;
-  perspective: 1800px;
+  width: 100%;
+  max-width: 860px !important;
+  margin: 0 auto !important;
+  align-self: center;
+  perspective: none;
 }
 
 body.hc-page-home .hc-home-premium__shot-card {
@@ -11776,8 +11778,8 @@ body.hc-page-home .hc-home-premium__shot-card {
   border-radius: 26px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 252, 0.98));
   box-shadow:
-    0 30px 80px rgba(15, 23, 42, 0.1),
-    0 14px 34px rgba(37, 99, 235, 0.08);
+    0 24px 58px rgba(15, 23, 42, 0.09),
+    0 8px 22px rgba(37, 99, 235, 0.05);
 }
 
 body.hc-page-home .hc-home-premium__shot-card::after {
@@ -11789,23 +11791,25 @@ body.hc-page-home .hc-home-premium__shot-card::after {
 }
 
 body.hc-page-home .hc-home-premium__shot-card--hero {
-  transform: rotate(-0.8deg) translateY(-6px);
+  margin-top: 0;
+  transform: none;
 }
 
 body.hc-page-home .hc-home-premium__shot-card--hero::before {
   content: "";
   position: absolute;
-  inset: auto 8% -20px 8%;
-  height: 40px;
+  inset: auto 10% -16px 10%;
+  height: 30px;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.18);
-  filter: blur(18px);
+  background: rgba(15, 23, 42, 0.12);
+  filter: blur(16px);
   z-index: 0;
 }
 
 body.hc-page-home .hc-home-premium__hero-grid {
   grid-template-columns: minmax(0, 0.76fr) minmax(760px, 1.24fr);
   gap: clamp(24px, 3vw, 42px);
+  align-items: center;
 }
 
 body.hc-page-home .hc-home-premium__shot-bar {
@@ -11847,6 +11851,10 @@ body.hc-page-home .hc-home-premium__shot-img {
 
 body.hc-page-home .hc-home-premium__shot-img--hero {
   aspect-ratio: 1876 / 836;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center top;
 }
 
 body.hc-page-home .hc-home-premium__section--product {
@@ -12033,6 +12041,7 @@ body.hc-page-home .hc-home-premium__cta-title-line {
 
   body.hc-page-home .hc-home-premium__preview {
     max-width: 100% !important;
+    margin-top: 0 !important;
   }
 
   body.hc-page-home .hc-home-premium__shot-card--hero {
