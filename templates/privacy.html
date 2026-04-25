@@ -1,86 +1,122 @@
 ﻿{% extends "base.html" %}
-{% block title %}{{ _("Politique de confidentialitÃ©") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Politique de confidentialitÃ© HelpChain : Responsable du traitement
 
-À ce stade de développement, HelpChain est porté et administré par sa fondatrice, dans le cadre d’un projet de plateforme numérique de coordination à destination des structures locales, associations, collectivités et professionnels.
+{% block title %}Politique de confidentialité | HelpChain{% endblock %}
 
-Une structure juridique dédiée pourra être mise en place dans le cadre du déploiement commercial et institutionnel de la plateforme. Les informations relatives au responsable du traitement seront alors mises à jour en conséquence.
+{% block meta_description %}
+Politique de confidentialité HelpChain : traitement des données personnelles, sécurité, cookies, droits des personnes et contact.
+{% endblock %}
 
-Pour toute question relative aux données personnelles, à l’exercice des droits ou à la confidentialité, les utilisateurs peuvent contacter l’équipe HelpChain à l’adresse suivante : contact@helpchain.live.<p>Pour toute question relative aux données personnelles, à l’exercice des droits ou à la confidentialité, les utilisateurs peuvent contacter l’équipe HelpChain à l’adresse suivante : <a href='mailto:contact@helpchain.live'>contact@helpchain.live</a>.</p>
-
-<p>Pour toute question relative aux données personnelles, à l’exercice des droits ou à la confidentialité, les utilisateurs peuvent contacter l’équipe HelpChain à l’adresse suivante : <a href='mailto:contact@helpchain.live'>contact@helpchain.live</a>.</p>
-
-<h2 class='h5 mb-3'>Responsable du traitement</h2>
-
-<p>À ce stade de développement, HelpChain est porté et administré par sa fondatrice, dans le cadre d’un projet de plateforme numérique de coordination à destination des structures locales, associations, collectivités et professionnels.</p>
-
-<p>Une structure juridique dédiée pourra être mise en place dans le cadre du déploiement commercial et institutionnel de la plateforme. Les informations relatives au responsable du traitement seront alors mises à jour en conséquence.</p>
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Politique de confidentialité</h1>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Transferts hors Union europÃ©enne") }}</h2>
+      <h2 class="h5 mb-3">Responsable du traitement</h2>
+
+      <p>
+        À ce stade de développement, HelpChain est porté et administré par sa fondatrice,
+        dans le cadre d’un projet de plateforme numérique de coordination à destination
+        des structures locales, associations, collectivités et professionnels.
+      </p>
+
+      <p>
+        Une structure juridique dédiée pourra être mise en place dans le cadre du déploiement
+        commercial et institutionnel de la plateforme. Les informations relatives au responsable
+        du traitement seront alors mises à jour en conséquence.
+      </p>
+
       <p class="mb-0">
-        {{ _("Ã€ la connaissance de HelpChain, la plateforme est exploitÃ©e avec un objectif de maÃ®trise contractuelle et technique des traitements. Si certains prestataires ou sous-traitants impliquent un accÃ¨s ou un transfert hors de lâ€™Union europÃ©enne, ceux-ci doivent Ãªtre encadrÃ©s par des garanties appropriÃ©es au sens du RGPD.") }}
+        Pour toute question relative aux données personnelles, à l’exercice des droits ou à la confidentialité,
+        les utilisateurs peuvent contacter l’équipe HelpChain à l’adresse suivante :
+        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>.
       </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Cookies") }}</h2>
+      <h2 class="h5 mb-3">Transferts hors Union européenne</h2>
+      <p class="mb-0">
+        À la connaissance de HelpChain, la plateforme est exploitée avec un objectif de maîtrise
+        contractuelle et technique des traitements. Si certains prestataires ou sous-traitants
+        impliquent un accès ou un transfert hors de l’Union européenne, ceux-ci doivent être
+        encadrés par des garanties appropriées au sens du RGPD.
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Cookies</h2>
       <p class="mb-2">
-        {{ _("Le site utilise uniquement des cookies et traceurs strictement nÃ©cessaires au fonctionnement du service, Ã  la sÃ©curitÃ© des accÃ¨s et Ã  la mÃ©morisation de certains choix utiles Ã  lâ€™usage, comme la langue de navigation.") }}
+        Le site utilise uniquement des cookies et traceurs strictement nécessaires au fonctionnement
+        du service, à la sécurité des accès et à la mémorisation de certains choix utiles à l’usage,
+        comme la langue de navigation.
       </p>
       <p class="mb-0">
-        {{ _("Aucun cookie publicitaire, de ciblage marketing ou de mesure dâ€™audience tiers non indispensable nâ€™est chargÃ© sur le site public Ã  la date de la prÃ©sente politique.") }}
+        Aucun cookie publicitaire, de ciblage marketing ou de mesure d’audience tiers non indispensable
+        n’est chargé sur le site public à la date de la présente politique.
       </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Droits des personnes") }}</h2>
-      <p class="mb-2">{{ _("ConformÃ©ment au RGPD et sous rÃ©serve des conditions lÃ©gales applicables, vous disposez notamment des droits suivants :") }}</p>
+      <h2 class="h5 mb-3">Droits des personnes</h2>
+      <p class="mb-2">
+        Conformément au RGPD et sous réserve des conditions légales applicables,
+        vous disposez notamment des droits suivants :
+      </p>
       <ul class="mb-0">
-        <li>{{ _("droit dâ€™accÃ¨s") }}</li>
-        <li>{{ _("droit de rectification") }}</li>
-        <li>{{ _("droit dâ€™effacement") }}</li>
-        <li>{{ _("droit Ã  la limitation du traitement") }}</li>
-        <li>{{ _("droit dâ€™opposition") }}</li>
-        <li>{{ _("droit Ã  la portabilitÃ© lorsque ce droit est applicable") }}</li>
-        <li>{{ _("droit de dÃ©finir des directives relatives au sort de vos donnÃ©es aprÃ¨s votre dÃ©cÃ¨s, dans les conditions prÃ©vues par le droit franÃ§ais") }}</li>
+        <li>droit d’accès</li>
+        <li>droit de rectification</li>
+        <li>droit d’effacement</li>
+        <li>droit à la limitation du traitement</li>
+        <li>droit d’opposition</li>
+        <li>droit à la portabilité lorsque ce droit est applicable</li>
+        <li>
+          droit de définir des directives relatives au sort de vos données après votre décès,
+          dans les conditions prévues par le droit français
+        </li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Contact") }}</h2>
-      <p class="mb-2">{{ _("Pour toute demande relative aux donnÃ©es personnelles ou Ã  lâ€™exercice de vos droits :") }}</p>
-      <p class="mb-0"><a href="mailto:contact@helpchain.live">contact@helpchain.live</a></p>
-    </div>
-  </section>
-
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Droit de rÃ©clamation") }}</h2>
+      <h2 class="h5 mb-3">Contact</h2>
+      <p class="mb-2">
+        Pour toute demande relative aux données personnelles ou à l’exercice de vos droits :
+      </p>
       <p class="mb-0">
-        {{ _("Si vous estimez, aprÃ¨s nous avoir contactÃ©s, que vos droits ne sont pas respectÃ©s, vous pouvez adresser une rÃ©clamation Ã  la CNIL (www.cnil.fr).") }}
+        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
       </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Mise Ã  jour") }}</h2>
+      <h2 class="h5 mb-3">Droit de réclamation</h2>
       <p class="mb-0">
-        {{ _("La prÃ©sente politique peut Ãªtre mise Ã  jour pour tenir compte des Ã©volutions lÃ©gales, techniques, contractuelles ou organisationnelles. La version en vigueur est celle publiÃ©e sur cette page.") }}
+        Si vous estimez, après nous avoir contactés, que vos droits ne sont pas respectés,
+        vous pouvez adresser une réclamation à la CNIL (www.cnil.fr).
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Mise à jour</h2>
+      <p class="mb-0">
+        La présente politique peut être mise à jour pour tenir compte des évolutions légales,
+        techniques, contractuelles ou organisationnelles. La version en vigueur est celle publiée
+        sur cette page.
       </p>
     </div>
   </section>
 </div>
 {% endblock %}
-
 
 
 
