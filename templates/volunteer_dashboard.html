@@ -1,5 +1,5 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Моето табло') }} | HelpChain{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}{{ _('Espace intervenant') }} | HelpChain{% endblock %}
 {% block head %}
   {{ super() }}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/volunteer_dashboard.css') }}" />
@@ -13,7 +13,7 @@
   <!-- HERO / TOP BAR -->
   <header class="hc-vdash__hero">
     <div class="hc-vdash__heroText">
-      <h1 class="hc-vdash__title">{{ _('Моето табло') }}</h1>
+      <h1 class="hc-vdash__title">{{ _('Espace intervenant') }}</h1>
       <p class="hc-vdash__subtitle hc-secondary">
         {{ _('Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.')|safe }}
       </p>
@@ -21,8 +21,8 @@
   </header>
 
   {% if match_count and match_count > 0 %}
-    {% if notifications and notifications|length %}
-      {% set n = notifications[0] %}
+    {% if Notifications and Notifications|length %}
+      {% set n = Notifications[0] %}
       {% set btn_class = 'btn-primary' if n.tone == 'primary' else ('btn-success' if n.tone == 'success' else 'btn-outline-secondary') %}
       <div class="alert alert-{{ n.tone }} d-flex align-items-start justify-content-between hc-secondary" role="status">
         <div>
@@ -60,8 +60,8 @@
       'waiting': {'title': 'В момента е спокойно', 'body': 'Търсим заявки, които отговарят на твоя профил.\nЩе бъдеш уведомен веднага щом има съвпадение.', 'cta': 'Как работи?'},
       'matches': {'title': 'Има заявки, подходящи за теб', 'body': 'Виж ги и избери как да помогнеш.', 'cta': 'Виж заявките'},
       'checklist_title': 'Твоят профил',
-      'label_location': 'Локация',
-      'label_availability': 'Наличност',
+      'label_location': 'Localisation',
+      'label_availability': 'Disponibilité',
       'steps': 'стъпки',
       'empty': "Все още няма заявки, които да съвпадат с профила ти.\nТова е нормално — помощта ти е ценна.",
     },
@@ -109,7 +109,7 @@
       <a href="{{ status_cta_href }}" class="btn btn-sm btn-primary js-native-link">
         {{ status.cta }}
       </a>
-      <a href="{{ url_for('main.volunteer_notifications') }}" class="btn btn-sm btn-outline-secondary">
+      <a href="{{ url_for('main.volunteer_Notifications') }}" class="btn btn-sm btn-outline-secondary">
         {{ _('Notifications') }}
         {% if unread_count and unread_count > 0 %}
           <span class="badge text-bg-danger ms-1">{{ unread_count }}</span>
@@ -121,12 +121,12 @@
   <section class="hc-smart">
     <div class="hc-smart__head">
       <div>
-        <h2 class="hc-smart__title">{{ _('Recommended for you') }}</h2>
-        <p class="hc-smart__sub hc-secondary">{{ _('Match score + urgency + freshness.') }}</p>
+        <h2 class="hc-smart__title">{{ _('Recommandé pour vous') }}</h2>
+        <p class="hc-smart__sub hc-secondary">{{ _('Score de correspondance, urgence et fraîcheur des demandes.') }}</p>
       </div>
       <div class="hc-smart__headMeta">
         <span class="hc-smart__count hc-secondary">{{ (matched_v1|length) if matched_v1 else 0 }} {{ _('matches') }}</span>
-        <span class="hc-smart__algo hc-secondary">{{ _('Sorted by match score & urgency') }}</span>
+        <span class="hc-smart__algo hc-secondary">{{ _('Trié par score de correspondance et urgence') }}</span>
         <form method="get" action="{{ url_for('main.volunteer_dashboard') }}"
               id="matchControls"
               class="hc-match-controls hc-smart-filters"
@@ -136,14 +136,14 @@
               data-near-km="{{ near_km }}"
               data-has-coords="{{ 1 if has_coords else 0 }}">
           <div class="hc-match-controls__row">
-            <label for="min_match" class="hc-smart-filters__label hc-label">{{ _('Min match') }}</label>
+            <label for="min_match" class="hc-smart-filters__label hc-label">{{ _('Correspondance minimale') }}</label>
             <select id="min_match" name="min" class="hc-smart-filters__select hc-select">
               {% for v in [40,50,55,60,65,70,75,80] %}
                 <option value="{{ v }}" {% if match_min == v %}selected{% endif %}>{{ v }}%</option>
               {% endfor %}
             </select>
 
-            <label for="prio" class="hc-smart-filters__label hc-label">{{ _('Priority') }}</label>
+            <label for="prio" class="hc-smart-filters__label hc-label">{{ _('Priorité') }}</label>
             <select id="prio" name="prio" class="hc-smart-filters__select hc-select">
               <option value="all" {% if match_prio == "all" %}selected{% endif %}>{{ _('All') }}</option>
               <option value="urgent" {% if match_prio == "urgent" %}selected{% endif %}>{{ _('Urgent only') }}</option>
@@ -153,15 +153,15 @@
             <label class="hc-smart-filters__check hc-check {% if not has_coords %}is-disabled{% endif %}"
                    {% if not has_coords %}title="{{ _('Enable location in profile') }}"{% endif %}>
               <input id="matchNear" type="checkbox" name="near" value="1" {% if match_near %}checked{% endif %} {% if not has_coords %}disabled aria-describedby="near-help"{% endif %}>
-              <span>{{ _('Near me') }} {% if has_coords %}({{ near_km }}km){% endif %}</span>
+              <span>{{ _('Près de moi') }} {% if has_coords %}({{ near_km }}km){% endif %}</span>
             </label>
             {% if not has_coords %}
               <div id="near-help" class="visually-hidden">
-                {{ _('Enable location in profile to use Near me.') }}
+                {{ _('Ajoutez votre localisation au profil pour utiliser cette option.') }}
               </div>
             {% endif %}
             <button type="submit" class="btn btn-sm btn-outline-secondary">
-              {{ _('Apply filters') }}
+              {{ _('Appliquer les filtres') }}
             </button>
           </div>
         </form>
@@ -195,11 +195,11 @@
 
     {% if smart_tips and smart_tips|length %}
       <div class="hc-smart-empty mt-3">
-        <h4>{{ _('Help us match you better') }}</h4>
-        <p>{{ _('Add your location and a few skills. Then you will start seeing high-confidence matches.') }}</p>
+        <h4>{{ _('Améliorez vos correspondances') }}</h4>
+        <p>{{ _('Ajoutez votre localisation et quelques compétences pour recevoir des demandes plus pertinentes.') }}</p>
 
         <div class="hc-smart-progress">
-          <div class="hc-smart-progress__label">{{ _('Profile completeness') }}: {{ profile_completeness }}%</div>
+          <div class="hc-smart-progress__label">{{ _('Profil complété') }}: {{ profile_completeness }}%</div>
           <div class="hc-smart-progress__track"><i data-hc-width="{{ profile_completeness }}"></i></div>
         </div>
 
@@ -209,7 +209,7 @@
           {% endfor %}
         </ul>
 
-        <a class="btn btn-outline-primary" href="{{ url_for('main.volunteer_profile') }}">{{ _('Update my profile') }}</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('main.volunteer_profile') }}">{{ _('Mettre à jour mon profil') }}</a>
       </div>
     {% else %}
       <div class="hc-smart-empty">
@@ -251,20 +251,20 @@
     <aside class="hc-vdash__side">
       <section class="hc-card hc-sticky hc-sideCard hc-profile-checklist hc-secondary">
         <h2>{{ copy_lang['checklist_title'] }}</h2>
-        <p class="hc-muted">{{ _('Показваме само липсващото, за да станеш готов за свързване.') }}</p>
+        <p class="hc-muted">{{ _('Nous affichons uniquement les éléments manquants pour finaliser votre profil.') }}</p>
 
         <div class="hc-ready">
           {% if missing_count > 0 %}
             {% if missing_location %}
               <div class="hc-ready__row">
                 <span class="hc-ready__label"> {{ copy_lang['label_location'] }}</span>
-                <span class="hc-ready__value is-missing">{{ _('не е зададена') }}</span>
+                <span class="hc-ready__value is-missing">{{ _('Non renseigné') }}</span>
               </div>
             {% endif %}
             {% if missing_availability %}
               <div class="hc-ready__row">
                 <span class="hc-ready__label"> {{ copy_lang['label_availability'] }}</span>
-                <span class="hc-ready__value is-missing">{{ _('не е зададена') }}</span>
+                <span class="hc-ready__value is-missing">{{ _('Non renseigné') }}</span>
               </div>
             {% endif %}
 
@@ -286,7 +286,7 @@
         </div>
 
         <p class="hc-muted small" style="margin-top:10px;">
-           {{ copy_lang['label_availability'] }}: {{ volunteer.availability or _('по избор') }}
+           {{ copy_lang['label_availability'] }}: {{ volunteer.availability or _('facultatif') }}
         </p>
       </section>
     </aside>
@@ -295,12 +295,12 @@
     <section class="hc-card hc-vdash__matches">
       <div class="hc-card__head hc-matchesHead">
         <div>
-          <h2 class="hc-card__title">{{ _('All active requests') }}</h2>
+          <h2 class="hc-card__title">{{ _('Toutes les demandes actives') }}</h2>
           <p class="hc-muted hc-matchesSub">
             {{ _('Demandes ouvertes triées par récence.') }}
           </p>
           <p class="hc-card__desc hc-muted">
-            {{ _('This list is not personalized. Use the section above for intelligent matching.') }}
+            {{ _('Cette liste n’est pas personnalisée. Utilisez les filtres ci-dessus pour améliorer la correspondance.') }}
           </p>
         </div>
       </div>
@@ -343,7 +343,7 @@
               {% set vol_badge = _("Одобрен/а") %}
               {% set vol_badge_mod = "hc-badge--approved" %}
             {% elif is_pending %}
-              {% set vol_badge = _("В изчакване") %}
+              {% set vol_badge = _("En attente") %}
               {% set vol_badge_mod = "hc-badge--muted" %}
             {% elif istatus == "REJECTED" %}
               {% set vol_badge = _("Отхвърлен/а") %}
@@ -369,7 +369,7 @@
                 {% if is_assigned %}
                   <div class="hc-statusCopy"> {{ _("Affectée à vous. Prochaine étape : ouvrir les détails.") }}</div>
                 {% elif is_pending %}
-                  <div class="hc-statusCopy"> {{ _("В изчакване — ще получиш известие при потвърждение.") }}</div>
+                  <div class="hc-statusCopy"> {{ _("En attente — ще получиш известие при потвърждение.") }}</div>
                 {% endif %}
 
                 <div class="hc-listItem__metaRow">
@@ -418,7 +418,7 @@
                 {% elif is_assigned or istatus == "APPROVED" %}
                   <a class="btn btn-sm btn-primary js-native-link"
                      href="{{ url_for('main.volunteer_request_details', req_id=m.id) }}">
-                    {{ _('Виж детайли') }}
+                    {{ _('Voir détails') }}
                   </a>
                 {% elif istatus == "REJECTED" %}
                   <a class="btn btn-sm btn-outline-secondary js-native-link"
@@ -426,7 +426,7 @@
                     {{ _('Виж други активни заявки') }}
                   </a>
                 {% elif istatus %}
-                  <button class="btn btn-sm btn-outline-secondary" disabled>{{ _('В изчакване') }}</button>
+                  <button class="btn btn-sm btn-outline-secondary" disabled>{{ _('En attente') }}</button>
                 {% else %}
                   <form method="post" action="{{ safe_url_for('main.volunteer_help', req_id=m.id) }}" class="d-inline" data-hc-action-form="1">
                     {% if csrf_token is defined %}
@@ -473,7 +473,7 @@
         </div>
       {% else %}
         <section class="hc-empty hc-empty--tight">
-          <h2 class="hc-empty__title">{{ _('Няма активни заявки в момента') }}</h2>
+          <h2 class="hc-empty__title">{{ _('Aucune demande active pour le moment') }}</h2>
           <p class="hc-empty__text">
             {{ copy_lang['empty'].replace('\n', '<br>')|safe }}
           </p>
@@ -534,13 +534,13 @@
   <section class="hc-card hc-myreq" style="margin-top:16px;">
     <div class="hc-card__head hc-myreq__head">
       <div>
-        <h2 class="hc-card__title">{{ _('Моите заявки') }}</h2>
+        <h2 class="hc-card__title">{{ _('Mes demandes') }}</h2>
         <p class="hc-card__desc hc-muted" style="margin-top:4px;">
           {{ _('Виж подадените от теб заявки и статуса им.') }}
         </p>
       </div>
 
-      <div class="hc-tabs" role="tablist" aria-label="{{ _('Моите заявки') }}">
+      <div class="hc-tabs" role="tablist" aria-label="{{ _('Mes demandes') }}">
         <button class="hc-tab"
                 type="button"
                 role="tab"
@@ -548,7 +548,7 @@
                 aria-controls="myreq-panel-pending"
                 id="myreq-tab-pending"
                 data-tab="pending">
-          {{ _('В изчакване') }}
+          {{ _('En attente') }}
           <span class="hc-tab__count">{{ pending_count }}</span>
         </button>
 
@@ -559,7 +559,7 @@
                 aria-controls="myreq-panel-approved"
                 id="myreq-tab-approved"
                 data-tab="approved">
-          {{ _('Одобрени') }}
+          {{ _('Approuvées') }}
           <span class="hc-tab__count">{{ approved_count }}</span>
         </button>
 
@@ -570,7 +570,7 @@
                 aria-controls="myreq-panel-rejected"
                 id="myreq-tab-rejected"
                 data-tab="rejected">
-          {{ _('Отказани') }}
+          {{ _('Refusées') }}
           <span class="hc-tab__count">{{ rejected_count }}</span>
         </button>
       </div>
@@ -579,7 +579,7 @@
     {% macro myreq_list(items) -%}
       {% if items|length == 0 %}
         <div class="hc-emptyLine">
-          <span class="hc-muted">{{ _('Няма заявки в този статус') }}</span>
+          <span class="hc-muted">{{ _('Aucune demande avec ce statut') }}</span>
         </div>
       {% else %}
         <div class="list-group">
@@ -632,7 +632,7 @@
 <!-- PREVIEW (secondary) -->
   <section class="hc-card hc-vdash__preview" id="hc-preview">
     <div class="hc-card__head">
-      <h2 class="hc-card__title">{{ _("Как ще изглежда заявка") }}</h2>
+      <h2 class="hc-card__title">{{ _("Exemple de demande") }}</h2>
       <p class="hc-card__desc">{{ _("Пример, за да знаеш какво да очакваш.") }}</p>
     </div>
 
@@ -643,18 +643,18 @@
         <span class="hc-pill">{{ _("Онлайн") }}</span>
       </div>
 
-      <h3 class="hc-previewCard__title">{{ _("Помощ с документи") }}</h3>
+      <h3 class="hc-previewCard__title">{{ _("Aide aux démarches") }}</h3>
       <p class="hc-previewCard__text">
-        {{ _("Човек търси помощ за попълване на документи и ориентация къде да подаде заявление.") }}
+        {{ _("Une personne recherche de l’aide pour remplir des documents et savoir où déposer une demande.") }}
       </p>
 
       <div class="hc-previewCard__actions">
-        <button class="btn btn-outline-primary" type="button" disabled>{{ _("Виж детайли") }}</button>
-        <button class="btn btn-primary" type="button" disabled>{{ _("Ще помогна") }}</button>
+        <button class="btn btn-outline-primary" type="button" disabled>{{ _("Voir détails") }}</button>
+        <button class="btn btn-primary" type="button" disabled>{{ _("Je peux aider") }}</button>
       </div>
 
       <p class="hc-note">
-        {{ _("Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш.") }}
+        {{ _("Vous n’êtes jamais engagé automatiquement. Vous choisissez quand et comment aider.") }}
       </p>
     </article>
   </section>
@@ -671,7 +671,7 @@
           {{ _("Откажи") }}
         </button>
         <button id="hc-confirm-ok" class="btn btn-primary btn-sm">
-          {{ _("Да, ще помогна") }}
+          {{ _("Oui, je peux aider") }}
         </button>
       </div>
     </div>
@@ -691,7 +691,7 @@
   "toastDemoDetails": _(" Демо: детайлите ще изглеждат така. Реалните ще отварят страница."),
   "confirmDemoInterest": _("Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."),
   "confirmSendInterest": _("Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.") ~ "\n\n" ~ _("Продължаваме?"),
-  "pending": _("В изчакване"),
+  "pending": _("En attente"),
   "toastDemoHelpSent": _(" Демо: помощта е заявена. Нищо не се поема автоматично."),
   "toastHelpSent": _(" Помощта е заявена. Очаква се кратко потвърждение от екипа."),
   "toastDemoInlineDetails": _(" Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."),
@@ -703,8 +703,8 @@
   "demoPill": _("Пример (демо)"),
   "demoAppeared": _("Току-що се появи. Провери дали ти е удобно."),
   "demoBody": _("Човек търси помощ за документи и насоки къде да ги подаде."),
-  "viewDetails": _("Виж детайли"),
-  "willHelp": _("Ще помогна"),
+  "viewDetails": _("Voir détails"),
+  "willHelp": _("Je peux aider"),
   "inviteHint": _("Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."),
   "processing": _("Обработва се…"),
   "close": _("Close")
@@ -724,3 +724,7 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/pages/volunteer_dashboard.js') }}" defer></script>
 {% endblock %}
+
+
+
+
