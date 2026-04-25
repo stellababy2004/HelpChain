@@ -15,7 +15,7 @@
     <div class="hc-vdash__heroText">
       <h1 class="hc-vdash__title">{{ _('Espace intervenant') }}</h1>
       <p class="hc-vdash__subtitle hc-secondary">
-        {{ _('Тук виждаш заявки, които <strong>съвпадат с профила ти</strong>. Нищо не се поема автоматично — <strong>ти решаваш</strong>.')|safe }}
+        {{ _('Vous voyez ici les demandes qui <strong>correspondent à votre profil</strong>. Rien n’est accepté automatiquement — <strong>vous décidez</strong>.')|safe }}
       </p>
     </div>
   </header>
@@ -56,14 +56,14 @@
       'empty': "Aucune demande ne correspond à votre profil pour le moment.\nVous serez notifié dès qu’une nouvelle situation pourra vous être proposée.",
     },
     'bg': {
-      'almost_ready': {'title': 'Профилът ти е почти готов', 'body': 'Добави локация и наличност, за да получаваш подходящи заявки.', 'cta': 'Попълни профила'},
-      'waiting': {'title': 'В момента е спокойно', 'body': 'Търсим заявки, които отговарят на твоя профил.\nЩе бъдеш уведомен веднага щом има съвпадение.', 'cta': 'Как работи?'},
-      'matches': {'title': 'Има заявки, подходящи за теб', 'body': 'Виж ги и избери как да помогнеш.', 'cta': 'Виж заявките'},
-      'checklist_title': 'Твоят профил',
+      'almost_ready': {'title': 'Votre profil est presque prêt', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir des demandes adaptées.', 'cta': 'Compléter le profil'},
+      'waiting': {'title': 'Aucune demande pour le moment', 'body': 'Nous recherchons des demandes correspondant à votre profil.\nVous serez notifié dès qu’une correspondance sera disponible.', 'cta': 'Comment ça marche ?'},
+      'matches': {'title': 'Des demandes vous correspondent', 'body': 'Consultez-les et choisissez comment intervenir.', 'cta': 'Voir les demandes'},
+      'checklist_title': 'Votre profil',
       'label_location': 'Localisation',
       'label_availability': 'Disponibilité',
       'steps': 'стъпки',
-      'empty': "Все още няма заявки, които да съвпадат с профила ти.\nТова е нормално — помощта ти е ценна.",
+      'empty': "Aucune demande ne correspond encore à votre profil.\nC’est normal — votre aide reste précieuse.",
     },
     'en': {
       'almost_ready': {'title': 'Profil à compléter', 'body': 'Ajoutez votre localisation et vos disponibilités pour recevoir les demandes qui vous correspondent.', 'cta': 'Compléter mon profil'},
@@ -109,7 +109,7 @@
       <a href="{{ status_cta_href }}" class="btn btn-sm btn-primary js-native-link">
         {{ status.cta }}
       </a>
-      <a href="{{ url_for('main.volunteer_Notifications') }}" class="btn btn-sm btn-outline-secondary">
+      <a href="{{ url_for('main.volunteer_notifications') }}" class="btn btn-sm btn-outline-secondary">
         {{ _('Notifications') }}
         {% if unread_count and unread_count > 0 %}
           <span class="badge text-bg-danger ms-1">{{ unread_count }}</span>
@@ -272,15 +272,15 @@
                {{ missing_count }} {{ copy_lang['steps'] }}
             </p>
             <a href="{{ safe_url_for('main.volunteer_profile') }}" class="btn btn-primary w-100">
-              {{ copy_lang['almost_ready']['cta'] if 'almost_ready' in copy_lang else _('Попълни профила') }}
+              {{ copy_lang['almost_ready']['cta'] if 'almost_ready' in copy_lang else _('Compléter le profil') }}
             </a>
           {% else %}
-            <p class="hc-success"> {{ _('Профилът е готов') }}</p>
+            <p class="hc-success"> {{ _('Profil prêt') }}</p>
             <p class="hc-muted" style="margin:4px 0 8px;">
-              {{ _('Ако искаш, можеш да обновиш наличност или умения по-късно.') }}
+              {{ _('Vous pourrez modifier vos disponibilités ou compétences plus tard.') }}
             </p>
             <a href="{{ safe_url_for('main.volunteer_profile') }}" class="btn btn-outline-primary w-100">
-              {{ _('Редактирай профила') }}
+              {{ _('Modifier le profil') }}
             </a>
           {% endif %}
         </div>
@@ -307,7 +307,7 @@
 
       {% if matches and matches|length %}
         <p class="hc-cta-hint" style="margin-bottom:12px;">
-          {{ _('Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш.') }}
+          {{ _('C’est une invitation, pas un engagement. Vous pouvez consulter les détails puis décider tranquillement.') }}
         </p>
         <div id="hc-matches" class="hc-soft-fade">
           {% for m in matches %}
@@ -356,7 +356,7 @@
             <article class="hc-listItem hc-soft-fade hc-match-card" data-req-id="{{ m.id }}" data-demo="0" data-seen="0">
               <div class="hc-listItem__top">
                 <div class="hc-listItem__titleRow">
-                  <strong class="hc-listItem__title">{{ m.title or _('Нова заявка') }}</strong>
+                  <strong class="hc-listItem__title">{{ m.title or _('Nouvelle demande') }}</strong>
 
                   <div class="hc-badges">
                     <span class="hc-badge {{ req_badge_mod }}">{{ req_badge }}</span>
@@ -369,7 +369,7 @@
                 {% if is_assigned %}
                   <div class="hc-statusCopy"> {{ _("Affectée à vous. Prochaine étape : ouvrir les détails.") }}</div>
                 {% elif is_pending %}
-                  <div class="hc-statusCopy"> {{ _("En attente — ще получиш известие при потвърждение.") }}</div>
+                  <div class="hc-statusCopy"> {{ _("En attente — vous recevrez une notification après confirmation.") }}</div>
                 {% endif %}
 
                 <div class="hc-listItem__metaRow">
@@ -382,15 +382,15 @@
 
               <div class="hc-reqmeta">
                 {% if is_done %}
-                  <span class="hc-reqmeta__hint">{{ _('Благодарим! Заявката е маркирана като приключена.') }}</span>
+                  <span class="hc-reqmeta__hint">{{ _('Merci ! La demande est marquée comme terminée.') }}</span>
                 {% elif is_assigned %}
                   <span class="hc-reqmeta__hint">{{ _('Affectée à vous. Prochaine étape : cliquer sur « Voir les détails ».') }}</span>
                 {% elif istatus == "APPROVED" %}
-                  <span class="hc-reqmeta__hint">{{ _('Одобрен/а си. Отвори заявката за контакт и следващи стъпки.') }}</span>
+                  <span class="hc-reqmeta__hint">{{ _('Vous êtes approuvé(e). Ouvrez la demande pour accéder au contact et aux prochaines étapes.') }}</span>
                 {% elif istatus == "REJECTED" %}
-                  <span class="hc-reqmeta__hint">{{ _('Тази заявка вече е поета. Виж други активни заявки.') }}</span>
+                  <span class="hc-reqmeta__hint">{{ _('Cette demande est déjà prise en charge. Consultez les autres demandes actives.') }}</span>
                 {% elif istatus %}
-                  <span class="hc-reqmeta__hint">{{ _('Администратор преглежда интереса ти. Ще получиш известие.') }}</span>
+                  <span class="hc-reqmeta__hint">{{ _('Un administrateur examine votre proposition. Vous recevrez une notification.') }}</span>
                 {% else %}
                   <span class="hc-reqmeta__hint">{{ _('Натисни “Искам да помогна”, за да поискаш достъп.') }}</span>
                 {% endif %}
@@ -403,9 +403,9 @@
 
               <p class="hc-match__why">
                 {% if volunteer.location %}
-                  {{ _('Виждаш тази заявка, защото съвпада с профила ти в %(loc)s', loc=volunteer.location) }}
+                  {{ _('Vous voyez cette demande car elle correspond à votre profil. в %(loc)s', loc=volunteer.location) }}
                 {% else %}
-                  {{ _('Виждаш тази заявка, защото съвпада с профила ти') }}
+                  {{ _('Vous voyez cette demande car elle correspond à votre profil.') }}
                 {% endif %}
               </p>
 
@@ -413,7 +413,7 @@
                 {% if is_done %}
                   <a class="btn btn-sm btn-outline-secondary js-native-link"
                      href="{{ url_for('main.volunteer_dashboard') }}">
-                    {{ _('Виж други активни заявки') }}
+                    {{ _('Voir les autres demandes actives') }}
                   </a>
                 {% elif is_assigned or istatus == "APPROVED" %}
                   <a class="btn btn-sm btn-primary js-native-link"
@@ -423,7 +423,7 @@
                 {% elif istatus == "REJECTED" %}
                   <a class="btn btn-sm btn-outline-secondary js-native-link"
                      href="{{ url_for('main.volunteer_dashboard') }}">
-                    {{ _('Виж други активни заявки') }}
+                    {{ _('Voir les autres demandes actives') }}
                   </a>
                 {% elif istatus %}
                   <button class="btn btn-sm btn-outline-secondary" disabled>{{ _('En attente') }}</button>
@@ -466,7 +466,7 @@
               {% endif %}
 
               {% if is_pending %}
-                <p class="hc-waiting-note">{{ _('Нищо не се поема автоматично.') }}</p>
+                <p class="hc-waiting-note">{{ _('Rien n’est accepté automatiquement.') }}</p>
               {% endif %}
             </article>
           {% endfor %}
@@ -481,33 +481,33 @@
           <p class="hc-tip">{{ _('По-точна локация + 2–3 умения = по-бърз match.') }}</p>
 
           <details class="hc-demoWrap" style="margin-top:12px;">
-            <summary>{{ _('Виж пример') }}</summary>
+            <summary>{{ _('Voir un exemple') }}</summary>
             <p class="hc-demoNote">
-              {{ _('Това е само пример — реалните заявки ще се покажат автоматично.') }}
+              {{ _('Ceci est un exemple — les vraies demandes apparaîtront automatiquement.') }}
             </p>
 
             <article class="hc-match hc-match--demo" data-req-id="demo-empty" data-demo="1" style="margin-top:10px;">
               <header class="hc-match__top">
                 <div class="hc-match__titleWrap">
-                  <strong class="hc-match__title">{{ _('Примерна заявка') }}</strong>
+                  <strong class="hc-match__title">{{ _('Exemple de demande') }}</strong>
                   <div class="hc-match__meta">
                 <span class="hc-match__city">{{ _('Paris') }}</span>
                 <span class="hc-dotSep" aria-hidden="true">•</span>
-                <span class="hc-match__time">{{ _('току-що') }}</span>
+                <span class="hc-match__time">{{ _("à l'instant") }}</span>
               </div>
             </div>
-            <span class="hc-demo-pill">{{ _('Пример (демо)') }}</span>
+            <span class="hc-demo-pill">{{ _('Exemple démo') }}</span>
           </header>
 
               <p class="hc-muted" style="margin:4px 0 8px;">
-                {{ _('Току-що се появи. Провери дали ти е удобно.') }}
+                {{ _('Elle vient d’apparaître. Vérifiez si elle vous convient.') }}
               </p>
-              <p class="hc-match__desc">{{ _('Човек търси помощ за документи и насоки къде да ги подаде.') }}</p>
+              <p class="hc-match__desc">{{ _('Une personne cherche de l’aide pour des documents et des orientations administratives.') }}</p>
               <p class="hc-match__why">
                 {% if volunteer.location %}
-                  {{ _('Виждаш тази заявка, защото съвпада с профила ти в %(loc)s', loc=volunteer.location) }}
+                  {{ _('Vous voyez cette demande car elle correspond à votre profil. в %(loc)s', loc=volunteer.location) }}
                 {% else %}
-                  {{ _('Виждаш тази заявка, защото съвпада с профила ти') }}
+                  {{ _('Vous voyez cette demande car elle correspond à votre profil.') }}
                 {% endif %}
               </p>
             </article>
@@ -536,7 +536,7 @@
       <div>
         <h2 class="hc-card__title">{{ _('Mes demandes') }}</h2>
         <p class="hc-card__desc hc-muted" style="margin-top:4px;">
-          {{ _('Виж подадените от теб заявки и статуса им.') }}
+          {{ _('Consultez vos demandes envoyées et leur statut.') }}
         </p>
       </div>
 
@@ -593,7 +593,7 @@
                    {{ req.city or req.location_text or '-' }}
                 </div>
               </div>
-              <span class="hc-pill">{{ _('Виж') }}</span>
+              <span class="hc-pill">{{ _('Voir') }}</span>
             </a>
           {% endfor %}
         </div>
@@ -633,14 +633,14 @@
   <section class="hc-card hc-vdash__preview" id="hc-preview">
     <div class="hc-card__head">
       <h2 class="hc-card__title">{{ _("Exemple de demande") }}</h2>
-      <p class="hc-card__desc">{{ _("Пример, за да знаеш какво да очакваш.") }}</p>
+      <p class="hc-card__desc">{{ _("Exemple pour vous montrer à quoi vous attendre.") }}</p>
     </div>
 
     <article class="hc-previewCard">
       <div class="hc-previewCard__chips">
-        <span class="hc-pill">{{ _("Административна помощ") }}</span>
+        <span class="hc-pill">{{ _("Aide administrative") }}</span>
         <span class="hc-pill">{{ _('Paris') }}</span>
-        <span class="hc-pill">{{ _("Онлайн") }}</span>
+        <span class="hc-pill">{{ _("En ligne") }}</span>
       </div>
 
       <h3 class="hc-previewCard__title">{{ _("Aide aux démarches") }}</h3>
@@ -663,7 +663,7 @@
     <div class="hc-confirm-box">
       <h4>{{ _("Потвърди помощта") }}</h4>
       <p>
-        {{ _("Това е покана, не ангажимент. Изпращаш интерес, после спокойно решаваш дали да поемеш. Нищо не се поема автоматично.") }}
+        {{ _("C’est une invitation, pas un engagement. Vous envoyez votre intérêt, puis vous décidez ensuite si vous souhaitez intervenir. Rien n’est accepté automatiquement.") }}
       </p>
 
       <div class="hc-confirm-actions">
@@ -682,30 +682,30 @@
   </div>
 
   <div id="hc-detail-toast" class="hc-help-success" hidden>
-     {{ _("Детайлите ще се показват тук. Нищо не е изпратено автоматично.") }}
+     {{ _("Les détails s’afficheront ici. Rien n’est envoyé automatiquement.") }}
   </div>
 
 </section>
 <script type="application/json" id="hc-volDash-i18n">
 {{ {
-  "toastDemoDetails": _(" Демо: детайлите ще изглеждат така. Реалните ще отварят страница."),
-  "confirmDemoInterest": _("Демо: ще изпратиш “интерес”. Това е покана, не ангажимент. После спокойно решаваш."),
-  "confirmSendInterest": _("Ще изпратиш “интерес”. Това е покана, не ангажимент. Нищо не се поема автоматично.") ~ "\n\n" ~ _("Продължаваме?"),
+  "toastDemoDetails": _(" Démo : les détails apparaîtront ainsi. Les vraies demandes ouvriront une page dédiée."),
+  "confirmDemoInterest": _("Démo : vous allez signaler votre intérêt. C’est une invitation, pas un engagement. Vous déciderez ensuite tranquillement."),
+  "confirmSendInterest": _("Vous allez signaler votre intérêt. C’est une invitation, pas un engagement. Rien n’est accepté automatiquement.") ~ "\n\n" ~ _("Continuer ?"),
   "pending": _("En attente"),
-  "toastDemoHelpSent": _(" Демо: помощта е заявена. Нищо не се поема автоматично."),
+  "toastDemoHelpSent": _(" Démo : l’aide a été proposée. Rien n’est accepté automatiquement."),
   "toastHelpSent": _(" Помощта е заявена. Очаква се кратко потвърждение от екипа."),
-  "toastDemoInlineDetails": _(" Демо: детайлите ще се показват тук. Реалните заявки ще отварят страница с детайли."),
+  "toastDemoInlineDetails": _(" Démo : les détails s’afficheront ici. Les vraies demandes ouvriront une page de détails."),
   "newPill": _(" НОВО"),
   "tipTitle": _("Какво става, ако натиснеш?"),
-  "tipText": _("Разглеждаш детайлите и изпращаш “интерес”. После спокойно решаваш дали да поемеш. Нищо не става автоматично."),
-  "demoTitle": _("Примерна заявка"),
-  "demoJustNow": _("току-що"),
-  "demoPill": _("Пример (демо)"),
-  "demoAppeared": _("Току-що се появи. Провери дали ти е удобно."),
-  "demoBody": _("Човек търси помощ за документи и насоки къде да ги подаде."),
+  "tipText": _("Vous consultez les détails et signalez votre intérêt. Vous décidez ensuite tranquillement si vous souhaitez intervenir. Rien ne se fait automatiquement."),
+  "demoTitle": _("Exemple de demande"),
+  "demoJustNow": _("à l'instant"),
+  "demoPill": _("Exemple démo"),
+  "demoAppeared": _("Elle vient d’apparaître. Vérifiez si elle vous convient."),
+  "demoBody": _("Une personne cherche de l’aide pour des documents et des orientations administratives."),
   "viewDetails": _("Voir détails"),
   "willHelp": _("Je peux aider"),
-  "inviteHint": _("Това е покана, не ангажимент. Можеш спокойно да прегледаш детайлите и да решиш."),
+  "inviteHint": _("C’est une invitation, pas un engagement. Vous pouvez consulter les détails puis décider tranquillement."),
   "processing": _("Обработва се…"),
   "close": _("Close")
 }|tojson }}
@@ -716,7 +716,7 @@
   "path": request.path,
   "qs": request.query_string.decode("utf-8") if request.query_string else "",
   "justLoggedIn": just_logged_in,
-  "demoReason": (_("Виждаш тази заявка, защото съвпада с профила ти в %(loc)s", loc=volunteer.location) if volunteer.location else _("Виждаш тази заявка, защото съвпада с профила ти"))
+  "demoReason": (_("Vous voyez cette demande car elle correspond à votre profil. в %(loc)s", loc=volunteer.location) if volunteer.location else _("Vous voyez cette demande car elle correspond à votre profil."))
 }|tojson }}
 </script>
 {% endblock %}
@@ -724,6 +724,13 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/pages/volunteer_dashboard.js') }}" defer></script>
 {% endblock %}
+
+
+
+
+
+
+
 
 
 

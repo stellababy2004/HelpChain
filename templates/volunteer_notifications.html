@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _("Notifications") }} | HelpChain{% endblock %}
 
 {% block content %}
@@ -15,8 +15,8 @@
 
   {% if notifications|length == 0 %}
     <div class="hc-empty">
-      <h3>{{ _("No notifications yet") }}</h3>
-      <p>{{ _("When a request matches your profile, you'll see it here.") }}</p>
+      <h3>{{ _('Aucune notification pour le moment') }}</h3>
+      <p>{{ _("Lorsqu’une demande correspondra à votre profil, elle apparaîtra ici.") }}</p>
 
       <a class="btn btn-primary" href="{{ url_for('main.volunteer_dashboard') }}">
         {{ _("Voir les demandes") }}
@@ -70,3 +70,5 @@
   {% endif %}
 </section>
 {% endblock %}
+
+

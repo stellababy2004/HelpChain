@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _("Детайли за заявка") }} | HelpChain{% endblock %}
 
 {% macro interest_button(pending, approved, rejected, req_id, is_demo=False) -%}
@@ -12,7 +12,7 @@
     {% set post_url = url_for('main.volunteer_request_help_demo') if is_demo else url_for('main.volunteer_help', req_id=req_id) %}
     <form method="post" action="{{ post_url }}" class="d-inline">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-primary">{{ _("Ще помогна") }}</button>
+      <button type="submit" class="btn btn-primary">{{ _("Je peux aider") }}</button>
     </form>
     {% if is_demo %}
       <small class="text-muted d-block mt-2">{{ _("Демо: нищо не се записва.") }}</small>
@@ -94,7 +94,7 @@
         {% elif istatus == "REJECTED" %}
           <span class="hc-badge hc-badge--rejected">{{ _("Отхвърлен/а") }}</span>
         {% elif istatus %}
-          <span class="hc-badge hc-badge--pending">{{ _("В изчакване") }}</span>
+          <span class="hc-badge hc-badge--pending">{{ _("En attente") }}</span>
         {% endif %}
       </div>
 
@@ -222,3 +222,5 @@
   </div>
 </div>
 {% endblock %}
+
+

@@ -10,8 +10,12 @@
         {{ _("Ce lien n’est plus valable. Veuillez demander un nouveau lien.") }}
       </p>
       <div class="hc-actions">
-        <a class="hc-btn hc-btn--primary" href="{{ url_for('main.submit_request') }}">{{ _("Submit a request") }}</a>
-        <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.become_volunteer') }}">{{ _("Register") }}</a>
+        <a class="hc-btn hc-btn--primary" href="{{ url_for('main.submit_request') }}">
+          {{ _("Déposer une demande") }}
+        </a>
+        <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.become_volunteer') }}">
+          {{ _("Créer un accès") }}
+        </a>
       </div>
     </div>
   </div>
