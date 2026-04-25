@@ -1548,6 +1548,7 @@
       src="{{ PLAUSIBLE_SCRIPT_URL }}"
     ></script>
     {% endif %}
+    <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/public-mobile-nav.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/admin-top-nav.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/lead-capture.js') }}?v=5" defer></script>
@@ -1633,8 +1634,7 @@
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
     {% endif %}
-    <script src="{{ url_for('static', filename='js/lead-capture.js') }}" defer></script>
-  </body>
+     </body>
 </html>
 
 
