@@ -78,7 +78,7 @@ def create_structure_from_access_request(
 def create_org_admin_for_structure(
     access_request: OrganizationAccessRequest,
     structure: Structure,
-) -> AdminUser:
+) -> tuple[AdminUser, str]:
     email = (access_request.email or "").strip().lower()
     if not email:
         raise ValueError("email_required")
@@ -99,10 +99,11 @@ def create_org_admin_for_structure(
         structure_id=structure.id,
         password_hash="",
     )
-    admin.set_password(_temporary_password())
+    temporary_password = _temporary_password()
+    admin.set_password(temporary_password)
     db.session.add(admin)
     db.session.flush()
-    return admin
+    return admin, temporary_password
 
 
 def approve_access_request(
@@ -110,7 +111,7 @@ def approve_access_request(
     *,
     reviewer_admin_id: int | None,
     internal_notes: str | None = None,
-) -> tuple[Structure, AdminUser]:
+) -> tuple[Structure, AdminUser, str]:
     status = ((access_request.status or "").strip().lower() or "new")
     if status == "approved":
         raise AccessRequestAlreadyApproved("access_request_already_approved")
@@ -119,14 +120,14 @@ def approve_access_request(
 
     try:
         structure = create_structure_from_access_request(access_request)
-        admin = create_org_admin_for_structure(access_request, structure)
+        admin, temporary_password = create_org_admin_for_structure(access_request, structure)
         access_request.status = "approved"
         access_request.reviewed_by_admin_id = reviewer_admin_id
         access_request.reviewed_at = _now()
         access_request.internal_notes = _clean_notes(internal_notes)
         access_request.updated_at = _now()
         db.session.commit()
-        return structure, admin
+        return structure, admin, temporary_password
     except Exception:
         db.session.rollback()
         raise

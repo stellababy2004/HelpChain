@@ -132,6 +132,35 @@
     </div>
   {% endif %}
 
+  {% if credentials %}
+  <div class="hc-card mt-3 border border-success">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Accès administrateur créé</strong>
+      <span class="hc-muted small">À copier maintenant — le mot de passe temporaire ne sera affiché qu’une seule fois.</span>
+    </div>
+    <div class="p-3">
+      <div class="alert alert-warning mb-3">
+        Copiez ces informations dans votre procédure d’onboarding avant de quitter cette page.
+      </div>
+      <dl class="row mb-0">
+        <dt class="col-sm-4 text-muted">Structure</dt>
+        <dd class="col-sm-8">{{ credentials.structure_name }} (#{{ credentials.structure_id }})</dd>
+
+        <dt class="col-sm-4 text-muted">URL de connexion</dt>
+        <dd class="col-sm-8"><code>{{ credentials.login_url }}</code></dd>
+
+        <dt class="col-sm-4 text-muted">Email admin</dt>
+        <dd class="col-sm-8"><code>{{ credentials.email }}</code></dd>
+
+        <dt class="col-sm-4 text-muted">Nom utilisateur</dt>
+        <dd class="col-sm-8"><code>{{ credentials.username }}</code></dd>
+
+        <dt class="col-sm-4 text-muted">Mot de passe temporaire</dt>
+        <dd class="col-sm-8"><code>{{ credentials.temporary_password }}</code></dd>
+      </dl>
+    </div>
+  </div>
+  {% endif %}
   <div class="hc-card mt-3">
     <div class="hc-card__section hc-card__section--header">
       <strong>Revue interne</strong>
