@@ -60,7 +60,6 @@
       emailInput.value = emailInput.value.toLowerCase();
 
       const email = emailInput.value.trim();
-
       if (!email) {
         alert("Veuillez entrer un email professionnel.");
         emailInput.focus();
@@ -74,9 +73,7 @@
       try {
         const response = await fetch("/api/lead-capture", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: email,
             page: window.location.pathname,
@@ -85,9 +82,7 @@
           })
         });
 
-        if (!response.ok) {
-          throw new Error("Lead capture failed: " + response.status);
-        }
+        if (!response.ok) throw new Error("Lead capture failed: " + response.status);
 
         localStorage.setItem("hc_lead_email", email);
         localStorage.setItem("hc_lead_capture_closed", "1");
@@ -118,20 +113,19 @@
     });
   }
 
+  // show popup after 8s or on scroll >55%
   setTimeout(showCapture, 8000);
 
   let maxScroll = 0;
-
   window.addEventListener("scroll", function () {
     const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-
     if (docHeight <= 0) return;
 
     maxScroll = Math.max(maxScroll, scrollTop / docHeight);
-
-    if (maxScroll > 0.55) {
-      showCapture();
-    }
+    if (maxScroll > 0.55) showCapture();
   });
+
+  // make function globally available for debug/testing
+  window.showCapture = showCapture;
 })();

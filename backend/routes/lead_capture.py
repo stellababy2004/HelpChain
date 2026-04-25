@@ -13,21 +13,27 @@ def notify_admin_new_lead(email, score):
     print(f"[{level}] New lead: {email} | score={score}")
 
 
-def send_followup_email(email):
+def queue_followup_email(email, delay_hours=2):
+    scheduled_at = datetime.utcnow() + timedelta(hours=delay_hours)
+
     print(
-        "[FOLLOWUP EMAIL READY]",
+        "[FOLLOWUP QUEUED]",
         {
             "to": email,
+            "scheduled_at": scheduled_at.isoformat(),
             "subject": "HelpChain — Démonstration",
             "body": (
                 "Bonjour,\n\n"
-                "Nous avons bien reçu votre intérêt pour HelpChain.\n\n"
-                "Souhaitez-vous voir concrètement comment cela fonctionnerait dans votre structure ?\n\n"
+                "Vous avez récemment manifesté un intérêt pour HelpChain.\n\n"
+                "Souhaitez-vous voir concrètement comment HelpChain pourrait fonctionner "
+                "dans votre structure, sur un périmètre pilote ?\n\n"
                 "👉 https://helpchain.live/contact\n\n"
                 "Bien à vous,\nHelpChain"
             ),
         },
     )
+
+    return scheduled_at
 
 
 @lead_capture_bp.route("/api/lead-capture", methods=["POST"])
@@ -55,9 +61,11 @@ def capture_lead():
         is_hot = score >= 20
         status = "qualified" if is_hot else "new"
 
-        next_action_at = datetime.utcnow() + timedelta(days=1) if is_hot else None
+        followup_at = queue_followup_email(email, delay_hours=2) if is_hot else None
+
+        next_action_at = followup_at if is_hot else None
         next_action_note = (
-            "Relancer rapidement : intérêt fort détecté sur une page à forte intention."
+            "Auto follow-up prévu dans 2h : proposer une démonstration courte adaptée à la structure."
             if is_hot
             else None
         )
@@ -66,6 +74,9 @@ def capture_lead():
             f"{'HOT_LEAD' if is_hot else 'LEAD'} | "
             f"page={page} | intent={intent} | score={score} | source={source}"
         )
+
+        if is_hot and followup_at:
+            note += f" | followup_queued_at={followup_at.isoformat()}"
 
         existing = ProfessionalLead.query.filter_by(email=email).first()
 
@@ -93,15 +104,13 @@ def capture_lead():
 
         notify_admin_new_lead(email, score)
 
-        if is_hot:
-            send_followup_email(email)
-
         return jsonify(
             {
                 "status": "ok",
                 "score": score,
                 "lead_status": status,
                 "hot_lead": is_hot,
+                "followup_queued": bool(followup_at),
             }
         )
 
