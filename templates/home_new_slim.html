@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{{ _('Accueil') }} | HelpChain{% endblock %}
 {% block meta_description %}{{ _('Plateforme opérationnelle pour coordonner demandes, dossiers, intervenants et suivi dans un cadre sécurisé, traçable et prêt à déployer pour les structures locales.') }}{% endblock %}
@@ -39,7 +39,7 @@
       <h1 id="hc-home-hero-title">{{ _('Vos équipes travaillent déjà dur.<br>Donnez-leur enfin un vrai système.') }}</h1>
 
       <p class="hc-home-premium__lead">
-        {{ _('HelpChain centralise demandes, responsabilités, suivi et reporting pour collectivités, associations et établissements.') }}
+        {{ _('Trop d’emails, trop de suivi dispersé, trop de perte de temps. HelpChain centralise, attribue et suit vos demandes dans un cadre sécurisé.') }}
       </p>
 
       <div class="hc-home-premium__hero-actions">
@@ -56,8 +56,8 @@
         <li>{{ _('Accès par rôles') }}</li>
         <li>{{ _('Traçabilité native') }}</li>
       </ul>
-
-    </div>
+<p class="hc-home-premium__hero-demo-note">Conçu pour : CCAS · Collectivités · Associations · Structures multi-sites</p>
+</div>
 
     <aside class="hc-home-premium__preview" aria-label="{{ _('Aperçu produit HelpChain') }}">
       <div class="hc-home-premium__shot-card hc-home-premium__shot-card--hero">
@@ -191,7 +191,8 @@
         <li>{{ _('Délais raccourcis') }}</li>
         <li>{{ _('Pilotage facilité') }}</li>
       </ul>
-    </div>
+<p class="hc-home-premium__hero-demo-note">Conçu pour : CCAS · Collectivités · Associations · Structures multi-sites</p>
+</div>
   </section>
 
   <section class="hc-home-premium__section hc-home-premium__section--governance" aria-labelledby="hc-home-governance-title">
@@ -209,11 +210,35 @@
         <li>{{ _('Gouvernance multi-structure') }}</li>
         <li>{{ _('Données traitées avec sobriété') }}</li>
       </ul>
+<p class="hc-home-premium__hero-demo-note">Conçu pour : CCAS · Collectivités · Associations · Structures multi-sites</p>
+</div>
+  </section>
+
+  <section class="hc-home-premium__section hc-home-premium__section--revenue" aria-labelledby="hc-home-revenue-title">
+    <div class="hc-home-premium__outcomes-card hc-home-premium__outcomes-card--revenue">
+      <div class="hc-home-premium__section-head hc-home-premium__section-head--compact">
+        <p>{{ _('POURQUOI MAINTENANT') }}</p>
+        <h2 id="hc-home-revenue-title">{{ _('Quand les demandes augmentent, les outils improvisés cassent.') }}</h2>
+        <p>{{ _('Emails, tableaux partagés, messages dispersés et suivis manuels fonctionnent un temps. Puis les responsabilités deviennent floues, les délais s’allongent et le pilotage devient difficile.') }}</p>
+      </div>
+
+      <ul class="hc-home-premium__outcomes-list hc-home-premium__outcomes-list--revenue">
+        <li>{{ _('Moins d’échanges dispersés') }}</li>
+        <li>{{ _('Responsabilités clarifiées') }}</li>
+        <li>{{ _('Suivi structuré des demandes') }}</li>
+        <li>{{ _('Pilotage plus lisible') }}</li>
+        <li>{{ _('Historique exploitable') }}</li>
+        <li>{{ _('Déploiement progressif') }}</li>
+      </ul>
+
+      <div class="hc-home-premium__revenue-cta">
+        <strong>{{ _('Pilote court, cadré, sans transformation brutale.') }}</strong>
+        <span>{{ _('L’objectif : tester HelpChain sur un flux réel de votre organisation avant tout déploiement large.') }}</span>
+      </div>
     </div>
   </section>
 
-
-  <section class="hc-home-premium__section hc-home-premium__section--cta" aria-labelledby="hc-home-final-title">
+<section class="hc-home-premium__section hc-home-premium__section--cta" aria-labelledby="hc-home-final-title">
     <div class="hc-home-premium__cta-card">
       <div>
         <p>{{ _('PASSER À L’ÉCHELLE') }}</p>
@@ -226,10 +251,13 @@
       <div class="hc-home-premium__cta-actions">
         <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Planifier une démo') }}</a>
         <a class="hc-btn hc-btn-outline btn btn-secondary" href="/demo">{{ _('Échanger sur un pilote') }}</a>
-        <p class="hc-home-premium__cta-note">{{ _('Sans engagement · Réponse sous 24h · France / UE') }}</p>
+        <p class="hc-home-premium__cta-note">{{ _('Démo orientée sur votre organisation · Réponse sous 24h · France / UE') }}</p>
       </div>
     </div>
   </section>
 </main>
 {% endblock %}
+
+
+
 
