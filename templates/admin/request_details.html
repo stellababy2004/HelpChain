@@ -7,7 +7,7 @@
 
 {% block content %}
 {% set is_locked = is_locked|default(false) %}
-{% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'super_admin') %}
+{% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'superadmin') %}
 {% set risk_level_key = (req.risk_level or 'standard')|lower %}
 {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
   {% set risk_level_key = 'standard' %}
@@ -25,7 +25,7 @@
 {% set priority_label = priority_label_map.get(priority_key, 'Standard') %}
 <div class="hc-admin-wrap hc-admin-wrap--request-detail">
   <nav class="hc-admin-breadcrumb" aria-label="Fil d'ariane">
-    <a href="{{ url_for('admin.admin_requests') }}">Demandes</a>
+    <a href="{{ url_for('ops.ops_workspace') if current_user.role == 'ops' else url_for('admin.admin_requests') }}">Demandes</a>
     <span>/</span>
     <span>Demande #{{ req.id }}</span>
   </nav>
@@ -92,7 +92,7 @@
             </div>
           </div>
         </div>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_workspace') if current_user.role == 'ops' else url_for('admin.admin_requests') }}">Retour aux demandes</a>
       </div>
 
       <div class="hc-case-header__commands mt-3">

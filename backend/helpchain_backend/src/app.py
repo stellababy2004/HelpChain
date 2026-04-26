@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import os
@@ -1034,6 +1034,25 @@ def create_app(config_object=None) -> Flask:
         """Generate and enqueue the daily health report."""
         _run_reports_daily_health()
 
+    @app.errorhandler(403)
+    def forbidden(e):
+        try:
+            from flask import jsonify, render_template, request
+            from flask_login import current_user
+        except Exception:
+            return "Forbidden", 403
+
+        if request.path.startswith("/api/") or request.accept_mimetypes.best == "application/json":
+            return jsonify({"ok": False, "error": "forbidden"}), 403
+
+        role = None
+        try:
+            role = getattr(current_user, "role", None)
+        except Exception:
+            role = None
+
+        return render_template("errors/403.html", role=role), 403
+
     @app.errorhandler(404)
     def not_found(e):
         # Keep privacy semantics (404) but give volunteers a human fallback page.
@@ -1285,3 +1304,5 @@ def _log_l10n_missing_once(
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
+
+

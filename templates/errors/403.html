@@ -1,0 +1,54 @@
+﻿<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Accès non autorisé · HelpChain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/fonts/inter.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}" />
+  </head>
+
+  <body class="hc-admin-body">
+    <main class="container py-5">
+      <section class="mx-auto" style="max-width: 760px;">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+          <div class="mb-3 text-uppercase small fw-semibold text-muted">
+            Sécurité des accès
+          </div>
+
+          <h1 class="h3 fw-bold mb-3">Accès non autorisé</h1>
+
+          <p class="text-muted mb-4">
+            Votre compte ne dispose pas des droits nécessaires pour consulter cette page.
+            Si vous pensez qu’il s’agit d’une erreur, contactez un administrateur de la plateforme.
+          </p>
+
+          <div class="alert alert-light border rounded-3 mb-4">
+            Cette restriction protège les données des structures et garantit le cloisonnement des accès.
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            {% if role == "ops" %}
+              <a class="btn btn-primary" href="{{ url_for('admin.admin_operator_dashboard') }}">
+                Retour à l’espace opérateur
+              </a>
+            {% else %}
+              <a class="btn btn-primary" href="{{ url_for('admin.admin_home') }}">
+                Retour au tableau de bord
+              </a>
+            {% endif %}
+
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_logout') }}">
+              Se déconnecter
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
