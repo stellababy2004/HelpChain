@@ -12410,3 +12410,47 @@ body.hc-page-home .hc-home-premium__cta-title-line {
     grid-template-columns: 1fr;
   }
 }
+
+/* HelpChain Phase 4 — Objection killers */
+.hc-home-premium__section--objections {
+  padding-top: 4.5rem;
+  padding-bottom: 4.5rem;
+}
+
+.hc-home-premium__objection-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.hc-home-premium__objection-card {
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 1.35rem;
+  padding: 1.2rem;
+  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
+}
+
+.hc-home-premium__objection-card h3 {
+  font-size: 1rem;
+  margin-bottom: .5rem;
+  color: #0f172a;
+}
+
+.hc-home-premium__objection-card p {
+  color: #425a78;
+  margin-bottom: 0;
+}
+
+@media (max-width: 1050px) {
+  .hc-home-premium__objection-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .hc-home-premium__objection-grid {
+    grid-template-columns: 1fr;
+  }
+}
