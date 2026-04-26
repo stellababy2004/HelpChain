@@ -12357,3 +12357,56 @@ body.hc-page-home .hc-home-premium__cta-title-line {
 .hc-home-premium__revenue-cta span {
   color: #425a78;
 }
+
+/* HelpChain Phase 3 — Buyer hooks */
+.hc-home-premium__section--buyer-hooks {
+  padding-top: 4.5rem;
+  padding-bottom: 4.5rem;
+}
+
+.hc-home-premium__buyer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.hc-home-premium__buyer-card {
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,251,255,0.92));
+  border-radius: 1.5rem;
+  padding: 1.35rem;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.07);
+}
+
+.hc-home-premium__buyer-card span {
+  display: inline-flex;
+  width: 2.1rem;
+  height: 2.1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.10);
+  color: #1d4ed8;
+  font-weight: 800;
+  font-size: .78rem;
+  margin-bottom: .85rem;
+}
+
+.hc-home-premium__buyer-card h3 {
+  font-size: 1.08rem;
+  margin-bottom: .55rem;
+  color: #0f172a;
+}
+
+.hc-home-premium__buyer-card p {
+  color: #425a78;
+  margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+  .hc-home-premium__buyer-grid {
+    grid-template-columns: 1fr;
+  }
+}
