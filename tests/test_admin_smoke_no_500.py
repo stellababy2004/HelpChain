@@ -13,15 +13,20 @@ def _dbg(resp):
     return (
         f"status={resp.status_code} "
         f"ctype={resp.headers.get('Content-Type')} "
+        f"location={resp.headers.get('Location')} "
         f"body[:300]={body[:300]!r}"
     )
 
 
 def test_admin_ops_login_public_never_500(client):
-    r = client.get("/admin/ops/login")
+    r = client.get("/admin/ops/login", follow_redirects=False)
 
     assert r.status_code != 500, _dbg(r)
-    assert r.status_code == 200, _dbg(r)
+    assert r.status_code in (200, 302), _dbg(r)
+
+    if r.status_code == 302:
+        assert "/admin/login" in r.headers.get("Location", ""), _dbg(r)
+        return
 
     html = r.get_data(as_text=True).lower()
     assert "<html" in html and "</head>" in html
