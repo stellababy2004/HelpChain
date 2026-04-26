@@ -138,9 +138,6 @@ from ..services.structure_service import create_structure_with_admin
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
     "Identifiants invalides ou accès temporairement bloqué."
 )
-GENERIC_ADMIN_LOGIN_FAIL_MSG = (
-    "Identifiants invalides ou accès temporairement bloqué."
-)
 CATEGORY_CASE_STATUSES = (
     "new",
     "triaged",
