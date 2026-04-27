@@ -313,6 +313,113 @@ def add_security_headers(app: Flask):
     return app
 
 
+
+
+def maybe_self_heal_local_sqlite(app, db):
+    """
+    Local-dev SQLite self-heal only.
+    Refuses Postgres/Neon/Render/production.
+    Creates backup before deleting any local DB.
+    """
+    import os
+    import shutil
+    import subprocess
+    import sys
+    from datetime import datetime
+    from pathlib import Path
+
+    from sqlalchemy import inspect
+
+    if os.getenv("HC_SKIP_SELFHEAL") == "1":
+        app.logger.warning("[SELFHEAL] skipped: HC_SKIP_SELFHEAL=1")
+        return
+
+    uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
+
+    if not uri.lower().startswith("sqlite:///"):
+        return
+
+    if os.getenv("FLASK_ENV") == "production" or os.getenv("RENDER"):
+        app.logger.warning("[SELFHEAL] skipped: production/cloud env detected")
+        return
+
+    database_url = os.getenv("DATABASE_URL", "")
+    if database_url.startswith(("postgres://", "postgresql://")):
+        app.logger.warning("[SELFHEAL] skipped: DATABASE_URL points to Postgres")
+        return
+
+    db_path_raw = uri.replace("sqlite:///", "", 1)
+    db_path = Path(db_path_raw)
+
+    if not db_path.is_absolute():
+        db_path = Path.cwd() / db_path
+
+    try:
+        tables = inspect(db.engine).get_table_names()
+    except Exception as exc:
+        app.logger.warning("[SELFHEAL] cannot inspect DB: %s", exc)
+        return
+
+    if "structures" in tables:
+        return
+
+    app.logger.warning("[SELFHEAL] broken local SQLite detected: missing structures table")
+
+    if not db_path.exists():
+        app.logger.warning("[SELFHEAL] DB file does not exist: %s", db_path)
+        return
+
+    safe_path = str(db_path).lower()
+    if not (
+        "instance" in db_path.parts
+        or "local" in safe_path
+        or "dev" in safe_path
+    ):
+        app.logger.warning("[SELFHEAL] refused: DB path does not look local/dev: %s", db_path)
+        return
+
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    backup_path = db_path.with_suffix(db_path.suffix + f".selfheal_backup_{timestamp}")
+
+    try:
+        shutil.copy2(db_path, backup_path)
+        app.logger.warning("[SELFHEAL] backup created: %s", backup_path)
+
+        db.session.remove()
+        db.engine.dispose()
+
+        db_path.unlink()
+        app.logger.warning("[SELFHEAL] broken DB removed: %s", db_path)
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "flask",
+                "--app",
+                "backend.helpchain_backend.src.app:create_app",
+                "db",
+                "upgrade",
+            ],
+            cwd=Path.cwd(),
+            text=True,
+            capture_output=True,
+            timeout=90,
+        )
+
+        if result.returncode != 0:
+            app.logger.error("[SELFHEAL] flask db upgrade failed: %s", result.stderr)
+            if backup_path.exists() and not db_path.exists():
+                shutil.copy2(backup_path, db_path)
+                app.logger.warning("[SELFHEAL] backup restored after failed migration")
+            return
+
+        app.logger.warning("[SELFHEAL] local SQLite repaired successfully")
+
+    except Exception as exc:
+        app.logger.exception("[SELFHEAL] repair failed: %s", exc)
+
+
 def create_app(config_object=None) -> Flask:
     """
     Single source of truth for app factory.
@@ -555,6 +662,8 @@ def create_app(config_object=None) -> Flask:
     from backend.system_checks import check_database_integrity
 
     with app.app_context():
+        maybe_self_heal_local_sqlite(app, db)
+
         if (
             not app.config.get("TESTING", False)
             and app.config.get("HC_AUTO_HEAL_DEFAULT_STRUCTURE", True)
