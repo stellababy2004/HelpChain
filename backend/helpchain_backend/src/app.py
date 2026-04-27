@@ -549,6 +549,8 @@ def create_app(config_object=None) -> Flask:
 
     # DB + Migrate
     db.init_app(app)
+    migrate.init_app(app, db, directory="migrations")
+
     from backend.system_guard import ensure_default_structure
     from backend.system_checks import check_database_integrity
 
@@ -560,11 +562,11 @@ def create_app(config_object=None) -> Flask:
             ensure_default_structure()
         if not app.config.get("TESTING", False):
             check_database_integrity()
+
     # Mail (Flask-Mail): used by backend.tasks.send_email_task via backend.mail_service
     mail.init_app(app)
     if app.debug or app.config.get("DEBUG"):
         _install_slow_sql_logger(app)
-    migrate.init_app(app, db, directory="migrations")
 
     # i18n (Babel)
     babel.init_app(app, locale_selector=_locale_selector)
