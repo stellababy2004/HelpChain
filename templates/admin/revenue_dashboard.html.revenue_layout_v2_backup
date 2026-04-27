@@ -339,7 +339,7 @@
       </div>
     </main>
 
-    <section class="hc-revenue-sidegrid">
+    <aside>
       <div class="hc-card hc-revenue-sidecard">
         <div class="hc-card__section hc-card__section--header">
           <strong>Top 5 Opportunities Today</strong>
@@ -426,7 +426,7 @@
           {% endif %}
         </div>
       </div>
-    </section>
+    </aside>
   </div>
 </div>
 {% endblock %}

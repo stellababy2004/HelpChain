@@ -1635,7 +1635,6 @@
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
     {% endif %}
        <script defer src="{{ url_for('static', filename='js/revenue-action-menu.js') }}"></script>
-  <script defer src="{{ url_for('static', filename='js/revenue-premium-grid.js') }}"></script>
 </body>
 </html>
 

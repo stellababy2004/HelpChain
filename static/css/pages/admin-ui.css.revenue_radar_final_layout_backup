@@ -1,4 +1,4 @@
-﻿/* Admin UI â€“ clean SaaS cards */
+/* Admin UI – clean SaaS cards */
 .hc-admin-workspace__content{
   padding: 24px 24px 48px;
 }
@@ -584,7 +584,7 @@
   display: none;
 }
 .hc-coordination-fold > summary::after{
-  content: "â–¾";
+  content: "▾";
   color: rgba(15,23,42,.66);
   font-size: 14px;
   line-height: 1;
@@ -12240,135 +12240,4 @@ body:has([href="/admin/audience-map"]) table th:last-child,
 body:has([href="/admin/audience-map"]) table td:last-child {
   width: 13rem !important;
   text-align: right !important;
-}
-
-
-/* Revenue Radar Feed final layout */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-  display: grid !important;
-  grid-template-columns: 0.9fr 1.1fr !important;
-  column-gap: 2rem !important;
-  row-gap: .75rem !important;
-  align-items: start !important;
-}
-
-/* Put insight badges in a compact left rail */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .badge.text-bg-info {
-  display: inline-flex !important;
-  width: fit-content !important;
-  max-width: 100% !important;
-  padding: .38rem .75rem !important;
-  margin: 0 .5rem .5rem 0 !important;
-  border-radius: 999px !important;
-  font-size: .78rem !important;
-  line-height: 1.15 !important;
-  white-space: nowrap !important;
-}
-
-/* Radar rows should occupy the right column cleanly */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
-  width: 100% !important;
-  max-width: 680px !important;
-  margin-left: auto !important;
-  padding: .58rem 0 !important;
-  border-bottom: 1px solid rgba(203,213,225,.8) !important;
-}
-
-/* Avoid too much vertical emptiness */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) {
-  min-height: 280px !important;
-}
-
-/* On smaller screens stack it */
-@media (max-width: 1180px) {
-  body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-    grid-template-columns: 1fr !important;
-  }
-
-  body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-  }
-}
-
-
-/* FIX: Audience map revenue radar must stay normal */
-body:has([href="/admin/audience-map"]) .hc-revenue-sidecard .p-3,
-body:has([href="/admin/audience-map"]) .hc-audience-map .p-3 {
-  display: block !important;
-}
-
-body:has([href="/admin/audience-map"]) .badge.text-bg-info {
-  display: inline-flex !important;
-  width: auto !important;
-  max-width: none !important;
-  margin: 0 .45rem .45rem 0 !important;
-  white-space: nowrap !important;
-}
-
-body:has([href="/admin/audience-map"]) .border-bottom {
-  max-width: 100% !important;
-  margin-left: 0 !important;
-}
-
-
-/* === GLOBAL ADMIN WIDTH FIX — compact premium baseline === */
-:root {
-  --hc-admin-max-width: 1480px;
-  --hc-admin-page-pad: 18px;
-}
-
-.hc-admin-shell,
-.admin-shell,
-.hc-admin-page,
-.hc-admin-main,
-.hc-admin-content,
-.hc-admin-workspace,
-main {
-  box-sizing: border-box;
-}
-
-.hc-admin-shell,
-.admin-shell,
-.hc-admin-page,
-.hc-admin-main,
-.hc-admin-content,
-.hc-admin-workspace {
-  max-width: var(--hc-admin-max-width) !important;
-  width: calc(100% - 36px) !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
-.hc-admin-content,
-.hc-admin-workspace,
-.hc-admin-main {
-  padding-left: var(--hc-admin-page-pad) !important;
-  padding-right: var(--hc-admin-page-pad) !important;
-}
-
-.hc-card,
-.hc-panel,
-.admin-card,
-.admin-panel {
-  max-width: 100% !important;
-}
-
-.hc-table-wrap,
-.table-responsive,
-.admin-table-wrap {
-  max-width: 100% !important;
-  overflow-x: auto !important;
-}
-
-@media (max-width: 1200px) {
-  .hc-admin-shell,
-  .admin-shell,
-  .hc-admin-page,
-  .hc-admin-main,
-  .hc-admin-content,
-  .hc-admin-workspace {
-    width: calc(100% - 20px) !important;
-    max-width: none !important;
-  }
 }

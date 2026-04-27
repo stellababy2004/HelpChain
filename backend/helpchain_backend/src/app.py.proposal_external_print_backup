@@ -1532,9 +1532,8 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
 
 <div class="actions">
   <a href="/admin/revenue">Retour Revenue</a>
-  <button type="button" data-proposal-print class="primary">Imprimer / Enregistrer PDF</button>
+  <a href="javascript:window.print()" class="primary">Imprimer / Enregistrer PDF</a>
 </div>
-<script defer src="/static/js/proposal-print.js"></script>
 </body>
 </html>
 """, org=org, contact=contact, email=email, city=city, status=status, notes=notes, value=value, today=datetime.now().strftime("%d/%m/%Y"))
@@ -1670,9 +1669,8 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
 
 <div class="actions">
   <a href="/admin/revenue">Retour Revenue</a>
-  <button type="button" data-proposal-print class="primary">Imprimer / Enregistrer PDF</button>
+  <a href="javascript:window.print()" class="primary">Imprimer / Enregistrer PDF</a>
 </div>
-<script defer src="/static/js/proposal-print.js"></script>
 </body>
 </html>
 """, org=org, contact=contact, email=email, city=city, status=status, notes=notes, value=value, today=datetime.now().strftime("%d/%m/%Y"))

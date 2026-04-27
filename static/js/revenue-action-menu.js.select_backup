@@ -1,0 +1,71 @@
+
+(function () {
+  function buildMenu(row, cell) {
+    if (cell.dataset.hcMenuReady === "1") return;
+
+    const leadLink = row.querySelector('a[href*="/professional-leads/"]');
+    let leadId = null;
+
+    if (leadLink) {
+      const match = leadLink.getAttribute("href").match(/professional-leads\/(\d+)/);
+      if (match) leadId = match[1];
+    }
+
+    const oldNodes = Array.from(cell.childNodes);
+
+    const details = document.createElement("details");
+    details.className = "hc-action-menu";
+
+    const summary = document.createElement("summary");
+    summary.textContent = "Actions";
+
+    const panel = document.createElement("div");
+    panel.className = "hc-action-menu-panel";
+
+    if (leadLink) {
+      const open = document.createElement("a");
+      open.href = leadLink.href;
+      open.textContent = "Open lead";
+      panel.appendChild(open);
+    }
+
+    if (leadId) {
+      const proposal = document.createElement("a");
+      proposal.href = "/admin/proposal-clean/" + leadId;
+      proposal.textContent = "Generate proposal";
+      proposal.target = "_blank";
+      panel.appendChild(proposal);
+    }
+
+    const sep = document.createElement("div");
+    sep.className = "hc-action-menu-sep";
+    panel.appendChild(sep);
+
+    oldNodes.forEach(function (node) {
+      panel.appendChild(node);
+    });
+
+    details.appendChild(summary);
+    details.appendChild(panel);
+
+    cell.innerHTML = "";
+    cell.appendChild(details);
+    cell.dataset.hcMenuReady = "1";
+  }
+
+  function init() {
+    if (!location.pathname.includes("/admin/revenue")) return;
+
+    document.querySelectorAll("table tbody tr").forEach(function (row) {
+      const cells = row.querySelectorAll("td");
+      if (cells.length < 2) return;
+
+      const lastCell = cells[cells.length - 1];
+      if (!lastCell) return;
+
+      buildMenu(row, lastCell);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();

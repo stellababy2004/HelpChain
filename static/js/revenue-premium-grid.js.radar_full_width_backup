@@ -1,0 +1,66 @@
+
+(function () {
+  function textOf(el) {
+    return (el && el.textContent || "").trim().toLowerCase();
+  }
+
+  function findCardByHeading(label) {
+    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,strong"));
+    const h = headings.find(function (el) {
+      return textOf(el).includes(label.toLowerCase());
+    });
+    if (!h) return null;
+
+    return h.closest(".card, .hc-card, section, article, .panel, .revenue-card, div");
+  }
+
+  function createWrap(className) {
+    const wrap = document.createElement("section");
+    wrap.className = className;
+    return wrap;
+  }
+
+  function init() {
+    if (!location.pathname.includes("/admin/revenue")) return;
+    if (document.querySelector(".hc-revenue-premium-grid")) return;
+
+    const pipeline = Array.from(document.querySelectorAll("h1,h2,h3"))
+      .find(function (h) { return textOf(h).includes("unified pipeline"); });
+
+    const insertionPoint = pipeline ? pipeline.closest("section, .card, .hc-card, div") : null;
+    if (!insertionPoint || !insertionPoint.parentNode) return;
+
+    const topOpp = findCardByHeading("Top 5 Opportunities Today");
+    const atRisk = findCardByHeading("At Risk Deals");
+    const forecast = findCardByHeading("Revenue Forecast");
+    const radar = findCardByHeading("Revenue Radar Feed");
+    const founder = findCardByHeading("Revenue Control Center");
+
+    const premium = createWrap("hc-revenue-premium-grid");
+
+    if (topOpp) {
+      const topRow = createWrap("hc-revenue-top-opps-row");
+      topRow.appendChild(topOpp);
+      premium.appendChild(topRow);
+    }
+
+    const triad = createWrap("hc-revenue-exec-triad");
+
+    [atRisk, forecast, radar].forEach(function (card) {
+      if (card) triad.appendChild(card);
+    });
+
+    if (triad.children.length) premium.appendChild(triad);
+
+    insertionPoint.parentNode.insertBefore(premium, insertionPoint);
+
+    if (founder) {
+      founder.classList.add("hc-founder-revenue-bottom");
+      insertionPoint.parentNode.appendChild(founder);
+    }
+
+    document.body.classList.add("hc-revenue-v2-active");
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();

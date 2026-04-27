@@ -1,0 +1,158 @@
+
+from datetime import datetime
+from flask import render_template_string, abort
+from sqlalchemy import inspect, text as sa_text
+
+from backend.extensions import db
+
+
+def register_proposal_engine(app):
+    def find_lead_table():
+        inspector = inspect(db.engine)
+        for table in inspector.get_table_names():
+            low = table.lower()
+            if "lead" in low or "access_request" in low:
+                return table
+        return None
+
+    def pick(row, *names, default=""):
+        for name in names:
+            value = row.get(name)
+            if value not in (None, ""):
+                return value
+        return default
+
+    @app.route("/admin/proposal/<int:lead_id>")
+    def admin_proposal_engine(lead_id):
+        table = find_lead_table()
+        if not table:
+            abort(404)
+
+        row = db.session.execute(
+            sa_text(f"SELECT * FROM {table} WHERE id = :id"),
+            {"id": lead_id},
+        ).mappings().first()
+
+        if not row:
+            abort(404)
+
+        org = pick(row, "organization", "organisation", "organization_name", "company", "structure_name", default="Structure partenaire")
+        contact = pick(row, "contact_name", "name", "full_name", "profession", "role", default="Contact professionnel")
+        email = pick(row, "email", "contact_email", default="?")
+        city = pick(row, "city", "ville", default="France")
+        status = pick(row, "status", "stage", default="pilot")
+        notes = pick(row, "notes", "message", default="Besoin identifi? : structurer le suivi, la qualification et la coordination op?rationnelle.")
+        value = pick(row, "estimated_value", "value", "amount", "mrr", default="490")
+
+        html = """
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Proposition HelpChain - {{ org }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #10233f; background: #f4f7fb; margin: 0; padding: 32px; }
+    .page { max-width: 880px; margin: 0 auto; background: #fff; border: 1px solid #d8e2ef; border-radius: 18px; padding: 42px; box-shadow: 0 20px 60px rgba(15,35,65,.12); }
+    .top { display: flex; justify-content: space-between; gap: 24px; border-bottom: 2px solid #e5edf7; padding-bottom: 24px; margin-bottom: 28px; }
+    .brandline { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .brandline img { width: 42px; height: 42px; }
+    .brandname { font-size: 18px; font-weight: 900; color: #163a63; }
+    .brandtag { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: #4f6f96; font-weight: 800; }
+    h1 { margin: 8px 0 0; font-size: 34px; line-height: 1.08; }
+    h2 { margin-top: 30px; font-size: 20px; color: #14365f; }
+    .muted { color: #63758f; }
+    .pill { display: inline-block; padding: 7px 12px; border-radius: 999px; background: #edf5ff; border: 1px solid #ccddf2; font-weight: 700; font-size: 13px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 22px 0; }
+    .card { border: 1px solid #d8e2ef; border-radius: 14px; padding: 16px; background: #fbfdff; }
+    .label { text-transform: uppercase; letter-spacing: .08em; color: #60728d; font-size: 12px; font-weight: 800; }
+    .value { font-size: 18px; font-weight: 800; margin-top: 6px; }
+    ul { line-height: 1.75; }
+    .price { font-size: 34px; font-weight: 900; color: #0f766e; }
+    .cta { margin-top: 32px; padding: 20px; border-radius: 16px; background: linear-gradient(135deg, #eef6ff, #f7fbff); border: 1px solid #cfe0f4; }
+    .actions { max-width: 880px; margin: 18px auto 0; display: flex; justify-content: flex-end; gap: 10px; }
+    button, a { border: 1px solid #cbd8ea; background: white; color: #12365f; padding: 12px 16px; border-radius: 12px; font-weight: 800; text-decoration: none; cursor: pointer; }
+    .primary { background: #245bd8; border-color: #245bd8; color: white; }
+    @media print {
+      body { background: white; padding: 0; }
+      .page { box-shadow: none; border: none; border-radius: 0; }
+      .actions { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top">
+      <div>
+        <div class="brandline">
+          <img src="/static/img/hc-logo-mark.svg" alt="HelpChain logo">
+          <div>
+            <div class="brandname">HelpChain</div>
+            <div class="brandtag">Infrastructure de coordination sociale</div>
+          </div>
+        </div>
+        <h1>Proposition de d?ploiement pilote</h1>
+        <p class="muted">Pour {{ org }}</p>
+      </div>
+      <div>
+        <span class="pill">Offre pilote</span>
+        <p class="muted">{{ today }}</p>
+      </div>
+    </div>
+
+    <h2>Structure concern?e?e</h2>
+    <div class="grid">
+      <div class="card"><div class="label">Organisation</div><div class="value">{{ org }}</div></div>
+      <div class="card"><div class="label">Contact</div><div class="value">{{ contact }}</div></div>
+      <div class="card"><div class="label">Ville</div><div class="value">{{ city }}</div></div>
+      <div class="card"><div class="label">E-mail</div><div class="value">{{ email }}</div></div>
+    </div>
+
+    <h2>Contexte identifi??</h2>
+    <p>{{ notes }}</p>
+
+    <h2>Objectif du pilote</h2>
+    <p>Centraliser les demandes, qualifier les situations, suivre les actions, s?curiser les acc?s et piloter les indicateurs cl?s.</p>
+
+    <h2>P?rim?tre inclus</h2>
+    <ul>
+      <li>Entr?e structur?e des demandes et qualification initiale.</li>
+      <li>Suivi op?rationnel des situations, statuts et priorit?s.</li>
+      <li>Tableau de bord de pilotage pour les ?quipes habilit?es.</li>
+      <li>Tra?abilit? des actions sensibles et connexions administratives.</li>
+      <li>Accompagnement au cadrage et ? la prise en main.</li>
+    </ul>
+
+    <h2>Conditions propos?es</h2>
+    <div class="grid">
+      <div class="card"><div class="label">Dur?e pilote</div><div class="value">60 jours</div></div>
+      <div class="card"><div class="label">Tarif mensuel pilote</div><div class="price">{{ value }} ?</div></div>
+      <div class="card"><div class="label">Frais de mise en route</div><div class="value">Offerts pendant la phase pilote</div></div>
+?tape actuelle</div><div class="value">{{ status }}</div></div>
+    </div>
+
+    <div class="cta">
+      <h2>Prochaine ?tape propos?e</h2>
+      <p>Valider le p?rim?tre du pilote, identifier un r?f?rent op?rationnel et planifier une r?union de lancement de 30 minutes.</p>
+    </div>
+
+    <p class="muted" style="margin-top:34px;">Proposition indicative g?n?r?e pour d?monstration. Conditions adaptables selon p?rim?tre, utilisateurs et structure de d?ploiement.</p>
+  </div>
+
+  <div class="actions">
+    <a href="/admin/revenue">Retour Revenue</a>
+    <button onclick="window.print()" class="primary">Imprimer / Enregistrer PDF</button>
+  </div>
+</body>
+</html>
+"""
+        return render_template_string(
+            html,
+            org=org,
+            contact=contact,
+            email=email,
+            city=city,
+            status=status,
+            notes=notes,
+            value=value,
+            today=datetime.now().strftime("%d/%m/%Y"),
+        )

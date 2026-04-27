@@ -1,0 +1,60 @@
+
+(function () {
+  function getLeadId(row) {
+    const leadLink = row.querySelector('a[href*="/professional-leads/"]');
+    if (!leadLink) return null;
+    const match = leadLink.getAttribute("href").match(/professional-leads\/(\d+)/);
+    return match ? match[1] : null;
+  }
+
+  function buildSelect(row, cell) {
+    if (cell.dataset.hcMenuReady === "1") return;
+
+    const leadId = getLeadId(row);
+
+    const select = document.createElement("select");
+    select.className = "hc-revenue-action-select";
+    select.innerHTML = `
+      <option value="">Actions</option>
+      <option value="open">Open lead</option>
+      <option value="proposal">Generate proposal</option>
+      <option value="tomorrow">Follow tomorrow</option>
+      <option value="next_week">Follow next week</option>
+      <option value="contacted">Mark contacted</option>
+      <option value="lost">Mark lost</option>
+    `;
+
+    select.addEventListener("change", function () {
+      const action = select.value;
+      if (!action) return;
+
+      if (action === "proposal" && leadId) {
+        window.open("/admin/proposal-clean/" + leadId, "_blank");
+      } else if (action === "open" && leadId) {
+        window.location.href = "/admin/professional-leads/" + leadId;
+      } else {
+        alert("Action selected: " + action + "\\nBackend update hook can be connected next.");
+      }
+
+      select.value = "";
+    });
+
+    cell.innerHTML = "";
+    cell.appendChild(select);
+    cell.dataset.hcMenuReady = "1";
+  }
+
+  function init() {
+    if (!location.pathname.includes("/admin/revenue")) return;
+
+    document.querySelectorAll("table tbody tr").forEach(function (row) {
+      const cells = row.querySelectorAll("td");
+      if (!cells.length) return;
+
+      const lastCell = cells[cells.length - 1];
+      buildSelect(row, lastCell);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();

@@ -1436,10 +1436,10 @@ def create_app(config_object=None) -> Flask:
 
         org = pick("organization", "organisation", "organization_name", "company", "structure_name", default="Structure partenaire")
         contact = pick("contact_name", "name", "full_name", "profession", "role", default="Contact professionnel")
-        email = pick("email", "contact_email", default="EUR")
+        email = pick("email", "contact_email", default="?")
         city = pick("city", "ville", default="France")
         status = pick("status", "stage", default="pilot")
-        notes = pick("notes", "message", default="Besoin identifie : structurer le suivi, la qualification et la coordination operationnelle.")
+        notes = pick("notes", "message", default="Besoin identifi? : structurer le suivi, la qualification et la coordination op?rationnelle.")
         value = pick("estimated_value", "value", "amount", "mrr", default="490")
 
         return render_template_string("""
@@ -1468,7 +1468,7 @@ h2{margin-top:30px;font-size:20px;color:#14365f}
 ul{line-height:1.75}
 .cta{margin-top:32px;padding:20px;border-radius:16px;background:linear-gradient(135deg,#eef6ff,#f7fbff);border:1px solid #cfe0f4}
 .actions{max-width:880px;margin:18px auto 0;display:flex;justify-content:flex-end;gap:10px}
-button,a{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd8ea;background:white;color:#12365f;padding:12px 16px;border-radius:12px;font-weight:800;text-decoration:none;cursor:pointer}
+button,a{border:1px solid #cbd8ea;background:white;color:#12365f;padding:12px 16px;border-radius:12px;font-weight:800;text-decoration:none;cursor:pointer}
 .primary{background:#245bd8;border-color:#245bd8;color:white}
 @media print{body{background:white;padding:0}.page{box-shadow:none;border:none;border-radius:0}.actions{display:none}}
 </style>
@@ -1484,7 +1484,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
           <div class="brandtag">Infrastructure de coordination sociale</div>
         </div>
       </div>
-      <h1>Proposition de deploiement pilote</h1>
+      <h1>Proposition de d?ploiement pilote</h1>
       <p class="muted">Pour {{ org }}</p>
     </div>
     <div>
@@ -1493,7 +1493,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
     </div>
   </div>
 
-  <h2>Structure concernee</h2>
+  <h2>Structure concern?e</h2>
   <div class="grid">
     <div class="card"><div class="label">Organisation</div><div class="value">{{ org }}</div></div>
     <div class="card"><div class="label">Contact</div><div class="value">{{ contact }}</div></div>
@@ -1501,40 +1501,39 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
     <div class="card"><div class="label">E-mail</div><div class="value">{{ email }}</div></div>
   </div>
 
-  <h2>Contexte identifie</h2>
+  <h2>Contexte identifi?</h2>
   <p>{{ notes }}</p>
 
   <h2>Objectif du pilote</h2>
-  <p>Centraliser les demandes, qualifier les situations, suivre les actions, securiser les acces et piloter les indicateurs cles.</p>
+  <p>Centraliser les demandes, qualifier les situations, suivre les actions, s?curiser les acc?s et piloter les indicateurs cl?s.</p>
 
-  <h2>Perimetre inclus</h2>
+  <h2>P?rim?tre inclus</h2>
   <ul>
-    <li>Entree structuree des demandes et qualification initiale.</li>
-    <li>Suivi operationnel des situations, statuts et priorites.</li>
-    <li>Tableau de bord de pilotage pour les equipes habilitees.</li>
-    <li>Tracabilite des actions sensibles et connexions administratives.</li>
-    <li>Accompagnement au cadrage et la prise en main.</li>
+    <li>Entr?e structur?e des demandes et qualification initiale.</li>
+    <li>Suivi op?rationnel des situations, statuts et priorit?s.</li>
+    <li>Tableau de bord de pilotage pour les ?quipes habilit?es.</li>
+    <li>Tra?abilit? des actions sensibles et connexions administratives.</li>
+    <li>Accompagnement au cadrage et ? la prise en main.</li>
   </ul>
 
-  <h2>Conditions proposees</h2>
+  <h2>Conditions propos?es</h2>
   <div class="grid">
-    <div class="card"><div class="label">DurEURe pilote</div><div class="value">60 jours</div></div>
-    <div class="card"><div class="label">Tarif mensuel pilote</div><div class="price">{{ value }} EUR</div></div>
+    <div class="card"><div class="label">Dur?e pilote</div><div class="value">60 jours</div></div>
+    <div class="card"><div class="label">Tarif mensuel pilote</div><div class="price">{{ value }} ?</div></div>
     <div class="card"><div class="label">Frais de mise en route</div><div class="value">Offerts pendant la phase pilote</div></div>
-    <div class="card"><div class="label">etape actuelle</div><div class="value">{{ status }}</div></div>
+    <div class="card"><div class="label">?tape actuelle</div><div class="value">{{ status }}</div></div>
   </div>
 
   <div class="cta">
-    <h2>Prochaine etape proposee</h2>
-    <p>Valider le perimetre du pilote, identifier un referent operationnel et planifier une reunion de lancement de 30 minutes.</p>
+    <h2>Prochaine ?tape propos?e</h2>
+    <p>Valider le p?rim?tre du pilote, identifier un r?f?rent op?rationnel et planifier une r?union de lancement de 30 minutes.</p>
   </div>
 </div>
 
 <div class="actions">
   <a href="/admin/revenue">Retour Revenue</a>
-  <button type="button" data-proposal-print class="primary">Imprimer / Enregistrer PDF</button>
+  <button onclick="window.print()" class="primary">Imprimer / Enregistrer PDF</button>
 </div>
-<script defer src="/static/js/proposal-print.js"></script>
 </body>
 </html>
 """, org=org, contact=contact, email=email, city=city, status=status, notes=notes, value=value, today=datetime.now().strftime("%d/%m/%Y"))
@@ -1573,12 +1572,12 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
 
         org = pick("organization", default="Structure partenaire")
         contact = pick("full_name", "profession", default="Contact professionnel")
-        email = pick("email", default="EUR")
+        email = pick("email", default="?")
         city = pick("city", default="France")
         status = pick("status", default="pilote")
         value = pick("estimated_value", "value", "amount", "mrr", default="490")
-        notes = pick("notes", "message", default="Besoin identifie : structurer le suivi, la qualification et la coordination operationnelle.")
-        notes = notes.replace("Demo Paris Elite EUR", "Demo Paris Elite EUR")
+        notes = pick("notes", "message", default="Besoin identifi? : structurer le suivi, la qualification et la coordination op?rationnelle.")
+        notes = notes.replace("Demo Paris Elite ?", "D?mo Paris Elite ?")
 
         return render_template_string("""
 <!doctype html>
@@ -1606,7 +1605,7 @@ h2{margin-top:30px;font-size:20px;color:#14365f}
 ul{line-height:1.75}
 .cta{margin-top:32px;padding:20px;border-radius:16px;background:linear-gradient(135deg,#eef6ff,#f7fbff);border:1px solid #cfe0f4}
 .actions{max-width:880px;margin:18px auto 0;display:flex;justify-content:flex-end;gap:10px}
-button,a{display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd8ea;background:white;color:#12365f;padding:12px 16px;border-radius:12px;font-weight:800;text-decoration:none;cursor:pointer}
+button,a{border:1px solid #cbd8ea;background:white;color:#12365f;padding:12px 16px;border-radius:12px;font-weight:800;text-decoration:none;cursor:pointer}
 .primary{background:#245bd8;border-color:#245bd8;color:white}
 @media print{body{background:white;padding:0}.page{box-shadow:none;border:none;border-radius:0}.actions{display:none}}
 </style>
@@ -1622,7 +1621,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
           <div class="brandtag">Infrastructure de coordination sociale</div>
         </div>
       </div>
-      <h1>Proposition de deploiement pilote</h1>
+      <h1>Proposition de d?ploiement pilote</h1>
       <p class="muted">Pour {{ org }}</p>
     </div>
     <div>
@@ -1631,7 +1630,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
     </div>
   </div>
 
-  <h2>Structure concernee</h2>
+  <h2>Structure concern?e</h2>
   <div class="grid">
     <div class="card"><div class="label">Organisation</div><div class="value">{{ org }}</div></div>
     <div class="card"><div class="label">Contact</div><div class="value">{{ contact }}</div></div>
@@ -1639,40 +1638,39 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
     <div class="card"><div class="label">E-mail</div><div class="value">{{ email }}</div></div>
   </div>
 
-  <h2>Contexte identifie</h2>
+  <h2>Contexte identifi?</h2>
   <p>{{ notes }}</p>
 
   <h2>Objectif du pilote</h2>
-  <p>Centraliser les demandes, qualifier les situations, suivre les actions, securiser les acces et piloter les indicateurs cles.</p>
+  <p>Centraliser les demandes, qualifier les situations, suivre les actions, s?curiser les acc?s et piloter les indicateurs cl?s.</p>
 
-  <h2>Perimetre inclus</h2>
+  <h2>P?rim?tre inclus</h2>
   <ul>
-    <li>Entree structuree des demandes et qualification initiale.</li>
-    <li>Suivi operationnel des situations, statuts et priorites.</li>
-    <li>Tableau de bord de pilotage pour les equipes habilitees.</li>
-    <li>Tracabilite des actions sensibles et connexions administratives.</li>
-    <li>Accompagnement au cadrage et la prise en main.</li>
+    <li>Entr?e structur?e des demandes et qualification initiale.</li>
+    <li>Suivi op?rationnel des situations, statuts et priorit?s.</li>
+    <li>Tableau de bord de pilotage pour les ?quipes habilit?es.</li>
+    <li>Tra?abilit? des actions sensibles et connexions administratives.</li>
+    <li>Accompagnement au cadrage et ? la prise en main.</li>
   </ul>
 
-  <h2>Conditions proposees</h2>
+  <h2>Conditions propos?es</h2>
   <div class="grid">
-    <div class="card"><div class="label">DurEURe pilote</div><div class="value">60 jours</div></div>
-    <div class="card"><div class="label">Tarif mensuel pilote</div><div class="price">{{ value }} EUR</div></div>
+    <div class="card"><div class="label">Dur?e pilote</div><div class="value">60 jours</div></div>
+    <div class="card"><div class="label">Tarif mensuel pilote</div><div class="price">{{ value }} ?</div></div>
     <div class="card"><div class="label">Frais de mise en route</div><div class="value">Offerts pendant la phase pilote</div></div>
-    <div class="card"><div class="label">etape actuelle</div><div class="value">{{ status }}</div></div>
+    <div class="card"><div class="label">?tape actuelle</div><div class="value">{{ status }}</div></div>
   </div>
 
   <div class="cta">
-    <h2>Prochaine etape proposee</h2>
-    <p>Valider le perimetre du pilote, identifier un referent operationnel et planifier une reunion de lancement de 30 minutes.</p>
+    <h2>Prochaine ?tape propos?e</h2>
+    <p>Valider le p?rim?tre du pilote, identifier un r?f?rent op?rationnel et planifier une r?union de lancement de 30 minutes.</p>
   </div>
 </div>
 
 <div class="actions">
   <a href="/admin/revenue">Retour Revenue</a>
-  <button type="button" data-proposal-print class="primary">Imprimer / Enregistrer PDF</button>
+  <button onclick="window.print()" class="primary">Imprimer / Enregistrer PDF</button>
 </div>
-<script defer src="/static/js/proposal-print.js"></script>
 </body>
 </html>
 """, org=org, contact=contact, email=email, city=city, status=status, notes=notes, value=value, today=datetime.now().strftime("%d/%m/%Y"))
