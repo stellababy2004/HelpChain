@@ -316,6 +316,10 @@ def add_security_headers(app: Flask):
 
 
 def maybe_self_heal_local_sqlite(app, db):
+    if __import__("os").getenv("HC_SELFHEAL_RUNNING") == "1":
+        app.logger.warning("[SELFHEAL] skipped because HC_SELFHEAL_RUNNING=1")
+        return
+
     """
     Local-dev SQLite self-heal only.
     Refuses Postgres/Neon/Render/production.
@@ -391,6 +395,9 @@ def maybe_self_heal_local_sqlite(app, db):
         db_path.unlink()
         app.logger.warning("[SELFHEAL] broken DB removed: %s", db_path)
 
+        heal_env = __import__("os").environ.copy()
+        heal_env["HC_SELFHEAL_RUNNING"] = "1"
+
         result = subprocess.run(
             [
                 sys.executable,
@@ -403,8 +410,9 @@ def maybe_self_heal_local_sqlite(app, db):
             ],
             cwd=Path.cwd(),
             text=True,
+            env=heal_env,
             capture_output=True,
-            timeout=90,
+            timeout=int(__import__("os").getenv("HC_SELFHEAL_MIGRATION_TIMEOUT", "300")),
         )
 
         if result.returncode != 0:
