@@ -11844,3 +11844,173 @@ body[data-hc-page^="/ops"] :is(.hc-page-hero, .hc-admin-headerCard, .hc-card, .h
     justify-content: flex-start !important;
   }
 }
+/* OPS WORKSPACE TABLE EMPTY/ROW SPACING FIX */
+.ops-workspace table tbody tr:first-child td,
+.ops-shell table tbody tr:first-child td,
+.ops-page table tbody tr:first-child td {
+  padding-top: 28px !important;
+}
+
+.ops-workspace table,
+.ops-shell table,
+.ops-page table {
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+}
+
+.ops-workspace .table-responsive,
+.ops-shell .table-responsive,
+.ops-page .table-responsive {
+  overflow: visible !important;
+}
+/* OPS WORKSPACE REAL FIX */
+#ops-priority-queue,
+.ops-priority-queue,
+.hc-ops-priority,
+section table tbody tr:first-child {
+    position: relative !important;
+}
+
+#ops-priority-queue tbody tr:first-child td,
+.ops-priority-queue tbody tr:first-child td,
+.hc-ops-priority tbody tr:first-child td,
+section table tbody tr:first-child td {
+    padding-top: 52px !important;
+    vertical-align: top !important;
+}
+
+section table tbody tr td{
+    line-height:1.35 !important;
+}
+/* =========================================================
+   ADMIN TABLE RESET — FIX BROKEN TABLE LAYOUTS
+   Keeps tables stable, readable and non-overlapping.
+   ========================================================= */
+
+.hc-admin-shell table,
+.admin-shell table,
+.admin-page table,
+.ops-page table,
+.ops-workspace table,
+.hc-card table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  table-layout: auto !important;
+}
+
+.hc-admin-shell thead,
+.admin-shell thead,
+.admin-page thead,
+.ops-page thead,
+.ops-workspace thead,
+.hc-card thead {
+  display: table-header-group !important;
+  position: static !important;
+  z-index: auto !important;
+}
+
+.hc-admin-shell tbody,
+.admin-shell tbody,
+.admin-page tbody,
+.ops-page tbody,
+.ops-workspace tbody,
+.hc-card tbody {
+  display: table-row-group !important;
+}
+
+.hc-admin-shell tr,
+.admin-shell tr,
+.admin-page tr,
+.ops-page tr,
+.ops-workspace tr,
+.hc-card tr {
+  display: table-row !important;
+  position: static !important;
+}
+
+.hc-admin-shell th,
+.hc-admin-shell td,
+.admin-shell th,
+.admin-shell td,
+.admin-page th,
+.admin-page td,
+.ops-page th,
+.ops-page td,
+.ops-workspace th,
+.ops-workspace td,
+.hc-card th,
+.hc-card td {
+  display: table-cell !important;
+  position: static !important;
+  vertical-align: middle !important;
+  padding: 14px 16px !important;
+  white-space: normal !important;
+  line-height: 1.35 !important;
+}
+
+.hc-admin-shell .table-responsive,
+.admin-shell .table-responsive,
+.admin-page .table-responsive,
+.ops-page .table-responsive,
+.ops-workspace .table-responsive,
+.hc-card .table-responsive {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+}
+
+/* Prevent empty-state cards from covering table headers */
+.hc-empty-state,
+.empty-state,
+.table-empty-state {
+  position: relative !important;
+  z-index: 1 !important;
+  margin: 24px !important;
+}
+
+/* Kill previous emergency spacing hacks */
+.ops-workspace table tbody tr:first-child td,
+.ops-page table tbody tr:first-child td,
+.admin-page table tbody tr:first-child td,
+.hc-card table tbody tr:first-child td {
+  padding-top: 14px !important;
+}
+/* OPS WORKSPACE PRIORITY QUEUE FINAL ALIGNMENT */
+.ops-workspace .hc-table,
+.ops-workspace table,
+.ops-page .hc-table,
+.ops-page table {
+  margin-top: 0 !important;
+}
+
+.ops-workspace table caption,
+.ops-page table caption {
+  display: none !important;
+}
+
+.ops-workspace tbody tr,
+.ops-page tbody tr {
+  min-height: 92px !important;
+}
+
+.ops-workspace tbody tr:first-child,
+.ops-page tbody tr:first-child {
+  border-top: 1px solid rgba(148, 163, 184, .35) !important;
+}
+
+.ops-workspace tbody tr:first-child td,
+.ops-page tbody tr:first-child td {
+  padding-top: 28px !important;
+}
+
+.ops-workspace .hc-card__body,
+.ops-page .hc-card__body {
+  padding-top: 24px !important;
+}
+
+.ops-workspace .hc-table-wrap,
+.ops-page .hc-table-wrap,
+.ops-workspace .table-responsive,
+.ops-page .table-responsive {
+  padding-top: 18px !important;
+}

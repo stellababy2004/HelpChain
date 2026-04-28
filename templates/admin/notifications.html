@@ -2,6 +2,52 @@
 {% block title %}Admin • Notifications | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 
+{% block admin_workspace_css %}
+  <style>
+    .hc-notify-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+
+    .hc-notify-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+
+    .hc-notify-table thead {
+      display: table-header-group;
+      position: static;
+    }
+
+    .hc-notify-table tbody {
+      display: table-row-group;
+      position: static;
+    }
+
+    .hc-notify-table tr {
+      display: table-row;
+      position: static;
+    }
+
+    .hc-notify-table th,
+    .hc-notify-table td {
+      display: table-cell;
+      position: static;
+      vertical-align: middle;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .hc-notify-empty-cell {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+  </style>
+{% endblock %}
+
 {% block admin_content %}
 {% set notifications_endpoint = 'ops.ops_notifications_list' if request.path.startswith('/ops') else 'admin.admin_notifications_list' %}
 <div class="hc-admin-wrap hc-admin-wrap--wide">
@@ -77,8 +123,8 @@
       <h2 class="h6 mb-1">Flux de notification</h2>
       <div class="hc-muted">Suivi des jobs de diffusion avec statut, tentatives et erreurs récentes.</div>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-notify-table mb-0">
+    <div class="hc-notify-table-wrap">
+      <table class="hc-notify-table">
         <colgroup>
           <col class="hc-notify-col-id">
           <col class="hc-notify-col-created">
@@ -133,7 +179,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="10" class="py-4">
+              <td colspan="10" class="hc-notify-empty-cell">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">
                     {% if status or channel or event_type or recipient %}
