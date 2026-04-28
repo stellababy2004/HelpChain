@@ -45,40 +45,72 @@
   scrollbar-gutter: stable both-edges;
 }
 
-.hc-admin-structures-page .hc-admin-table{
-  table-layout: fixed;
+.hc-admin-structures-page .hc-structures-table-wrap{
   width: 100%;
-  min-width: 920px;
-  border-collapse: separate;
-  border-spacing: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
-.hc-admin-structures-page .hc-admin-table col.hc-col-structure{
-  width: 38%;
+.hc-admin-structures-page .hc-structures-table{
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.hc-admin-structures-page .hc-admin-table col.hc-col-slug{
-  width: 24%;
+.hc-admin-structures-page .hc-structures-table thead{
+  display: table-header-group;
 }
 
-.hc-admin-structures-page .hc-admin-table col.hc-col-users{
-  width: 10%;
+.hc-admin-structures-page .hc-structures-table tbody{
+  display: table-row-group;
 }
 
-.hc-admin-structures-page .hc-admin-table col.hc-col-requests{
-  width: 10%;
+.hc-admin-structures-page .hc-structures-table tr{
+  display: table-row;
 }
 
-.hc-admin-structures-page .hc-admin-table col.hc-col-status{
+.hc-admin-structures-page .hc-structures-table th,
+.hc-admin-structures-page .hc-structures-table td{
+  display: table-cell;
+  position: static;
+  float: none;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.hc-admin-structures-page .hc-structures-table th:nth-child(1),
+.hc-admin-structures-page .hc-structures-table td:nth-child(1){
+  width: 34%;
+}
+
+.hc-admin-structures-page .hc-structures-table th:nth-child(2),
+.hc-admin-structures-page .hc-structures-table td:nth-child(2){
+  width: 22%;
+}
+
+.hc-admin-structures-page .hc-structures-table th:nth-child(3),
+.hc-admin-structures-page .hc-structures-table td:nth-child(3){
   width: 12%;
 }
 
-.hc-admin-structures-page .hc-admin-table col.hc-col-actions{
-  width: 6%;
+.hc-admin-structures-page .hc-structures-table th:nth-child(4),
+.hc-admin-structures-page .hc-structures-table td:nth-child(4){
+  width: 12%;
 }
 
-.hc-admin-structures-page .hc-admin-table thead th,
-.hc-admin-structures-page .hc-admin-table tbody td{
+.hc-admin-structures-page .hc-structures-table th:nth-child(5),
+.hc-admin-structures-page .hc-structures-table td:nth-child(5){
+  width: 10%;
+}
+
+.hc-admin-structures-page .hc-structures-table th:nth-child(6),
+.hc-admin-structures-page .hc-structures-table td:nth-child(6){
+  width: 10%;
+}
+
+.hc-admin-structures-page .hc-structures-table thead th,
+.hc-admin-structures-page .hc-structures-table tbody td{
   vertical-align: middle;
   white-space: nowrap;
   overflow: hidden;
@@ -88,7 +120,7 @@
   hyphens: none;
 }
 
-.hc-admin-structures-page .hc-admin-table thead th{
+.hc-admin-structures-page .hc-structures-table thead th{
   position: static;
   top: auto;
   z-index: auto;
@@ -102,54 +134,41 @@
   padding-bottom: 0.72rem;
 }
 
-.hc-admin-structures-page .hc-admin-table tbody td{
+.hc-admin-structures-page .hc-structures-table tbody td{
   padding-top: 0.64rem;
   padding-bottom: 0.64rem;
   line-height: 1.25;
   color: rgba(15, 23, 42, 0.92);
 }
 
-.hc-admin-structures-page .hc-admin-table tbody tr:nth-child(even) td{
+.hc-admin-structures-page .hc-structures-table tbody tr:nth-child(even) td{
   background: rgba(248, 250, 252, 0.72);
 }
 
-.hc-admin-structures-page .hc-admin-table tbody tr:hover td{
+.hc-admin-structures-page .hc-structures-table tbody tr:hover td{
   background: rgba(239, 246, 255, 0.78);
 }
 
-.hc-admin-structures-page .hc-admin-table th:first-child,
-.hc-admin-structures-page .hc-admin-table td:first-child,
-.hc-admin-structures-page .hc-admin-table th:nth-child(2),
-.hc-admin-structures-page .hc-admin-table td:nth-child(2),
-.hc-admin-structures-page .hc-admin-table th:nth-child(3),
-.hc-admin-structures-page .hc-admin-table td:nth-child(3){
-  position: static !important;
-  left: auto !important;
-  z-index: auto !important;
-  background: inherit;
-  box-shadow: none !important;
-}
-
-.hc-admin-structures-page .hc-admin-table td.hc-structure-name{
+.hc-admin-structures-page .hc-structures-table td.hc-structure-name{
   font-weight: 700;
   color: rgba(15, 23, 42, 0.96);
 }
 
-.hc-admin-structures-page .hc-admin-table td.hc-structure-slug{
+.hc-admin-structures-page .hc-structures-table td.hc-structure-slug{
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   color: rgba(71, 85, 105, 0.78);
 }
 
-.hc-admin-structures-page .hc-admin-table td.text-center{
+.hc-admin-structures-page .hc-structures-table td.text-center{
   text-align: center;
   color: rgba(71, 85, 105, 0.78);
 }
 
-.hc-admin-structures-page .hc-admin-table td.text-end{
+.hc-admin-structures-page .hc-structures-table td.text-end{
   text-align: right;
 }
 
-.hc-admin-structures-page .hc-admin-table td:last-child{
+.hc-admin-structures-page .hc-structures-table td:last-child{
   padding-right: 0.75rem;
 }
 
@@ -163,7 +182,7 @@
   padding: .38rem .62rem;
 }
 
-.hc-admin-structures-page .hc-admin-table td:last-child .btn{
+.hc-admin-structures-page .hc-structures-table td:last-child .btn{
   min-width: 84px;
   min-height: 32px;
   display: inline-flex;
@@ -172,7 +191,8 @@
   padding-inline: .9rem;
 }
 
-.hc-admin-structures-page .hc-empty-row td{
+.hc-admin-structures-page .hc-empty-row td,
+.hc-admin-structures-page .hc-structures-empty-cell{
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
   background: rgba(255,255,255,.96) !important;
@@ -216,7 +236,7 @@
     padding: 14px 16px;
   }
 
-  .hc-admin-structures-page .hc-admin-table{
+  .hc-admin-structures-page .hc-structures-table{
     min-width: 860px;
   }
 }

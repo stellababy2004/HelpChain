@@ -11551,307 +11551,13 @@ body.hc-ops-workspace-page .hc-ops-summary{
   margin: .25rem 0;
 }
 
-
-/* Requests table action visibility fix */
-body:has([href*="/admin/requests"]) .hc-admin-table td:last-child,
-body:has([href*="/admin/requests"]) table td:last-child {
-  overflow: visible;
-  white-space: nowrap;
-}
-
-body:has([href*="/admin/requests"]) td:last-child .dropdown-menu,
-body:has([href*="/admin/requests"]) td:last-child details,
-body:has([href*="/admin/requests"]) td:last-child .hc-action-menu-panel {
-  position: static !important;
-  display: block !important;
-  box-shadow: none !important;
-  border: 0 !important;
-  background: transparent !important;
-  padding: 0 !important;
-}
-
-body:has([href*="/admin/requests"]) td:last-child .dropdown-menu a,
-body:has([href*="/admin/requests"]) td:last-child a,
-body:has([href*="/admin/requests"]) td:last-child button {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  min-width: 88px;
-  height: 34px;
-  margin: 2px;
-  border-radius: 10px;
-  font-size: .82rem;
-  font-weight: 800;
-}
-
-body:has([href*="/admin/requests"]) td:last-child summary {
-  display: none !important;
-}
-
-
-/* Revenue Premium Grid V2 */
-.hc-revenue-v2-active .hc-revenue-premium-grid {
-  display: grid;
-  gap: 1rem;
-  margin: 1rem 0 1.25rem;
-}
-
-.hc-revenue-v2-active .hc-revenue-top-opps-row {
-  display: block;
-}
-
-.hc-revenue-v2-active .hc-revenue-top-opps-row > * {
-  width: 100% !important;
-  max-width: none !important;
-}
-
-.hc-revenue-v2-active .hc-revenue-exec-triad {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.25fr);
-  gap: 1rem;
-  align-items: stretch;
-}
-
-.hc-revenue-v2-active .hc-revenue-exec-triad > * {
-  width: 100% !important;
-  max-width: none !important;
-  min-width: 0;
-  height: 100%;
-}
-
-.hc-revenue-v2-active .hc-founder-revenue-bottom {
-  width: 100% !important;
-  max-width: none !important;
-  margin-top: 1.25rem !important;
-}
-
-/* Give moved revenue cards a premium card feel without touching content */
-.hc-revenue-v2-active .hc-revenue-premium-grid > *,
-.hc-revenue-v2-active .hc-revenue-exec-triad > *,
-.hc-revenue-v2-active .hc-founder-revenue-bottom {
-  border-radius: 18px;
-  box-shadow: 0 14px 38px rgba(15, 35, 65, .08);
-}
-
-/* Improve table width priority */
-.hc-revenue-v2-active table {
-  width: 100%;
-}
-
-.hc-revenue-v2-active .hc-revenue-action-select {
-  min-width: 128px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid #cbd8ea;
-  background: #fff;
-  font-weight: 800;
-  color: #12365f;
-}
-
-/* Responsive */
-@media (max-width: 1180px) {
-  .hc-revenue-v2-active .hc-revenue-exec-triad {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-/* Revenue CSS Surgery V1 */
-/* Goal: give the pipeline table priority and reduce right-sidebar pressure */
-
-body:has([href="/admin/revenue"]) {
-  --hc-revenue-main-max: none;
-}
-
-/* Try to neutralize common two-column revenue layouts */
-body:has([href="/admin/revenue"]) .revenue-layout,
-body:has([href="/admin/revenue"]) .revenue-dashboard,
-body:has([href="/admin/revenue"]) .revenue-grid,
-body:has([href="/admin/revenue"]) .admin-revenue-grid,
-body:has([href="/admin/revenue"]) .hc-revenue-grid {
-  grid-template-columns: 1fr !important;
-}
-
-/* Any direct sidebar-like panels become horizontal blocks */
-body:has([href="/admin/revenue"]) aside,
-body:has([href="/admin/revenue"]) .sidebar,
-body:has([href="/admin/revenue"]) .right-sidebar,
-body:has([href="/admin/revenue"]) .revenue-sidebar,
-body:has([href="/admin/revenue"]) .hc-revenue-sidebar {
-  width: 100% !important;
-  max-width: none !important;
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(240px, 1fr)) !important;
-  gap: 1rem !important;
-  align-items: stretch !important;
-}
-
-/* Main area expands */
-body:has([href="/admin/revenue"]) main,
-body:has([href="/admin/revenue"]) .main,
-body:has([href="/admin/revenue"]) .content,
-body:has([href="/admin/revenue"]) .admin-content,
-body:has([href="/admin/revenue"]) .workspace-main {
-  max-width: none !important;
-}
-
-/* Revenue page cards should not force narrow columns */
-body:has([href="/admin/revenue"]) section,
-body:has([href="/admin/revenue"]) article,
-body:has([href="/admin/revenue"]) .card,
-body:has([href="/admin/revenue"]) .hc-card {
-  max-width: none;
-}
-
-/* Pipeline table gets breathing room */
-body:has([href="/admin/revenue"]) table {
-  min-width: 1180px;
-}
-
-body:has([href="/admin/revenue"]) .table-responsive,
-body:has([href="/admin/revenue"]) .table-wrap,
-body:has([href="/admin/revenue"]) .hc-table-wrap {
-  width: 100% !important;
-  overflow-x: auto;
-}
-
-/* Keep action dropdown compact */
-body:has([href="/admin/revenue"]) .hc-revenue-action-select {
-  min-width: 128px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid #cbd8ea;
-  background: #fff;
-  font-weight: 800;
-  color: #12365f;
-}
-
-/* Reduce wasted vertical space on side cards */
-body:has([href="/admin/revenue"]) aside > *,
-body:has([href="/admin/revenue"]) .revenue-sidebar > *,
-body:has([href="/admin/revenue"]) .hc-revenue-sidebar > * {
-  min-width: 0;
-  height: auto !important;
-}
-
-/* Responsive fallback */
-@media (max-width: 1100px) {
-  body:has([href="/admin/revenue"]) aside,
-  body:has([href="/admin/revenue"]) .sidebar,
-  body:has([href="/admin/revenue"]) .right-sidebar,
-  body:has([href="/admin/revenue"]) .revenue-sidebar,
-  body:has([href="/admin/revenue"]) .hc-revenue-sidebar {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-
-/* Revenue Radar Feed full-width polish */
-body:has([href="/admin/revenue"]) .hc-revenue-exec-triad {
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
-body:has([href="/admin/revenue"]) .hc-revenue-exec-triad > *:has(h2, h3, h4) {
-  min-height: 220px;
-}
-
-/* Move/shape Radar as full-width when JS placed it after the first row */
-body:has([href="/admin/revenue"]) .hc-revenue-exec-triad > *:has(h2:contains("Revenue Radar Feed")) {
-  grid-column: 1 / -1;
-}
-
-/* Fallback: any card containing Radar title becomes full-width inside premium grid */
-body:has([href="/admin/revenue"]) .hc-revenue-premium-grid section:has(h2),
-body:has([href="/admin/revenue"]) .hc-revenue-premium-grid article:has(h2),
-body:has([href="/admin/revenue"]) .hc-revenue-premium-grid div:has(> h2) {
-  min-width: 0;
-}
-
-/* Better radar internal density */
-body:has([href="/admin/revenue"]) .hc-revenue-premium-grid *:has(> h2) {
-  overflow: visible;
-}
-
-
-body:has([href="/admin/revenue"]) .hc-revenue-radar-full {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  max-width: none !important;
-}
-
-body:has([href="/admin/revenue"]) .hc-revenue-radar-full > * {
-  max-width: none !important;
-}
-
-
-/* Revenue dashboard final premium grid */
-.hc-revenue-sidegrid {
-  width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1rem;
-  margin: 1.25rem 0;
-}
-
-.hc-revenue-sidegrid .hc-revenue-sidecard {
-  width: 100%;
-  min-width: 0;
-  height: auto;
-}
-
-.hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) {
-  grid-column: 1 / -1;
-}
-
-.hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: .75rem 1rem;
-  align-items: start;
-}
-
-.hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
-  border-bottom: 0 !important;
-  border: 1px solid #e2eaf5;
-  border-radius: 14px;
-  padding: .85rem !important;
-  margin: 0 !important;
-  background: #fff;
-}
-
-@media (max-width: 1180px) {
-  .hc-revenue-sidegrid {
-    grid-template-columns: 1fr;
-  }
-
-  .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-    grid-template-columns: 1fr;
-  }
-}
-
-
-/* FINAL LUXURY PASS ? Revenue cockpit polish */
+/* Revenue-only card polish */
 body:has([href="/admin/revenue"]) {
   background:
     radial-gradient(circle at 15% 5%, rgba(37, 99, 235, .08), transparent 30%),
     linear-gradient(180deg, #f7faff 0%, #eef4fb 100%);
 }
 
-/* Slimmer admin chrome on revenue page */
-body:has([href="/admin/revenue"]) .hc-admin-shell,
-body:has([href="/admin/revenue"]) .admin-shell,
-body:has([href="/admin/revenue"]) .hc-admin-topbar {
-  backdrop-filter: blur(18px);
-}
-
-/* Prevent navbar from visually crushing content */
-body:has([href="/admin/revenue"]) .hc-admin-workspace,
-body:has([href="/admin/revenue"]) main,
-body:has([href="/admin/revenue"]) .admin-content {
-  padding-top: .75rem !important;
-}
-
-/* KPI cards: cleaner premium row */
 body:has([href="/admin/revenue"]) .hc-kpi-card,
 body:has([href="/admin/revenue"]) .hc-stat-card,
 body:has([href="/admin/revenue"]) [class*="kpi"],
@@ -11860,7 +11566,6 @@ body:has([href="/admin/revenue"]) [class*="metric"] {
   box-shadow: 0 14px 35px rgba(15, 35, 65, .07) !important;
 }
 
-/* Main filters and pipeline cards */
 body:has([href="/admin/revenue"]) .hc-card,
 body:has([href="/admin/revenue"]) .card {
   border-radius: 20px !important;
@@ -11868,7 +11573,6 @@ body:has([href="/admin/revenue"]) .card {
   box-shadow: 0 16px 42px rgba(15, 35, 65, .075) !important;
 }
 
-/* Reduce useless vertical air */
 body:has([href="/admin/revenue"]) .hc-card__section,
 body:has([href="/admin/revenue"]) .card-body,
 body:has([href="/admin/revenue"]) .p-3 {
@@ -11876,15 +11580,21 @@ body:has([href="/admin/revenue"]) .p-3 {
   padding-bottom: 1rem !important;
 }
 
-/* Premium grid cards */
 .hc-revenue-sidegrid {
-  align-items: stretch !important;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  margin: 1.25rem 0;
+  align-items: stretch;
 }
 
 .hc-revenue-sidegrid .hc-revenue-sidecard {
+  width: 100%;
+  min-width: 0;
   min-height: 230px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.88)) !important;
+  height: auto;
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.88)) !important;
 }
 
 .hc-revenue-sidegrid .hc-card__section--header {
@@ -11896,247 +11606,22 @@ body:has([href="/admin/revenue"]) .p-3 {
   letter-spacing: -.01em;
 }
 
-/* Top Opportunities should feel like a premium command block */
 .hc-revenue-sidegrid .hc-revenue-sidecard:first-child {
   border-top: 3px solid rgba(37, 99, 235, .75);
 }
 
-/* At Risk */
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(2) {
   border-top: 3px solid rgba(220, 38, 38, .65);
 }
 
-/* Forecast */
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(3) {
   border-top: 3px solid rgba(5, 150, 105, .75);
 }
 
-/* Radar full-width block */
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) {
+  grid-column: 1 / -1;
   min-height: 190px;
   border-top: 3px solid rgba(14, 165, 233, .75);
-}
-
-/* Radar internal cards tighter */
-.hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-  align-items: stretch;
-}
-
-.hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
-  box-shadow: 0 10px 24px rgba(15, 35, 65, .055);
-}
-
-/* Pipeline table: sharper enterprise feel */
-body:has([href="/admin/revenue"]) table thead th {
-  background: #f4f8fd !important;
-  color: #41536c !important;
-  font-size: .76rem !important;
-  letter-spacing: .07em !important;
-  text-transform: uppercase !important;
-  border-bottom: 1px solid #cbd8ea !important;
-}
-
-body:has([href="/admin/revenue"]) table tbody td {
-  vertical-align: middle !important;
-  border-bottom: 1px solid rgba(226, 232, 240, .95) !important;
-}
-
-body:has([href="/admin/revenue"]) table tbody tr:hover {
-  background: rgba(37, 99, 235, .035) !important;
-}
-
-/* Action select refinement */
-body:has([href="/admin/revenue"]) .hc-revenue-action-select {
-  min-width: 132px;
-  height: 38px;
-  border-radius: 999px;
-  padding: 0 .75rem;
-  box-shadow: 0 8px 20px rgba(15, 35, 65, .06);
-}
-
-/* Founder block remains bottom but more executive */
-body:has([href="/admin/revenue"]) .hc-founder-revenue-bottom,
-body:has([href="/admin/revenue"]) section:has(h1),
-body:has([href="/admin/revenue"]) section:has(h2) {
-  scroll-margin-top: 120px;
-}
-
-/* Less chaos from horizontal scroll */
-body:has([href="/admin/revenue"]) .table-responsive,
-body:has([href="/admin/revenue"]) .table-wrap,
-body:has([href="/admin/revenue"]) .hc-table-wrap {
-  border-radius: 18px;
-}
-
-/* Mobile fallback */
-@media (max-width: 1180px) {
-  .hc-revenue-sidegrid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .hc-revenue-sidegrid .hc-revenue-sidecard {
-    min-height: auto;
-  }
-}
-
-
-/* Admin shell compact tables + fixed premium nav */
-.hc-admin-shell,
-.admin-shell,
-.hc-admin-topbar,
-.hc-admin-nav,
-.admin-workspace-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 1000 !important;
-  backdrop-filter: blur(18px);
-  background: rgba(255,255,255,.88) !important;
-}
-
-/* Stop nav from floating over content too aggressively */
-.hc-admin-workspace,
-.admin-content,
-.workspace-main,
-main {
-  padding-top: 1rem !important;
-}
-
-/* Compact admin tables globally */
-.hc-admin-table,
-.admin-table,
-table {
-  table-layout: fixed !important;
-  width: 100% !important;
-  min-width: 0 !important;
-}
-
-/* Make cells wrap instead of forcing page width */
-.hc-admin-table th,
-.hc-admin-table td,
-.admin-table th,
-.admin-table td,
-table th,
-table td {
-  white-space: normal !important;
-  overflow-wrap: anywhere !important;
-  word-break: normal !important;
-  padding: .72rem .75rem !important;
-  vertical-align: middle !important;
-}
-
-/* Keep important buttons compact */
-table td:last-child,
-.hc-admin-table td:last-child,
-.admin-table td:last-child {
-  width: 120px !important;
-  min-width: 110px !important;
-  white-space: nowrap !important;
-}
-
-table td:last-child a,
-table td:last-child button,
-table td:last-child select {
-  max-width: 110px !important;
-  min-width: 90px !important;
-  height: 34px !important;
-  font-size: .82rem !important;
-}
-
-/* Clamp long titles/details */
-table td,
-.hc-admin-table td,
-.admin-table td {
-  font-size: .92rem;
-}
-
-table td a,
-.hc-admin-table td a,
-.admin-table td a {
-  overflow-wrap: anywhere;
-}
-
-/* Requests / Leads / Notifications: reduce giant row feeling */
-body:has([href="/admin/requests"]) table td,
-body:has([href="/admin/professional-leads"]) table td,
-body:has([href="/admin/notifications"]) table td,
-body:has([href="/admin/revenue"]) table td {
-  line-height: 1.25 !important;
-}
-
-/* Status chips smaller */
-.badge,
-[class*="badge"],
-[class*="chip"],
-[class*="pill"] {
-  max-width: 160px;
-}
-
-/* Prevent horizontal scroll unless absolutely needed */
-.table-responsive,
-.table-wrap,
-.hc-table-wrap {
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-/* Admin nav pills compact */
-.hc-admin-nav a,
-.hc-admin-nav button,
-.admin-workspace-header a,
-.admin-workspace-header button {
-  white-space: nowrap;
-  padding: .55rem .85rem !important;
-}
-
-/* Revenue table was forced wide earlier ? undo that */
-body:has([href="/admin/revenue"]) table {
-  min-width: 0 !important;
-}
-
-/* Requests table compact priority */
-body:has([href="/admin/requests"]) table th:nth-child(3),
-body:has([href="/admin/requests"]) table td:nth-child(3) {
-  width: 32% !important;
-}
-
-body:has([href="/admin/requests"]) table th:nth-child(8),
-body:has([href="/admin/requests"]) table td:nth-child(8) {
-  width: 18% !important;
-}
-
-/* Leads table compact priority */
-body:has([href="/admin/professional-leads"]) table th:nth-child(2),
-body:has([href="/admin/professional-leads"]) table td:nth-child(2) {
-  width: 20% !important;
-}
-
-body:has([href="/admin/professional-leads"]) table th:nth-child(3),
-body:has([href="/admin/professional-leads"]) table td:nth-child(3) {
-  width: 22% !important;
-}
-
-/* Revenue table compact priority */
-body:has([href="/admin/revenue"]) table th:nth-child(2),
-body:has([href="/admin/revenue"]) table td:nth-child(2) {
-  width: 18% !important;
-}
-
-body:has([href="/admin/revenue"]) table th:nth-child(3),
-body:has([href="/admin/revenue"]) table td:nth-child(3) {
-  width: 18% !important;
-}
-
-body:has([href="/admin/revenue"]) table th:nth-child(8),
-body:has([href="/admin/revenue"]) table td:nth-child(8) {
-  width: 18% !important;
-}
-
-
-/* Revenue Radar Feed badge fix + width tuning */
-.hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) {
-  grid-column: 1 / -1 !important;
-  width: 100% !important;
-  min-height: auto !important;
 }
 
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
@@ -12146,7 +11631,6 @@ body:has([href="/admin/revenue"]) table td:nth-child(8) {
   align-items: start !important;
 }
 
-/* Kill the giant cyan blobs */
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .badge,
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) [class*="badge"] {
   display: inline-flex !important;
@@ -12162,7 +11646,6 @@ body:has([href="/admin/revenue"]) table td:nth-child(8) {
   white-space: nowrap !important;
 }
 
-/* Radar rows clean */
 .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
   background: transparent !important;
   box-shadow: none !important;
@@ -12172,203 +11655,192 @@ body:has([href="/admin/revenue"]) table td:nth-child(8) {
   padding: .65rem 0 !important;
 }
 
-/* Slightly wider cockpit feel */
-.hc-admin-workspace,
-.admin-content,
-.workspace-main,
-main {
-  max-width: none !important;
-}
-
 @media (max-width: 1180px) {
+  .hc-revenue-sidegrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hc-revenue-sidegrid .hc-revenue-sidecard {
+    min-height: auto;
+  }
+
   .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
     grid-template-columns: 1fr !important;
   }
 }
 
-
-/* Audience map table compact polish */
-body:has([href="/admin/audience-map"]) table {
-  table-layout: fixed !important;
-  width: 100% !important;
+/* === FINAL ADMIN NAVBAR V2 — PREMIUM STICKY WITHOUT COVERING CONTENT === */
+body.hc-page-admin,
+body[data-hc-page^="/ops"]{
+  --hc-admin-shell-gap: 14px;
+  --hc-admin-shell-offset: 98px;
 }
 
-body:has([href="/admin/audience-map"]) table th,
-body:has([href="/admin/audience-map"]) table td {
-  padding: .72rem .85rem !important;
-  line-height: 1.25 !important;
-  white-space: normal !important;
-  overflow-wrap: normal !important;
-  word-break: normal !important;
+body.hc-page-admin :is(.hc-admin-shell, .admin-shell, .hc-admin-topbar, .hc-admin-nav, .admin-workspace-header),
+body[data-hc-page^="/ops"] :is(.hc-admin-shell, .admin-shell, .hc-admin-topbar, .hc-admin-nav, .admin-workspace-header){
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
 }
 
-/* Session column must not break letter by letter */
-body:has([href="/admin/audience-map"]) table th:first-child,
-body:has([href="/admin/audience-map"]) table td:first-child {
-  width: 16rem !important;
-  max-width: 16rem !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  color: #e91e63;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: .82rem;
+body.hc-page-admin .hc-admin-workspace__content,
+body[data-hc-page^="/ops"] .hc-admin-workspace__content{
+  padding-top: 8px;
 }
 
-/* Better proportional columns */
-body:has([href="/admin/audience-map"]) table th:nth-child(2),
-body:has([href="/admin/audience-map"]) table td:nth-child(2) {
-  width: 5rem !important;
+body.hc-page-admin .hc-admin-shellbar,
+body[data-hc-page^="/ops"] .hc-admin-shellbar{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  width: min(1640px, calc(100vw - 48px)) !important;
+  max-width: min(1640px, calc(100vw - 48px)) !important;
+  margin: 0 auto var(--hc-admin-shell-gap) !important;
+  padding: 6px 0 4px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
 }
 
-body:has([href="/admin/audience-map"]) table th:nth-child(3),
-body:has([href="/admin/audience-map"]) table td:nth-child(3) {
-  width: 9rem !important;
+body.hc-page-admin .hc-admin-shellbar__inner,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 14px !important;
+  min-height: 64px;
+  width: 100%;
+  max-width: 100%;
+  padding: 9px 12px 9px 14px !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(180, 200, 225, 0.65) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.09) !important;
 }
 
-body:has([href="/admin/audience-map"]) table th:nth-child(4),
-body:has([href="/admin/audience-map"]) table td:nth-child(4) {
-  width: 12rem !important;
+body.hc-page-admin .hc-admin-shellbar__brand,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__brand{
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
-body:has([href="/admin/audience-map"]) table th:nth-child(5),
-body:has([href="/admin/audience-map"]) table td:nth-child(5) {
-  width: 12rem !important;
+body.hc-page-admin .hc-admin-shellbar__eyebrow,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__eyebrow{
+  font-size: .63rem !important;
+  line-height: 1 !important;
 }
 
-body:has([href="/admin/audience-map"]) table th:last-child,
-body:has([href="/admin/audience-map"]) table td:last-child {
-  width: 13rem !important;
-  text-align: right !important;
+body.hc-page-admin .hc-admin-shellbar__title,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__title{
+  font-size: .9rem !important;
+  line-height: 1.08 !important;
 }
 
-
-/* Revenue Radar Feed final layout */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-  display: grid !important;
-  grid-template-columns: 0.9fr 1.1fr !important;
-  column-gap: 2rem !important;
-  row-gap: .75rem !important;
-  align-items: start !important;
-}
-
-/* Put insight badges in a compact left rail */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .badge.text-bg-info {
-  display: inline-flex !important;
-  width: fit-content !important;
-  max-width: 100% !important;
-  padding: .38rem .75rem !important;
-  margin: 0 .5rem .5rem 0 !important;
-  border-radius: 999px !important;
-  font-size: .78rem !important;
-  line-height: 1.15 !important;
-  white-space: nowrap !important;
-}
-
-/* Radar rows should occupy the right column cleanly */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
-  width: 100% !important;
-  max-width: 680px !important;
-  margin-left: auto !important;
-  padding: .58rem 0 !important;
-  border-bottom: 1px solid rgba(203,213,225,.8) !important;
-}
-
-/* Avoid too much vertical emptiness */
-body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) {
-  min-height: 280px !important;
-}
-
-/* On smaller screens stack it */
-@media (max-width: 1180px) {
-  body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .p-3 {
-    grid-template-columns: 1fr !important;
-  }
-
-  body:has([href="/admin/revenue"]) .hc-revenue-sidegrid .hc-revenue-sidecard:nth-child(4) .border-bottom {
-    margin-left: 0 !important;
-    max-width: 100% !important;
-  }
-}
-
-
-/* FIX: Audience map revenue radar must stay normal */
-body:has([href="/admin/audience-map"]) .hc-revenue-sidecard .p-3,
-body:has([href="/admin/audience-map"]) .hc-audience-map .p-3 {
-  display: block !important;
-}
-
-body:has([href="/admin/audience-map"]) .badge.text-bg-info {
-  display: inline-flex !important;
-  width: auto !important;
-  max-width: none !important;
-  margin: 0 .45rem .45rem 0 !important;
-  white-space: nowrap !important;
-}
-
-body:has([href="/admin/audience-map"]) .border-bottom {
-  max-width: 100% !important;
-  margin-left: 0 !important;
-}
-
-
-/* === GLOBAL ADMIN WIDTH FIX — compact premium baseline === */
-:root {
-  --hc-admin-max-width: 1480px;
-  --hc-admin-page-pad: 18px;
-}
-
-.hc-admin-shell,
-.admin-shell,
-.hc-admin-page,
-.hc-admin-main,
-.hc-admin-content,
-.hc-admin-workspace,
-main {
-  box-sizing: border-box;
-}
-
-.hc-admin-shell,
-.admin-shell,
-.hc-admin-page,
-.hc-admin-main,
-.hc-admin-content,
-.hc-admin-workspace {
-  max-width: var(--hc-admin-max-width) !important;
-  width: calc(100% - 36px) !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
-.hc-admin-content,
-.hc-admin-workspace,
-.hc-admin-main {
-  padding-left: var(--hc-admin-page-pad) !important;
-  padding-right: var(--hc-admin-page-pad) !important;
-}
-
-.hc-card,
-.hc-panel,
-.admin-card,
-.admin-panel {
-  max-width: 100% !important;
-}
-
-.hc-table-wrap,
-.table-responsive,
-.admin-table-wrap {
-  max-width: 100% !important;
+body.hc-page-admin .hc-admin-shellnav,
+body[data-hc-page^="/ops"] .hc-admin-shellnav{
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
   overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-@media (max-width: 1200px) {
-  .hc-admin-shell,
-  .admin-shell,
-  .hc-admin-page,
-  .hc-admin-main,
-  .hc-admin-content,
-  .hc-admin-workspace {
-    width: calc(100% - 20px) !important;
-    max-width: none !important;
+body.hc-page-admin .hc-admin-shellnav::-webkit-scrollbar,
+body[data-hc-page^="/ops"] .hc-admin-shellnav::-webkit-scrollbar{
+  display: none;
+}
+
+body.hc-page-admin .hc-admin-shellnav__link,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link{
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: .46rem .78rem !important;
+  border: 1px solid rgba(180, 200, 225, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+  color: #42566e !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transform: none !important;
+  font-size: .79rem !important;
+  line-height: 1 !important;
+}
+
+body.hc-page-admin .hc-admin-shellnav__link:hover,
+body.hc-page-admin .hc-admin-shellnav__link:focus-visible,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link:hover,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link:focus-visible{
+  border-color: rgba(167, 188, 214, 0.72) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: #1d4f86 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.hc-page-admin .hc-admin-shellnav__link.is-active,
+body.hc-page-admin .hc-admin-shellnav__link[aria-current="page"],
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link.is-active,
+body[data-hc-page^="/ops"] .hc-admin-shellnav__link[aria-current="page"]{
+  border-color: rgba(120, 163, 220, 0.45) !important;
+  background: rgba(231, 241, 255, 0.92) !important;
+  color: #1d4f86 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72) !important;
+  transform: none !important;
+}
+
+body.hc-page-admin :is(.hc-sticky, .hc-admin-stickybar),
+body[data-hc-page^="/ops"] :is(.hc-sticky, .hc-admin-stickybar){
+  top: var(--hc-admin-shell-offset) !important;
+}
+
+body.hc-page-admin .hc-control-panel,
+body[data-hc-page^="/ops"] .hc-control-panel{
+  top: calc(var(--hc-admin-shell-offset) + 2px) !important;
+}
+
+body.hc-page-admin .hc-admin-table thead th,
+body[data-hc-page^="/ops"] .hc-admin-table thead th{
+  top: var(--hc-admin-shell-offset) !important;
+}
+
+body.hc-page-admin :is(.hc-page-hero, .hc-admin-headerCard, .hc-card, .hc-admin-stickybar, .hc-requests-toolbar),
+body[data-hc-page^="/ops"] :is(.hc-page-hero, .hc-admin-headerCard, .hc-card, .hc-admin-stickybar, .hc-requests-toolbar){
+  scroll-margin-top: calc(var(--hc-admin-shell-offset) + 12px);
+}
+
+@media (max-width: 991.98px){
+  body.hc-page-admin,
+  body[data-hc-page^="/ops"]{
+    --hc-admin-shell-offset: 132px;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar,
+  body[data-hc-page^="/ops"] .hc-admin-shellbar{
+    width: min(1640px, calc(100vw - 24px)) !important;
+    max-width: min(1640px, calc(100vw - 24px)) !important;
+    padding-top: 6px !important;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__inner,
+  body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    min-height: auto;
+    padding: 9px 12px 10px !important;
+  }
+
+  body.hc-page-admin .hc-admin-shellnav,
+  body[data-hc-page^="/ops"] .hc-admin-shellnav{
+    width: 100%;
+    justify-content: flex-start !important;
   }
 }

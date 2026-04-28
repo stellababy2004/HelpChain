@@ -6190,6 +6190,72 @@ def admin_intervenants_new():
     )
 
 
+@admin_bp.get("/api/geocode")
+@admin_required
+def admin_api_geocode():
+    admin_required_404()
+    if not current_user.is_admin:
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+
+    address = (request.args.get("address") or "").strip()
+    city = (request.args.get("city") or "").strip()
+    query = request_address_display_text(
+        address_line=address or None,
+        city=city or None,
+        country="France",
+    )
+    if not address or not city or not query:
+        return jsonify({"ok": False, "error": "missing_query"}), 400
+
+    try:
+        import requests
+    except Exception:
+        current_app.logger.warning("admin_api_geocode requests import unavailable")
+        return jsonify({"ok": False, "error": "service_unavailable"}), 503
+
+    try:
+        response = requests.get(
+            "https://api-adresse.data.gouv.fr/search/",
+            params={"q": query, "limit": 1},
+            headers={"Accept": "application/json"},
+            timeout=4.0,
+        )
+        response.raise_for_status()
+        payload = response.json() or {}
+    except Exception:
+        current_app.logger.exception("admin_api_geocode provider request failed")
+        return jsonify({"ok": False, "error": "provider_error"}), 502
+
+    features = payload.get("features") or []
+    if not features:
+        return jsonify({"ok": False, "error": "no_result"})
+
+    feature = features[0] or {}
+    geometry = feature.get("geometry") or {}
+    coordinates = geometry.get("coordinates") or []
+    properties = feature.get("properties") or {}
+    if len(coordinates) < 2:
+        return jsonify({"ok": False, "error": "no_result"})
+
+    longitude = coordinates[0]
+    latitude = coordinates[1]
+    try:
+        latitude = float(latitude)
+        longitude = float(longitude)
+    except Exception:
+        return jsonify({"ok": False, "error": "no_result"})
+
+    return jsonify(
+        {
+            "ok": True,
+            "latitude": latitude,
+            "longitude": longitude,
+            "label": properties.get("label") or query,
+            "score": properties.get("score"),
+        }
+    )
+
+
 @admin_bp.get("/professionals-map")
 @admin_required
 def admin_professionals_map():

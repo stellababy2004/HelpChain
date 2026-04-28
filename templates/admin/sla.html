@@ -1,6 +1,56 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Délais et dépassements SLA | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
+{% block admin_workspace_css %}
+<style>
+.hc-sla-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.hc-sla-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.hc-sla-table thead { display: table-header-group; }
+.hc-sla-table tbody { display: table-row-group; }
+.hc-sla-table tr { display: table-row; }
+
+.hc-sla-table th,
+.hc-sla-table td {
+  display: table-cell;
+  position: static;
+  float: none;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.hc-sla-table th:nth-child(1),
+.hc-sla-table td:nth-child(1) { width: 8%; }
+
+.hc-sla-table th:nth-child(2),
+.hc-sla-table td:nth-child(2) { width: 28%; }
+
+.hc-sla-table th:nth-child(3),
+.hc-sla-table td:nth-child(3) { width: 13%; }
+
+.hc-sla-table th:nth-child(4),
+.hc-sla-table td:nth-child(4) { width: 18%; }
+
+.hc-sla-table th:nth-child(5),
+.hc-sla-table td:nth-child(5) { width: 13%; }
+
+.hc-sla-table th:nth-child(6),
+.hc-sla-table td:nth-child(6) { width: 12%; }
+
+.hc-sla-table th:nth-child(7),
+.hc-sla-table td:nth-child(7) { width: 8%; }
+</style>
+{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap">
@@ -74,8 +124,8 @@
 
   <div class="hc-card">
     <div class="card-body p-0">
-      <div class="table-responsive hc-admin-tablewrap">
-        <table class="table table-hover mb-0 align-middle hc-admin-table">
+      <div class="hc-sla-table-wrap">
+        <table class="hc-sla-table">
           <thead>
             <tr>
               <th style="width:80px;">ID</th>

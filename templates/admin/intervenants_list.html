@@ -1,6 +1,52 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Intervenants') }} | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-intervenants{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-intervenants-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .hc-intervenants-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+
+    .hc-intervenants-table thead {
+      display: table-header-group;
+    }
+
+    .hc-intervenants-table tbody {
+      display: table-row-group;
+    }
+
+    .hc-intervenants-table tr {
+      display: table-row;
+    }
+
+    .hc-intervenants-table th,
+    .hc-intervenants-table td {
+      display: table-cell;
+      position: static;
+      vertical-align: middle;
+      white-space: normal;
+    }
+
+    .hc-intervenants-table th {
+      background: #f8fbff;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #40536b;
+    }
+
+    .hc-intervenants-table td {
+      color: #10233f;
+    }
+  </style>
+{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
@@ -65,8 +111,8 @@
         {% endif %}
       </span>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table mb-0 hc-intervenants-table">
+    <div class="hc-intervenants-table-wrap">
+      <table class="hc-intervenants-table">
         <colgroup>
           <col class="hc-col-id">
           <col class="hc-col-name">
@@ -115,7 +161,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="10" class="text-center py-5 hc-intervenants-emptyCell">
+              <td colspan="10" class="text-center py-5 hc-intervenants-emptyCell hc-intervenants-empty-cell">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">Aucun intervenant trouvé</div>
                   <div class="hc-empty-state__text">

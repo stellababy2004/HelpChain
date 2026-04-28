@@ -1,6 +1,15 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Nouvel intervenant | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-intervenants{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-intervenants-geoHint {
+      margin-top: .5rem;
+      color: rgba(71, 85, 105, .84);
+      font-size: .875rem;
+    }
+  </style>
+{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
@@ -170,6 +179,9 @@
         <div class="form-text">Optionnel. Exemple: `23.3219`.</div>
         </div>
       </div>
+            <div class="col-12">
+              <div id="hcIntervenantGeoHint" class="hc-intervenants-geoHint" aria-live="polite"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -183,4 +195,128 @@
     </form>
   </div>
 </div>
+<script>
+  (() => {
+    const cityInput = document.getElementById("city");
+    const addressInput = document.getElementById("address");
+    const latitudeInput = document.getElementById("latitude");
+    const longitudeInput = document.getElementById("longitude");
+    const hintNode = document.getElementById("hcIntervenantGeoHint");
+
+    if (!cityInput || !addressInput || !latitudeInput || !longitudeInput || !hintNode) {
+      return;
+    }
+
+    const debounceMs = 700;
+    const timeoutMs = 4500;
+    let debounceHandle = null;
+    let activeController = null;
+    let requestToken = 0;
+    let manualCoordsDirty = false;
+    let isApplyingAutofill = false;
+    let lastAddressKey = "";
+
+    const setHint = (message) => {
+      hintNode.textContent = message || "";
+    };
+
+    const currentAddressKey = () => {
+      return `${addressInput.value.trim()}|${cityInput.value.trim()}`;
+    };
+
+    const handleManualCoordinateInput = () => {
+      if (isApplyingAutofill) {
+        return;
+      }
+      manualCoordsDirty = true;
+    };
+
+    const scheduleGeocode = () => {
+      const nextKey = currentAddressKey();
+      if (nextKey !== lastAddressKey) {
+        manualCoordsDirty = false;
+        lastAddressKey = nextKey;
+      }
+
+      if (debounceHandle) {
+        clearTimeout(debounceHandle);
+      }
+
+      const address = addressInput.value.trim();
+      const city = cityInput.value.trim();
+      if (!address || !city) {
+        setHint("");
+        return;
+      }
+
+      debounceHandle = window.setTimeout(() => {
+        const token = ++requestToken;
+        if (activeController) {
+          activeController.abort();
+        }
+        activeController = new AbortController();
+        const timeoutHandle = window.setTimeout(() => activeController.abort(), timeoutMs);
+        setHint("Recherche automatique des coordonnées...");
+
+        const url = new URL("{{ url_for('admin.admin_api_geocode') }}", window.location.origin);
+        url.searchParams.set("address", address);
+        url.searchParams.set("city", city);
+
+        fetch(url.toString(), {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          signal: activeController.signal,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (token !== requestToken) {
+              return;
+            }
+            if (!data || !data.ok) {
+              setHint("Coordonnées introuvables — vous pouvez les saisir manuellement");
+              return;
+            }
+            if (manualCoordsDirty) {
+              setHint("Coordonnées modifiées manuellement");
+              return;
+            }
+
+            isApplyingAutofill = true;
+            latitudeInput.value = data.latitude ?? "";
+            longitudeInput.value = data.longitude ?? "";
+            isApplyingAutofill = false;
+            setHint("Coordonnées détectées automatiquement");
+          })
+          .catch((error) => {
+            if (token !== requestToken) {
+              return;
+            }
+            if (error && error.name === "AbortError") {
+              setHint("Coordonnées introuvables — vous pouvez les saisir manuellement");
+              return;
+            }
+            setHint("Coordonnées introuvables — vous pouvez les saisir manuellement");
+          })
+          .finally(() => {
+            clearTimeout(timeoutHandle);
+          });
+      }, debounceMs);
+    };
+
+    addressInput.addEventListener("input", scheduleGeocode);
+    cityInput.addEventListener("input", scheduleGeocode);
+    latitudeInput.addEventListener("input", handleManualCoordinateInput);
+    longitudeInput.addEventListener("input", handleManualCoordinateInput);
+
+    lastAddressKey = currentAddressKey();
+    if (addressInput.value.trim() && cityInput.value.trim() && !latitudeInput.value.trim() && !longitudeInput.value.trim()) {
+      scheduleGeocode();
+    }
+  })();
+</script>
 {% endblock %}

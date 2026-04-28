@@ -56,16 +56,8 @@
         <input type="text" class="form-control" placeholder="Rechercher une structure..." aria-label="Rechercher une structure">
       </div>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table mb-0">
-        <colgroup>
-          <col class="hc-col-structure">
-          <col class="hc-col-slug">
-          <col class="hc-col-users">
-          <col class="hc-col-requests">
-          <col class="hc-col-status">
-          <col class="hc-col-actions">
-        </colgroup>
+    <div class="hc-structures-table-wrap">
+      <table class="hc-structures-table">
         <thead>
           <tr>
             <th scope="col">Structure</th>
@@ -93,7 +85,7 @@
           {% endfor %}
           {% if structures|length == 0 %}
           <tr class="hc-empty-row">
-            <td colspan="6">
+            <td colspan="6" class="hc-structures-empty-cell">
               <div class="hc-empty-state">
                 <div class="hc-empty-state__title">Aucune structure</div>
                 <div class="hc-empty-state__text">Aucune organisation n’est encore enregistrée dans cet espace d’administration.</div>

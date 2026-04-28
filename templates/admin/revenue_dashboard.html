@@ -3,18 +3,34 @@
 {% block admin_body_class %} hc-admin-revenue-page hc-density-compact{% endblock %}
 {% block admin_workspace_css %}
   <style>
-    .hc-revenue-grid {
+    .hc-revenue-page {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    .hc-revenue-page * {
+      box-sizing: border-box;
+    }
+    .hc-revenue-page .hc-revenue-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
-      gap: 14px;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
       align-items: start;
     }
-    .hc-revenue-kpis {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 10px;
+    .hc-revenue-page .hc-revenue-kpi-grid,
+    .hc-revenue-page .hc-revenue-filters,
+    .hc-revenue-page .hc-revenue-sidegrid,
+    .hc-revenue-page .hc-revenue-radar,
+    .hc-revenue-page .hc-card {
+      max-width: 100%;
+      min-width: 0;
     }
-    .hc-revenue-kpi {
+    .hc-revenue-page .hc-revenue-kpis,
+    .hc-revenue-page .hc-revenue-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .hc-revenue-page .hc-revenue-kpi {
       border: 1px solid rgba(15, 23, 42, .08);
       border-left: 4px solid #64748b;
       background: #fff;
@@ -22,11 +38,11 @@
       padding: .8rem .85rem;
       min-width: 0;
     }
-    .hc-revenue-kpi--hot { border-left-color: #dc2626; }
-    .hc-revenue-kpi--due { border-left-color: #d97706; }
-    .hc-revenue-kpi--demo { border-left-color: #2563eb; }
-    .hc-revenue-kpi--money { border-left-color: #059669; }
-    .hc-revenue-kpi__label {
+    .hc-revenue-page .hc-revenue-kpi--hot { border-left-color: #dc2626; }
+    .hc-revenue-page .hc-revenue-kpi--due { border-left-color: #d97706; }
+    .hc-revenue-page .hc-revenue-kpi--demo { border-left-color: #2563eb; }
+    .hc-revenue-page .hc-revenue-kpi--money { border-left-color: #059669; }
+    .hc-revenue-page .hc-revenue-kpi__label {
       color: rgba(15, 23, 42, .62);
       font-size: .74rem;
       font-weight: 700;
@@ -36,7 +52,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .hc-revenue-kpi__value {
+    .hc-revenue-page .hc-revenue-kpi__value {
       display: block;
       margin-top: .22rem;
       font-size: 1.35rem;
@@ -44,104 +60,127 @@
       font-weight: 800;
       color: #0f172a;
     }
-    .hc-revenue-filterbar {
+    .hc-revenue-page .hc-revenue-filterbar {
       padding: .9rem;
     }
-    .hc-revenue-filtergrid {
+    .hc-revenue-page .hc-revenue-filtergrid,
+    .hc-revenue-page .hc-revenue-filters {
       display: grid;
-      grid-template-columns: minmax(220px, 1.4fr) repeat(5, minmax(130px, .8fr)) auto;
-      gap: .65rem;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr 0.8fr auto auto;
+      gap: 1rem;
       align-items: end;
     }
-    .hc-revenue-table {
-      table-layout: fixed;
-      min-width: 1320px;
+    .hc-revenue-page .hc-revenue-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
     }
-    .hc-revenue-table th,
-    .hc-revenue-table td {
+    .hc-revenue-page .hc-revenue-table {
+      width: 100%;
+      min-width: 980px;
+      table-layout: auto !important;
+    }
+    .hc-revenue-page .hc-revenue-table th,
+    .hc-revenue-page .hc-revenue-table td {
       vertical-align: middle;
     }
-    .hc-revenue-col-type { width: 120px; }
-    .hc-revenue-col-org { width: 245px; }
-    .hc-revenue-col-contact { width: 190px; }
-    .hc-revenue-col-city { width: 145px; }
-    .hc-revenue-col-stage { width: 142px; }
-    .hc-revenue-col-score { width: 118px; }
-    .hc-revenue-col-activity { width: 132px; }
-    .hc-revenue-col-next { width: 220px; }
-    .hc-revenue-col-value { width: 120px; }
-    .hc-revenue-col-actions { width: 255px; }
-    .hc-revenue-line {
+    .hc-revenue-page .hc-revenue-col-type { width: 120px; }
+    .hc-revenue-page .hc-revenue-col-org { width: 245px; }
+    .hc-revenue-page .hc-revenue-col-contact { width: 190px; }
+    .hc-revenue-page .hc-revenue-col-city { width: 145px; }
+    .hc-revenue-page .hc-revenue-col-stage { width: 142px; }
+    .hc-revenue-page .hc-revenue-col-score { width: 118px; }
+    .hc-revenue-page .hc-revenue-col-activity { width: 132px; }
+    .hc-revenue-page .hc-revenue-col-next { width: 220px; }
+    .hc-revenue-page .hc-revenue-col-value { width: 120px; }
+    .hc-revenue-page .hc-revenue-col-actions { width: 255px; }
+    .hc-revenue-page .hc-revenue-line {
       display: block;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.25;
     }
-    .hc-revenue-org {
+    .hc-revenue-page .hc-revenue-org {
       font-weight: 750;
       color: #0f172a;
     }
-    .hc-revenue-sub {
+    .hc-revenue-page .hc-revenue-sub {
       color: rgba(15, 23, 42, .56);
       font-size: .78rem;
     }
-    .hc-revenue-next--overdue {
+    .hc-revenue-page .hc-revenue-next--overdue {
       color: #b91c1c;
       font-weight: 700;
     }
-    .hc-revenue-next--none {
+    .hc-revenue-page .hc-revenue-next--none {
       color: rgba(15, 23, 42, .48);
       font-style: italic;
     }
-    .hc-revenue-actions {
+    .hc-revenue-page .hc-revenue-actions {
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
       gap: .25rem;
     }
-    .hc-revenue-sidecard + .hc-revenue-sidecard {
-      margin-top: 12px;
+    .hc-revenue-page .hc-revenue-sidegrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
     }
-    .hc-revenue-focus {
+    .hc-revenue-page .hc-revenue-focus {
       display: grid;
       gap: .65rem;
     }
-    .hc-revenue-focus__item {
+    .hc-revenue-page .hc-revenue-focus__item {
       border: 1px solid rgba(15, 23, 42, .08);
       border-radius: 8px;
       padding: .75rem;
       background: #fff;
     }
-    .hc-revenue-forecast {
+    .hc-revenue-page .hc-revenue-forecast {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: .65rem;
     }
-    .hc-revenue-forecast__item {
+    .hc-revenue-page .hc-revenue-forecast__item {
       border: 1px solid rgba(15, 23, 42, .08);
       border-radius: 8px;
       padding: .75rem;
       background: #f8fafc;
     }
-    @media (max-width: 1399.98px) {
-      .hc-revenue-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .hc-revenue-grid { grid-template-columns: 1fr; }
+    @media (max-width: 1200px) {
+      .hc-revenue-page .hc-revenue-kpis,
+      .hc-revenue-page .hc-revenue-kpi-grid,
+      .hc-revenue-page .hc-revenue-sidegrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .hc-revenue-page .hc-revenue-filtergrid,
+      .hc-revenue-page .hc-revenue-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
-    @media (max-width: 991.98px) {
-      .hc-revenue-filtergrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 575.98px) {
-      .hc-revenue-kpis,
-      .hc-revenue-filtergrid,
-      .hc-revenue-forecast {
+    @media (max-width: 760px) {
+      .hc-revenue-page .hc-revenue-kpis,
+      .hc-revenue-page .hc-revenue-kpi-grid,
+      .hc-revenue-page .hc-revenue-sidegrid,
+      .hc-revenue-page .hc-revenue-filtergrid,
+      .hc-revenue-page .hc-revenue-filters,
+      .hc-revenue-page .hc-revenue-forecast {
         grid-template-columns: 1fr;
       }
     }
   </style>
 {% endblock %}
 
+{% block scripts %}
+  {{ super() }}
+  <script defer src="{{ url_for('static', filename='js/revenue-action-menu.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/revenue-premium-grid.js') }}"></script>
+{% endblock %}
+
 {% block admin_content %}
+<div class="hc-revenue-page">
 <div class="hc-admin-wrap hc-admin-shell hc-admin-shell--wide">
   <div class="hc-card hc-admin-headerCard mb-3">
     <div class="hc-row hc-admin-headerTop">
@@ -157,7 +196,7 @@
     </div>
   </div>
 
-  <section class="hc-revenue-kpis mb-3" aria-label="Revenue KPIs">
+  <section class="hc-revenue-kpis hc-revenue-kpi-grid mb-3" aria-label="Revenue KPIs">
     <article class="hc-revenue-kpi">
       <span class="hc-revenue-kpi__label">New Leads</span>
       <strong class="hc-revenue-kpi__value">{{ metrics.new_leads }}</strong>
@@ -186,7 +225,7 @@
 
   <div class="hc-revenue-grid">
     <main>
-      <form method="GET" class="hc-card hc-revenue-filterbar mb-3">
+      <form method="GET" class="hc-card hc-revenue-filterbar hc-revenue-filters mb-3">
         <div class="hc-revenue-filtergrid">
           <div>
             <label class="hc-muted" for="q">Search</label>
@@ -250,7 +289,7 @@
           </div>
           {% if active_filters %}<span class="badge text-bg-light border">Filters active</span>{% endif %}
         </div>
-        <div class="table-responsive hc-admin-tablewrap">
+        <div class="table-responsive hc-admin-tablewrap hc-revenue-table-wrap">
           <table class="table table-hover align-middle hc-admin-table hc-revenue-table mb-0">
             <colgroup>
               <col class="hc-revenue-col-type">
@@ -340,7 +379,7 @@
     </main>
 
     <section class="hc-revenue-sidegrid">
-      <div class="hc-card hc-revenue-sidecard">
+      <div class="hc-card hc-revenue-sidecard hc-revenue-radar">
         <div class="hc-card__section hc-card__section--header">
           <strong>Top 5 Opportunities Today</strong>
         </div>
@@ -428,5 +467,6 @@
       </div>
     </section>
   </div>
+</div>
 </div>
 {% endblock %}

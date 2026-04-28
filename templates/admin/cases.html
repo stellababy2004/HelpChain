@@ -1,6 +1,54 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Cas | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-cases-table-wrap{
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .hc-cases-table{
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+
+    .hc-cases-table thead{
+      position: static !important;
+      display: table-header-group !important;
+    }
+
+    .hc-cases-table tbody{
+      position: static !important;
+      display: table-row-group !important;
+    }
+
+    .hc-cases-table tr{
+      position: static !important;
+      display: table-row !important;
+    }
+
+    .hc-cases-table th,
+    .hc-cases-table td{
+      position: static !important;
+      display: table-cell !important;
+      left: auto !important;
+      right: auto !important;
+      inset-inline-start: auto !important;
+      inset-inline-end: auto !important;
+      transform: none !important;
+      vertical-align: middle;
+    }
+
+    .hc-cases-empty-cell{
+      text-align: center;
+      padding: 3rem 1rem;
+      white-space: normal;
+    }
+  </style>
+{% endblock %}
 
 {% block admin_content %}
 {% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
@@ -155,8 +203,8 @@
         </div>
       </div>
     </div>
-    <div class="table-responsive hc-admin-tablewrap admin-table-wrap">
-      <table class="table table-hover align-middle hc-admin-table admin-table hc-cases-table mb-0">
+    <div class="hc-cases-table-wrap">
+      <table class="hc-cases-table">
         <thead>
           <tr>
             <th class="case-col">ID</th>
@@ -170,6 +218,7 @@
           </tr>
         </thead>
         <tbody>
+          {% if cases %}
           {% for c in cases %}
             {% set ops_level = (ops_priority_levels.get(c.id) or 'normal') %}
             {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
@@ -252,16 +301,17 @@
                 {% endif %}
               </td>
             </tr>
+          {% endfor %}
           {% else %}
             <tr>
-              <td colspan="8" class="py-4">
+              <td colspan="8" class="hc-cases-empty-cell">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">Aucun cas a afficher</div>
                   <div class="hc-empty-state__text">Aucune situation ne correspond actuellement aux filtres actifs dans la console operateur.</div>
                 </div>
               </td>
             </tr>
-          {% endfor %}
+          {% endif %}
         </tbody>
       </table>
     </div>

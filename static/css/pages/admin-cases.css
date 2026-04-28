@@ -1,0 +1,56 @@
+.hc-admin-wrap--cases .hc-cases-table-wrap{
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hc-admin-wrap--cases .hc-cases-table{
+  width: 100%;
+  min-width: 1180px;
+  table-layout: fixed;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--id{
+  width: 92px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--title{
+  width: 330px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--city{
+  width: 150px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--status{
+  width: 128px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--priority{
+  width: 124px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--owner{
+  width: 150px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--activity{
+  width: 174px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .hc-cases-col--action{
+  width: 104px;
+}
+
+.hc-admin-wrap--cases .hc-cases-table th,
+.hc-admin-wrap--cases .hc-cases-table td{
+  vertical-align: middle;
+}
+
+.hc-admin-wrap--cases .hc-cases-table .actions-col{
+  white-space: nowrap;
+  text-align: right;
+}
+
+.hc-admin-wrap--cases .hc-cases-table tbody td[colspan="8"]{
+  white-space: normal;
+}
