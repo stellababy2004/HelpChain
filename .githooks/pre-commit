@@ -41,6 +41,7 @@ echo "$staged_files" | grep -Eq '^backend/helpchain_backend/src/models/' && mode
 echo "$staged_files" | grep -Eq '^backend/.*/models/' && models_changed=1
 
 echo "$staged_files" | grep -Eq '^migrations/versions/' && migrations_changed=1
+echo "$staged_files" | grep -Eq '^backend/migrations/versions/' && migrations_changed=1
 echo "$staged_files" | grep -Eq '^alembic/versions/' && migrations_changed=1
 
 if [ "$models_changed" -eq 1 ] && [ "$migrations_changed" -eq 0 ]; then
@@ -56,3 +57,4 @@ elif [ -x ".venv/bin/python" ]; then
 else
   python -m pytest tests/test_auth_access_invariants.py -q
 fi
+

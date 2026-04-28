@@ -1,0 +1,266 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Previsualisation import | Admin{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-import-preview-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 1rem;
+    }
+    .hc-import-preview-kpi {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-radius: 14px;
+      padding: .9rem 1rem;
+      background: linear-gradient(180deg, rgba(255,255,255,.97), rgba(248,250,252,.92));
+    }
+    .hc-import-preview-kpi__label {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: rgba(15, 23, 42, .58);
+    }
+    .hc-import-preview-kpi__value {
+      margin-top: .2rem;
+      font-size: 1.45rem;
+      font-weight: 760;
+      color: #0f172a;
+    }
+    .hc-import-mapping-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .75rem 1rem;
+    }
+    .hc-import-preview-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .hc-import-preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+    .hc-import-preview-table th,
+    .hc-import-preview-table td {
+      vertical-align: top;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .hc-import-warning-list {
+      margin: 0;
+      padding-left: 1rem;
+      color: #8a5a00;
+    }
+    .hc-import-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 118px;
+      border-radius: 999px;
+      padding: .28rem .7rem;
+      font-size: .76rem;
+      font-weight: 700;
+      border: 1px solid rgba(15, 23, 42, .1);
+      background: #f8fafc;
+      color: #475569;
+    }
+    .hc-import-status--valid {
+      background: #ecfdf5;
+      border-color: rgba(5, 150, 105, .18);
+      color: #047857;
+    }
+    .hc-import-status--warning {
+      background: #fffbeb;
+      border-color: rgba(217, 119, 6, .2);
+      color: #b45309;
+    }
+    .hc-import-status--rejected {
+      background: #fef2f2;
+      border-color: rgba(220, 38, 38, .2);
+      color: #b91c1c;
+    }
+    .hc-import-preview-row--warning {
+      background: rgba(255, 251, 235, .45);
+    }
+    .hc-import-preview-row--rejected {
+      background: rgba(254, 242, 242, .72);
+    }
+    @media (max-width: 980px) {
+      .hc-import-preview-grid,
+      .hc-import-mapping-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+{% block admin_content %}
+<section class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card hc-page-hero mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Previsualisation du lot #{{ batch.id }}</h1>
+        <div class="hc-muted">{{ batch.filename }} · {{ source_label(batch.source_type) }} vers {{ target_label(batch.target_type) }}</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_import_express') }}">Nouveau fichier</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_import_history') }}">Historique</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-import-preview-grid">
+    <div class="hc-import-preview-kpi">
+      <div class="hc-import-preview-kpi__label">Lignes detectees</div>
+      <div class="hc-import-preview-kpi__value">{{ preview.rows_detected }}</div>
+    </div>
+    <div class="hc-import-preview-kpi">
+      <div class="hc-import-preview-kpi__label">Valides</div>
+      <div class="hc-import-preview-kpi__value">{{ preview.valid_rows }}</div>
+    </div>
+    <div class="hc-import-preview-kpi">
+      <div class="hc-import-preview-kpi__label">Avec avertissement</div>
+      <div class="hc-import-preview-kpi__value">{{ preview.warning_rows }}</div>
+    </div>
+    <div class="hc-import-preview-kpi">
+      <div class="hc-import-preview-kpi__label">Rejetees / ignorees</div>
+      <div class="hc-import-preview-kpi__value">{{ preview.rejected_rows + preview.skipped_empty_rows }}</div>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('admin.admin_import_confirm') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="batch_id" value="{{ batch.id }}">
+
+    <div class="hc-card mb-3">
+      <div class="hc-card__header">
+        <div>
+          <h2 class="h6 mb-1">Mapping des colonnes</h2>
+          <div class="hc-muted">Ajustez le mapping avant de lancer l'import.</div>
+        </div>
+      </div>
+      <div class="p-3">
+        <div class="hc-import-mapping-grid">
+          {% for header in preview.headers %}
+            <div>
+              <label class="form-label" for="hcImportMap{{ loop.index0 }}">{{ header }}</label>
+              <select class="form-select form-select-sm" id="hcImportMap{{ loop.index0 }}" name="mapping_{{ loop.index0 }}">
+                {% for value, label in field_options %}
+                  <option value="{{ value }}" {% if preview.mapping.get(header) == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-card mb-3">
+      <div class="hc-card__header">
+        <div>
+          <h2 class="h6 mb-1">Apercu des 20 premieres lignes</h2>
+          <div class="hc-muted">Les lignes rejetees ne seront pas importees.</div>
+        </div>
+      </div>
+      <div class="hc-import-preview-table-wrap">
+        <table class="hc-import-preview-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Statut</th>
+              {% for header in preview.headers %}
+                <th>{{ header }}</th>
+              {% endfor %}
+              <th>Controles</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in preview.sample_rows %}
+              <tr class="hc-import-preview-row--{{ row.status }}">
+                <td class="text-muted">L{{ row.row_number }}</td>
+                <td>
+                  <span class="hc-import-status hc-import-status--{{ row.status }}">
+                    {% if row.status == 'valid' %}
+                      Valide
+                    {% elif row.status == 'warning' %}
+                      Avertissement
+                    {% elif row.status == 'rejected' %}
+                      Rejetee
+                    {% else %}
+                      Ignoree
+                    {% endif %}
+                  </span>
+                </td>
+                {% for header in preview.headers %}
+                  <td>{{ row.values.get(header, '-') or '-' }}</td>
+                {% endfor %}
+                <td>
+                  {% if row.warnings %}
+                    <ul class="hc-import-warning-list">
+                      {% for warning in row.warnings %}
+                        <li>{{ warning }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% elif row.reasons %}
+                    <ul class="hc-import-warning-list">
+                      {% for reason in row.reasons %}
+                        <li>{{ reason }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <span class="text-muted">OK</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="{{ preview.headers|length + 3 }}" class="py-4 text-center">
+                  <div class="hc-empty-state">
+                    <div class="hc-empty-state__title">Aucune ligne exploitable</div>
+                    <div class="hc-empty-state__text">Le CSV ne contient actuellement aucune donnee importable apres nettoyage.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if preview.preview_errors or preview.rejection_reasons %}
+      <div class="hc-card mb-3">
+        <div class="hc-card__header">
+          <div>
+            <h2 class="h6 mb-1">Alertes detectees</h2>
+            <div class="hc-muted">Resume des lignes rejetees, en doublon ou en guardrail.</div>
+          </div>
+        </div>
+        <div class="p-3">
+          {% if preview.rejection_reasons %}
+            <div class="mb-3">
+              <div class="small text-muted text-uppercase mb-2">Principales raisons de rejet</div>
+              <ul class="hc-import-warning-list">
+                {% for label, count in preview.rejection_reasons %}
+                  <li>{{ label }} — {{ count }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+          {% if preview.preview_errors %}
+            <ul class="hc-import-warning-list">
+              {% for item in preview.preview_errors %}
+                <li>{{ item }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Importer</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_import_express') }}">Annuler</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

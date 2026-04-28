@@ -1,0 +1,97 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Historique imports | Admin{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-import-history-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .hc-import-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+    .hc-import-history-table th,
+    .hc-import-history-table td {
+      vertical-align: middle;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  </style>
+{% endblock %}
+{% block admin_content %}
+<section class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card hc-page-hero mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Historique des imports</h1>
+        <div class="hc-muted">Suivi des lots Import Express et rollback ciblé des leads créés.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_import_express') }}">Nouveau lot</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professional_leads') }}">Pipeline leads</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card">
+    <div class="hc-card__header">
+      <div>
+        <h2 class="h6 mb-1">Lots récents</h2>
+        <div class="hc-muted">Les rollbacks suppriment uniquement les leads dont la source est <code>excel_import:&lt;batch_id&gt;</code>.</div>
+      </div>
+    </div>
+    <div class="hc-import-history-wrap">
+      <table class="hc-import-history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Fichier</th>
+            <th>Source</th>
+            <th>Cible</th>
+            <th>Importés</th>
+            <th>Ignorés</th>
+            <th>Erreurs</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for batch in batches %}
+            <tr>
+              <td class="small text-muted">{{ batch.created_at|format_datetime_fr }}</td>
+              <td>{{ batch.filename }}</td>
+              <td>{{ source_label(batch.source_type) }}</td>
+              <td>{{ target_label(batch.target_type) }}</td>
+              <td>{{ batch.imported_count }}</td>
+              <td>{{ batch.skipped_count }}</td>
+              <td title="{{ batch_errors_to_text(batch.errors_json) }}">{{ batch.error_count }}</td>
+              <td><span class="badge text-bg-light border">{{ batch.status }}</span></td>
+              <td>
+                {% if batch.target_type == 'professional_leads' and batch.status == 'imported' %}
+                  <form method="post" action="{{ url_for('admin.admin_import_rollback', batch_id=batch.id) }}" onsubmit="return confirm('Confirmer l’annulation de cet import ? Les leads créés par ce lot seront supprimés.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">Annuler cet import</button>
+                  </form>
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="9" class="py-4 text-center">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun lot importé</div>
+                  <div class="hc-empty-state__text">Les premiers imports CSV apparaîtront ici dès qu'un lot sera prévisualisé ou confirmé.</div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -80,13 +80,36 @@
     .hc-proleads-filterbar .hc-admin-filtergrid {
       align-items: end;
     }
+    .hc-proleads-table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
     .hc-proleads-table {
+      width: 100%;
+      min-width: 1080px;
+      border-collapse: collapse;
       table-layout: fixed;
-      min-width: 1180px;
+    }
+    .hc-proleads-table thead {
+      display: table-header-group;
+      position: static;
+    }
+    .hc-proleads-table tbody {
+      display: table-row-group;
+      position: static;
+    }
+    .hc-proleads-table tr {
+      display: table-row;
+      position: static;
     }
     .hc-proleads-table th,
     .hc-proleads-table td {
+      display: table-cell;
+      position: static;
       vertical-align: middle;
+      box-sizing: border-box;
     }
     .hc-proleads-table td {
       padding-top: .55rem;
@@ -116,9 +139,10 @@
     .hc-proleads-next__main,
     .hc-proleads-next__sub {
       display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      overflow-wrap: anywhere;
       line-height: 1.24;
     }
     .hc-proleads-name {
@@ -232,7 +256,11 @@
           {% if active_filters %}<span class="hc-proleads-chip">Filtres actifs</span>{% endif %}
         </div>
       </div>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_demo_leads') }}">Vue demo</a>
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_import_express') }}">Importer CSV</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_import_history') }}">Historique imports</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_demo_leads') }}">Vue demo</a>
+      </div>
     </div>
   </div>
 
@@ -322,8 +350,8 @@
       </div>
       <span class="badge text-bg-light border">{{ leads|length }} lignes</span>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-proleads-table mb-0">
+    <div class="hc-proleads-table-wrap">
+      <table class="hc-proleads-table">
         <colgroup>
           <col class="hc-proleads-col-id">
           <col class="hc-proleads-col-contact">
@@ -417,7 +445,7 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="9" class="py-5">
+              <td colspan="9" class="py-5 text-center">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">Aucun lead professionnel pour le moment</div>
                   <div class="hc-empty-state__text">

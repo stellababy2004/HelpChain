@@ -1,0 +1,49 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Import terminé | Admin{% endblock %}
+{% block admin_content %}
+<section class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card hc-page-hero mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Import terminé</h1>
+        <div class="hc-muted">Lot #{{ batch.id }} · {{ batch.filename }} · {{ target_label(batch.target_type) }}</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_import_history') }}">Historique</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professional_leads') }}">Voir les leads</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-admin-grid mb-3" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+    <div class="hc-card p-3">
+      <div class="small text-muted text-uppercase">Importés</div>
+      <div class="fs-3 fw-semibold">{{ outcome.imported_count }}</div>
+    </div>
+    <div class="hc-card p-3">
+      <div class="small text-muted text-uppercase">Ignorés</div>
+      <div class="fs-3 fw-semibold">{{ outcome.skipped_count }}</div>
+    </div>
+    <div class="hc-card p-3">
+      <div class="small text-muted text-uppercase">Erreurs</div>
+      <div class="fs-3 fw-semibold">{{ outcome.error_count }}</div>
+    </div>
+  </div>
+
+  <div class="hc-card p-3">
+    {% if outcome.errors %}
+      <div class="mb-2 fw-semibold">Détails des erreurs</div>
+      <ul class="mb-0">
+        {% for item in outcome.errors %}
+          <li>Ligne {{ item.row_number }} — {{ item.message }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="hc-empty-state hc-empty-state--compact">
+        <div class="hc-empty-state__title">Aucune erreur bloquante</div>
+        <div class="hc-empty-state__text">Le lot a été traité sans incident bloquant.</div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

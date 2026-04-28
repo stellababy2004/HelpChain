@@ -1,0 +1,122 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Import Express | Admin{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-import-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr);
+    }
+    .hc-import-card {
+      padding: 1rem 1.05rem;
+    }
+    .hc-import-form {
+      display: grid;
+      gap: 1rem;
+    }
+    .hc-import-help {
+      color: rgba(15, 23, 42, .66);
+      font-size: .92rem;
+      line-height: 1.5;
+    }
+    .hc-import-kpis {
+      display: grid;
+      gap: .75rem;
+    }
+    .hc-import-kpi {
+      border: 1px solid rgba(15, 23, 42, .08);
+      border-radius: 14px;
+      padding: .85rem .95rem;
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,250,252,.94));
+    }
+    .hc-import-kpi__label {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: rgba(15, 23, 42, .58);
+    }
+    .hc-import-kpi__value {
+      margin-top: .25rem;
+      font-size: 1.4rem;
+      font-weight: 760;
+      color: #0f172a;
+    }
+    @media (max-width: 980px) {
+      .hc-import-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+{% endblock %}
+{% block admin_content %}
+<section class="hc-admin-wrap hc-admin-wrap--wide">
+  <div class="hc-card hc-page-hero mb-3">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">HelpChain Import Express</h1>
+        <div class="hc-muted">Import MVP de leads professionnels depuis un fichier CSV.</div>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_import_history') }}">Historique</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professional_leads') }}">Voir les leads</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-import-grid">
+    <div class="hc-card hc-import-card">
+      <div class="hc-card__header px-0 pt-0">
+        <div>
+          <h2 class="h6 mb-1">Préparer un import</h2>
+          <div class="hc-muted">Chargez un CSV, vérifiez le mapping, puis importez dans le pipeline professionnel.</div>
+        </div>
+      </div>
+      <form class="hc-import-form" method="post" action="{{ url_for('admin.admin_import_preview') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label class="form-label" for="hcImportTarget">Cible</label>
+          <select class="form-select" id="hcImportTarget" name="target_type" {% if not import_tables_ready %}disabled{% endif %}>
+            {% for value, label in target_options %}
+              <option value="{{ value }}" {% if selected_target == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label" for="hcImportFile">Fichier CSV</label>
+          <input class="form-control" id="hcImportFile" name="file" type="file" accept=".csv,text/csv,.txt" {% if not import_tables_ready %}disabled{% endif %}>
+          <div class="form-text">Encodage UTF-8 privilégié, avec fallback automatique.</div>
+        </div>
+        <div class="hc-import-help">
+          Colonnes reconnues automatiquement: Nom, Email, Téléphone, Ville, Fonction, Organisation, Disponibilité, Message.
+          Les doublons par email sont ignorés. Les emails manquants reçoivent une adresse synthétique interne.
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" type="submit" {% if not import_tables_ready %}disabled{% endif %}>Prévisualiser</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_import_history') }}">Voir les lots</a>
+        </div>
+      </form>
+      {% if not import_tables_ready %}
+        <div class="hc-empty-state mt-3">
+          <div class="hc-empty-state__title">Migration requise</div>
+          <div class="hc-empty-state__text">Le module d'import sera disponible dès que la table <code>import_batches</code> sera créée.</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="hc-import-kpis">
+      <div class="hc-import-kpi">
+        <div class="hc-import-kpi__label">Format supporté</div>
+        <div class="hc-import-kpi__value">CSV</div>
+      </div>
+      <div class="hc-import-kpi">
+        <div class="hc-import-kpi__label">Cible MVP</div>
+        <div class="hc-import-kpi__value">Professional leads</div>
+      </div>
+      <div class="hc-import-kpi">
+        <div class="hc-import-kpi__label">Comportement doublon</div>
+        <div class="hc-import-kpi__value">Skip</div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -38,6 +38,7 @@ from flask_babel import force_locale, gettext as _
 from flask_mail import Message
 from babel.support import Translations
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 try:
     import psutil
@@ -61,6 +62,7 @@ from ..config import Config
 from ..models import (
     AdminAuditEvent,
     AdminLoginAttempt,
+    ImportBatch,
     AdminUser,
     Assignment,
     Case,
@@ -122,6 +124,25 @@ from ..services.demo_data import (
     get_demo_sla_payload,
 )
 from ..services.geocoding import request_address_display_text
+from ..services.import_service import (
+    IMPORT_SOURCE_CSV,
+    IMPORT_TARGET_PROFESSIONAL_LEADS,
+    available_field_options,
+    available_target_options,
+    batch_errors_to_text,
+    build_preview,
+    cleanup_preview_upload,
+    encode_json_payload,
+    import_batch_source,
+    import_professional_leads,
+    infer_mapping,
+    load_preview_upload,
+    parse_csv_bytes,
+    sanitize_mapping,
+    save_preview_upload,
+    source_label,
+    target_label,
+)
 from ..services.ops_priority import compute_ops_priority
 from ..services.prospect_auto_capture import (
     append_audience_context_to_notes,
@@ -190,6 +211,8 @@ PROFESSIONAL_LEAD_STATUS_CHOICES = [
     "invalid",
     "spam",
 ]
+ADMIN_IMPORT_PREVIEW_SESSION_KEY = "admin_import_preview"
+ADMIN_IMPORT_ALLOWED_TARGETS = {IMPORT_TARGET_PROFESSIONAL_LEADS}
 
 AUDIENCE_INTENT_PATHS = (
     "/demander-acces",
@@ -8266,6 +8289,316 @@ def admin_audience_map():
         audience=_build_audience_map_context(),
         intent_paths=AUDIENCE_INTENT_PATHS,
     )
+
+
+def _admin_import_tables_ready() -> bool:
+    return _table_exists("professional_leads") and _table_exists("import_batches")
+
+
+def _admin_import_preview_state() -> dict[str, object]:
+    state = session.get(ADMIN_IMPORT_PREVIEW_SESSION_KEY)
+    return state if isinstance(state, dict) else {}
+
+
+def _set_admin_import_preview_state(*, batch_id: int, preview_path: str, filename: str) -> None:
+    session[ADMIN_IMPORT_PREVIEW_SESSION_KEY] = {
+        "batch_id": int(batch_id),
+        "preview_path": str(preview_path),
+        "filename": str(filename or ""),
+    }
+    session.modified = True
+
+
+def _clear_admin_import_preview_state(*, remove_file: bool = False) -> None:
+    state = _admin_import_preview_state()
+    session.pop(ADMIN_IMPORT_PREVIEW_SESSION_KEY, None)
+    session.modified = True
+    if remove_file:
+        cleanup_preview_upload(str(state.get("preview_path") or ""))
+
+
+def _existing_professional_lead_emails() -> set[str]:
+    if not _table_exists("professional_leads"):
+        return set()
+    rows = db.session.query(ProfessionalLead.email).filter(ProfessionalLead.email.isnot(None)).all()
+    return {
+        (str(email or "").strip().lower())
+        for (email,) in rows
+        if str(email or "").strip()
+    }
+
+
+def _read_admin_import_mapping_from_form(headers: list[str]) -> dict[str, str]:
+    submitted: dict[str, str] = {}
+    for index, header in enumerate(headers):
+        submitted[header] = (request.form.get(f"mapping_{index}") or "").strip()
+    return sanitize_mapping(headers, submitted)
+
+
+def _render_admin_import_upload(*, status_code: int = 200):
+    return (
+        render_template(
+            "admin/import.html",
+            target_options=available_target_options(),
+            selected_target=IMPORT_TARGET_PROFESSIONAL_LEADS,
+            import_tables_ready=_admin_import_tables_ready(),
+        ),
+        status_code,
+    )
+
+
+@admin_bp.get("/import")
+@login_required
+@admin_required
+def admin_import_express():
+    if not _admin_import_tables_ready():
+        flash(
+            "Le module Import Express nécessite les tables professional_leads et import_batches.",
+            "warning",
+        )
+    return _render_admin_import_upload()
+
+
+@admin_bp.post("/import/preview")
+@login_required
+@admin_required
+def admin_import_preview():
+    if not _admin_import_tables_ready():
+        flash("Import Express indisponible tant que la migration n'est pas appliquée.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    target_type = (request.form.get("target_type") or "").strip()
+    if target_type not in ADMIN_IMPORT_ALLOWED_TARGETS:
+        flash("Cible d'import non prise en charge pour ce MVP.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    upload = request.files.get("file")
+    if upload is None or not (upload.filename or "").strip():
+        flash("Sélectionnez un fichier CSV à prévisualiser.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    original_filename = secure_filename(upload.filename or "") or "import.csv"
+    if Path(original_filename).suffix.lower() not in {".csv", ".txt"}:
+        flash("Seuls les fichiers CSV sont pris en charge pour le moment.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    raw_bytes = upload.read()
+    if not raw_bytes:
+        flash("Le fichier importé est vide.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    _clear_admin_import_preview_state(remove_file=True)
+
+    try:
+        parsed_file = parse_csv_bytes(raw_bytes)
+    except Exception:
+        flash("Impossible de lire ce CSV. Vérifiez l'encodage et les en-têtes.", "danger")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    if not parsed_file.headers:
+        flash("Aucune colonne détectée dans le fichier importé.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    preview_file = save_preview_upload(
+        instance_path=current_app.instance_path,
+        filename=original_filename,
+        raw_bytes=raw_bytes,
+    )
+    try:
+        batch = ImportBatch(
+            filename=original_filename,
+            source_type=IMPORT_SOURCE_CSV,
+            target_type=target_type,
+            status="preview",
+            created_by_admin_id=int(current_user.id),
+        )
+        db.session.add(batch)
+        db.session.flush()
+
+        mapping = infer_mapping(parsed_file.headers)
+        preview = build_preview(
+            parsed_file,
+            mapping=mapping,
+            existing_emails=_existing_professional_lead_emails(),
+            batch_id=int(batch.id or 0),
+        )
+
+        batch.imported_count = int(preview.valid_rows + preview.warning_rows)
+        batch.skipped_count = int(preview.skipped_rows)
+        batch.error_count = int(preview.rejected_rows)
+        batch.mapping_json = encode_json_payload(preview.mapping)
+        batch.errors_json = encode_json_payload(
+            [{"message": item} for item in preview.preview_errors]
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        cleanup_preview_upload(preview_file["path"])
+        flash("Le lot n'a pas pu être préparé pour prévisualisation.", "danger")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    _set_admin_import_preview_state(
+        batch_id=int(batch.id),
+        preview_path=preview_file["path"],
+        filename=original_filename,
+    )
+
+    return (
+        render_template(
+            "admin/import_preview.html",
+            batch=batch,
+            preview=preview,
+            field_options=available_field_options(),
+            target_label=target_label,
+            source_label=source_label,
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/import/confirm")
+@login_required
+@admin_required
+def admin_import_confirm():
+    if not _admin_import_tables_ready():
+        flash("Import Express indisponible tant que la migration n'est pas appliquée.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    state = _admin_import_preview_state()
+    try:
+        batch_id = int(request.form.get("batch_id") or "0")
+    except ValueError:
+        batch_id = 0
+
+    if not state or int(state.get("batch_id") or 0) != batch_id:
+        flash("La prévisualisation a expiré. Rechargez le fichier avant import.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    batch = ImportBatch.query.filter_by(
+        id=batch_id,
+        created_by_admin_id=int(current_user.id),
+    ).first_or_404()
+
+    preview_path = str(state.get("preview_path") or "")
+    try:
+        raw_bytes = load_preview_upload(preview_path)
+        parsed_file = parse_csv_bytes(raw_bytes)
+    except Exception:
+        batch.status = "failed"
+        batch.errors_json = encode_json_payload(
+            [{"message": "Le fichier temporaire de prévisualisation n'est plus disponible."}]
+        )
+        db.session.commit()
+        _clear_admin_import_preview_state(remove_file=True)
+        flash("Le fichier temporaire n'est plus disponible. Rechargez le CSV.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    mapping = _read_admin_import_mapping_from_form(parsed_file.headers)
+
+    def _create_imported_lead(payload: dict[str, str]) -> None:
+        with db.session.begin_nested():
+            lead = ProfessionalLead(
+                full_name=payload.get("full_name") or None,
+                email=payload.get("email") or None,
+                phone=payload.get("phone") or None,
+                city=payload.get("city") or None,
+                profession=payload.get("profession") or None,
+                organization=payload.get("organization") or None,
+                availability=payload.get("availability") or None,
+                message=payload.get("message") or None,
+                source=import_batch_source(int(batch.id)),
+                status="imported",
+            )
+            db.session.add(lead)
+            db.session.flush()
+
+    outcome = import_professional_leads(
+        parsed_file=parsed_file,
+        mapping=mapping,
+        batch_id=int(batch.id),
+        existing_emails=_existing_professional_lead_emails(),
+        create_row=_create_imported_lead,
+    )
+
+    batch.status = "imported"
+    batch.imported_count = int(outcome.imported_count)
+    batch.skipped_count = int(outcome.skipped_count)
+    batch.error_count = int(outcome.error_count)
+    batch.mapping_json = encode_json_payload(mapping)
+    batch.errors_json = encode_json_payload(outcome.errors)
+    db.session.commit()
+
+    _clear_admin_import_preview_state(remove_file=True)
+    flash(
+        f"Import terminé: {outcome.imported_count} lead(s) importé(s), "
+        f"{outcome.skipped_count} ignoré(s), {outcome.error_count} erreur(s).",
+        "success" if outcome.error_count == 0 else "warning",
+    )
+
+    return (
+        render_template(
+            "admin/import_result.html",
+            batch=batch,
+            outcome=outcome,
+            target_label=target_label,
+            source_label=source_label,
+        ),
+        200,
+    )
+
+
+@admin_bp.get("/import/history")
+@login_required
+@admin_required
+def admin_import_history():
+    if not _table_exists("import_batches"):
+        flash("La table import_batches n'est pas encore disponible.", "warning")
+        return redirect(url_for("admin.admin_import_express"), code=303)
+
+    batches = (
+        ImportBatch.query.order_by(ImportBatch.created_at.desc(), ImportBatch.id.desc())
+        .limit(100)
+        .all()
+    )
+    return (
+        render_template(
+            "admin/import_history.html",
+            batches=batches,
+            target_label=target_label,
+            source_label=source_label,
+            batch_errors_to_text=batch_errors_to_text,
+        ),
+        200,
+    )
+
+
+@admin_bp.post("/import/<int:batch_id>/rollback")
+@login_required
+@admin_required
+def admin_import_rollback(batch_id: int):
+    if not _admin_import_tables_ready():
+        flash("Import Express indisponible tant que la migration n'est pas appliquée.", "warning")
+        return redirect(url_for("admin.admin_import_history"), code=303)
+
+    batch = ImportBatch.query.filter_by(id=batch_id).first_or_404()
+    if batch.target_type != IMPORT_TARGET_PROFESSIONAL_LEADS:
+        flash("Rollback non disponible pour cette cible d'import.", "warning")
+        return redirect(url_for("admin.admin_import_history"), code=303)
+
+    deleted_count = (
+        ProfessionalLead.query.filter(
+            ProfessionalLead.source == import_batch_source(int(batch.id))
+        ).delete(synchronize_session=False)
+    )
+    batch.status = "rolled_back"
+    db.session.commit()
+
+    state = _admin_import_preview_state()
+    if int(state.get("batch_id") or 0) == int(batch.id):
+        _clear_admin_import_preview_state(remove_file=True)
+
+    flash(f"Rollback terminé: {deleted_count} lead(s) supprimé(s).", "success")
+    return redirect(url_for("admin.admin_import_history"), code=303)
 
 
 @admin_bp.get("/professional-leads")
