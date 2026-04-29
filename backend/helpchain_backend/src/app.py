@@ -293,7 +293,7 @@ def add_security_headers(app: Flask):
         resp.headers["Content-Security-Policy"] = csp_enforce
 
         # Keep Report-Only in parallel for visibility during rollout.
-        csp_report_only = f"{csp_enforce}; report-uri /csp-report"
+        csp_report_only = f"{csp_enforce.replace('upgrade-insecure-requests', '').rstrip().rstrip(';')}; report-uri /csp-report"
         resp.headers["Content-Security-Policy-Report-Only"] = csp_report_only
 
         # HSTS only when really on HTTPS and in production-ish env
@@ -1718,5 +1718,6 @@ def _log_l10n_missing_once(
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)
+
 
 
