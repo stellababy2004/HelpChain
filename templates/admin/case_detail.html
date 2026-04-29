@@ -188,20 +188,32 @@
       <section class="hc-card hc-case-detail-card hc-case-detail-card--assistant">
         <div class="hc-case-section-head">
           <div>
-            <div class="hc-section-kicker">Decision support</div>
-            <h2 class="hc-section-title">Assistant operationnel</h2>
+            <h2 class="hc-section-title">COPILOTE OPÉRATIONNEL</h2>
+            <p class="mb-0 text-muted">Synthèse rapide du dossier et prochaine action utile.</p>
           </div>
-          <span class="badge text-bg-light border">{{ assistant_recommendation.urgency }}</span>
         </div>
-        <p class="mb-1"><strong>Action recommandee:</strong> {{ assistant_recommendation.action_label }}</p>
-        {% if assistant_recommendation.reason_tags %}
-          <div class="hc-case-chiprow my-2">
-            {% for tag in assistant_recommendation.reason_tags %}
-              <span class="badge text-bg-light border">{{ tag }}</span>
-            {% endfor %}
+        <div class="hc-case-copilot">
+          <div class="hc-case-copilot__header">
+            <div>
+              <h3 class="hc-case-copilot__title">Résumé du dossier</h3>
+              <ul class="hc-case-copilot__summary">
+                {% for point in case_copilot.summary_points %}
+                  <li>{{ point }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="hc-case-copilot__attention">
+              <div class="hc-case-copilot__label">Niveau d’attention</div>
+              <span class="hc-case-copilot__badge hc-case-copilot__badge--{{ case_copilot.attention_level }}">{{ case_copilot.attention_label }}</span>
+              <div class="small text-muted mt-2">{{ case_copilot.reason }}</div>
+            </div>
           </div>
-        {% endif %}
-        <p class="mb-0">{{ assistant_recommendation.operator_summary }}</p>
+          <div class="hc-case-copilot__action">
+            <div class="hc-case-copilot__label">Action recommandée</div>
+            <strong>{{ case_copilot.recommended_action }}</strong>
+          </div>
+          <p class="hc-case-copilot__disclaimer mb-0">Aide à la décision - l’équipe conserve la responsabilité du traitement.</p>
+        </div>
       </section>
 
       <section class="hc-card hc-case-detail-card hc-case-detail-card--blockages">
@@ -327,6 +339,49 @@
           {% else %}
             <div class="text-muted">Aucun participant pour le moment.</div>
           {% endfor %}
+        </div>
+      </section>
+
+      <section class="hc-card hc-case-detail-card hc-case-detail-card--journal">
+        <div class="hc-case-section-head">
+          <div>
+            <div class="hc-section-kicker">Suivi interne</div>
+            <h2 class="hc-section-title">Echanges internes</h2>
+            <p class="mb-0 text-muted">Centralisez les informations utiles au suivi du dossier.</p>
+          </div>
+          <span class="small text-muted">{{ coordination_events|length }} notes</span>
+        </div>
+
+        <div class="hc-case-journal">
+          <form method="post" action="{{ url_for('admin.admin_case_add_coordination_note', case_id=case_row.id) }}" class="hc-case-journal__form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label class="form-label" for="hc-case-journal-message">Note de coordination</label>
+            <textarea
+              id="hc-case-journal-message"
+              name="message"
+              rows="4"
+              maxlength="1000"
+              class="form-control hc-case-journal__textarea"
+              placeholder="Ex. Appel effectue, document recu, relance prevue, besoin de renfort..."
+            ></textarea>
+            <div class="d-flex justify-content-end mt-2">
+              <button class="btn btn-primary btn-sm" type="submit">Ajouter la note</button>
+            </div>
+          </form>
+
+          <div class="hc-case-journal__feed">
+            {% for ev in coordination_events %}
+              <article class="hc-case-journal__item">
+                <div class="hc-case-journal__meta">
+                  <strong>{% if ev.actor_user %}{{ ev.actor_user.username or ev.actor_user.email or ('#' ~ ev.actor_user_id) }}{% else %}Equipe HelpChain{% endif %}</strong>
+                  <span>{{ ev.created_at|format_datetime_fr }}</span>
+                </div>
+                <div class="hc-case-journal__message">{{ ev.message }}</div>
+              </article>
+            {% else %}
+              <div class="text-muted">Aucun echange interne pour le moment.</div>
+            {% endfor %}
+          </div>
         </div>
       </section>
 

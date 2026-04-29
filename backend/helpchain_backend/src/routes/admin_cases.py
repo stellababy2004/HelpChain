@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
+from collections import defaultdict
+from datetime import datetime, timezone
 
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func, or_
-from collections import defaultdict
-from datetime import datetime, timezone
 
 from backend.extensions import db
 from ..models import (
@@ -20,7 +20,6 @@ from ..models import (
     Structure,
     User,
 )
-from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
@@ -84,6 +83,197 @@ def _safe_json_dict(raw: str | None) -> dict:
     except Exception:
         return {}
     return {}
+
+
+def _coerce_dt(value):
+    if not value:
+        return None
+    if not isinstance(value, datetime):
+        return None
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value
+
+
+def _first_dt(*values):
+    for value in values:
+        dt = _coerce_dt(value)
+        if dt is not None:
+            return dt
+    return None
+
+
+def _human_elapsed(value, now=None):
+    dt = _coerce_dt(value)
+    if dt is None:
+        return None
+    current = now or _now_utc()
+    delta_seconds = max(0, int((current - dt).total_seconds()))
+    if delta_seconds < 3600:
+        minutes = max(1, delta_seconds // 60)
+        return f"{minutes} min"
+    if delta_seconds < 86400:
+        hours = max(1, delta_seconds // 3600)
+        return f"{hours} h"
+    days = max(1, delta_seconds // 86400)
+    return f"{days} jours"
+
+
+def _status_label(value):
+    labels = {
+        "new": "Nouveau",
+        "open": "Ouvert",
+        "triaged": "Oriente",
+        "assigned": "Assigne",
+        "in_progress": "En cours",
+        "resolved": "Resolu",
+        "done": "Termine",
+        "closed": "Cloture",
+        "blocked": "Bloque",
+        "cancelled": "Annule",
+        "canceled": "Annule",
+    }
+    key = (value or "").strip().lower()
+    if not key:
+        return "Non renseigne"
+    return labels.get(key, key.replace("_", " ").title())
+
+
+def _priority_label(value):
+    labels = {
+        "low": "Basse",
+        "standard": "Standard",
+        "medium": "Moyenne",
+        "high": "Haute",
+        "urgent": "Urgente",
+        "critical": "Critique",
+    }
+    key = (value or "").strip().lower()
+    if not key:
+        return "Non renseignee"
+    return labels.get(key, key.replace("_", " ").title())
+
+
+def build_case_copilot(case, request, events=None, assignments=None):
+    now = _now_utc()
+    opened_at = _first_dt(
+        getattr(case, "opened_at", None),
+        getattr(case, "created_at", None),
+        getattr(request, "created_at", None),
+    )
+    latest_event_at = None
+    if events:
+        latest_event_at = _first_dt(*(getattr(ev, "created_at", None) for ev in events[:5]))
+    last_activity_at = _first_dt(
+        getattr(case, "last_activity_at", None),
+        getattr(case, "updated_at", None),
+        latest_event_at,
+        opened_at,
+    )
+
+    case_status = getattr(case, "status", None) or getattr(request, "status", None)
+    case_priority = getattr(case, "priority", None) or getattr(request, "priority", None)
+    risk_score = getattr(case, "risk_score", None)
+    if risk_score is None:
+        risk_score = getattr(request, "risk_score", None)
+    try:
+        risk_score_value = int(risk_score) if risk_score is not None else None
+    except Exception:
+        risk_score_value = None
+
+    owner_assigned = bool(getattr(case, "owner_user_id", None))
+    city_label = (
+        getattr(request, "city", None)
+        or getattr(request, "location_text", None)
+        or getattr(case, "city", None)
+    )
+
+    opened_hours = None
+    if opened_at is not None:
+        opened_hours = max(0.0, (now - opened_at).total_seconds() / 3600)
+
+    inactivity_hours = None
+    if last_activity_at is not None:
+        inactivity_hours = max(0.0, (now - last_activity_at).total_seconds() / 3600)
+
+    if risk_score_value is not None and risk_score_value >= 80:
+        attention_level = "red"
+        attention_label = "Rouge - action prioritaire"
+        reason = "Score de risque eleve."
+    elif (case_priority or "").strip().lower() in {"critical", "urgent", "high"}:
+        attention_level = "red"
+        attention_label = "Rouge - action prioritaire"
+        reason = "Priorite urgente, critique ou haute."
+    elif inactivity_hours is not None and inactivity_hours > 72:
+        attention_level = "orange"
+        attention_label = "Orange - vigilance recommandee"
+        reason = "Aucune action recente depuis plus de 72h."
+    elif not owner_assigned and opened_hours is not None and opened_hours <= 2:
+        attention_level = "green"
+        attention_label = "Vert - suivi standard"
+        reason = "Dossier recent en cours de prise en charge."
+    elif not owner_assigned and opened_hours is not None and opened_hours > 24:
+        attention_level = "orange"
+        attention_label = "Orange - vigilance recommandee"
+        reason = "Aucun responsable attribue au dela de 24h."
+    elif risk_score_value is not None and risk_score_value >= 50:
+        attention_level = "orange"
+        attention_label = "Orange - vigilance recommandee"
+        reason = "Score de risque intermediaire."
+    elif not owner_assigned:
+        attention_level = "green"
+        attention_label = "Vert - suivi standard"
+        reason = "Attribution encore en cours."
+    elif inactivity_hours is not None and inactivity_hours > 24:
+        attention_level = "orange"
+        attention_label = "Orange - vigilance recommandee"
+        reason = "Derniere activite ancienne."
+    else:
+        attention_level = "green"
+        attention_label = "Vert - suivi standard"
+        reason = "Suivi courant sans signal critique."
+
+    status_key = (case_status or "").strip().lower()
+    priority_key = (case_priority or "").strip().lower()
+    if not owner_assigned:
+        recommended_action = "Attribuer un référent aujourd'hui."
+    elif inactivity_hours is not None and inactivity_hours > 72:
+        recommended_action = "Relancer le dossier et confirmer la prochaine étape."
+    elif priority_key in {"critical", "urgent", "high"} or (risk_score_value is not None and risk_score_value >= 80):
+        recommended_action = "Traiter en priorité et vérifier les besoins immédiats."
+    elif status_key in {"done", "closed", "resolved"}:
+        recommended_action = "Conserver l'historique et vérifier la clôture."
+    else:
+        recommended_action = "Poursuivre le suivi opérationnel standard."
+
+    summary_points = []
+    opened_age = _human_elapsed(opened_at, now=now)
+    if opened_age:
+        summary_points.append(f"Dossier ouvert depuis {opened_age}.")
+    summary_points.append(f"Statut actuel : {_status_label(case_status)}.")
+    summary_points.append(f"Priorité : {_priority_label(case_priority)}.")
+    summary_points.append(f"Responsable : {'attribué' if owner_assigned else 'non attribué'}.")
+    last_activity_age = _human_elapsed(last_activity_at, now=now)
+    if last_activity_age:
+        summary_points.append(f"Dernière activité : il y a {last_activity_age}.")
+    elif city_label:
+        summary_points.append(f"Ville / territoire : {city_label}.")
+    if risk_score_value is not None:
+        risk_level = getattr(request, "risk_level", None)
+        risk_fragment = f"Risque : score {risk_score_value}"
+        if risk_level:
+            risk_fragment += f" ({str(risk_level).replace('_', ' ')})"
+        summary_points.append(risk_fragment + ".")
+    elif city_label and len(summary_points) < 5:
+        summary_points.append(f"Ville / territoire : {city_label}.")
+
+    return {
+        "attention_level": attention_level,
+        "attention_label": attention_label,
+        "summary_points": summary_points[:5],
+        "recommended_action": recommended_action,
+        "reason": reason,
+    }
 
 
 def _get_scoped_case_or_404(case_id: int) -> tuple[Case, Request]:
@@ -173,18 +363,26 @@ def admin_case_detail(case_id: int):
     risk_ai_suggestion = _build_risk_ai_suggestion(req)
     operational_blockages = _build_operational_blockages(req, case_row)
     suggested_professionals = suggest_professional_leads_for_case(case_row, req, limit=8)
-    assistant_recommendation = build_case_assistant_recommendation(
-        case_row,
-        req,
-        risk_ai_suggestion,
-        suggested_professionals=suggested_professionals,
-    )
     events = (
         CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
         .order_by(CaseEvent.created_at.desc(), CaseEvent.id.desc())
         .limit(200)
         .all()
     )
+    coordination_events = (
+        CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
+        .filter(
+            or_(
+                CaseEvent.event_type.in_(("coordination_note", "comment", "internal_note")),
+                CaseEvent.visibility == "internal",
+            )
+        )
+        .filter(CaseEvent.message.isnot(None))
+        .order_by(CaseEvent.created_at.desc(), CaseEvent.id.desc())
+        .limit(20)
+        .all()
+    )
+    case_copilot = build_case_copilot(case_row, req, events=events, assignments=None)
     grouped_events = _group_events_by_day(events)
    
     participants = (
@@ -230,6 +428,7 @@ def admin_case_detail(case_id: int):
         case_row=case_row,
         req=req,
         events=events,
+        coordination_events=coordination_events,
         grouped_events=grouped_events,
         statuses=list(CATEGORY_CASE_STATUSES),
         priorities=list(CASE_PRIORITIES),
@@ -240,11 +439,47 @@ def admin_case_detail(case_id: int):
         professionals=professionals,
         participants=participants,
         collaborators=collaborators,
+        case_copilot=case_copilot,
         risk_ai_suggestion=risk_ai_suggestion,
         operational_blockages=operational_blockages,
         suggested_professionals=suggested_professionals,
-        assistant_recommendation=assistant_recommendation,
     )
+
+
+@admin_bp.post("/cases/<int:case_id>/coordination-note")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_case_add_coordination_note(case_id: int):
+    admin_required_404()
+    case_row, _req = _get_scoped_case_or_404(case_id)
+
+    message = (request.form.get("message") or "").strip()
+    if not message:
+        flash("La note de coordination ne peut pas être vide.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    if len(message) > 1000:
+        flash("La note de coordination ne doit pas dépasser 1000 caractères.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    created_at = _now_utc()
+    case_row.last_activity_at = created_at
+    db.session.add(
+        CaseEvent(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="coordination_note",
+            message=message,
+            metadata_json="{}",
+            visibility="internal",
+            created_at=created_at,
+        )
+    )
+    db.session.commit()
+    flash("Note de coordination ajoutée.", "success")
+    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+
 @admin_bp.post("/cases/<int:case_id>/status")
 @admin_required
 @admin_role_required("ops", "superadmin")

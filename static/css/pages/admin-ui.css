@@ -11260,13 +11260,13 @@ body.hc-admin-case-detail-page .hc-case-detail-card--sla{
   border-color: rgba(20, 122, 82, .22);
 }
 
-body.hc-admin-case-detail-page :is(.hc-case-detail-card--controls, .hc-case-detail-card--quick, .hc-case-detail-card--structures, .hc-case-detail-card--add-participant, .hc-case-detail-card--note) :is(.form-control, .form-select){
+body.hc-admin-case-detail-page :is(.hc-case-detail-card--controls, .hc-case-detail-card--quick, .hc-case-detail-card--structures, .hc-case-detail-card--add-participant, .hc-case-detail-card--note, .hc-case-detail-card--journal) :is(.form-control, .form-select){
   border-color: rgba(157, 176, 199, .82);
   background-color: rgba(255,255,255,.98);
   box-shadow: inset 0 1px 2px rgba(15, 23, 42, .035);
 }
 
-body.hc-admin-case-detail-page :is(.hc-case-detail-card--controls, .hc-case-detail-card--quick, .hc-case-detail-card--structures, .hc-case-detail-card--add-participant, .hc-case-detail-card--note) :is(.form-control, .form-select):focus{
+body.hc-admin-case-detail-page :is(.hc-case-detail-card--controls, .hc-case-detail-card--quick, .hc-case-detail-card--structures, .hc-case-detail-card--add-participant, .hc-case-detail-card--note, .hc-case-detail-card--journal) :is(.form-control, .form-select):focus{
   border-color: rgba(36, 91, 159, .58);
   box-shadow: 0 0 0 .18rem rgba(36, 91, 159, .12), inset 0 1px 2px rgba(15, 23, 42, .035);
 }
@@ -11291,6 +11291,159 @@ body.hc-admin-case-detail-page .hc-case-pro-card__score strong{
 body.hc-admin-case-detail-page .hc-case-pro-card__name{
   color: #132b45;
   font-weight: 800;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot{
+  display: grid;
+  gap: 1rem;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__header{
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(220px, .7fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__title{
+  margin: 0 0 .7rem;
+  color: #173252;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__summary{
+  display: grid;
+  gap: .55rem;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #324760;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__summary li{
+  line-height: 1.55;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__attention,
+body.hc-admin-case-detail-page .hc-case-copilot__action{
+  padding: .95rem 1rem;
+  border: 1px solid rgba(157, 176, 199, .45);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, .88);
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__label{
+  margin-bottom: .45rem;
+  color: #61758f;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__badge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: .35rem .75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: .84rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__badge--green{
+  border-color: rgba(24, 122, 82, .18);
+  background: rgba(24, 122, 82, .08);
+  color: #166649;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__badge--orange{
+  border-color: rgba(180, 96, 31, .2);
+  background: rgba(180, 96, 31, .08);
+  color: #9a561d;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__badge--red{
+  border-color: rgba(178, 51, 51, .18);
+  background: rgba(178, 51, 51, .08);
+  color: #a12d2d;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__action strong{
+  display: block;
+  color: #132b45;
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__action{
+  border-color: rgba(36, 91, 159, .24);
+  background: linear-gradient(180deg, rgba(244, 248, 255, .98), rgba(236, 243, 252, .94));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 10px 24px rgba(36, 91, 159, .08);
+}
+
+body.hc-admin-case-detail-page .hc-case-copilot__disclaimer{
+  color: #6a7c95;
+  font-size: .88rem;
+  line-height: 1.5;
+}
+
+body.hc-admin-case-detail-page .hc-case-detail-card--journal{
+  border-color: rgba(53, 80, 122, .22);
+}
+
+body.hc-admin-case-detail-page .hc-case-journal{
+  display: grid;
+  gap: 1rem;
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__form{
+  padding: 1rem;
+  border: 1px solid rgba(157, 176, 199, .5);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, .82);
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__textarea{
+  min-height: 112px;
+  resize: vertical;
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__feed{
+  display: grid;
+  gap: .85rem;
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__item{
+  padding: .95rem 1rem;
+  border: 1px solid rgba(157, 176, 199, .45);
+  border-radius: 16px;
+  background: rgba(255,255,255,.98);
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__meta{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .45rem;
+  color: #61758f;
+  font-size: .86rem;
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__meta strong{
+  color: #173252;
+  font-size: .95rem;
+}
+
+body.hc-admin-case-detail-page .hc-case-journal__message{
+  color: #24374f;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 body.hc-admin-case-detail-page .hc-case-pro-card__meta,
@@ -11332,6 +11485,12 @@ body.hc-page-admin :is(.btn-primary, .hc-btn-primary):hover{
 body.hc-page-admin :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-success, .btn-outline-danger){
   background: rgba(255,255,255,.86);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+@media (max-width: 991.98px){
+  body.hc-admin-case-detail-page .hc-case-copilot__header{
+    grid-template-columns: 1fr;
+  }
 }
 
 body.hc-page-admin :is(.btn-outline-primary, .btn-outline-secondary, .btn-outline-success, .btn-outline-danger):hover{
