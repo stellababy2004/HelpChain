@@ -253,6 +253,68 @@ AUDIENCE_CITY_MARKERS = {
     "tours": {"label": "Tours", "department": "Indre-et-Loire", "region": "Centre-Val de Loire", "x": 236, "y": 226},
     "orleans": {"label": "Orleans", "department": "Loiret", "region": "Centre-Val de Loire", "x": 275, "y": 190},
 }
+AUDIENCE_BUSINESS_MAP_POINTS = (
+    {
+        "slug": "paris",
+        "label": "Paris",
+        "lat": 48.8566,
+        "lng": 2.3522,
+        "priority": "Haute",
+        "recommendation": "Prioriser les comptes publics deja engages et proposer un cadrage pilote.",
+        "default_demands": 12,
+        "default_structures": 8,
+    },
+    {
+        "slug": "saint-denis",
+        "label": "Saint-Denis",
+        "lat": 48.9362,
+        "lng": 2.3574,
+        "priority": "Haute",
+        "recommendation": "Activer les relais ESS et les collectivites a fort volume de demandes.",
+        "default_demands": 9,
+        "default_structures": 6,
+    },
+    {
+        "slug": "nanterre",
+        "label": "Nanterre",
+        "lat": 48.8924,
+        "lng": 2.2060,
+        "priority": "Moyenne",
+        "recommendation": "Consolider un pipeline grands comptes et acteurs territoriaux du 92.",
+        "default_demands": 7,
+        "default_structures": 5,
+    },
+    {
+        "slug": "creteil",
+        "label": "Creteil",
+        "lat": 48.7904,
+        "lng": 2.4556,
+        "priority": "Moyenne",
+        "recommendation": "Positionner HelpChain sur les usages coordination medico-sociale et accompagnement.",
+        "default_demands": 6,
+        "default_structures": 4,
+    },
+    {
+        "slug": "versailles",
+        "label": "Versailles",
+        "lat": 48.8049,
+        "lng": 2.1204,
+        "priority": "Moyenne",
+        "recommendation": "Pousser une approche pilotage et indicateurs pour les directions territoriales.",
+        "default_demands": 5,
+        "default_structures": 4,
+    },
+    {
+        "slug": "boulogne-billancourt",
+        "label": "Boulogne-Billancourt",
+        "lat": 48.8397,
+        "lng": 2.2399,
+        "priority": "Haute",
+        "recommendation": "Capitaliser sur la traction locale et convertir les signaux chauds en rendez-vous.",
+        "default_demands": 8,
+        "default_structures": 5,
+    },
+)
 DEMO_LEAD_STATUS_CHOICES = [
     "new",
     "contacted",
@@ -7786,6 +7848,8 @@ def _build_audience_map_context() -> dict:
         "source_rows": [],
         "repeat_rows": [],
         "map_markers": [],
+        "map_locations": [],
+        "map_default_location": None,
         "unmapped_locations": [],
         "founder_insights": [],
         "revenue_radar_rows": [],
@@ -7885,6 +7949,39 @@ def _build_audience_map_context() -> dict:
 
     context["geo_available"] = bool(markers or location_counts)
     context["map_markers"] = markers
+    map_location_counts = {
+        _audience_normalize_text(city): int(count)
+        for city, count in location_counts.items()
+    }
+    business_points = []
+    for point in AUDIENCE_BUSINESS_MAP_POINTS:
+        normalized_label = _audience_normalize_text(point["label"])
+        observed = int(map_location_counts.get(normalized_label, 0) or 0)
+        estimated_demands = max(int(point["default_demands"]), observed)
+        structures = max(
+            int(point["default_structures"]),
+            min(int(point["default_structures"]) + 2, max(1, math.ceil(estimated_demands * 0.6))),
+        )
+        business_points.append(
+            {
+                "slug": point["slug"],
+                "label": point["label"],
+                "lat": float(point["lat"]),
+                "lng": float(point["lng"]),
+                "department": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("department", "Ile-de-France"),
+                "region": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("region", "Ile-de-France"),
+                "estimated_demands": estimated_demands,
+                "structures": structures,
+                "priority": point["priority"],
+                "recommendation": point["recommendation"],
+                "observed_signals": observed,
+            }
+        )
+    context["map_locations"] = business_points
+    context["map_default_location"] = next(
+        (point for point in business_points if point["slug"] == "paris"),
+        business_points[0] if business_points else None,
+    )
     context["unmapped_locations"] = unmapped[:8]
     context["city_rows"] = [
         {"label": city, "count": count}
