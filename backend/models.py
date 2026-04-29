@@ -113,6 +113,13 @@ class AdminUser(db.Model, UserMixin):
         db.Text, nullable=True
     )  # JSON list of password hashes
     backup_codes_generated_at = db.Column(db.DateTime, nullable=True)
+    must_change_password = db.Column(
+        db.Boolean, nullable=False, default=False, server_default=db.false()
+    )
+    onboarding_started_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    onboarding_completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    onboarding_step = db.Column(db.String(32), nullable=True)
+    onboarding_data_json = db.Column(db.Text, nullable=True)
 
     @property
     def is_admin(self) -> bool:

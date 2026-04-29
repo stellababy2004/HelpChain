@@ -1,0 +1,223 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Onboarding structure | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-onboarding-page{% endblock %}
+
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-onboarding.css') }}">
+{% endblock %}
+
+{% block admin_content %}
+  {% set structure_data = onboarding_data.get('structure_setup', {}) %}
+  {% set invite_data = onboarding_data.get('team_invites', {}) %}
+  {% set first_request = onboarding_data.get('first_request', {}) %}
+  <section class="hc-onboarding-shell">
+    <div class="hc-onboarding-card">
+      <div class="hc-onboarding-header">
+        <div>
+          <p class="hc-onboarding-eyebrow">Activation structure</p>
+          <h1 class="hc-onboarding-title">
+            {% if onboarding_step == "complete" %}
+              Votre structure est opérationnelle.
+            {% else %}
+              Bienvenue sur HelpChain
+            {% endif %}
+          </h1>
+          <p class="hc-onboarding-copy">
+            {% if onboarding_step == "complete" %}
+              Les fondamentaux sont en place. Vous pouvez lancer votre coordination ou demander un accompagnement.
+            {% else %}
+              Votre espace de coordination est prêt. Configurons-le en quelques minutes.
+            {% endif %}
+          </p>
+        </div>
+        <div class="hc-onboarding-progressWrap" aria-label="Progression onboarding">
+          <div class="hc-onboarding-progressMeta">
+            <span>Progression</span>
+            <strong>{{ onboarding_progress }}%</strong>
+          </div>
+          <div class="progress hc-onboarding-progress" role="progressbar" aria-valuenow="{{ onboarding_progress }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ onboarding_progress }}%"></div>
+          </div>
+        </div>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="hc-onboarding-alerts" aria-live="polite">
+            {% for category, msg in messages %}
+              <div class="alert alert-{{ category if category else 'info' }}">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if onboarding_step == "welcome" %}
+        <form method="post" action="{{ url_for('admin.admin_onboarding_step') }}" class="hc-onboarding-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="step" value="welcome">
+          <div class="hc-onboarding-panel">
+            <p class="hc-onboarding-stepLabel">Étape 1 sur 5</p>
+            <h2 class="hc-onboarding-panelTitle">Bienvenue sur HelpChain</h2>
+            <p class="hc-onboarding-panelText">Votre espace de coordination est prêt. Configurons-le en quelques minutes.</p>
+          </div>
+          <button type="submit" class="btn btn-primary hc-onboarding-primary">Commencer</button>
+        </form>
+      {% elif onboarding_step == "secure_access" %}
+        <form method="post" action="{{ url_for('admin.admin_onboarding_step') }}" class="hc-onboarding-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="step" value="secure_access">
+          <div class="hc-onboarding-panel">
+            <p class="hc-onboarding-stepLabel">Étape 2 sur 5</p>
+            <h2 class="hc-onboarding-panelTitle">Accès sécurisé</h2>
+            {% if onboarding_password_done %}
+              <div class="hc-onboarding-state hc-onboarding-state--done">
+                <strong>Mot de passe déjà mis à jour.</strong>
+                <span>Votre accès sécurisé est prêt.</span>
+              </div>
+            {% else %}
+              <p class="hc-onboarding-panelText">Choisissez un nouveau mot de passe avant d’ouvrir l’espace de travail.</p>
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="form-label" for="new_password">Nouveau mot de passe</label>
+                  <input class="form-control" id="new_password" name="new_password" type="password" autocomplete="new-password" required>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="confirm_password">Confirmer le mot de passe</label>
+                  <input class="form-control" id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+          <button type="submit" class="btn btn-primary hc-onboarding-primary">Continuer</button>
+        </form>
+      {% elif onboarding_step == "structure_setup" %}
+        <form method="post" action="{{ url_for('admin.admin_onboarding_step') }}" class="hc-onboarding-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="step" value="structure_setup">
+          <div class="hc-onboarding-panel">
+            <p class="hc-onboarding-stepLabel">Étape 3 sur 5</p>
+            <h2 class="hc-onboarding-panelTitle">Paramétrer votre structure</h2>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="structure_name">Nom de la structure</label>
+                <input class="form-control" id="structure_name" name="structure_name" value="{{ structure_data.get('name') or onboarding_structure.name if onboarding_structure else '' }}" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="city">Ville</label>
+                <input class="form-control" id="city" name="city" value="{{ structure_data.get('city', '') }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="team_size">Taille d’équipe</label>
+                <select class="form-select" id="team_size" name="team_size">
+                  <option value="">Sélectionner</option>
+                  {% for size in onboarding_team_sizes %}
+                    <option value="{{ size }}" {% if structure_data.get('team_size') == size %}selected{% endif %}>{{ size }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="main_need">Besoin principal</label>
+                <select class="form-select" id="main_need" name="main_need">
+                  <option value="">Sélectionner</option>
+                  {% for need in onboarding_main_needs %}
+                    <option value="{{ need }}" {% if structure_data.get('main_need') == need %}selected{% endif %}>{{ need }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary hc-onboarding-primary">Enregistrer et continuer</button>
+        </form>
+      {% elif onboarding_step == "invite_team" %}
+        <form method="post" action="{{ url_for('admin.admin_onboarding_step') }}" class="hc-onboarding-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="step" value="invite_team">
+          <div class="hc-onboarding-panel">
+            <p class="hc-onboarding-stepLabel">Étape 4 sur 5</p>
+            <h2 class="hc-onboarding-panelTitle">Inviter votre équipe</h2>
+            <p class="hc-onboarding-panelText">Ajoutez jusqu’à 3 adresses e-mail pour préparer le déploiement de l’équipe.</p>
+            <div class="row g-3">
+              {% for idx in range(1, 4) %}
+                <div class="col-12">
+                  <label class="form-label" for="invite_email_{{ idx }}">Adresse e-mail {{ idx }}</label>
+                  <input class="form-control" id="invite_email_{{ idx }}" name="invite_email_{{ idx }}" type="email" value="{{ (invite_data.get('emails') or [])[idx - 1] if (invite_data.get('emails') or [])|length >= idx else '' }}">
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="hc-onboarding-actions">
+            <button type="submit" class="btn btn-primary hc-onboarding-primary" name="invite_action" value="send">Envoyer les invitations</button>
+            <button type="submit" class="btn btn-outline-secondary" name="invite_action" value="skip">Passer cette étape</button>
+          </div>
+        </form>
+      {% elif onboarding_step == "first_win" %}
+        <form method="post" action="{{ url_for('admin.admin_onboarding_step') }}" class="hc-onboarding-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="step" value="first_win">
+          <div class="hc-onboarding-panel">
+            <p class="hc-onboarding-stepLabel">Étape 5 sur 5</p>
+            <h2 class="hc-onboarding-panelTitle">Première situation prête</h2>
+            <p class="hc-onboarding-panelText">Créez une première situation test pour entrer directement dans le flux opérationnel.</p>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="request_title">Titre</label>
+                <input class="form-control" id="request_title" name="request_title" value="{{ first_request.get('title') or 'Première situation test' }}" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="request_city">Ville</label>
+                <input class="form-control" id="request_city" name="request_city" value="{{ first_request.get('city') or structure_data.get('city', '') }}">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="request_priority">Priorité</label>
+                <select class="form-select" id="request_priority" name="request_priority">
+                  {% set selected_priority = first_request.get('priority') or 'normal' %}
+                  <option value="normal" {% if selected_priority == 'normal' %}selected{% endif %}>Normale</option>
+                  <option value="high" {% if selected_priority == 'high' %}selected{% endif %}>Élevée</option>
+                  <option value="urgent" {% if selected_priority == 'urgent' %}selected{% endif %}>Urgente</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="hc-onboarding-actions">
+            <button type="submit" class="btn btn-primary hc-onboarding-primary" name="first_win_action" value="create">Créer la première situation</button>
+            <button type="submit" class="btn btn-outline-secondary" name="first_win_action" value="skip">Passer cette étape</button>
+          </div>
+        </form>
+      {% else %}
+        <div class="hc-onboarding-panel hc-onboarding-panel--complete">
+          <div class="hc-onboarding-summaryGrid">
+            <article class="hc-onboarding-summaryCard">
+              <h2>Accès sécurisé</h2>
+              <p>Mot de passe renouvelé et accès administrateur prêt.</p>
+            </article>
+            <article class="hc-onboarding-summaryCard">
+              <h2>Structure configurée</h2>
+              <p>{{ structure_data.get('name') or onboarding_structure.name if onboarding_structure else 'Structure active' }}{% if structure_data.get('city') %} · {{ structure_data.get('city') }}{% endif %}</p>
+            </article>
+            <article class="hc-onboarding-summaryCard">
+              <h2>Première situation prête</h2>
+              <p>
+                {% if first_request.get('created') and first_request.get('id') %}
+                  Situation test créée et prête à être traitée.
+                {% else %}
+                  Votre premier cas peut être créé depuis le flux de demandes existant.
+                {% endif %}
+              </p>
+            </article>
+          </div>
+          {% if first_request.get('fallback_url') %}
+            <a class="btn btn-outline-secondary hc-onboarding-ghostLink" href="{{ first_request.get('fallback_url') }}">Ouvrir la création de demande</a>
+          {% endif %}
+        </div>
+        <div class="hc-onboarding-actions">
+          <form method="post" action="{{ url_for('admin.admin_onboarding_complete') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-primary hc-onboarding-primary">Accéder au tableau de bord</button>
+          </form>
+          <a class="btn btn-outline-secondary" href="{{ onboarding_plan_url }}">Planifier un accompagnement</a>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

@@ -98,6 +98,8 @@ def create_org_admin_for_structure(
         is_active=True,
         structure_id=structure.id,
         password_hash="",
+        must_change_password=True,
+        onboarding_step="welcome",
     )
     temporary_password = _temporary_password()
     admin.set_password(temporary_password)

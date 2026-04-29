@@ -71,6 +71,8 @@ def create_structure_with_admin(name: str, admin_email: str, password: str) -> t
             is_active=True,
             structure_id=structure.id,
             password_hash="",
+            must_change_password=True,
+            onboarding_step="welcome",
         )
         admin.set_password(password)
         db.session.add(admin)

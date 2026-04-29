@@ -1,0 +1,225 @@
+.hc-admin-onboarding-page {
+  --hc-onboarding-border: rgba(188, 201, 219, 0.82);
+  --hc-onboarding-text: #18324f;
+  --hc-onboarding-muted: #64768c;
+  --hc-onboarding-bg: linear-gradient(180deg, #f4f7fb 0%, #eef3f9 100%);
+}
+
+.hc-admin-onboarding-page .hc-admin-shellnav {
+  opacity: 0.78;
+}
+
+.hc-onboarding-shell {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.hc-onboarding-card {
+  border: 1px solid var(--hc-onboarding-border);
+  border-radius: 24px;
+  background: var(--hc-onboarding-bg);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.hc-onboarding-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: 1.25rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+.hc-onboarding-eyebrow {
+  margin: 0 0 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #60758f;
+}
+
+.hc-onboarding-title {
+  margin: 0;
+  font-size: clamp(2rem, 3.4vw, 2.75rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #142b45;
+}
+
+.hc-onboarding-copy {
+  margin: 0.8rem 0 0;
+  max-width: 38rem;
+  color: var(--hc-onboarding-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.hc-onboarding-progressWrap {
+  border: 1px solid rgba(189, 204, 222, 0.82);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 1rem;
+}
+
+.hc-onboarding-progressMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+  color: #3e5879;
+  font-size: 0.88rem;
+}
+
+.hc-onboarding-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(209, 220, 234, 0.75);
+  overflow: hidden;
+}
+
+.hc-onboarding-progress .progress-bar {
+  background: linear-gradient(90deg, #2b5f9a 0%, #457fb6 100%);
+}
+
+.hc-onboarding-alerts {
+  margin-bottom: 1.25rem;
+}
+
+.hc-onboarding-alerts .alert {
+  border-radius: 14px;
+}
+
+.hc-onboarding-panel {
+  border: 1px solid rgba(195, 207, 223, 0.86);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: clamp(1.2rem, 2.6vw, 1.8rem);
+}
+
+.hc-onboarding-stepLabel {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #60758f;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hc-onboarding-panelTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  color: var(--hc-onboarding-text);
+}
+
+.hc-onboarding-panelText {
+  margin: 0.75rem 0 0;
+  color: var(--hc-onboarding-muted);
+  line-height: 1.6;
+}
+
+.hc-onboarding-form .form-label {
+  font-weight: 600;
+  color: #35516f;
+}
+
+.hc-onboarding-form .form-control,
+.hc-onboarding-form .form-select {
+  min-height: 48px;
+  border-radius: 14px;
+  border-color: #d4dfeb;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.hc-onboarding-form .form-control:focus,
+.hc-onboarding-form .form-select:focus {
+  border-color: #7da2d0;
+  box-shadow: 0 0 0 3px rgba(75, 123, 192, 0.14);
+}
+
+.hc-onboarding-primary {
+  min-width: 220px;
+  min-height: 50px;
+  margin-top: 1.25rem;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+.hc-onboarding-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+.hc-onboarding-actions form {
+  margin: 0;
+}
+
+.hc-onboarding-state {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(127, 181, 140, 0.44);
+  background: rgba(239, 249, 241, 0.88);
+  color: #21563a;
+  margin-top: 1rem;
+}
+
+.hc-onboarding-summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.hc-onboarding-summaryCard {
+  min-height: 180px;
+  border: 1px solid rgba(194, 207, 224, 0.84);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.94));
+  padding: 1.2rem;
+}
+
+.hc-onboarding-summaryCard h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.08rem;
+  color: #18324f;
+}
+
+.hc-onboarding-summaryCard p {
+  margin: 0;
+  color: var(--hc-onboarding-muted);
+  line-height: 1.55;
+}
+
+.hc-onboarding-ghostLink {
+  margin-top: 1rem;
+}
+
+@media (max-width: 991.98px) {
+  .hc-onboarding-header,
+  .hc-onboarding-summaryGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hc-onboarding-card {
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .hc-onboarding-panel,
+  .hc-onboarding-summaryCard {
+    border-radius: 16px;
+  }
+
+  .hc-onboarding-primary,
+  .hc-onboarding-actions .btn,
+  .hc-onboarding-actions form {
+    width: 100%;
+  }
+}

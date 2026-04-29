@@ -306,6 +306,7 @@ ADMIN_FRESH_AUTH_MIN = 10
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 _SCHEMA_TABLE_CACHE: dict[str, bool] = {}
 _CTRL_CHARS_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
+_ONBOARDING_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _UI_KEYS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_keys.json"
 _UI_DOMAINS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_domains.json"
 _TERMINOLOGY_PATH = Path(__file__).resolve().parents[4] / "i18n" / "terminology.json"
@@ -317,6 +318,29 @@ _HF_MODEL_MAP = {
 _HF_TRANSLATORS: dict[str, tuple[object, object]] = {}
 _HF_TRANSLATOR_FAILED: set[str] = set()
 _HF_TRANSLATOR_LOCK = threading.Lock()
+ONBOARDING_STEPS = (
+    "welcome",
+    "secure_access",
+    "structure_setup",
+    "invite_team",
+    "first_win",
+    "complete",
+)
+ONBOARDING_PROGRESS = {
+    "welcome": 20,
+    "secure_access": 40,
+    "structure_setup": 60,
+    "invite_team": 80,
+    "first_win": 100,
+    "complete": 100,
+}
+ONBOARDING_TEAM_SIZE_OPTIONS = ("1-5", "6-15", "16-50", "50+")
+ONBOARDING_MAIN_NEED_OPTIONS = (
+    "centraliser demandes",
+    "suivi dossiers",
+    "coordination equipe",
+    "reporting",
+)
 def _table_has_column(table_name: str, column_name: str) -> bool:
     key = (table_name, column_name)
     cached = _SCHEMA_COLUMN_CACHE.get(key)
@@ -1236,7 +1260,7 @@ def _verify_admin_password(user: AdminUser | None, password: str) -> bool:
         return False
 
 
-def _default_admin_landing_url(user: AdminUser | None = None) -> str:
+def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
     role = _normalize_admin_role_value(
         getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
     )
@@ -1251,6 +1275,12 @@ def _default_admin_landing_url(user: AdminUser | None = None) -> str:
     return url_for("admin.admin_requests")
 
 
+def _default_admin_landing_url(user: AdminUser | None = None) -> str:
+    if _admin_onboarding_required(user):
+        return url_for("admin.admin_onboarding")
+    return _default_admin_workspace_url(user)
+
+
 def _admin_role_requires_mfa(raw_role) -> bool:
     role = _normalize_admin_role_value(raw_role)
     return role in {"superadmin", "admin"}
@@ -1262,6 +1292,95 @@ def is_mfa_required(user) -> bool:
 
     role = _normalize_admin_role_value(getattr(user, "role", ""))
     return role in {"superadmin", "admin"}
+
+
+def _admin_onboarding_columns_available() -> bool:
+    required_columns = (
+        "must_change_password",
+        "onboarding_started_at",
+        "onboarding_completed_at",
+        "onboarding_step",
+    )
+    return all(_table_has_column("admin_users", column_name) for column_name in required_columns)
+
+
+def _admin_onboarding_data_columns_available() -> bool:
+    return _table_has_column("admin_users", "onboarding_data_json")
+
+
+def _admin_onboarding_required(user: AdminUser | None = None) -> bool:
+    target = user if user is not None else current_user
+    if not target or not getattr(target, "is_authenticated", False):
+        return False
+    if not getattr(target, "is_admin", False):
+        return False
+    if getattr(target, "structure_id", None) is None:
+        return False
+    if not _admin_onboarding_columns_available():
+        return False
+    if getattr(target, "onboarding_completed_at", None) is not None:
+        return False
+    step = (getattr(target, "onboarding_step", None) or "").strip().lower()
+    must_change_password = bool(getattr(target, "must_change_password", False))
+    started_at = getattr(target, "onboarding_started_at", None)
+    return bool(step or must_change_password or started_at)
+
+
+def _admin_onboarding_step(user: AdminUser | None = None) -> str:
+    target = user if user is not None else current_user
+    raw_step = (getattr(target, "onboarding_step", None) or "").strip().lower()
+    if raw_step in ONBOARDING_STEPS:
+        return raw_step
+    if bool(getattr(target, "must_change_password", False)):
+        return "secure_access"
+    return "welcome"
+
+
+def _admin_onboarding_load_data(user: AdminUser | None = None) -> dict:
+    target = user if user is not None else current_user
+    if not _admin_onboarding_data_columns_available():
+        return {}
+    raw = getattr(target, "onboarding_data_json", None)
+    if not raw:
+        return {}
+    try:
+        parsed = json.loads(raw)
+    except Exception:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _admin_onboarding_save_data(user: AdminUser, payload: dict) -> None:
+    if not _admin_onboarding_data_columns_available():
+        return
+    user.onboarding_data_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+
+
+def _admin_onboarding_touch_started(user: AdminUser) -> None:
+    if getattr(user, "onboarding_started_at", None) is None:
+        user.onboarding_started_at = utc_now()
+
+
+def _admin_onboarding_set_step(user: AdminUser, step: str) -> None:
+    if step not in ONBOARDING_STEPS:
+        return
+    _admin_onboarding_touch_started(user)
+    user.onboarding_step = step
+
+
+def _admin_onboarding_safe_structure(user: AdminUser | None = None) -> Structure | None:
+    target = user if user is not None else current_user
+    structure_id = getattr(target, "structure_id", None)
+    if structure_id is None:
+        return None
+    return db.session.get(Structure, int(structure_id))
+
+
+def _admin_onboarding_plan_url() -> str:
+    try:
+        return url_for("main.contact")
+    except Exception:
+        return "/contact"
 
 
 def _admin_login_is_locked(
@@ -4103,6 +4222,186 @@ def enforce_admin_mfa():
         return None
     nxt = request.full_path if request.query_string else request.path
     return redirect(url_for("admin.admin_mfa_verify", next=nxt))
+
+
+@admin_bp.before_request
+def enforce_admin_onboarding():
+    allowed = {
+        "admin.ops_login",
+        "admin.admin_login_legacy",
+        "admin.admin_logout",
+        "admin.admin_mfa_setup",
+        "admin.admin_mfa_verify",
+        "admin.admin_mfa_backup_codes",
+        "admin.admin_onboarding",
+        "admin.admin_onboarding_step",
+        "admin.admin_onboarding_complete",
+    }
+    if request.endpoint in allowed or (
+        request.endpoint and request.endpoint.startswith("static")
+    ):
+        return None
+    if not session.get("admin_logged_in"):
+        return None
+    if not _admin_onboarding_required():
+        return None
+    return redirect(url_for("admin.admin_onboarding"), code=303)
+
+
+@admin_bp.get("/onboarding")
+@admin_required
+def admin_onboarding():
+    admin_required_404()
+    if not _admin_onboarding_required():
+        return redirect(_default_admin_workspace_url(), code=303)
+
+    structure = _admin_onboarding_safe_structure()
+    payload = _admin_onboarding_load_data()
+    current_step = _admin_onboarding_step()
+    _admin_onboarding_touch_started(current_user)
+    db.session.commit()
+
+    return render_template(
+        "admin/onboarding.html",
+        onboarding_step=current_step,
+        onboarding_progress=ONBOARDING_PROGRESS.get(current_step, 20),
+        onboarding_data=payload,
+        onboarding_structure=structure,
+        onboarding_team_sizes=ONBOARDING_TEAM_SIZE_OPTIONS,
+        onboarding_main_needs=ONBOARDING_MAIN_NEED_OPTIONS,
+        onboarding_plan_url=_admin_onboarding_plan_url(),
+        onboarding_request_new_url=url_for("admin.admin_request_new"),
+        onboarding_password_done=not bool(getattr(current_user, "must_change_password", False)),
+    )
+
+
+@admin_bp.post("/onboarding/step")
+@admin_required
+def admin_onboarding_step():
+    admin_required_404()
+    if not _admin_onboarding_required():
+        return redirect(_default_admin_workspace_url(), code=303)
+
+    step = (request.form.get("step") or "").strip().lower()
+    payload = _admin_onboarding_load_data()
+    structure = _admin_onboarding_safe_structure()
+
+    if step == "welcome":
+        _admin_onboarding_set_step(current_user, "secure_access")
+        db.session.commit()
+        return redirect(url_for("admin.admin_onboarding"), code=303)
+
+    if step == "secure_access":
+        if bool(getattr(current_user, "must_change_password", False)):
+            password = request.form.get("new_password") or ""
+            confirm_password = request.form.get("confirm_password") or ""
+            if password != confirm_password:
+                flash("La confirmation du mot de passe ne correspond pas.", "warning")
+                return redirect(url_for("admin.admin_onboarding"), code=303)
+            try:
+                current_user.set_password(password)
+            except ValueError as exc:
+                flash(str(exc), "warning")
+                return redirect(url_for("admin.admin_onboarding"), code=303)
+            current_user.must_change_password = False
+        _admin_onboarding_set_step(current_user, "structure_setup")
+        db.session.commit()
+        return redirect(url_for("admin.admin_onboarding"), code=303)
+
+    if step == "structure_setup":
+        structure_name = (request.form.get("structure_name") or "").strip()
+        city = (request.form.get("city") or "").strip()
+        team_size = (request.form.get("team_size") or "").strip()
+        main_need = (request.form.get("main_need") or "").strip().lower()
+        if not structure_name:
+            flash("Le nom de la structure est requis.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
+        if team_size and team_size not in ONBOARDING_TEAM_SIZE_OPTIONS:
+            flash("La taille d'équipe selectionnee est invalide.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
+        if main_need and main_need not in ONBOARDING_MAIN_NEED_OPTIONS:
+            flash("Le besoin principal selectionne est invalide.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
+        if structure is not None:
+            structure.name = structure_name
+        payload["structure_setup"] = {
+            "name": structure_name,
+            "city": city,
+            "team_size": team_size,
+            "main_need": main_need,
+        }
+        _admin_onboarding_save_data(current_user, payload)
+        _admin_onboarding_set_step(current_user, "invite_team")
+        db.session.commit()
+        return redirect(url_for("admin.admin_onboarding"), code=303)
+
+    if step == "invite_team":
+        invite_action = (request.form.get("invite_action") or "send").strip().lower()
+        emails: list[str] = []
+        for idx in range(1, 4):
+            raw_email = (request.form.get(f"invite_email_{idx}") or "").strip().lower()
+            if not raw_email:
+                continue
+            if not _ONBOARDING_EMAIL_RE.match(raw_email):
+                flash("Au moins une adresse e-mail est invalide.", "warning")
+                return redirect(url_for("admin.admin_onboarding"), code=303)
+            emails.append(raw_email)
+        payload["team_invites"] = {
+            "emails": emails[:3],
+            "sent": invite_action == "send" and bool(emails),
+            "skipped": invite_action == "skip",
+        }
+        _admin_onboarding_save_data(current_user, payload)
+        _admin_onboarding_set_step(current_user, "first_win")
+        db.session.commit()
+        return redirect(url_for("admin.admin_onboarding"), code=303)
+
+    if step == "first_win":
+        first_win_action = (request.form.get("first_win_action") or "create").strip().lower()
+        default_city = (
+            ((payload.get("structure_setup") or {}).get("city") or "").strip()
+            or getattr(structure, "city", None)
+            or ""
+        )
+        request_title = (request.form.get("request_title") or "Premiere situation test").strip()
+        request_city = (request.form.get("request_city") or default_city).strip()
+        request_priority = (request.form.get("request_priority") or "normal").strip().lower()
+        if not request_title:
+            flash("Le titre de la premiere situation est requis.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
+        if not request_city:
+            flash("La ville de la premiere situation est requise.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
+        if request_priority not in {"normal", "high", "urgent"}:
+            flash("La priorite selectionnee est invalide.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
+        payload["first_request"] = {
+            "created": False,
+            "title": request_title,
+            "city": request_city,
+            "priority": request_priority,
+            "fallback_url": url_for("admin.admin_request_new"),
+            "action": first_win_action,
+        }
+        _admin_onboarding_save_data(current_user, payload)
+        _admin_onboarding_set_step(current_user, "complete")
+        db.session.commit()
+        return redirect(url_for("admin.admin_onboarding"), code=303)
+
+    flash("Etape d'onboarding inconnue.", "warning")
+    return redirect(url_for("admin.admin_onboarding"), code=303)
+
+
+@admin_bp.post("/onboarding/complete")
+@admin_required
+def admin_onboarding_complete():
+    admin_required_404()
+    if not _admin_onboarding_required():
+        return redirect(_default_admin_workspace_url(), code=303)
+    _admin_onboarding_set_step(current_user, "complete")
+    current_user.onboarding_completed_at = utc_now()
+    db.session.commit()
+    return redirect(_default_admin_workspace_url(), code=303)
 
 
 # API endpoint Ð·Ð° Ð·Ð°ÑÐ²ÐºÐ¸ Ñ Ñ„Ð¸Ð»Ñ‚Ñ€Ð¸ (status, date)
