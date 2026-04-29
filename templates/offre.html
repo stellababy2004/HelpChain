@@ -8,6 +8,7 @@
 
 {% block extra_css %}
   {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/offre.css') }}">
   <style>
     body.hc-page-offre {
       --hc-offre-ink: #11233c;
@@ -521,6 +522,14 @@
         <span class="hc-offre__eyebrow">{{ _("Modèles d’engagement") }}</span>
         <h2>{{ _("Trois cadres pour démarrer, structurer puis déployer") }}</h2>
         <p>{{ _("Chaque offre correspond à un niveau de coordination différent, sans afficher de tarification simpliste ni forcer un cadre inadapté à votre organisation.") }}</p>
+      </div>
+
+      
+      <div class="hc-reality-proof hc-reality-proof--clean" aria-label="Rep&egrave;res de cr&eacute;dibilit&eacute;">
+        <span class="hc-reality-proof__chip">Pilot en pr&eacute;paration</span>
+        <span class="hc-reality-proof__chip">Con&ccedil;u et op&eacute;r&eacute; depuis la France</span>
+        <span class="hc-reality-proof__chip">D&eacute;ploiement progressif en &Icirc;le-de-France</span>
+        <span class="hc-reality-proof__chip">Approche institutionnelle sobre</span>
       </div>
 
       <div class="hc-offre__grid hc-offre__grid--offers">

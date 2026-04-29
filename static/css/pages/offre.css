@@ -1,0 +1,32 @@
+body.hc-page-offre .hc-reality-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 1.5rem;
+}
+
+body.hc-page-offre .hc-offre__shell > .hc-reality-proof:first-of-type:not(.hc-reality-proof--clean) {
+  display: none;
+}
+
+body.hc-page-offre .hc-reality-proof__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid rgba(53, 80, 122, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #35507a;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+@media (max-width: 767.98px) {
+  body.hc-page-offre .hc-reality-proof__chip {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

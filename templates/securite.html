@@ -5,6 +5,10 @@
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Sécurité et conformité") }}{% endblock %}
 {% block body_class %}hc-page-trust hc-page-securite{% endblock %}
+{% block extra_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/securite.css') }}">
+{% endblock %}
 
 {% block content %}
 <main class="hc-trust-page">
@@ -121,6 +125,13 @@
           <h3>{{ _("Cadre documentable") }}</h3>
           <p>{{ _("Les équipes disposent d’éléments concrets pour instruire un pilote, une validation interne ou un échange avec leur DPO.") }}</p>
         </article>
+      </div>
+      
+      <div class="hc-reality-proof hc-reality-proof--clean" aria-label="Rep&egrave;res de cr&eacute;dibilit&eacute;">
+        <span class="hc-reality-proof__chip">Pilot en pr&eacute;paration</span>
+        <span class="hc-reality-proof__chip">Con&ccedil;u et op&eacute;r&eacute; depuis la France</span>
+        <span class="hc-reality-proof__chip">D&eacute;ploiement progressif en &Icirc;le-de-France</span>
+        <span class="hc-reality-proof__chip">Approche institutionnelle sobre</span>
       </div>
     </div>
   </section>
