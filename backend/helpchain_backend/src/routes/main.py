@@ -1081,11 +1081,52 @@ def events_collect():
     props = data.get("props") or {}
     if not event:
         return jsonify({"ok": False}), 400
+
+    visitor_ip = (
+        request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        or request.headers.get("X-Real-IP", "").strip()
+        or request.remote_addr
+        or ""
+    )
+    path = str(props.get("path") or props.get("url") or request.referrer or "").lower()
+    user_agent = (request.headers.get("User-Agent") or "").lower()
+
+    is_founder_ip = visitor_ip.startswith("176.187.")
+    is_admin_path = "/admin" in path
+    is_local_ip = (
+        visitor_ip.startswith("127.")
+        or visitor_ip.startswith("192.168.")
+        or visitor_ip == "::1"
+        or visitor_ip == "localhost"
+    )
+    is_bot = any(
+        token in user_agent
+        for token in ("bot", "crawler", "spider", "uptime", "monitor", "healthcheck")
+    )
+
+    if is_founder_ip or is_admin_path or is_local_ip or is_bot:
+        try:
+            current_app.logger.info(
+                "[EVENT-IGNORED] %s ip=%s path=%s reason=founder_or_admin_or_bot",
+                event,
+                visitor_ip,
+                path,
+            )
+        except Exception:
+            pass
+        return jsonify({"ok": True, "ignored": True}), 200
+
     try:
-        current_app.logger.info("[EVENT] %s %s", event, props)
+        current_app.logger.info(
+            "[EVENT-QUALIFIED] %s ip=%s path=%s props=%s",
+            event,
+            visitor_ip,
+            path,
+            props,
+        )
     except Exception:
         pass
-    return jsonify({"ok": True}), 200
+    return jsonify({"ok": True, "ignored": False}), 200
 
 
 def _emit_event(event: str, props: dict | None = None) -> None:
