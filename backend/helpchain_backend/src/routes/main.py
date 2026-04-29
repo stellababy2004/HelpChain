@@ -5025,6 +5025,354 @@ def deploiement():
     return render_template("deploiement.html")
 
 
+def _safe_get_model(name: str):
+    try:
+        from .. import models as route_models
+
+        candidate = getattr(route_models, name, None)
+        if candidate is not None:
+            return candidate
+    except Exception:
+        pass
+
+    try:
+        import backend.models as legacy_models
+
+        return getattr(legacy_models, name, None)
+    except Exception:
+        return None
+
+
+def _safe_model_count(model, *, structure_id: int | None = None, predicate=None) -> int:
+    if model is None:
+        return 0
+
+    table = getattr(model, "__table__", None)
+    if table is None or not _table_exists(getattr(table, "name", "")):
+        return 0
+
+    try:
+        query = db.session.query(func.count()).select_from(model)
+        if (
+            structure_id is not None
+            and hasattr(model, "structure_id")
+            and getattr(model, "structure_id", None) is not None
+        ):
+            query = query.filter(model.structure_id == structure_id)
+        if predicate is not None:
+            query = query.filter(predicate)
+        return int(query.scalar() or 0)
+    except Exception:
+        return 0
+
+
+def _safe_find_public_structure(structure_model):
+    if structure_model is None:
+        return None
+
+    table = getattr(structure_model, "__table__", None)
+    if table is None or not _table_exists(getattr(table, "name", "")):
+        return None
+
+    candidates = []
+
+    current_structure_fn = _safe_get_model("current_structure")
+    if callable(current_structure_fn):
+        candidates.append(current_structure_fn)
+
+    for resolver in candidates:
+        try:
+            structure = resolver()
+            if structure is not None:
+                return structure
+        except Exception:
+            continue
+
+    try:
+        query = structure_model.query
+        if hasattr(structure_model, "created_at"):
+            query = query.order_by(structure_model.created_at.asc(), structure_model.id.asc())
+        else:
+            query = query.order_by(structure_model.id.asc())
+        return query.first()
+    except Exception:
+        return None
+
+
+def _safe_days_since(value) -> int | None:
+    if not value:
+        return None
+    try:
+        now = datetime.now(UTC)
+        created_at = value
+        if getattr(created_at, "tzinfo", None) is None:
+            created_at = created_at.replace(tzinfo=UTC)
+        return max(0, int((now - created_at).days))
+    except Exception:
+        return None
+
+
+def _build_premium_onboarding_context() -> dict[str, object]:
+    fallback = {
+        "structure_name": "Structure pilote",
+        "completion_percent": 25,
+        "completion_bucket": 25,
+        "users_count": 0,
+        "requests_count": 0,
+        "active_requests_count": 0,
+        "completed_requests_count": 0,
+        "days_since_created": None,
+        "pilot_ready": False,
+        "state_label": "Configuration en cours",
+        "next_action_label": "Configurer la structure",
+        "next_action_description": (
+            "Définir le cadre initial de la structure pour ouvrir un pilote clair."
+        ),
+        "steps": [],
+    }
+
+    try:
+        structure_model = _safe_get_model("Structure")
+        user_model = _safe_get_model("User")
+        admin_user_model = _safe_get_model("AdminUser")
+        request_model = _safe_get_model("Request")
+        help_request_model = _safe_get_model("HelpRequest")
+        organization_access_request_model = _safe_get_model("OrganizationAccessRequest")
+        professional_lead_model = _safe_get_model("ProfessionalLead")
+        demo_lead_model = _safe_get_model("DemoLead")
+
+        structure = _safe_find_public_structure(structure_model)
+        structure_name = (getattr(structure, "name", None) or "").strip() or "Structure pilote"
+        structure_id = getattr(structure, "id", None)
+        has_structure = bool(getattr(structure, "name", None))
+        days_since_created = _safe_days_since(getattr(structure, "created_at", None))
+
+        users_count = _safe_model_count(user_model, structure_id=structure_id) + _safe_model_count(
+            admin_user_model, structure_id=structure_id
+        )
+
+        request_models = []
+        for candidate in (request_model, help_request_model):
+            if candidate is None:
+                continue
+            table = getattr(getattr(candidate, "__table__", None), "name", None)
+            if any(getattr(getattr(existing, "__table__", None), "name", None) == table for existing in request_models):
+                continue
+            request_models.append(candidate)
+
+        requests_count = 0
+        active_requests_count = 0
+        completed_requests_count = 0
+        completed_statuses = {"completed", "closed", "resolved", "done", "archived"}
+
+        for candidate in request_models:
+            requests_count += _safe_model_count(candidate, structure_id=structure_id)
+
+            if hasattr(candidate, "status") and getattr(candidate, "status", None) is not None:
+                completed_requests_count += _safe_model_count(
+                    candidate,
+                    structure_id=structure_id,
+                    predicate=func.lower(candidate.status).in_(completed_statuses),
+                )
+                active_requests_count += _safe_model_count(
+                    candidate,
+                    structure_id=structure_id,
+                    predicate=or_(
+                        candidate.status.is_(None),
+                        ~func.lower(candidate.status).in_(completed_statuses),
+                    ),
+                )
+            elif hasattr(candidate, "completed_at") and getattr(candidate, "completed_at", None) is not None:
+                completed_requests_count += _safe_model_count(
+                    candidate,
+                    structure_id=structure_id,
+                    predicate=candidate.completed_at.is_not(None),
+                )
+                active_requests_count += _safe_model_count(
+                    candidate,
+                    structure_id=structure_id,
+                    predicate=candidate.completed_at.is_(None),
+                )
+
+        pilot_signal = any(
+            _safe_model_count(candidate) > 0
+            for candidate in (
+                organization_access_request_model,
+                professional_lead_model,
+                demo_lead_model,
+            )
+        )
+
+        completion_percent = 0
+        if has_structure:
+            completion_percent += 25
+        if users_count > 0:
+            completion_percent += 25
+        if requests_count > 0:
+            completion_percent += 25
+        if active_requests_count > 0 or completed_requests_count > 0 or pilot_signal:
+            completion_percent += 25
+
+        completion_percent = max(25, min(100, completion_percent))
+
+        if completion_percent >= 100:
+            completion_bucket = 100
+        elif completion_percent >= 75:
+            completion_bucket = 75
+        elif completion_percent >= 50:
+            completion_bucket = 50
+        elif completion_percent >= 25:
+            completion_bucket = 25
+        else:
+            completion_bucket = 0
+
+        pilot_ready = completion_percent >= 75
+        state_label = "Pilote prêt à lancer" if pilot_ready else "Configuration en cours"
+
+        if not has_structure:
+            next_action_label = "Configurer la structure"
+            next_action_description = (
+                "Définir le nom, le périmètre et le cadre d’usage pour lancer le paramétrage."
+            )
+        elif users_count == 0:
+            next_action_label = "Ajouter les premières équipes habilitées"
+            next_action_description = (
+                "Inviter les premiers référents et attribuer les accès utiles au pilote."
+            )
+        elif requests_count == 0:
+            next_action_label = "Créer une première situation pilote"
+            next_action_description = (
+                "Ouvrir une première situation simple pour tester le suivi opérationnel."
+            )
+        elif completion_percent < 100:
+            next_action_label = "Valider le périmètre pilote"
+            next_action_description = (
+                "Confirmer les usages initiaux et le rythme de suivi avant généralisation."
+            )
+        else:
+            next_action_label = "Lancer le suivi opérationnel"
+            next_action_description = (
+                "Démarrer le pilotage courant avec les premières situations déjà en place."
+            )
+
+        step_specs = [
+            (
+                "Structure",
+                "Définir le cadre de la structure, ses accès et son périmètre d’usage.",
+                has_structure,
+            ),
+            (
+                "Équipes",
+                "Inviter les équipes habilitées et répartir les responsabilités opérationnelles.",
+                users_count > 0,
+            ),
+            (
+                "Périmètre pilote",
+                "Définir un premier pilote simple avec quelques situations et des objectifs lisibles.",
+                requests_count > 0,
+            ),
+            (
+                "Mise en route",
+                "Lancer le suivi opérationnel avec les premières situations actives ou clôturées.",
+                active_requests_count > 0 or completed_requests_count > 0,
+            ),
+        ]
+
+        steps = []
+        first_incomplete_index = next(
+            (index for index, (_, _, is_complete) in enumerate(step_specs) if not is_complete),
+            None,
+        )
+
+        for index, (title, description, is_complete) in enumerate(step_specs):
+            if is_complete:
+                status_type = "complete"
+                status_label = "Complété"
+            elif index == first_incomplete_index:
+                if title == "Périmètre pilote" and users_count > 0:
+                    status_type = "recommended"
+                    status_label = "Recommandé"
+                else:
+                    status_type = "current"
+                    status_label = "En cours"
+            elif title == "Périmètre pilote" and users_count > 0:
+                status_type = "recommended"
+                status_label = "Recommandé"
+            else:
+                status_type = "pending"
+                status_label = "À compléter"
+
+            steps.append(
+                {
+                    "title": title,
+                    "description": description,
+                    "status_label": status_label,
+                    "status_type": status_type,
+                    "is_complete": is_complete,
+                }
+            )
+
+        fallback.update(
+            {
+                "structure_name": structure_name,
+                "completion_percent": completion_percent,
+                "completion_bucket": completion_bucket,
+                "users_count": users_count,
+                "requests_count": requests_count,
+                "active_requests_count": active_requests_count,
+                "completed_requests_count": completed_requests_count,
+                "days_since_created": days_since_created,
+                "pilot_ready": pilot_ready,
+                "state_label": state_label,
+                "next_action_label": next_action_label,
+                "next_action_description": next_action_description,
+                "steps": steps,
+            }
+        )
+    except Exception as exc:
+        current_app.logger.warning("Premium onboarding fallback due to data error: %s", exc)
+
+    if not fallback["steps"]:
+        fallback["steps"] = [
+            {
+                "title": "Structure",
+                "description": "Définir le cadre de la structure, ses accès et son périmètre d’usage.",
+                "status_label": "En cours",
+                "status_type": "current",
+                "is_complete": False,
+            },
+            {
+                "title": "Équipes",
+                "description": "Inviter les équipes habilitées et répartir les responsabilités opérationnelles.",
+                "status_label": "À compléter",
+                "status_type": "pending",
+                "is_complete": False,
+            },
+            {
+                "title": "Périmètre pilote",
+                "description": "Définir un premier pilote simple avec quelques situations et des objectifs lisibles.",
+                "status_label": "Recommandé",
+                "status_type": "recommended",
+                "is_complete": False,
+            },
+            {
+                "title": "Mise en route",
+                "description": "Lancer le suivi opérationnel avec les premières situations actives ou clôturées.",
+                "status_label": "À compléter",
+                "status_type": "pending",
+                "is_complete": False,
+            },
+        ]
+
+    return fallback
+
+
+@main_bp.get("/onboarding/premium", endpoint="premium_onboarding")
+def premium_onboarding():
+    onboarding = _build_premium_onboarding_context()
+    return render_template("premium_onboarding.html", onboarding=onboarding)
+
+
 @main_bp.get("/offre")
 def offre():
     return render_template("offre.html")

@@ -566,7 +566,7 @@
               {{ _('Connexion') }}
             </a>
             <a class="nav-link hc-nav-cta hc-cta hc-public-nav-demo-cta" href="/demo">
-              <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
+              <span class="hc-navlabel">{{ _('Échanger sur un pilote') }}</span>
             </a>
           </div>
           {% else %}
@@ -608,7 +608,7 @@
             </li>
             <li class="nav-item hc-public-nav-cta">
               <a class="nav-link hc-nav-cta hc-cta hc-public-nav-demo-cta" href="/demo">
-                <span class="hc-navlabel">{{ _('Planifier une démo') }}</span>
+                <span class="hc-navlabel">{{ _('Échanger sur un pilote') }}</span>
               </a>
             </li>
             {% if current_user.is_authenticated %}
@@ -875,7 +875,7 @@
             <a class="{{ 'is-active' if mobile_ep.startswith('main.volunteer_login') else '' }}" href="{{ url_for('main.volunteer_login') }}" {% if mobile_ep.startswith('main.volunteer_login') %}aria-current="page"{% endif %}>{{ _('Connexion') }}</a>
           </li>
           <li class="hc-mobile-nav__item hc-mobile-nav__item--cta">
-            <a class="hc-public-nav-demo-cta" href="/demo">{{ _('Planifier une démo') }}</a>
+            <a class="hc-public-nav-demo-cta" href="/demo">{{ _('Échanger sur un pilote') }}</a>
           </li>
         </ul>
       </aside>

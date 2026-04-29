@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}HelpChain Premium Onboarding V3 | HelpChain{% endblock %}
+{% block meta_description %}Votre espace HelpChain est prêt à être configuré avec un parcours de déploiement structuré, sobre et opérationnel.{% endblock %}
+{% block og_title %}HelpChain Premium Onboarding V3{% endblock %}
+{% block og_description %}Un accompagnement structuré pour lancer votre premier pilote, organiser vos équipes et suivre vos situations dès les premiers jours.{% endblock %}
+{% block body_class %}hc-page-premium-onboarding{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/premium-onboarding.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="hc-premium-onboarding">
+  <section class="hc-premium-hero">
+    <div class="hc-premium-shell">
+      <div class="hc-premium-hero__grid">
+        <div class="hc-premium-hero__copy">
+          <p class="hc-premium-eyebrow">Onboarding institutionnel</p>
+          <h1>Votre espace HelpChain est prêt à être configuré.</h1>
+          {% if onboarding.structure_name %}
+            <p class="hc-premium-hero__meta">Vue de démarrage : {{ onboarding.structure_name }}</p>
+          {% endif %}
+          <p class="hc-premium-hero__lead">
+            Un accompagnement structuré pour lancer votre premier pilote, organiser vos équipes et suivre vos situations dès les premiers jours.
+          </p>
+          <div class="hc-premium-hero__actions">
+            <a class="hc-btn hc-btn--primary" href="/demo">Échanger sur un pilote</a>
+            <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.deploiement') }}">Voir les étapes du déploiement</a>
+          </div>
+        </div>
+
+        <aside class="hc-premium-progress" aria-labelledby="premium-progress-title">
+          <div class="hc-premium-progress__head">
+            <p class="hc-premium-kicker">Progression recommandée</p>
+            <div class="hc-premium-progress__summary">
+              <div>
+                <h2 id="premium-progress-title">Déploiement initial</h2>
+                <p class="hc-premium-progress__state">{{ onboarding.state_label }}</p>
+              </div>
+              <p class="hc-premium-progress__percent">{{ onboarding.completion_percent }}%</p>
+            </div>
+            <div class="hc-premium-progress__bar" aria-hidden="true">
+              <span class="hc-premium-progress__fill progress-{{ onboarding.completion_bucket }}"></span>
+            </div>
+          </div>
+          <div class="hc-premium-progress__list">
+            {% for step in onboarding.steps %}
+              <article class="hc-premium-step-chip">
+                <div>
+                  <p class="hc-premium-step-chip__label">{{ step.title }}</p>
+                  <p class="hc-premium-step-chip__text">{{ step.description }}</p>
+                </div>
+                <span class="hc-premium-status hc-premium-status--{{ step.status_type }}">{{ step.status_label }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-premium-metrics" aria-label="Repères de démarrage">
+    <div class="hc-premium-shell">
+      <div class="hc-premium-metrics__grid">
+        <article class="hc-premium-metric-card">
+          <p class="hc-premium-metric-card__value">{{ onboarding.completion_percent }}%</p>
+          <p class="hc-premium-metric-card__label">configuration</p>
+        </article>
+        <article class="hc-premium-metric-card">
+          <p class="hc-premium-metric-card__value">{{ onboarding.users_count }}</p>
+          <p class="hc-premium-metric-card__label">utilisateurs configurés</p>
+        </article>
+        <article class="hc-premium-metric-card">
+          <p class="hc-premium-metric-card__value">{{ onboarding.requests_count }}</p>
+          <p class="hc-premium-metric-card__label">situations créées</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-premium-roadmap" id="etapes-deploiement">
+    <div class="hc-premium-shell">
+      <div class="hc-premium-roadmap__layout">
+        <div class="hc-premium-roadmap__main">
+          <div class="hc-premium-section-head">
+            <p class="hc-premium-kicker">Parcours conseillé</p>
+            <h2>Un cadre de mise en route clair pour votre premier pilote.</h2>
+          </div>
+
+          <div class="hc-premium-roadmap__cards">
+            {% for step in onboarding.steps %}
+              <article class="hc-premium-roadmap-card">
+                <div class="hc-premium-roadmap-card__marker" aria-hidden="true">{{ "%02d"|format(loop.index) }}</div>
+                <div class="hc-premium-roadmap-card__body">
+                  <div class="hc-premium-roadmap-card__head">
+                    <h3>{{ loop.index }}. {{ step.title }}</h3>
+                    <span class="hc-premium-status hc-premium-status--{{ step.status_type }}">{{ step.status_label }}</span>
+                  </div>
+                  <p>{{ step.description }}</p>
+                </div>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+
+        <aside class="hc-premium-summary" aria-labelledby="premium-summary-title">
+          <div class="hc-premium-summary__panel">
+            <p class="hc-premium-kicker">Accompagnement</p>
+            <h2 id="premium-summary-title">Session de lancement</h2>
+            <dl class="hc-premium-summary__list">
+              <div class="hc-premium-summary__row">
+                <dt>Durée estimée</dt>
+                <dd>45 minutes</dd>
+              </div>
+              <div class="hc-premium-summary__row">
+                <dt>État</dt>
+                <dd>{{ onboarding.state_label }}</dd>
+              </div>
+              <div class="hc-premium-summary__row">
+                <dt>Utilisateurs</dt>
+                <dd>{{ onboarding.users_count }}</dd>
+              </div>
+              <div class="hc-premium-summary__row">
+                <dt>Situations</dt>
+                <dd>{{ onboarding.requests_count }}</dd>
+              </div>
+              <div class="hc-premium-summary__row">
+                <dt>Progression</dt>
+                <dd>{{ onboarding.completion_percent }}%</dd>
+              </div>
+            </dl>
+            <div class="hc-premium-next-action">
+              <p class="hc-premium-next-action__kicker">Prochaine action</p>
+              <h3>{{ onboarding.next_action_label }}</h3>
+              <p>{{ onboarding.next_action_description }}</p>
+            </div>
+            <a class="hc-btn hc-btn--primary hc-premium-summary__cta" href="/demo">Échanger sur un pilote</a>
+            <p class="hc-premium-summary__note">Aucune migration complexe n’est nécessaire pour démarrer.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-premium-final-cta">
+    <div class="hc-premium-shell">
+      <div class="hc-premium-final-cta__panel">
+        <div class="hc-premium-section-head hc-premium-section-head--compact">
+          <p class="hc-premium-kicker">Mise en route progressive</p>
+          <h2>Un démarrage guidé, sans surcharge.</h2>
+          <p>
+            HelpChain permet de commencer progressivement, avec un périmètre clair, avant d’étendre l’usage à d’autres équipes ou structures.
+          </p>
+        </div>
+        <div class="hc-premium-final-cta__actions">
+          <a class="hc-btn hc-btn--primary" href="/demo">Échanger sur un pilote</a>
+          <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.deploiement') }}">Comprendre le déploiement</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
