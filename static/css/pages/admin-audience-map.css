@@ -343,10 +343,54 @@ body.hc-admin-audience-page .audience-sidebar-footer {
   border-top: 1px solid rgba(226, 233, 242, 0.92);
 }
 
+body.hc-admin-audience-page .audience-data-tag,
+body.hc-admin-audience-page .audience-inline-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body.hc-admin-audience-page .audience-data-tag {
+  margin-left: 0.35rem;
+  padding: 0.16rem 0.45rem;
+  border: 1px solid rgba(205, 215, 228, 0.96);
+}
+
+body.hc-admin-audience-page .audience-inline-tag {
+  padding: 0.12rem 0.38rem;
+  border: 1px solid rgba(213, 222, 234, 0.9);
+}
+
+body.hc-admin-audience-page .audience-data-tag--raw,
+body.hc-admin-audience-page .audience-inline-tag {
+  background: rgba(248, 250, 252, 0.94);
+  color: #617892;
+}
+
+body.hc-admin-audience-page .audience-data-tag--estimated {
+  background: rgba(232, 240, 255, 0.94);
+  color: #2457bc;
+  border-color: rgba(127, 167, 241, 0.48);
+}
+
+body.hc-admin-audience-page .audience-module-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
 body.hc-admin-audience-page .audience-radar-list,
 body.hc-admin-audience-page .audience-signal-list,
 body.hc-admin-audience-page .audience-action-list,
-body.hc-admin-audience-page .audience-shortlist {
+body.hc-admin-audience-page .audience-shortlist,
+body.hc-admin-audience-page .audience-founder-queue {
   display: grid;
   gap: 0.7rem;
 }
@@ -478,6 +522,74 @@ body.hc-admin-audience-page .audience-opportunity-card.is-hot {
 
 body.hc-admin-audience-page .audience-side-module + .audience-side-module {
   margin-top: 1rem;
+}
+
+body.hc-admin-audience-page .audience-founder-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  width: 100%;
+  border: 1px solid rgba(214, 223, 235, 0.94);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.96);
+  color: #17304d;
+  padding: 0.85rem 0.95rem;
+  text-align: left;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, background-color 120ms ease;
+}
+
+body.hc-admin-audience-page .audience-founder-row:hover,
+body.hc-admin-audience-page .audience-founder-row:focus-visible {
+  border-color: rgba(47, 107, 255, 0.4);
+  box-shadow: 0 14px 28px rgba(47, 107, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+body.hc-admin-audience-page .audience-founder-row__main {
+  display: grid;
+  gap: 0.2rem;
+}
+
+body.hc-admin-audience-page .audience-founder-row__main strong {
+  color: #13304d;
+}
+
+body.hc-admin-audience-page .audience-founder-row__reason,
+body.hc-admin-audience-page .audience-founder-row__action {
+  font-size: 0.82rem;
+  color: #5f7791;
+}
+
+body.hc-admin-audience-page .audience-founder-row__action {
+  font-weight: 600;
+  color: #224465;
+}
+
+body.hc-admin-audience-page .audience-founder-row__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 92px;
+  padding: 0.28rem 0.58rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+body.hc-admin-audience-page .audience-founder-row__badge.is-high {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1f54bb;
+}
+
+body.hc-admin-audience-page .audience-founder-row__badge.is-warm {
+  background: rgba(96, 165, 250, 0.14);
+  color: #1d5ea6;
+}
+
+body.hc-admin-audience-page .audience-founder-row__badge.is-watch {
+  background: rgba(226, 232, 240, 0.92);
+  color: #5e748d;
 }
 
 body.hc-admin-audience-page .audience-signal-item {
@@ -752,6 +864,15 @@ body.hc-admin-audience-page .leaflet-marker-icon:focus {
   body.hc-admin-audience-page .audience-map-canvas,
   body.hc-admin-audience-page .hc-audience-mapCanvas {
     height: 460px;
+  }
+
+  body.hc-admin-audience-page .audience-module-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  body.hc-admin-audience-page .audience-founder-row {
+    grid-template-columns: 1fr;
   }
 
   body.hc-admin-audience-page .audience-city-item {
