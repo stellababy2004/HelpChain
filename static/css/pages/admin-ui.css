@@ -11293,26 +11293,26 @@ body.hc-admin-case-detail-page .hc-case-pro-card__name{
   font-weight: 800;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot{
   display: grid;
   gap: 1rem;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__header{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__header{
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(220px, .7fr);
   gap: 1rem;
   align-items: start;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__title{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__title{
   margin: 0 0 .7rem;
   color: #173252;
   font-size: 1rem;
   font-weight: 800;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__summary{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__summary{
   display: grid;
   gap: .55rem;
   margin: 0;
@@ -11320,19 +11320,19 @@ body.hc-admin-case-detail-page .hc-case-copilot__summary{
   color: #324760;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__summary li{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__summary li{
   line-height: 1.55;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__attention,
-body.hc-admin-case-detail-page .hc-case-copilot__action{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__attention,
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__action{
   padding: .95rem 1rem;
   border: 1px solid rgba(157, 176, 199, .45);
   border-radius: 16px;
   background: rgba(248, 250, 252, .88);
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__label{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__label{
   margin-bottom: .45rem;
   color: #61758f;
   font-size: .78rem;
@@ -11341,7 +11341,7 @@ body.hc-admin-case-detail-page .hc-case-copilot__label{
   text-transform: uppercase;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__badge{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__badge{
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -11354,38 +11354,38 @@ body.hc-admin-case-detail-page .hc-case-copilot__badge{
   line-height: 1.2;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__badge--green{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__badge--green{
   border-color: rgba(24, 122, 82, .18);
   background: rgba(24, 122, 82, .08);
   color: #166649;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__badge--orange{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__badge--orange{
   border-color: rgba(180, 96, 31, .2);
   background: rgba(180, 96, 31, .08);
   color: #9a561d;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__badge--red{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__badge--red{
   border-color: rgba(178, 51, 51, .18);
   background: rgba(178, 51, 51, .08);
   color: #a12d2d;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__action strong{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__action strong{
   display: block;
   color: #132b45;
   font-size: 1.02rem;
   line-height: 1.6;
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__action{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__action{
   border-color: rgba(36, 91, 159, .24);
   background: linear-gradient(180deg, rgba(244, 248, 255, .98), rgba(236, 243, 252, .94));
   box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 10px 24px rgba(36, 91, 159, .08);
 }
 
-body.hc-admin-case-detail-page .hc-case-copilot__disclaimer{
+body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__disclaimer{
   color: #6a7c95;
   font-size: .88rem;
   line-height: 1.5;
@@ -11488,7 +11488,7 @@ body.hc-page-admin :is(.btn-outline-primary, .btn-outline-secondary, .btn-outlin
 }
 
 @media (max-width: 991.98px){
-  body.hc-admin-case-detail-page .hc-case-copilot__header{
+  body.hc-page-admin .hc-admin-workspace__content .hc-case-copilot__header{
     grid-template-columns: 1fr;
   }
 }
