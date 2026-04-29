@@ -1,0 +1,519 @@
+body.hc-page-premium-onboarding {
+  background:
+    linear-gradient(180deg, #f5f8fc 0%, #f8fafc 26%, #f3f6fb 100%);
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-onboarding {
+  padding: clamp(2.5rem, 4vw, 4.5rem) 0 5rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-shell {
+  width: min(1160px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+body.hc-page-premium-onboarding .hc-premium-eyebrow,
+body.hc-page-premium-onboarding .hc-premium-kicker {
+  margin: 0 0 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #496486;
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero__grid,
+body.hc-page-premium-onboarding .hc-premium-roadmap__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.82fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero {
+  padding-bottom: 1.5rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero__copy,
+body.hc-page-premium-onboarding .hc-premium-progress,
+body.hc-page-premium-onboarding .hc-premium-summary__panel,
+body.hc-page-premium-onboarding .hc-premium-final-cta__panel,
+body.hc-page-premium-onboarding .hc-premium-metric-card,
+body.hc-page-premium-onboarding .hc-premium-roadmap-card {
+  border: 1px solid rgba(16, 35, 63, 0.10);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.06);
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero__copy {
+  padding: clamp(1.8rem, 3.8vw, 3rem);
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero h1 {
+  margin: 0;
+  max-width: 11ch;
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero__lead {
+  margin: 1.2rem 0 0;
+  max-width: 42rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(16, 35, 63, 0.76);
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero__meta {
+  margin: 1rem 0 0;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #315781;
+}
+
+body.hc-page-premium-onboarding .hc-premium-hero__actions,
+body.hc-page-premium-onboarding .hc-premium-final-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1.6rem;
+}
+
+body.hc-page-premium-onboarding :is(.hc-btn, a.hc-btn, button.hc-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border-radius: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+body.hc-page-premium-onboarding .hc-btn--primary {
+  background: #163d73;
+  border-color: #163d73;
+  color: #ffffff;
+}
+
+body.hc-page-premium-onboarding .hc-btn--primary:hover {
+  background: #102f59;
+  border-color: #102f59;
+  color: #ffffff;
+}
+
+body.hc-page-premium-onboarding .hc-btn--ghost {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(22, 61, 115, 0.16);
+  color: #163d73;
+}
+
+body.hc-page-premium-onboarding .hc-btn--ghost:hover {
+  background: #ffffff;
+  border-color: rgba(22, 61, 115, 0.24);
+  color: #102f59;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress {
+  padding: 1.5rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__summary {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__state {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(16, 35, 63, 0.70);
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__percent {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 2.85rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__bar {
+  margin-top: 1rem;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(16, 35, 63, 0.08);
+  overflow: hidden;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #214e85 0%, #3d72b1 100%);
+}
+
+body.hc-page-premium-onboarding .progress-0 {
+  width: 0%;
+}
+
+body.hc-page-premium-onboarding .progress-25 {
+  width: 25%;
+}
+
+body.hc-page-premium-onboarding .progress-50 {
+  width: 50%;
+}
+
+body.hc-page-premium-onboarding .progress-75 {
+  width: 75%;
+}
+
+body.hc-page-premium-onboarding .progress-100 {
+  width: 100%;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__head h2,
+body.hc-page-premium-onboarding .hc-premium-section-head h2,
+body.hc-page-premium-onboarding .hc-premium-summary h2,
+body.hc-page-premium-onboarding .hc-premium-final-cta h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-progress__list,
+body.hc-page-premium-onboarding .hc-premium-roadmap__cards {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.2rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-step-chip {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 1.05rem;
+  border: 1px solid rgba(16, 35, 63, 0.08);
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+body.hc-page-premium-onboarding .hc-premium-step-chip__label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-step-chip__text {
+  margin: 0.3rem 0 0;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: rgba(16, 35, 63, 0.70);
+}
+
+body.hc-page-premium-onboarding .hc-premium-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.72rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+body.hc-page-premium-onboarding .hc-premium-status--complete {
+  background: #ebf6ef;
+  color: #245c43;
+}
+
+body.hc-page-premium-onboarding .hc-premium-status--current {
+  background: #eaf3ff;
+  color: #1d4f91;
+}
+
+body.hc-page-premium-onboarding .hc-premium-status--pending {
+  background: #f4f6f8;
+  color: #506177;
+}
+
+body.hc-page-premium-onboarding .hc-premium-status--recommended {
+  background: #edf5f1;
+  color: #2f5d49;
+}
+
+body.hc-page-premium-onboarding .hc-premium-status--guided {
+  background: #f3eefc;
+  color: #5d4b80;
+}
+
+body.hc-page-premium-onboarding .hc-premium-metrics {
+  padding: 0.4rem 0 1.25rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-metrics__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-metric-card {
+  padding: 1.35rem 1.4rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-metric-card__value {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.35rem);
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-metric-card__label {
+  margin: 0.45rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: rgba(16, 35, 63, 0.70);
+}
+
+body.hc-page-premium-onboarding .hc-premium-roadmap {
+  padding: 1.4rem 0 1.5rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-section-head {
+  margin-bottom: 1.25rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-section-head--compact {
+  margin-bottom: 0;
+  max-width: 46rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-section-head p:last-child {
+  margin: 0.95rem 0 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(16, 35, 63, 0.74);
+}
+
+body.hc-page-premium-onboarding .hc-premium-roadmap-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1.3rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-roadmap-card__marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  border: 1px solid rgba(22, 61, 115, 0.10);
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1d4f91;
+}
+
+body.hc-page-premium-onboarding .hc-premium-roadmap-card__body h3 {
+  margin: 0;
+  font-size: 1.18rem;
+  line-height: 1.3;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-roadmap-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-roadmap-card__body p {
+  margin: 0.55rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: rgba(16, 35, 63, 0.74);
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary {
+  position: relative;
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__panel {
+  position: sticky;
+  top: 104px;
+  padding: 1.55rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__list {
+  margin: 1.1rem 0 0;
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 0.75rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid rgba(16, 35, 63, 0.08);
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__row:first-child {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__row dt,
+body.hc-page-premium-onboarding .hc-premium-summary__row dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__row dt {
+  color: rgba(16, 35, 63, 0.62);
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__row dd {
+  color: #10233f;
+  font-weight: 600;
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__cta {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-next-action {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(16, 35, 63, 0.08);
+  border-radius: 18px;
+  background: #f8fbff;
+}
+
+body.hc-page-premium-onboarding .hc-premium-next-action__kicker {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #496486;
+}
+
+body.hc-page-premium-onboarding .hc-premium-next-action h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: #10233f;
+}
+
+body.hc-page-premium-onboarding .hc-premium-next-action p:last-child {
+  margin: 0.45rem 0 0;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: rgba(16, 35, 63, 0.72);
+}
+
+body.hc-page-premium-onboarding .hc-premium-summary__note {
+  margin: 0.95rem 0 0;
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: rgba(16, 35, 63, 0.68);
+}
+
+body.hc-page-premium-onboarding .hc-premium-final-cta {
+  padding-top: 1.4rem;
+}
+
+body.hc-page-premium-onboarding .hc-premium-final-cta__panel {
+  padding: clamp(1.6rem, 3.4vw, 2.3rem);
+}
+
+@media (max-width: 991.98px) {
+  body.hc-page-premium-onboarding .hc-premium-hero__grid,
+  body.hc-page-premium-onboarding .hc-premium-roadmap__layout,
+  body.hc-page-premium-onboarding .hc-premium-metrics__grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-summary__panel {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hc-page-premium-onboarding .hc-premium-onboarding {
+    padding-top: 1.6rem;
+    padding-bottom: 3.5rem;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-shell {
+    width: min(100% - 1.25rem, 1160px);
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-hero__copy,
+  body.hc-page-premium-onboarding .hc-premium-progress,
+  body.hc-page-premium-onboarding .hc-premium-summary__panel,
+  body.hc-page-premium-onboarding .hc-premium-final-cta__panel,
+  body.hc-page-premium-onboarding .hc-premium-roadmap-card {
+    border-radius: 20px;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-hero h1 {
+    max-width: none;
+    font-size: clamp(2rem, 9vw, 2.9rem);
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-hero__actions,
+  body.hc-page-premium-onboarding .hc-premium-final-cta__actions {
+    flex-direction: column;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-hero__actions .hc-btn,
+  body.hc-page-premium-onboarding .hc-premium-final-cta__actions .hc-btn {
+    width: 100%;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-progress__summary,
+  body.hc-page-premium-onboarding .hc-premium-roadmap-card__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-step-chip,
+  body.hc-page-premium-onboarding .hc-premium-roadmap-card {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-step-chip {
+    flex-direction: column;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-roadmap-card__marker {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+  }
+
+  body.hc-page-premium-onboarding .hc-premium-summary__row {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+}

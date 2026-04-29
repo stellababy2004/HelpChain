@@ -102,8 +102,20 @@
     return point.departmentNumber + " " + point.departmentName;
   }
 
+  function formatEuro(value) {
+    try {
+      return new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 0,
+      }).format(Number(value) || 0);
+    } catch (error) {
+      return "\u20ac" + String(value || 0);
+    }
+  }
+
   function euroPerMonth(value) {
-    return "€" + String(value) + "/mo";
+    return formatEuro(value) + "/mo";
   }
 
   function buildPopupHtml(point) {
@@ -146,6 +158,110 @@
 
   function buildActionSuggestion(priority) {
     return getPriorityMeta(priority).action;
+  }
+
+  function getEstimatedDemand(row) {
+    var city = cityRegistry[row.focusSlug];
+    return city ? city.needs : 0;
+  }
+
+  function buildFounderAction(row) {
+    var estimatedDemand = getEstimatedDemand(row);
+    if (row.priority === "Haute" && estimatedDemand >= 8) {
+      return "Outreach now";
+    }
+    if (row.priority === "Moyenne") {
+      return "Email cible aujourd'hui";
+    }
+    if (row.priority === "Observation") {
+      return "Garder en observation";
+    }
+    return "Preparer campagne locale";
+  }
+
+  function buildFounderReason(row) {
+    var estimatedDemand = getEstimatedDemand(row);
+    if (row.priority === "Haute" && estimatedDemand >= 8) {
+      return "Signaux recurrents et demande estimee elevee.";
+    }
+    if (row.priority === "Moyenne") {
+      return "Interet qualifie avec marge pour une relance structuree.";
+    }
+    if (row.priority === "Observation") {
+      return "Momentum utile, mais encore trop leger pour accelerer.";
+    }
+    return "Signaux a consolider avant passage en priorite haute.";
+  }
+
+  function buildFounderBadge(row) {
+    var estimatedDemand = getEstimatedDemand(row);
+    if (row.priority === "Haute" && estimatedDemand >= 8) {
+      return "Haute priorite";
+    }
+    if (row.priority === "Moyenne" || row.priority === "Haute") {
+      return "Chaud";
+    }
+    return "Faible";
+  }
+
+  function founderBadgeClass(label) {
+    if (label === "Haute priorite") {
+      return "is-high";
+    }
+    if (label === "Chaud") {
+      return "is-warm";
+    }
+    return "is-watch";
+  }
+
+  function founderSortWeight(row) {
+    var territory = row.territory || "";
+    if (territory.indexOf("Paris") === 0) {
+      return 0;
+    }
+    if (territory.indexOf("Hauts-de-Seine") === 0) {
+      return 1;
+    }
+    if (territory.indexOf("Seine-Saint-Denis") === 0) {
+      return 2;
+    }
+    return 3;
+  }
+
+  function buildFounderQueue() {
+    return REVENUE_RADAR.slice()
+      .sort(function (a, b) {
+        var orderDiff = founderSortWeight(a) - founderSortWeight(b);
+        if (orderDiff !== 0) {
+          return orderDiff;
+        }
+        return b.score - a.score;
+      })
+      .map(function (row) {
+        var badge = buildFounderBadge(row);
+        return {
+          territory: row.territory,
+          reason: buildFounderReason(row),
+          action: buildFounderAction(row),
+          badge: badge,
+          badgeClass: founderBadgeClass(badge),
+          focusSlug: row.focusSlug,
+        };
+      });
+  }
+
+  function estimatedOpportunityThisWeek() {
+    return REVENUE_RADAR.reduce(function (sum, row) {
+      return sum + (Number(row.potential) || 0);
+    }, 0);
+  }
+
+  function runSafeRender(label, renderFn) {
+    try {
+      renderFn();
+    } catch (error) {
+      console.error("[AudienceMap] " + label + " failed:", error);
+    }
   }
 
   function createControl(position, className, innerHtml) {
@@ -300,6 +416,8 @@
   var recommendationsEl = document.getElementById("audienceRecommendations");
   var forecastEl = document.getElementById("audienceForecastPanel");
   var shortlistEl = document.getElementById("audienceProspectionShortlist");
+  var founderQueueEl = document.getElementById("audienceFounderQueue");
+  var estimatedOpportunityEl = document.getElementById("audienceEstimatedOpportunityValue");
 
   function setMarkerState(marker, state, enabled) {
     var icon = marker && marker.getElement();
@@ -390,6 +508,7 @@
         '<span class="audience-radar-row__pages">Pages vues: ' + escapeHtml(row.pages.join(" ")) + "</span>",
         "</span>",
         '<span class="audience-radar-row__score">',
+        '<span class="audience-inline-tag">ESTIMATED</span>',
         '<span class="audience-radar-row__badge">' + escapeHtml(row.priority) + "</span>",
         '<strong>Score: ' + escapeHtml(row.score) + "</strong>",
         '<em>Potentiel: ' + escapeHtml(euroPerMonth(row.potential)) + "</em>",
@@ -457,6 +576,36 @@
     });
   }
 
+  function renderFounderSalesQueue() {
+    if (!founderQueueEl) {
+      return;
+    }
+    buildFounderQueue().forEach(function (item) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "audience-founder-row";
+      button.innerHTML = [
+        '<span class="audience-founder-row__main">',
+        '<strong>' + escapeHtml(item.territory) + "</strong>",
+        '<span class="audience-founder-row__reason">' + escapeHtml(item.reason) + "</span>",
+        '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
+        "</span>",
+        '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + "</span>",
+      ].join("");
+      button.addEventListener("click", function () {
+        focusCity(item.focusSlug);
+      });
+      founderQueueEl.appendChild(button);
+    });
+  }
+
+  function renderEstimatedOpportunity() {
+    if (!estimatedOpportunityEl) {
+      return;
+    }
+    estimatedOpportunityEl.textContent = formatEuro(estimatedOpportunityThisWeek());
+  }
+
   function renderForecast() {
     if (!forecastEl) {
       return;
@@ -467,10 +616,10 @@
     var maxMrr = hotCount * 590;
     forecastEl.innerHTML = [
       '<div class="audience-forecast-card__grid">',
-      '<span><strong>' + expectedDemos + "</strong><em>Expected demos</em></span>",
-      '<span><strong>' + likelyPilots + "</strong><em>Likely pilots</em></span>",
-      '<span><strong>€590 - €' + maxMrr + "</strong><em>Potential MRR</em></span>",
-      '<span><strong>Moyenne</strong><em>Confidence</em></span>',
+      '<span><strong>' + expectedDemos + '</strong><em>Expected demos <span class="audience-inline-tag">RAW DATA</span></em></span>',
+      '<span><strong>' + likelyPilots + '</strong><em>Likely pilots <span class="audience-inline-tag">ESTIMATED</span></em></span>',
+      '<span><strong>' + escapeHtml(formatEuro(590)) + " - " + escapeHtml(formatEuro(maxMrr)) + '</strong><em>Potential MRR <span class="audience-inline-tag">ESTIMATED</span></em></span>',
+      '<span><strong>Moyenne</strong><em>Confidence <span class="audience-inline-tag">ESTIMATED</span></em></span>',
       "</div>",
     ].join("");
   }
@@ -529,12 +678,14 @@
       });
   }
 
-  renderRevenueRadar();
-  renderDepartmentScores();
-  renderLiveSignals();
-  renderRecommendations();
-  renderForecast();
-  renderShortlist();
+  runSafeRender("Estimated Opportunity", renderEstimatedOpportunity);
+  runSafeRender("Revenue Radar", renderRevenueRadar);
+  runSafeRender("Department Scores", renderDepartmentScores);
+  runSafeRender("Live Signals", renderLiveSignals);
+  runSafeRender("Recommendations", renderRecommendations);
+  runSafeRender("Founder Sales Queue", renderFounderSalesQueue);
+  runSafeRender("Forecast", renderForecast);
+  runSafeRender("Shortlist", renderShortlist);
 
   var markerGroup = L.featureGroup(
     LOCATIONS.map(function (point) { return markerRegistry[point.slug]; })
