@@ -1647,11 +1647,12 @@ def _audit_admin_auth_event(
 
 
 def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
-    # Successful login path
+    # Successful password verification path. Full admin access is granted
+    # only after MFA succeeds when MFA is required.
     session.clear()  # mitigate session fixation
     login_user(user, remember=False)
-    session["admin_user_id"] = user.id
-    session["admin_logged_in"] = True
+    session["pending_admin_user_id"] = int(user.id)
+    session["admin_password_verified"] = True
     current_app.logger.warning(
         "[LOGIN] user_id=%s role=%s via=%s",
         getattr(user, "id", None),
@@ -1715,10 +1716,11 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
                 next=next_url or _default_admin_landing_url(user),
             )
         )
-    _mfa_ok_set()
-    session.modified = True
-    current_app.logger.warning("[SESSION] %s", dict(session))
-    return _redirect_to_safe_next(next_url, _default_admin_landing_url(user), code=303)
+    return _finalize_admin_session(
+        user,
+        next_url,
+        fallback_url=_default_admin_landing_url(user),
+    )
 
 
 def audit_admin_action(
@@ -2247,8 +2249,11 @@ def require_admin_session():
         "admin.admin_login_legacy",
         "admin.admin_email_2fa",
         "admin.admin_2fa",
+        "admin.admin_mfa_setup",
+        "admin.admin_mfa_verify",
         "admin.metrics",
         "admin.metrics_tenant_leak_test",
+        "admin.admin_logout",
     }
     if request.endpoint in allowed or (
         request.endpoint and request.endpoint.startswith("static")
@@ -2258,8 +2263,18 @@ def require_admin_session():
     if session.get("admin_logged_in"):
         return None
 
+    if _has_pending_admin_mfa():
+        nxt = request.full_path if request.query_string else request.path
+        return redirect(
+            url_for("admin.admin_mfa_verify", next=_safe_next_url(nxt)),
+            code=303,
+        )
+
     nxt = request.full_path if request.query_string else request.path
-    return redirect(url_for("admin.admin_login_legacy", next=nxt), code=303)
+    return redirect(
+        url_for("admin.admin_login_legacy", next=_safe_next_url(nxt)),
+        code=303,
+    )
 
 
 @admin_bp.before_app_request
@@ -3600,12 +3615,36 @@ def _redirect_protected_login(endpoint: str):
 
 def _safe_next_url(candidate: str | None) -> str:
     target = (candidate or "").strip()
-    return target if target and is_safe_url(target) else ""
+    if not target:
+        return ""
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc:
+        return ""
+    if target.startswith("//") or "\\" in target:
+        return ""
+    if target != "/admin" and not target.startswith("/admin/"):
+        return ""
+    return target if is_safe_url(target) else ""
 
 
 def _redirect_to_safe_next(next_url: str | None, fallback_url: str, *, code: int = 303):
     target = _safe_next_url(next_url)
     return redirect(target or fallback_url, code=code)
+
+
+def _has_pending_admin_mfa() -> bool:
+    if not session.get("admin_password_verified"):
+        return False
+    if not session.get("mfa_required"):
+        return False
+    if not (current_user.is_authenticated and getattr(current_user, "is_admin", False)):
+        return False
+    pending_user_id = session.get("pending_admin_user_id")
+    current_admin_id = getattr(current_user, "id", None)
+    try:
+        return int(pending_user_id) == int(current_admin_id)
+    except (TypeError, ValueError):
+        return False
 
 
 def admin_required(view_func):
@@ -4145,6 +4184,25 @@ def _mfa_ok_set(ttl_min: int | None = None):
 def _mfa_ok_clear():
     session.pop(current_app.config.get("MFA_SESSION_KEY", "mfa_ok"), None)
     session.pop("mfa_ok_until", None)
+
+
+def _finalize_admin_session(
+    user: AdminUser,
+    next_url: str | None,
+    *,
+    fallback_url: str,
+):
+    _mfa_ok_set()
+    session["admin_user_id"] = int(user.id)
+    session["admin_logged_in"] = True
+    session.pop("pending_admin_user_id", None)
+    session.pop("admin_password_verified", None)
+    session.pop("pending_email_2fa", None)
+    session.pop("email_2fa_code", None)
+    session.pop("email_2fa_expires", None)
+    session.modified = True
+    current_app.logger.warning("[SESSION] %s", dict(session))
+    return _redirect_to_safe_next(next_url, fallback_url, code=303)
 
 
 def _mfa_ok_is_valid() -> bool:
@@ -4894,6 +4952,11 @@ def admin_logout():
     session.pop("mfa_required", None)
     session.pop("mfa_pending_secret", None)
     session.pop("backup_codes_plain", None)
+    session.pop("pending_admin_user_id", None)
+    session.pop("admin_password_verified", None)
+    session.pop("pending_email_2fa", None)
+    session.pop("email_2fa_code", None)
+    session.pop("email_2fa_expires", None)
     session.pop("admin_user_id", None)
     session.pop("admin_logged_in", None)
     session.pop("admin_last_seen", None)
@@ -4911,11 +4974,12 @@ MFA_SESSION_KEY = "mfa_ok"
 @login_required
 def admin_mfa_setup():
     admin_required_404()
+    next_url = _safe_next_url(request.args.get("next"))
     if getattr(current_user, "mfa_enabled", False) and getattr(
         current_user, "totp_secret", None
     ):
         flash(_("MFA is already enabled."), "info")
-        return redirect(url_for("admin.admin_mfa_verify"))
+        return redirect(url_for("admin.admin_mfa_verify", next=next_url))
 
     pending_secret = session.get(MFA_PENDING_SECRET_KEY)
     if not pending_secret:
@@ -4955,11 +5019,15 @@ def admin_mfa_setup():
         user.mfa_enrolled_at = utc_now()
         db.session.commit()
 
-        _mfa_ok_set()
+        mark_mfa_verified()
         session.pop(MFA_PENDING_SECRET_KEY, None)
         flash(_("MFA has been enabled successfully."), "success")
         flash(_("Generate backup codes now (recovery option)."), "info")
-        return redirect(url_for("admin.admin_mfa_backup_codes"))
+        return _finalize_admin_session(
+            user,
+            url_for("admin.admin_mfa_backup_codes"),
+            fallback_url=url_for("admin.admin_mfa_backup_codes"),
+        )
 
     return render_template(
         "admin/mfa_setup.html", qr_b64=qr_b64, secret=pending_secret, username=username
@@ -4975,6 +5043,7 @@ def admin_mfa_setup():
 @login_required
 def admin_mfa_verify():
     admin_required_404()
+    next_url = _safe_next_url(request.args.get("next"))
     if not current_app.config.get("MFA_ENABLED", False):
         abort(404)
 
@@ -4984,21 +5053,21 @@ def admin_mfa_verify():
     ):
         flash(_("MFA setup is required for your role before verification."), "warning")
         return redirect(
-            url_for("admin.admin_mfa_setup", next=request.args.get("next") or "")
+            url_for("admin.admin_mfa_setup", next=next_url)
         )
 
     if not (
         getattr(current_user, "mfa_enabled", False)
         and getattr(current_user, "totp_secret", None)
     ):
-        _mfa_ok_set()
-        session["admin_logged_in"] = True
+        mark_mfa_verified()
         now = _utc_now()
         _touch_admin_last_seen(now)
         _touch_admin_auth_at(now)
-        return _redirect_to_safe_next(
-            request.args.get("next"),
-            _default_admin_landing_url(),
+        return _finalize_admin_session(
+            current_user,
+            next_url,
+            fallback_url=_default_admin_landing_url(),
         )
 
     locked, remaining = _mfa_lock_is_active()
@@ -5016,7 +5085,7 @@ def admin_mfa_verify():
             route_context="mfa_verify",
             attempted_identifier=getattr(current_user, "username", None),
             user=current_user,
-            next_url=request.args.get("next") or "",
+            next_url=next_url,
             extra_payload={
                 "reason": "locked",
                 "retry_after_seconds": int(remaining or 0),
@@ -5026,7 +5095,7 @@ def admin_mfa_verify():
             f"Ð¢Ð²ÑŠÑ€Ð´Ðµ Ð¼Ð½Ð¾Ð³Ð¾ Ð¾Ð¿Ð¸Ñ‚Ð¸. ÐžÐ¿Ð¸Ñ‚Ð°Ð¹ ÑÐ»ÐµÐ´ {max(1, remaining // 60)} Ð¼Ð¸Ð½.", "danger"
         )
         return redirect(
-            url_for("admin.admin_mfa_verify", next=request.args.get("next", ""))
+            url_for("admin.admin_mfa_verify", next=next_url)
         )
 
     code = (request.form.get("code") or "").strip().replace(" ", "").upper()
@@ -5048,9 +5117,7 @@ def admin_mfa_verify():
 
     if totp_ok or backup_ok:
         _mfa_attempt_reset()
-        _mfa_ok_set()
         mark_mfa_verified()
-        session["admin_logged_in"] = True
         now = _utc_now()
         _touch_admin_last_seen(now)
         _touch_admin_auth_at(now)
@@ -5066,16 +5133,17 @@ def admin_mfa_verify():
             route_context="mfa_verify",
             attempted_identifier=getattr(current_user, "username", None),
             user=current_user,
-            next_url=request.args.get("next") or "",
+            next_url=next_url,
             extra_payload={
                 "method": "backup_code" if backup_ok and not totp_ok else "totp",
                 "result": "success",
             },
         )
         flash(_("MFA verified."), "success")
-        return _redirect_to_safe_next(
-            request.args.get("next"),
-            _default_admin_landing_url(),
+        return _finalize_admin_session(
+            current_user,
+            next_url,
+            fallback_url=_default_admin_landing_url(),
         )
 
     _mfa_attempt_fail()
@@ -5085,7 +5153,7 @@ def admin_mfa_verify():
         route_context="mfa_verify",
         attempted_identifier=getattr(current_user, "username", None),
         user=current_user,
-        next_url=request.args.get("next") or "",
+        next_url=next_url,
         extra_payload={
             "reason": "invalid_code",
             "attempts": int(session.get("mfa_attempts", 0) or 0),
@@ -5101,7 +5169,7 @@ def admin_mfa_verify():
         flash(_("Invalid code. Attempts remaining: %(count)s.", count=max(left, 0)), "danger")
 
     return redirect(
-        url_for("admin.admin_mfa_verify", next=request.args.get("next", ""))
+        url_for("admin.admin_mfa_verify", next=next_url)
     )
 
 
@@ -5152,7 +5220,7 @@ def admin_mfa_backup_codes():
 
 
 @admin_bp.route("/2fa", methods=["GET", "POST"])
-@admin_required
+@login_required
 def admin_2fa():
     admin_required_404()
     """2FA Ð²ÐµÑ€Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ Ð·Ð° Ð°Ð´Ð¼Ð¸Ð½"""
@@ -5167,11 +5235,12 @@ def admin_2fa():
     if request.method == "POST":
         token = request.form.get("token")
         if admin_user.verify_totp(token):
-            from flask_login import login_user
-
-            login_user(admin_user)
-            session.pop("pending_admin_user_id", None)
-            return redirect(url_for("admin.admin_dashboard"))
+            mark_mfa_verified()
+            return _finalize_admin_session(
+                admin_user,
+                url_for("admin.admin_dashboard"),
+                fallback_url=url_for("admin.admin_dashboard"),
+            )
         else:
             flash(_("Invalid 2FA code."), "error")
 
@@ -5187,10 +5256,18 @@ def admin_email_2fa():
     if request.method == "POST":
         entered = (request.form.get("code") or "").strip()
         if entered and entered == (session.get("email_2fa_code") or ""):
-            session.pop("pending_email_2fa", None)
-            session.pop("email_2fa_code", None)
-            session.pop("email_2fa_expires", None)
-            return redirect(url_for("admin.admin_dashboard"))
+            admin_user = db.session.get(AdminUser, session.get("pending_admin_user_id"))
+            if not admin_user:
+                return redirect(url_for("admin.admin_login_legacy"))
+            login_user(admin_user, remember=False)
+            session["admin_password_verified"] = True
+            session["mfa_required"] = True
+            mark_mfa_verified()
+            return _finalize_admin_session(
+                admin_user,
+                url_for("admin.admin_dashboard"),
+                fallback_url=url_for("admin.admin_dashboard"),
+            )
         flash(_("Invalid verification code."), "danger")
 
     return render_template("admin_email_2fa.html")
