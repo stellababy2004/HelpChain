@@ -8320,6 +8320,7 @@ def _build_audience_map_context() -> dict:
                     "organization": display_identity,
                     "organization_name": organization_name,
                     "email": email_value,
+                    "action_email": email_value,
                     "territory": territory,
                     "department": department,
                     "pages_viewed": pages_viewed[:5],
@@ -8363,6 +8364,7 @@ def _build_audience_map_context() -> dict:
                     "lead_count": 0,
                     "emails": [],
                     "email_set": set(),
+                    "action_email": "",
                     "pages_viewed": set(),
                     "best_score": 0,
                     "score_total": 0,
@@ -8396,6 +8398,8 @@ def _build_audience_map_context() -> dict:
             if email_value and email_value not in account_row["email_set"]:
                 account_row["email_set"].add(email_value)
                 account_row["emails"].append(_audience_mask_email(email_value))
+            if email_value and not account_row["action_email"]:
+                account_row["action_email"] = email_value
             for page in pages_viewed:
                 if isinstance(page, str) and page.strip():
                     account_row["pages_viewed"].add(page.strip())
@@ -8437,6 +8441,7 @@ def _build_audience_map_context() -> dict:
                     "confidence": str(row.get("confidence") or "low").strip() or "low",
                     "lead_count": int(row.get("lead_count") or 0),
                     "emails": list(row.get("emails") or [])[:6],
+                    "action_email": str(row.get("action_email") or "").strip(),
                     "pages_viewed": sorted(list(row.get("pages_viewed") or []))[:6],
                     "best_score": best_score,
                     "avg_score": avg_score,

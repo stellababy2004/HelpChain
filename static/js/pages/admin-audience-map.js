@@ -297,6 +297,31 @@
     return local.slice(0, 2) + "***@" + domain;
   }
 
+  function buildProfessionalLeadsUrl(queryValue) {
+    var value = String(queryValue || "").trim();
+    if (!value) {
+      return "/admin/professional-leads";
+    }
+    return "/admin/professional-leads?q=" + encodeURIComponent(value);
+  }
+
+  function buildMailtoHref(email, subject, body) {
+    var value = String(email || "").trim();
+    if (!value) {
+      return "";
+    }
+    return "mailto:" + encodeURIComponent(value) +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+  }
+
+  function renderActionLink(label, className, href, title) {
+    if (!href) {
+      return '<button type="button" class="' + escapeHtml(className) + '" disabled title="' + escapeHtml(title || "Action non disponible") + '">' + escapeHtml(label) + "</button>";
+    }
+    return '<a class="' + escapeHtml(className) + '" href="' + escapeHtml(href) + '" title="' + escapeHtml(title || "") + '">' + escapeHtml(label) + "</a>";
+  }
+
   function getEstimatedDemand(row) {
     var city = cityRegistry[row.focusSlug];
     return city ? city.needs : 0;
@@ -492,6 +517,7 @@
           organizationConfidence: String(row.organization_confidence || "").trim(),
           salesNote: String(row.sales_note || "").trim(),
           email: String(row.email || "").trim(),
+          actionEmail: String(row.action_email || row.email || "").trim(),
           emailMasked: maskEmail(row.email),
           pagesViewed: pagesViewed,
           territory: territoryLabel,
@@ -532,6 +558,7 @@
           confidence: confidence,
           leadCount: Number(row.lead_count) || 0,
           emails: emails,
+          actionEmail: String(row.action_email || "").trim(),
           pagesViewed: pagesViewed,
           bestScore: bestScore,
           avgScore: avgScore,
@@ -990,6 +1017,19 @@
         var accountCard = document.createElement("div");
         accountCard.className = "audience-founder-row";
         accountCard.setAttribute("role", "group");
+        var accountLeadsUrl = buildProfessionalLeadsUrl(item.domain || item.accountName);
+        var accountEmailHref = buildMailtoHref(
+          item.actionEmail,
+          "HelpChain - échange sur la coordination",
+          "Bonjour,\n\nJe me permets de revenir vers vous au sujet de HelpChain, une solution de coordination pour structures locales.\n\nSeriez-vous disponible pour un échange de 15 minutes cette semaine ?\n\nBien cordialement,\nStela"
+        );
+        var accountCallHref = item.actionEmail
+          ? buildMailtoHref(
+              item.actionEmail,
+              "Planification échange HelpChain",
+              "Bonjour,\nJe vous propose de planifier un échange court autour de vos besoins de coordination.\nQuels créneaux vous conviendraient cette semaine ?\nBien cordialement,\nStela"
+            )
+          : accountLeadsUrl;
         var accountLines = [];
         accountLines.push('<span class="audience-founder-row__reason">Compte detecte</span>');
         if (item.domain) {
@@ -1019,18 +1059,13 @@
           accountLines.join(""),
           '<span class="audience-founder-row__action">Action suggeree: ' + escapeHtml(item.action) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
-            '<button type="button" class="btn btn-sm btn-outline-primary" data-founder-account-cta="leads">Voir leads</button>' +
-            '<button type="button" class="btn btn-sm btn-outline-primary" data-founder-account-cta="email">Preparer email</button>' +
-            '<button type="button" class="btn btn-sm btn-primary" data-founder-account-cta="call">Planifier appel</button>' +
+            renderActionLink("Voir leads", "btn btn-sm btn-outline-primary", accountLeadsUrl, "Ouvrir la liste des leads filtres") +
+            renderActionLink("Preparer email", "btn btn-sm btn-outline-primary", accountEmailHref, item.actionEmail ? "Preparer un email" : "Email non disponible") +
+            renderActionLink("Planifier appel", "btn btn-sm btn-primary", accountCallHref, item.actionEmail ? "Proposer un echange" : "Ouvrir la liste des leads filtres") +
           "</span>",
           "</span>",
           '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
         ].join("");
-        Array.prototype.forEach.call(accountCard.querySelectorAll("[data-founder-account-cta]"), function (cta) {
-          cta.addEventListener("click", function () {
-            focusCity(item.focusSlug);
-          });
-        });
         founderQueueEl.appendChild(accountCard);
         return;
       }
@@ -1038,6 +1073,20 @@
         var card = document.createElement("div");
         card.className = "audience-founder-row";
         card.setAttribute("role", "group");
+        var leadSearchTerm = item.organizationDomain || item.email || item.organizationName || item.organization;
+        var leadLeadsUrl = buildProfessionalLeadsUrl(leadSearchTerm);
+        var leadEmailHref = buildMailtoHref(
+          item.actionEmail,
+          "HelpChain - échange sur la coordination",
+          "Bonjour,\n\nJe me permets de revenir vers vous au sujet de HelpChain, une solution de coordination pour structures locales.\n\nSeriez-vous disponible pour un échange de 15 minutes cette semaine ?\n\nBien cordialement,\nStela"
+        );
+        var leadCallHref = item.actionEmail
+          ? buildMailtoHref(
+              item.actionEmail,
+              "Planification échange HelpChain",
+              "Bonjour,\nJe vous propose de planifier un échange court autour de vos besoins de coordination.\nQuels créneaux vous conviendraient cette semaine ?\nBien cordialement,\nStela"
+            )
+          : leadLeadsUrl;
         var intelligenceLines = [];
         if (item.organizationName) {
           intelligenceLines.push('<span class="audience-founder-row__reason">Organisation détectée: ' + escapeHtml(item.organizationName) + "</span>");
@@ -1066,17 +1115,13 @@
           intelligenceLines.join(""),
           '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
-            '<button type="button" class="btn btn-sm btn-outline-primary" data-founder-cta="email">Envoyer email</button>' +
-            '<button type="button" class="btn btn-sm btn-primary" data-founder-cta="call">Planifier appel</button>' +
+            renderActionLink("Voir leads", "btn btn-sm btn-outline-primary", leadLeadsUrl, "Ouvrir la liste des leads filtres") +
+            renderActionLink("Envoyer email", "btn btn-sm btn-outline-primary", leadEmailHref, item.actionEmail ? "Preparer un email" : "Email non disponible") +
+            renderActionLink("Planifier appel", "btn btn-sm btn-primary", leadCallHref, item.actionEmail ? "Proposer un echange" : "Ouvrir la liste des leads filtres") +
           "</span>",
           "</span>",
           '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
         ].join("");
-        Array.prototype.forEach.call(card.querySelectorAll("[data-founder-cta]"), function (cta) {
-          cta.addEventListener("click", function () {
-            focusCity(item.focusSlug);
-          });
-        });
         founderQueueEl.appendChild(card);
         return;
       }
