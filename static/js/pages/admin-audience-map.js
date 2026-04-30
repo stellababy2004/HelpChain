@@ -77,6 +77,40 @@
     Moyenne: { cssClass: "audience-marker--medium", popupEyebrow: "Territoire a qualifier", action: "Qualifier les interlocuteurs avant prospection.", intensity: "Medium", zoom: 11.4, zIndexOffset: 350 },
     Observation: { cssClass: "audience-marker--watch", popupEyebrow: "Territoire en observation", action: "Conserver en veille commerciale.", intensity: "Watch", zoom: 11, zIndexOffset: 220 },
   };
+  var QUALIFIED_PAGE_WEIGHTS = {
+    "/demo": 40,
+    "/contact": 35,
+    "/offre": 30,
+    "/deploiement": 20,
+    "/securite": 15,
+  };
+
+  function parseAudiencePayload() {
+    var el = document.getElementById("audienceMapPayload");
+    if (!el) {
+      return {};
+    }
+    try {
+      return JSON.parse(el.textContent || "{}");
+    } catch (error) {
+      console.error("[AudienceMap] audience payload parse failed:", error);
+      return {};
+    }
+  }
+
+  var audiencePayload = parseAudiencePayload();
+  var FOUNDER_QUEUE_ACCOUNT_ROWS = Array.isArray(audiencePayload.founder_queue_account_rows)
+    ? audiencePayload.founder_queue_account_rows
+    : [];
+  var FOUNDER_QUEUE_LEAD_ROWS = Array.isArray(audiencePayload.founder_queue_lead_rows)
+    ? audiencePayload.founder_queue_lead_rows
+    : [];
+  var QUALIFIED_SIGNAL_ROWS = Array.isArray(audiencePayload.qualified_signal_rows)
+    ? audiencePayload.qualified_signal_rows
+    : [];
+  var BACKEND_MAP_LOCATIONS = Array.isArray(audiencePayload.map_locations)
+    ? audiencePayload.map_locations
+    : [];
 
   function escapeHtml(value) {
     return String(value || "")
@@ -96,6 +130,15 @@
 
   function getPriorityMeta(priority) {
     return PRIORITY_META[priority] || PRIORITY_META.Observation;
+  }
+
+  function normalizeText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   }
 
   function formatDepartment(point) {
@@ -158,6 +201,100 @@
 
   function buildActionSuggestion(priority) {
     return getPriorityMeta(priority).action;
+  }
+
+  function findFocusSlug(territory, department) {
+    var normalizedTerritory = normalizeText(territory);
+    var normalizedDepartment = String(department || "").trim();
+    var backendMatch = BACKEND_MAP_LOCATIONS.find(function (point) {
+      return normalizeText(point.label) === normalizedTerritory ||
+        (normalizedDepartment && String(point.department_code || "").trim() === normalizedDepartment);
+    });
+    if (backendMatch && backendMatch.slug) {
+      return backendMatch.slug;
+    }
+    var locationMatch = LOCATIONS.find(function (point) {
+      return normalizeText(point.city) === normalizedTerritory ||
+        (normalizedDepartment && String(point.departmentNumber || "").trim() === normalizedDepartment);
+    });
+    return locationMatch ? locationMatch.slug : "paris";
+  }
+
+  function clampScore(value) {
+    return Math.max(0, Math.min(100, Number(value) || 0));
+  }
+
+  function scorePriority(score) {
+    if (score >= 90) {
+      return "Tres chaud";
+    }
+    if (score >= 75) {
+      return "Chaud";
+    }
+    if (score >= 55) {
+      return "A qualifier";
+    }
+    return "Observation";
+  }
+
+  function scoreBadgeClass(score) {
+    if (score >= 75) {
+      return "is-high";
+    }
+    if (score >= 55) {
+      return "is-warm";
+    }
+    return "is-watch";
+  }
+
+  function suggestedActionForScore(score) {
+    if (score >= 90) {
+      return "Appeler / contacter aujourd'hui";
+    }
+    if (score >= 75) {
+      return "Envoyer un email cible aujourd'hui";
+    }
+    if (score >= 55) {
+      return "Qualifier les interlocuteurs";
+    }
+    return "Garder en observation";
+  }
+
+  function opportunityValueFromScore(score) {
+    if (score >= 90) {
+      return 590;
+    }
+    if (score >= 75) {
+      return 390;
+    }
+    if (score >= 55) {
+      return 190;
+    }
+    return 0;
+  }
+
+  function founderLeadBadgeClass(priority) {
+    if (priority === "Tres chaud" || priority === "Chaud") {
+      return "is-high";
+    }
+    if (priority === "A qualifier") {
+      return "is-warm";
+    }
+    return "is-watch";
+  }
+
+  function maskEmail(email) {
+    var value = String(email || "").trim();
+    var parts = value.split("@");
+    if (parts.length !== 2) {
+      return value;
+    }
+    var local = parts[0];
+    var domain = parts[1];
+    if (local.length <= 2) {
+      return local.charAt(0) + "***@" + domain;
+    }
+    return local.slice(0, 2) + "***@" + domain;
   }
 
   function getEstimatedDemand(row) {
@@ -256,11 +393,262 @@
     }, 0);
   }
 
-  function runSafeRender(label, renderFn) {
+  function buildQualifiedQueue() {
+    var grouped = {};
+    QUALIFIED_SIGNAL_ROWS.forEach(function (row) {
+      var territory = String(row.territory || "").trim();
+      var department = String(row.department || "").trim();
+      var page = String(row.page || "").trim();
+      if (!territory || !page) {
+        return;
+      }
+      var key = territory + "||" + department;
+      if (!grouped[key]) {
+        grouped[key] = {
+          territory: territory,
+          department: department,
+          pages: {},
+          totalCount: 0,
+          repeatSignals: 0,
+          uniquePagesSeen: 0,
+          lastSeen: "recent",
+          focusSlug: String(row.focus_slug || "").trim() || findFocusSlug(territory, department),
+        };
+      }
+      grouped[key].pages[page] = (grouped[key].pages[page] || 0) + (Number(row.count) || 0);
+      grouped[key].totalCount += Number(row.count) || 0;
+      grouped[key].repeatSignals += Number(row.repeat_sessions) || 0;
+      grouped[key].uniquePagesSeen = Math.max(grouped[key].uniquePagesSeen, Number(row.unique_pages_seen) || 0);
+      if (row.last_seen) {
+        grouped[key].lastSeen = row.last_seen;
+      }
+    });
+
+    return Object.keys(grouped)
+      .map(function (key) {
+        var item = grouped[key];
+        var pages = Object.keys(item.pages);
+        var score = 0;
+        pages.forEach(function (page) {
+          score += Number(QUALIFIED_PAGE_WEIGHTS[page] || 0);
+        });
+        if (item.repeatSignals > 0 || item.totalCount >= 2) {
+          score += 10;
+        }
+        if (Math.max(item.uniquePagesSeen, pages.length) >= 3) {
+          score += 8;
+        }
+        if (["75", "92", "93"].indexOf(item.department) !== -1) {
+          score += 5;
+        }
+        score = clampScore(score);
+        var territoryLabel = item.territory + (item.department ? " (" + item.department + ")" : "");
+        var detectedSignal = pages.slice(0, 3).join(" + ");
+        if (detectedSignal) {
+          detectedSignal += " vues " + item.lastSeen;
+        } else {
+          detectedSignal = "Pas encore assez de signaux qualifies.";
+        }
+        return {
+          territory: territoryLabel,
+          detectedSignal: detectedSignal,
+          score: score,
+          scoreLabel: "Score " + score,
+          priority: scorePriority(score),
+          badgeClass: scoreBadgeClass(score),
+          sourceLabel: "Signal qualifie",
+          action: suggestedActionForScore(score),
+          focusSlug: item.focusSlug || "paris",
+          estimatedValue: opportunityValueFromScore(score),
+        };
+      })
+      .sort(function (a, b) {
+        return b.score - a.score;
+      });
+  }
+
+  function buildQualifiedLeadQueue() {
+    return FOUNDER_QUEUE_LEAD_ROWS.slice()
+      .sort(function (a, b) {
+        var scoreDiff = (Number(b.score) || 0) - (Number(a.score) || 0);
+        if (scoreDiff !== 0) {
+          return scoreDiff;
+        }
+        return String(a.organization || a.email || "").localeCompare(String(b.organization || b.email || ""));
+      })
+      .map(function (row) {
+        var pagesViewed = Array.isArray(row.pages_viewed) ? row.pages_viewed : [];
+        var territoryLabel = String(row.organization || row.email || "Lead qualifie");
+        if (row.email && row.organization && row.organization !== row.email) {
+          territoryLabel += " - " + row.email;
+        }
+        return {
+          kind: "lead",
+          organization: String(row.organization || "").trim(),
+          organizationName: String(row.organization_name || "").trim(),
+          organizationDomain: String(row.organization_domain || "").trim(),
+          organizationType: String(row.organization_type || "").trim(),
+          territoryHint: String(row.territory_hint || "").trim(),
+          organizationConfidence: String(row.organization_confidence || "").trim(),
+          salesNote: String(row.sales_note || "").trim(),
+          email: String(row.email || "").trim(),
+          emailMasked: maskEmail(row.email),
+          pagesViewed: pagesViewed,
+          territory: territoryLabel,
+          detectedSignal: (pagesViewed.length ? pagesViewed.join(" + ") : "Pages non renseignees") + " - " + (row.territory || "France"),
+          score: Number(row.score) || 0,
+          scoreLabel: "Score " + (Number(row.score) || 0),
+          priority: String(row.priority || "Observation"),
+          badgeClass: founderLeadBadgeClass(String(row.priority || "")),
+          sourceLabel: "Signal qualifie",
+          action: suggestedActionForScore(Number(row.score) || 0),
+          focusSlug: String(row.focus_slug || "").trim() || findFocusSlug(row.territory, row.department),
+          estimatedValue: opportunityValueFromScore(Number(row.score) || 0),
+        };
+      });
+  }
+
+  function buildAccountQueue() {
+    return FOUNDER_QUEUE_ACCOUNT_ROWS.slice()
+      .sort(function (a, b) {
+        var scoreDiff = (Number(b.best_score) || 0) - (Number(a.best_score) || 0);
+        if (scoreDiff !== 0) {
+          return scoreDiff;
+        }
+        return String(b.last_activity || "").localeCompare(String(a.last_activity || ""));
+      })
+      .map(function (row) {
+        var pagesViewed = Array.isArray(row.pages_viewed) ? row.pages_viewed : [];
+        var emails = Array.isArray(row.emails) ? row.emails : [];
+        var bestScore = Number(row.best_score) || 0;
+        var avgScore = Number(row.avg_score) || 0;
+        var confidence = String(row.confidence || "low").trim() || "low";
+        return {
+          kind: "account",
+          accountName: String(row.account_name || "").trim(),
+          domain: String(row.domain || "").trim(),
+          organizationType: String(row.organization_type || "").trim(),
+          territoryHint: String(row.territory_hint || "").trim(),
+          confidence: confidence,
+          leadCount: Number(row.lead_count) || 0,
+          emails: emails,
+          pagesViewed: pagesViewed,
+          bestScore: bestScore,
+          avgScore: avgScore,
+          score: bestScore,
+          scoreLabel: "Score " + bestScore,
+          priority: String(row.priority || scorePriority(bestScore)),
+          badgeClass: founderLeadBadgeClass(String(row.priority || scorePriority(bestScore))),
+          sourceLabel: String(row.source_label || "Signal qualifie"),
+          action: String(row.recommended_action || suggestedActionForScore(bestScore)),
+          lastActivity: String(row.last_activity || "recent"),
+          focusSlug: String(row.focus_slug || "").trim() || findFocusSlug(row.territory_hint, ""),
+          salesNote: String(row.sales_note || "").trim(),
+          estimatedValue: opportunityValueFromScore(bestScore),
+        };
+      });
+  }
+
+  function buildEstimatedQueue() {
+    return buildFounderQueue().map(function (item) {
+      var fallbackScore = 0;
+      if (item.badge === "Haute priorite") {
+        fallbackScore = 82;
+      } else if (item.badge === "Chaud") {
+        fallbackScore = 68;
+      } else {
+        fallbackScore = 42;
+      }
+      return {
+        kind: "estimated",
+        territory: item.territory,
+        detectedSignal: item.reason,
+        score: fallbackScore,
+        scoreLabel: "Score " + fallbackScore,
+        priority: item.badge,
+        badgeClass: item.badgeClass,
+        sourceLabel: "Estimation interne",
+        action: item.action,
+        focusSlug: item.focusSlug,
+        estimatedValue: 0,
+      };
+    });
+  }
+
+  function founderQueueRows() {
+    var accountQueue = buildAccountQueue();
+    if (accountQueue.length) {
+      return {
+        mode: "qualified",
+        source: "account",
+        rows: accountQueue,
+      };
+    }
+    var leadQueue = buildQualifiedLeadQueue();
+    if (leadQueue.length) {
+      return {
+        mode: "qualified",
+        source: "lead",
+        rows: leadQueue,
+      };
+    }
+    var qualifiedQueue = buildQualifiedQueue();
+    if (qualifiedQueue.length) {
+      return {
+        mode: "qualified",
+        source: "qualified",
+        rows: qualifiedQueue,
+      };
+    }
+    return {
+      mode: "estimated",
+      source: "estimated",
+      rows: buildEstimatedQueue(),
+    };
+  }
+
+  function estimatedOpportunityMode() {
+    var queue = founderQueueRows();
+    if (queue.mode === "qualified") {
+      return {
+        title: "Opportunite qualifiee cette semaine",
+        modeLabel: "Signal qualifie",
+        label: "Signal qualifie + valeur estimee",
+        context: "Projection interne basee sur signaux qualifies, non facturee.",
+        value: queue.rows.reduce(function (sum, row) {
+          return sum + (Number(row.estimatedValue) || 0);
+        }, 0),
+      };
+    }
+    return {
+      title: "Opportunite estimee cette semaine",
+      modeLabel: "Estimation interne",
+      label: "Valeur estimee",
+      context: "Projection interne, non facturee.",
+      value: estimatedOpportunityThisWeek(),
+    };
+  }
+
+  function renderFounderQueueEmptyState() {
+    if (!founderQueueEl) {
+      return;
+    }
+    founderQueueEl.innerHTML = [
+      '<div class="hc-empty-state">',
+      '<div class="hc-empty-state__title">Pas encore assez de signaux comptes.</div>',
+      '<div class="hc-empty-state__text">Les recommandations s\'affineront avec les prochains leads qualifies.</div>',
+      "</div>",
+    ].join("");
+  }
+
+  function runSafeRender(label, renderFn, onError) {
     try {
       renderFn();
     } catch (error) {
       console.error("[AudienceMap] " + label + " failed:", error);
+      if (typeof onError === "function") {
+        onError();
+      }
     }
   }
 
@@ -418,6 +806,10 @@
   var shortlistEl = document.getElementById("audienceProspectionShortlist");
   var founderQueueEl = document.getElementById("audienceFounderQueue");
   var estimatedOpportunityEl = document.getElementById("audienceEstimatedOpportunityValue");
+  var opportunityTitleEl = document.getElementById("audienceOpportunityTitle");
+  var opportunityLabelEl = document.getElementById("audienceOpportunityLabel");
+  var opportunityContextEl = document.getElementById("audienceOpportunityContext");
+  var founderQueueModeEl = document.getElementById("audienceFounderQueueMode");
 
   function setMarkerState(marker, state, enabled) {
     var icon = marker && marker.getElement();
@@ -489,6 +881,7 @@
     if (!radarEl) {
       return;
     }
+    radarEl.innerHTML = "";
     if (!REVENUE_RADAR.length) {
       if (radarEmptyEl) {
         radarEmptyEl.classList.remove("d-none");
@@ -508,7 +901,7 @@
         '<span class="audience-radar-row__pages">Pages vues: ' + escapeHtml(row.pages.join(" ")) + "</span>",
         "</span>",
         '<span class="audience-radar-row__score">',
-        '<span class="audience-inline-tag">ESTIMATED</span>',
+        '<span class="audience-inline-tag">Estimation interne</span>',
         '<span class="audience-radar-row__badge">' + escapeHtml(row.priority) + "</span>",
         '<strong>Score: ' + escapeHtml(row.score) + "</strong>",
         '<em>Potentiel: ' + escapeHtml(euroPerMonth(row.potential)) + "</em>",
@@ -525,6 +918,7 @@
     if (!deptScoresEl) {
       return;
     }
+    deptScoresEl.innerHTML = "";
     DEPARTMENT_SCORES.forEach(function (dept) {
       var button = document.createElement("button");
       button.type = "button";
@@ -544,6 +938,7 @@
     if (!liveSignalsEl) {
       return;
     }
+    liveSignalsEl.innerHTML = "";
     LIVE_SIGNALS.forEach(function (signal) {
       var button = document.createElement("button");
       button.type = "button";
@@ -562,6 +957,7 @@
     if (!recommendationsEl) {
       return;
     }
+    recommendationsEl.innerHTML = "";
     recommendationLogic().forEach(function (item, index) {
       var button = document.createElement("button");
       button.type = "button";
@@ -580,17 +976,122 @@
     if (!founderQueueEl) {
       return;
     }
-    buildFounderQueue().forEach(function (item) {
+    var queue = founderQueueRows();
+    founderQueueEl.innerHTML = "";
+    if (founderQueueModeEl) {
+      founderQueueModeEl.textContent = queue.mode === "qualified" ? "Signal qualifie" : "Estimation interne";
+    }
+    if (!queue.rows.length) {
+      renderFounderQueueEmptyState();
+      return;
+    }
+    queue.rows.forEach(function (item) {
+      if (queue.source === "account" && item.kind === "account") {
+        var accountCard = document.createElement("div");
+        accountCard.className = "audience-founder-row";
+        accountCard.setAttribute("role", "group");
+        var accountLines = [];
+        accountLines.push('<span class="audience-founder-row__reason">Compte detecte</span>');
+        if (item.domain) {
+          accountLines.push('<span class="audience-founder-row__reason">Domaine: ' + escapeHtml(item.domain) + "</span>");
+        }
+        if (item.organizationType) {
+          accountLines.push('<span class="audience-founder-row__reason">Type probable: ' + escapeHtml(item.organizationType) + "</span>");
+        }
+        if (item.territoryHint) {
+          accountLines.push('<span class="audience-founder-row__reason">Territoire: ' + escapeHtml(item.territoryHint) + "</span>");
+        }
+        accountLines.push('<span class="audience-founder-row__reason">Contacts detectes: ' + escapeHtml(item.leadCount) + "</span>");
+        if (item.emails.length) {
+          accountLines.push('<span class="audience-founder-row__reason">Emails: ' + escapeHtml(item.emails.join(", ")) + "</span>");
+        }
+        accountLines.push('<span class="audience-founder-row__reason">Pages vues: ' + escapeHtml(item.pagesViewed.join(", ") || "Pages non renseignees") + "</span>");
+        accountLines.push('<span class="audience-founder-row__reason">Derniere activite: ' + escapeHtml(item.lastActivity) + "</span>");
+        accountLines.push('<span class="audience-founder-row__reason"><span class="audience-inline-tag">ACCOUNT</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + '</span> <span class="audience-inline-tag">Confiance ' + escapeHtml(item.confidence) + "</span></span>");
+        if (item.salesNote) {
+          accountLines.push('<span class="audience-founder-row__reason">Note commerciale: ' + escapeHtml(item.salesNote) + "</span>");
+        }
+        accountCard.innerHTML = [
+          '<span class="audience-founder-row__main">',
+          '<strong>' + escapeHtml(item.accountName || item.domain || "Compte probable") + "</strong>",
+          '<span class="audience-founder-row__reason">Organisation probable: ' + escapeHtml(item.accountName || item.domain || "-") + "</span>",
+          '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">Moyenne ' + escapeHtml(item.avgScore) + "</span></span>",
+          accountLines.join(""),
+          '<span class="audience-founder-row__action">Action suggeree: ' + escapeHtml(item.action) + "</span>",
+          '<span class="d-flex flex-wrap gap-2 mt-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-primary" data-founder-account-cta="leads">Voir leads</button>' +
+            '<button type="button" class="btn btn-sm btn-outline-primary" data-founder-account-cta="email">Preparer email</button>' +
+            '<button type="button" class="btn btn-sm btn-primary" data-founder-account-cta="call">Planifier appel</button>' +
+          "</span>",
+          "</span>",
+          '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
+        ].join("");
+        Array.prototype.forEach.call(accountCard.querySelectorAll("[data-founder-account-cta]"), function (cta) {
+          cta.addEventListener("click", function () {
+            focusCity(item.focusSlug);
+          });
+        });
+        founderQueueEl.appendChild(accountCard);
+        return;
+      }
+      if (queue.source === "lead" && item.kind === "lead") {
+        var card = document.createElement("div");
+        card.className = "audience-founder-row";
+        card.setAttribute("role", "group");
+        var intelligenceLines = [];
+        if (item.organizationName) {
+          intelligenceLines.push('<span class="audience-founder-row__reason">Organisation détectée: ' + escapeHtml(item.organizationName) + "</span>");
+        }
+        if (item.organizationType) {
+          intelligenceLines.push('<span class="audience-founder-row__reason">Type probable: ' + escapeHtml(item.organizationType) + "</span>");
+        }
+        if (item.territoryHint) {
+          intelligenceLines.push('<span class="audience-founder-row__reason">Territoire: ' + escapeHtml(item.territoryHint) + "</span>");
+        }
+        if (item.organizationDomain) {
+          intelligenceLines.push('<span class="audience-founder-row__reason">Domaine: ' + escapeHtml(item.organizationDomain) + "</span>");
+        }
+        if (item.organizationConfidence) {
+          intelligenceLines.push('<span class="audience-founder-row__reason">Confiance: ' + escapeHtml(item.organizationConfidence) + "</span>");
+        }
+        if (item.salesNote) {
+          intelligenceLines.push('<span class="audience-founder-row__reason">Note commerciale: ' + escapeHtml(item.salesNote) + "</span>");
+        }
+        card.innerHTML = [
+          '<span class="audience-founder-row__main">',
+          '<strong>' + escapeHtml(item.organizationName || item.organization || item.emailMasked || item.territory) + "</strong>",
+          '<span class="audience-founder-row__reason">' + escapeHtml(item.emailMasked || item.email || "-") + "</span>",
+          '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + "</span></span>",
+          '<span class="audience-founder-row__reason">Pages vues: ' + escapeHtml((item.pagesViewed || []).join(", ") || "Pages non renseignées") + "</span>",
+          intelligenceLines.join(""),
+          '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
+          '<span class="d-flex flex-wrap gap-2 mt-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-primary" data-founder-cta="email">Envoyer email</button>' +
+            '<button type="button" class="btn btn-sm btn-primary" data-founder-cta="call">Planifier appel</button>' +
+          "</span>",
+          "</span>",
+          '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
+        ].join("");
+        Array.prototype.forEach.call(card.querySelectorAll("[data-founder-cta]"), function (cta) {
+          cta.addEventListener("click", function () {
+            focusCity(item.focusSlug);
+          });
+        });
+        founderQueueEl.appendChild(card);
+        return;
+      }
+
       var button = document.createElement("button");
       button.type = "button";
       button.className = "audience-founder-row";
       button.innerHTML = [
         '<span class="audience-founder-row__main">',
         '<strong>' + escapeHtml(item.territory) + "</strong>",
-        '<span class="audience-founder-row__reason">' + escapeHtml(item.reason) + "</span>",
+        '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + "</span></span>",
+        '<span class="audience-founder-row__reason">' + escapeHtml(item.detectedSignal) + "</span>",
         '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
         "</span>",
-        '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + "</span>",
+        '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
       ].join("");
       button.addEventListener("click", function () {
         focusCity(item.focusSlug);
@@ -603,7 +1104,21 @@
     if (!estimatedOpportunityEl) {
       return;
     }
-    estimatedOpportunityEl.textContent = formatEuro(estimatedOpportunityThisWeek());
+    var mode = estimatedOpportunityMode();
+    estimatedOpportunityEl.textContent = formatEuro(mode.value);
+    if (opportunityTitleEl) {
+      opportunityTitleEl.innerHTML =
+        escapeHtml(mode.title) +
+        ' <span class="audience-data-tag audience-data-tag--estimated" id="audienceOpportunityMode">' +
+        escapeHtml(mode.modeLabel) +
+        "</span>";
+    }
+    if (opportunityLabelEl) {
+      opportunityLabelEl.textContent = mode.label;
+    }
+    if (opportunityContextEl) {
+      opportunityContextEl.textContent = mode.context;
+    }
   }
 
   function renderForecast() {
@@ -616,10 +1131,10 @@
     var maxMrr = hotCount * 590;
     forecastEl.innerHTML = [
       '<div class="audience-forecast-card__grid">',
-      '<span><strong>' + expectedDemos + '</strong><em>Expected demos <span class="audience-inline-tag">RAW DATA</span></em></span>',
-      '<span><strong>' + likelyPilots + '</strong><em>Likely pilots <span class="audience-inline-tag">ESTIMATED</span></em></span>',
-      '<span><strong>' + escapeHtml(formatEuro(590)) + " - " + escapeHtml(formatEuro(maxMrr)) + '</strong><em>Potential MRR <span class="audience-inline-tag">ESTIMATED</span></em></span>',
-      '<span><strong>Moyenne</strong><em>Confidence <span class="audience-inline-tag">ESTIMATED</span></em></span>',
+      '<span><strong>' + expectedDemos + '</strong><em>Demos attendues <span class="audience-inline-tag">Donnee brute</span></em></span>',
+      '<span><strong>' + likelyPilots + '</strong><em>Pilotes probables <span class="audience-inline-tag">Estimation interne</span></em></span>',
+      '<span><strong>' + escapeHtml(formatEuro(590)) + " - " + escapeHtml(formatEuro(maxMrr)) + '</strong><em>Valeur estimee <span class="audience-inline-tag">Estimation interne</span></em></span>',
+      '<span><strong>Moyenne</strong><em>Confiance <span class="audience-inline-tag">Estimation interne</span></em></span>',
       "</div>",
     ].join("");
   }
@@ -628,6 +1143,7 @@
     if (!shortlistEl) {
       return;
     }
+    shortlistEl.innerHTML = "";
     PIPELINE_SHORTLIST.forEach(function (item, index) {
       var row = document.createElement("div");
       row.className = "audience-shortlist-item";
@@ -683,7 +1199,7 @@
   runSafeRender("Department Scores", renderDepartmentScores);
   runSafeRender("Live Signals", renderLiveSignals);
   runSafeRender("Recommendations", renderRecommendations);
-  runSafeRender("Founder Sales Queue", renderFounderSalesQueue);
+  runSafeRender("FounderSalesQueue", renderFounderSalesQueue, renderFounderQueueEmptyState);
   runSafeRender("Forecast", renderForecast);
   runSafeRender("Shortlist", renderShortlist);
 

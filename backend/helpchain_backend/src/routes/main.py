@@ -1,4 +1,4 @@
-﻿import hashlib
+import hashlib
 import math
 import os
 import re
@@ -79,8 +79,10 @@ from ..services.matching_v1 import get_matched_requests_v1
 from ..services.matching_v1 import mark_seen as match_mark_seen
 from ..services.geocoding import request_address_display_text
 from ..services.prospect_auto_capture import (
+    append_audience_context_to_notes,
     attach_session_intelligence_to_access_request,
     attach_session_intelligence_to_professional_lead,
+    summarize_session_intelligence,
 )
 from ..statuses import normalize_request_status
 
@@ -422,6 +424,298 @@ def _resolved_lead_status(existing_status: str | None, screening_status: str | N
     if current_status in {"invalid", "spam"}:
         return "new"
     return current_status
+
+
+def _normalize_lead_source(value: str | None) -> str | None:
+    normalized = re.sub(r"[^a-z0-9_-]+", "-", (value or "").strip().lower())
+    normalized = normalized.strip("-_")
+    return normalized[:80] or None
+
+
+def _capture_inbound_lead_source() -> str | None:
+    source = _normalize_lead_source(request.args.get("src"))
+    if source:
+        session["hc_lead_src"] = source
+        return source
+    saved = _normalize_lead_source(session.get("hc_lead_src"))
+    if saved:
+        session["hc_lead_src"] = saved
+    return saved
+
+
+def _resolved_inbound_lead_source(*, posted_source: str | None, default_source: str) -> str:
+    source = _normalize_lead_source(posted_source)
+    default_normalized = _normalize_lead_source(default_source) or default_source
+    saved_source = _capture_inbound_lead_source()
+    if source and source != default_normalized:
+        session["hc_lead_src"] = source
+        return source
+    if saved_source:
+        return saved_source
+    return default_source
+
+
+LEAD_INTENT_PAGE_WEIGHTS = {
+    "/demo": 40,
+    "/contact": 35,
+    "/offre": 30,
+    "/deploiement": 20,
+}
+PERSONAL_EMAIL_PROVIDERS = {
+    "gmail.com",
+    "googlemail.com",
+    "outlook.com",
+    "hotmail.com",
+    "live.com",
+    "yahoo.com",
+    "icloud.com",
+    "proton.me",
+    "protonmail.com",
+    "orange.fr",
+    "free.fr",
+    "sfr.fr",
+    "laposte.net",
+    "wanadoo.fr",
+}
+
+
+def _lead_intent_session_id() -> str | None:
+    for candidate in (
+        request.form.get("session_id"),
+        request.form.get("audience_session_id"),
+        request.args.get("session_id"),
+        request.headers.get("X-Session-Id"),
+        request.cookies.get("hc_audience_sid"),
+        session.get("hc_audience_sid"),
+    ):
+        value = (candidate or "").strip()
+        if value:
+            return value
+    return None
+
+
+def _lead_intent_path(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return "/"
+    parsed = urlparse(raw)
+    return parsed.path or raw.split("?", 1)[0] or "/"
+
+
+def _mask_email_for_log(email: str | None) -> str:
+    value = (email or "").strip().lower()
+    local, sep, domain = value.partition("@")
+    if not sep or not domain:
+        return "***"
+    if not local:
+        return f"***@{domain}"
+    return f"{local[:1]}***@{domain}"
+
+
+def _extract_email_domain(email: str | None) -> str | None:
+    value = (email or "").strip().lower()
+    if not value or "@" not in value:
+        return None
+    _local, _sep, domain = value.rpartition("@")
+    domain = domain.strip().strip(".")
+    if not domain or "." not in domain:
+        return None
+    return domain
+
+
+def _guess_organization_name_from_domain(domain: str) -> str | None:
+    label = (domain or "").split(".", 1)[0].strip().lower()
+    if not label:
+        return None
+    words = [chunk for chunk in label.replace("-", " ").split() if chunk]
+    if not words:
+        return None
+    special_tokens = {
+        "ccas": "CCAS",
+        "cd92": "CD92",
+        "cd93": "CD93",
+        "cd94": "CD94",
+        "cd75": "CD75",
+        "asso": "Asso",
+        "mairie": "Mairie",
+        "ville": "Ville",
+    }
+    rendered = [special_tokens.get(word, word.title()) for word in words]
+    return " ".join(rendered)
+
+
+def _guess_organization_from_domain(domain: str | None) -> dict:
+    normalized = (domain or "").strip().lower()
+    if not normalized:
+        return {
+            "domain": None,
+            "probable_name": None,
+            "type": "Organisation non detectee",
+            "territory_hint": None,
+            "confidence": "low",
+            "sales_note": "Domaine non exploitable — qualification manuelle necessaire.",
+        }
+    if normalized in PERSONAL_EMAIL_PROVIDERS:
+        return {
+            "domain": normalized,
+            "probable_name": None,
+            "type": "Email personnel",
+            "territory_hint": None,
+            "confidence": "low",
+            "sales_note": "Email personnel — qualification manuelle necessaire.",
+        }
+
+    probable_type = "Organisation probable"
+    confidence = "low"
+    sales_note = "Email institutionnel probable — qualification commerciale a confirmer."
+
+    type_rules = (
+        (("ccas",), "CCAS / action sociale", "high", "Email institutionnel detecte — priorite de qualification elevee."),
+        (("mairie", "ville-", "villede"), "Collectivite / mairie", "high", "Collectivite probable — verifier le besoin de coordination territoriale."),
+        (("departement", "cd92", "hauts-de-seine"), "Conseil departemental", "high", "Compte departemental probable — proposer un cadrage institutionnel."),
+        (("association", "asso"), "Association", "medium", "Association probable — qualifier le perimetre d'usage et les relais terrain."),
+        (("solidarite", "social"), "Structure sociale", "medium", "Structure sociale probable — priorite de qualification fonctionnelle."),
+        (("missionlocale",), "Mission locale", "high", "Mission locale probable — orienter le discours vers le suivi et l'insertion."),
+        (("croix-rouge",), "Association nationale / aide sociale", "high", "Organisation d'aide sociale probable — verifier le scope local."),
+        (("emmaus",), "Association / insertion", "high", "Structure d'insertion probable — qualifier l'usage coordination et accompagnement."),
+    )
+    for markers, guessed_type, guessed_confidence, guessed_note in type_rules:
+        if any(marker in normalized for marker in markers):
+            probable_type = guessed_type
+            confidence = guessed_confidence
+            sales_note = guessed_note
+            break
+
+    territory_hint = None
+    territory_rules = (
+        (("nanterre",), "Nanterre / 92"),
+        (("paris",), "Paris / 75"),
+        (("saint-denis", "saintdenis"), "Seine-Saint-Denis / 93"),
+        (("boulogne",), "Boulogne-Billancourt / 92"),
+        (("creteil",), "Creteil / 94"),
+        (("versailles",), "Versailles / 78"),
+    )
+    for markers, territory in territory_rules:
+        if any(marker in normalized for marker in markers):
+            territory_hint = territory
+            break
+
+    return {
+        "domain": normalized,
+        "probable_name": _guess_organization_name_from_domain(normalized),
+        "type": probable_type,
+        "territory_hint": territory_hint,
+        "confidence": confidence,
+        "sales_note": sales_note,
+    }
+
+
+def _lead_intent_summary(*, lookback_minutes: int = 30) -> dict | None:
+    session_id = _lead_intent_session_id()
+    if not session_id or not _table_exists("analytics_events"):
+        return None
+
+    try:
+        from backend.models_with_analytics import AnalyticsEvent
+    except Exception:
+        return None
+
+    now = datetime.now(UTC).replace(tzinfo=None)
+    since = now - timedelta(minutes=lookback_minutes)
+    rows = (
+        db.session.query(AnalyticsEvent.created_at, AnalyticsEvent.page_url)
+        .filter(AnalyticsEvent.event_type == "page_view")
+        .filter(AnalyticsEvent.user_session == session_id)
+        .filter(AnalyticsEvent.created_at >= since)
+        .order_by(AnalyticsEvent.created_at.asc(), AnalyticsEvent.id.asc())
+        .limit(100)
+        .all()
+    )
+    if not rows:
+        return {
+            "version": 2,
+            "captured_at": now.isoformat(),
+            "session_id": session_id,
+            "lookback_minutes": lookback_minutes,
+            "lead_intent_score": 0,
+            "score": 0,
+            "pages_viewed": [],
+            "page_count": 0,
+            "repeat_visits": False,
+            "last_seen_at": None,
+            "telemetry_found": False,
+        }
+
+    paths = [_lead_intent_path(row.page_url) for row in rows]
+    unique_pages = list(dict.fromkeys(paths))
+    page_counts: dict[str, int] = {}
+    for path in paths:
+        page_counts[path] = page_counts.get(path, 0) + 1
+
+    score = 0
+    for prefix, weight in LEAD_INTENT_PAGE_WEIGHTS.items():
+        if any(path.startswith(prefix) for path in unique_pages):
+            score += weight
+
+    repeat_visits = any(count >= 2 for count in page_counts.values())
+    if repeat_visits:
+        score += 10
+    if len(unique_pages) >= 3:
+        score += 8
+    score = max(0, min(100, score))
+
+    last_seen_at = max((row.created_at for row in rows if row.created_at), default=None)
+    return {
+        "version": 2,
+        "captured_at": now.isoformat(),
+        "session_id": session_id,
+        "lookback_minutes": lookback_minutes,
+        "lead_intent_score": score,
+        "score": score,
+        "pages_viewed": unique_pages,
+        "page_count": len(paths),
+        "repeat_visits": repeat_visits,
+        "last_seen_at": last_seen_at.isoformat() if last_seen_at else None,
+        "telemetry_found": True,
+    }
+
+
+def _attach_contact_lead_intelligence(lead, *, email: str) -> dict | None:
+    summary = _lead_intent_summary() or summarize_session_intelligence()
+    domain = _extract_email_domain(email)
+    organization_intelligence = _guess_organization_from_domain(domain)
+    if summary is None:
+        summary = {
+            "version": 2,
+            "captured_at": datetime.now(UTC).replace(tzinfo=None).isoformat(),
+            "session_id": _lead_intent_session_id(),
+            "lead_intent_score": 0,
+            "score": 0,
+            "pages_viewed": [],
+            "page_count": 0,
+            "repeat_visits": False,
+            "last_seen_at": None,
+            "telemetry_found": False,
+        }
+    summary["organization_intelligence"] = organization_intelligence
+    summary["organization_domain"] = organization_intelligence.get("domain")
+    summary["organization_type"] = organization_intelligence.get("type")
+    summary["organization_confidence"] = organization_intelligence.get("confidence")
+    lead.notes = append_audience_context_to_notes(getattr(lead, "notes", None), summary)
+    current_app.logger.info(
+        "[LEAD-QUALIFIED] email=%s score=%s pages=%s",
+        email,
+        int(summary.get("lead_intent_score") or summary.get("score") or 0),
+        ",".join(summary.get("pages_viewed") or []) or "-",
+    )
+    current_app.logger.info(
+        "[LEAD-ENRICHED] email=%s domain=%s type=%s confidence=%s",
+        _mask_email_for_log(email),
+        organization_intelligence.get("domain") or "-",
+        organization_intelligence.get("type") or "-",
+        organization_intelligence.get("confidence") or "-",
+    )
+    return summary
 
 
 def _turnstile_is_enabled() -> bool:
@@ -4429,6 +4723,7 @@ def contact():
     if is_demo and request.method == "POST":
         current_app.logger.info("demo form detected")
     if request.method == "GET":
+        _capture_inbound_lead_source()
         submitted = request.args.get("sent") == "1"
         return render_template(
             "contact.html",
@@ -4443,6 +4738,11 @@ def contact():
     demo_organisation = (
         request.form.get("organisation") or request.form.get("structure") or ""
     ).strip()
+    default_lead_source = "demo_page" if is_demo else "contact_echange"
+    lead_source = _resolved_inbound_lead_source(
+        posted_source=request.form.get("source"),
+        default_source=default_lead_source,
+    )
     form_data = {
         "full_name": (request.form.get("full_name") or "").strip(),
         "fonction": (request.form.get("fonction") or "").strip(),
@@ -4459,7 +4759,7 @@ def contact():
         "objet_echange": (request.form.get("objet_echange") or "").strip(),
         "message": (request.form.get("message") or "").strip(),
         "form_type": (request.form.get("form_type") or "").strip(),
-        "source": (request.form.get("source") or "").strip(),
+        "source": lead_source,
         "organization_size": (request.form.get("organization_size") or "").strip(),
         "website": (request.form.get("website") or "").strip(),
     }
@@ -4615,7 +4915,7 @@ def contact():
             ).strip() or existing.locale
             existing.ip = _client_ip() or existing.ip
             existing.user_agent = user_agent or existing.user_agent
-            existing.source = "demo_page" if is_demo else "contact_echange"
+            existing.source = lead_source
             existing.status = _resolved_lead_status(existing.status, screening_status)
             if screening_status in {"invalid", "spam"}:
                 existing.notes = _merge_lead_notes(
@@ -4623,7 +4923,10 @@ def contact():
                     _screening_note(screening_status, screening_reasons),
                 )
             else:
-                attach_session_intelligence_to_professional_lead(existing)
+                _attach_contact_lead_intelligence(
+                    existing,
+                    email=form_data["email"],
+                )
             db.session.commit()
             lead = existing
         else:
@@ -4647,7 +4950,7 @@ def contact():
                 locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
                 ip=_client_ip(),
                 user_agent=user_agent,
-                source="demo_page" if is_demo else "contact_echange",
+                source=lead_source,
                 status=_resolved_lead_status(None, screening_status),
                 notes=(
                     _screening_note(screening_status, screening_reasons)
@@ -4658,7 +4961,10 @@ def contact():
             )
             db.session.add(lead)
             if screening_status not in {"invalid", "spam"}:
-                attach_session_intelligence_to_professional_lead(lead)
+                _attach_contact_lead_intelligence(
+                    lead,
+                    email=form_data["email"],
+                )
             db.session.commit()
         if is_demo:
             current_app.logger.info("lead saved")

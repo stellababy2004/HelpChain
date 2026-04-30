@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from collections import Counter
 import csv
@@ -231,6 +231,37 @@ AUDIENCE_REVENUE_PAGE_SCORES = (
     ("/professionnels", 4),
     ("/", 1),
 )
+AUDIENCE_QUALIFIED_PAGE_WEIGHTS = {
+    "/demo": 40,
+    "/contact": 35,
+    "/offre": 30,
+    "/deploiement": 20,
+    "/securite": 15,
+}
+AUDIENCE_DEPARTMENT_CODES = {
+    "paris": "75",
+    "boulogne billancourt": "92",
+    "nanterre": "92",
+    "versailles": "78",
+    "lyon": "69",
+    "marseille": "13",
+    "lille": "59",
+    "nantes": "44",
+    "bordeaux": "33",
+    "toulouse": "31",
+    "strasbourg": "67",
+    "rennes": "35",
+    "montpellier": "34",
+    "nice": "06",
+    "grenoble": "38",
+    "dijon": "21",
+    "rouen": "76",
+    "reims": "51",
+    "tours": "37",
+    "orleans": "45",
+    "saint denis": "93",
+    "creteil": "94",
+}
 AUDIENCE_CITY_MARKERS = {
     "paris": {"label": "Paris", "department": "Paris", "region": "Ile-de-France", "x": 285, "y": 135},
     "boulogne billancourt": {"label": "Boulogne-Billancourt", "department": "Hauts-de-Seine", "region": "Ile-de-France", "x": 279, "y": 140},
@@ -7827,6 +7858,96 @@ def _audience_import_models():
         return None, None
 
 
+def _audience_department_code(city: str | None) -> str:
+    return AUDIENCE_DEPARTMENT_CODES.get(_audience_normalize_text(city), "")
+
+
+def _audience_focus_slug(city: str | None) -> str | None:
+    normalized = _audience_normalize_text(city)
+    for point in AUDIENCE_BUSINESS_MAP_POINTS:
+        if _audience_normalize_text(point["label"]) == normalized:
+            return str(point["slug"])
+    return None
+
+
+def _audience_priority_for_lead_score(score: int) -> str:
+    if score >= 90:
+        return "Tres chaud"
+    if score >= 75:
+        return "Chaud"
+    if score >= 55:
+        return "A qualifier"
+    return "Observation"
+
+
+def _audience_action_for_lead_score(score: int) -> str:
+    if score >= 90:
+        return "Appeler / contacter aujourd'hui"
+    if score >= 75:
+        return "Envoyer un email cible aujourd'hui"
+    if score >= 55:
+        return "Qualifier les interlocuteurs"
+    return "Garder en observation"
+
+
+def _audience_mask_email(value: str | None) -> str:
+    email = (value or "").strip()
+    if "@" not in email:
+        return email
+    local_part, domain = email.split("@", 1)
+    local_part = local_part.strip()
+    domain = domain.strip()
+    if not local_part or not domain:
+        return email
+    return f"{local_part[:1]}***@{domain}"
+
+
+def _audience_is_personal_email_domain(value: str | None) -> bool:
+    domain = (value or "").strip().lower()
+    if not domain:
+        return False
+    return domain in {
+        "gmail.com",
+        "googlemail.com",
+        "outlook.com",
+        "hotmail.com",
+        "live.com",
+        "yahoo.com",
+        "icloud.com",
+        "proton.me",
+        "protonmail.com",
+        "orange.fr",
+        "free.fr",
+        "sfr.fr",
+        "laposte.net",
+        "wanadoo.fr",
+    }
+
+
+def _audience_confidence_rank(value: str | None) -> int:
+    normalized = (value or "").strip().lower()
+    if normalized == "high":
+        return 3
+    if normalized == "medium":
+        return 2
+    if normalized == "low":
+        return 1
+    return 0
+
+
+def _audience_title_from_domain(value: str | None) -> str:
+    domain = (value or "").strip().lower()
+    if not domain:
+        return ""
+    root = domain.split(".", 1)[0].strip()
+    if not root:
+        return ""
+    tokens = [token for token in re.split(r"[-_]+", root) if token]
+    if not tokens:
+        return root.title()
+    return " ".join(token.upper() if token.upper() == "CCAS" else token.title() for token in tokens)
+
+
 def _build_audience_map_context() -> dict:
     now = datetime.now(UTC).replace(tzinfo=None)
     since_24h = now - timedelta(hours=24)
@@ -7854,6 +7975,9 @@ def _build_audience_map_context() -> dict:
         "founder_insights": [],
         "revenue_radar_rows": [],
         "revenue_radar_insights": [],
+        "qualified_signal_rows": [],
+        "founder_queue_account_rows": [],
+        "founder_queue_lead_rows": [],
     }
     if not _table_exists("analytics_events"):
         return context
@@ -7918,6 +8042,7 @@ def _build_audience_map_context() -> dict:
             session_bucket["has_external_referrer"] = True
 
     location_counts: Counter[str] = Counter()
+    session_locations: dict[str, dict[str, str]] = {}
     if UserBehavior is not None and _table_exists("user_behaviors"):
         behavior_rows = (
             db.session.query(UserBehavior.location, UserBehavior.session_id)
@@ -7931,6 +8056,14 @@ def _build_audience_map_context() -> dict:
             city = _audience_location_city(location)
             if city:
                 location_counts[city] += 1
+                if _session_id:
+                    marker = AUDIENCE_CITY_MARKERS.get(_audience_normalize_text(city), {})
+                    session_locations[str(_session_id).strip()] = {
+                        "territory": city,
+                        "department": _audience_department_code(city),
+                        "department_name": str(marker.get("department") or "").strip(),
+                        "focus_slug": _audience_focus_slug(city) or "",
+                    }
 
     department_counts: Counter[str] = Counter()
     region_counts: Counter[str] = Counter()
@@ -7969,6 +8102,7 @@ def _build_audience_map_context() -> dict:
                 "lat": float(point["lat"]),
                 "lng": float(point["lng"]),
                 "department": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("department", "Ile-de-France"),
+                "department_code": _audience_department_code(point["label"]),
                 "region": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("region", "Ile-de-France"),
                 "estimated_demands": estimated_demands,
                 "structures": structures,
@@ -8008,6 +8142,7 @@ def _build_audience_map_context() -> dict:
         for session_id, count in session_intent.most_common(6)
         if count >= 2
     ]
+    qualified_rollup: dict[tuple[str, str, str, str], dict[str, object]] = {}
     captured_sessions = captured_audience_session_targets()
     revenue_rows = []
     sessions_repeated_today = 0
@@ -8045,8 +8180,288 @@ def _build_audience_map_context() -> dict:
                 "captured_label": captured_sessions.get(session_id),
             }
         )
+        location_meta = session_locations.get(session_id)
+        qualified_paths = [
+            path for path in bucket["paths"] if _audience_label_page(path) in AUDIENCE_QUALIFIED_PAGE_WEIGHTS
+        ]
+        if not location_meta or not bucket["has_external_referrer"] or not qualified_paths:
+            continue
+        qualified_counts = Counter(_audience_label_page(path) for path in qualified_paths)
+        for page, count in qualified_counts.items():
+            key = (
+                location_meta["territory"],
+                location_meta["department"],
+                page,
+                "page_view",
+            )
+            row = qualified_rollup.setdefault(
+                key,
+                {
+                    "territory": location_meta["territory"],
+                    "department": location_meta["department"],
+                    "page": page,
+                    "event": "page_view",
+                    "count": 0,
+                    "last_seen_at": None,
+                    "intent_weight": AUDIENCE_QUALIFIED_PAGE_WEIGHTS.get(page, 0),
+                    "signal_type": "qualified",
+                    "repeat_sessions": 0,
+                    "unique_pages_seen": 0,
+                    "focus_slug": location_meta["focus_slug"],
+                },
+            )
+            row["count"] = int(row["count"]) + int(count)
+            row["unique_pages_seen"] = max(int(row["unique_pages_seen"]), len(set(bucket["paths"])))
+            if repeated_same_day:
+                row["repeat_sessions"] = int(row["repeat_sessions"]) + 1
+            last_seen_at = row["last_seen_at"]
+            if bucket["last_activity"] and (
+                last_seen_at is None or bucket["last_activity"] > last_seen_at
+            ):
+                row["last_seen_at"] = bucket["last_activity"]
     revenue_rows.sort(key=lambda row: (row["score"], row["last_activity"] or datetime.min), reverse=True)
     context["revenue_radar_rows"] = revenue_rows[:12]
+    qualified_rows = []
+    for row in qualified_rollup.values():
+        last_seen_at = row.pop("last_seen_at", None)
+        row["last_seen"] = _audience_relative_time(last_seen_at, now)
+        qualified_rows.append(row)
+    qualified_rows.sort(
+        key=lambda row: (
+            int(row.get("intent_weight") or 0),
+            int(row.get("count") or 0),
+            int(row.get("repeat_sessions") or 0),
+        ),
+        reverse=True,
+    )
+    context["qualified_signal_rows"] = qualified_rows[:24]
+    if _table_exists("professional_leads"):
+        since_30d = now - timedelta(days=30)
+        lead_query = (
+            db.session.query(
+                ProfessionalLead.id,
+                ProfessionalLead.organization,
+                ProfessionalLead.email,
+                ProfessionalLead.city,
+                ProfessionalLead.source,
+                ProfessionalLead.status,
+                ProfessionalLead.created_at,
+                ProfessionalLead.notes,
+            )
+            .filter(
+                ProfessionalLead.created_at >= since_30d,
+            )
+            .filter(
+                or_(
+                    ProfessionalLead.status.is_(None),
+                    ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+                )
+            )
+            .order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
+            .limit(100)
+        )
+        lead_rows = lead_query.all()
+        founder_queue_account_groups: dict[str, dict[str, object]] = {}
+        founder_queue_lead_rows = []
+        for row in lead_rows:
+            audience_context = extract_audience_context(getattr(row, "notes", None))
+            if not isinstance(audience_context, dict):
+                continue
+            organization_intelligence = audience_context.get("organization_intelligence")
+            if not isinstance(organization_intelligence, dict):
+                organization_intelligence = {}
+            lead_score = int(
+                audience_context.get("lead_intent_score")
+                or audience_context.get("score")
+                or 0
+            )
+            pages_viewed = audience_context.get("pages_viewed") or []
+            if not isinstance(pages_viewed, list):
+                pages_viewed = []
+            last_seen_at_raw = audience_context.get("last_seen_at")
+            last_seen_at = None
+            if isinstance(last_seen_at_raw, str) and last_seen_at_raw.strip():
+                try:
+                    last_seen_at = datetime.fromisoformat(last_seen_at_raw.strip())
+                except Exception:
+                    last_seen_at = None
+            territory = (getattr(row, "city", None) or "").strip() or "France"
+            department = _audience_department_code(territory)
+            display_identity = (
+                (getattr(row, "organization", None) or "").strip()
+                or (getattr(row, "email", None) or "").strip()
+                or "Lead qualifie"
+            )
+            organization_name = (
+                (organization_intelligence.get("probable_name") or "").strip()
+                or display_identity
+            )
+            organization_domain = (
+                (organization_intelligence.get("domain") or "").strip().lower()
+                or (audience_context.get("organization_domain") or "").strip().lower()
+            )
+            organization_type = (
+                (organization_intelligence.get("type") or "").strip()
+                or (audience_context.get("organization_type") or "").strip()
+            )
+            territory_hint = (
+                (organization_intelligence.get("territory_hint") or "").strip()
+            )
+            organization_confidence = (
+                (organization_intelligence.get("confidence") or "").strip()
+                or (audience_context.get("organization_confidence") or "").strip()
+            )
+            sales_note = (
+                (organization_intelligence.get("sales_note") or "").strip()
+            )
+            email_value = (getattr(row, "email", None) or "").strip()
+            founder_queue_lead_rows.append(
+                {
+                    "organization": display_identity,
+                    "organization_name": organization_name,
+                    "email": email_value,
+                    "territory": territory,
+                    "department": department,
+                    "pages_viewed": pages_viewed[:5],
+                    "score": max(0, min(100, lead_score)),
+                    "priority": _audience_priority_for_lead_score(lead_score),
+                    "last_seen": _audience_relative_time(last_seen_at, now),
+                    "source_label": "Signal qualifie",
+                    "focus_slug": _audience_focus_slug(territory) or "paris",
+                    "organization_domain": organization_domain,
+                    "organization_type": organization_type,
+                    "territory_hint": territory_hint,
+                    "organization_confidence": organization_confidence,
+                    "sales_note": sales_note,
+                    "created_at": getattr(row, "created_at", None),
+                }
+            )
+            group_key = ""
+            if organization_domain:
+                group_key = f"domain:{organization_domain}"
+            else:
+                normalized_org = _audience_normalize_text(getattr(row, "organization", None))
+                if normalized_org:
+                    group_key = f"organization:{normalized_org}"
+                elif email_value and "@" in email_value:
+                    email_domain = email_value.rsplit("@", 1)[-1].strip().lower()
+                    if email_domain and not _audience_is_personal_email_domain(email_domain):
+                        group_key = f"email-domain:{email_domain}"
+                        if not organization_domain:
+                            organization_domain = email_domain
+            if not group_key:
+                continue
+            account_row = founder_queue_account_groups.setdefault(
+                group_key,
+                {
+                    "account_name": "",
+                    "domain": organization_domain,
+                    "organization_type": organization_type,
+                    "territory_hint": territory_hint,
+                    "confidence": organization_confidence or "low",
+                    "confidence_rank": _audience_confidence_rank(organization_confidence),
+                    "lead_count": 0,
+                    "emails": [],
+                    "email_set": set(),
+                    "pages_viewed": set(),
+                    "best_score": 0,
+                    "score_total": 0,
+                    "score_count": 0,
+                    "last_activity_at": None,
+                    "focus_slug": _audience_focus_slug(territory_hint or territory) or "paris",
+                    "sales_note": sales_note,
+                },
+            )
+            probable_name = (organization_intelligence.get("probable_name") or "").strip()
+            if probable_name and not account_row["account_name"]:
+                account_row["account_name"] = probable_name
+            elif not account_row["account_name"]:
+                account_row["account_name"] = (
+                    (getattr(row, "organization", None) or "").strip()
+                    or _audience_title_from_domain(organization_domain)
+                )
+            if organization_domain and not account_row["domain"]:
+                account_row["domain"] = organization_domain
+            if organization_type and not account_row["organization_type"]:
+                account_row["organization_type"] = organization_type
+            if territory_hint and not account_row["territory_hint"]:
+                account_row["territory_hint"] = territory_hint
+            current_rank = _audience_confidence_rank(organization_confidence)
+            if current_rank > int(account_row["confidence_rank"]):
+                account_row["confidence"] = organization_confidence or "low"
+                account_row["confidence_rank"] = current_rank
+            if sales_note and not account_row["sales_note"]:
+                account_row["sales_note"] = sales_note
+            account_row["lead_count"] = int(account_row["lead_count"]) + 1
+            if email_value and email_value not in account_row["email_set"]:
+                account_row["email_set"].add(email_value)
+                account_row["emails"].append(_audience_mask_email(email_value))
+            for page in pages_viewed:
+                if isinstance(page, str) and page.strip():
+                    account_row["pages_viewed"].add(page.strip())
+            account_row["best_score"] = max(int(account_row["best_score"]), max(0, min(100, lead_score)))
+            account_row["score_total"] = int(account_row["score_total"]) + max(0, int(lead_score))
+            account_row["score_count"] = int(account_row["score_count"]) + 1
+            candidate_last_activity = last_seen_at or getattr(row, "created_at", None)
+            if candidate_last_activity and (
+                account_row["last_activity_at"] is None
+                or candidate_last_activity > account_row["last_activity_at"]
+            ):
+                account_row["last_activity_at"] = candidate_last_activity
+            if territory and not account_row["territory_hint"]:
+                account_row["territory_hint"] = territory
+            if territory and not account_row["focus_slug"]:
+                account_row["focus_slug"] = _audience_focus_slug(territory) or "paris"
+        founder_queue_lead_rows.sort(
+            key=lambda row: (
+                int(row.get("score") or 0),
+                row.get("created_at") or datetime.min,
+                row.get("email") or "",
+            ),
+            reverse=True,
+        )
+        for row in founder_queue_lead_rows:
+            row.pop("created_at", None)
+        founder_queue_account_rows = []
+        for row in founder_queue_account_groups.values():
+            best_score = max(0, min(100, int(row["best_score"] or 0)))
+            score_count = max(1, int(row["score_count"] or 0))
+            avg_score = round(int(row["score_total"] or 0) / score_count)
+            last_activity_at = row.get("last_activity_at")
+            founder_queue_account_rows.append(
+                {
+                    "account_name": str(row.get("account_name") or row.get("domain") or "Compte detecte").strip(),
+                    "domain": str(row.get("domain") or "").strip(),
+                    "organization_type": str(row.get("organization_type") or "").strip(),
+                    "territory_hint": str(row.get("territory_hint") or "").strip(),
+                    "confidence": str(row.get("confidence") or "low").strip() or "low",
+                    "lead_count": int(row.get("lead_count") or 0),
+                    "emails": list(row.get("emails") or [])[:6],
+                    "pages_viewed": sorted(list(row.get("pages_viewed") or []))[:6],
+                    "best_score": best_score,
+                    "avg_score": avg_score,
+                    "priority": _audience_priority_for_lead_score(best_score),
+                    "recommended_action": _audience_action_for_lead_score(best_score),
+                    "last_activity": _audience_relative_time(last_activity_at, now),
+                    "last_activity_at": last_activity_at,
+                    "source": "account",
+                    "source_label": "Signal qualifie",
+                    "focus_slug": str(row.get("focus_slug") or "paris"),
+                    "sales_note": str(row.get("sales_note") or "").strip(),
+                }
+            )
+        founder_queue_account_rows.sort(
+            key=lambda row: (
+                int(row.get("best_score") or 0),
+                row.get("last_activity_at") or datetime.min,
+                row.get("account_name") or "",
+            ),
+            reverse=True,
+        )
+        for row in founder_queue_account_rows:
+            row.pop("last_activity_at", None)
+        context["founder_queue_account_rows"] = founder_queue_account_rows[:12]
+        context["founder_queue_lead_rows"] = founder_queue_lead_rows[:12]
     context["kpis"] = {
         "visitors_24h": len(visitors_24h),
         "visitors_7d": len(visitors_7d),

@@ -33,12 +33,12 @@
 
   <div class="hc-kpis mb-3">
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Visiteurs 24h <span class="audience-data-tag audience-data-tag--raw">RAW DATA</span></div>
+      <div class="hc-kpi__label">Visiteurs 24h <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.visitors_24h }}</div>
       <div class="hc-kpi__context">sessions ou IP distinctes</div>
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Visiteurs 7 jours <span class="audience-data-tag audience-data-tag--raw">RAW DATA</span></div>
+      <div class="hc-kpi__label">Visiteurs 7 jours <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.visitors_7d }}</div>
       <div class="hc-kpi__context">audience recente</div>
     </div>
@@ -48,19 +48,20 @@
       <div class="hc-kpi__context">si localisation disponible</div>
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Pages cles vues <span class="audience-data-tag audience-data-tag--raw">RAW DATA</span></div>
+      <div class="hc-kpi__label">Pages cles vues <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.key_pages }}</div>
       <div class="hc-kpi__context">parcours institutionnels</div>
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Intentions detectees <span class="audience-data-tag audience-data-tag--raw">RAW DATA</span></div>
+      <div class="hc-kpi__label">Intentions detectees <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.intent_signals }}</div>
       <div class="hc-kpi__context">vues sur pages a intention</div>
     </div>
     <div class="hc-kpi hc-kpi--estimated">
-      <div class="hc-kpi__label">Estimated Opportunity This Week <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span></div>
+      <div class="hc-kpi__label" id="audienceOpportunityTitle">Opportunite estimee cette semaine <span class="audience-data-tag audience-data-tag--estimated" id="audienceOpportunityMode">Estimation interne</span></div>
       <div class="hc-kpi__value" id="audienceEstimatedOpportunityValue">€1,770</div>
-      <div class="hc-kpi__context">Projection interne, non facturee.</div>
+      <div class="hc-kpi__context" id="audienceOpportunityLabel">Valeur estimee</div>
+      <div class="hc-kpi__context" id="audienceOpportunityContext">Projection interne, non facturee.</div>
     </div>
   </div>
 
@@ -70,7 +71,7 @@
         <strong>Revenue Radar</strong>
         <div class="hc-muted small">Sessions anonymes classees par intention commerciale probable.</div>
       </div>
-      <span class="badge text-bg-light border">ESTIMATED</span>
+      <span class="badge text-bg-light border">Estimation interne</span>
     </div>
     <div class="p-3">
       <div class="audience-radar-list" id="audienceRevenueRadar" aria-live="polite"></div>
@@ -122,7 +123,7 @@
             <h2 class="hc-audience-detailCard__title" id="audienceMapDetailCity">Paris</h2>
             <div class="hc-audience-detailGrid audience-sidebar-kpis">
               <div class="hc-audience-detailMetric audience-kpi-card">
-                <span class="hc-audience-detailMetric__label">Demandes estimees <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span></span>
+                <span class="hc-audience-detailMetric__label">Demandes estimees <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></span>
                 <strong id="audienceMapDetailDemand">12</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
@@ -134,11 +135,11 @@
                 <strong id="audienceMapDetailDepartment">75</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
-                <span class="hc-audience-detailMetric__label">Priorite <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span></span>
+                <span class="hc-audience-detailMetric__label">Priorite <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></span>
                 <strong id="audienceMapDetailPriority">Haute</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
-                <span class="hc-audience-detailMetric__label">Intensite marche <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span></span>
+                <span class="hc-audience-detailMetric__label">Intensite marche <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></span>
                 <strong id="audienceMapDetailIntensity">High</strong>
               </div>
             </div>
@@ -187,9 +188,9 @@
             <thead>
               <tr>
                 <th>Page</th>
-                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">RAW DATA</span></th>
+                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></th>
                 <th>Meaning</th>
-                <th>Sales Weight <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span></th>
+                <th>Sales Weight <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></th>
               </tr>
             </thead>
             <tbody>
@@ -250,9 +251,9 @@
             <div class="audience-module-header">
               <div>
                 <h2 class="h6 mb-1">Founder Action Queue</h2>
-                <div class="hc-muted small">Actions commerciales suggerees a partir des signaux qualifies.</div>
+                <div class="hc-muted small">Comptes probables puis leads qualifies, sinon cartes estimees de prospection.</div>
               </div>
-              <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span>
+              <span class="audience-data-tag audience-data-tag--estimated" id="audienceFounderQueueMode">Estimation interne</span>
             </div>
             <div class="audience-founder-queue" id="audienceFounderQueue" aria-live="polite"></div>
           </div>
@@ -260,7 +261,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Signaux en direct</h2>
-              <span class="audience-data-tag audience-data-tag--raw">RAW DATA</span>
+              <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span>
             </div>
             <div class="audience-signal-list" id="audienceLiveSignals" aria-live="polite"></div>
           </div>
@@ -268,7 +269,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Actions recommandees</h2>
-              <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span>
+              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
             </div>
             <div class="audience-action-list" id="audienceRecommendations" aria-live="polite"></div>
           </div>
@@ -276,7 +277,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Prevision 30 jours</h2>
-              <span class="audience-data-tag audience-data-tag--estimated">ESTIMATED</span>
+              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
             </div>
             <div class="audience-forecast-card" id="audienceForecastPanel" aria-live="polite"></div>
           </div>
@@ -290,6 +291,20 @@
     </div>
   </div>
 </div>
+<script id="audienceMapPayload" type="application/json">
+  {{ {
+    "founder_queue_account_rows": audience.founder_queue_account_rows,
+    "founder_queue_lead_rows": audience.founder_queue_lead_rows,
+    "qualified_signal_rows": audience.qualified_signal_rows,
+    "map_locations": audience.map_locations,
+    "revenue_radar_rows": audience.revenue_radar_rows,
+    "city_rows": audience.city_rows,
+    "repeat_rows": audience.repeat_rows,
+    "source_rows": audience.source_rows,
+    "page_rows": audience.page_rows,
+    "founder_insights": audience.founder_insights
+  }|tojson }}
+</script>
 {% endblock %}
 
 {% block scripts %}
