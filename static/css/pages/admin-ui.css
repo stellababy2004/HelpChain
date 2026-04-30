@@ -12003,6 +12003,227 @@ body[data-hc-page^="/ops"] :is(.hc-page-hero, .hc-admin-headerCard, .hc-card, .h
     justify-content: flex-start !important;
   }
 }
+
+/* Phase 2 polish: revenue + security table readability without backend changes */
+body.hc-admin-revenue-page .hc-revenue-table-wrap,
+body.hc-admin-security-page .hc-admin-tablewrap{
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-gutter: stable both-edges;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table{
+  table-layout: fixed !important;
+  min-width: 1360px;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table :is(th, td){
+  padding: .72rem .85rem !important;
+  vertical-align: middle !important;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table tbody tr{
+  height: 72px;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table :is(.hc-revenue-col-type, .hc-revenue-col-stage){
+  width: 116px;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table :is(.hc-revenue-col-score, .hc-revenue-col-value){
+  width: 112px;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table :is(.hc-revenue-col-actions){
+  width: 228px;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(2),
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(3),
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(8){
+  vertical-align: top !important;
+}
+
+body.hc-admin-revenue-page .hc-revenue-line{
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+body.hc-admin-revenue-page .hc-revenue-org{
+  font-weight: 700;
+  color: #183b63;
+}
+
+body.hc-admin-revenue-page .hc-revenue-sub{
+  display: block;
+  margin-top: .28rem;
+  color: rgba(67, 87, 111, .78);
+  font-size: .77rem;
+  line-height: 1.2;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(6),
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(9){
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(6) .badge,
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(9){
+  justify-content: center;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(7),
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(9){
+  white-space: nowrap;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table td:nth-child(10){
+  text-align: right;
+}
+
+body.hc-admin-revenue-page .hc-revenue-actions{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-items: stretch;
+  gap: .42rem;
+  width: 100%;
+  min-width: 0;
+}
+
+body.hc-admin-revenue-page .hc-revenue-actions form{
+  margin: 0;
+}
+
+body.hc-admin-revenue-page .hc-revenue-actions .btn{
+  width: 100%;
+  min-height: 34px;
+  padding-inline: .65rem;
+  justify-content: center;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table .badge{
+  min-height: 26px;
+  padding: .34rem .62rem;
+}
+
+body.hc-admin-revenue-page .hc-revenue-table tbody td .hc-admin-empty,
+body.hc-admin-revenue-page .hc-revenue-table tbody td .hc-empty-state,
+body.hc-admin-security-page .hc-admin-table tbody td .hc-admin-empty,
+body.hc-admin-security-page .hc-admin-table tbody td .hc-empty-state,
+body.hc-admin-proleads-page .hc-proleads-table tbody td .hc-empty-state{
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 88px;
+  margin: 0;
+  padding: 1rem 1.15rem;
+  text-align: center;
+}
+
+body.hc-admin-security-page .hc-security-panel{
+  overflow: hidden;
+}
+
+body.hc-admin-security-page .hc-security-panel .hc-card__header{
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+}
+
+body.hc-admin-security-page .hc-security-panel .hc-card__header strong{
+  line-height: 1.25;
+}
+
+body.hc-admin-security-page .hc-admin-table{
+  table-layout: fixed !important;
+}
+
+body.hc-admin-security-page .hc-security-signal-table{
+  min-width: 100%;
+}
+
+body.hc-admin-security-page .hc-security-login-table :is(th, td),
+body.hc-admin-security-page .hc-security-activity-table :is(th, td),
+body.hc-admin-security-page .hc-security-signal-table :is(th, td){
+  padding: .72rem .85rem !important;
+  vertical-align: middle !important;
+}
+
+body.hc-admin-security-page .hc-security-login-table tbody tr,
+body.hc-admin-security-page .hc-security-activity-table tbody tr,
+body.hc-admin-security-page .hc-security-signal-table tbody tr{
+  height: 58px;
+}
+
+body.hc-admin-security-page .hc-security-login-table td:nth-child(4),
+body.hc-admin-security-page .hc-security-signal-table td:last-child{
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-security-page .hc-security-activity-table td:nth-child(3),
+body.hc-admin-security-page .hc-security-login-table td:nth-child(4){
+  white-space: nowrap;
+}
+
+body.hc-admin-security-page .hc-security-login-table td:nth-child(2),
+body.hc-admin-security-page .hc-security-activity-table td:nth-child(2),
+body.hc-admin-security-page .hc-security-activity-table td:nth-child(4){
+  overflow-wrap: anywhere;
+}
+
+body.hc-admin-security-page .hc-security-login-table .badge,
+body.hc-admin-security-page .hc-security-activity-table .badge,
+body.hc-admin-security-page .hc-security-anomalies .badge{
+  min-height: 26px;
+  padding: .34rem .68rem;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+body.hc-admin-security-page .hc-security-anomalies .d-flex.flex-wrap.gap-2{
+  align-items: center;
+}
+
+body.hc-admin-security-page .hc-security-login-table .small,
+body.hc-admin-security-page .hc-security-activity-table .small,
+body.hc-admin-security-page .hc-security-signal-table .small{
+  line-height: 1.3;
+}
+
+body.hc-admin-security-page .hc-security-login-table td[colspan],
+body.hc-admin-security-page .hc-security-activity-table td[colspan],
+body.hc-admin-security-page .hc-security-signal-table td[colspan],
+body.hc-admin-revenue-page .hc-revenue-table td[colspan],
+body.hc-admin-proleads-page .hc-proleads-table td[colspan]{
+  padding: 1rem !important;
+  background: transparent !important;
+}
+
+body.hc-admin-proleads-page .hc-proleads-desktop .badge,
+body.hc-admin-proleads-page .hc-proleads-desktop .hc-proleads-priority{
+  min-height: 26px;
+  align-items: center;
+  vertical-align: middle;
+}
+
+@media (max-width: 1199.98px){
+  body.hc-admin-revenue-page .hc-revenue-table{
+    min-width: 1280px;
+  }
+}
+
+@media (max-width: 991.98px){
+  body.hc-admin-revenue-page .hc-revenue-actions{
+    grid-template-columns: 1fr;
+  }
+}
 /* OPS WORKSPACE TABLE EMPTY/ROW SPACING FIX */
 .ops-workspace table tbody tr:first-child td,
 .ops-shell table tbody tr:first-child td,
