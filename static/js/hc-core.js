@@ -2389,3 +2389,86 @@
   window.hcApplyWidths = hcApplyWidths;
 
 })();
+;(function () {
+  if (window.__hcConversionTrackingV1) return;
+  window.__hcConversionTrackingV1 = true;
+
+  function sendConversion(eventName, props) {
+    try {
+      var payload = JSON.stringify({
+        event: eventName,
+        props: Object.assign({
+          category: "conversion",
+          url: window.location.pathname,
+          title: document.title || "",
+          referrer: document.referrer || ""
+        }, props || {})
+      });
+
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/events", new Blob([payload], { type: "application/json" }));
+        return;
+      }
+
+      fetch("/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+        credentials: "same-origin"
+      });
+    } catch (e) {}
+  }
+
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("a, button");
+    if (!el) return;
+
+    var text = (el.innerText || el.textContent || "").trim();
+    var href = el.getAttribute("href") || "";
+    var type = null;
+
+    if (href.indexOf("/demo") >= 0 || /démo|demo|planifier/i.test(text)) {
+      type = "cta_demo_click";
+    } else if (href.indexOf("/contact") >= 0 || /contact|échanger/i.test(text)) {
+      type = "cta_contact_click";
+    } else if (href.indexOf("/demander-acces") >= 0 || /accès|access/i.test(text)) {
+      type = "cta_access_request_click";
+    } else if (href.indexOf("/professionnels") >= 0 || href.indexOf("/pilote") >= 0 || /pilote|professionnel/i.test(text)) {
+      type = "cta_pilot_click";
+    }
+
+    if (!type) return;
+
+    sendConversion(type, {
+      action: "click",
+      label: text.slice(0, 120),
+      href: href
+    });
+  }, true);
+
+  document.addEventListener("submit", function (e) {
+    var form = e.target;
+    if (!form || !form.action) return;
+
+    var action = form.getAttribute("action") || "";
+    var type = null;
+
+    if (action.indexOf("/demo") >= 0) {
+      type = "demo_form_submit";
+    } else if (action.indexOf("/contact") >= 0) {
+      type = "contact_form_submit";
+    } else if (action.indexOf("/demander-acces") >= 0) {
+      type = "access_request_form_submit";
+    } else if (action.indexOf("/professionnels") >= 0 || action.indexOf("/pilote") >= 0) {
+      type = "pilot_interest_form_submit";
+    }
+
+    if (!type) return;
+
+    sendConversion(type, {
+      action: "submit",
+      form_action: action
+    });
+  }, true);
+})();

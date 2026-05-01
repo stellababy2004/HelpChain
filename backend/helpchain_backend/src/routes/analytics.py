@@ -104,3 +104,84 @@ def analytics_stream():
         {"ts": int(time.time()), "msg": "new_analytics_event"},
     ]
     return jsonify({"sse_enabled": False, "events": sample_events})
+from hashlib import sha256
+
+
+def _hash_ip(value: str | None) -> str | None:
+    if not value:
+        return None
+    salt = current_app.config.get("SECRET_KEY", "helpchain-local-dev")
+    return sha256(f"{salt}:{value}".encode("utf-8")).hexdigest()[:24]
+
+
+def _client_ip() -> str | None:
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.remote_addr
+
+
+@analytics_bp.route("/events", methods=["POST"])
+def collect_event():
+    """Collect real first-party analytics events.
+
+    Stores privacy-conscious telemetry only:
+    - no raw IP address
+    - hashed IP only
+    - no credentials
+    """
+    try:
+        from backend.extensions import db
+        from backend.models_with_analytics import AnalyticsEvent
+
+        payload = request.get_json(silent=True) or {}
+
+        event_name = (
+            payload.get("event")
+            or payload.get("event_type")
+            or payload.get("name")
+            or "unknown"
+        )
+
+        props = payload.get("props") or payload.get("properties") or {}
+
+        event = AnalyticsEvent(
+            event_type=str(event_name)[:100],
+            event_category=str(props.get("category") or "first_party")[:100],
+            event_action=str(props.get("action") or event_name)[:100],
+            event_label=str(props.get("label") or "")[:255],
+            user_session=str(
+                payload.get("session_id")
+                or props.get("session_id")
+                or request.cookies.get("session")
+                or ""
+            )[:128],
+            user_type="admin" if session.get("admin_logged_in") else "guest",
+            user_ip=_hash_ip(_client_ip()),
+            user_agent=(request.headers.get("User-Agent") or "")[:500],
+            page_url=str(
+                payload.get("url")
+                or payload.get("page")
+                or props.get("url")
+                or request.headers.get("Referer")
+                or ""
+            )[:500],
+            page_title=str(payload.get("title") or props.get("title") or "")[:255],
+            referrer=str(
+                payload.get("referrer")
+                or props.get("referrer")
+                or request.headers.get("Referer")
+                or ""
+            )[:500],
+            screen_resolution=str(props.get("screen") or props.get("screen_resolution") or "")[:20],
+            device_type=str(props.get("device") or props.get("device_type") or "")[:50],
+        )
+
+        db.session.add(event)
+        db.session.commit()
+
+        return jsonify({"ok": True}), 201
+
+    except Exception as exc:
+        current_app.logger.warning("analytics event collection failed: %s", exc)
+        return jsonify({"ok": False}), 500
