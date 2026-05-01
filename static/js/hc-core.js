@@ -2472,3 +2472,43 @@
     });
   }, true);
 })();
+(function () {
+  if (window.__hcPageViewTrackingV1) return;
+  window.__hcPageViewTrackingV1 = true;
+
+  function sendPageView() {
+    try {
+      var payload = JSON.stringify({
+        event: "page_view",
+        props: {
+          category: "audience",
+          action: "page_view",
+          url: window.location.pathname,
+          title: document.title || "",
+          referrer: document.referrer || "",
+          screen: window.screen ? (window.screen.width + "x" + window.screen.height) : "",
+          device: window.innerWidth < 768 ? "mobile" : "desktop"
+        }
+      });
+
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon("/events", new Blob([payload], { type: "application/json" }));
+        return;
+      }
+
+      fetch("/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+        credentials: "same-origin"
+      });
+    } catch (e) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", sendPageView);
+  } else {
+    sendPageView();
+  }
+})();
