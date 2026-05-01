@@ -24,7 +24,7 @@
       <div class="hc-admin-shellbar__inner">
         <div class="hc-admin-shellbar__brand">
           <span class="hc-admin-shellbar__eyebrow">HelpChain</span>
-          <span class="hc-admin-shellbar__title">Centre de pilotage opÃ©rationnel</span>
+          <span class="hc-admin-shellbar__title">Centre de pilotage opérationnel</span>
         </div>
         <nav class="hc-admin-shellnav" aria-label="Navigation administration">
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/home') or current_path in ['/admin', '/admin/'] else '' }}" href="{{ url_for('admin.admin_home') }}">Accueil</a>
@@ -37,7 +37,7 @@
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/conversion-dashboard') else '' }}" href="/admin/conversion-dashboard">Conversion</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/audience-map') else '' }}" href="{{ url_for('admin.admin_audience_map') }}">Audience</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/risk') else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
-          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">SÃ©curitÃ©</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') else '' }}" href="{{ url_for('admin.admin_security') }}">Sécurité</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/structures') or current_path.startswith('/admin/organizations') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') else '' }}" href="{{ url_for('admin.admin_structures') }}">Plateforme</a>
         </nav>
       </div>
@@ -51,6 +51,7 @@
     {{ super() }}
   {% endif %}
 {% endblock %}
+
 
 
 
