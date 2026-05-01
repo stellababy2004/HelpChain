@@ -2245,6 +2245,7 @@ def require_admin_session():
     - "Admin" navbar link is also keyed off the same session flag.
     """
     allowed = {
+        "admin.admin_login",
         "admin.ops_login",
         "admin.admin_login_legacy",
         "admin.admin_email_2fa",
@@ -2264,11 +2265,7 @@ def require_admin_session():
         return None
 
     if _has_pending_admin_mfa():
-        nxt = request.full_path if request.query_string else request.path
-        return redirect(
-            url_for("admin.admin_mfa_verify", next=_safe_next_url(nxt)),
-            code=303,
-        )
+        return _pending_admin_mfa_redirect_response()
 
     nxt = request.full_path if request.query_string else request.path
     return redirect(
@@ -3647,6 +3644,16 @@ def _has_pending_admin_mfa() -> bool:
         return False
 
 
+def _pending_admin_mfa_redirect_response():
+    nxt = request.full_path if request.query_string else request.path
+    next_url = _safe_next_url(nxt)
+    user_has_mfa = bool(getattr(current_user, "mfa_enabled", False)) and bool(
+        getattr(current_user, "totp_secret", None)
+    )
+    endpoint = "admin.admin_mfa_verify" if user_has_mfa else "admin.admin_mfa_setup"
+    return redirect(url_for(endpoint, next=next_url), code=303)
+
+
 def admin_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
@@ -4346,6 +4353,7 @@ def enforce_admin_mfa():
     ):
         return None
     allowed = {
+        "admin.admin_login",
         "admin.ops_login",
         "admin.admin_login_legacy",
         "admin.admin_logout",
@@ -4378,6 +4386,7 @@ def enforce_admin_mfa():
 @admin_bp.before_request
 def enforce_admin_onboarding():
     allowed = {
+        "admin.admin_login",
         "admin.ops_login",
         "admin.admin_login_legacy",
         "admin.admin_logout",
