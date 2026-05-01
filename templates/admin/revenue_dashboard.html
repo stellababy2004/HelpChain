@@ -75,25 +75,74 @@
       max-width: 100%;
       overflow-x: auto;
     }
-    .hc-revenue-page .hc-revenue-table {
-      width: 100%;
-      min-width: 980px;
-      table-layout: auto !important;
+    .hc-revenue-page .hc-revenue-pipeline {
+      min-width: 0;
     }
-    .hc-revenue-page .hc-revenue-table th,
-    .hc-revenue-page .hc-revenue-table td {
-      vertical-align: middle;
+    .hc-revenue-page .hc-revenue-pipeline__head,
+    .hc-revenue-page .hc-revenue-pipeline__row {
+      display: grid;
+      grid-template-columns: 104px minmax(220px, 1.8fr) minmax(170px, 1.1fr) 120px 132px 108px 118px minmax(180px, 1.3fr) 110px minmax(220px, 1.35fr);
+      gap: .75rem;
+      align-items: center;
     }
-    .hc-revenue-page .hc-revenue-col-type { width: 120px; }
-    .hc-revenue-page .hc-revenue-col-org { width: 245px; }
-    .hc-revenue-page .hc-revenue-col-contact { width: 190px; }
-    .hc-revenue-page .hc-revenue-col-city { width: 145px; }
-    .hc-revenue-page .hc-revenue-col-stage { width: 142px; }
-    .hc-revenue-page .hc-revenue-col-score { width: 118px; }
-    .hc-revenue-page .hc-revenue-col-activity { width: 132px; }
-    .hc-revenue-page .hc-revenue-col-next { width: 220px; }
-    .hc-revenue-page .hc-revenue-col-value { width: 120px; }
-    .hc-revenue-page .hc-revenue-col-actions { width: 255px; }
+    .hc-revenue-page .hc-revenue-pipeline__head {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: .8rem 1rem;
+      border-bottom: 1px solid rgba(15, 23, 42, .08);
+      background: #f8fafc;
+      color: rgba(15, 23, 42, .62);
+      font-size: .72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__body {
+      display: grid;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__row {
+      padding: .9rem 1rem;
+      border-bottom: 1px solid rgba(15, 23, 42, .06);
+      background: #fff;
+      min-height: 84px;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__row:last-child {
+      border-bottom: 0;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__cell {
+      min-width: 0;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__cell--metric,
+    .hc-revenue-page .hc-revenue-pipeline__cell--value,
+    .hc-revenue-page .hc-revenue-pipeline__cell--actions {
+      justify-self: end;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__cell--value {
+      text-align: right;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__metric {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: .2rem;
+    }
+    .hc-revenue-page .hc-revenue-pipeline__mobile-label {
+      display: none;
+      color: rgba(15, 23, 42, .55);
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: .25rem;
+    }
+    .hc-revenue-page .hc-revenue-empty {
+      padding: 1.15rem;
+      background: #fff;
+    }
     .hc-revenue-page .hc-revenue-line {
       display: block;
       white-space: nowrap;
@@ -168,6 +217,53 @@
       .hc-revenue-page .hc-revenue-filters,
       .hc-revenue-page .hc-revenue-forecast {
         grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 1180px) {
+      .hc-revenue-page .hc-revenue-pipeline__head {
+        display: none;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__body {
+        gap: .9rem;
+        padding: .9rem;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .8rem 1rem;
+        border: 1px solid rgba(15, 23, 42, .08);
+        border-radius: 12px;
+        min-height: 0;
+        padding: .95rem;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__cell--actions,
+      .hc-revenue-page .hc-revenue-pipeline__cell--metric,
+      .hc-revenue-page .hc-revenue-pipeline__cell--value {
+        justify-self: stretch;
+        text-align: left;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__metric {
+        align-items: flex-start;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__cell--organization,
+      .hc-revenue-page .hc-revenue-pipeline__cell--next,
+      .hc-revenue-page .hc-revenue-pipeline__cell--actions {
+        grid-column: 1 / -1;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__mobile-label {
+        display: block;
+      }
+      .hc-revenue-page .hc-revenue-actions {
+        justify-content: flex-start;
+      }
+    }
+    @media (max-width: 640px) {
+      .hc-revenue-page .hc-revenue-pipeline__row {
+        grid-template-columns: 1fr;
+      }
+      .hc-revenue-page .hc-revenue-pipeline__cell--organization,
+      .hc-revenue-page .hc-revenue-pipeline__cell--next,
+      .hc-revenue-page .hc-revenue-pipeline__cell--actions {
+        grid-column: auto;
       }
     }
   </style>
@@ -289,55 +385,65 @@
           </div>
           {% if active_filters %}<span class="badge text-bg-light border">Filters active</span>{% endif %}
         </div>
-        <div class="table-responsive hc-admin-tablewrap hc-revenue-table-wrap">
-          <table class="table table-hover align-middle hc-admin-table hc-revenue-table mb-0">
-            <colgroup>
-              <col class="hc-revenue-col-type">
-              <col class="hc-revenue-col-org">
-              <col class="hc-revenue-col-contact">
-              <col class="hc-revenue-col-city">
-              <col class="hc-revenue-col-stage">
-              <col class="hc-revenue-col-score">
-              <col class="hc-revenue-col-activity">
-              <col class="hc-revenue-col-next">
-              <col class="hc-revenue-col-value">
-              <col class="hc-revenue-col-actions">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Organization</th>
-                <th>Contact</th>
-                <th>City</th>
-                <th>Stage</th>
-                <th>Score</th>
-                <th>Last Activity</th>
-                <th>Next Action</th>
-                <th class="text-end">Value</th>
-                <th class="text-end">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div class="hc-admin-tablewrap hc-revenue-table-wrap">
+          <div class="hc-revenue-pipeline" role="table" aria-label="Unified Pipeline">
+            <div class="hc-revenue-pipeline__head" role="row">
+              <div role="columnheader">Type</div>
+              <div role="columnheader">Organization</div>
+              <div role="columnheader">Contact</div>
+              <div role="columnheader">City</div>
+              <div role="columnheader">Stage</div>
+              <div role="columnheader" class="text-end">Score</div>
+              <div role="columnheader">Last Activity</div>
+              <div role="columnheader">Next Action</div>
+              <div role="columnheader" class="text-end">Value</div>
+              <div role="columnheader" class="text-end">Actions</div>
+            </div>
+            <div class="hc-revenue-pipeline__body" role="rowgroup">
               {% for row in rows %}
-                <tr>
-                  <td><span class="badge text-bg-light border">{{ row.type_label }}</span></td>
-                  <td>
+                <div class="hc-revenue-pipeline__row" role="row">
+                  <div class="hc-revenue-pipeline__cell" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Type</div>
+                    <span class="badge text-bg-light border">{{ row.type_label }}</span>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell hc-revenue-pipeline__cell--organization" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Organization</div>
                     <a class="hc-revenue-line hc-revenue-org" href="{{ row.action_url }}">{{ row.organization }}</a>
                     <span class="hc-revenue-line hc-revenue-sub">{{ row.source }}</span>
-                  </td>
-                  <td><span class="hc-revenue-line">{{ row.contact }}</span></td>
-                  <td><span class="hc-revenue-line">{{ row.city }}</span></td>
-                  <td><span class="badge text-bg-light border">{{ row.stage_label }}</span></td>
-                  <td>
-                    <span class="badge {{ row.score_class }}">{{ row.score_bucket }}</span>
-                    <span class="hc-revenue-sub d-block">{{ row.score }}/100</span>
-                  </td>
-                  <td>{{ row.last_activity_label }}</td>
-                  <td>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Contact</div>
+                    <span class="hc-revenue-line">{{ row.contact }}</span>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">City</div>
+                    <span class="hc-revenue-line">{{ row.city }}</span>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Stage</div>
+                    <span class="badge text-bg-light border">{{ row.stage_label }}</span>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell hc-revenue-pipeline__cell--metric" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Score</div>
+                    <div class="hc-revenue-pipeline__metric">
+                      <span class="badge {{ row.score_class }}">{{ row.score_bucket }}</span>
+                      <span class="hc-revenue-sub">{{ row.score }}/100</span>
+                    </div>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Last Activity</div>
+                    <span class="hc-revenue-line">{{ row.last_activity_label }}</span>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell hc-revenue-pipeline__cell--next" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Next Action</div>
                     <span class="hc-revenue-line hc-revenue-next--{{ row.next_action_state }}">{{ row.next_action_label }}</span>
-                  </td>
-                  <td class="text-end fw-semibold">EUR {{ row.estimated_value }}</td>
-                  <td>
+                  </div>
+                  <div class="hc-revenue-pipeline__cell hc-revenue-pipeline__cell--value" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Value</div>
+                    EUR {{ row.estimated_value }}
+                  </div>
+                  <div class="hc-revenue-pipeline__cell hc-revenue-pipeline__cell--actions" role="cell">
+                    <div class="hc-revenue-pipeline__mobile-label">Actions</div>
                     <div class="hc-revenue-actions">
                       <form method="POST" action="{{ url_for('admin.admin_revenue_quick_action', item_type=row.kind, item_id=row.id) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -360,20 +466,18 @@
                         <button class="btn btn-outline-danger btn-sm" type="submit">Lost</button>
                       </form>
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               {% else %}
-                <tr>
-                  <td colspan="10">
-                    <div class="hc-empty-state">
-                      <div class="hc-empty-state__title">No revenue signals yet</div>
-                      <div class="hc-empty-state__text">Professional leads and organization access requests will appear here when available.</div>
-                    </div>
-                  </td>
-                </tr>
+                <div class="hc-revenue-empty">
+                  <div class="hc-empty-state">
+                    <div class="hc-empty-state__title">No revenue signals yet</div>
+                    <div class="hc-empty-state__text">Professional leads and organization access requests will appear here when available.</div>
+                  </div>
+                </div>
               {% endfor %}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
       </div>
     </main>
