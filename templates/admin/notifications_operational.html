@@ -1,11 +1,139 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin • Notifications | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-notify-page .hc-notify-grid-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .hc-notify-page .hc-notify-grid {
+      min-width: 0;
+    }
+    .hc-notify-page .hc-notify-grid__head,
+    .hc-notify-page .hc-notify-grid__row {
+      display: grid;
+      grid-template-columns: 72px 132px 88px minmax(180px, 1.2fr) minmax(190px, 1.25fr) 110px 88px 138px 132px minmax(180px, 1.15fr) 96px;
+      gap: .75rem;
+      align-items: center;
+    }
+    .hc-notify-page .hc-notify-grid__head {
+      padding: .85rem 1rem;
+      border-bottom: 1px solid rgba(15, 23, 42, .08);
+      background: #f8fafc;
+      color: rgba(15, 23, 42, .62);
+      font-size: .72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .hc-notify-page .hc-notify-grid__body {
+      display: grid;
+    }
+    .hc-notify-page .hc-notify-grid__row {
+      padding: .9rem 1rem;
+      border-bottom: 1px solid rgba(15, 23, 42, .06);
+      background: #fff;
+      min-height: 82px;
+    }
+    .hc-notify-page .hc-notify-grid__row:last-child {
+      border-bottom: 0;
+    }
+    .hc-notify-page .hc-notify-grid__cell {
+      min-width: 0;
+    }
+    .hc-notify-page .hc-notify-grid__label {
+      display: none;
+      color: rgba(15, 23, 42, .55);
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: .25rem;
+    }
+    .hc-notify-page .hc-notify-grid__line {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .hc-notify-page .hc-notify-grid__sub {
+      color: rgba(15, 23, 42, .58);
+      font-size: .78rem;
+    }
+    .hc-notify-page .hc-notify-grid__cell--status,
+    .hc-notify-page .hc-notify-grid__cell--attempts,
+    .hc-notify-page .hc-notify-grid__cell--action {
+      justify-self: center;
+    }
+    .hc-notify-page .hc-notify-grid__badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 88px;
+    }
+    .hc-notify-page .hc-notify-grid__action {
+      display: flex;
+      justify-content: center;
+    }
+    .hc-notify-page .hc-notify-grid__empty {
+      padding: 1.15rem;
+      background: #fff;
+    }
+    @media (max-width: 1280px) {
+      .hc-notify-page .hc-notify-grid__head {
+        display: none;
+      }
+      .hc-notify-page .hc-notify-grid__body {
+        gap: .9rem;
+        padding: .9rem;
+      }
+      .hc-notify-page .hc-notify-grid__row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .8rem 1rem;
+        min-height: 0;
+        padding: 1rem;
+        border: 1px solid rgba(15, 23, 42, .08);
+        border-radius: 12px;
+      }
+      .hc-notify-page .hc-notify-grid__label {
+        display: block;
+      }
+      .hc-notify-page .hc-notify-grid__cell--event,
+      .hc-notify-page .hc-notify-grid__cell--recipient,
+      .hc-notify-page .hc-notify-grid__cell--error,
+      .hc-notify-page .hc-notify-grid__cell--action {
+        grid-column: 1 / -1;
+      }
+      .hc-notify-page .hc-notify-grid__cell--status,
+      .hc-notify-page .hc-notify-grid__cell--attempts,
+      .hc-notify-page .hc-notify-grid__cell--action {
+        justify-self: stretch;
+      }
+      .hc-notify-page .hc-notify-grid__action {
+        justify-content: flex-start;
+      }
+    }
+    @media (max-width: 640px) {
+      .hc-notify-page .hc-notify-grid__row {
+        grid-template-columns: 1fr;
+      }
+      .hc-notify-page .hc-notify-grid__cell--event,
+      .hc-notify-page .hc-notify-grid__cell--recipient,
+      .hc-notify-page .hc-notify-grid__cell--error,
+      .hc-notify-page .hc-notify-grid__cell--action {
+        grid-column: auto;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block admin_content %}
 {% set notifications_endpoint = 'ops.ops_notifications_list' if request.path.startswith('/ops') else 'admin.admin_notifications_list' %}
 {% set retry_endpoint = 'ops.ops_notifications_retry' if request.path.startswith('/ops') else 'admin.admin_notifications_retry' %}
-<div class="hc-admin-wrap hc-admin-wrap--wide">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-notify-page">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
@@ -85,104 +213,118 @@
       <h2 class="h6 mb-1">Flux des notifications</h2>
       <div class="hc-muted">Suivi des envois avec statut, tentatives et erreurs récentes.</div>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-notify-table mb-0">
-        <colgroup>
-          <col class="hc-notify-col-id">
-          <col class="hc-notify-col-created">
-          <col class="hc-notify-col-channel">
-          <col class="hc-notify-col-event">
-          <col class="hc-notify-col-recipient-col">
-          <col class="hc-notify-col-status">
-          <col class="hc-notify-col-attempts">
-          <col class="hc-notify-col-next-retry">
-          <col class="hc-notify-col-sent-at">
-          <col class="hc-notify-col-error-col">
-          <col style="width: 96px;">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Créée le</th>
-            <th>Canal</th>
-            <th>Événement</th>
-            <th>Destinataire</th>
-            <th>Statut</th>
-            <th>Tentatives</th>
-            <th>Prochaine relance</th>
-            <th>Envoyée le</th>
-            <th>Dernière erreur</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
+    <div class="hc-admin-tablewrap hc-notify-grid-wrap">
+      <div class="hc-notify-grid" role="table" aria-label="Flux des notifications">
+        <div class="hc-notify-grid__head" role="row">
+          <div role="columnheader">ID</div>
+          <div role="columnheader">Créée le</div>
+          <div role="columnheader">Canal</div>
+          <div role="columnheader">Événement</div>
+          <div role="columnheader">Destinataire</div>
+          <div role="columnheader">Statut</div>
+          <div role="columnheader">Tentatives</div>
+          <div role="columnheader">Prochaine relance</div>
+          <div role="columnheader">Envoyée le</div>
+          <div role="columnheader">Dernière erreur</div>
+          <div role="columnheader">Action</div>
+        </div>
+        <div class="hc-notify-grid__body" role="rowgroup">
           {% for j in jobs %}
-            <tr>
-              <td class="text-muted">#{{ j.id }}</td>
-              <td class="small text-muted">{{ j.created_at|format_datetime_fr }}</td>
-              <td>{{ j.channel or '-' }}</td>
-              <td>{{ j.event_type or '-' }}</td>
-              <td class="hc-notify-col-recipient" title="{{ j.recipient }}">{{ j.recipient }}</td>
-              <td>
+            <div class="hc-notify-grid__row" role="row">
+              <div class="hc-notify-grid__cell" role="cell">
+                <div class="hc-notify-grid__label">ID</div>
+                <span class="hc-notify-grid__line text-muted">#{{ j.id }}</span>
+              </div>
+              <div class="hc-notify-grid__cell" role="cell">
+                <div class="hc-notify-grid__label">Créée le</div>
+                <span class="hc-notify-grid__line small text-muted">{{ j.created_at|format_datetime_fr }}</span>
+              </div>
+              <div class="hc-notify-grid__cell" role="cell">
+                <div class="hc-notify-grid__label">Canal</div>
+                <span class="hc-notify-grid__line">{{ j.channel or '-' }}</span>
+              </div>
+              <div class="hc-notify-grid__cell hc-notify-grid__cell--event" role="cell">
+                <div class="hc-notify-grid__label">Événement</div>
+                <span class="hc-notify-grid__line" title="{{ j.event_type or '-' }}">{{ j.event_type or '-' }}</span>
+              </div>
+              <div class="hc-notify-grid__cell hc-notify-grid__cell--recipient" role="cell">
+                <div class="hc-notify-grid__label">Destinataire</div>
+                <span class="hc-notify-grid__line" title="{{ j.recipient }}">{{ j.recipient }}</span>
+              </div>
+              <div class="hc-notify-grid__cell hc-notify-grid__cell--status" role="cell">
+                <div class="hc-notify-grid__label">Statut</div>
                 {% if j.ui_status_bucket == 'sent' %}
-                  <span class="badge text-bg-success">{{ j.ui_status_label }}</span>
+                  <span class="badge text-bg-success hc-notify-grid__badge">{{ j.ui_status_label }}</span>
                 {% elif j.ui_status_bucket == 'retry' %}
-                  <span class="badge text-bg-warning text-dark">{{ j.ui_status_label }}</span>
+                  <span class="badge text-bg-warning text-dark hc-notify-grid__badge">{{ j.ui_status_label }}</span>
                 {% elif j.ui_status_bucket == 'failed' %}
-                  <span class="badge text-bg-danger">{{ j.ui_status_label }}</span>
+                  <span class="badge text-bg-danger hc-notify-grid__badge">{{ j.ui_status_label }}</span>
                 {% elif j.ui_status_bucket == 'processing' %}
-                  <span class="badge text-bg-info text-dark">en cours</span>
+                  <span class="badge text-bg-info text-dark hc-notify-grid__badge">en cours</span>
                 {% else %}
-                  <span class="badge text-bg-secondary">en attente</span>
+                  <span class="badge text-bg-secondary hc-notify-grid__badge">en attente</span>
                 {% endif %}
-              </td>
-              <td>{{ j.attempts or 0 }}/{{ j.max_attempts or 0 }}</td>
-              <td class="small text-muted">{{ j.next_retry_at|format_datetime_fr }}</td>
-              <td class="small text-muted">{{ j.sent_at|format_datetime_fr }}</td>
-              <td class="hc-notify-col-error" title="{{ j.last_error or '-' }}">{{ (j.last_error or '-')|truncate(80, True) }}</td>
-              <td>
-                {% if j.ui_status_bucket == 'failed' %}
-                  {% if config.DEMO_MODE %}
-                    <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Action démo</span>
+              </div>
+              <div class="hc-notify-grid__cell hc-notify-grid__cell--attempts" role="cell">
+                <div class="hc-notify-grid__label">Tentatives</div>
+                <span class="hc-notify-grid__line">{{ j.attempts or 0 }}/{{ j.max_attempts or 0 }}</span>
+              </div>
+              <div class="hc-notify-grid__cell" role="cell">
+                <div class="hc-notify-grid__label">Prochaine relance</div>
+                <span class="hc-notify-grid__line small text-muted">{{ j.next_retry_at|format_datetime_fr }}</span>
+              </div>
+              <div class="hc-notify-grid__cell" role="cell">
+                <div class="hc-notify-grid__label">Envoyée le</div>
+                <span class="hc-notify-grid__line small text-muted">{{ j.sent_at|format_datetime_fr }}</span>
+              </div>
+              <div class="hc-notify-grid__cell hc-notify-grid__cell--error" role="cell">
+                <div class="hc-notify-grid__label">Dernière erreur</div>
+                <span class="hc-notify-grid__line hc-notify-grid__sub" title="{{ j.last_error or '-' }}">{{ (j.last_error or '-')|truncate(80, True) }}</span>
+              </div>
+              <div class="hc-notify-grid__cell hc-notify-grid__cell--action" role="cell">
+                <div class="hc-notify-grid__label">Action</div>
+                <div class="hc-notify-grid__action">
+                  {% if j.ui_status_bucket == 'failed' %}
+                    {% if config.DEMO_MODE %}
+                      <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Action démo</span>
+                    {% else %}
+                      <form method="post" action="{{ url_for(retry_endpoint, job_id=j.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="status" value="{{ status }}">
+                        <input type="hidden" name="channel" value="{{ channel }}">
+                        <input type="hidden" name="event_type" value="{{ event_type }}">
+                        <input type="hidden" name="recipient" value="{{ recipient }}">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Relancer</button>
+                      </form>
+                    {% endif %}
                   {% else %}
-                    <form method="post" action="{{ url_for(retry_endpoint, job_id=j.id) }}">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="status" value="{{ status }}">
-                      <input type="hidden" name="channel" value="{{ channel }}">
-                      <input type="hidden" name="event_type" value="{{ event_type }}">
-                      <input type="hidden" name="recipient" value="{{ recipient }}">
-                      <button type="submit" class="btn btn-outline-secondary btn-sm">Relancer</button>
-                    </form>
+                    <span class="small text-muted">-</span>
                   {% endif %}
-                {% else %}
-                  <span class="small text-muted">-</span>
-                {% endif %}
-              </td>
-            </tr>
-          {% else %}
-            <tr>
-              <td colspan="11" class="py-4">
-                <div class="hc-empty-state">
-                  <div class="hc-empty-state__title">
-                    {% if status or channel or event_type or recipient %}
-                      Aucune notification ne correspond aux filtres actifs
-                    {% else %}
-                      Aucune notification
-                    {% endif %}
-                  </div>
-                  <div class="hc-empty-state__text">
-                    {% if status or channel or event_type or recipient %}
-                      Ajustez ou réinitialisez les filtres pour réafficher le flux opérationnel.
-                    {% else %}
-                      Aucun envoi n'est actuellement en file d'attente, en reprise ou en erreur sur cette instance.
-                    {% endif %}
-                  </div>
                 </div>
-              </td>
-            </tr>
+              </div>
+            </div>
+          {% else %}
+            <div class="hc-notify-grid__empty">
+              <div class="hc-empty-state">
+                <div class="hc-empty-state__title">
+                  {% if status or channel or event_type or recipient %}
+                    Aucune notification ne correspond aux filtres actifs
+                  {% else %}
+                    Aucune notification
+                  {% endif %}
+                </div>
+                <div class="hc-empty-state__text">
+                  {% if status or channel or event_type or recipient %}
+                    Ajustez ou réinitialisez les filtres pour réafficher le flux opérationnel.
+                  {% else %}
+                    Aucun envoi n'est actuellement en file d'attente, en reprise ou en erreur sur cette instance.
+                  {% endif %}
+                </div>
+              </div>
+            </div>
           {% endfor %}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
