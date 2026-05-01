@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import time
@@ -71,6 +72,15 @@ class ProviderConfig:
     provider: str
     api_key: Optional[str] = None
     base_url: Optional[str] = None
+
+
+def resolve_provider_api_key(provider: str, explicit_api_key: Optional[str]) -> Optional[str]:
+    if explicit_api_key:
+        return explicit_api_key
+    if provider == "google":
+        # API key must be provided via environment variable. Do not commit real keys.
+        return os.getenv("GOOGLE_API_KEY", "local-dev-placeholder")
+    return None
 
 
 class Translator:
@@ -295,7 +305,13 @@ def main() -> int:
         print("[ERROR] No target languages after filtering source language.", file=sys.stderr)
         return 2
 
-    translator = Translator(ProviderConfig(provider=args.provider, api_key=args.api_key, base_url=args.base_url))
+    translator = Translator(
+        ProviderConfig(
+            provider=args.provider,
+            api_key=resolve_provider_api_key(args.provider, args.api_key),
+            base_url=args.base_url,
+        )
+    )
     cache_file = Path(args.cache_file)
     cache = {} if args.no_cache else load_cache(cache_file)
 
