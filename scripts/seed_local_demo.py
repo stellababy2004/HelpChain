@@ -49,8 +49,9 @@ from backend.helpchain_backend.src.models import (
 
 
 DEMO_MARKER = "[LOCAL_DEMO_SEED]"
-DEFAULT_ADMIN_PASSWORD = "Admin123!"
-DEFAULT_USER_PASSWORD = "Demo123!"
+# Local demo defaults only; override via environment variables in local development.
+DEFAULT_ADMIN_PASSWORD = os.getenv("HC_DEMO_ADMIN_PASSWORD", "change-me-local-admin")
+DEFAULT_USER_PASSWORD = os.getenv("HC_DEMO_USER_PASSWORD", "change-me-local-user")
 DEFAULT_LOCAL_BASE_URL = "http://127.0.0.1:5000"
 DEMO_EMAIL_DOMAIN = "helpchain.local"
 
@@ -1627,11 +1628,13 @@ def print_credentials_and_urls(cfg: dict[str, Any]) -> None:
     else:
         base_url = DEFAULT_LOCAL_BASE_URL
     print("\n== Demo credentials ==")
-    print(f"superadmin: username=admin email=admin@{DEMO_EMAIL_DOMAIN} password={DEFAULT_ADMIN_PASSWORD}")
-    print(f"coordinator: username=coord_nanterre email=coord.nanterre@{DEMO_EMAIL_DOMAIN} password={DEFAULT_ADMIN_PASSWORD}")
-    print(f"ops: username=ops_demo email=ops.demo@{DEMO_EMAIL_DOMAIN} password={DEFAULT_ADMIN_PASSWORD}")
-    print(f"readonly: username=readonly_demo email=readonly.demo@{DEMO_EMAIL_DOMAIN} password={DEFAULT_ADMIN_PASSWORD}")
-    print(f"requester: username=requester_nanterre email=requester.nanterre@{DEMO_EMAIL_DOMAIN} password={DEFAULT_USER_PASSWORD}")
+    admin_password_hint = "set via HC_DEMO_ADMIN_PASSWORD or local placeholder"
+    user_password_hint = "set via HC_DEMO_USER_PASSWORD or local placeholder"
+    print(f"superadmin: username=admin email=admin@{DEMO_EMAIL_DOMAIN} password={admin_password_hint}")
+    print(f"coordinator: username=coord_nanterre email=coord.nanterre@{DEMO_EMAIL_DOMAIN} password={admin_password_hint}")
+    print(f"ops: username=ops_demo email=ops.demo@{DEMO_EMAIL_DOMAIN} password={admin_password_hint}")
+    print(f"readonly: username=readonly_demo email=readonly.demo@{DEMO_EMAIL_DOMAIN} password={admin_password_hint}")
+    print(f"requester: username=requester_nanterre email=requester.nanterre@{DEMO_EMAIL_DOMAIN} password={user_password_hint}")
 
     print("\n== Demo admin MFA state ==")
     for spec in DEMO_ADMINS:
