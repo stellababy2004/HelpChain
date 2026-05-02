@@ -341,6 +341,10 @@ def maybe_self_heal_local_sqlite(app, db):
         app.logger.warning("[SELFHEAL] skipped: HC_SKIP_SELFHEAL=1")
         return
 
+    if app.config.get("TESTING") or os.getenv("HELPCHAIN_TESTING") == "1":
+        app.logger.warning("[SELFHEAL] skipped: testing context")
+        return
+
     uri = str(app.config.get("SQLALCHEMY_DATABASE_URI") or "")
 
     if not uri.lower().startswith("sqlite:///"):
@@ -391,6 +395,14 @@ def maybe_self_heal_local_sqlite(app, db):
     try:
         shutil.copy2(db_path, backup_path)
         app.logger.warning("[SELFHEAL] backup created: %s", backup_path)
+
+        allow_destructive = os.getenv("HC_SELFHEAL_ALLOW_DESTRUCTIVE", "").strip().lower() == "true"
+        if not allow_destructive:
+            app.logger.warning(
+                "[SELFHEAL] destructive repair blocked: set HC_SELFHEAL_ALLOW_DESTRUCTIVE=true to allow"
+            )
+            app.logger.warning("[SELFHEAL] original DB preserved")
+            return
 
         db.session.remove()
         db.engine.dispose()
