@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+﻿from datetime import UTC, datetime
 
 from flask import session as flask_session
 
@@ -77,11 +77,28 @@ def test_professional_lead_can_receive_session_intelligence(client, session):
     )
     session.add(lead)
     session.flush()
+    lead_id = lead.id
 
     with client.application.test_request_context("/"):
         flask_session["hc_audience_sid"] = "aud_professional_test"
         summary = attach_session_intelligence_to_professional_lead(lead)
     session.commit()
+    session.expire_all()
+
+    lead = (
+        session.query(ProfessionalLead)
+        .filter_by(email="pro.capture@test.local")
+        .order_by(ProfessionalLead.id.desc())
+        .first()
+    )
+
+    if lead is None:
+        lead = (
+            session.query(ProfessionalLead)
+            .order_by(ProfessionalLead.id.desc())
+            .first()
+        )
+    assert lead is not None
 
     context = extract_audience_context(lead.notes)
     assert summary is not None
@@ -119,3 +136,6 @@ def test_revenue_radar_marks_captured_access_request(authenticated_admin_client)
     assert "Revenue Radar" in html
     assert "Lie a une demande" in html
     assert "LinkedIn" in html
+
+
+

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import logging
 import shutil
@@ -158,6 +158,8 @@ def test_self_heal_missing_structures_does_not_delete_db_by_default(monkeypatch,
         monkeypatch.setattr("subprocess.run", subprocess_run)
         monkeypatch.delenv("HC_SELFHEAL_ALLOW_DESTRUCTIVE", raising=False)
         monkeypatch.delenv("HC_SKIP_SELFHEAL", raising=False)
+        monkeypatch.delenv("HELPCHAIN_TESTING", raising=False)
+        monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
         monkeypatch.delenv("FLASK_ENV", raising=False)
         monkeypatch.delenv("RENDER", raising=False)
         monkeypatch.delenv("DATABASE_URL", raising=False)
@@ -206,6 +208,8 @@ def test_self_heal_destructive_repair_only_runs_when_explicitly_allowed(monkeypa
         monkeypatch.setattr(Path, "unlink", lambda self: None)
         monkeypatch.setenv("HC_SELFHEAL_ALLOW_DESTRUCTIVE", "true")
         monkeypatch.delenv("HC_SKIP_SELFHEAL", raising=False)
+        monkeypatch.delenv("HELPCHAIN_TESTING", raising=False)
+        monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
         monkeypatch.delenv("FLASK_ENV", raising=False)
         monkeypatch.delenv("RENDER", raising=False)
         monkeypatch.delenv("DATABASE_URL", raising=False)
@@ -225,3 +229,4 @@ def test_self_heal_destructive_repair_only_runs_when_explicitly_allowed(monkeypa
         assert "[SELFHEAL] destructive repair blocked: set HC_SELFHEAL_ALLOW_DESTRUCTIVE=true to allow" not in caplog.text
     finally:
         shutil.rmtree(tmp_path, ignore_errors=True)
+

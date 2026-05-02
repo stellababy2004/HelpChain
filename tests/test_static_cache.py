@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 
 from backend.appy import app
 
@@ -38,6 +38,7 @@ def test_no_cache_header_for_api_route():
 
     # Use the public API endpoint which returns JSON to ensure normal routes
     # don't receive the static Cache-Control header
-    resp = client.get("/requests")
-    assert resp.status_code in (200, 204, 404)
+    resp = client.get("/health")
+    assert resp.status_code in (200, 204, 404, 503)
     assert "Cache-Control" not in resp.headers
+

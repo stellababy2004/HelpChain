@@ -360,12 +360,12 @@ def update_status(req_id):
     )
 
     try:
-        subject = f"Статусът на вашата заявка #{req.id} е променен на {new_status}"
+        subject = f"Ð¡Ñ‚Ð°Ñ‚ÑƒÑÑŠÑ‚ Ð½Ð° Ð²Ð°ÑˆÐ°Ñ‚Ð° Ð·Ð°ÑÐ²ÐºÐ° #{req.id} Ðµ Ð¿Ñ€Ð¾Ð¼ÐµÐ½ÐµÐ½ Ð½Ð° {new_status}"
         recipient = getattr(req, "email", None)
-        recipient_name = getattr(req, "name", "Потребител")
+        recipient_name = getattr(req, "name", "ÐŸÐ¾Ñ‚Ñ€ÐµÐ±Ð¸Ñ‚ÐµÐ»")
         content = (
-            f"Статусът на вашата заявка е променен на <b>{new_status}</b>.\n\n"
-            f"Описание: {req.description or ''}"
+            f"Ð¡Ñ‚Ð°Ñ‚ÑƒÑÑŠÑ‚ Ð½Ð° Ð²Ð°ÑˆÐ°Ñ‚Ð° Ð·Ð°ÑÐ²ÐºÐ° Ðµ Ð¿Ñ€Ð¾Ð¼ÐµÐ½ÐµÐ½ Ð½Ð° <b>{new_status}</b>.\n\n"
+            f"ÐžÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ: {req.description or ''}"
         )
         context = {
             "subject": subject,
@@ -549,12 +549,12 @@ def admin_requests():
         )
         abort(403)
     status_labels_bg = {
-        "new": "Нови",
-        "pending": "Чакащи",
-        "approved": "Одобрени",
-        "in_progress": "В процес",
-        "done": "Приключени",
-        "rejected": "Отхвърлени",
+        "new": "ÐÐ¾Ð²Ð¸",
+        "pending": "Ð§Ð°ÐºÐ°Ñ‰Ð¸",
+        "approved": "ÐžÐ´Ð¾Ð±Ñ€ÐµÐ½Ð¸",
+        "in_progress": "Ð’ Ð¿Ñ€Ð¾Ñ†ÐµÑ",
+        "done": "ÐŸÑ€Ð¸ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸",
+        "rejected": "ÐžÑ‚Ñ…Ð²ÑŠÑ€Ð»ÐµÐ½Ð¸",
     }
 
     queue = (request.args.get("queue") or "").strip().lower()
@@ -621,7 +621,7 @@ def admin_requests():
             else:
                 scope_label = f"Structure active : #{sid}"
         except Exception:
-            scope_label = "Structure active : —"
+            scope_label = "Structure active : â€”"
 
     action_counts = {}
     last_signal_by_req = {}
@@ -814,12 +814,12 @@ def admin_requests():
 
 @admin_bp.route("/requests/new", methods=["GET", "POST"])
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("superadmin")
 def admin_request_new():
     admin_required_404()
-    if _admin_role_value() not in {"ops", "superadmin"}:
+    if _admin_role_value() != "superadmin":
         _audit_denied_action(
-            required_roles={"ops", "superadmin"},
+            required_roles={"superadmin", "admin"},
             actor_role=_admin_role_value(),
         )
         abort(403)
@@ -901,15 +901,15 @@ def admin_request_new():
         if not form_data["description"]:
             form_errors["description"] = "Veuillez renseigner la description."
         if not form_data["person_name"]:
-            form_errors["person_name"] = "Veuillez renseigner la personne concernée."
+            form_errors["person_name"] = "Veuillez renseigner la personne concernÃ©e."
         if not form_data["city"]:
             form_errors["city"] = "Veuillez renseigner la ville ou le territoire."
         if not form_data["category"]:
-            form_errors["category"] = "Veuillez sélectionner une catégorie."
+            form_errors["category"] = "Veuillez sÃ©lectionner une catÃ©gorie."
         elif form_data["category"] not in set(REQUEST_CATEGORY_CODES):
-            form_errors["category"] = "Veuillez sélectionner une catégorie valide."
+            form_errors["category"] = "Veuillez sÃ©lectionner une catÃ©gorie valide."
         if form_data["priority"] not in {"standard", "attention", "urgent"}:
-            form_errors["priority"] = "Veuillez sélectionner une priorité valide."
+            form_errors["priority"] = "Veuillez sÃ©lectionner une prioritÃ© valide."
         if form_data["email"] and "@" not in form_data["email"]:
             form_errors["email"] = "Veuillez renseigner une adresse e-mail valide."
 
@@ -921,7 +921,7 @@ def admin_request_new():
                     raise RuntimeError("current structure unavailable")
             except Exception:
                 form_errors["structure_id"] = (
-                    "Impossible de déterminer la structure active."
+                    "Impossible de dÃ©terminer la structure active."
                 )
         elif form_data["structure_id"]:
             try:
@@ -938,7 +938,7 @@ def admin_request_new():
                     raise RuntimeError("current structure unavailable")
             except Exception:
                 form_errors["structure_id"] = (
-                    "Impossible de déterminer la structure active."
+                    "Impossible de dÃ©terminer la structure active."
                 )
 
         owner_id = None
@@ -952,7 +952,7 @@ def admin_request_new():
                     form_errors["owner_id"] = "Responsable initial invalide."
 
         if form_errors:
-            flash("Veuillez corriger les champs indiqués.", "warning")
+            flash("Veuillez corriger les champs indiquÃ©s.", "warning")
         else:
             requester_user = _ensure_internal_requester_user()
             priority_map = {
@@ -1012,7 +1012,7 @@ def admin_request_new():
                     "category": req.category,
                 },
             )
-            flash("Demande créée avec succès.", "success")
+            flash("Demande crÃ©Ã©e avec succÃ¨s.", "success")
             return redirect(
                 url_for("admin.admin_request_details", req_id=req.id),
                 code=303,
@@ -1921,7 +1921,7 @@ def admin_interest_approve(req_id: int, interest_id: int):
 
     if _locked_by_other(req, admin_id):
         flash(
-            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -1932,7 +1932,7 @@ def admin_interest_approve(req_id: int, interest_id: int):
 
     if _is_request_locked(req):
         flash(
-            "🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.",
+            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° (done/cancelled). Ð¡Ð¼ÐµÐ½Ð¸ ÑÑ‚Ð°Ñ‚ÑƒÑÐ°, Ð·Ð° Ð´Ð° Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñˆ Ð´ÐµÐ¹ÑÑ‚Ð²Ð¸ÑÑ‚Ð°.",
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -2006,7 +2006,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
 
     if _locked_by_other(req, admin_id):
         flash(
-            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -2017,7 +2017,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
 
     if _is_request_locked(req):
         flash(
-            "🔒 Заявката е заключена (done/cancelled). Смени статуса, за да отключиш действията.",
+            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° (done/cancelled). Ð¡Ð¼ÐµÐ½Ð¸ ÑÑ‚Ð°Ñ‚ÑƒÑÐ°, Ð·Ð° Ð´Ð° Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñˆ Ð´ÐµÐ¹ÑÑ‚Ð²Ð¸ÑÑ‚Ð°.",
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -2078,7 +2078,7 @@ def admin_request_assign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(
-            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -2164,7 +2164,7 @@ def admin_request_unassign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(
-            "🔒 Заявката е заключена от друг админ. Може да я отключите ръчно.",
+            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
             "warning",
         )
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
@@ -2388,3 +2388,5 @@ def admin_request_notes_get_alias(req_id: int):
 @login_required
 def admin_request_notes_post_alias(req_id: int):
     return admin_request_add_note(req_id)
+
+

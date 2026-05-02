@@ -1,5 +1,5 @@
-{% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} • {{ _('Requests') }} | HelpChain{% endblock %}
+﻿{% extends "layouts/admin_workspace.html" %}
+{% block title %}{{ _('Admin') }} â€¢ {{ _('Requests') }} | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 {% block admin_workspace_css %}
   <style>
@@ -64,7 +64,7 @@
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
-        <div class="hc-muted">Pilotage opérationnel des situations par priorité, service et responsable</div>
+        <div class="hc-muted">Pilotage opÃ©rationnel des situations par prioritÃ©, service et responsable</div>
         {% if scope_label %}
         <div class="text-muted small">{{ scope_label }}</div>
         {% endif %}
@@ -83,7 +83,7 @@
       <button type="button" class="hc-tab" id="hcToggleActionable">Actions prioritaires</button>
       <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
         <span aria-hidden="true"></span>
-        <span class="hc-copy-tick" aria-hidden="true">✓</span>
+        <span class="hc-copy-tick" aria-hidden="true">âœ“</span>
         <span class="visually-hidden">Copier le lien</span>
       </button>
     </div>
@@ -92,7 +92,7 @@
       <div class="hc-kpi" data-kpi="NEW">
         <div class="hc-kpi__label">Nouvelles</div>
         <div class="hc-kpi__value">0</div>
-        <div class="hc-kpi__context">Entrées à qualifier</div>
+        <div class="hc-kpi__context">EntrÃ©es Ã  qualifier</div>
       </div>
       <div class="hc-kpi" data-kpi="IN_PROGRESS">
         <div class="hc-kpi__label">En traitement</div>
@@ -105,9 +105,9 @@
         <div class="hc-kpi__context">Action prioritaire</div>
       </div>
       <div class="hc-kpi" data-kpi="COMPLETED">
-        <div class="hc-kpi__label">Situations clôturées</div>
+        <div class="hc-kpi__label">Situations clÃ´turÃ©es</div>
         <div class="hc-kpi__value">0</div>
-        <div class="hc-kpi__context">Cycle terminé</div>
+        <div class="hc-kpi__context">Cycle terminÃ©</div>
       </div>
     </div>
   </div>
@@ -115,11 +115,11 @@
   {% if active_sla_queue %}
   <div class="alert alert-info d-flex align-items-center justify-content-between mb-3" role="status">
     <div>
-      <strong>{{ _('SLA queue:') }}</strong> {{ _(active_sla_filter_label) }}{% if sla_days %} • {{ sla_days }}{{ _('d') }}{% endif %}
+      <strong>{{ _('SLA queue:') }}</strong> {{ _(active_sla_filter_label) }}{% if sla_days %} â€¢ {{ sla_days }}{{ _('d') }}{% endif %}
     </div>
     <a class="btn btn-sm btn-outline-primary"
        href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, category=request.args.get('category') or None) }}">
-      Réinitialiser les filtres
+      RÃ©initialiser les filtres
     </a>
   </div>
   {% endif %}
@@ -134,26 +134,26 @@
       aria-controls="hcInsightsBody"
     >
       <span class="hc-live-header__copy">
-        <span class="hc-live-header__title hc-fold__title">Repères opérationnels</span>
-        <span class="hc-muted hc-fold__subtitle">État opérationnel, indicateurs et vue instantanée de la file</span>
+        <span class="hc-live-header__title hc-fold__title">RepÃ¨res opÃ©rationnels</span>
+        <span class="hc-muted hc-fold__subtitle">Ã‰tat opÃ©rationnel, indicateurs et vue instantanÃ©e de la file</span>
       </span>
-      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">›</span>
+      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">â€º</span>
     </button>
     <div class="hc-live-body hc-fold__body" id="hcInsightsBody" hidden>
   <div class="hc-health" id="hc-health">
     <div>
       <div class="hc-health__label">{{ _('Operational status') }}</div>
-      <div class="hc-health__sub" id="hc-health-sub">—</div>
+      <div class="hc-health__sub" id="hc-health-sub">â€”</div>
       <div class="hc-health__cta-container" id="hc-health-cta"></div>
     </div>
-    <div class="hc-health__value" id="hc-health-value">—</div>
+    <div class="hc-health__value" id="hc-health-value">â€”</div>
   </div>
 
   <section class="hc-ops-kpis mb-0" data-days="30">
     <div class="hc-ops-kpis__header">
-      <h2 class="hc-h2">Pilotage opérationnel</h2>
+      <h2 class="hc-h2">Pilotage opÃ©rationnel</h2>
       <div class="hc-ops-kpis__controls">
-        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fenêtre : 30 jours</span>
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">FenÃªtre : 30 jours</span>
         <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
           <option value="7">{{ _('7 days') }}</option>
           <option value="30" selected>{{ _('30 days') }}</option>
@@ -164,36 +164,36 @@
 
     <div class="hc-ops-kpis__grid">
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Nombre de demandes reçues</div>
-        <div class="hc-kpi-value" id="kpi-new">—</div>
+        <div class="hc-kpi-label">Nombre de demandes reÃ§ues</div>
+        <div class="hc-kpi-value" id="kpi-new">â€”</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Résolues</div>
-        <div class="hc-kpi-value" id="kpi-resolved">—</div>
+        <div class="hc-kpi-label">RÃ©solues</div>
+        <div class="hc-kpi-value" id="kpi-resolved">â€”</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Délai moyen avant affectation</div>
-        <div class="hc-kpi-value" id="kpi-assign">—</div>
+        <div class="hc-kpi-label">DÃ©lai moyen avant affectation</div>
+        <div class="hc-kpi-value" id="kpi-assign">â€”</div>
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Délai moyen de traitement jusqu’à clôture</div>
-        <div class="hc-kpi-value" id="kpi-resolve">—</div>
+        <div class="hc-kpi-label">DÃ©lai moyen de traitement jusquâ€™Ã  clÃ´ture</div>
+        <div class="hc-kpi-value" id="kpi-resolve">â€”</div>
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
       </div>
 
       <div class="hc-kpi-card hc-kpi-card--alert" id="kpi-stale-card">
         <div class="hc-kpi-label">Demandes en attente > 7j</div>
-        <div class="hc-kpi-value" id="kpi-stale">—</div>
+        <div class="hc-kpi-value" id="kpi-stale">â€”</div>
       </div>
 
       <div class="hc-kpi-card hc-kpi-card--wide">
-        <div class="hc-kpi-label">Répartition par catégorie</div>
+        <div class="hc-kpi-label">RÃ©partition par catÃ©gorie</div>
         <ul class="hc-kpi-list" id="kpi-category">
-          <li>—</li>
+          <li>â€”</li>
         </ul>
       </div>
     </div>
@@ -206,12 +206,12 @@
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
       <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
-      <span class="hc-risk-overview__context">À traiter en premier</span>
+      <span class="hc-risk-overview__context">Ã€ traiter en premier</span>
     </a>
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high', city=request.args.get('city') or None) }}">
-      <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
+      <span class="hc-risk-overview__label">{{ _('Situations Ã  vÃ©rifier') }}</span>
       <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
-      <span class="hc-risk-overview__context">Vigilance renforcée</span>
+      <span class="hc-risk-overview__context">Vigilance renforcÃ©e</span>
     </a>
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
@@ -221,7 +221,7 @@
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1', city=request.args.get('city') or None) }}">
       <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
       <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
-      <span class="hc-risk-overview__context">Relance nécessaire</span>
+      <span class="hc-risk-overview__context">Relance nÃ©cessaire</span>
     </a>
   </div>
 
@@ -230,7 +230,7 @@
     <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention', city=request.args.get('city') or None) }}">{{ _('Attention') }}</a>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1', city=request.args.get('city') or None) }}">{{ _('Sans responsable') }}</a>
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}">{{ _('Sans action 72h') }}</a>
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Réinitialiser les filtres</a>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">RÃ©initialiser les filtres</a>
   </div>
 
   {% if request.args.get('city') %}
@@ -268,8 +268,8 @@
       </select>
     </div>
     <div class="col-6 col-md-3 col-xl-1">
-      <select class="form-select" id="hcFilterPriority" aria-label="Filtrer par priorité">
-        <option value="">Priorité</option>
+      <select class="form-select" id="hcFilterPriority" aria-label="Filtrer par prioritÃ©">
+        <option value="">PrioritÃ©</option>
         <option value="CRITICAL">Critical</option>
         <option value="HIGH">High</option>
         <option value="MEDIUM">Medium</option>
@@ -342,7 +342,7 @@
     </div>
 
     <a class="btn btn-primary btn-sm ms-auto" href="{{ url_for('admin.admin_request_new') }}">Nouvelle demande</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Réinitialiser</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">RÃ©initialiser</a>
   </div>
 
   <div class="collapse {% if status or show_deleted or risk or request.args.get('category') %}show {% endif %}mb-2 hc-requests-toolbar__advanced" id="hcFiltersPanel">
@@ -368,7 +368,7 @@
             value="1"
             {% if show_deleted %}checked{% endif %}
           />
-          <label class="form-check-label" for="filterDeleted">Afficher les demandes supprimées</label>
+          <label class="form-check-label" for="filterDeleted">Afficher les demandes supprimÃ©es</label>
         </div>
       </div>
 
@@ -399,26 +399,27 @@
   {% endif %}
 
   <div class="hc-bulkbar mt-2 hc-requests-toolbar__bulk" id="hcBulkBar" data-csrf="{{ csrf_token() }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="form-check m-0">
       <input class="form-check-input" type="checkbox" id="hcSelectAllVisible">
       <span class="form-check-label ms-1">{{ _('Select visible') }}</span>
     </label>
     <span class="hc-bulkbar__count" id="hcBulkCount">{{ _('0 selected') }}</span>
     <select class="form-select form-select-sm hc-bulkbar__select" id="hcBulkAction">
-      <option value="">Action groupée</option>
+      <option value="">Action groupÃ©e</option>
       <option value="claim_me">{{ _('Claim ownership (me)') }}</option>
       <option value="open">{{ _('Open selected') }}</option>
       <option value="copy_ids">Copier les identifiants</option>
       <option value="copy_links">Copier les liens</option>
-      <option value="nudge">Nudge selected bénévoles</option>
+      <option value="nudge">Nudge selected bÃ©nÃ©voles</option>
       <option value="status:pending">Set statut : Pending</option>
       <option value="status:in_progress">Set statut : In progress</option>
       <option value="status:done">Set statut : Done</option>
       <option value="status:rejected">Set statut : Rejected</option>
     </select>
     <button type="button" class="btn btn-sm btn-primary" id="hcBulkApply">{{ _('Apply') }}</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">Effacer la sélection</button>
-    <span class="hc-bulkbar__hint">{{ _('/ search · j/k move · Enter open') }}</span>
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">Effacer la sÃ©lection</button>
+    <span class="hc-bulkbar__hint">{{ _('/ search Â· j/k move Â· Enter open') }}</span>
   </div>
   <div class="hc-quickchips mt-2 hc-requests-toolbar__quickchips" id="hcQuickChips">
     <button type="button" class="hc-quickchip" data-quick-filter="no_owner">Sans responsable</button>
@@ -433,7 +434,7 @@
     <div class="hc-card__header hc-admin-table-toolbar">
       <div>
         <h2 class="hc-section-title mb-1">File des demandes</h2>
-        <div class="hc-section-subtitle">Vue consolidée des demandes, risques, signaux et actions prioritaires.</div>
+        <div class="hc-section-subtitle">Vue consolidÃ©e des demandes, risques, signaux et actions prioritaires.</div>
       </div>
     </div>
   <div class="hc-requests-table-wrap hc-requests-list">
@@ -448,8 +449,8 @@
           <th class="hc-col-title">{{ _('Demande') }}</th>
           <th class="hc-col-status">Statut</th>
           <th class="hc-col-risk">{{ _('Risk level') }}</th>
-          <th class="hc-col-category">Catégorie</th>
-          <th class="hc-col-created-context">Créé le</th>
+          <th class="hc-col-category">CatÃ©gorie</th>
+          <th class="hc-col-created-context">CrÃ©Ã© le</th>
           <th class="hc-col-signals">{{ _('Signals') }}</th>
           <th class="hc-col-actions">{{ _('Actions') }}</th>
         </tr>
@@ -498,7 +499,7 @@
         {% else %}
           {% set owner_label = 'Sans responsable' %}
         {% endif %}
-        {% set requester_label = r.name or r.requester_name or '—' %}
+        {% set requester_label = r.name or r.requester_name or 'â€”' %}
             {% set age_days = age_days_by_id.get(r.id, 0) %}
         {% set category_label = request_category_label(r.category) %}
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
@@ -536,12 +537,12 @@
           <td class="hc-col-title hc-td-request">
             <div class="hc-req__title" title="{{ r.title }}">{{ r.title }}</div>
             <div class="hc-req__meta">
-              <span class="hc-metaItem" title="{{ r.city or '—' }}">{{ r.city or "—" }}</span>
-              <span class="hc-dot">•</span>
-              <span class="hc-metaItem" title="{{ r.service.name if r.service else '—' }}">{{ r.service.name if r.service else "—" }}</span>
-              <span class="hc-dot">•</span>
+              <span class="hc-metaItem" title="{{ r.city or 'â€”' }}">{{ r.city or "â€”" }}</span>
+              <span class="hc-dot">â€¢</span>
+              <span class="hc-metaItem" title="{{ r.service.name if r.service else 'â€”' }}">{{ r.service.name if r.service else "â€”" }}</span>
+              <span class="hc-dot">â€¢</span>
               <span class="hc-metaItem" title="{{ owner_label }}">{{ owner_label }}</span>
-              <span class="hc-dot">•</span>
+              <span class="hc-dot">â€¢</span>
               <span class="hc-metaItem" title="{{ requester_label }}">{{ requester_label }}</span>
             </div>
           </td>
@@ -572,7 +573,7 @@
               <details class="hc-statusmenu" data-no-rowclick data-request-id="{{ r.id }}" data-csrf="{{ csrf_token() }}">
                 <summary class="badge {{ status_class }} hc-statusmenu__summary" data-no-rowclick>
                   <span class="hc-statusmenu__label">{{ status_inline_label }}</span>
-                  <span class="hc-statusmenu__chev" aria-hidden="true">▾</span>
+                  <span class="hc-statusmenu__chev" aria-hidden="true">â–¾</span>
                 </summary>
                 <div class="hc-statusmenu__list" data-no-rowclick>
                   <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('New') }}" data-no-rowclick>{{ _('New') }}</button>
@@ -610,7 +611,7 @@
             <div class="hc-created-meta">
               <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
               {% if r.closed_at %}
-                <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}">✓ {{ _('Closed') }}</span>
+                <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}">âœ“ {{ _('Closed') }}</span>
               {% endif %}
             </div>
             <div class="hc-created-flags">
@@ -623,7 +624,7 @@
               <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
             {% endif %}
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-warning" title="Aucun responsable assigné"> Sans responsable</span>
+              <span class="badge text-bg-warning" title="Aucun responsable assignÃ©"> Sans responsable</span>
             {% endif %}
             {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
               <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
@@ -645,24 +646,24 @@
               </span>
             {% endif %}
             {% if ch == 0 and cc == 0 %}
-              <span class="hc-muted">—</span>
+              <span class="hc-muted">â€”</span>
             {% endif %}
             </div>
             <div class="text-muted small hc-signal-meta" title="{{ _('Signal summary') }}">
               {% if sig %}
                 {{ _('Last:') }} {{ sig.action }}
                 {% if (sig.updated_at or sig.created_at) %}
-                  · {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") }}
+                  Â· {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") }}
                 {% endif %}
-                {% if sig.volunteer_id is defined %} · #{{ sig.volunteer_id }}{% endif %}
+                {% if sig.volunteer_id is defined %} Â· #{{ sig.volunteer_id }}{% endif %}
               {% else %}
-                {{ _('Last:') }} —
+                {{ _('Last:') }} â€”
               {% endif %}
-              · {{ _('Engagement:') }}
+              Â· {{ _('Engagement:') }}
               {% if eng %}
                 {{ eng.label }} ({{ eng.score }})
               {% else %}
-                —
+                â€”
               {% endif %}
             </div>
           </td>
@@ -701,7 +702,7 @@
               </summary>
               <div class="hc-rowmenu__list" data-no-rowclick>
                 <a class="hc-rowmenu__item" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
-                  Détails
+                  DÃ©tails
                 </a>
 
                 {% if sig and sig.action == 'CAN_HELP' and sig.volunteer_id %}
@@ -741,9 +742,9 @@
         <tr>
           <td colspan="10" class="hc-requests-empty-cell">
             <div class="hc-empty-state">
-              <h3>Aucune demande à afficher</h3>
-              <p>Cette file est vide pour les filtres actuels. Réinitialisez les filtres ou créez une nouvelle demande.</p>
-              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">Créer une demande</a>
+              <h3>Aucune demande Ã  afficher</h3>
+              <p>Cette file est vide pour les filtres actuels. RÃ©initialisez les filtres ou crÃ©ez une nouvelle demande.</p>
+              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">CrÃ©er une demande</a>
             </div>
           </td>
         </tr>
@@ -763,25 +764,25 @@
       aria-controls="hcLiveBody"
     >
       <span class="hc-live-header__copy">
-        <span class="hc-live-header__title hc-fold__title">Centre opérationnel</span>
-        <span class="hc-muted hc-fold__subtitle">État opérationnel immédiat</span>
+        <span class="hc-live-header__title hc-fold__title">Centre opÃ©rationnel</span>
+        <span class="hc-muted hc-fold__subtitle">Ã‰tat opÃ©rationnel immÃ©diat</span>
       </span>
-      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">›</span>
+      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">â€º</span>
     </button>
     <div class="hc-live-body hc-fold__body" id="hcLiveBody" hidden>
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveUnassigned">• Sans bénévole assigné : 0</p>
-        <div class="hc-activity-meta">Priorité : affecter ou clôturer</div>
+        <p class="hc-activity-title" id="hcLiveUnassigned">â€¢ Sans bÃ©nÃ©vole assignÃ© : 0</p>
+        <div class="hc-activity-meta">PrioritÃ© : affecter ou clÃ´turer</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveInProgress">• En cours : 0</p>
-        <div class="hc-activity-meta">À suivre</div>
+        <p class="hc-activity-title" id="hcLiveInProgress">â€¢ En cours : 0</p>
+        <div class="hc-activity-meta">Ã€ suivre</div>
       </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveCanHelp">• Disponibles (CAN_HELP) : 0</p>
-        <div class="hc-activity-meta">Bénévoles mobilisables</div>
+        <p class="hc-activity-title" id="hcLiveCanHelp">â€¢ Disponibles (CAN_HELP) : 0</p>
+        <div class="hc-activity-meta">BÃ©nÃ©voles mobilisables</div>
       </div>
     </div>
   </div>
@@ -800,3 +801,4 @@
 <script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 {% endblock %}
+

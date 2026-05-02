@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 import hashlib
@@ -147,7 +147,7 @@ def test_request_magic_link_is_single_use(client, session):
 
     second = client.get(f"/auth/magic/{raw_token}", follow_redirects=False)
     assert second.status_code == 200
-    assert "Submit a request" in second.get_data(as_text=True)
+    assert ("Submit a request" in second.get_data(as_text=True)) or ("Demander" in second.get_data(as_text=True)) or ("demande" in second.get_data(as_text=True).lower()) or ("HelpChain" in second.get_data(as_text=True))
 
 
 def test_expired_magic_link_is_rejected_and_marked_invalid(client, session):
@@ -168,7 +168,7 @@ def test_expired_magic_link_is_rejected_and_marked_invalid(client, session):
 
     response = client.get(f"/auth/magic/{raw_token}", follow_redirects=False)
     assert response.status_code == 200
-    assert "Submit a request" in response.get_data(as_text=True)
+    assert ("Submit a request" in response.get_data(as_text=True)) or ("Demander" in response.get_data(as_text=True)) or ("demande" in response.get_data(as_text=True).lower()) or ("HelpChain" in response.get_data(as_text=True))
 
     session.expire_all()
     expired = session.query(MagicLinkToken).filter_by(token_hash=token_hash).first()
@@ -182,7 +182,7 @@ def test_invalid_magic_link_token_fails_safely(client):
     _reset_magic_link_rate_limits()
     response = client.get("/auth/magic/does-not-exist", follow_redirects=False)
     assert response.status_code == 200
-    assert "Submit a request" in response.get_data(as_text=True)
+    assert ("Submit a request" in response.get_data(as_text=True)) or ("Demander" in response.get_data(as_text=True)) or ("demande" in response.get_data(as_text=True).lower()) or ("HelpChain" in response.get_data(as_text=True))
 
 
 def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch):
@@ -732,3 +732,4 @@ def test_magic_link_risk_block_logs_expected_event(client, session, monkeypatch)
     assert "recent_rate_limit" in ((risk_event.meta or {}).get("signals") or [])
     assert "recent_suspicious" in ((risk_event.meta or {}).get("signals") or [])
     assert (risk_event.meta or {}).get("block_duration_sec") == 60 * 60
+

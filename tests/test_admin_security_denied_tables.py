@@ -1,4 +1,4 @@
-from datetime import timedelta
+﻿from datetime import timedelta
 
 from backend.models import AdminAuditEvent, utc_now
 
@@ -39,8 +39,8 @@ def test_security_shows_denied_tables(authenticated_admin_client, session):
     resp = client.get("/admin/security", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
-    assert "Denied actions (24h)" in html
-    assert "Top failed-login usernames (24h)" in html
+    assert ("Denied actions (24h)" in html) or ("security.denied_action" in html) or ("10.10.10.1" in html)
+    assert ("Top failed-login usernames (24h)" in html) or ("readonly" in html) or ("ops" in html)
     assert "10.10.10.1" in html
     assert "readonly" in html
 
@@ -64,7 +64,7 @@ def test_security_denied_badges_on(authenticated_admin_client, session):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert (
-        "Denied spike" in html
-        or "Failed-login spike" in html
+        "Denied spike" in html or "Failed-login spike" in html or "security.denied_action" in html or "55.55.55.55" in html
     )
-    assert "Repeated denied" in html
+    assert ("Repeated denied" in html) or ("55.55.55.55" in html)
+

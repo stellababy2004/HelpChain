@@ -1,4 +1,5 @@
 from __future__ import annotations
+from backend.helpchain_backend.src.services.radar_v2 import compute_radar_v2
 
 import json
 from collections import Counter
@@ -142,7 +143,22 @@ def summarize_session_intelligence(
     lookback_days: int = 30,
 ) -> dict | None:
     sid = (session_id or get_current_audience_session_id() or "").strip()
-    if not sid or not _analytics_events_available():
+
+    if not sid:
+        try:
+            last_event = (
+                db.session.query(AnalyticsEvent.user_session)
+                .filter(AnalyticsEvent.event_type == "page_view")
+                .filter(AnalyticsEvent.user_session.isnot(None))
+                .order_by(AnalyticsEvent.created_at.desc(), AnalyticsEvent.id.desc())
+                .first()
+            )
+            if last_event and last_event.user_session:
+                sid = str(last_event.user_session).strip()
+        except Exception:
+            return None
+
+    if not sid:
         return None
 
     now = now or datetime.now(UTC).replace(tzinfo=None)
@@ -267,7 +283,16 @@ def attach_session_intelligence_to_professional_lead(lead) -> dict | None:
     summary = summarize_session_intelligence()
     if not summary:
         return None
-    lead.notes = append_audience_context_to_notes(getattr(lead, "notes", None), summary)
+
+    new_notes = append_audience_context_to_notes(getattr(lead, "notes", None), summary)
+    lead.notes = new_notes
+
+    try:
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(lead, "notes")
+    except Exception:
+        pass
+
     return summary
 
 
@@ -294,3 +319,7 @@ def captured_audience_session_targets() -> dict[str, str]:
     except Exception:
         return targets
     return targets
+
+
+
+
