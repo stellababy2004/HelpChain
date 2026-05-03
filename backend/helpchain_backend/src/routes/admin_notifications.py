@@ -105,7 +105,7 @@ def _notification_retry_impl(job_id: int):
 def _notification_retry_impl_sync(job_id: int):
     if not _table_exists("notification_jobs"):
         flash(
-            "La table des notifications n'est pas encore disponible. ExÃ©cutez d'abord les migrations.",
+            "La table des notifications n'est pas encore disponible. Exécutez d'abord les migrations.",
             "warning",
         )
         return redirect(
@@ -134,7 +134,7 @@ def _notification_retry_impl_sync(job_id: int):
 
     if (job.status or "").lower() not in {"dead_letter", "failed"}:
         flash(
-            "Seules les notifications en Ã©chec peuvent Ãªtre relancÃ©es manuellement.",
+            "Seules les notifications en échec peuvent être relancées manuellement.",
             "warning",
         )
         return redirect(
@@ -165,10 +165,10 @@ def _notification_retry_impl_sync(job_id: int):
             },
         )
         if delivered:
-            flash(f"La notification #{job.id} a Ã©tÃ© renvoyÃ©e.", "success")
+            flash(f"La notification #{job.id} a été renvoyée.", "success")
         else:
             flash(
-                f"La notification #{job.id} a Ã©tÃ© relancÃ©e mais l'envoi a Ã©chouÃ©.",
+                f"La notification #{job.id} a été relancée mais l'envoi a échoué.",
                 "warning",
             )
     except Exception:

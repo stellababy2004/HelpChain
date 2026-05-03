@@ -621,7 +621,7 @@ def admin_requests():
             else:
                 scope_label = f"Structure active : #{sid}"
         except Exception:
-            scope_label = "Structure active : â€”"
+            scope_label = "Structure active : —"
 
     action_counts = {}
     last_signal_by_req = {}
@@ -901,15 +901,15 @@ def admin_request_new():
         if not form_data["description"]:
             form_errors["description"] = "Veuillez renseigner la description."
         if not form_data["person_name"]:
-            form_errors["person_name"] = "Veuillez renseigner la personne concernÃ©e."
+            form_errors["person_name"] = "Veuillez renseigner la personne concernée."
         if not form_data["city"]:
             form_errors["city"] = "Veuillez renseigner la ville ou le territoire."
         if not form_data["category"]:
-            form_errors["category"] = "Veuillez sÃ©lectionner une catÃ©gorie."
+            form_errors["category"] = "Veuillez sélectionner une catégorie."
         elif form_data["category"] not in set(REQUEST_CATEGORY_CODES):
-            form_errors["category"] = "Veuillez sÃ©lectionner une catÃ©gorie valide."
+            form_errors["category"] = "Veuillez sélectionner une catégorie valide."
         if form_data["priority"] not in {"standard", "attention", "urgent"}:
-            form_errors["priority"] = "Veuillez sÃ©lectionner une prioritÃ© valide."
+            form_errors["priority"] = "Veuillez sélectionner une priorité valide."
         if form_data["email"] and "@" not in form_data["email"]:
             form_errors["email"] = "Veuillez renseigner une adresse e-mail valide."
 
@@ -921,7 +921,7 @@ def admin_request_new():
                     raise RuntimeError("current structure unavailable")
             except Exception:
                 form_errors["structure_id"] = (
-                    "Impossible de dÃ©terminer la structure active."
+                    "Impossible de déterminer la structure active."
                 )
         elif form_data["structure_id"]:
             try:
@@ -938,7 +938,7 @@ def admin_request_new():
                     raise RuntimeError("current structure unavailable")
             except Exception:
                 form_errors["structure_id"] = (
-                    "Impossible de dÃ©terminer la structure active."
+                    "Impossible de déterminer la structure active."
                 )
 
         owner_id = None
@@ -952,7 +952,7 @@ def admin_request_new():
                     form_errors["owner_id"] = "Responsable initial invalide."
 
         if form_errors:
-            flash("Veuillez corriger les champs indiquÃ©s.", "warning")
+            flash("Veuillez corriger les champs indiqués.", "warning")
         else:
             requester_user = _ensure_internal_requester_user()
             priority_map = {
@@ -1012,7 +1012,7 @@ def admin_request_new():
                     "category": req.category,
                 },
             )
-            flash("Demande crÃ©Ã©e avec succÃ¨s.", "success")
+            flash("Demande créée avec succès.", "success")
             return redirect(
                 url_for("admin.admin_request_details", req_id=req.id),
                 code=303,

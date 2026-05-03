@@ -1,4 +1,4 @@
-﻿/* Admin UI â€“ clean SaaS cards */
+/* Admin UI – clean SaaS cards */
 .hc-admin-workspace__content{
   padding: 24px 24px 48px;
 }
@@ -584,7 +584,7 @@
   display: none;
 }
 .hc-coordination-fold > summary::after{
-  content: "â–¾";
+  content: "▾";
   color: rgba(15,23,42,.66);
   font-size: 14px;
   line-height: 1;

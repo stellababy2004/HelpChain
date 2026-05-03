@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% set hide_topbar_search = true %}
 {% set disable_nav_chrome = true %}
 {% set disable_a11y = true %}
@@ -14,7 +14,7 @@
 {% block content %}
   <div class="hc-admin-workspace__content">
     {% if config.DEMO_MODE %}
-      <div class="demo-badge">DEMO MODE Â· {{ (config.DEMO_SCENARIO or 'pilot_ccas')|replace('_', ' ')|title }}</div>
+      <div class="demo-badge">DEMO MODE · {{ (config.DEMO_SCENARIO or 'pilot_ccas')|replace('_', ' ')|title }}</div>
     {% endif %}
     {% set current_path = request.path or '' %}
     {% set is_ops_context = current_path.startswith('/ops') %}

@@ -1,4 +1,4 @@
-﻿import re
+import re
 
 import pytest
 
@@ -28,12 +28,12 @@ def test_bulk_actions_dropdown_has_expected_options(admin_login):
     options = [o.strip() for o in _extract_bulk_actions(html) if o.strip()]
 
     expected = [
-        "Action groupÃ©e",
+        "Action groupée",
         "Claim ownership (me)",
         "Open selected",
         "Copier les identifiants",
         "Copier les liens",
-        "Nudge selected bÃ©nÃ©voles",
+        "Nudge selected bénévoles",
         "Set statut : Pending",
         "Set statut : In progress",
         "Set statut : Done",

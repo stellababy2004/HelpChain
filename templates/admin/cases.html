@@ -226,7 +226,7 @@
             {% set status_key = (c.status or 'open')|replace('_', '-')|lower %}
             {% set status_label = status_display_labels.get((c.status or '')|lower, (c.status or '-')|replace('_', ' ')|title) %}
             {% set case_detail_href = url_for('admin.admin_case_detail', case_id=c.id) %}
-            <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'Ã©levÃ©', 'ÃƒÂ©levÃƒÂ©'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}">
+            <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'élevé', 'ÃƒÂ©levÃƒÂ©'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}">
               <td class="case-col">
                 <div class="hc-case-id">#{{ c.id }}</div>
                 <div class="small text-muted">Req #{{ c.request_id }}</div>
@@ -269,7 +269,7 @@
               <td class="priority-col">
                 {% if ops_level == 'critique' %}
                   <span class="badge text-bg-danger">Critique</span>
-                {% elif ops_level == 'eleve' or ops_level == 'Ã©levÃ©' %}
+                {% elif ops_level == 'eleve' or ops_level == 'élevé' %}
                   <span class="badge text-bg-warning text-dark">Élevé</span>
                 {% else %}
                   <span class="badge text-bg-secondary">Normal</span>
