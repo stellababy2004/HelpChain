@@ -1,804 +1,1618 @@
 ﻿{% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} â€¢ {{ _('Requests') }} | HelpChain{% endblock %}
+
+{% block title %}{{ _('Admin') }}  {{ _('Requests') }} | HelpChain{% endblock %}
+
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
+
 {% block admin_workspace_css %}
+
   <style>
+
     .hc-requests-table-wrap{
+
       width: 100%;
+
       overflow-x: auto;
+
       overflow-y: hidden;
+
     }
+
+
 
     .hc-requests-table{
+
       width: 100%;
+
       border-collapse: collapse;
+
       table-layout: auto;
+
     }
+
+
 
     .hc-requests-table thead{
+
       display: table-header-group !important;
+
       position: static !important;
+
     }
+
+
 
     .hc-requests-table tbody{
+
       display: table-row-group !important;
+
       position: static !important;
+
     }
+
+
 
     .hc-requests-table tr{
+
       display: table-row !important;
+
       position: static !important;
+
     }
+
+
 
     .hc-requests-table th,
+
     .hc-requests-table td{
+
       display: table-cell !important;
+
       position: static !important;
+
       vertical-align: middle;
+
     }
+
+
 
     .hc-requests-empty-cell{
+
       text-align: center;
+
       padding: 3rem 1rem;
+
     }
+
   </style>
+
 {% endblock %}
+
+
 
 {% block admin_content %}
+
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact">
+
 <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+
     <a href="{{ safe_url_for('main.index') }}">Accueil</a>
+
     <span>/</span>
+
     <span>Demandes</span>
+
   </nav>
 
+
+
   {# Localized export confirmation (stable multiline msgids) #}
+
   {% set export_confirm = '\n'.join([
+
     _(' This export contains personal data.'),
+
     _('Internal use only.'),
+
     '',
+
     _('Are you sure you want to continue?')
+
   ]) %}
 
+
+
   <div class="hc-card mb-3 hc-admin-headerCard hc-page-hero">
+
     <div class="hc-row hc-admin-headerTop">
+
       <div>
+
         <h1 class="hc-admin-title">{{ _('Requests') }}</h1>
-        <div class="hc-muted">Pilotage opÃ©rationnel des situations par prioritÃ©, service et responsable</div>
+
+        <div class="hc-muted">Pilotage oprationnel des situations par priorit, service et responsable</div>
+
         {% if scope_label %}
+
         <div class="text-muted small">{{ scope_label }}</div>
+
         {% endif %}
+
       </div>
+
       <a class="btn btn-outline-secondary btn-sm" href="{{ safe_url_for('main.index') }}">
+
         {{ _('Home') }}
+
       </a>
+
     </div>
+
     <div class="hc-tabs">
+
       <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">{{ _('All') }}</button>
+
       <button type="button" class="hc-tab" data-hc-tab="NEW">{{ _('New') }}</button>
+
       <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">{{ _('Assigned') }}</button>
+
       <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">{{ _('In progress') }}</button>
+
       <button type="button" class="hc-tab" data-hc-tab="COMPLETED">{{ _('Completed') }}</button>
+
       <button type="button" class="hc-tab" data-hc-tab="CLOSED">{{ _('Closed') }}</button>
+
       <button type="button" class="hc-tab" id="hcToggleActionable">Actions prioritaires</button>
+
       <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
+
         <span aria-hidden="true"></span>
-        <span class="hc-copy-tick" aria-hidden="true">âœ“</span>
+
+        <span class="hc-copy-tick" aria-hidden="true"></span>
+
         <span class="visually-hidden">Copier le lien</span>
+
       </button>
+
     </div>
+
+
 
     <div class="hc-kpis" id="hcAdminKpis">
+
       <div class="hc-kpi" data-kpi="NEW">
+
         <div class="hc-kpi__label">Nouvelles</div>
+
         <div class="hc-kpi__value">0</div>
-        <div class="hc-kpi__context">EntrÃ©es Ã  qualifier</div>
+
+        <div class="hc-kpi__context">Entrées à qualifier</div>
+
       </div>
+
       <div class="hc-kpi" data-kpi="IN_PROGRESS">
+
         <div class="hc-kpi__label">En traitement</div>
+
         <div class="hc-kpi__value">0</div>
+
         <div class="hc-kpi__context">Situations actives</div>
+
       </div>
+
       <div class="hc-kpi" data-kpi="URGENT">
+
         <div class="hc-kpi__label">Urgentes</div>
+
         <div class="hc-kpi__value">0</div>
+
         <div class="hc-kpi__context">Action prioritaire</div>
+
       </div>
+
       <div class="hc-kpi" data-kpi="COMPLETED">
-        <div class="hc-kpi__label">Situations clÃ´turÃ©es</div>
+
+        <div class="hc-kpi__label">Situations cltures</div>
+
         <div class="hc-kpi__value">0</div>
-        <div class="hc-kpi__context">Cycle terminÃ©</div>
+
+        <div class="hc-kpi__context">Cycle termin</div>
+
       </div>
+
     </div>
+
   </div>
+
+
 
   {% if active_sla_queue %}
+
   <div class="alert alert-info d-flex align-items-center justify-content-between mb-3" role="status">
+
     <div>
-      <strong>{{ _('SLA queue:') }}</strong> {{ _(active_sla_filter_label) }}{% if sla_days %} â€¢ {{ sla_days }}{{ _('d') }}{% endif %}
+
+      <strong>{{ _('SLA queue:') }}</strong> {{ _(active_sla_filter_label) }}{% if sla_days %}  {{ sla_days }}{{ _('d') }}{% endif %}
+
     </div>
+
     <a class="btn btn-sm btn-outline-primary"
+
        href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, category=request.args.get('category') or None) }}">
-      RÃ©initialiser les filtres
+
+      Rinitialiser les filtres
+
     </a>
+
   </div>
+
   {% endif %}
+
+
 
   <section class="hc-insights hc-card mb-3 hc-fold" id="hcInsights">
+
     <button
+
       type="button"
+
       class="hc-live-header hc-fold__head"
+
       id="hcInsightsToggle"
+
       data-fold-toggle
+
       aria-expanded="false"
+
       aria-controls="hcInsightsBody"
+
     >
+
       <span class="hc-live-header__copy">
-        <span class="hc-live-header__title hc-fold__title">RepÃ¨res opÃ©rationnels</span>
-        <span class="hc-muted hc-fold__subtitle">Ã‰tat opÃ©rationnel, indicateurs et vue instantanÃ©e de la file</span>
+
+        <span class="hc-live-header__title hc-fold__title">Repres oprationnels</span>
+
+        <span class="hc-muted hc-fold__subtitle">tat oprationnel, indicateurs et vue instantane de la file</span>
+
       </span>
-      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">â€º</span>
+
+      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true"></span>
+
     </button>
+
     <div class="hc-live-body hc-fold__body" id="hcInsightsBody" hidden>
+
   <div class="hc-health" id="hc-health">
+
     <div>
+
       <div class="hc-health__label">{{ _('Operational status') }}</div>
-      <div class="hc-health__sub" id="hc-health-sub">â€”</div>
+
+      <div class="hc-health__sub" id="hc-health-sub"></div>
+
       <div class="hc-health__cta-container" id="hc-health-cta"></div>
+
     </div>
-    <div class="hc-health__value" id="hc-health-value">â€”</div>
+
+    <div class="hc-health__value" id="hc-health-value"></div>
+
   </div>
+
+
 
   <section class="hc-ops-kpis mb-0" data-days="30">
+
     <div class="hc-ops-kpis__header">
-      <h2 class="hc-h2">Pilotage opÃ©rationnel</h2>
+
+      <h2 class="hc-h2">Pilotage oprationnel</h2>
+
       <div class="hc-ops-kpis__controls">
-        <span class="hc-ops-kpis__meta" id="opsWindowLabel">FenÃªtre : 30 jours</span>
+
+        <span class="hc-ops-kpis__meta" id="opsWindowLabel">Fentre : 30 jours</span>
+
         <select id="opsDaysSelect" class="form-select form-select-sm hc-ops-kpis__select" data-ops-days>
+
           <option value="7">{{ _('7 days') }}</option>
+
           <option value="30" selected>{{ _('30 days') }}</option>
+
           <option value="90">{{ _('90 days') }}</option>
+
         </select>
+
       </div>
+
     </div>
+
+
 
     <div class="hc-ops-kpis__grid">
-      <div class="hc-kpi-card">
-        <div class="hc-kpi-label">Nombre de demandes reÃ§ues</div>
-        <div class="hc-kpi-value" id="kpi-new">â€”</div>
-      </div>
 
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">RÃ©solues</div>
-        <div class="hc-kpi-value" id="kpi-resolved">â€”</div>
+
+        <div class="hc-kpi-label">Nombre de demandes reues</div>
+
+        <div class="hc-kpi-value" id="kpi-new"></div>
+
       </div>
 
+
+
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">DÃ©lai moyen avant affectation</div>
-        <div class="hc-kpi-value" id="kpi-assign">â€”</div>
+
+        <div class="hc-kpi-label">Rsolues</div>
+
+        <div class="hc-kpi-value" id="kpi-resolved"></div>
+
+      </div>
+
+
+
+      <div class="hc-kpi-card">
+
+        <div class="hc-kpi-label">Délai moyen de traitement jusqu’à clôture</div>
+
+        <div class="hc-kpi-value" id="kpi-assign"></div>
+
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
+
       </div>
 
+
+
       <div class="hc-kpi-card">
-        <div class="hc-kpi-label">DÃ©lai moyen de traitement jusquâ€™Ã  clÃ´ture</div>
-        <div class="hc-kpi-value" id="kpi-resolve">â€”</div>
+
+        <div class="hc-kpi-label">Délai moyen de traitement jusqu’à clôture</div>
+
+        <div class="hc-kpi-value" id="kpi-resolve"></div>
+
         <div class="hc-kpi-sub">{{ _('hours') }}</div>
+
       </div>
+
+
 
       <div class="hc-kpi-card hc-kpi-card--alert" id="kpi-stale-card">
+
         <div class="hc-kpi-label">Demandes en attente > 7j</div>
-        <div class="hc-kpi-value" id="kpi-stale">â€”</div>
+
+        <div class="hc-kpi-value" id="kpi-stale"></div>
+
       </div>
+
+
 
       <div class="hc-kpi-card hc-kpi-card--wide">
-        <div class="hc-kpi-label">RÃ©partition par catÃ©gorie</div>
+
+        <div class="hc-kpi-label">Rpartition par catgorie</div>
+
         <ul class="hc-kpi-list" id="kpi-category">
-          <li>â€”</li>
+
+          <li></li>
+
         </ul>
+
       </div>
+
     </div>
+
   </section>
+
     </div>
+
   </section>
+
+
 
   <div class="hc-requests-toolbar mb-3 hc-admin-stickybar hc-requests-toolbar--wide" id="hcRequestsToolbar">
+
   <div class="hc-risk-overview mb-2 hc-requests-toolbar__overview">
+
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical', city=request.args.get('city') or None) }}">
+
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
+
       <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
-      <span class="hc-risk-overview__context">Ã€ traiter en premier</span>
+
+      <span class="hc-risk-overview__context"> traiter en premier</span>
+
     </a>
+
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high', city=request.args.get('city') or None) }}">
-      <span class="hc-risk-overview__label">{{ _('Situations Ã  vÃ©rifier') }}</span>
+
+      <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
+
       <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
-      <span class="hc-risk-overview__context">Vigilance renforcÃ©e</span>
+
+      <span class="hc-risk-overview__context">Vigilance renforce</span>
+
     </a>
+
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none', city=request.args.get('city') or None) }}">
+
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
+
       <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
+
       <span class="hc-risk-overview__context">Affectation attendue</span>
+
     </a>
+
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1', city=request.args.get('city') or None) }}">
+
       <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
+
       <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
-      <span class="hc-risk-overview__context">Relance nÃ©cessaire</span>
+
+      <span class="hc-risk-overview__context">Relance ncessaire</span>
+
     </a>
+
   </div>
+
+
 
   <div class="hc-risk-filters mb-2 hc-requests-toolbar__shortcuts">
+
     <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical', city=request.args.get('city') or None) }}">{{ _('Critique') }}</a>
+
     <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention', city=request.args.get('city') or None) }}">{{ _('Attention') }}</a>
+
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1', city=request.args.get('city') or None) }}">{{ _('Sans responsable') }}</a>
+
     <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}">{{ _('Sans action 72h') }}</a>
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">RÃ©initialiser les filtres</a>
+
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Rinitialiser les filtres</a>
+
   </div>
+
+
 
   {% if request.args.get('city') %}
+
   <div class="mb-2">
+
     <span class="badge text-bg-light border hc-context-badge">Zone active: {{ request.args.get('city') }}</span>
+
   </div>
+
   {% endif %}
+
+
 
   {% set selected_category = normalize_request_category(request.args.get('category') or '') %}
+
   <form class="row g-2 align-items-end mb-2 hc-requests-toolbar__search" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminSearchForm">
+
     <div class="col-12 col-xl-4">
+
       <input class="form-control" type="text" name="q" id="hcAdminFilterSearch" value="{{ q or '' }}"
+
         autofocus
+
         placeholder="Rechercher par nom, titre, description..." aria-label="Rechercher" />
+
       {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+
       {% if show_deleted %}<input type="hidden" name="deleted" value="1">{% endif %}
+
       {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
+
       {% if queue %}<input type="hidden" name="queue" value="{{ queue }}">{% endif %}
+
       {% if sla_kind %}<input type="hidden" name="sla_kind" value="{{ sla_kind }}">{% endif %}
+
       {% if sla_days %}<input type="hidden" name="sla_days" value="{{ sla_days }}">{% endif %}
+
       {% if risk_level %}<input type="hidden" name="risk_level" value="{{ risk_level }}">{% endif %}
+
       {% if no_owner %}<input type="hidden" name="no_owner" value="1">{% endif %}
+
       {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
+
       {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+
       {% if request.args.get('city') %}<input type="hidden" name="city" value="{{ request.args.get('city') }}">{% endif %}
+
     </div>
+
     <div class="col-6 col-md-3 col-xl-2">
+
       <select class="form-select" id="hcFilterCity" aria-label="Filtrer par ville">
+
         <option value="">Ville</option>
+
       </select>
+
     </div>
+
     <div class="col-6 col-md-3 col-xl-2">
+
       <select class="form-select" id="hcFilterService" aria-label="Filtrer par service">
+
         <option value="">Service</option>
+
       </select>
+
     </div>
+
     <div class="col-6 col-md-3 col-xl-1">
-      <select class="form-select" id="hcFilterPriority" aria-label="Filtrer par prioritÃ©">
-        <option value="">PrioritÃ©</option>
+
+      <select class="form-select" id="hcFilterPriority" aria-label="Filtrer par priorit">
+
+        <option value="">Priorit</option>
+
         <option value="CRITICAL">Critical</option>
+
         <option value="HIGH">High</option>
+
         <option value="MEDIUM">Medium</option>
+
         <option value="LOW">Low</option>
+
       </select>
+
     </div>
+
     <div class="col-6 col-md-3 col-xl-2">
+
       <select class="form-select" name="category" id="hcToolbarCategory" aria-label="{{ _('Category') }}">
+
         <option value="">{{ _('Category') }}</option>
+
         {% for code, label in REQUEST_CATEGORY_CHOICES %}
+
           <option value="{{ code }}" {% if selected_category == code %}selected{% endif %}>{{ label }}</option>
+
         {% endfor %}
+
       </select>
+
     </div>
+
     <div class="col-6 col-md-3 col-xl-1 d-grid">
+
       <button class="btn btn-primary" type="submit">Rechercher</button>
+
     </div>
+
   </form>
 
+
+
   <div class="d-flex flex-wrap gap-2 align-items-center mb-2 hc-requests-toolbar__actions">
+
     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#hcFiltersPanel" aria-expanded="false" aria-controls="hcFiltersPanel">
+
       Filtres
+
     </button>
+
+
 
     <div class="dropdown">
+
       <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+
         {{ _('Export') }}
+
       </button>
+
       <ul class="dropdown-menu">
+
         <li>
+
           <a class="dropdown-item"
+
              href="{{ url_for('admin.admin_requests_export_csv') }}"
+
              data-action="confirmSubmit"
+
              data-confirm="{{ export_confirm|e }}">
+
             {{ _('Export CSV') }}
+
           </a>
+
         </li>
+
         <li>
+
           <a class="dropdown-item"
+
              href="{{ url_for('admin.admin_requests_export_xlsx') }}"
+
              data-action="confirmSubmit"
+
              data-confirm="{{ export_confirm|e }}">
+
             {{ _('Export XLSX') }}
+
           </a>
+
         </li>
+
         <li><hr class="dropdown-divider"></li>
+
         <li>
+
           <a class="dropdown-item"
+
              href="{{ url_for('admin.admin_requests_export_csv_anonymized') }}"
+
              data-action="confirmSubmit"
+
              data-confirm="{{ export_confirm|e }}">
+
             {{ _('Export CSV (anonymized)') }}
+
           </a>
+
         </li>
+
         <li>
+
           <a class="dropdown-item"
+
              href="{{ url_for('admin.admin_requests_export_xlsx_anonymized') }}"
+
              data-action="confirmSubmit"
+
              data-confirm="{{ export_confirm|e }}">
+
             {{ _('Export XLSX (anonymized)') }}
+
           </a>
+
         </li>
+
         <li><hr class="dropdown-divider"></li>
+
         <li>
+
           <a class="dropdown-item" href="{{ url_for('admin.admin_audit', entity='export') }}">
+
             {{ _('View export logs') }}
+
           </a>
+
         </li>
+
       </ul>
+
     </div>
+
+
 
     <a class="btn btn-primary btn-sm ms-auto" href="{{ url_for('admin.admin_request_new') }}">Nouvelle demande</a>
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">RÃ©initialiser</a>
+
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Rinitialiser</a>
+
   </div>
+
+
 
   <div class="collapse {% if status or show_deleted or risk or request.args.get('category') %}show {% endif %}mb-2 hc-requests-toolbar__advanced" id="hcFiltersPanel">
+
     <form class="row g-2 align-items-end hc-requests-toolbar__advancedForm" method="GET" action="{{ safe_url_for('admin.admin_requests') }}" id="hcAdminFilterForm">
+
       <div class="col-xl-4 col-lg-5">
+
         <select class="form-select" name="status" id="hcAdminFilterStatus" aria-label="{{ _('Status') }}">
+
           <option value="">{{ _('All statuses') }}</option>
+
           {% for key, msgid in STATUS_LABELS.items() %}
+
             <option value="{{ key }}" {% if status == key %}selected{% endif %}>
+
               {{ _(msgid) }}
+
             </option>
+
           {% endfor %}
+
         </select>
+
       </div>
+
+
 
       <div class="col-xl-3 col-lg-3">
+
         <div class="form-check form-switch pt-2">
+
           <input
+
             class="form-check-input"
+
             type="checkbox"
+
             id="filterDeleted"
+
             name="deleted"
+
             value="1"
+
             {% if show_deleted %}checked{% endif %}
+
           />
-          <label class="form-check-label" for="filterDeleted">Afficher les demandes supprimÃ©es</label>
+
+          <label class="form-check-label" for="filterDeleted">Afficher les demandes supprimes</label>
+
         </div>
+
       </div>
+
+
 
       <div class="col-xl-2 col-lg-12 d-grid">
+
         <button class="btn btn-primary" type="submit">{{ _('Apply filters') }}</button>
+
       </div>
+
+
 
       {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+
       {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
+
       {% if queue %}<input type="hidden" name="queue" value="{{ queue }}">{% endif %}
+
       {% if sla_kind %}<input type="hidden" name="sla_kind" value="{{ sla_kind }}">{% endif %}
+
       {% if sla_days %}<input type="hidden" name="sla_days" value="{{ sla_days }}">{% endif %}
+
       {% if risk_level %}<input type="hidden" name="risk_level" value="{{ risk_level }}">{% endif %}
+
       {% if no_owner %}<input type="hidden" name="no_owner" value="1">{% endif %}
+
       {% if not_seen_72h %}<input type="hidden" name="not_seen_72h" value="1">{% endif %}
+
       {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+
       {% if request.args.get('city') %}<input type="hidden" name="city" value="{{ request.args.get('city') }}">{% endif %}
+
     </form>
+
   </div>
+
+
 
   {% if request.args.get('category') %}
+
   <div class="mt-2">
+
     <span class="badge text-bg-primary">
+
       {{ _('Category') }}: {{ request_category_label(request.args.get('category')) }}
+
     </span>
+
     <a class="btn btn-link btn-sm" href="{{ url_for('admin.admin_requests', status=status or None, q=q or None, deleted='1' if show_deleted else None, risk=risk or None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days if queue == 'sla' and sla_kind else None) }}">{{ _('Clear') }}</a>
+
   </div>
+
   {% endif %}
 
+
+
   <div class="hc-bulkbar mt-2 hc-requests-toolbar__bulk" id="hcBulkBar" data-csrf="{{ csrf_token() }}">
+
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
     <label class="form-check m-0">
+
       <input class="form-check-input" type="checkbox" id="hcSelectAllVisible">
+
       <span class="form-check-label ms-1">{{ _('Select visible') }}</span>
+
     </label>
+
     <span class="hc-bulkbar__count" id="hcBulkCount">{{ _('0 selected') }}</span>
+
     <select class="form-select form-select-sm hc-bulkbar__select" id="hcBulkAction">
-      <option value="">Action groupÃ©e</option>
+
+      <option value="">Action groupée</option>
+
       <option value="claim_me">{{ _('Claim ownership (me)') }}</option>
+
       <option value="open">{{ _('Open selected') }}</option>
+
       <option value="copy_ids">Copier les identifiants</option>
+
       <option value="copy_links">Copier les liens</option>
-      <option value="nudge">Nudge selected bÃ©nÃ©voles</option>
+
+      <option value="nudge">Nudge selected bénévoles</option>
+
       <option value="status:pending">Set statut : Pending</option>
+
       <option value="status:in_progress">Set statut : In progress</option>
+
       <option value="status:done">Set statut : Done</option>
+
       <option value="status:rejected">Set statut : Rejected</option>
+
     </select>
+
     <button type="button" class="btn btn-sm btn-primary" id="hcBulkApply">{{ _('Apply') }}</button>
-    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">Effacer la sÃ©lection</button>
-    <span class="hc-bulkbar__hint">{{ _('/ search Â· j/k move Â· Enter open') }}</span>
+
+    <button type="button" class="btn btn-sm btn-outline-secondary" id="hcBulkClear">Effacer la slection</button>
+
+    <span class="hc-bulkbar__hint">{{ _('/ search j/k move Enter open') }}</span>
+
   </div>
+
   <div class="hc-quickchips mt-2 hc-requests-toolbar__quickchips" id="hcQuickChips">
+
     <button type="button" class="hc-quickchip" data-quick-filter="no_owner">Sans responsable</button>
+
     <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Stale') }}</button>
+
     <button type="button" class="hc-quickchip" data-quick-filter="urgent">{{ _('Urgent') }}</button>
+
     <button type="button" class="hc-quickchip" data-quick-filter="can_help">{{ _('Has CAN_HELP') }}</button>
+
     <button type="button" class="hc-quickchip hc-quickchip--ghost" data-quick-filter="clear">{{ _('Clear quick filters') }}</button>
+
   </div>
+
   </div>
+
+
 
   <div class="hc-card hc-admin-table-shell hc-requests-table-shell">
+
     <div class="hc-card__header hc-admin-table-toolbar">
+
       <div>
+
         <h2 class="hc-section-title mb-1">File des demandes</h2>
-        <div class="hc-section-subtitle">Vue consolidÃ©e des demandes, risques, signaux et actions prioritaires.</div>
+
+        <div class="hc-section-subtitle">Vue consolide des demandes, risques, signaux et actions prioritaires.</div>
+
       </div>
+
     </div>
+
   <div class="hc-requests-table-wrap hc-requests-list">
+
     <table class="hc-requests-table">
+
       <thead>
+
         <tr>
+
           <th class="hc-col-select" title="{{ _('Select') }}">
+
             <span class="visually-hidden">{{ _('Select') }}</span>
+
           </th>
+
           <th class="hc-col-id">{{ _('ID') }}</th>
+
           <th class="hc-col-priority">{{ _('Priority') }}</th>
+
           <th class="hc-col-title">{{ _('Demande') }}</th>
+
           <th class="hc-col-status">Statut</th>
+
           <th class="hc-col-risk">{{ _('Risk level') }}</th>
-          <th class="hc-col-category">CatÃ©gorie</th>
-          <th class="hc-col-created-context">CrÃ©Ã© le</th>
+
+          <th class="hc-col-category">Catgorie</th>
+
+          <th class="hc-col-created-context">Cr le</th>
+
           <th class="hc-col-signals">{{ _('Signals') }}</th>
+
           <th class="hc-col-actions">{{ _('Actions') }}</th>
+
         </tr>
+
       </thead>
+
       <tbody>
+
         {% if requests %}
+
         {% for r in requests %}
+
         {% set c = volunteer_action_counts.get(r.id, {}) %}
+
         {% set ch = c.get('CAN_HELP', 0) %}
+
         {% set cc = c.get('CANT_HELP', 0) %}
+
         {% set priority_raw = ((r.priority or 'LOW')|upper) %}
+
         {% if priority_raw in ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] %}
+
           {% set row_priority = priority_raw %}
+
         {% else %}
+
           {% set row_priority = 'LOW' %}
+
         {% endif %}
+
         {% set row_status_raw = ((r.status or '')|lower) %}
+
         {% if row_status_raw in ['new', 'pending', 'open'] %}
+
           {% set row_status = 'pending' %}
+
         {% elif row_status_raw in ['approved', 'in_progress', 'in progress'] %}
+
           {% set row_status = 'in_progress' %}
+
         {% elif row_status_raw in ['done', 'completed'] %}
+
           {% set row_status = 'done' %}
+
         {% elif row_status_raw in ['rejected', 'cancelled', 'canceled', 'closed'] %}
+
           {% set row_status = 'rejected' %}
+
         {% else %}
+
           {% set row_status = row_status_raw %}
+
         {% endif %}
+
         {% set row_status_bucket = {
+
           'pending': 'NEW',
+
           'in_progress': 'IN_PROGRESS',
+
           'done': 'COMPLETED',
+
           'rejected': 'CLOSED'
+
         }.get(row_status, row_status|upper) %}
+
         {% if not r.owner_id %}
+
           {% set owner_state = 'free' %}
+
         {% elif r.owner_id == current_user.id %}
+
           {% set owner_state = 'mine' %}
+
         {% else %}
+
           {% set owner_state = 'taken' %}
+
         {% endif %}
+
         {% if r.owner %}
+
           {% set owner_label = r.owner.username %}
+
         {% elif r.owner_id %}
+
           {% set owner_label = '#' ~ r.owner_id %}
+
         {% else %}
+
           {% set owner_label = 'Sans responsable' %}
+
         {% endif %}
-        {% set requester_label = r.name or r.requester_name or 'â€”' %}
+
+        {% set requester_label = r.name or r.requester_name or '' %}
+
             {% set age_days = age_days_by_id.get(r.id, 0) %}
+
         {% set category_label = request_category_label(r.category) %}
+
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
+
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+
             data-request-id="{{ r.id }}"
+
             data-hc-status-row="{{ row_status_bucket }}"
+
             data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
+
             data-owner-id="{{ r.owner_id or '' }}"
+
             data-owner-state="{{ owner_state }}"
+
             data-city="{{ (r.city or '')|lower }}"
+
             data-service="{{ ((r.service.name if r.service else '') or '')|lower }}"
+
             data-priority-label="{{ row_priority }}"
+
             data-sig-can-help="{{ ch }}"
+
             data-sig-cant-help="{{ cc }}"
+
             data-priority="{{ row_priority }}"
+
             style="cursor:pointer">
+
           <td class="hc-col-select">
+
             <input type="checkbox"
+
                    class="form-check-input hc-row-select"
+
                    value="{{ r.id }}"
+
                    data-link="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+
                    aria-label="{{ _('Select request') }} {{ r.id }}"
+
                    data-no-rowclick>
+
           </td>
+
           <td class="hc-col-id">{{ r.id }}</td>
+
           <td class="hc-col-priority">
+
             {% set prio_class = {
+
               'CRITICAL': 'hc-prio hc-prio--critical',
+
               'HIGH': 'hc-prio hc-prio--high',
+
               'MEDIUM': 'hc-prio hc-prio--medium',
+
               'LOW': 'hc-prio hc-prio--low'
+
             }.get(row_priority, 'hc-prio hc-prio--low') %}
+
             <span class="{{ prio_class }}">{{ row_priority|lower }}</span>
+
           </td>
+
           <td class="hc-col-title hc-td-request">
+
             <div class="hc-req__title" title="{{ r.title }}">{{ r.title }}</div>
+
             <div class="hc-req__meta">
-              <span class="hc-metaItem" title="{{ r.city or 'â€”' }}">{{ r.city or "â€”" }}</span>
-              <span class="hc-dot">â€¢</span>
-              <span class="hc-metaItem" title="{{ r.service.name if r.service else 'â€”' }}">{{ r.service.name if r.service else "â€”" }}</span>
-              <span class="hc-dot">â€¢</span>
+
+              <span class="hc-metaItem" title="{{ r.city or '' }}">{{ r.city or "" }}</span>
+
+              <span class="hc-dot"></span>
+
+              <span class="hc-metaItem" title="{{ r.service.name if r.service else '' }}">{{ r.service.name if r.service else "" }}</span>
+
+              <span class="hc-dot"></span>
+
               <span class="hc-metaItem" title="{{ owner_label }}">{{ owner_label }}</span>
-              <span class="hc-dot">â€¢</span>
+
+              <span class="hc-dot"></span>
+
               <span class="hc-metaItem" title="{{ requester_label }}">{{ requester_label }}</span>
+
             </div>
+
           </td>
+
           <td class="hc-col-status">
+
           {% set status_key = row_status %}
+
           {% set status_norm = row_status %}
+
           {% set status_inline_label = {
+
             'pending': _('New'),
+
             'in_progress': _('In progress'),
+
             'done': _('Completed'),
+
             'rejected': _('Rejected')
+
           }.get(status_norm, _(STATUS_LABELS.get(r.status, r.status))) %}
+
           {% set status_class = {
+
               'new':'bg-primary',
+
               'pending':'bg-primary',
+
               'open':'bg-primary',
+
               'in_progress':'bg-warning text-dark',
+
               'in progress':'bg-warning text-dark',
+
               'approved':'bg-warning text-dark',
+
               'done':'bg-success',
+
               'completed':'bg-success',
+
               'rejected':'bg-secondary',
+
               'cancelled':'bg-secondary',
+
               'canceled':'bg-secondary',
+
               'closed':'bg-secondary'
+
             }.get(status_norm, 'bg-secondary') %}
+
             <div class="hc-statusmenu-wrap" data-no-rowclick>
+
               <details class="hc-statusmenu" data-no-rowclick data-request-id="{{ r.id }}" data-csrf="{{ csrf_token() }}">
+
                 <summary class="badge {{ status_class }} hc-statusmenu__summary" data-no-rowclick>
+
                   <span class="hc-statusmenu__label">{{ status_inline_label }}</span>
-                  <span class="hc-statusmenu__chev" aria-hidden="true">â–¾</span>
+
+                  <span class="hc-statusmenu__chev" aria-hidden="true"></span>
+
                 </summary>
+
                 <div class="hc-statusmenu__list" data-no-rowclick>
+
                   <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('New') }}" data-no-rowclick>{{ _('New') }}</button>
+
                   <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('Open') }}" data-no-rowclick>{{ _('Open') }}</button>
+
                   <button type="button" class="hc-statusmenu__item" data-status-target="in_progress" data-status-label="{{ _('In progress') }}" data-no-rowclick>{{ _('In progress') }}</button>
+
                   <button type="button" class="hc-statusmenu__item" data-status-target="done" data-status-label="{{ _('Completed') }}" data-no-rowclick>{{ _('Completed') }}</button>
+
                   <button type="button" class="hc-statusmenu__item" data-status-target="rejected" data-status-label="{{ _('Rejected') }}" data-no-rowclick>{{ _('Rejected') }}</button>
+
                 </div>
+
               </details>
+
               <span class="hc-statusmenu__flash small" aria-live="polite"></span>
+
             </div>
+
             {% if not r.owner_id %}
+
               <span class="badge text-bg-primary ms-1">Sans responsable</span>
+
             {% elif r.owner_id == current_user.id %}
+
               <span class="badge text-bg-success ms-1">{{ _('Mine') }}</span>
+
             {% else %}
+
               <span class="badge text-bg-secondary ms-1">{{ _('Taken') }}</span>
+
             {% endif %}
+
           </td>
+
           <td class="hc-col-risk">
+
             {% set risk_level_key = (r.risk_level or 'standard')|lower %}
+
             {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
+
               {% set risk_level_key = 'standard' %}
+
             {% endif %}
+
             <div class="hc-risk-cell">
+
               <strong>{{ r.risk_score or 0 }}/100</strong>
+
               <span class="hc-risk-badge hc-risk-badge--{{ risk_level_key }}">
+
                 {{ risk_level_key|capitalize }}
+
               </span>
+
             </div>
+
           </td>
+
           <td class="hc-col-category" title="{{ category_label }}">{{ category_label }}</td>
+
           <td class="hc-col-created-context">
+
             <div class="hc-created-main">{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '-' }}</div>
+
             <div class="hc-created-meta">
+
               <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
+
               {% if r.closed_at %}
-                <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}">âœ“ {{ _('Closed') }}</span>
+
+                <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}"> {{ _('Closed') }}</span>
+
               {% endif %}
+
             </div>
+
             <div class="hc-created-flags">
+
             {% if risk_notseen_tier_hours %}
+
               {% if risk_notseen_tier_hours >= 72 %}
+
                 {% set risk_badge_class = 'text-bg-danger' %}
+
               {% else %}
+
                 {% set risk_badge_class = 'text-bg-warning' %}
+
               {% endif %}
+
               <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
+
             {% endif %}
+
             {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
-              <span class="badge text-bg-warning" title="Aucun responsable assignÃ©"> Sans responsable</span>
+
+              <span class="badge text-bg-warning" title="Aucun responsable assign"> Sans responsable</span>
+
             {% endif %}
+
             {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
+
               <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
+
             {% endif %}
+
             </div>
+
           </td>
+
           <td class="hc-col-signals">
+
             {% set sig = last_signal_by_req.get(r.id) %}
+
             {% set eng = engagement_by_request.get(r.id) %}
+
             <div class="hc-signal-counts">
+
             {% if ch > 0 %}
+
               <span class="hc-chip hc-chip--pos" title="{{ _('Available volunteers') }}">
+
                 <span class="hc-chip__dot"></span> +{{ ch }} CAN_HELP
+
               </span>
+
             {% endif %}
+
             {% if cc > 0 %}
+
               <span class="hc-chip hc-chip--neg ms-1" title="{{ _('Unavailable volunteers') }}">
+
                 <span class="hc-chip__dot"></span> +{{ cc }} CANT_HELP
+
               </span>
+
             {% endif %}
+
             {% if ch == 0 and cc == 0 %}
-              <span class="hc-muted">â€”</span>
+
+              <span class="hc-muted"></span>
+
             {% endif %}
+
             </div>
+
             <div class="text-muted small hc-signal-meta" title="{{ _('Signal summary') }}">
+
               {% if sig %}
+
                 {{ _('Last:') }} {{ sig.action }}
+
                 {% if (sig.updated_at or sig.created_at) %}
-                  Â· {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") }}
+
+                  {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") }}
+
                 {% endif %}
-                {% if sig.volunteer_id is defined %} Â· #{{ sig.volunteer_id }}{% endif %}
+
+                {% if sig.volunteer_id is defined %} #{{ sig.volunteer_id }}{% endif %}
+
               {% else %}
-                {{ _('Last:') }} â€”
+
+                {{ _('Last:') }} 
+
               {% endif %}
-              Â· {{ _('Engagement:') }}
+
+              {{ _('Engagement:') }}
+
               {% if eng %}
+
                 {{ eng.label }} ({{ eng.score }})
+
               {% else %}
-                â€”
+
+                
+
               {% endif %}
+
             </div>
+
           </td>
+
           <td class="text-end hc-col-actions hc-td-action">
+
             {% set nu = (nudge_ui or {}).get(r.id, {}) %}
+
             {% set is_disabled = nu.get('disabled', False) %}
+
             {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
+
             {% set sig = last_signal_by_req.get(r.id) %}
+
             <div class="mb-1 d-flex justify-content-end">
+
               {% if not r.owner_id %}
+
                 <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=r.id) }}" data-no-rowclick>
+
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                   <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
+
                   <button
+
                     type="submit"
+
                     class="btn btn-primary btn-sm"
+
                     data-no-rowclick
+
                     onclick="this.disabled=true; this.form.submit(); return false;"
+
                   >
+
                     {{ _('Attribuer un responsable') }}
+
                   </button>
+
                 </form>
+
               {% elif r.owner_id == current_user.id %}
+
                 <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
+
                   {{ _('Open') }}
+
                 </a>
+
               {% else %}
+
                 <button class="btn btn-outline-secondary btn-sm" type="button" disabled data-no-rowclick>
+
                   {{ _('Taken') }}
+
                 </button>
+
               {% endif %}
+
             </div>
+
             <details class="hc-rowmenu" data-no-rowclick>
+
               <summary class="btn btn-sm btn-outline-secondary hc-rowmenu__summary" data-no-rowclick>
+
                 {{ _('Actions') }}
+
               </summary>
+
               <div class="hc-rowmenu__list" data-no-rowclick>
+
                 <a class="hc-rowmenu__item" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
-                  DÃ©tails
+
+                  Dtails
+
                 </a>
+
+
 
                 {% if sig and sig.action == 'CAN_HELP' and sig.volunteer_id %}
+
                   {% set already_assigned = r.assigned_volunteer_id and r.assigned_volunteer_id != sig.volunteer_id %}
+
                   {% set closed_statuses = ['done','closed','cancelled','canceled','rejected'] %}
+
                   {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
+
                   <form method="post"
+
                         action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
+
                         class="hc-rowmenu__form"
+
                         data-no-rowclick>
+
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                     <button type="submit"
+
                             class="hc-rowmenu__item hc-rowmenu__item--button"
+
                             data-no-rowclick
+
                             {% if already_assigned or is_closed %}disabled{% endif %}>
+
                       {{ _('Attribuer un responsable') }} #{{ sig.volunteer_id }}
+
                     </button>
+
                   </form>
+
                 {% endif %}
 
+
+
                 <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="hc-rowmenu__form" data-no-rowclick>
+
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                   <button type="submit"
+
                           class="hc-rowmenu__item hc-rowmenu__item--button"
+
                           title="{{ tip }}"
+
                           data-no-rowclick
+
                           {% if is_disabled %}disabled aria-disabled="true"{% endif %}>
+
                     {{ _('Nudge volunteer') }}
+
                   </button>
+
                 </form>
+
               </div>
+
             </details>
+
           </td>
+
         </tr>
+
         {% endfor %}
+
         {% else %}
+
         <tr>
+
           <td colspan="10" class="hc-requests-empty-cell">
+
             <div class="hc-empty-state">
-              <h3>Aucune demande Ã  afficher</h3>
-              <p>Cette file est vide pour les filtres actuels. RÃ©initialisez les filtres ou crÃ©ez une nouvelle demande.</p>
-              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">CrÃ©er une demande</a>
+
+              <h3>Aucune demande à afficher</h3>
+
+              <p>Cette file est vide pour les filtres actuels. Rinitialisez les filtres ou crez une nouvelle demande.</p>
+
+              <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">Crer une demande</a>
+
             </div>
+
           </td>
+
         </tr>
+
         {% endif %}
+
       </tbody>
+
     </table>
+
   </div>
+
   </div>
+
+
 
   <div class="hc-card hc-live-card hc-fold" style="margin-top:12px;">
+
     <button
+
       type="button"
+
       class="hc-live-header hc-fold__head"
+
       id="hcLiveToggle"
+
       data-fold-toggle
+
       aria-expanded="false"
+
       aria-controls="hcLiveBody"
+
     >
+
       <span class="hc-live-header__copy">
-        <span class="hc-live-header__title hc-fold__title">Centre opÃ©rationnel</span>
-        <span class="hc-muted hc-fold__subtitle">Ã‰tat opÃ©rationnel immÃ©diat</span>
+
+        <span class="hc-live-header__title hc-fold__title">Centre oprationnel</span>
+
+        <span class="hc-muted hc-fold__subtitle">tat oprationnel immdiat</span>
+
       </span>
-      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true">â€º</span>
+
+      <span class="hc-live-chevron hc-fold__chev" aria-hidden="true"></span>
+
     </button>
+
     <div class="hc-live-body hc-fold__body" id="hcLiveBody" hidden>
-      <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveUnassigned">â€¢ Sans bÃ©nÃ©vole assignÃ© : 0</p>
-        <div class="hc-activity-meta">PrioritÃ© : affecter ou clÃ´turer</div>
-      </div>
 
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveInProgress">â€¢ En cours : 0</p>
-        <div class="hc-activity-meta">Ã€ suivre</div>
+
+        <p class="hc-activity-title" id="hcLiveUnassigned"> Sans bnvole assign : 0</p>
+
+        <div class="hc-activity-meta">Priorit : affecter ou clturer</div>
+
       </div>
 
+
+
       <div class="hc-activity-item">
-        <p class="hc-activity-title" id="hcLiveCanHelp">â€¢ Disponibles (CAN_HELP) : 0</p>
-        <div class="hc-activity-meta">BÃ©nÃ©voles mobilisables</div>
+
+        <p class="hc-activity-title" id="hcLiveInProgress"> En cours : 0</p>
+
+        <div class="hc-activity-meta"> suivre</div>
+
       </div>
+
+
+
+      <div class="hc-activity-item">
+
+        <p class="hc-activity-title" id="hcLiveCanHelp"> Disponibles (CAN_HELP) : 0</p>
+
+        <div class="hc-activity-meta">Bnvoles mobilisables</div>
+
+      </div>
+
     </div>
+
   </div>
 
+
+
 </div>
+
 <script src="{{ url_for('static', filename='js/admin-requests.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-kpis.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-folds.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-live-now.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-rowhints.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-actionable-mark.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-filters.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-copy-link.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-rowclick.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
+
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
+
 {% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
 
