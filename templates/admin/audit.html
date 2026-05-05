@@ -1,5 +1,5 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} • Audit des actions | HelpChain{% endblock %}
+{% block title %}{{ _('Admin') }} - Audit des actions | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-audit-page hc-admin-table-page{% endblock %}
 
 {% block admin_content %}
@@ -7,9 +7,9 @@
   <div class="hc-card mb-3 hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <div class="hc-admin-kicker">Traçabilité administrative</div>
+        <div class="hc-admin-kicker">Traçabilite administrative</div>
         <h1 class="hc-admin-title">Audit des actions</h1>
-        <div class="hc-muted">Historique exploitable des actions administratives, de leurs cibles et des changements associés.</div>
+        <div class="hc-muted">Historique exploitable des actions administratives, de leurs cibles et des changements associes.</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>
@@ -56,83 +56,194 @@
 
   <div class="hc-card hc-admin-table-shell hc-table-shell">
     <div class="hc-card__section hc-card__section--header hc-audit-tableHeader">
-      <strong>Événements récents</strong>
-      <span class="hc-muted small">Console de traçabilité pour les actions, cibles et changements de charge utile.</span>
+      <strong>Evenements recents</strong>
+      <span class="hc-muted small">Vue operationnelle des actions, cibles, impacts et details enregistres.</span>
     </div>
-    <div class="table-responsive hc-admin-tablewrap">
-      <table class="table table-hover align-middle hc-admin-table hc-table hc-audit-table mb-0">
-        <colgroup>
-          <col style="width: 220px;">
-          <col style="width: 120px;">
-          <col style="width: 140px;">
-          <col style="width: 150px;">
-          <col>
-          <col style="width: 180px;">
-        </colgroup>
-        <thead>
-          <tr>
-            <th class="hc-col-time">{{ _('Time') }}</th>
-            <th class="hc-col-action">{{ _('Action') }}</th>
-            <th class="hc-col-admin">{{ _('Admin') }}</th>
-            <th class="hc-col-target">{{ _('Target') }}</th>
-            <th class="hc-col-change">Changement</th>
-            <th class="hc-col-ip">IP</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for e in events %}
-          {% set created_at_label = e.created_at.strftime('%Y-%m-%d %H:%M:%S') if e.created_at and e.created_at.strftime is defined else e.created_at %}
-          <tr>
-            <td class="small text-muted hc-audit-time" title="{{ created_at_label }}">{{ created_at_label }}</td>
-            <td class="hc-audit-actionCell"><span class="badge text-bg-secondary">{{ e.action }}</span></td>
-            <td class="small hc-audit-admin">{{ e.admin_username or ("#" ~ e.admin_user_id) }}</td>
-            <td class="small hc-audit-target">
-              <div class="hc-audit-targetMain">{{ e.target_type }} #{{ e.target_id }}</div>
-              {% if e.target_type == "Request" and e.action != "security.denied_action" %}
-                {% if config.DEMO_MODE %}
-                  <span class="btn btn-sm btn-outline-secondary disabled ms-2" aria-disabled="true">Aperçu</span>
-                {% else %}
-                  <a class="ms-2 small" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">Voir</a>
-                {% endif %}
-              {% endif %}
-            </td>
-            <td class="small hc-audit-change change-cell">
-              {% if e.payload and e.payload.old and e.payload.new %}
-                <div class="audit-diff">
-                  <div><span class="text-muted">avant :</span> <code>{{ e.payload.old }}</code></div>
-                  <div><span class="text-muted">après :</span> <code>{{ e.payload.new }}</code></div>
+
+    <div class="hc-admin-tablewrap px-3 pb-3">
+      {% if events|length > 0 %}
+      <div class="vstack gap-3">
+        {% for e in events %}
+        {% set created_at_label = e.created_at.strftime('%Y-%m-%d %H:%M:%S') if e.created_at and e.created_at.strftime is defined else e.created_at %}
+        {% set created_date = e.created_at.strftime('%Y-%m-%d') if e.created_at and e.created_at.strftime is defined else created_at_label %}
+        {% set created_time = e.created_at.strftime('%H:%M:%S') if e.created_at and e.created_at.strftime is defined else '' %}
+        {% set action_key = (e.action or '')|lower %}
+        {% set actor_label = e.admin_username or ("#" ~ e.admin_user_id) or "System" %}
+        {% set target_label = ((e.target_type or 'Target') ~ ' #' ~ (e.target_id or '-')) if e.target_id else (e.target_type or 'Target') %}
+        {% set payload_map = e.payload if e.payload is mapping else none %}
+        {% set raw_payload = e.payload|tojson(indent=2) if e.payload is mapping else (e.payload|string if e.payload else '') %}
+        {% set old_value = payload_map.old if payload_map and payload_map.old is defined else none %}
+        {% set new_value = payload_map.new if payload_map and payload_map.new is defined else none %}
+        {% set route_value = payload_map.route if payload_map and payload_map.route is defined else none %}
+        {% set identifier_value = payload_map.identifier if payload_map and payload_map.identifier is defined else none %}
+        {% set attempted_action = payload_map.attempted_action if payload_map and payload_map.attempted_action is defined else none %}
+        {% set reason_value = payload_map.reason if payload_map and payload_map.reason is defined else none %}
+        {% set user_value = payload_map.user if payload_map and payload_map.user is defined else none %}
+        {% set status_value = payload_map.status if payload_map and payload_map.status is defined else none %}
+        {% set important_flag = payload_map.flag if payload_map and payload_map.flag is defined else none %}
+
+        {% if 'security' in action_key or 'denied' in action_key or 'failure' in action_key or 'delete' in action_key %}
+          {% set tone_class = 'border-danger' %}
+          {% set badge_class = 'text-bg-danger' %}
+        {% elif 'login' in action_key or 'success' in action_key or 'create' in action_key %}
+          {% set tone_class = 'border-success' %}
+          {% set badge_class = 'text-bg-success' %}
+        {% elif 'status' in action_key or 'assign' in action_key or 'update' in action_key %}
+          {% set tone_class = 'border-warning' %}
+          {% set badge_class = 'text-bg-warning text-dark' %}
+        {% else %}
+          {% set tone_class = 'border-primary' %}
+          {% set badge_class = 'text-bg-primary' %}
+        {% endif %}
+
+        {% if action_key == 'status_change' %}
+          {% set action_sentence = 'Statut mis a jour' %}
+        {% elif 'login_success' in action_key %}
+          {% set action_sentence = 'Connexion administrateur reussie' %}
+        {% elif 'login_failure' in action_key %}
+          {% set action_sentence = 'Tentative de connexion echouee' %}
+        {% elif action_key == 'security.denied_action' %}
+          {% set action_sentence = 'Action refusee par la couche de securite' %}
+        {% elif 'assign' in action_key %}
+          {% set action_sentence = 'Affectation mise a jour' %}
+        {% elif 'create' in action_key %}
+          {% set action_sentence = 'Creation enregistree' %}
+        {% elif 'update' in action_key %}
+          {% set action_sentence = 'Modification enregistree' %}
+        {% else %}
+          {% set action_sentence = (e.action or 'Action')|replace('_', ' ')|replace('.', ' ')|title %}
+        {% endif %}
+
+        <details class="hc-card list-group-item list-group-item-action rounded-4 border-start border-4 {{ tone_class }} shadow-sm overflow-hidden">
+          <summary class="list-unstyled px-3 py-3 px-xl-4">
+            <div class="row g-3 align-items-center">
+              <div class="col-12 col-xl-3">
+                <div class="d-flex flex-column gap-2">
+                  <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge {{ badge_class }}">{{ e.action }}</span>
+                    <span class="badge text-bg-light border">Audit</span>
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ created_time or created_at_label }}</div>
+                    <div class="small text-muted">{{ created_date if created_time else '' }}</div>
+                  </div>
                 </div>
-              {% elif e.payload %}
-                <code>{{ e.payload }}</code>
-              {% else %}
-                <span class="text-muted">—</span>
-              {% endif %}
-            </td>
-            <td class="small text-muted hc-audit-ip" title="{{ e.ip or '—' }}">{{ e.ip or "—" }}</td>
-          </tr>
-          {% endfor %}
-          {% if events|length == 0 %}
-          <tr>
-            <td colspan="6" class="py-0">
-              <div class="hc-empty-state">
-                <div class="hc-empty-state__title">Aucun événement d’audit</div>
-                <div class="hc-empty-state__text">Aucun événement ne correspond aux filtres sélectionnés.</div>
               </div>
-            </td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
+
+              <div class="col-12 col-xl-5">
+                <div class="fw-semibold">{{ action_sentence }}</div>
+                <div class="small text-muted mt-1">Par <span class="fw-semibold text-body">{{ actor_label }}</span></div>
+                <div class="small text-muted">
+                  Cible :
+                  {% if e.target_type == "Request" and e.action != "security.denied_action" and not config.DEMO_MODE %}
+                    <a class="fw-semibold text-decoration-none" href="{{ url_for('admin.admin_request_details', req_id=e.target_id) }}">{{ target_label }}</a>
+                  {% else %}
+                    <span class="fw-semibold text-body">{{ target_label }}</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-12 col-xl-4">
+                <div class="d-flex flex-wrap justify-content-xl-end gap-2">
+                  {% if old_value is not none and new_value is not none %}
+                    <span class="hc-pill hc-pill--sla" title="Changement de valeur">status: {{ old_value }} -> {{ new_value }}</span>
+                  {% elif status_value %}
+                    <span class="hc-pill hc-pill--sla" title="Statut">status: {{ status_value }}</span>
+                  {% endif %}
+                  {% if route_value %}
+                    <span class="hc-pill hc-pill--muted" title="Route">route: {{ route_value }}</span>
+                  {% endif %}
+                  {% if identifier_value %}
+                    <span class="hc-pill hc-pill--muted" title="Identifiant">id: {{ identifier_value }}</span>
+                  {% endif %}
+                  {% if user_value %}
+                    <span class="hc-pill hc-pill--muted" title="Utilisateur">user: {{ user_value }}</span>
+                  {% endif %}
+                  {% if reason_value %}
+                    <span class="hc-pill hc-pill--warn" title="Motif">reason: {{ reason_value }}</span>
+                  {% endif %}
+                  {% if important_flag %}
+                    <span class="hc-pill hc-pill--warn" title="Flag">flag: {{ important_flag }}</span>
+                  {% endif %}
+                  {% if attempted_action %}
+                    <span class="hc-pill hc-pill--warn" title="Action tentee">{{ attempted_action }}</span>
+                  {% endif %}
+                  {% if old_value is none and new_value is none and not route_value and not identifier_value and not user_value and not reason_value and not attempted_action and not important_flag and e.payload %}
+                    <span class="hc-pill hc-pill--muted" title="Charge utile">payload disponible</span>
+                  {% endif %}
+                </div>
+
+                <div class="small text-muted text-xl-end mt-2">
+                  IP: {{ e.ip or "-" }}
+                  {% if e.user_agent %}
+                    <span class="d-block">UA: {{ e.user_agent[:72] }}{% if e.user_agent|length > 72 %}...{% endif %}</span>
+                  {% endif %}
+                </div>
+
+                <div class="small fw-semibold text-xl-end mt-2">Voir details</div>
+              </div>
+            </div>
+          </summary>
+
+          <div class="border-top px-3 py-3 px-xl-4 bg-light bg-opacity-50">
+            <div class="row g-3">
+              <div class="col-12 col-xl-5">
+                <div class="small text-muted mb-2">Contexte</div>
+                <div class="vstack gap-2">
+                  <div class="rounded-3 border bg-white p-3">
+                    <div class="small text-muted">Action</div>
+                    <div class="fw-semibold">{{ e.action }}</div>
+                  </div>
+                  <div class="rounded-3 border bg-white p-3">
+                    <div class="small text-muted">Admin</div>
+                    <div class="fw-semibold">{{ actor_label }}</div>
+                  </div>
+                  <div class="rounded-3 border bg-white p-3">
+                    <div class="small text-muted">Cible</div>
+                    <div class="fw-semibold">{{ target_label }}</div>
+                    {% if e.target_type == "Request" and e.action != "security.denied_action" and config.DEMO_MODE %}
+                      <div class="small text-muted mt-2">Apercu indisponible en mode demo.</div>
+                    {% endif %}
+                  </div>
+                  <div class="rounded-3 border bg-white p-3">
+                    <div class="small text-muted">Reseau</div>
+                    <div class="fw-semibold">{{ e.ip or "-" }}</div>
+                    {% if e.user_agent %}
+                      <div class="small text-muted mt-2">{{ e.user_agent }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-xl-7">
+                <div class="small text-muted mb-2">Charge utile complete</div>
+                {% if raw_payload %}
+                  <pre class="mb-0 rounded-3 border bg-white p-3 small overflow-auto"><code>{{ raw_payload }}</code></pre>
+                {% else %}
+                  <div class="rounded-3 border bg-white p-3 text-muted small">Aucun detail supplementaire enregistre.</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </details>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="hc-empty-state">
+        <div class="hc-empty-state__title">Aucun evenement d'audit</div>
+        <div class="hc-empty-state__text">Aucun evenement ne correspond aux filtres selectionnes.</div>
+      </div>
+      {% endif %}
     </div>
 
     <div class="hc-row mt-2 hc-audit-pagination">
       <div class="hc-muted small">
-        Page {{ pagination.page }} / {{ pagination.pages or 1 }} · {{ pagination.total }} événements
+        Page {{ pagination.page }} / {{ pagination.pages or 1 }} - {{ pagination.total }} evenements
       </div>
       <nav>
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-            <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page-1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">Précédent</a>
+            <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page-1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">Precedent</a>
           </li>
           <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
             <a class="page-link" href="{{ url_for('admin.admin_audit', page=pagination.page+1, action=filters.action, admin=filters.admin, target_id=filters.target_id, days=filters.days) }}">Suivant</a>
@@ -141,9 +252,10 @@
       </nav>
     </div>
   </div>
-  <div class="hc-section-thread" aria-label="Continuité audit">
-    <span class="hc-section-thread__label">Pour prolonger l’analyse</span>
-    <a class="hc-section-thread__link" href="{{ url_for('admin.admin_security') }}">Voir la console de sécurité</a>
+
+  <div class="hc-section-thread" aria-label="Continuite audit">
+    <span class="hc-section-thread__label">Pour prolonger l'analyse</span>
+    <a class="hc-section-thread__link" href="{{ url_for('admin.admin_security') }}">Voir la console de securite</a>
   </div>
 </div>
 {% endblock %}

@@ -5,6 +5,7 @@ import csv
 import json
 import math
 import os
+from queue import Empty
 import secrets
 import threading
 import time
@@ -31,6 +32,7 @@ from flask import (
     request,
     send_file,
     session,
+    stream_with_context,
     url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -154,6 +156,11 @@ from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
+from ..services.event_bus import (
+    publish as publish_admin_stream_event,
+    subscribe as subscribe_admin_stream,
+    unsubscribe as unsubscribe_admin_stream,
+)
 from ..services.structure_service import create_structure_with_admin
 
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
@@ -11266,3 +11273,109 @@ from . import admin_structures as _admin_structures  # noqa: F401
 build_requests_query = _admin_requests.build_requests_query
 get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
 
+
+
+# --- Ops Action Queue API v1 ---
+from flask import jsonify
+from datetime import datetime, timezone
+
+try:
+    from backend.models import Request as OpsActionRequest
+except Exception:
+    from backend.helpchain_backend.src.models import Request as OpsActionRequest
+
+
+@admin_bp.get("/api/action-queue")
+@admin_required
+def admin_ops_action_queue_v1():
+    rows = (
+        OpsActionRequest.query
+        .filter(OpsActionRequest.is_archived.is_(False))
+        .order_by(
+            OpsActionRequest.updated_at.desc(),
+            OpsActionRequest.created_at.desc(),
+        )
+        .limit(10)
+        .all()
+    )
+
+    items = []
+    for r in rows:
+        score = int(getattr(r, "risk_score", 0) or 0)
+        owner = getattr(r, "owner_id", None)
+
+        items.append({
+            "id": r.id,
+            "title": getattr(r, "title", None) or f"Demande #{r.id}",
+            "city": getattr(r, "city", None) or "",
+            "priority": getattr(r, "priority", None) or "",
+            "status": getattr(r, "status", None) or "open",
+            "risk_score": score,
+            "risk_level": getattr(r, "risk_level", None) or "",
+            "category": getattr(r, "category", None) or "",
+            "owner_id": owner,
+            "recommendation": (
+                "Escalader" if score >= 85 else
+                "Assigner / relancer" if not owner else
+                "Suivre"
+            ),
+        })
+
+    return jsonify({"ok": True, "items": items})
+
+
+@admin_bp.get("/api/stream")
+def admin_ops_stream_v1():
+    def generate():
+        while True:
+            yield ":\n\n"
+            data = {"type": "ping"}
+            yield f"data: {json.dumps(data)}\n\n"
+            time.sleep(2)
+
+    return Response(
+        generate(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@admin_bp.post("/api/action-queue/<int:request_id>/assign")
+@admin_required
+def admin_ops_action_queue_assign_v1(request_id):
+    r = OpsActionRequest.query.get_or_404(request_id)
+
+    current_admin_id = session.get("admin_user_id") or session.get("user_id")
+    current_admin_name = session.get("admin_username") or session.get("username") or "admin"
+
+    if hasattr(r, "owner_id"):
+        r.owner_id = current_admin_id
+    if hasattr(r, "owned_at"):
+        r.owned_at = datetime.now(timezone.utc)
+    if hasattr(r, "updated_at"):
+        r.updated_at = datetime.now(timezone.utc)
+    if hasattr(r, "status") and (r.status or "").lower() in {"new", "open"}:
+        r.status = "assigned"
+
+    db.session.commit()
+
+    try:
+        publish_admin_stream_event({
+            "type": "request_assigned",
+            "request_id": r.id,
+        })
+    except Exception:
+        current_app.logger.exception(
+            "admin_ops_action_queue_assign_publish_failed request_id=%s",
+            r.id,
+        )
+
+    return jsonify({
+        "ok": True,
+        "request_id": r.id,
+        "assignee": current_admin_name,
+        "status": getattr(r, "status", None),
+    })

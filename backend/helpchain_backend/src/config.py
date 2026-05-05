@@ -14,6 +14,13 @@ load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 class Config:
     # --- Core ---
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-only-change-me")
+    GIT_SHA = (
+        os.getenv("GIT_SHA")
+        or os.getenv("RENDER_GIT_COMMIT")
+        or os.getenv("RENDER_GIT_COMMIT_SHA")
+        or os.getenv("COMMIT_SHA")
+        or "dev"
+    )
     PROPAGATE_EXCEPTIONS = True  # Enable full tracebacks during MFA debug
     DEBUG = os.getenv("DEBUG", "false").lower() in ("true", "1")
 
