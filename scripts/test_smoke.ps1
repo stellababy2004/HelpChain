@@ -16,6 +16,21 @@ if (-not (Test-Path $pythonExe)) {
     exit 1
 }
 
+$tmpRoot = Join-Path ([System.IO.Path]::GetTempPath()) "HelpChainSmoke"
+if (-not (Test-Path $tmpRoot)) {
+    New-Item -ItemType Directory -Path $tmpRoot | Out-Null
+}
+$runStamp = Get-Date -Format "yyyyMMdd_HHmmss_fff"
+$smokeDbPath = Join-Path $tmpRoot ("smoke_pytest_{0}.sqlite" -f $runStamp)
+$env:HC_ENV = "test"
+$env:HELPCHAIN_TESTING = "1"
+$env:HC_DB_PATH = $smokeDbPath
+$env:TMPDIR = $tmpRoot
+$env:TEMP = $tmpRoot
+$env:TMP = $tmpRoot
+Remove-Item Env:DATABASE_URL -ErrorAction SilentlyContinue
+Remove-Item Env:SQLALCHEMY_DATABASE_URI -ErrorAction SilentlyContinue
+
 $tests = @(
     "tests\test_request_details_workspace.py",
     "tests\test_admin_request_new_smoke.py",
@@ -40,6 +55,7 @@ Write-Host "Running HelpChain smoke tests..." -ForegroundColor Cyan
 Write-Host "Python: $pythonExe"
 Write-Host "Mode: $(if ($CollectOnly) { 'collect-only' } elseif ($Verbose) { 'verbose' } else { 'standard' })"
 Write-Host "Stop on first fail: $(if ($StopOnFirstFail) { 'yes' } else { 'no' })"
+Write-Host "Isolated test DB: $smokeDbPath"
 Write-Host "Test targets:"
 foreach ($t in $tests) {
     Write-Host " - $t"

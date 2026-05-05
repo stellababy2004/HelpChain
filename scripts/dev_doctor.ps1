@@ -308,7 +308,10 @@ $dbUri = [string]($payload.sqlalchemy_database_uri)
 if ($payload.local_db.selected_uri -and $dbUri -ne [string]$payload.local_db.selected_uri) {
     Write-Warn "Runtime DB differs from the selected effective local DB."
 }
-if ($payload.local_db.selected_healthy -eq $false) {
+if (
+    $payload.local_db.selected_label -ne "configured" -and
+    $payload.local_db.selected_healthy -eq $false
+) {
     Write-Warn "Selected local DB is not healthy."
 }
 
