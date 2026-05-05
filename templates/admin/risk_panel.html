@@ -1,4 +1,6 @@
 {% extends "layouts/admin_workspace.html" %}
+{% block head_extra %}
+{% endblock %}
 {% block title %}Pilotage des risques | {{ _('Admin') }}{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
@@ -144,7 +146,9 @@
       </div>
       <a class="btn btn-sm btn-outline-light" href="{{ url_for('admin.admin_requests') }}">Ouvrir les demandes</a>
     </div>
-    <ul class="hc-risklist mt-3" id="riskTopList">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-risk-actions.css') }}?v=8">
+<div id="hc-risk-actions-list" class="mt-3"></div>
+<ul class="hc-risklist mt-3" id="riskTopList">
       <li class="hc-risklist__empty">Chargement...</li>
     </ul>
   </div>
@@ -152,6 +156,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/pages/admin-risk-actions.js') }}?v={{ config.get('GIT_SHA', 'dev') }}"></script>
   <script>
     function escapeHtml(value) {
       return String(value ?? "")

@@ -1,119 +1,13 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Centre de commandement risques | Admin{% endblock %}
+{% block title %}Centre de pilotage opérationnel | Admin{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page hc-admin-table-page hc-admin-list-page hc-ops-workspace-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
-{% block admin_workspace_css %}
-  <style>
-    .hc-ops-queue-wrap {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-      overflow-y: visible;
-    }
-
-    .hc-ops-queue-table {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-
-    .hc-ops-queue-table thead {
-      display: table-header-group;
-    }
-
-    .hc-ops-queue-table tbody {
-      display: table-row-group;
-    }
-
-    .hc-ops-queue-table tr {
-      display: table-row;
-    }
-
-    .hc-ops-queue-table th,
-    .hc-ops-queue-table td {
-      display: table-cell;
-      box-sizing: border-box;
-      position: static;
-      vertical-align: middle;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      z-index: auto;
-    }
-
-    .hc-ops-queue-table th:nth-child(1),
-    .hc-ops-queue-table td:nth-child(1) {
-      width: 4.5%;
-    }
-
-    .hc-ops-queue-table th:nth-child(2),
-    .hc-ops-queue-table td:nth-child(2) {
-      width: 35%;
-    }
-
-    .hc-ops-queue-table th:nth-child(3),
-    .hc-ops-queue-table td:nth-child(3) {
-      width: 9%;
-    }
-
-    .hc-ops-queue-table th:nth-child(4),
-    .hc-ops-queue-table td:nth-child(4) {
-      width: 9%;
-    }
-
-    .hc-ops-queue-table th:nth-child(5),
-    .hc-ops-queue-table td:nth-child(5) {
-      width: 9%;
-    }
-
-    .hc-ops-queue-table th:nth-child(6),
-    .hc-ops-queue-table td:nth-child(6) {
-      width: 10%;
-    }
-
-    .hc-ops-queue-table th:nth-child(7),
-    .hc-ops-queue-table td:nth-child(7) {
-      width: 11%;
-    }
-
-    .hc-ops-queue-table th:nth-child(8),
-    .hc-ops-queue-table td:nth-child(8) {
-      width: 12.5%;
-    }
-
-    .hc-ops-queue-table .hc-ops-title,
-    .hc-ops-queue-table .hc-ops-description {
-      white-space: normal;
-      overflow: visible;
-      text-overflow: clip;
-    }
-
-    .hc-ops-queue-table .hc-ops-cell-priority,
-    .hc-ops-queue-table .hc-ops-cell-status,
-    .hc-ops-queue-table .hc-ops-cell-action,
-    .hc-ops-queue-table .hc-ops-cell-action .btn {
-      white-space: nowrap;
-      overflow-wrap: normal;
-    }
-
-    .hc-ops-queue-table .hc-ops-cell-action .btn {
-      min-width: 0;
-      padding-inline: .85rem;
-      max-width: 100%;
-    }
-
-    .hc-ops-table-shell {
-      overflow: visible;
-    }
-  </style>
-{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases hc-ops-console-shell">
   <div class="hc-card mb-3 hc-page-hero">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <div class="hc-admin-kicker">Console opérateur</div>
+        <div class="hc-admin-kicker">Workspace</div>
         <h1 class="hc-admin-title">Centre de pilotage opérationnel</h1>
         <div class="hc-muted">Surface opérationnelle — priorités, blocages, relances.</div>
       </div>
