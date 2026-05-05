@@ -454,13 +454,33 @@
 
   <div class="hc-risk-filters mb-2 hc-requests-toolbar__shortcuts">
 
-    <a class="btn btn-outline-danger btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical', city=request.args.get('city') or None) }}">{{ _('Critique') }}</a>
+    <a
+      class="btn btn-outline-danger btn-sm {% if risk_level == 'critical' %}is-active{% endif %}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical', city=request.args.get('city') or None) }}"
+      data-risk-shortcut="critical"
+      aria-pressed="{{ 'true' if risk_level == 'critical' else 'false' }}"
+    >{{ _('Critique') }} (<span data-risk-count="critical">{{ critical_count or 0 }}</span>)</a>
 
-    <a class="btn btn-outline-warning btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention', city=request.args.get('city') or None) }}">{{ _('Attention') }}</a>
+    <a
+      class="btn btn-outline-warning btn-sm {% if risk_level == 'attention' %}is-active{% endif %}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention', city=request.args.get('city') or None) }}"
+      data-risk-shortcut="attention"
+      aria-pressed="{{ 'true' if risk_level == 'attention' else 'false' }}"
+    >{{ _('Attention') }} (<span data-risk-count="attention">{{ attention_count or 0 }}</span>)</a>
 
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1', city=request.args.get('city') or None) }}">{{ _('Sans responsable') }}</a>
+    <a
+      class="btn btn-outline-secondary btn-sm {% if no_owner %}is-active{% endif %}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1', city=request.args.get('city') or None) }}"
+      data-risk-shortcut="no_owner"
+      aria-pressed="{{ 'true' if no_owner else 'false' }}"
+    >{{ _('Sans responsable') }} (<span data-risk-count="no_owner">{{ no_owner_count or 0 }}</span>)</a>
 
-    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}">{{ _('Sans action 72h') }}</a>
+    <a
+      class="btn btn-outline-secondary btn-sm {% if not_seen_72h %}is-active{% endif %}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}"
+      data-risk-shortcut="stale"
+      aria-pressed="{{ 'true' if not_seen_72h else 'false' }}"
+    >{{ _('Sans action 72h') }} (<span data-risk-count="stale">{{ not_seen_72h_count or 0 }}</span>)</a>
 
     <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Rinitialiser les filtres</a>
 
@@ -864,6 +884,11 @@
 
   <div class="hc-card hc-admin-table-shell hc-requests-table-shell">
 
+    <div class="hc-admin-empty hc-admin-empty--filters" id="hcRequestsNoMatch" hidden>
+      <strong>Aucune demande ne correspond aux filtres rapides.</strong>
+      <span class="d-block small text-muted mt-1">Essayez un autre raccourci ou réinitialisez les filtres actifs.</span>
+    </div>
+
     <div class="hc-card__header hc-admin-table-toolbar">
 
       <div>
@@ -878,35 +903,13 @@
 
   <div class="hc-requests-table-wrap hc-requests-list">
 
-    <table class="hc-requests-table">
+    <table class="hc-requests-table" aria-label="File des demandes">
 
       <thead>
 
         <tr>
 
-          <th class="hc-col-select" title="{{ _('Select') }}">
-
-            <span class="visually-hidden">{{ _('Select') }}</span>
-
-          </th>
-
-          <th class="hc-col-id">{{ _('ID') }}</th>
-
-          <th class="hc-col-priority">{{ _('Priority') }}</th>
-
-          <th class="hc-col-title">{{ _('Demande') }}</th>
-
-          <th class="hc-col-status">Statut</th>
-
-          <th class="hc-col-risk">{{ _('Risk level') }}</th>
-
-          <th class="hc-col-category">Catgorie</th>
-
-          <th class="hc-col-created-context">Cr le</th>
-
-          <th class="hc-col-signals">{{ _('Signals') }}</th>
-
-          <th class="hc-col-actions">{{ _('Actions') }}</th>
+          <th colspan="10">Demandes</th>
 
         </tr>
 
@@ -1005,6 +1008,12 @@
             {% set age_days = age_days_by_id.get(r.id, 0) %}
 
         {% set category_label = request_category_label(r.category) %}
+        {% set sig = last_signal_by_req.get(r.id) %}
+        {% set eng = engagement_by_request.get(r.id) %}
+        {% set activity_at = (sig.updated_at or sig.created_at) if sig else r.created_at %}
+        {% set activity_label = 'Dernière activité' %}
+        {% set nu = (nudge_ui or {}).get(r.id, {}) %}
+        {% set is_disabled = nu.get('disabled', False) %}
 
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
 
@@ -1030,73 +1039,25 @@
 
             data-sig-cant-help="{{ cc }}"
 
+            data-risk-level="{{ (r.risk_level or 'standard')|lower }}"
+
+            data-not-seen-hours="{{ risk_notseen_tier_hours or 0 }}"
+
             data-priority="{{ row_priority }}"
 
             style="cursor:pointer">
 
-          <td class="hc-col-select">
+          {% set prio_class = {
 
-            <input type="checkbox"
+            'CRITICAL': 'hc-prio hc-prio--critical',
 
-                   class="form-check-input hc-row-select"
+            'HIGH': 'hc-prio hc-prio--high',
 
-                   value="{{ r.id }}"
+            'MEDIUM': 'hc-prio hc-prio--medium',
 
-                   data-link="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+            'LOW': 'hc-prio hc-prio--low'
 
-                   aria-label="{{ _('Select request') }} {{ r.id }}"
-
-                   data-no-rowclick>
-
-          </td>
-
-          <td class="hc-col-id">{{ r.id }}</td>
-
-          <td class="hc-col-priority">
-
-            {% set prio_class = {
-
-              'CRITICAL': 'hc-prio hc-prio--critical',
-
-              'HIGH': 'hc-prio hc-prio--high',
-
-              'MEDIUM': 'hc-prio hc-prio--medium',
-
-              'LOW': 'hc-prio hc-prio--low'
-
-            }.get(row_priority, 'hc-prio hc-prio--low') %}
-
-            <span class="{{ prio_class }}">{{ row_priority|lower }}</span>
-
-          </td>
-
-          <td class="hc-col-title hc-td-request">
-
-            <div class="hc-req__title" title="{{ r.title }}">{{ r.title }}</div>
-
-            <div class="hc-req__meta">
-
-              <span class="hc-metaItem" title="{{ r.city or '' }}">{{ r.city or "" }}</span>
-
-              <span class="hc-dot"></span>
-
-              <span class="hc-metaItem" title="{{ r.service.name if r.service else '' }}">{{ r.service.name if r.service else "" }}</span>
-
-              <span class="hc-dot"></span>
-
-              <span class="hc-metaItem" title="{{ owner_label }}">{{ owner_label }}</span>
-
-              <span class="hc-dot"></span>
-
-              <span class="hc-metaItem" title="{{ requester_label }}">{{ requester_label }}</span>
-
-            </div>
-
-          </td>
-
-          <td class="hc-col-status">
-
-          {% set status_key = row_status %}
+          }.get(row_priority, 'hc-prio hc-prio--low') %}
 
           {% set status_norm = row_status %}
 
@@ -1140,273 +1101,316 @@
 
             }.get(status_norm, 'bg-secondary') %}
 
-            <div class="hc-statusmenu-wrap" data-no-rowclick>
+          {% set risk_level_key = (r.risk_level or 'standard')|lower %}
 
-              <details class="hc-statusmenu" data-no-rowclick data-request-id="{{ r.id }}" data-csrf="{{ csrf_token() }}">
+          {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
 
-                <summary class="badge {{ status_class }} hc-statusmenu__summary" data-no-rowclick>
+            {% set risk_level_key = 'standard' %}
 
-                  <span class="hc-statusmenu__label">{{ status_inline_label }}</span>
+          {% endif %}
 
-                  <span class="hc-statusmenu__chev" aria-hidden="true"></span>
+          <td colspan="10" class="border-0 px-0 py-2">
 
-                </summary>
+            <article class="list-group-item list-group-item-action rounded-4 border shadow-sm px-3 py-3 px-xl-4" aria-label="Demande #{{ r.id }}">
 
-                <div class="hc-statusmenu__list" data-no-rowclick>
+              <div class="row g-3 align-items-center">
 
-                  <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('New') }}" data-no-rowclick>{{ _('New') }}</button>
+                <div class="col-12 col-xl-5">
 
-                  <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('Open') }}" data-no-rowclick>{{ _('Open') }}</button>
+                  <div class="d-flex align-items-start gap-3">
 
-                  <button type="button" class="hc-statusmenu__item" data-status-target="in_progress" data-status-label="{{ _('In progress') }}" data-no-rowclick>{{ _('In progress') }}</button>
+                    <div class="pt-1" data-no-rowclick>
 
-                  <button type="button" class="hc-statusmenu__item" data-status-target="done" data-status-label="{{ _('Completed') }}" data-no-rowclick>{{ _('Completed') }}</button>
+                      <input type="checkbox"
 
-                  <button type="button" class="hc-statusmenu__item" data-status-target="rejected" data-status-label="{{ _('Rejected') }}" data-no-rowclick>{{ _('Rejected') }}</button>
+                             class="form-check-input hc-row-select"
+
+                             value="{{ r.id }}"
+
+                             data-link="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+
+                             aria-label="{{ _('Select request') }} {{ r.id }}"
+
+                             data-no-rowclick>
+
+                    </div>
+
+                    <div class="hc-td-request flex-grow-1">
+
+                      <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+
+                        <span class="text-muted small fw-semibold">#{{ r.id }}</span>
+
+                        {% if category_label %}
+
+                          <span class="hc-pill hc-pill--muted" title="{{ category_label }}">{{ category_label }}</span>
+
+                        {% endif %}
+
+                      </div>
+
+                      <div class="hc-req__title" title="{{ r.title }}">{{ r.title }}</div>
+
+                      <div class="hc-req__meta">
+
+                        <span class="hc-metaItem" title="{{ r.city or '' }}">{{ r.city or 'Ville non renseignée' }}</span>
+
+                        {% if requester_label %}
+
+                          <span class="hc-dot"></span>
+
+                          <span class="hc-metaItem" title="{{ requester_label }}">{{ requester_label }}</span>
+
+                        {% endif %}
+
+                        {% if r.service and r.service.name %}
+
+                          <span class="hc-dot"></span>
+
+                          <span class="hc-metaItem" title="{{ r.service.name }}">{{ r.service.name }}</span>
+
+                        {% endif %}
+
+                        <span class="hc-dot"></span>
+
+                        <span class="hc-metaItem" title="{{ owner_label }}" data-request-owner-label>{{ owner_label }}</span>
+
+                      </div>
+
+                      <div class="hc-metaPills mt-2">
+
+                        {% if ch > 0 %}
+
+                          <span class="hc-chip hc-chip--pos" title="{{ _('Available volunteers') }}">
+
+                            <span class="hc-chip__dot"></span> +{{ ch }} CAN_HELP
+
+                          </span>
+
+                        {% endif %}
+
+                        {% if cc > 0 %}
+
+                          <span class="hc-chip hc-chip--neg" title="{{ _('Unavailable volunteers') }}">
+
+                            <span class="hc-chip__dot"></span> +{{ cc }} CANT_HELP
+
+                          </span>
+
+                        {% endif %}
+
+                        {% if eng %}
+
+                          <span class="hc-pill hc-pill--sla" title="{{ _('Engagement') }}">{{ _('Engagement') }}: {{ eng.label }} ({{ eng.score }})</span>
+
+                        {% endif %}
+
+                        {% if risk_notseen_tier_hours %}
+
+                          {% if risk_notseen_tier_hours >= 72 %}
+
+                            {% set risk_badge_class = 'text-bg-danger' %}
+
+                          {% else %}
+
+                            {% set risk_badge_class = 'text-bg-warning' %}
+
+                          {% endif %}
+
+                          <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
+
+                        {% endif %}
+
+                        {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
+
+                          <span class="badge text-bg-warning" title="Aucun responsable assign">Sans responsable</span>
+
+                        {% endif %}
+
+                        {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
+
+                          <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
+
+                        {% endif %}
+
+                        {% if r.closed_at %}
+
+                          <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}">{{ _('Closed') }}</span>
+
+                        {% endif %}
+
+                      </div>
+
+                    </div>
+
+                  </div>
 
                 </div>
 
-              </details>
+                <div class="col-12 col-xl-4" data-no-rowclick>
 
-              <span class="hc-statusmenu__flash small" aria-live="polite"></span>
+                  <div class="d-flex flex-wrap align-items-center gap-2">
 
-            </div>
+                    <div class="hc-statusmenu-wrap">
 
-            {% if not r.owner_id %}
+                      <details
+                        class="hc-statusmenu"
+                        data-no-rowclick
+                        data-request-id="{{ r.id }}"
+                        data-csrf="{{ csrf_token() }}"
+                      >
 
-              <span class="badge text-bg-primary ms-1">Sans responsable</span>
+                        <summary
+                          class="badge {{ status_class }} hc-statusmenu__summary"
+                          data-no-rowclick
+                          aria-haspopup="menu"
+                          aria-expanded="false"
+                        >
 
-            {% elif r.owner_id == current_user.id %}
+                          <span class="hc-statusmenu__label">{{ status_inline_label }}</span>
 
-              <span class="badge text-bg-success ms-1">{{ _('Mine') }}</span>
+                          <span class="hc-statusmenu__chev" aria-hidden="true"></span>
 
-            {% else %}
+                        </summary>
 
-              <span class="badge text-bg-secondary ms-1">{{ _('Taken') }}</span>
+                        <div class="hc-statusmenu__list" data-no-rowclick role="menu">
 
-            {% endif %}
+                          <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('New') }}" data-no-rowclick role="menuitem" title="{{ _('Mark as new') }}" aria-label="{{ _('Mark as new') }}">{{ _('New') }}</button>
 
-          </td>
+                          <button type="button" class="hc-statusmenu__item" data-status-target="pending" data-status-label="{{ _('Open') }}" data-no-rowclick role="menuitem" title="{{ _('Mark as open') }}" aria-label="{{ _('Mark as open') }}">{{ _('Open') }}</button>
 
-          <td class="hc-col-risk">
+                          <button type="button" class="hc-statusmenu__item" data-status-target="in_progress" data-status-label="{{ _('In progress') }}" data-no-rowclick role="menuitem" title="{{ _('Mark as in progress') }}" aria-label="{{ _('Mark as in progress') }}">{{ _('In progress') }}</button>
 
-            {% set risk_level_key = (r.risk_level or 'standard')|lower %}
+                          <button type="button" class="hc-statusmenu__item" data-status-target="done" data-status-label="{{ _('Completed') }}" data-no-rowclick role="menuitem" title="{{ _('Mark as completed') }}" aria-label="{{ _('Mark as completed') }}">{{ _('Completed') }}</button>
 
-            {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
+                          <button type="button" class="hc-statusmenu__item" data-status-target="rejected" data-status-label="{{ _('Rejected') }}" data-no-rowclick role="menuitem" title="{{ _('Mark as rejected') }}" aria-label="{{ _('Mark as rejected') }}">{{ _('Rejected') }}</button>
 
-              {% set risk_level_key = 'standard' %}
+                        </div>
 
-            {% endif %}
+                      </details>
 
-            <div class="hc-risk-cell">
+                      <span class="hc-statusmenu__flash small" aria-live="polite"></span>
 
-              <strong>{{ r.risk_score or 0 }}/100</strong>
+                    </div>
 
-              <span class="hc-risk-badge hc-risk-badge--{{ risk_level_key }}">
+                    <span class="{{ prio_class }}">{{ row_priority|lower }}</span>
 
-                {{ risk_level_key|capitalize }}
+                    <div class="hc-signal">
 
-              </span>
+                      <div class="fw-semibold">{{ r.risk_score or 0 }}/100</div>
 
-            </div>
+                      <div class="mt-1">
 
-          </td>
+                        <span class="hc-risk-badge hc-risk-badge--{{ risk_level_key }}">{{ risk_level_key|capitalize }}</span>
 
-          <td class="hc-col-category" title="{{ category_label }}">{{ category_label }}</td>
+                      </div>
 
-          <td class="hc-col-created-context">
+                    </div>
 
-            <div class="hc-created-main">{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '-' }}</div>
+                    {% if not r.owner_id %}
 
-            <div class="hc-created-meta">
+                      <span class="badge text-bg-primary" data-request-owner-badge>Sans responsable</span>
 
-              <span class="badge text-bg-secondary" title="{{ _('Created') }}: {{ r.created_at }}">{{ age_days }}d</span>
+                    {% elif r.owner_id == current_user.id %}
 
-              {% if r.closed_at %}
+                      <span class="badge text-bg-success" data-request-owner-badge>{{ _('Mine') }}</span>
 
-                <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}"> {{ _('Closed') }}</span>
+                    {% else %}
 
-              {% endif %}
+                      <span class="badge text-bg-secondary" data-request-owner-badge>{{ _('Taken') }}</span>
 
-            </div>
+                    {% endif %}
 
-            <div class="hc-created-flags">
+                  </div>
 
-            {% if risk_notseen_tier_hours %}
+                </div>
 
-              {% if risk_notseen_tier_hours >= 72 %}
+                <div class="col-12 col-xl-3 text-xl-end" data-no-rowclick>
 
-                {% set risk_badge_class = 'text-bg-danger' %}
+                  <div class="small text-muted">{{ activity_label }}</div>
 
-              {% else %}
+                  <div class="fw-semibold">{{ activity_at.strftime('%H:%M') if activity_at else '-' }}</div>
 
-                {% set risk_badge_class = 'text-bg-warning' %}
+                  <div class="small text-muted">{{ activity_at.strftime('%Y-%m-%d') if activity_at else '-' }}</div>
 
-              {% endif %}
+                  <div class="d-flex flex-wrap align-items-center justify-content-xl-end gap-2 mt-3 hc-request-primary-action" data-request-primary-action>
 
-              <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
+                    <a
+                      class="btn btn-primary btn-sm"
+                      href="{{ url_for('admin.admin_request_details', req_id=r.id) }}"
+                      data-no-rowclick
+                      title="{{ _('Open request details') }}"
+                      aria-label="{{ _('Open request details') }}"
+                    >
 
-            {% endif %}
+                      {{ _('Ouvrir') }}
 
-            {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
+                    </a>
 
-              <span class="badge text-bg-warning" title="Aucun responsable assign"> Sans responsable</span>
+                    {% if not r.owner_id %}
 
-            {% endif %}
+                      <form
+                        method="post"
+                        action="{{ url_for('admin.admin_request_assign', req_id=r.id) }}"
+                        class="hc-request-action-form"
+                        data-no-rowclick
+                        data-request-action="assign-owner"
+                        data-success-message="{{ _('Responsable assigné') }}"
+                      >
 
-            {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-              <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
+                        <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
 
-            {% endif %}
+                        <button
 
-            </div>
+                          type="submit"
 
-          </td>
+                          class="btn btn-outline-primary btn-sm hc-request-action-btn"
 
-          <td class="hc-col-signals">
+                          data-no-rowclick
+                          data-loading-text="{{ _('Traitement...') }}"
+                          data-success-label="{{ _('Ouvrir') }}"
+                          title="{{ _('Assign yourself as owner') }}"
+                          aria-label="{{ _('Assign yourself as owner') }}"
 
-            {% set sig = last_signal_by_req.get(r.id) %}
+                        >
 
-            {% set eng = engagement_by_request.get(r.id) %}
+                          {{ _("Me l'attribuer") }}
 
-            <div class="hc-signal-counts">
+                        </button>
 
-            {% if ch > 0 %}
+                      </form>
 
-              <span class="hc-chip hc-chip--pos" title="{{ _('Available volunteers') }}">
+                    {% endif %}
 
-                <span class="hc-chip__dot"></span> +{{ ch }} CAN_HELP
+                    <details class="hc-rowmenu" data-no-rowclick data-request-rowmenu>
 
-              </span>
+              <summary
+                class="btn btn-sm btn-outline-secondary hc-rowmenu__summary"
+                data-no-rowclick
+                aria-haspopup="menu"
+                title="{{ _('Open actions menu') }}"
+              >
 
-            {% endif %}
+                <span>{{ _('Actions') }}</span>
 
-            {% if cc > 0 %}
-
-              <span class="hc-chip hc-chip--neg ms-1" title="{{ _('Unavailable volunteers') }}">
-
-                <span class="hc-chip__dot"></span> +{{ cc }} CANT_HELP
-
-              </span>
-
-            {% endif %}
-
-            {% if ch == 0 and cc == 0 %}
-
-              <span class="hc-muted"></span>
-
-            {% endif %}
-
-            </div>
-
-            <div class="text-muted small hc-signal-meta" title="{{ _('Signal summary') }}">
-
-              {% if sig %}
-
-                {{ _('Last:') }} {{ sig.action }}
-
-                {% if (sig.updated_at or sig.created_at) %}
-
-                  {{ (sig.updated_at or sig.created_at).strftime("%Y-%m-%d %H:%M") }}
-
-                {% endif %}
-
-                {% if sig.volunteer_id is defined %} #{{ sig.volunteer_id }}{% endif %}
-
-              {% else %}
-
-                {{ _('Last:') }} 
-
-              {% endif %}
-
-              {{ _('Engagement:') }}
-
-              {% if eng %}
-
-                {{ eng.label }} ({{ eng.score }})
-
-              {% else %}
-
-                
-
-              {% endif %}
-
-            </div>
-
-          </td>
-
-          <td class="text-end hc-col-actions hc-td-action">
-
-            {% set nu = (nudge_ui or {}).get(r.id, {}) %}
-
-            {% set is_disabled = nu.get('disabled', False) %}
-
-            {% set tip = nu.get('title', 'Send reminder to assigned volunteer') %}
-
-            {% set sig = last_signal_by_req.get(r.id) %}
-
-            <div class="mb-1 d-flex justify-content-end">
-
-              {% if not r.owner_id %}
-
-                <form method="post" action="{{ url_for('admin.admin_request_assign', req_id=r.id) }}" data-no-rowclick>
-
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                  <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
-
-                  <button
-
-                    type="submit"
-
-                    class="btn btn-primary btn-sm"
-
-                    data-no-rowclick
-
-                    onclick="this.disabled=true; this.form.submit(); return false;"
-
-                  >
-
-                    {{ _('Attribuer un responsable') }}
-
-                  </button>
-
-                </form>
-
-              {% elif r.owner_id == current_user.id %}
-
-                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
-
-                  {{ _('Open') }}
-
-                </a>
-
-              {% else %}
-
-                <button class="btn btn-outline-secondary btn-sm" type="button" disabled data-no-rowclick>
-
-                  {{ _('Taken') }}
-
-                </button>
-
-              {% endif %}
-
-            </div>
-
-            <details class="hc-rowmenu" data-no-rowclick>
-
-              <summary class="btn btn-sm btn-outline-secondary hc-rowmenu__summary" data-no-rowclick>
-
-                {{ _('Actions') }}
+                <span class="hc-rowmenu__chev" aria-hidden="true"></span>
 
               </summary>
 
-              <div class="hc-rowmenu__list" data-no-rowclick>
+              <div class="hc-rowmenu__list" data-no-rowclick role="menu">
 
-                <a class="hc-rowmenu__item" href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}" data-no-rowclick>
+                <a
+                  class="hc-rowmenu__item"
+                  href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
+                  data-no-rowclick
+                  role="menuitem"
+                  title="{{ _('Open request details') }}"
+                  aria-label="{{ _('Open request details') }}"
+                >
 
-                  Dtails
+                  {{ _('Ouvrir le dossier') }}
 
                 </a>
 
@@ -1420,23 +1424,34 @@
 
                   {% set is_closed = ((r.status or '')|lower) in closed_statuses %}
 
-                  <form method="post"
-
-                        action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
-
-                        class="hc-rowmenu__form"
-
-                        data-no-rowclick>
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.admin_assign_volunteer', req_id=r.id, volunteer_id=sig.volunteer_id) }}"
+                    class="hc-rowmenu__form hc-request-action-form"
+                    data-no-rowclick
+                    data-request-action="assign-volunteer"
+                    data-success-message="{{ _('Intervenant assigné') }}"
+                  >
 
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                    <button type="submit"
-
-                            class="hc-rowmenu__item hc-rowmenu__item--button"
-
-                            data-no-rowclick
-
-                            {% if already_assigned or is_closed %}disabled{% endif %}>
+                    <button
+                      type="submit"
+                      class="hc-rowmenu__item hc-rowmenu__item--button hc-request-action-btn"
+                      data-no-rowclick
+                      data-loading-text="{{ _('Traitement...') }}"
+                      {% if already_assigned %}
+                      title="{{ _('Another volunteer is already assigned') }}"
+                      aria-label="{{ _('Another volunteer is already assigned') }}"
+                      {% elif is_closed %}
+                      title="{{ _('Unavailable because this request is closed') }}"
+                      aria-label="{{ _('Unavailable because this request is closed') }}"
+                      {% else %}
+                      title="{{ _('Assign this volunteer') }}"
+                      aria-label="{{ _('Assign this volunteer') }}"
+                      {% endif %}
+                      {% if already_assigned or is_closed %}disabled aria-disabled="true"{% endif %}
+                    >
 
                       {{ _('Attribuer un responsable') }} #{{ sig.volunteer_id }}
 
@@ -1448,29 +1463,48 @@
 
 
 
-                <form method="post" action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}" class="hc-rowmenu__form" data-no-rowclick>
+                <form
+                  method="post"
+                  action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}"
+                  class="hc-rowmenu__form hc-request-action-form"
+                  data-no-rowclick
+                  data-request-action="nudge-volunteer"
+                  data-success-message="{{ _('Intervenant relancé') }}"
+                >
 
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                  <button type="submit"
+                  <button
+                    type="submit"
+                    class="hc-rowmenu__item hc-rowmenu__item--button hc-request-action-btn"
+                    title="{{ _('Relancer intervenant') }}"
+                    data-no-rowclick
+                    data-loading-text="{{ _('Traitement...') }}"
+                    aria-label="{{ _('Relancer intervenant') }}"
+                    {% if is_disabled %}disabled aria-disabled="true"{% endif %}
+                  >
 
-                          class="hc-rowmenu__item hc-rowmenu__item--button"
-
-                          title="{{ tip }}"
-
-                          data-no-rowclick
-
-                          {% if is_disabled %}disabled aria-disabled="true"{% endif %}>
-
-                    {{ _('Nudge volunteer') }}
+                    {{ _('Relancer intervenant') }}
 
                   </button>
 
                 </form>
 
+                <div class="hc-rowmenu__feedback small" data-request-menu-feedback aria-live="polite"></div>
+
               </div>
 
-            </details>
+                    </details>
+
+                  </div>
+
+                  <div class="hc-request-row-feedback small mt-2" data-request-feedback aria-live="polite"></div>
+
+                </div>
+
+              </div>
+
+            </article>
 
           </td>
 
@@ -1577,6 +1611,8 @@
 
 
 </div>
+
+<script src="{{ url_for('static', filename='js/hc-toast.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/admin-requests.js') }}"></script>
 

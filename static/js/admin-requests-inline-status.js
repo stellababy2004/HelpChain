@@ -2,19 +2,8 @@
   const menus = Array.from(document.querySelectorAll(".hc-statusmenu[data-request-id]"));
   if (!menus.length) return;
 
-  const STATUS_CLASS = {
-    open: "bg-primary",
-    in_progress: "bg-warning text-dark",
-    done: "bg-success",
-    cancelled: "bg-secondary",
-  };
-
-  const ROW_STATUS_MAP = {
-    open: "NEW",
-    in_progress: "IN_PROGRESS",
-    done: "COMPLETED",
-    cancelled: "CLOSED",
-  };
+  const MIN_VISIBLE_BUSY_MS = 400;
+  const FLICKER_THRESHOLD_MS = 300;
 
   function closeOthers(current) {
     menus.forEach((menu) => {
@@ -50,17 +39,6 @@
     list.style.top = `${top}px`;
   }
 
-  function updateBadge(menu, status, label) {
-    const summary = menu.querySelector(".hc-statusmenu__summary");
-    const labelEl = menu.querySelector(".hc-statusmenu__label");
-    if (!summary || !labelEl) return;
-
-    summary.classList.remove("bg-primary", "bg-warning", "text-dark", "bg-success", "bg-secondary");
-    const classes = (STATUS_CLASS[status] || STATUS_CLASS.cancelled).split(/\s+/).filter(Boolean);
-    summary.classList.add(...classes);
-    labelEl.textContent = label || labelEl.textContent;
-  }
-
   function showFlash(menu, message, kind) {
     const wrap = menu.closest(".hc-statusmenu-wrap");
     const flash = wrap?.querySelector(".hc-statusmenu__flash");
@@ -74,14 +52,63 @@
     flash._timerId = window.setTimeout(() => {
       flash.textContent = "";
       flash.classList.remove("is-ok", "is-error");
-    }, 2000);
+    }, 2200);
+  }
+
+  function showToast(message, kind) {
+    const text = String(message || "").trim();
+    if (!text || !window.hcToast) return;
+    if (kind === "is-ok" && typeof window.hcToast.success === "function") {
+      window.hcToast.success(text);
+      return;
+    }
+    if (kind === "is-error" && typeof window.hcToast.error === "function") {
+      window.hcToast.error(text, { duration: 4200 });
+      return;
+    }
+    if (typeof window.hcToast.info === "function") {
+      window.hcToast.info(text);
+    }
+  }
+
+  function wait(ms) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  }
+
+  async function ensureStableBusy(startedAt) {
+    const elapsed = performance.now() - startedAt;
+    if (elapsed > FLICKER_THRESHOLD_MS && elapsed < MIN_VISIBLE_BUSY_MS) {
+      await wait(MIN_VISIBLE_BUSY_MS - elapsed);
+    }
+  }
+
+  function setBusy(menu, busy, activeItem) {
+    const summary = menu.querySelector(".hc-statusmenu__summary");
+    const labelEl = menu.querySelector(".hc-statusmenu__label");
+    const items = Array.from(menu.querySelectorAll(".hc-statusmenu__item[data-status-target]"));
+    if (!menu.dataset.initialLabel && labelEl) {
+      menu.dataset.initialLabel = labelEl.textContent.trim();
+    }
+    menu.dataset.busy = busy ? "true" : "false";
+    menu.setAttribute("aria-busy", busy ? "true" : "false");
+    if (summary) summary.setAttribute("aria-disabled", busy ? "true" : "false");
+    if (labelEl) {
+      labelEl.textContent = busy ? "Traitement..." : menu.dataset.initialLabel || labelEl.textContent;
+    }
+    items.forEach((item) => {
+      item.disabled = !!busy;
+      item.dataset.loading = item === activeItem && busy ? "true" : "false";
+    });
   }
 
   async function submitStatus(menu, nextStatus, nextLabel) {
     const reqId = menu.dataset.requestId;
     const csrf = menu.dataset.csrf || "";
-    if (!reqId || !nextStatus || !csrf) return;
+    if (!reqId || !nextStatus || !csrf) return { changed: false, message: "Action impossible." };
 
+    const startedAt = performance.now();
     const body = new URLSearchParams({
       csrf_token: csrf,
       status: nextStatus,
@@ -103,18 +130,32 @@
     } catch {
       data = {};
     }
+    await ensureStableBusy(startedAt);
 
-    if (!res.ok || data.success === false) {
-      throw new Error(data.message || "Échec de la mise à jour");
+    const ui = window.hcAdminRequestsUi || {};
+    const normalizeMessage = typeof ui.normalizeMessage === "function"
+      ? ui.normalizeMessage
+      : (message) => String(message || "").trim();
+
+    if (!res.ok) {
+      throw new Error(normalizeMessage(data.message || "Echec de la mise a jour."));
     }
 
-    const row = menu.closest("tr[data-hc-status-row]");
-    const canonical = String(data.status || nextStatus).trim().toLowerCase();
-    const rowStatus = ROW_STATUS_MAP[canonical];
-    if (row && rowStatus) row.dataset.hcStatusRow = rowStatus;
+    if (data.success === false) {
+      return {
+        changed: false,
+        message: normalizeMessage(data.message || "No status change."),
+      };
+    }
 
-    updateBadge(menu, canonical, nextLabel);
-    showFlash(menu, "Statut mis à jour", "is-ok");
+    const row = menu.closest("tr[data-request-id]");
+    if (typeof ui.updateStatusRow === "function") {
+      ui.updateStatusRow(row, data.status || nextStatus, nextLabel);
+    }
+    return {
+      changed: true,
+      message: "Statut mis a jour.",
+    };
   }
 
   menus.forEach((menu) => {
@@ -133,16 +174,42 @@
 
         const nextStatus = (item.dataset.statusTarget || "").trim();
         const nextLabel = (item.dataset.statusLabel || item.textContent || "").trim();
-        if (!nextStatus) return;
+        if (!nextStatus || menu.dataset.busy === "true") return;
 
         try {
-          item.disabled = true;
-          await submitStatus(menu, nextStatus, nextLabel);
-          menu.open = false;
-        } catch {
-          showFlash(menu, "Mise à jour impossible", "is-error");
+          setBusy(menu, true, item);
+          const result = await submitStatus(menu, nextStatus, nextLabel);
+          const ui = window.hcAdminRequestsUi || {};
+          if (result.changed) {
+            showFlash(menu, result.message, "is-ok");
+            showToast(result.message, "is-ok");
+            if (typeof ui.setRowFeedback === "function") {
+              ui.setRowFeedback(menu, result.message, "success");
+            }
+            if (typeof ui.flashRowState === "function") {
+              ui.flashRowState(menu, "success");
+            }
+            menu.open = false;
+          } else {
+            showFlash(menu, result.message, "");
+            showToast(result.message, "");
+            if (typeof ui.setRowFeedback === "function") {
+              ui.setRowFeedback(menu, result.message, "info");
+            }
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Mise a jour impossible.";
+          const ui = window.hcAdminRequestsUi || {};
+          showFlash(menu, message, "is-error");
+          showToast(message, "is-error");
+          if (typeof ui.setRowFeedback === "function") {
+            ui.setRowFeedback(menu, message, "error");
+          }
+          if (typeof ui.flashRowState === "function") {
+            ui.flashRowState(menu, "error");
+          }
         } finally {
-          item.disabled = false;
+          setBusy(menu, false, null);
         }
       });
     });

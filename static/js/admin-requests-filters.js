@@ -3,6 +3,7 @@
   const tabs = Array.from(document.querySelectorAll("[data-hc-tab]"));
   const kpiCards = Array.from(document.querySelectorAll("#hcAdminKpis [data-kpi]"));
   const btnAction = document.getElementById("hcToggleActionable");
+  const tableFilters = window.hcAdminRequestsTableFilters;
 
   if (!rows.length || (!tabs.length && !kpiCards.length && !btnAction)) return;
 
@@ -53,13 +54,17 @@
   }
 
   function applyFilters({ syncUrl = true } = {}) {
-    let actionableCount = 0;
-    rows.forEach((tr) => {
-      const actionable = isActionable(tr);
-      if (actionable) actionableCount += 1;
-      const ok = passesTab(tr) && (!actionOnly || actionable);
-      tr.style.display = ok ? "" : "none";
-    });
+    const predicate = (tr) => passesTab(tr) && (!actionOnly || isActionable(tr));
+    const actionableCount = tableFilters
+      ? tableFilters.countMatching((tr) => isActionable(tr), { exclude: ["statusTabs"] })
+      : rows.filter((tr) => isActionable(tr)).length;
+
+    if (tableFilters) tableFilters.setPredicate("statusTabs", predicate);
+    else {
+      rows.forEach((tr) => {
+        tr.style.display = predicate(tr) ? "" : "none";
+      });
+    }
 
     tabs.forEach((t) =>
       t.setAttribute("aria-current", String(t.dataset.hcTab === activeTab))
@@ -97,6 +102,13 @@
   window.addEventListener("popstate", () => {
     readFromUrl();
     applyFilters({ syncUrl: false });
+  });
+
+  tableFilters?.subscribe(() => {
+    const actionableCount = tableFilters.countMatching((tr) => isActionable(tr), { exclude: ["statusTabs"] });
+    if (btnAction) {
+      btnAction.textContent = `${actionLabelBase} (${actionableCount})`;
+    }
   });
 
   readFromUrl();

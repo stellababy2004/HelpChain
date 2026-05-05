@@ -1,6 +1,7 @@
 (() => {
   const rows = Array.from(document.querySelectorAll("tr[data-request-id]"));
   if (!rows.length) return;
+  const tableFilters = window.hcAdminRequestsTableFilters;
 
   const citySelect = document.getElementById("hcFilterCity");
   const serviceSelect = document.getElementById("hcFilterService");
@@ -38,7 +39,7 @@
     const selectedService = normalize(serviceSelect.value);
     const selectedPriority = normalize(prioritySelect.value);
 
-    rows.forEach((row) => {
+    const predicate = (row) => {
       const rowCity = normalize(row.dataset.city);
       const rowService = normalize(row.dataset.service);
       const rowPriority = normalize(row.dataset.priorityLabel || row.dataset.priority);
@@ -47,8 +48,15 @@
       const matchService = !selectedService || rowService === selectedService;
       const matchPriority = !selectedPriority || rowPriority === selectedPriority;
 
-      row.style.display = matchCity && matchService && matchPriority ? "" : "none";
-    });
+      return matchCity && matchService && matchPriority;
+    };
+
+    if (tableFilters) tableFilters.setPredicate("listFilters", predicate);
+    else {
+      rows.forEach((row) => {
+        row.style.display = predicate(row) ? "" : "none";
+      });
+    }
   };
 
   citySelect.addEventListener("change", applyFilters);
