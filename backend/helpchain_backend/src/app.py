@@ -337,8 +337,14 @@ def maybe_self_heal_local_sqlite(app, db):
 
     from sqlalchemy import inspect
 
-    if os.getenv("HC_SKIP_SELFHEAL") == "1":
-        app.logger.warning("[SELFHEAL] skipped: HC_SKIP_SELFHEAL=1")
+    skip_selfheal = os.getenv("HC_SKIP_SELFHEAL") == "1" or os.getenv("DISABLE_SELF_HEAL") == "1"
+    if skip_selfheal:
+        app.logger.warning("[SELFHEAL] skipped: self-heal disabled by environment")
+        return
+
+    argv = [str(arg).lower() for arg in getattr(sys, "argv", [])]
+    if "flask" in " ".join(argv) and "db" in argv:
+        app.logger.warning("[SELFHEAL] skipped: Flask DB CLI command detected")
         return
 
     if app.config.get("TESTING") or os.getenv("HELPCHAIN_TESTING") == "1":

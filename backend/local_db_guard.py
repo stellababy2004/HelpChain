@@ -9,14 +9,15 @@ from typing import Mapping, MutableMapping
 APP_IMPORT_PATH = "backend.appy:app"
 ROOT = Path(__file__).resolve().parents[1]
 
-# Legacy write-guard constants kept for older scripts that still import them.
-CANONICAL_DB_URI = "sqlite:///C:/dev/HelpChain.bg/backend/instance/app_clean.db"
-CANONICAL_DB_PATH = r"C:\dev\HelpChain.bg\backend\instance\app_clean.db"
-
 PRIMARY_LOCAL_DB_PATH = ROOT / "instance" / "hc_local_dev.db"
 FALLBACK_LOCAL_DB_PATH = ROOT / "backend" / "instance" / "app_clean.db"
 PRIMARY_LOCAL_DB_URI = f"sqlite:///{PRIMARY_LOCAL_DB_PATH.as_posix()}"
 FALLBACK_LOCAL_DB_URI = f"sqlite:///{FALLBACK_LOCAL_DB_PATH.as_posix()}"
+
+# Keep legacy imports working, but bind the canonical local DB to this repo's
+# actual primary dev database instead of a stale absolute path from an older clone.
+CANONICAL_DB_PATH = str(PRIMARY_LOCAL_DB_PATH)
+CANONICAL_DB_URI = PRIMARY_LOCAL_DB_URI
 
 LOCAL_RUNTIME_REQUIRED_TABLES = ("admin_users", "structures", "users", "cases")
 LOCAL_RUNTIME_REQUIRED_CASE_COLUMNS = ("latitude", "longitude", "status", "priority")
