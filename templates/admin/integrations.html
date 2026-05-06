@@ -1,0 +1,117 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Connecteurs | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-integrations-page{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-density-compact">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <span>Connecteurs</span>
+  </nav>
+
+  <div class="hc-card mb-3 hc-admin-headerCard hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Connecteurs</h1>
+        <div class="hc-muted">Vue de supervision du relais de coordination et du connecteur léger.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3">
+    <div class="hc-ops-summary mb-3">
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Événements relayés</div>
+        <div class="hc-ops-summary__value">{{ total_events or 0 }}</div>
+        <div class="hc-muted small">Total enregistré dans le relais opérationnel</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Reçus</div>
+        <div class="hc-ops-summary__value">{{ received_count or 0 }}</div>
+        <div class="hc-muted small">Événements en attente d’un traitement aval</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Traités</div>
+        <div class="hc-ops-summary__value">{{ processed_count or 0 }}</div>
+        <div class="hc-muted small">Événements marqués comme traités</div>
+      </div>
+      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__label">Rejetés</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if rejected_count }}">{{ rejected_count or 0 }}</div>
+        <div class="hc-muted small">
+          Dernière réception :
+          {% if latest_received_at %}
+            {{ latest_received_at|format_datetime_fr }}
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-muted">
+      HelpChain conserve uniquement des signaux opérationnels minimisés pour la coordination. Aucun payload brut ni contenu sensible n’est affiché ici.
+    </div>
+    {% if not relay_available %}
+      <div class="alert alert-warning mt-3 mb-0" role="alert">
+        La table <code>relay_events</code> n’est pas encore disponible sur cette base. Exécutez la migration avant d’utiliser le relais de coordination.
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="hc-card hc-admin-table-shell">
+    <div class="hc-card__header">
+      <h2 class="h6 mb-1">Événements récents</h2>
+      <div class="hc-muted">Flux récents reçus via le relais de coordination.</div>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Reçu le</th>
+            <th>Source</th>
+            <th>Référence externe</th>
+            <th>Statut</th>
+            <th>Priorité</th>
+            <th>Catégorie</th>
+            <th>Structure</th>
+            <th>Sync status</th>
+            <th>Champs rejetés</th>
+            <th class="text-end">Détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in recent_rows %}
+            {% set relay_event = row.event %}
+            <tr>
+              <td>{{ relay_event.created_at|format_datetime_fr if relay_event.created_at else "—" }}</td>
+              <td>{{ relay_event.external_source }}</td>
+              <td><code>{{ relay_event.external_reference_id }}</code></td>
+              <td>{{ relay_event.status or "—" }}</td>
+              <td>{{ relay_event.priority or "—" }}</td>
+              <td>{{ relay_event.category or "—" }}</td>
+              <td>{{ relay_event.structure.name if relay_event.structure else "—" }}</td>
+              <td>{{ relay_event.sync_status or "—" }}</td>
+              <td>{{ row.rejected_fields_count }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_relay_event_detail', event_id=relay_event.id) }}">Voir</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="10" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun événement relayé pour le moment.</div>
+                  <div class="hc-empty-state__text">Le tableau s’alimentera dès réception des premiers signaux opérationnels.</div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

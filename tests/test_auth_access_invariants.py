@@ -184,7 +184,7 @@ def test_ops_login_without_mfa_redirects_to_operator_landing(client, session):
 
     response = _post_admin_login(client, username=admin.username)
     assert response.status_code in (302, 303)
-    assert "/admin/operator" in (response.headers.get("Location", "") or "")
+    assert "/ops/workspace" in (response.headers.get("Location", "") or "")
 
 
 def test_admin_login_with_mfa_enabled_continues_through_verify_flow(client, session):

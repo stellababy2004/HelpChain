@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 import csv
+import inspect
 import json
 import math
 import os
@@ -76,6 +77,7 @@ from ..models import (
     OrganizationAccessRequest,
     ProfessionalLead,
     ProfessionalLeadActivity,
+    RelayEvent,
     Intervenant,
     Request,
     RequestActivity,
@@ -156,6 +158,10 @@ from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
+from ..services.request_sla import (
+    build_request_meaningful_activity_subquery,
+    get_request_last_meaningful_activity,
+)
 from ..services.event_bus import (
     publish as publish_admin_stream_event,
     subscribe as subscribe_admin_stream,
@@ -1364,14 +1370,21 @@ def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
     role = _normalize_admin_role_value(
         getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
     )
+    structure_id = (
+        getattr(user, "structure_id", None)
+        if user is not None
+        else getattr(current_user, "structure_id", None)
+    )
     if role == "superadmin":
         return url_for("admin.admin_home")
+    if structure_id is not None and role == "admin":
+        return url_for("ops.ops_workspace")
     if role == "admin":
         return url_for("admin.admin_pilotage")
     if role == "ops":
-        return url_for("admin.admin_operator_dashboard")
+        return url_for("ops.ops_workspace")
     if role == "readonly":
-        return url_for("admin.admin_operator_dashboard")
+        return url_for("ops.ops_workspace")
     return url_for("admin.admin_requests")
 
 
@@ -1931,6 +1944,43 @@ def _to_utc_naive(dt: datetime | None) -> datetime | None:
     if dt.tzinfo is None:
         return dt
     return dt.astimezone(UTC).replace(tzinfo=None)
+
+
+def _relay_event_scope_query():
+    query = RelayEvent.query
+    if _is_global_admin():
+        return query
+    return query.filter(RelayEvent.structure_id == _current_structure_id())
+
+
+def _relay_event_rejected_fields(relay_event: RelayEvent) -> list[str]:
+    raw_value = getattr(relay_event, "rejected_fields_json", None)
+    if not raw_value:
+        return []
+    try:
+        parsed = json.loads(raw_value)
+    except Exception:
+        return []
+    if not isinstance(parsed, list):
+        return []
+    return [str(item) for item in parsed if str(item or "").strip()]
+
+
+def _relay_event_metadata(relay_event: RelayEvent) -> dict:
+    raw_value = getattr(relay_event, "metadata_json", None)
+    if not raw_value:
+        return {}
+    try:
+        parsed = json.loads(raw_value)
+    except Exception:
+        return {}
+    if not isinstance(parsed, dict):
+        return {}
+    return {
+        str(key): value
+        for key, value in parsed.items()
+        if str(key or "").strip()
+    }
 
 
 def _normalize_sla_kind(raw_kind: str | None) -> str | None:
@@ -3626,7 +3676,12 @@ def _safe_next_url(candidate: str | None) -> str:
         return ""
     if target.startswith("//") or "\\" in target:
         return ""
-    if target != "/admin" and not target.startswith("/admin/"):
+    if (
+        target != "/admin"
+        and not target.startswith("/admin/")
+        and target != "/ops"
+        and not target.startswith("/ops/")
+    ):
         return ""
     return target if is_safe_url(target) else ""
 
@@ -3634,6 +3689,64 @@ def _safe_next_url(candidate: str | None) -> str:
 def _redirect_to_safe_next(next_url: str | None, fallback_url: str, *, code: int = 303):
     target = _safe_next_url(next_url)
     return redirect(target or fallback_url, code=code)
+
+
+def _endpoint_allowed_admin_roles(endpoint: str | None) -> set[str] | None:
+    if not endpoint:
+        return None
+
+    view_func = current_app.view_functions.get(endpoint)
+    visited: set[int] = set()
+
+    while callable(view_func) and id(view_func) not in visited:
+        visited.add(id(view_func))
+        try:
+            nonlocals = inspect.getclosurevars(view_func).nonlocals
+        except Exception:
+            nonlocals = {}
+        allowed = nonlocals.get("allowed")
+        if isinstance(allowed, set) and all(isinstance(item, str) for item in allowed):
+            return {item.strip().lower() for item in allowed if item}
+        view_func = getattr(view_func, "__wrapped__", None)
+
+    return None
+
+
+def _is_next_url_authorized_for_admin_user(
+    user: AdminUser | None,
+    next_url: str | None,
+) -> bool:
+    target = _safe_next_url(next_url)
+    if not target or user is None:
+        return False
+
+    role = _normalize_admin_role_value(getattr(user, "role", None))
+    structure_id = getattr(user, "structure_id", None)
+
+    if target == "/ops" or target.startswith("/ops/"):
+        return role in {"admin", "ops", "readonly", "superadmin"}
+
+    if target == "/admin" or target.startswith("/admin/"):
+        if role == "superadmin" and structure_id is None:
+            return True
+        try:
+            adapter = current_app.url_map.bind(request.host, url_scheme=request.scheme)
+            endpoint, _ = adapter.match(target, method="GET")
+        except Exception:
+            return False
+        allowed_roles = _endpoint_allowed_admin_roles(endpoint)
+        if allowed_roles is None:
+            return False
+        return role in allowed_roles
+
+    return False
+
+
+def _next_url_for_admin_user(user: AdminUser | None, next_url: str | None) -> str:
+    target = _safe_next_url(next_url)
+    if not target:
+        return ""
+    return target if _is_next_url_authorized_for_admin_user(user, target) else ""
 
 
 def _has_pending_admin_mfa() -> bool:
@@ -3908,7 +4021,12 @@ def _render_operator_dashboard():
     # Treat unset/legacy "new" requests as operator-actionable so local/demo
     # imports do not disappear from the ops queue while still staying scoped.
     actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
-    activity_expr = func.coalesce(Request.updated_at, Request.created_at)
+    activity_sq = build_request_meaningful_activity_subquery()
+    activity_expr = func.coalesce(
+        activity_sq.c.last_activity_at,
+        Request.updated_at,
+        Request.created_at,
+    )
     stale_threshold = _now_utc() - timedelta(hours=72)
     today_start = _now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
     urgent_filter = or_(
@@ -3923,7 +4041,10 @@ def _render_operator_dashboard():
         activity_expr <= stale_threshold,
     )
 
-    workspace_query = base_query.filter(actionable_filter, priority_filter)
+    workspace_query = (
+        base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+        .filter(actionable_filter, priority_filter)
+    )
 
     urgent_count = workspace_query.filter(urgent_filter).count()
     unassigned_count = workspace_query.filter(unassigned_filter).count()
@@ -3974,15 +4095,39 @@ def _render_operator_dashboard():
     now_utc = _now_utc()
     scored_rows = []
     for r in queue_rows:
-        result = compute_ops_priority(request_row=r, now=now_utc)
-        scored_rows.append((int(result.get("ops_priority_score") or 0), r, result))
+        last_activity_at = get_request_last_meaningful_activity(r)
+        result = compute_ops_priority(
+            request_row=r,
+            activity_ref=last_activity_at,
+            now=now_utc,
+        )
+        scored_rows.append((int(result.get("ops_priority_score") or 0), r, result, last_activity_at))
     scored_rows.sort(key=lambda row: row[0], reverse=True)
     top_scored_rows = scored_rows[:5]
     queue_rows = [row[1] for row in top_scored_rows]
     ops_priority_levels = {}
-    for _, row, result in top_scored_rows:
+    workspace_row_flags = {}
+    workspace_last_activity_by_id = {}
+    for _, row, result, last_activity_at in top_scored_rows:
+        workspace_last_activity_by_id[int(row.id)] = last_activity_at
         queue_reasons[int(row.id)] = result.get("ops_priority_reasons") or []
-        ops_priority_levels[int(row.id)] = result.get("ops_priority_level") or "normal"
+        ops_level = result.get("ops_priority_level") or "normal"
+        ops_priority_levels[int(row.id)] = ops_level
+        is_stale_72h = False
+        try:
+            activity_ref = last_activity_at
+            if activity_ref is not None:
+                if getattr(activity_ref, "tzinfo", None) is None:
+                    activity_ref = activity_ref.replace(tzinfo=UTC)
+                is_stale_72h = activity_ref <= stale_threshold
+        except Exception:
+            is_stale_72h = False
+        workspace_row_flags[int(row.id)] = {
+            "critical": 1 if ops_level == "critique" else 0,
+            "owner_missing": 1 if getattr(row, "owner_id", None) is None else 0,
+            "stale_72h": 1 if is_stale_72h else 0,
+            "notification_failed": 0,
+        }
 
     request_ids = [int(row.id) for row in queue_rows]
     case_links_by_request = {}
@@ -4009,6 +4154,8 @@ def _render_operator_dashboard():
         queue_hidden_count=max(workspace_total_count - len(queue_rows), 0),
         queue_reasons=queue_reasons,
         ops_priority_levels=ops_priority_levels,
+        workspace_row_flags=workspace_row_flags,
+        workspace_last_activity_by_id=workspace_last_activity_by_id,
         case_links_by_request=case_links_by_request,
     )
 
@@ -4216,7 +4363,8 @@ def _finalize_admin_session(
     session.pop("email_2fa_expires", None)
     session.modified = True
     current_app.logger.warning("[SESSION] %s", dict(session))
-    return _redirect_to_safe_next(next_url, fallback_url, code=303)
+    target = _next_url_for_admin_user(user, next_url)
+    return redirect(target or fallback_url, code=303)
 
 
 def _mfa_ok_is_valid() -> bool:
@@ -6389,7 +6537,12 @@ def admin_home():
     status_expr = func.lower(func.coalesce(Request.status, ""))
     actionable_statuses = ("new", "open", "in_progress", "approved", "pending")
     actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
-    activity_expr = func.coalesce(Request.updated_at, Request.created_at)
+    activity_sq = build_request_meaningful_activity_subquery()
+    activity_expr = func.coalesce(
+        activity_sq.c.last_activity_at,
+        Request.updated_at,
+        Request.created_at,
+    )
     stale_threshold = _now_utc() - timedelta(hours=72)
     urgent_filter = or_(
         func.lower(func.coalesce(Request.priority, "")).in_(["high", "critical"]),
@@ -6399,13 +6552,15 @@ def admin_home():
     stale_filter = activity_expr <= stale_threshold
     attention_filter = or_(urgent_filter, unassigned_filter, stale_filter)
 
-    attention_count = base_query.filter(actionable_filter, attention_filter).count()
-    unassigned_count = base_query.filter(actionable_filter, unassigned_filter).count()
-    followup_count = base_query.filter(actionable_filter, stale_filter).count()
+    dashboard_query = base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+
+    attention_count = dashboard_query.filter(actionable_filter, attention_filter).count()
+    unassigned_count = dashboard_query.filter(actionable_filter, unassigned_filter).count()
+    followup_count = dashboard_query.filter(actionable_filter, stale_filter).count()
     stale_count = followup_count
 
     attention_rows = (
-        base_query.filter(actionable_filter, attention_filter)
+        dashboard_query.filter(actionable_filter, attention_filter)
         .options(joinedload(Request.owner))
         .order_by(
             case((urgent_filter, 0), (unassigned_filter, 1), (stale_filter, 2), else_=3),
@@ -6416,6 +6571,9 @@ def admin_home():
         .limit(5)
         .all()
     )
+    dashboard_last_activity_by_id = {}
+    for row in attention_rows:
+        dashboard_last_activity_by_id[int(row.id)] = get_request_last_meaningful_activity(row)
 
     queue_summary = {
         "pending": 0,
@@ -6505,8 +6663,92 @@ def admin_home():
         followup_count=followup_count,
         stale_count=stale_count,
         attention_rows=attention_rows,
+        dashboard_last_activity_by_id=dashboard_last_activity_by_id,
         queue_summary=queue_summary,
         security_summary=security_summary,
+    )
+
+
+@admin_bp.get("/integrations")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin", "admin")
+def admin_integrations():
+    admin_required_404()
+
+    relay_available = _table_exists("relay_events")
+    total_events = 0
+    received_count = 0
+    processed_count = 0
+    rejected_count = 0
+    latest_received_at = None
+    recent_rows = []
+
+    if relay_available:
+        relay_query = _relay_event_scope_query()
+        total_events = relay_query.count()
+        received_count = relay_query.filter(RelayEvent.sync_status == "received").count()
+        processed_count = relay_query.filter(RelayEvent.sync_status == "processed").count()
+        rejected_count = relay_query.filter(RelayEvent.sync_status == "rejected").count()
+        latest_received_at = relay_query.with_entities(func.max(RelayEvent.created_at)).scalar()
+
+        recent_events = (
+            relay_query.options(joinedload(RelayEvent.structure))
+            .order_by(RelayEvent.created_at.desc(), RelayEvent.id.desc())
+            .limit(25)
+            .all()
+        )
+        recent_rows = [
+            SimpleNamespace(
+                event=row,
+                rejected_fields_count=len(_relay_event_rejected_fields(row)),
+            )
+            for row in recent_events
+        ]
+
+    return render_template(
+        "admin/integrations.html",
+        relay_available=relay_available,
+        total_events=total_events,
+        received_count=received_count,
+        processed_count=processed_count,
+        rejected_count=rejected_count,
+        latest_received_at=latest_received_at,
+        recent_rows=recent_rows,
+    )
+
+
+@admin_bp.get("/integrations/relay-events/<int:event_id>")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin", "admin")
+def admin_relay_event_detail(event_id: int):
+    admin_required_404()
+
+    if not _table_exists("relay_events"):
+        abort(404)
+
+    relay_event = _relay_event_scope_query().options(joinedload(RelayEvent.structure)).filter(
+        RelayEvent.id == int(event_id)
+    ).first()
+    if relay_event is None:
+        abort(404)
+
+    accepted_fields = {
+        "external_source": relay_event.external_source,
+        "external_reference_id": relay_event.external_reference_id,
+        "status": relay_event.status,
+        "priority": relay_event.priority,
+        "category": relay_event.category,
+        "due_date": relay_event.due_date,
+        "relance_at": relay_event.relance_at,
+        "summary_label": relay_event.summary_label,
+    }
+
+    return render_template(
+        "admin/relay_event_detail.html",
+        relay_event=relay_event,
+        accepted_fields=accepted_fields,
+        rejected_fields=_relay_event_rejected_fields(relay_event),
+        sanitized_metadata=_relay_event_metadata(relay_event),
     )
 
 
@@ -7171,16 +7413,26 @@ def admin_pilotage():
     no_owner_count = 0
     not_seen_72h_count = 0
     critical_no_owner_count = 0
+    activity_sq = build_request_meaningful_activity_subquery()
+    activity_expr = func.coalesce(
+        activity_sq.c.last_activity_at,
+        Request.updated_at,
+        Request.created_at,
+    )
+    stale_threshold = _now_utc() - timedelta(hours=72)
     if has_risk_signals:
         no_owner_filter = func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
-        not_seen_filter = func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
         no_owner_count = base_query.filter(no_owner_filter).count()
-        not_seen_72h_count = base_query.filter(not_seen_filter).count()
         if has_risk_level:
             critical_no_owner_count = base_query.filter(
                 func.lower(func.coalesce(Request.risk_level, "")) == "critical",
                 no_owner_filter,
             ).count()
+    not_seen_72h_count = (
+        base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+        .filter(activity_expr <= stale_threshold)
+        .count()
+    )
 
     rec_counts = {
         "assign_immediately": 0,
@@ -7442,17 +7694,134 @@ def admin_pilotage():
     )
 
 
-def _apply_cases_risk_filter(query, risk_value: str):
+def _normalize_cases_risk_filter(risk_value: str) -> str:
     risk = (risk_value or "").strip().lower()
-    score_col = func.coalesce(Case.risk_score, 0)
-    if risk == "critical":
-        return query.filter(score_col >= 85)
     if risk == "high":
-        return query.filter(score_col >= 60, score_col <= 84)
+        return "attention"
+    if risk in {"critical", "attention", "normal", "low"}:
+        return risk
+    return ""
+
+
+def _build_case_kpi_filters(
+    *,
+    now: datetime | None = None,
+    activity_expr_override=None,
+) -> dict[str, object]:
+    now_utc = now or _now_utc()
+    if activity_expr_override is not None:
+        activity_expr = activity_expr_override
+    else:
+        activity_expr = func.coalesce(
+            Case.last_activity_at,
+            Case.updated_at,
+            Case.created_at,
+        )
+    stale_threshold_72h = now_utc - timedelta(hours=72)
+    stale_threshold_7d = now_utc - timedelta(days=7)
+
+    priority_key = func.lower(func.coalesce(Case.priority, ""))
+    priority_points = case(
+        (priority_key == "critical", 45),
+        (priority_key == "high", 30),
+        else_=0,
+    )
+
+    risk_score = func.coalesce(Case.risk_score, 0)
+    risk_points = case(
+        (risk_score >= 85, 35),
+        (risk_score >= 60, 20),
+        else_=0,
+    )
+
+    no_owner_filter = Case.owner_user_id.is_(None)
+    owner_points = case((no_owner_filter, 20), else_=0)
+
+    stale_72h_filter = activity_expr <= stale_threshold_72h
+    stale_points = case(
+        (activity_expr <= stale_threshold_7d, 30),
+        (stale_72h_filter, 20),
+        else_=0,
+    )
+
+    text_expr = func.lower(
+        func.coalesce(Request.title, "")
+        + " "
+        + func.coalesce(Request.description, "")
+        + " "
+        + func.coalesce(Request.message, "")
+    )
+    essential_keywords = (
+        "sans nourriture",
+        "faim",
+        "pas à manger",
+        "pas a manger",
+        "sans manger",
+        "sans logement",
+        "sans abri",
+        "à la rue",
+        "a la rue",
+        "dehors ce soir",
+        "sans chauffage",
+        "pas de chauffage",
+        "sans électricité",
+        "sans electricite",
+        "sans eau",
+        "pas d'eau",
+        "plus de médicaments",
+        "plus de medicaments",
+        "sans médicaments",
+        "sans medicaments",
+    )
+    vulnerability_keywords = (
+        "personne âgée",
+        "personne agee",
+        "âgée",
+        "agee",
+        "senior",
+        "handicap",
+        "handicapé",
+        "handicape",
+        "enfant",
+        "bébé",
+        "bebe",
+        "mineur",
+        "grossesse",
+        "enceinte",
+    )
+    essential_filter = or_(*[text_expr.like(f"%{keyword}%") for keyword in essential_keywords])
+    vulnerability_filter = or_(*[text_expr.like(f"%{keyword}%") for keyword in vulnerability_keywords])
+    text_points = case((essential_filter, 20), else_=0) + case((vulnerability_filter, 10), else_=0)
+
+    ops_priority_score = priority_points + risk_points + owner_points + stale_points + text_points
+    critical_filter = ops_priority_score >= 80
+    attention_filter = and_(ops_priority_score >= 50, ops_priority_score < 80)
+    normal_filter = and_(ops_priority_score >= 30, ops_priority_score < 50)
+    low_filter = ops_priority_score < 30
+
+    return {
+        "activity_expr": activity_expr,
+        "stale_72h": stale_72h_filter,
+        "no_owner": no_owner_filter,
+        "critical": critical_filter,
+        "attention": attention_filter,
+        "normal": normal_filter,
+        "low": low_filter,
+        "ops_priority_score": ops_priority_score,
+    }
+
+
+def _apply_cases_risk_filter(query, risk_value: str, *, case_filters: dict[str, object] | None = None):
+    risk = _normalize_cases_risk_filter(risk_value)
+    case_filters = case_filters or _build_case_kpi_filters()
+    if risk == "critical":
+        return query.filter(case_filters["critical"])
+    if risk == "attention":
+        return query.filter(case_filters["attention"])
     if risk == "normal":
-        return query.filter(score_col >= 30, score_col <= 59)
+        return query.filter(case_filters["normal"])
     if risk == "low":
-        return query.filter(score_col <= 29)
+        return query.filter(case_filters["low"])
     return query
 
 
@@ -7517,7 +7886,7 @@ def _render_cases_list():
             owner="",
             category="",
             risk="",
-            stale=False,
+            stale_72h=False,
             statuses=list(CATEGORY_CASE_STATUSES),
             priorities=list(CASE_PRIORITIES),
             owners=[(1, "Marie Dupont"), (2, "Nadia Bernard")],
@@ -7539,7 +7908,7 @@ def _render_cases_list():
             owner="",
             category="",
             risk="",
-            stale=False,
+            stale_72h=False,
             statuses=list(CATEGORY_CASE_STATUSES),
             priorities=list(CASE_PRIORITIES),
             owners=[],
@@ -7553,9 +7922,12 @@ def _render_cases_list():
     priority = (request.args.get("priority") or "").strip().lower()
     owner = (request.args.get("owner") or "").strip()
     category = normalize_request_category((request.args.get("category") or "").strip())
-    risk = (request.args.get("risk") or "").strip().lower()
+    risk = _normalize_cases_risk_filter((request.args.get("risk") or "").strip().lower())
     city = (request.args.get("city") or "").strip()
-    stale = (request.args.get("stale") or "").strip() == "1"
+    stale_72h = (
+        (request.args.get("stale_72h") or request.args.get("stale") or "").strip()
+        == "1"
+    )
     owner_id = None
     owner_none = owner.lower() == "none"
     if owner:
@@ -7565,28 +7937,46 @@ def _render_cases_list():
             owner_id = None
 
     scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+    activity_sq = build_request_meaningful_activity_subquery()
+    case_activity_expr = func.coalesce(
+        activity_sq.c.last_activity_at,
+        Case.last_activity_at,
+        Case.updated_at,
+        Request.updated_at,
+        Case.created_at,
+        Request.created_at,
+    )
     query = (
         Case.query.join(Request, Case.request_id == Request.id)
         .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
+        .outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
     )
     counts_base = (
         Case.query.join(Request, Case.request_id == Request.id)
         .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
+        .outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
     )
-    activity_expr = func.coalesce(Case.last_activity_at, Case.updated_at, Case.created_at)
+    case_kpi_filters = _build_case_kpi_filters(activity_expr_override=case_activity_expr)
+    activity_expr = case_kpi_filters["activity_expr"]
     stale_threshold = _now_utc() - timedelta(hours=72)
     if status in CATEGORY_CASE_STATUSES:
         query = query.filter(Case.status == status)
+        counts_base = counts_base.filter(Case.status == status)
     else:
-        query = query.filter(Case.status.in_(("new", "triaged", "assigned", "in_progress", "resolved")))
+        active_statuses = ("new", "triaged", "assigned", "in_progress", "resolved")
+        query = query.filter(Case.status.in_(active_statuses))
+        counts_base = counts_base.filter(Case.status.in_(active_statuses))
     if priority in CASE_PRIORITIES:
         query = query.filter(Case.priority == priority)
+        counts_base = counts_base.filter(Case.priority == priority)
     if category:
         category_variants = {category}
         for legacy_code in ("general", "social", "medical", "tech", "admin", "other"):
             if normalize_request_category(legacy_code) == category:
                 category_variants.add(legacy_code)
-        query = query.filter(func.lower(func.coalesce(Request.category, "")).in_([c.lower() for c in category_variants]))
+        category_filter = func.lower(func.coalesce(Request.category, "")).in_([c.lower() for c in category_variants])
+        query = query.filter(category_filter)
+        counts_base = counts_base.filter(category_filter)
     if city:
         city_like = f"%{city.lower()}%"
         city_filter = or_(
@@ -7599,10 +7989,10 @@ def _render_cases_list():
     if owner_id:
         query = query.filter(Case.owner_user_id == owner_id)
     elif owner_none:
-        query = query.filter(Case.owner_user_id.is_(None))
-    query = _apply_cases_risk_filter(query, risk)
-    if stale:
-        query = query.filter(activity_expr <= stale_threshold)
+        query = query.filter(case_kpi_filters["no_owner"])
+    query = _apply_cases_risk_filter(query, risk, case_filters=case_kpi_filters)
+    if stale_72h:
+        query = query.filter(case_kpi_filters["stale_72h"])
 
     case_rows = (
         query.options(
@@ -7638,24 +8028,31 @@ def _render_cases_list():
         owner,
         category,
         risk,
-        stale,
+        stale_72h,
         city,
     )
 
     case_signals = {}
     ops_priority_levels = {}
     now_utc = _now_utc()
+    case_last_activity_by_id = {}
     for c in case_rows:
-        result = compute_ops_priority(case_row=c, request_row=getattr(c, "request", None), now=now_utc)
+        last_activity_at = get_request_last_meaningful_activity(getattr(c, "request", None))
+        case_last_activity_by_id[int(c.id)] = last_activity_at
+        result = compute_ops_priority(
+            case_row=c,
+            request_row=getattr(c, "request", None),
+            activity_ref=last_activity_at,
+            now=now_utc,
+        )
         case_signals[int(c.id)] = result.get("ops_priority_reasons") or []
         ops_priority_levels[int(c.id)] = result.get("ops_priority_level") or "normal"
 
     # counts_base prepared above to include collaborators when applicable
-    score_col = func.coalesce(Case.risk_score, 0)
-    critical_count = counts_base.filter(score_col >= 85).count()
-    attention_count = counts_base.filter(score_col >= 60, score_col <= 84).count()
-    no_owner_count = counts_base.filter(Case.owner_user_id.is_(None)).count()
-    stale_count = counts_base.filter(activity_expr <= stale_threshold).count()
+    critical_count = counts_base.filter(case_kpi_filters["critical"]).count()
+    attention_count = counts_base.filter(case_kpi_filters["attention"]).count()
+    no_owner_count = counts_base.filter(case_kpi_filters["no_owner"]).count()
+    stale_count = counts_base.filter(case_kpi_filters["stale_72h"]).count()
 
     owners = (
         AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
@@ -7672,7 +8069,7 @@ def _render_cases_list():
         category=category,
         risk=risk,
         city=city,
-        stale=stale,
+        stale_72h=stale_72h,
         statuses=list(CATEGORY_CASE_STATUSES),
         priorities=list(CASE_PRIORITIES),
         owners=owners,
@@ -7682,6 +8079,7 @@ def _render_cases_list():
         stale_count=stale_count,
         case_signals=case_signals,
         ops_priority_levels=ops_priority_levels,
+        case_last_activity_by_id=case_last_activity_by_id,
     )
 
 

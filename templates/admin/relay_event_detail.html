@@ -1,0 +1,111 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Détail connecteur | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-integrations-page{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-density-compact">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_integrations') }}">Connecteurs</a>
+    <span>/</span>
+    <span>Événement #{{ relay_event.id }}</span>
+  </nav>
+
+  <div class="hc-card mb-3 hc-admin-headerCard hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <h1 class="hc-admin-title">Événement relayé #{{ relay_event.id }}</h1>
+        <div class="hc-muted">Vue de détail d’un signal opérationnel reçu par le connecteur léger.</div>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_integrations') }}">Retour aux connecteurs</a>
+    </div>
+  </div>
+
+  <div class="hc-command-grid mb-3" aria-label="Synthèse événement relayé">
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">Réception</div>
+      <h2 class="hc-command-panel__title">{{ relay_event.created_at|format_datetime_fr if relay_event.created_at else "—" }}</h2>
+      <div class="hc-muted">Horodatage de création dans HelpChain</div>
+    </section>
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">Structure</div>
+      <h2 class="hc-command-panel__title">{{ relay_event.structure.name if relay_event.structure else "Non résolue" }}</h2>
+      <div class="hc-muted">Référence de structure actuellement associée</div>
+    </section>
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">Sync status</div>
+      <h2 class="hc-command-panel__title">{{ relay_event.sync_status or "—" }}</h2>
+      <div class="hc-muted">Statut de synchronisation enregistré</div>
+    </section>
+  </div>
+
+  <div class="hc-command-grid">
+    <section class="hc-card p-3">
+      <h2 class="h6 mb-3">Champs opérationnels acceptés</h2>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <tbody>
+            {% for field_name, field_value in accepted_fields.items() %}
+              <tr>
+                <th class="text-nowrap">{{ field_name }}</th>
+                <td>
+                  {% if field_value %}
+                    {% if field_name in ["external_reference_id", "external_source"] %}
+                      <code>{{ field_value }}</code>
+                    {% elif field_name in ["due_date", "relance_at"] %}
+                      {{ field_value|format_datetime_fr }}
+                    {% else %}
+                      {{ field_value }}
+                    {% endif %}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            <tr>
+              <th class="text-nowrap">structure</th>
+              <td>{{ relay_event.structure.name if relay_event.structure else "Non résolue" }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="hc-card p-3">
+      <h2 class="h6 mb-3">Champs sensibles rejetés</h2>
+      {% if rejected_fields %}
+        <ul class="mb-0">
+          {% for field_name in rejected_fields %}
+            <li><code>{{ field_name }}</code></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="hc-muted">Aucun champ sensible rejeté pour cet événement.</div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="hc-card mt-3 p-3">
+    <h2 class="h6 mb-3">Métadonnées sanitizées</h2>
+    {% if sanitized_metadata %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <tbody>
+            {% for field_name, field_value in sanitized_metadata.items() %}
+              <tr>
+                <th class="text-nowrap">{{ field_name }}</th>
+                <td>{{ field_value }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="hc-muted">Aucune métadonnée complémentaire conservée pour cet événement.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

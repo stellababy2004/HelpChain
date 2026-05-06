@@ -878,6 +878,29 @@ class StructureService(db.Model):
     )
 
 
+class RelayEvent(db.Model):
+    __tablename__ = "relay_events"
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, index=True)
+    external_source = Column(String(120), nullable=False, index=True)
+    external_reference_id = Column(String(255), nullable=False, index=True)
+    status = Column(String(64), nullable=True, index=True)
+    priority = Column(String(64), nullable=True, index=True)
+    category = Column(String(64), nullable=True, index=True)
+    due_date = Column(DateTime(timezone=True), nullable=True, index=True)
+    relance_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True, index=True)
+    summary_label = Column(String(255), nullable=True)
+    sync_status = Column(
+        String(32), nullable=False, default="received", server_default="received", index=True
+    )
+    rejected_fields_json = Column(Text, nullable=True)
+    metadata_json = Column(Text, nullable=True)
+
+    structure = relationship("Structure", lazy="joined")
+
+
 def get_default_structure():
     """Sprint-1 helper: cached lookup of the bootstrap tenant."""
     cached = getattr(g, "_hc_default_structure", None)

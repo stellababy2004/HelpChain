@@ -1,12 +1,14 @@
 import asyncio
+import hmac
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, current_app, g, jsonify, request, send_file, session
 from flask_login import current_user
 from pywebpush import WebPushException, webpush
-from sqlalchemy import func, or_
+from sqlalchemy import func, inspect as sa_inspect, or_
 
 from backend.ai_service import ai_service
 
@@ -17,6 +19,7 @@ from ..models import (
     CaseCollaborator,
     CaseEvent,
     NotificationSubscription,
+    RelayEvent,
     Request,
     RequestLog,
     RequestMetric,
@@ -29,6 +32,174 @@ from ..security.api_authz import require_api_auth, require_roles
 api_bp = Blueprint("api", __name__)
 controller = HelpChainController()
 csrf.exempt(api_bp)
+
+_RELAY_ALLOWED_FIELDS = {
+    "external_source",
+    "external_reference_id",
+    "status",
+    "priority",
+    "category",
+    "due_date",
+    "relance_at",
+    "structure_id",
+    "structure_slug",
+    "summary_label",
+}
+_RELAY_SENSITIVE_FIELDS = {
+    "birth_date",
+    "diagnosis",
+    "full_name",
+    "medical_notes",
+    "patient_file",
+    "psychological_notes",
+    "social_report",
+}
+_RELAY_MAX_LENGTHS = {
+    "external_source": 120,
+    "external_reference_id": 255,
+    "status": 64,
+    "priority": 64,
+    "category": 64,
+    "summary_label": 255,
+}
+_RELAY_TEXT_NORMALIZER = re.compile(r"[^a-z0-9._-]+")
+
+
+def _relay_table_available() -> bool:
+    try:
+        return bool(sa_inspect(db.engine).has_table("relay_events"))
+    except Exception:
+        current_app.logger.exception("RelayEvent table inspection failed")
+        return False
+
+
+def _parse_relay_datetime(raw_value):
+    if raw_value in (None, ""):
+        return None
+    if isinstance(raw_value, datetime):
+        return raw_value
+    value = str(raw_value).strip()
+    if not value:
+        return None
+    normalized = value.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise ValueError("invalid datetime format") from exc
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _sanitize_summary_label(raw_value: object) -> str | None:
+    value = str(raw_value or "").strip()
+    if not value:
+        return None
+    if len(value) > _RELAY_MAX_LENGTHS["summary_label"]:
+        raise ValueError("summary_label exceeds max length 255")
+    lowered = value.lower()
+    if "@" in value or any(marker in lowered for marker in ("diagnostic", "patient", "psycholog", "social")):
+        raise ValueError("summary_label appears sensitive")
+    return value
+
+
+def _sanitize_relay_string(field_name: str, raw_value: object, *, required: bool = False) -> str | None:
+    value = str(raw_value or "").strip()
+    if not value:
+        if required:
+            raise ValueError(f"{field_name} is required")
+        return None
+    max_length = _RELAY_MAX_LENGTHS[field_name]
+    if len(value) > max_length:
+        raise ValueError(f"{field_name} exceeds max length {max_length}")
+    return value
+
+
+def _normalize_relay_token(field_name: str, raw_value: object) -> str | None:
+    value = _sanitize_relay_string(field_name, raw_value, required=False)
+    if value is None:
+        return None
+    normalized = _RELAY_TEXT_NORMALIZER.sub("_", value.strip().lower()).strip("._-")
+    if not normalized:
+        return None
+    if len(normalized) > _RELAY_MAX_LENGTHS[field_name]:
+        normalized = normalized[: _RELAY_MAX_LENGTHS[field_name]].rstrip("._-")
+    return normalized or None
+
+
+def _sanitize_relay_metadata_value(field_name: str, field_value):
+    if field_value is None:
+        return None
+    if isinstance(field_value, bool):
+        return field_value
+    if isinstance(field_value, (int, float)):
+        return field_value
+    value = str(field_value).strip()
+    if not value:
+        return None
+    if len(value) > 255:
+        value = value[:255].rstrip()
+    lowered = value.lower()
+    if "@" in value or any(marker in lowered for marker in ("diagnostic", "patient", "psycholog", "social")):
+        raise ValueError(f"metadata field {field_name} appears sensitive")
+    return value
+
+
+def _resolve_relay_structure(payload: dict) -> int | None:
+    raw_structure_id = payload.get("structure_id")
+    raw_structure_slug = (payload.get("structure_slug") or "").strip()
+    structure = None
+
+    if raw_structure_id not in (None, ""):
+        try:
+            structure = db.session.get(Structure, int(raw_structure_id))
+        except (TypeError, ValueError) as exc:
+            raise ValueError("structure_id invalid") from exc
+        if structure is None:
+            raise ValueError("structure_id unknown")
+
+    if raw_structure_slug:
+        slug_match = Structure.query.filter_by(slug=raw_structure_slug).first()
+        if slug_match is None:
+            raise ValueError("structure_slug unknown")
+        if structure is not None and int(structure.id) != int(slug_match.id):
+            raise ValueError("structure_id and structure_slug mismatch")
+        structure = slug_match
+
+    return getattr(structure, "id", None)
+
+
+def _sanitize_relay_payload(payload: dict) -> tuple[dict, list[str], dict | None]:
+    sanitized = {
+        "external_source": _sanitize_relay_string(
+            "external_source", payload.get("external_source"), required=True
+        ),
+        "external_reference_id": _sanitize_relay_string(
+            "external_reference_id",
+            payload.get("external_reference_id"),
+            required=True,
+        ),
+        "status": _normalize_relay_token("status", payload.get("status")),
+        "priority": _normalize_relay_token("priority", payload.get("priority")),
+        "category": _normalize_relay_token("category", payload.get("category")),
+        "due_date": _parse_relay_datetime(payload.get("due_date")),
+        "relance_at": _parse_relay_datetime(payload.get("relance_at")),
+        "summary_label": _sanitize_summary_label(payload.get("summary_label")),
+        "structure_id": _resolve_relay_structure(payload),
+    }
+
+    rejected_fields = sorted(
+        field_name for field_name in payload.keys() if field_name in _RELAY_SENSITIVE_FIELDS
+    )
+    metadata = {}
+    for field_name, field_value in payload.items():
+        if field_name in _RELAY_ALLOWED_FIELDS or field_name in _RELAY_SENSITIVE_FIELDS:
+            continue
+        if isinstance(field_value, (str, int, float, bool)) or field_value is None:
+            sanitized_value = _sanitize_relay_metadata_value(field_name, field_value)
+            if sanitized_value is not None:
+                metadata[field_name] = sanitized_value
+    return sanitized, rejected_fields, (metadata or None)
 
 
 @api_bp.route("/chat", methods=["POST"])
@@ -56,6 +227,66 @@ def chat():
             ),
             500,
         )
+
+
+@api_bp.post("/integrations/relay")
+def integrations_relay():
+    expected_key = (
+        current_app.config.get("HC_RELAY_API_KEY") or os.getenv("HC_RELAY_API_KEY") or ""
+    ).strip()
+    if not expected_key:
+        return jsonify({"error": "Relay integration is not enabled."}), 503
+
+    provided_key = (request.headers.get("X-HC-Relay-Key") or "").strip()
+    if not provided_key or not hmac.compare_digest(provided_key, expected_key):
+        return jsonify({"error": "Unauthorized relay key."}), 401
+
+    if not request.is_json:
+        return jsonify({"error": "JSON body required."}), 415
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({"error": "Invalid JSON payload."}), 400
+
+    if not _relay_table_available():
+        return jsonify({"error": "Relay storage is unavailable."}), 503
+
+    try:
+        sanitized_payload, rejected_fields, sanitized_metadata = _sanitize_relay_payload(payload)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    relay_event = RelayEvent(
+        external_source=sanitized_payload["external_source"],
+        external_reference_id=sanitized_payload["external_reference_id"],
+        status=sanitized_payload["status"],
+        priority=sanitized_payload["priority"],
+        category=sanitized_payload["category"],
+        due_date=sanitized_payload["due_date"],
+        relance_at=sanitized_payload["relance_at"],
+        structure_id=sanitized_payload["structure_id"],
+        summary_label=sanitized_payload["summary_label"],
+        rejected_fields_json=json.dumps(rejected_fields, ensure_ascii=True)
+        if rejected_fields
+        else None,
+        metadata_json=json.dumps(sanitized_metadata, ensure_ascii=True)
+        if sanitized_metadata
+        else None,
+    )
+    db.session.add(relay_event)
+    db.session.commit()
+
+    return (
+        jsonify(
+            {
+                "ok": True,
+                "relay_event_id": relay_event.id,
+                "sync_status": relay_event.sync_status,
+                "rejected_fields": rejected_fields,
+            }
+        ),
+        201,
+    )
 
 
 @api_bp.post("/chatbot/message")
