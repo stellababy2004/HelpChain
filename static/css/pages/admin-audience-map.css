@@ -255,6 +255,47 @@ body.hc-admin-audience-page .audience-map-legend__zone--expansion {
   border-top: 2px dashed rgba(37, 99, 235, 0.7);
 }
 
+body.hc-admin-audience-page .hc-admin-headerCard,
+body.hc-admin-audience-page .hc-admin-table-shell,
+body.hc-admin-audience-page .hc-card {
+  border-color: rgba(172, 191, 213, 0.7);
+  box-shadow: var(--hc-shadow-soft);
+}
+
+body.hc-admin-audience-page .hc-admin-headerCard {
+  background:
+    var(--hc-gradient-header),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.94));
+}
+
+body.hc-admin-audience-page .audience-map-shell,
+body.hc-admin-audience-page .hc-audience-mapFrame {
+  background:
+    linear-gradient(180deg, rgba(238, 244, 249, 0.98), rgba(225, 234, 242, 0.96)),
+    radial-gradient(circle at top left, rgba(95, 135, 170, 0.14), transparent 38%);
+  box-shadow: 0 26px 46px rgba(23, 50, 79, 0.12);
+}
+
+body.hc-admin-audience-page .audience-map-summary,
+body.hc-admin-audience-page .audience-map-legend {
+  border-color: rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(20, 36, 56, 0.78), rgba(28, 47, 70, 0.62));
+  color: rgba(246, 249, 252, 0.96);
+}
+
+body.hc-admin-audience-page :is(.audience-map-summary__eyebrow, .audience-map-legend__title, .audience-map-legend__section, .audience-map-legend__item) {
+  color: inherit;
+}
+
+body.hc-admin-audience-page .audience-map-summary__stats span,
+body.hc-admin-audience-page .hc-audience-detailMetric,
+body.hc-admin-audience-page .audience-kpi-card {
+  border-color: rgba(170, 191, 213, 0.58);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(241, 247, 252, 0.9));
+  box-shadow: 0 12px 24px rgba(23, 50, 79, 0.06);
+}
+
 body.hc-admin-audience-page .audience-zone-label {
   display: inline-flex;
   align-items: center;
@@ -887,4 +928,83 @@ body.hc-admin-audience-page .leaflet-marker-icon:focus {
   body.hc-admin-audience-page .audience-city-item__arrow {
     display: none;
   }
+}
+
+body.hc-admin-audience-page .audience-map-shell::after,
+body.hc-admin-audience-page .hc-audience-mapFrame::after {
+  content: "";
+  position: absolute;
+  inset: 0.8rem;
+  border-radius: 18px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(20, 39, 60, 0.06), rgba(20, 39, 60, 0.1)),
+    radial-gradient(circle at top left, rgba(158, 202, 215, 0.14), transparent 34%);
+}
+
+body.hc-admin-audience-page .leaflet-container {
+  background:
+    linear-gradient(180deg, rgba(216, 228, 238, 0.96), rgba(207, 220, 231, 0.98));
+}
+
+body.hc-admin-audience-page .leaflet-tile {
+  filter: saturate(0.76) hue-rotate(3deg) brightness(0.95) contrast(1.03);
+}
+
+body.hc-admin-audience-page .leaflet-popup-content-wrapper {
+  border: 1px solid rgba(170, 191, 213, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(243, 248, 252, 0.92));
+  box-shadow:
+    0 24px 42px rgba(12, 22, 35, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+body.hc-admin-audience-page .audience-marker {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.99), rgba(240, 246, 251, 0.96));
+}
+
+body.hc-admin-audience-page .audience-marker::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  opacity: 0.6;
+}
+
+body.hc-admin-audience-page .audience-marker--high {
+  box-shadow:
+    0 0 0 7px rgba(37, 99, 235, 0.11),
+    0 0 0 12px rgba(158, 202, 215, 0.1),
+    0 16px 28px rgba(23, 50, 79, 0.18);
+}
+
+body.hc-admin-audience-page .audience-marker--medium {
+  box-shadow:
+    0 0 0 5px rgba(95, 184, 240, 0.1),
+    0 12px 22px rgba(23, 50, 79, 0.14);
+}
+
+body.hc-admin-audience-page .audience-marker--watch {
+  box-shadow:
+    0 0 0 4px rgba(148, 163, 184, 0.1),
+    0 10px 18px rgba(23, 50, 79, 0.12);
+}
+
+body.hc-admin-audience-page .leaflet-marker-icon:hover .audience-marker,
+body.hc-admin-audience-page .leaflet-marker-icon.is-hover .audience-marker {
+  transform: scale(1.14);
+  box-shadow:
+    0 0 0 9px rgba(158, 202, 215, 0.14),
+    0 18px 32px rgba(12, 22, 35, 0.24);
+}
+
+body.hc-admin-audience-page .leaflet-marker-icon.is-active .audience-marker {
+  box-shadow:
+    0 0 0 10px rgba(255, 255, 255, 0.92),
+    0 0 0 18px rgba(158, 202, 215, 0.16),
+    0 20px 34px rgba(23, 50, 79, 0.22);
 }

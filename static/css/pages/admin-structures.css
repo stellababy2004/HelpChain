@@ -240,3 +240,34 @@
     min-width: 860px;
   }
 }
+
+body.hc-admin-structures-page .hc-admin-headerCard{
+  background:
+    var(--hc-gradient-header),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.94));
+}
+
+body.hc-admin-structures-page .row.g-3.mb-3 > .col-12 > .hc-card{
+  border-color: rgba(168, 189, 210, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 251, 0.94));
+  box-shadow: var(--hc-shadow-soft);
+}
+
+body.hc-admin-structures-page .hc-card.hc-admin-table-shell > .d-flex{
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(242, 247, 252, 0.92)),
+    radial-gradient(circle at top right, rgba(95, 135, 170, 0.08), transparent 26%);
+}
+
+body.hc-admin-structures-page .hc-structures-search .input-group-text,
+body.hc-admin-structures-page .hc-structures-search .form-control{
+  border-color: rgba(168, 189, 210, 0.58);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+body.hc-admin-structures-page .hc-structure-status{
+  border: 1px solid rgba(62, 120, 91, 0.18);
+  background: linear-gradient(180deg, rgba(239, 250, 244, 0.98), rgba(231, 246, 238, 0.94));
+  color: #29563f;
+}
