@@ -945,7 +945,9 @@
       aria-controls="hcA11yDrawer"
       aria-expanded="false"
     >
-      <span class="hc-a11y-fab__icon" aria-hidden="true">?</span>
+      <span class="hc-a11y-fab__icon" aria-hidden="true">
+        <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-a11y-fab__logo" alt="">
+      </span>
     </button>
 
     <div
@@ -967,11 +969,14 @@
               class="hc-a11y-topbar__btn hc-a11y-topbar__btn--menu"
               aria-label="{{ _('Accessibility menu') }}"
             >
-              ?
+              <svg viewBox="0 0 24 24" width="20" height="20" focusable="false" aria-hidden="true">
+                <path d="M4.75 8.25 12 3l7.25 5.25v8.5a1 1 0 0 1-1 1H5.75a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.75"></path>
+                <path d="M9.25 18v-5.25h5.5V18" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.75"></path>
+              </svg>
             </button>
 
             <div class="hc-a11y-topbar__brand" aria-hidden="true">
-              <span class="hc-a11y-topbar__brand-mark">?</span>
+              <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark hc-logo" alt="">
               <span class="hc-a11y-topbar__brand-text">{{ _('HelpChain') }}</span>
             </div>
 
@@ -979,14 +984,20 @@
               <button
                 type="button"
                 id="hcA11yPower"
-                class="hc-a11y-topbar__btn hc-a11y-topbar__btn--power"
+                class="hc-a11y-topbar__btn"
                 aria-label="{{ _('Toggle accessibility settings') }}"
                 title="{{ _('Toggle accessibility settings') }}"
               >
-                ?
+                <svg viewBox="0 0 24 24" width="20" height="20" focusable="false" aria-hidden="true">
+                  <path d="M12 3.75v7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.75"></path>
+                  <path d="M7.25 6.5a7 7 0 1 0 9.5 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"></path>
+                </svg>
               </button>
               <button type="button" class="hc-a11y-topbar__btn hc-a11y-topbar__btn--close" data-a11y-close="true" aria-label="{{ _('Close') }}">
-                ?
+                <svg viewBox="0 0 24 24" width="20" height="20" focusable="false" aria-hidden="true">
+                  <path d="M6 6 18 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.75"></path>
+                  <path d="M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.75"></path>
+                </svg>
               </button>
             </div>
           </div>

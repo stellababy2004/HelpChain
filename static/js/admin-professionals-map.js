@@ -14,6 +14,56 @@
     el.textContent = value;
   }
 
+  function popupActionsHtml(city) {
+    var selectedCity = encodeURIComponent(city || "Boulogne-Billancourt");
+    return [
+      '<div class="hc-risk-map-popup__actions">',
+      '<a class="hc-risk-map-popup__action" href="/ops/cases?city=' + selectedCity + '">Voir les cas lies</a>',
+      '<a class="hc-risk-map-popup__action" href="/admin/requests?city=' + selectedCity + '">Voir les demandes</a>',
+      "</div>",
+    ].join("");
+  }
+
+  function professionalPopupHtml(item) {
+    var name = esc((item && item.full_name) || "Intervenant");
+    var profession = esc((item && item.profession) || "professional");
+    var city = esc((item && item.city) || "N/A");
+    var availability = esc((item && item.availability) || "unknown");
+    var workload = Number(item && item.workload);
+    var safeWorkload = Number.isFinite(workload) ? workload : 0;
+    var address = esc((item && item.address) || "");
+    var coordsLabel = item && item.has_exact_coordinates ? "coordonnees exactes" : "coordonnees ville";
+    var actionCity = (item && item.city) || "Boulogne-Billancourt";
+
+    return [
+      '<div class="hc-risk-map-popup__eyebrow">Intervenant</div>',
+      "<strong>" + name + "</strong>",
+      profession,
+      city,
+      address || "",
+      "Disponibilite : " + availability,
+      "Charge : " + String(safeWorkload),
+      "Source carte : " + coordsLabel,
+      popupActionsHtml(actionCity),
+    ]
+      .filter(Boolean)
+      .join("<br>");
+  }
+
+  function buildRingIcon(variant) {
+    var tone = variant || "professional";
+    return L.divIcon({
+      className: "hc-map-ringMarkerWrap",
+      html:
+        '<span class="hc-map-ringMarker hc-map-ringMarker--' +
+        tone +
+        '"><span class="hc-map-ringMarker__core"></span></span>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+      popupAnchor: [0, -10],
+    });
+  }
+
   function updateKpis(rows) {
     var list = Array.isArray(rows) ? rows : [];
     var cityCounts = Object.create(null);
@@ -93,26 +143,10 @@
         var lng = Number(item && item.longitude);
         if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-        var name = esc((item && item.full_name) || "Intervenant");
-        var profession = esc((item && item.profession) || "professional");
-        var city = esc((item && item.city) || "N/A");
-        var availability = esc((item && item.availability) || "unknown");
-        var workload = Number(item && item.workload);
-        var safeWorkload = Number.isFinite(workload) ? workload : 0;
-        var address = esc((item && item.address) || "");
-        var coordsLabel = item && item.has_exact_coordinates ? "coordonnées exactes" : "coordonnées ville";
-
         L.marker([lat, lng])
+          .setIcon(buildRingIcon("professional"))
           .addTo(layer)
-          .bindPopup(
-            "<strong>" + name + "</strong><br>" +
-              profession + "<br>" +
-              city + "<br>" +
-              (address ? address + "<br>" : "") +
-              "Disponibilité: " + availability + "<br>" +
-              "Charge: " + String(safeWorkload) + "<br>" +
-              "Source carte: " + coordsLabel
-          );
+          .bindPopup(professionalPopupHtml(item));
 
         bounds.push([lat, lng]);
       });

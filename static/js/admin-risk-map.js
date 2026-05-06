@@ -41,6 +41,7 @@
   var professionalsLayer = null;
   var refreshTimer = null;
   var lastProfessionalsCount = 0;
+  var lastVisibleProfessionalsCount = 0;
   var currentRiskItems = [];
 
   if (emptyCta) {
@@ -102,6 +103,26 @@
     if (numericScore >= 80) return 10;
     if (numericScore >= 50) return 8;
     return 6;
+  }
+
+  function buildRingIcon(variant) {
+    var tone = variant || "professional";
+    return L.divIcon({
+      className: "hc-map-ringMarkerWrap",
+      html:
+        '<span class="hc-map-ringMarker hc-map-ringMarker--' +
+        tone +
+        '"><span class="hc-map-ringMarker__core"></span></span>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+      popupAnchor: [0, -10],
+    });
+  }
+
+  function riskVariant(level, score) {
+    if (level === "high" || Number(score) >= 80) return "critical";
+    if (level === "medium" || Number(score) >= 50) return "attention";
+    return "standard";
   }
 
   function escapeHtml(value) {
@@ -185,6 +206,12 @@
     if (emptyState) {
       emptyState.classList.toggle("is-visible", Boolean(isVisible));
     }
+  }
+
+  function syncEmptyStateVisibility() {
+    var hasRiskRows = Array.isArray(currentRiskItems) && currentRiskItems.length > 0;
+    var hasVisibleProfessionals = lastVisibleProfessionalsCount > 0;
+    setEmptyVisible(!hasRiskRows && !hasVisibleProfessionals);
   }
 
   function setMapHint(text, isVisible) {
@@ -405,21 +432,9 @@
           return;
         }
         visibleMarkers += 1;
-        L.circleMarker([lat, lng], {
-          radius: 12,
-          color: "rgba(59, 130, 246, 0.28)",
-          weight: 1,
-          fillColor: "rgba(96, 165, 250, 0.18)",
-          fillOpacity: 0.32,
-          opacity: 0.55,
-        }).addTo(professionalsLayer);
-        var marker = L.circleMarker([lat, lng], {
-          radius: 7,
-          color: "#1d4ed8",
-          weight: 2.5,
-          fillColor: "#93c5fd",
-          fillOpacity: 0.95,
-          opacity: 1,
+        var marker = L.marker([lat, lng], {
+          icon: buildRingIcon("professional"),
+          riseOnHover: true,
         });
         marker.bindPopup(professionalPopupHtml(item));
         marker.on("click", function () {
@@ -428,6 +443,7 @@
         });
         marker.addTo(professionalsLayer);
       });
+      lastVisibleProfessionalsCount = visibleMarkers;
       lastProfessionalsCount = availableCount;
       setText(professionalsCountEl, availableCount);
       setText(
@@ -453,7 +469,9 @@
       }
       updateEmptyCapacity(visibleMarkers);
       updateRiskKpis(currentRiskItems);
+      syncEmptyStateVisibility();
     } catch (_) {
+      lastVisibleProfessionalsCount = 0;
       lastProfessionalsCount = 0;
       setText(professionalsCountEl, "—");
       setText(professionalsHintEl, "Capacité opérationnelle non disponible.");
@@ -463,6 +481,7 @@
       setMapHint("", false);
       updateEmptyCapacity(0);
       updateRiskKpis(currentRiskItems);
+      syncEmptyStateVisibility();
     }
   }
 
@@ -481,13 +500,9 @@
       }
 
       var score = Number(item && item.risk_score || 0);
-      var color = riskColor(item && item.risk_level, score);
-      var marker = L.circleMarker([lat, lng], {
-        radius: riskRadius(score),
-        color: color,
-        weight: 2,
-        fillColor: color,
-        fillOpacity: 0.35,
+      var marker = L.marker([lat, lng], {
+        icon: buildRingIcon(riskVariant(item && item.risk_level, score)),
+        riseOnHover: true,
       });
       marker.bindPopup(popupHtml(item));
       marker.on("click", function () {
@@ -500,7 +515,7 @@
 
     if (bounds.length === 0) {
       map.setView([48.8397, 2.2399], 13);
-      setEmptyVisible(true);
+      syncEmptyStateVisibility();
       return;
     }
 
@@ -541,7 +556,7 @@
         map.setView([defaultLat, defaultLng], defaultZoom);
       }
       updateRiskKpis([]);
-      setEmptyVisible(true);
+      syncEmptyStateVisibility();
     }
   }
 

@@ -6507,6 +6507,53 @@ body.hc-admin-risk-map-page .leaflet-popup-content{
   color: #17304d;
 }
 
+body.hc-page-admin .hc-map-ringMarkerWrap{
+  background: transparent;
+  border: 0;
+}
+
+body.hc-page-admin .hc-map-ringMarker{
+  --hc-map-ring-color: #2563eb;
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid var(--hc-map-ring-color);
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.9), 0 10px 18px rgba(15,23,42,.14);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+body.hc-page-admin .hc-map-ringMarker__core{
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.98);
+}
+
+body.hc-page-admin .hc-map-ringMarker--critical{
+  --hc-map-ring-color: #d9485f;
+}
+
+body.hc-page-admin .hc-map-ringMarker--attention{
+  --hc-map-ring-color: #f08a24;
+}
+
+body.hc-page-admin .hc-map-ringMarker--standard{
+  --hc-map-ring-color: #2d8a5f;
+}
+
+body.hc-page-admin .hc-map-ringMarker--professional{
+  --hc-map-ring-color: #2563eb;
+}
+
+body.hc-page-admin .leaflet-marker-icon:hover .hc-map-ringMarker,
+body.hc-page-admin .leaflet-marker-icon:focus .hc-map-ringMarker{
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.92), 0 14px 22px rgba(15,23,42,.18);
+}
+
 @media (max-width: 1199.98px){
   body.hc-admin-risk-map-page .hc-risk-map-kpis{
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -12278,8 +12325,8 @@ body:has([href="/admin/revenue"]) .p-3 {
 body.hc-page-admin,
 body[data-hc-page^="/ops"]{
   --hc-admin-shell-gap: 14px;
-  --hc-admin-shell-offset: 98px;
-  --hc-admin-shell-brand-width: clamp(190px, 18vw, 240px);
+  --hc-admin-shell-offset: 18px;
+  --hc-admin-shell-brand-width: clamp(96px, 8vw, 126px);
 }
 
 body.hc-page-admin :is(.hc-admin-shell, .admin-shell, .hc-admin-topbar, .hc-admin-nav, .admin-workspace-header),
@@ -12302,11 +12349,11 @@ body[data-hc-page^="/ops"]{
 
 body.hc-page-admin .hc-admin-shellbar,
 body[data-hc-page^="/ops"] .hc-admin-shellbar{
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 1040 !important;
-  width: min(1640px, calc(100vw - 48px)) !important;
-  max-width: min(1640px, calc(100vw - 48px)) !important;
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+  width: min(1480px, calc(100vw - 32px)) !important;
+  max-width: min(1480px, calc(100vw - 32px)) !important;
   margin: 0 auto var(--hc-admin-shell-gap) !important;
   padding: 6px 0 4px !important;
   box-sizing: border-box !important;
@@ -12320,11 +12367,11 @@ body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
   align-items: center !important;
   justify-content: space-between !important;
   flex-wrap: nowrap !important;
-  gap: 14px !important;
-  min-height: 64px;
+  gap: 10px !important;
+  min-height: 58px;
   width: 100%;
   max-width: 100%;
-  padding: 9px 12px 9px 14px !important;
+  padding: 6px 8px 6px 10px !important;
   box-sizing: border-box !important;
   border: 1px solid rgba(180, 200, 225, 0.65) !important;
   border-radius: 18px !important;
@@ -12345,14 +12392,22 @@ body[data-hc-page^="/ops"] .hc-admin-shellbar__brand{
 
 body.hc-page-admin .hc-admin-shellbar__eyebrow,
 body[data-hc-page^="/ops"] .hc-admin-shellbar__eyebrow{
-  font-size: .63rem !important;
+  font-size: .6rem !important;
   line-height: 1 !important;
 }
 
 body.hc-page-admin .hc-admin-shellbar__title,
 body[data-hc-page^="/ops"] .hc-admin-shellbar__title{
-  font-size: .9rem !important;
-  line-height: 1.08 !important;
+  font-size: .76rem !important;
+  line-height: 1.02 !important;
+  display: block !important;
+  max-width: 10ch !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  hyphens: auto !important;
 }
 
 body.hc-page-admin .hc-admin-shellnav,
@@ -12363,7 +12418,7 @@ body[data-hc-page^="/ops"] .hc-admin-shellnav{
   align-items: center !important;
   justify-content: flex-start !important;
   flex-wrap: nowrap !important;
-  gap: 6px !important;
+  gap: 3px !important;
   overflow-x: auto !important;
   overflow-y: hidden !important;
   padding-inline: 0 2px;
@@ -12381,7 +12436,7 @@ body.hc-page-admin .hc-admin-shellnav__link,
 body[data-hc-page^="/ops"] .hc-admin-shellnav__link{
   flex: 0 0 auto;
   min-height: 34px;
-  padding: .46rem .78rem !important;
+  padding: .38rem .58rem !important;
   border: 1px solid rgba(180, 200, 225, 0.22) !important;
   border-radius: 999px !important;
   background: rgba(255, 255, 255, 0.42) !important;
@@ -12389,7 +12444,7 @@ body[data-hc-page^="/ops"] .hc-admin-shellnav__link{
   white-space: nowrap !important;
   box-shadow: none !important;
   transform: none !important;
-  font-size: .79rem !important;
+  font-size: .72rem !important;
   line-height: 1 !important;
 }
 
@@ -12443,13 +12498,13 @@ body[data-hc-page^="/ops"] .hc-admin-wrap > *{
 @media (max-width: 991.98px){
   body.hc-page-admin,
   body[data-hc-page^="/ops"]{
-    --hc-admin-shell-offset: 132px;
+    --hc-admin-shell-offset: 18px;
   }
 
   body.hc-page-admin .hc-admin-shellbar,
   body[data-hc-page^="/ops"] .hc-admin-shellbar{
-    width: min(1640px, calc(100vw - 24px)) !important;
-    max-width: min(1640px, calc(100vw - 24px)) !important;
+    width: min(1380px, calc(100vw - 24px)) !important;
+    max-width: min(1380px, calc(100vw - 24px)) !important;
     padding-top: 6px !important;
   }
 
@@ -12508,6 +12563,49 @@ body.hc-admin-revenue-page .hc-revenue-table :is(.hc-revenue-col-score, .hc-reve
 
 body.hc-admin-revenue-page .hc-revenue-table :is(.hc-revenue-col-actions){
   width: 228px;
+}
+
+body.hc-page-admin .hc-admin-shellbar__inner,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
+  display: grid !important;
+  grid-template-columns: minmax(220px, var(--hc-admin-shell-brand-width)) minmax(0, 1fr) !important;
+  grid-template-areas:
+    "brand nav"
+    "subnav subnav" !important;
+  align-items: center !important;
+  justify-content: stretch !important;
+  gap: 12px 14px !important;
+}
+
+body.hc-page-admin .hc-admin-shellbar__brand,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__brand{
+  grid-area: brand;
+}
+
+body.hc-page-admin .hc-admin-shellnav,
+body[data-hc-page^="/ops"] .hc-admin-shellnav{
+  grid-area: nav;
+  width: 100%;
+  max-width: 100%;
+}
+
+body.hc-page-admin .hc-admin-shellsubnav,
+body[data-hc-page^="/ops"] .hc-admin-shellsubnav{
+  grid-area: subnav;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+@media (max-width: 1199.98px){
+  body.hc-page-admin .hc-admin-shellbar__inner,
+  body[data-hc-page^="/ops"] .hc-admin-shellbar__inner{
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "brand"
+      "nav"
+      "subnav" !important;
+    align-items: stretch !important;
+  }
 }
 
 body.hc-admin-revenue-page .hc-revenue-table td:nth-child(2),
@@ -13553,6 +13651,1360 @@ body[data-hc-page^="/admin/revenue"] .hc-revenue-pipeline__row:hover{
   body[data-hc-page^="/admin/import/history"] .hc-import-history-table tbody td,
   body.hc-admin-security-page :is(.hc-security-login-table, .hc-security-activity-table, .hc-security-signal-table) tbody td{
     padding-inline: .82rem;
+  }
+}
+
+body.hc-page-admin .hc-admin-shellsubnav{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(186, 199, 216, .72);
+}
+
+body.hc-page-admin .hc-admin-shellsubnav__label{
+  padding-right: 6px;
+  color: rgba(74, 91, 114, .86);
+  font-size: .74rem;
+  font-weight: 760;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin .hc-admin-shellsubnav__link{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: .42rem .78rem;
+  border: 1px solid rgba(169, 186, 208, .82);
+  border-radius: 999px;
+  background: rgba(247, 250, 253, .95);
+  color: #27425d;
+  font-size: .86rem;
+  font-weight: 650;
+  text-decoration: none;
+  transition: all .18s ease;
+}
+
+body.hc-page-admin .hc-admin-shellsubnav__link:hover,
+body.hc-page-admin .hc-admin-shellsubnav__link:focus-visible,
+body.hc-page-admin .hc-admin-shellsubnav__link.is-active{
+  color: #173b73;
+  border-color: rgba(91, 122, 171, .58);
+  background: linear-gradient(180deg, rgba(237, 244, 252, .98), rgba(231, 239, 248, .98));
+  box-shadow: 0 10px 20px rgba(15,23,42,.06);
+}
+
+body.hc-page-admin .hc-admin-breadcrumb{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 4px;
+  color: rgba(68, 85, 108, .92);
+  font-size: .92rem;
+  font-weight: 560;
+  line-height: 1.4;
+}
+
+body.hc-page-admin .hc-admin-breadcrumb a{
+  color: #214e86;
+  text-decoration: none;
+  font-weight: 650;
+}
+
+body.hc-page-admin .hc-admin-breadcrumb a:hover,
+body.hc-page-admin .hc-admin-breadcrumb a:focus-visible{
+  color: #163b69;
+  text-decoration: underline;
+}
+
+body.hc-page-admin .hc-admin-breadcrumb span:last-child{
+  color: #1a2f49;
+  font-weight: 760;
+}
+
+body.hc-page-admin .hc-admin-map-access__grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+body.hc-page-admin .hc-admin-map-card{
+  position: relative;
+  display: grid;
+  gap: 10px;
+  min-height: 196px;
+  padding: 18px;
+  border: 1px solid rgba(177, 194, 216, .78);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(245,249,253,.96));
+  box-shadow: 0 14px 28px rgba(15,23,42,.06);
+}
+
+body.hc-page-admin .hc-admin-map-card__eyebrow{
+  color: rgba(83, 101, 126, .92);
+  font-size: .72rem;
+  font-weight: 760;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+body.hc-page-admin .hc-admin-map-card__title{
+  margin: 0;
+  color: #132c49;
+  font-size: 1.08rem;
+  font-weight: 780;
+}
+
+body.hc-page-admin .hc-admin-map-card__text{
+  margin: 0;
+  color: rgba(78, 95, 122, .9);
+  line-height: 1.55;
+}
+
+body.hc-page-admin .hc-admin-map-card__actions{
+  margin-top: auto;
+}
+
+body.hc-page-admin .hc-admin-wrap--territory-map{
+  gap: 14px;
+}
+
+body.hc-page-admin .hc-territory-map-card{
+  padding: 16px;
+  border-radius: 20px;
+}
+
+body.hc-page-admin .hc-territory-map-shell{
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(191, 205, 222, .84);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(231,238,246,.96), rgba(221,230,239,.98));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.66);
+}
+
+body.hc-page-admin .hc-territory-map-canvas{
+  height: min(76vh, 760px);
+  min-height: 560px;
+}
+
+body.hc-page-admin .hc-territory-map-overlay{
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 450;
+  width: min(360px, calc(100% - 32px));
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(255,255,255,.34);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(14,28,45,.66), rgba(22,37,59,.52));
+  box-shadow: 0 18px 40px rgba(9, 16, 29, .18);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: rgba(247, 250, 253, .98);
+}
+
+body.hc-page-admin .hc-territory-map-overlay__eyebrow{
+  margin-bottom: 10px;
+  font-size: .72rem;
+  font-weight: 760;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: rgba(226, 235, 244, .82);
+}
+
+body.hc-page-admin .hc-territory-map-overlay__title{
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 780;
+  color: #fff;
+}
+
+body.hc-page-admin .hc-territory-map-overlay__copy,
+body.hc-page-admin .hc-territory-map-overlay__hint{
+  color: rgba(231, 238, 246, .88);
+  font-size: .9rem;
+  line-height: 1.5;
+}
+
+body.hc-page-admin .hc-territory-map-overlay__grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.hc-page-admin .hc-territory-map-overlay__item{
+  min-height: 74px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  background: rgba(255,255,255,.08);
+}
+
+body.hc-page-admin .hc-territory-map-overlay__label{
+  display: block;
+  margin-bottom: 6px;
+  color: rgba(227, 236, 245, .72);
+  font-size: .72rem;
+  letter-spacing: .04em;
+}
+
+body.hc-page-admin .hc-territory-map-overlay__value{
+  display: block;
+  color: #fff;
+  font-size: 1.02rem;
+  font-weight: 780;
+  line-height: 1.2;
+}
+
+body.hc-page-admin .hc-territory-map-overlay__value--truncate{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hc-page-admin .hc-territory-map-overlay__actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-canvas{
+  height: min(78vh, 820px);
+  min-height: 600px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__card{
+  max-width: 440px;
+  padding: 16px 18px;
+  border-radius: 16px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__title{
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__text{
+  margin-bottom: 10px;
+  line-height: 1.45;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__capacity{
+  margin-bottom: 10px;
+}
+
+@media (max-width: 991.98px){
+  body.hc-page-admin .hc-admin-map-access__grid{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-admin .hc-territory-map-overlay{
+    width: min(320px, calc(100% - 24px));
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-page-admin .hc-admin-shellsubnav{
+    align-items: stretch;
+  }
+
+  body.hc-page-admin .hc-admin-shellsubnav__label{
+    width: 100%;
+  }
+
+  body.hc-page-admin .hc-admin-shellsubnav__link{
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  body.hc-page-admin .hc-territory-map-overlay{
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+    padding: 12px;
+  }
+
+  body.hc-page-admin .hc-territory-map-overlay__grid{
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body.hc-page-admin .hc-territory-map-canvas{
+    height: 62vh;
+    min-height: 440px;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-canvas{
+    height: 64vh;
+    min-height: 440px;
+  }
+}
+
+/* === OPERATIONAL MAPS V2 POLISH === */
+body.hc-admin-risk-map-page .hc-admin-workspace__content{
+  gap: 8px;
+}
+
+body.hc-admin-risk-map-page .hc-admin-shellbar{
+  margin-bottom: 8px !important;
+  padding: 2px 0 0 !important;
+}
+
+body.hc-admin-risk-map-page .hc-admin-shellbar__inner{
+  min-height: 54px;
+  padding: 6px 8px 6px 10px !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08) !important;
+}
+
+body.hc-admin-risk-map-page .hc-admin-shellsubnav{
+  row-gap: 6px;
+  padding-top: 8px;
+}
+
+body.hc-admin-risk-map-page .hc-admin-shellsubnav__label{
+  font-size: .72rem;
+}
+
+body.hc-admin-risk-map-page .hc-admin-shellsubnav__link{
+  min-height: 34px;
+  padding: .36rem .78rem;
+}
+
+body.hc-admin-risk-map-page .hc-admin-wrap--risk-map{
+  gap: 8px;
+}
+
+body.hc-admin-risk-map-page .hc-admin-breadcrumb{
+  margin: 0 2px 4px;
+  padding: 0;
+  font-size: .82rem;
+  line-height: 1.15;
+}
+
+body.hc-admin-risk-map-page .hc-admin-breadcrumb a,
+body.hc-admin-risk-map-page .hc-admin-breadcrumb span{
+  line-height: 1.15;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card{
+  padding: 14px 16px 12px !important;
+  border-radius: 18px;
+  border-color: rgba(177, 194, 216, .82);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.94), rgba(246,249,253,.92)),
+    radial-gradient(circle at top right, rgba(96, 165, 250, .12), transparent 34%);
+  box-shadow: 0 18px 34px rgba(15,23,42,.07), inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-section-intro{
+  margin-bottom: 10px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-admin-kicker{
+  margin-bottom: 4px;
+  font-size: .68rem;
+  letter-spacing: .1em;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-admin-title{
+  margin-bottom: 2px;
+  font-size: clamp(1.55rem, 2vw, 1.95rem);
+  line-height: 1.04;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-section-subtitle{
+  margin: 0;
+  max-width: 78ch;
+  color: rgba(73, 91, 118, .9);
+  line-height: 1.48;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpis{
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi{
+  position: relative;
+  min-height: 82px;
+  padding: 11px 13px;
+  border-radius: 16px;
+  border-color: rgba(177, 194, 216, .78);
+  background: linear-gradient(180deg, rgba(255,255,255,.74), rgba(247,250,253,.64));
+  box-shadow: 0 14px 28px rgba(15,23,42,.06), inset 0 1px 0 rgba(255,255,255,.74);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi::after{
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 16px 0 0 16px;
+  background: rgba(148, 163, 184, .38);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi:nth-child(1)::after{
+  background: rgba(217, 72, 95, .72);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi:nth-child(2)::after{
+  background: rgba(240, 138, 36, .68);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi:nth-child(3)::after{
+  background: rgba(37, 99, 235, .66);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi:nth-child(4)::after{
+  background: rgba(45, 138, 95, .58);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi__label{
+  margin-bottom: 7px;
+  font-size: .62rem;
+  font-weight: 760;
+  letter-spacing: .12em;
+  color: rgba(34, 52, 79, .58);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi__value{
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  font-weight: 860;
+  letter-spacing: -.03em;
+  color: #0f1f35;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi__hint{
+  margin-top: 6px;
+  font-size: .8rem;
+  line-height: 1.35;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi--capacity{
+  border-color: rgba(96, 165, 250, .46);
+  background: linear-gradient(180deg, rgba(242,248,255,.84), rgba(236,244,255,.72));
+  box-shadow: 0 16px 30px rgba(29, 78, 216, .08), inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-contextbar{
+  gap: 8px 14px;
+  padding-top: 10px;
+  margin-top: 2px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-contextbar__secondary{
+  font-size: .84rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-queue-note{
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border-color: rgba(177, 194, 216, .76);
+  background: linear-gradient(180deg, rgba(245,248,252,.84), rgba(238,243,249,.72));
+  color: #29415d;
+  font-size: .84rem;
+  line-height: 1.45;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-card{
+  padding: 10px;
+  border-radius: 22px;
+  border-color: rgba(177, 194, 216, .74);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.9), rgba(243,247,252,.9)),
+    radial-gradient(circle at top left, rgba(14, 165, 233, .06), transparent 34%);
+  box-shadow: 0 22px 42px rgba(15,23,42,.08), inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-card .hc-card__header{
+  padding-bottom: 8px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header{
+  gap: 10px 16px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header__main{
+  gap: 8px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header .hc-section-title{
+  margin-bottom: 2px;
+  font-size: 1.08rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header .hc-section-subtitle{
+  margin: 0;
+  max-width: 74ch;
+  font-size: .92rem;
+  line-height: 1.45;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend{
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(16, 25, 41, .52);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 14px 30px rgba(15,23,42,.16);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend__item{
+  color: rgba(240, 245, 250, .94);
+  font-size: .8rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell{
+  position: relative;
+  border-radius: 22px;
+  border-color: rgba(146, 167, 193, .52);
+  background: linear-gradient(180deg, rgba(199,211,225,.88), rgba(185,198,214,.94));
+  box-shadow: 0 26px 48px rgba(15,23,42,.14), inset 0 1px 0 rgba(255,255,255,.54);
+  isolation: isolate;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(9, 18, 31, .09), rgba(10, 18, 30, .14)),
+    radial-gradient(circle at top right, rgba(255,255,255,.1), transparent 34%);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-canvas{
+  position: relative;
+  z-index: 0;
+  height: 72vh;
+  min-height: 72vh;
+}
+
+@media (min-width: 1600px){
+  body.hc-admin-risk-map-page .hc-risk-map-canvas{
+    height: 78vh;
+    min-height: 78vh;
+  }
+}
+
+body.hc-admin-risk-map-page .leaflet-tile-pane{
+  filter: saturate(.74) brightness(.9) contrast(1.04);
+}
+
+body.hc-admin-risk-map-page .leaflet-control-zoom{
+  border: 0;
+  box-shadow: 0 12px 24px rgba(15,23,42,.18);
+}
+
+body.hc-admin-risk-map-page .leaflet-control-zoom a{
+  background: rgba(17, 26, 43, .7);
+  color: rgba(243, 247, 251, .96);
+  border-color: rgba(255,255,255,.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel{
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 470;
+  width: min(340px, calc(100% - 90px));
+  padding: 13px 14px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(180deg, rgba(16, 25, 41, .72), rgba(19, 32, 51, .54));
+  color: rgba(246, 249, 252, .98);
+  box-shadow: 0 18px 34px rgba(7, 12, 22, .24);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__eyebrow{
+  margin-bottom: 8px;
+  font-size: .68rem;
+  font-weight: 760;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(222, 231, 241, .72);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__title{
+  margin-bottom: 5px;
+  font-size: 1.02rem;
+  font-weight: 820;
+  line-height: 1.12;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__copy{
+  color: rgba(232, 239, 247, .86);
+  font-size: .84rem;
+  line-height: 1.46;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metrics{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric{
+  display: grid;
+  gap: 2px;
+  min-width: 112px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.08);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric strong{
+  font-size: .95rem;
+  font-weight: 820;
+  color: #fff;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric span{
+  font-size: .72rem;
+  color: rgba(226, 235, 244, .78);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-maphint{
+  top: auto;
+  right: 16px;
+  bottom: 16px;
+  z-index: 470;
+  padding: 9px 12px;
+  border-radius: 999px;
+  border-color: rgba(255,255,255,.12);
+  background: rgba(16, 25, 41, .64);
+  color: rgba(242, 246, 250, .94);
+  box-shadow: 0 14px 28px rgba(9, 16, 29, .22);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty{
+  background: linear-gradient(180deg, rgba(9,18,31,.14), rgba(10,18,30,.24));
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__card{
+  max-width: 460px;
+  padding: 18px 18px 16px;
+  text-align: left;
+  border-radius: 18px;
+  border-color: rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(18, 29, 47, .84), rgba(24, 38, 59, .7));
+  box-shadow: 0 24px 46px rgba(7, 12, 22, .28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__title{
+  color: rgba(249, 251, 253, .98);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__text,
+body.hc-admin-risk-map-page .hc-risk-map-empty__hint{
+  color: rgba(223, 232, 241, .84);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__capacity{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.08);
+  color: rgba(244, 248, 252, .94);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__actions{
+  justify-items: start;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip{
+  gap: 12px 18px;
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border-color: rgba(177, 194, 216, .68);
+  background:
+    linear-gradient(180deg, rgba(247,250,253,.92), rgba(238,244,249,.84)),
+    radial-gradient(circle at top right, rgba(37, 99, 235, .08), transparent 30%);
+  box-shadow: 0 16px 28px rgba(15,23,42,.07), inset 0 1px 0 rgba(255,255,255,.76);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__title{
+  font-size: .96rem;
+  font-weight: 780;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__meta{
+  font-size: .84rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__actions{
+  gap: 8px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__actions .btn{
+  min-height: 38px;
+  padding-inline: .95rem;
+  box-shadow: 0 10px 18px rgba(15,23,42,.06);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__actions .btn-primary{
+  box-shadow: 0 14px 24px rgba(29, 79, 139, .22);
+}
+
+body.hc-page-admin .hc-map-ringMarkerWrap{
+  width: 30px !important;
+  height: 30px !important;
+}
+
+body.hc-page-admin .hc-map-ringMarker{
+  width: 18px;
+  height: 18px;
+  border-width: 3px;
+  background: rgba(255,255,255,.98);
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.88),
+    0 12px 22px rgba(8, 15, 29, .2);
+}
+
+body.hc-page-admin .hc-map-ringMarker__core{
+  inset: 3px;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.98), rgba(241,246,250,.94));
+}
+
+body.hc-page-admin .hc-map-ringMarker--critical{
+  width: 24px;
+  height: 24px;
+  border-color: #d9485f;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 10px rgba(217,72,95,.14),
+    0 16px 28px rgba(217,72,95,.22);
+}
+
+body.hc-page-admin .hc-map-ringMarker--attention{
+  width: 20px;
+  height: 20px;
+  border-color: #f08a24;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.88),
+    0 0 0 8px rgba(240,138,36,.12),
+    0 14px 24px rgba(240,138,36,.18);
+}
+
+body.hc-page-admin .hc-map-ringMarker--standard{
+  width: 18px;
+  height: 18px;
+  border-color: #2d8a5f;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.88),
+    0 0 0 6px rgba(45,138,95,.1),
+    0 12px 22px rgba(45,138,95,.16);
+}
+
+body.hc-page-admin .hc-map-ringMarker--professional{
+  width: 18px;
+  height: 18px;
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.9),
+    0 0 0 7px rgba(37,99,235,.12),
+    0 14px 24px rgba(37,99,235,.18);
+}
+
+body.hc-page-admin .leaflet-marker-icon:hover .hc-map-ringMarker,
+body.hc-page-admin .leaflet-marker-icon:focus .hc-map-ringMarker{
+  transform: scale(1.14);
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,.92),
+    0 18px 28px rgba(8,15,29,.24);
+}
+
+@media (max-width: 1365.98px){
+  body.hc-admin-risk-map-page .hc-risk-map-canvas{
+    height: 68vh;
+    min-height: 68vh;
+  }
+}
+
+@media (max-width: 1199.98px){
+  body.hc-admin-risk-map-page .hc-map-command-panel{
+    width: min(300px, calc(100% - 78px));
+  }
+}
+
+@media (max-width: 991.98px){
+  body.hc-admin-risk-map-page .hc-admin-shellbar{
+    margin-bottom: 6px !important;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-toolbar-card{
+    padding: 12px 12px 10px !important;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-canvas{
+    height: 64vh;
+    min-height: 500px;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-command-panel{
+    top: 12px;
+    left: 12px;
+    width: min(280px, calc(100% - 86px));
+    padding: 11px 12px 10px;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-maphint{
+    right: 12px;
+    bottom: 12px;
+    max-width: 46vw;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-actionstrip__actions{
+    width: 100%;
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-admin-risk-map-page .hc-admin-breadcrumb{
+    font-size: .76rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-admin-title{
+    font-size: 1.42rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-kpi{
+    min-height: 74px;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-canvas{
+    height: 62vh;
+    min-height: 440px;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-command-panel{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px);
+  }
+
+  body.hc-admin-risk-map-page .hc-map-command-panel__metrics{
+    display: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-maphint{
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    max-width: none;
+    justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   UX consistency pass - shared admin atmosphere
+   ========================================================================== */
+body.hc-page-admin,
+body[data-hc-page^="/ops"] {
+  background: var(--hc-gradient-page);
+}
+
+body.hc-page-admin .hc-admin-workspace__content,
+body[data-hc-page^="/ops"] .hc-admin-workspace__content {
+  position: relative;
+}
+
+body.hc-page-admin .hc-admin-shellbar__inner,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__inner {
+  border-color: rgba(175, 194, 214, 0.7) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(241, 247, 252, 0.82)),
+    radial-gradient(circle at top left, rgba(95, 135, 170, 0.12), transparent 36%) !important;
+  box-shadow: var(--hc-shadow-soft) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+body.hc-page-admin :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link),
+body[data-hc-page^="/ops"] :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link) {
+  border-color: rgba(175, 194, 214, 0.48) !important;
+  background: rgba(255, 255, 255, 0.56) !important;
+  color: rgba(32, 59, 88, 0.86) !important;
+}
+
+body.hc-page-admin :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link):hover,
+body.hc-page-admin :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link).is-active,
+body.hc-page-admin :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link)[aria-current="page"],
+body[data-hc-page^="/ops"] :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link):hover,
+body[data-hc-page^="/ops"] :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link).is-active,
+body[data-hc-page^="/ops"] :is(.hc-admin-shellnav__link, .hc-admin-shellsubnav__link)[aria-current="page"] {
+  border-color: rgba(95, 135, 170, 0.42) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(232, 240, 247, 0.92)) !important;
+  box-shadow: 0 10px 22px rgba(23, 50, 79, 0.08) !important;
+  color: var(--hc-ocean-900) !important;
+}
+
+body.hc-page-admin .hc-admin-breadcrumb,
+body[data-hc-page^="/ops"] .hc-admin-breadcrumb {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid rgba(175, 194, 214, 0.42);
+  border-radius: 999px;
+  width: fit-content;
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 8px 18px rgba(23, 50, 79, 0.04);
+}
+
+body.hc-page-admin :is(.hc-page-hero, .hc-admin-headerCard),
+body[data-hc-page^="/ops"] :is(.hc-page-hero, .hc-admin-headerCard) {
+  border-color: rgba(170, 191, 213, 0.72) !important;
+  background:
+    var(--hc-gradient-header),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 252, 0.94)) !important;
+  box-shadow: var(--hc-shadow-soft) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+body.hc-page-admin :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-command-panel, .hc-risk-map-toolbar-card, .hc-risk-map-card, .hc-cases-zonebar),
+body[data-hc-page^="/ops"] :is(.hc-card, .card, .hc-admin-table-shell, .hc-admin-table-card, .hc-command-panel, .hc-cases-zonebar) {
+  border-color: rgba(175, 194, 214, 0.72);
+  background: var(--hc-gradient-card);
+  box-shadow: var(--hc-shadow-soft);
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-admin-table-card, .hc-risk-map-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card) > :is(.hc-card__header, .hc-card__section--header, .hc-admin-tableHeader) {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 247, 252, 0.9)),
+    radial-gradient(circle at top right, rgba(95, 135, 170, 0.08), transparent 30%);
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard, .hc-sla-kpi, .hc-perf-kpi, .hc-structure-metric, .hc-risk-map-kpi),
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard) {
+  border-color: rgba(168, 189, 210, 0.72) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(239, 246, 251, 0.94)) !important;
+  box-shadow:
+    0 16px 30px rgba(23, 50, 79, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+body.hc-page-admin :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard, .hc-sla-kpi, .hc-perf-kpi, .hc-structure-metric, .hc-risk-map-kpi)::before,
+body[data-hc-page^="/ops"] :is(.hc-kpi, .hc-kpi-card, .hc-ops-summary__item, .hc-notify-summary__item, .hc-risk-overview__item, .hc-riskcard)::before {
+  background: linear-gradient(180deg, rgba(23, 50, 79, 0.9), rgba(95, 135, 170, 0.34));
+}
+
+body.hc-page-admin :is(.hc-command-panel, .hc-admin-map-card, .hc-risk-overview__item--link),
+body[data-hc-page^="/ops"] :is(.hc-command-panel, .hc-risk-overview__item--link) {
+  transition:
+    transform var(--hc-duration-normal) var(--hc-ease-standard),
+    box-shadow var(--hc-duration-normal) var(--hc-ease-standard),
+    border-color var(--hc-duration-normal) var(--hc-ease-standard);
+}
+
+body.hc-page-admin :is(.hc-command-panel, .hc-admin-map-card, .hc-risk-overview__item--link):hover,
+body[data-hc-page^="/ops"] :is(.hc-command-panel, .hc-risk-overview__item--link):hover {
+  transform: translateY(-1px);
+  border-color: rgba(95, 135, 170, 0.44);
+  box-shadow: 0 20px 36px rgba(23, 50, 79, 0.12);
+}
+
+body.hc-page-admin .hc-command-panel::before,
+body[data-hc-page^="/ops"] .hc-command-panel::before {
+  background: linear-gradient(180deg, rgba(23, 50, 79, 0.96), rgba(95, 135, 170, 0.42));
+}
+
+body.hc-page-admin :is(.table, .hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-structures-table) thead th,
+body[data-hc-page^="/ops"] :is(.table, .hc-admin-table, .hc-requests-table, .hc-cases-table) thead th {
+  border-bottom-color: rgba(175, 194, 214, 0.72);
+  background: linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(241, 247, 252, 0.92));
+  color: rgba(59, 82, 108, 0.82);
+}
+
+body.hc-page-admin :is(.table, .hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-structures-table) tbody td,
+body[data-hc-page^="/ops"] :is(.table, .hc-admin-table, .hc-requests-table, .hc-cases-table) tbody td {
+  border-color: rgba(220, 229, 238, 0.94);
+}
+
+body.hc-page-admin :is(.table-hover tbody tr:hover, .hc-requests-table tbody tr:hover, .hc-cases-table tbody tr:hover, .hc-structures-table tbody tr:hover) td,
+body[data-hc-page^="/ops"] :is(.table-hover tbody tr:hover, .hc-requests-table tbody tr:hover, .hc-cases-table tbody tr:hover) td {
+  background: rgba(239, 246, 251, 0.82);
+}
+
+body.hc-page-admin :is(.hc-empty-state, .hc-admin-empty),
+body[data-hc-page^="/ops"] :is(.hc-empty-state, .hc-admin-empty) {
+  border-style: solid;
+  border-color: rgba(175, 194, 214, 0.52);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(240, 247, 252, 0.82)),
+    radial-gradient(circle at top, rgba(95, 135, 170, 0.08), transparent 44%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+body.hc-page-admin :is(.badge.text-bg-light.border, .badge.text-bg-secondary, .badge.text-bg-success, .badge.text-bg-warning),
+body[data-hc-page^="/ops"] :is(.badge.text-bg-light.border, .badge.text-bg-secondary, .badge.text-bg-success, .badge.text-bg-warning) {
+  border-color: rgba(164, 184, 205, 0.52) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
+}
+
+body.hc-page-admin :is(.btn-primary, .hc-admin-map-card .btn-primary, .hc-risk-map-actionstrip__actions .btn-primary),
+body[data-hc-page^="/ops"] :is(.btn-primary) {
+  border-color: rgba(23, 50, 79, 0.08);
+  background: linear-gradient(135deg, var(--hc-ocean-900), #2d5477 56%, #4f7ea4 100%);
+  box-shadow: 0 14px 28px rgba(23, 50, 79, 0.16);
+}
+
+body.hc-page-admin :is(.btn-outline-secondary, .btn-outline-primary),
+body[data-hc-page^="/ops"] :is(.btn-outline-secondary, .btn-outline-primary) {
+  border-color: rgba(164, 184, 205, 0.58);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--hc-ocean-900);
+}
+
+body.hc-page-admin :is(.hc-risk-map-shell, .hc-territory-map-shell, .audience-map-shell, .hc-audience-mapFrame),
+body[data-hc-page^="/ops"] :is(.hc-risk-map-shell, .hc-territory-map-shell) {
+  border-color: rgba(175, 194, 214, 0.72);
+  background:
+    linear-gradient(180deg, rgba(232, 239, 246, 0.98), rgba(220, 230, 239, 0.96)),
+    radial-gradient(circle at top left, rgba(95, 135, 170, 0.14), transparent 36%);
+  box-shadow: 0 24px 44px rgba(23, 50, 79, 0.12);
+}
+
+body.hc-page-admin :is(.hc-map-command-panel, .hc-territory-map-overlay, .audience-map-summary, .audience-map-legend),
+body[data-hc-page^="/ops"] :is(.hc-map-command-panel, .hc-territory-map-overlay) {
+  border-color: rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(180deg, rgba(19, 34, 53, 0.76), rgba(29, 49, 73, 0.58));
+  box-shadow: 0 20px 36px rgba(12, 22, 35, 0.22);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell::after,
+body.hc-admin-professionals-map-page .hc-risk-map-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(22, 42, 65, 0.08), rgba(22, 42, 65, 0.12)),
+    radial-gradient(circle at top left, rgba(158, 202, 215, 0.12), transparent 34%);
+}
+
+body.hc-admin-risk-map-page .leaflet-tile-pane,
+body.hc-admin-professionals-map-page .leaflet-tile-pane {
+  filter: saturate(0.72) hue-rotate(2deg) brightness(0.94) contrast(1.03);
+}
+
+body.hc-admin-risk-map-page .leaflet-popup-content-wrapper,
+body.hc-admin-professionals-map-page .leaflet-popup-content-wrapper {
+  border: 1px solid rgba(170, 191, 213, 0.42);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(243, 248, 252, 0.92));
+  box-shadow:
+    0 22px 42px rgba(12, 22, 35, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-admin-risk-map-page :is(.hc-map-command-panel, .hc-risk-map-maphint),
+body.hc-admin-professionals-map-page .hc-map-command-panel {
+  border-color: rgba(255, 255, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(16, 31, 49, 0.8), rgba(24, 43, 66, 0.66));
+  box-shadow:
+    0 24px 44px rgba(12, 22, 35, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+body.hc-page-admin .hc-map-ringMarker {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 0 7px rgba(158, 202, 215, 0.12),
+    0 14px 26px rgba(12, 22, 35, 0.2);
+}
+
+body.hc-page-admin .hc-map-ringMarker::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  opacity: 0.55;
+}
+
+body.hc-page-admin .hc-map-ringMarker__core {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.98), rgba(236, 243, 249, 0.96));
+}
+
+body.hc-page-admin .hc-map-ringMarker--critical {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 0 0 10px rgba(217, 72, 95, 0.12),
+    0 18px 30px rgba(217, 72, 95, 0.18);
+}
+
+body.hc-page-admin .hc-map-ringMarker--attention {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 0 8px rgba(240, 138, 36, 0.1),
+    0 16px 26px rgba(240, 138, 36, 0.16);
+}
+
+body.hc-page-admin .hc-map-ringMarker--standard,
+body.hc-page-admin .hc-map-ringMarker--professional {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 0 7px rgba(95, 135, 170, 0.1),
+    0 14px 24px rgba(23, 50, 79, 0.16);
+}
+
+body.hc-page-admin .leaflet-marker-icon:hover .hc-map-ringMarker,
+body.hc-page-admin .leaflet-marker-icon:focus .hc-map-ringMarker,
+body.hc-page-admin .leaflet-marker-icon.leaflet-interactive:active .hc-map-ringMarker {
+  transform: scale(1.14);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.94),
+    0 0 0 11px rgba(158, 202, 215, 0.16),
+    0 18px 30px rgba(12, 22, 35, 0.24);
+}
+
+/* Territorial intelligence layer prep: calm atmospheric framing for operational maps */
+body.hc-admin-risk-map-page {
+  --hc-map-ocean-ink: #153454;
+  --hc-map-ocean-soft: #54779b;
+  --hc-map-mist: rgba(232, 240, 247, 0.94);
+  --hc-map-border: rgba(166, 189, 215, 0.72);
+  --hc-map-glow: rgba(94, 143, 194, 0.16);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card,
+body.hc-admin-risk-map-page .hc-risk-map-card {
+  position: relative;
+  overflow: hidden;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card::before,
+body.hc-admin-risk-map-page .hc-risk-map-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(26, 65, 111, 0.92), rgba(74, 126, 180, 0.66), rgba(148, 197, 223, 0.34));
+  pointer-events: none;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(243, 248, 252, 0.78)),
+    radial-gradient(circle at top right, rgba(125, 173, 221, 0.14), transparent 42%);
+  box-shadow:
+    0 18px 30px rgba(15, 23, 42, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-contextbar,
+body.hc-admin-risk-map-page .hc-risk-map-queue-note {
+  border-color: rgba(176, 196, 218, 0.74);
+  background:
+    linear-gradient(180deg, rgba(249, 251, 254, 0.94), rgba(239, 245, 250, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header {
+  position: relative;
+  gap: 1rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -0.2rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(165, 188, 213, 0), rgba(165, 188, 213, 0.9), rgba(165, 188, 213, 0));
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend {
+  border: 1px solid rgba(173, 193, 215, 0.76);
+  background:
+    linear-gradient(180deg, rgba(250, 252, 254, 0.95), rgba(238, 244, 249, 0.94));
+  box-shadow:
+    0 14px 28px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend__item {
+  color: #294766;
+  font-weight: 720;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell {
+  border: 1px solid var(--hc-map-border);
+  background:
+    linear-gradient(180deg, rgba(221, 231, 241, 0.98), rgba(209, 222, 234, 0.98)),
+    radial-gradient(circle at 14% 12%, rgba(130, 174, 217, 0.22), transparent 32%),
+    radial-gradient(circle at 82% 0%, rgba(162, 205, 225, 0.16), transparent 28%);
+  box-shadow:
+    0 30px 54px rgba(16, 31, 48, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell::before {
+  height: 108px;
+  background:
+    linear-gradient(180deg, rgba(14, 30, 48, 0.28), rgba(14, 30, 48, 0)),
+    linear-gradient(90deg, rgba(58, 96, 138, 0.14), rgba(58, 96, 138, 0));
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell::after,
+body.hc-admin-professionals-map-page .hc-risk-map-shell::after {
+  background:
+    linear-gradient(180deg, rgba(19, 38, 60, 0.08), rgba(19, 38, 60, 0.14)),
+    radial-gradient(circle at top left, rgba(176, 214, 227, 0.12), transparent 32%);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-canvas,
+body.hc-admin-professionals-map-page .hc-risk-map-canvas {
+  border-radius: 24px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.26),
+    inset 0 32px 52px rgba(21, 42, 64, 0.06);
+}
+
+body.hc-admin-risk-map-page .leaflet-control-zoom,
+body.hc-admin-professionals-map-page .leaflet-control-zoom {
+  border: 1px solid rgba(167, 189, 214, 0.74);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 28px rgba(12, 22, 35, 0.12);
+}
+
+body.hc-admin-risk-map-page .leaflet-control-zoom a,
+body.hc-admin-professionals-map-page .leaflet-control-zoom a {
+  color: var(--hc-map-ocean-ink);
+  background: rgba(248, 251, 254, 0.96);
+  border-bottom-color: rgba(184, 202, 221, 0.72);
+}
+
+body.hc-admin-risk-map-page .leaflet-control-zoom a:hover,
+body.hc-admin-professionals-map-page .leaflet-control-zoom a:hover {
+  background: rgba(233, 241, 248, 0.98);
+  color: #0f2c4b;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel,
+body.hc-admin-professionals-map-page .hc-map-command-panel {
+  border-color: rgba(193, 222, 245, 0.22);
+  background:
+    linear-gradient(180deg, rgba(17, 34, 54, 0.88), rgba(23, 46, 71, 0.76)),
+    radial-gradient(circle at top left, rgba(132, 181, 224, 0.16), transparent 38%);
+  box-shadow:
+    0 28px 48px rgba(12, 22, 35, 0.24),
+    0 0 0 1px rgba(207, 229, 247, 0.06);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__eyebrow,
+body.hc-admin-professionals-map-page .hc-map-command-panel__eyebrow {
+  color: rgba(191, 222, 247, 0.82);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__title,
+body.hc-admin-professionals-map-page .hc-map-command-panel__title {
+  color: #f5f9fd;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__copy,
+body.hc-admin-professionals-map-page .hc-map-command-panel__copy,
+body.hc-admin-risk-map-page .hc-map-command-panel__metric span,
+body.hc-admin-professionals-map-page .hc-map-command-panel__metric span {
+  color: rgba(221, 235, 247, 0.78);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric,
+body.hc-admin-professionals-map-page .hc-map-command-panel__metric {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(211, 230, 245, 0.12);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-maphint {
+  border-color: rgba(196, 225, 248, 0.2);
+  color: #edf6fc;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__card {
+  border-color: rgba(174, 198, 220, 0.88);
+  background:
+    linear-gradient(180deg, rgba(254, 255, 255, 0.96), rgba(243, 248, 252, 0.94)),
+    radial-gradient(circle at top right, rgba(145, 191, 221, 0.12), transparent 42%);
+  box-shadow:
+    0 24px 42px rgba(12, 22, 35, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__title {
+  color: #14385f;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__text,
+body.hc-admin-risk-map-page .hc-risk-map-empty__hint,
+body.hc-admin-risk-map-page .hc-risk-map-empty__capacity {
+  color: #536d87;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip {
+  border-top: 1px solid rgba(180, 200, 220, 0.78);
+  background:
+    linear-gradient(180deg, rgba(245, 249, 252, 0.96), rgba(235, 242, 247, 0.94));
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__actions .btn {
+  box-shadow: 0 12px 22px rgba(16, 31, 48, 0.08);
+}
+
+body.hc-admin-risk-map-page .leaflet-popup-content-wrapper,
+body.hc-admin-professionals-map-page .leaflet-popup-content-wrapper {
+  border-color: rgba(172, 194, 217, 0.58);
+}
+
+body.hc-admin-risk-map-page .leaflet-popup-tip,
+body.hc-admin-professionals-map-page .leaflet-popup-tip {
+  background: rgba(244, 248, 252, 0.96);
+}
+
+@media (max-width: 767.98px) {
+  body.hc-admin-risk-map-page .hc-map-command-panel,
+  body.hc-admin-professionals-map-page .hc-map-command-panel {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-shell::before {
+    height: 84px;
   }
 }
 

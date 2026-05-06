@@ -1,11 +1,10 @@
-{% extends "base.html" %}
+{% extends "layouts/admin_workspace.html" %}
 
-{% block title %}Pilotage territorial des situations | HelpChain{% endblock %}
-{% block body_class %}hc-page-admin hc-admin-risk-map-page{% endblock %}
+{% block title %}Carte des risques | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-risk-map-page{% endblock %}
 
-{% block extra_css %}
+{% block admin_workspace_css %}
   {{ super() }}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-ui.css') }}">
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -14,7 +13,7 @@
   />
 {% endblock %}
 
-{% block content %}
+{% block admin_content %}
 <div
   class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--risk-map"
   data-risk-map-root
@@ -28,44 +27,43 @@
   data-critical-queue-count="{{ critical_queue_count or 0 }}"
   data-empty-cta="{{ url_for('admin.admin_requests') }}"
 >
-  <div class="hc-card mb-3 hc-page-hero hc-risk-map-hero">
-    <div class="hc-row hc-admin-headerTop">
-      <div>
-        <div class="hc-admin-kicker">Centre de pilotage territorial</div>
-        <h1 class="hc-admin-title">Pilotage territorial des situations</h1>
-        <div class="hc-muted">Lecture territoriale des situations sociales, des priorités critiques et de la couverture opérationnelle à Boulogne-Billancourt.</div>
-      </div>
-    </div>
-  </div>
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
+    <span>/</span>
+    <span>Carte des risques</span>
+  </nav>
 
   <div class="hc-card mb-3 p-3 hc-risk-map-toolbar-card">
     <div class="hc-section-intro">
       <div>
-        <h2 class="hc-section-title">Vue territoriale active</h2>
-        <p class="hc-section-subtitle">Identifiez les signaux critiques, mesurez la capacité de terrain et orientez la prochaine action opérateur depuis une même surface de pilotage.</p>
+        <div class="hc-admin-kicker">Pilotage territorial</div>
+        <h1 class="hc-admin-title">Carte des risques</h1>
+        <p class="hc-section-subtitle">Identifiez les situations critiques, mesurez la couverture disponible et ouvrez ensuite la file operateur avec le contexte de zone.</p>
       </div>
     </div>
 
-    <div class="hc-risk-map-kpis" aria-label="Indicateurs de synthèse">
+    <div class="hc-risk-map-kpis" aria-label="Indicateurs de synthese">
       <div class="hc-risk-map-kpi">
         <span class="hc-risk-map-kpi__label">Situations critiques</span>
         <div class="hc-risk-map-kpi__value" id="riskMapCriticalCount">0</div>
-        <div class="hc-risk-map-kpi__hint" id="riskMapCriticalHint">Aucune situation critique géolocalisée.</div>
+        <div class="hc-risk-map-kpi__hint" id="riskMapCriticalHint">Aucune situation critique geolocalisee.</div>
       </div>
       <div class="hc-risk-map-kpi">
         <span class="hc-risk-map-kpi__label">Zones actives</span>
         <div class="hc-risk-map-kpi__value" id="riskMapZonesCount">0</div>
-        <div class="hc-risk-map-kpi__hint" id="riskMapZonesHint">Aucune zone active détectée.</div>
+        <div class="hc-risk-map-kpi__hint" id="riskMapZonesHint">Aucune zone active detectee.</div>
       </div>
       <div class="hc-risk-map-kpi hc-risk-map-kpi--capacity">
         <span class="hc-risk-map-kpi__label">Intervenants disponibles</span>
         <div class="hc-risk-map-kpi__value" id="riskMapProfessionalsCount">0</div>
-        <div class="hc-risk-map-kpi__hint" id="riskMapProfessionalsHint">Capacité opérationnelle disponible.</div>
+        <div class="hc-risk-map-kpi__hint" id="riskMapProfessionalsHint">Capacite operationnelle disponible.</div>
       </div>
       <div class="hc-risk-map-kpi">
         <span class="hc-risk-map-kpi__label">Sans action &gt;72h</span>
         <div class="hc-risk-map-kpi__value" id="riskMapStaleCount">0</div>
-        <div class="hc-risk-map-kpi__hint" id="riskMapStaleHint">Aucune situation en dépassement.</div>
+        <div class="hc-risk-map-kpi__hint" id="riskMapStaleHint">Aucune situation en depassement.</div>
       </div>
     </div>
 
@@ -74,14 +72,14 @@
         <span class="hc-risk-map-contextbar__label">Zone active</span>
         <strong id="riskMapZoneLabel">{{ zone_city or 'Boulogne-Billancourt' }}</strong>
       </div>
-      <div class="hc-risk-map-contextbar__secondary" id="riskMapCoverageLine">Lecture en cours de la couverture opérationnelle.</div>
+      <div class="hc-risk-map-contextbar__secondary" id="riskMapCoverageLine">Lecture en cours de la couverture operationnelle.</div>
     </div>
 
     <div class="hc-risk-map-queue-note" id="riskMapQueueNote" aria-live="polite">
       {% if critical_queue_count %}
-        {{ critical_queue_count }} situation{% if critical_queue_count > 1 %}s{% endif %} critique{% if critical_queue_count > 1 %}s{% endif %} existent dans la file opérateur, sans localisation exploitable sur la carte.
+        {{ critical_queue_count }} situation{% if critical_queue_count > 1 %}s{% endif %} critique{% if critical_queue_count > 1 %}s{% endif %} restent a traiter dans la file operateur, sans localisation exploitable sur la carte.
       {% else %}
-        La file opérateur reste disponible sur la zone, même lorsque la carte ne dispose pas encore de situations localisées.
+        La file operateur reste accessible sur la zone, meme lorsque certaines situations ne sont pas encore localisees.
       {% endif %}
     </div>
   </div>
@@ -91,8 +89,8 @@
       <div class="hc-risk-map-header">
         <div class="hc-risk-map-header__main">
           <div>
-          <h2 class="hc-section-title">Carte des risques territoriaux</h2>
-          <p class="hc-section-subtitle">Repérez où se concentrent les besoins, évaluez la couverture disponible et basculez ensuite vers les demandes à traiter.</p>
+            <h2 class="hc-section-title">Carte des risques territoriaux</h2>
+            <p class="hc-section-subtitle">Reperez ou se concentrent les besoins, evaluez la couverture disponible et basculez ensuite vers les demandes a traiter.</p>
           </div>
           <div class="hc-risk-map-controls__group">
             <div class="hc-risk-map-control">
@@ -103,7 +101,7 @@
             </div>
           </div>
         </div>
-        <div class="hc-risk-map-legend" aria-label="Légende de la carte">
+        <div class="hc-risk-map-legend" aria-label="Legende de la carte">
           <span class="hc-risk-map-legend__item"><span class="hc-risk-map-legend__dot hc-risk-map-legend__dot--critical"></span>Critique</span>
           <span class="hc-risk-map-legend__item"><span class="hc-risk-map-legend__dot hc-risk-map-legend__dot--attention"></span>Attention</span>
           <span class="hc-risk-map-legend__item"><span class="hc-risk-map-legend__dot hc-risk-map-legend__dot--standard"></span>Standard</span>
@@ -112,16 +110,31 @@
     </div>
 
     <div class="hc-risk-map-shell">
+      <div class="hc-map-command-panel hc-map-command-panel--risk" aria-label="Lecture instantanee">
+        <div class="hc-map-command-panel__eyebrow">Vue instantanee</div>
+        <div class="hc-map-command-panel__title">Lecture territoriale</div>
+        <div class="hc-map-command-panel__copy">Croisez criticite, couverture visible et relance recente avant ouverture de la file operateur.</div>
+        <div class="hc-map-command-panel__metrics">
+          <span class="hc-map-command-panel__metric">
+            <strong>{{ active_case_count or 0 }}</strong>
+            <span>cas actifs</span>
+          </span>
+          <span class="hc-map-command-panel__metric">
+            <strong>{{ critical_queue_count or 0 }}</strong>
+            <span>critiques file</span>
+          </span>
+        </div>
+      </div>
       <div id="riskMapCanvas" class="hc-risk-map-canvas" aria-label="Carte des risques territoriaux"></div>
       <div class="hc-risk-map-maphint" id="riskMapMapHint" aria-live="polite">Intervenants disponibles sur la zone</div>
       <div class="hc-risk-map-empty" id="riskMapEmptyState" aria-live="polite">
         <div class="hc-risk-map-empty__card">
-          <div class="hc-risk-map-empty__title">Aucune situation géolocalisée pour le moment</div>
-          <div class="hc-risk-map-empty__text">La couverture opérationnelle reste disponible sur la zone. Les intervenants sont visibles, mais les situations critiques ne sont pas encore localisées.</div>
-          <div class="hc-risk-map-empty__capacity" id="riskMapEmptyCapacity">Capacité terrain en cours de lecture.</div>
+          <div class="hc-risk-map-empty__title">Aucune situation geolocalisee pour le moment</div>
+          <div class="hc-risk-map-empty__text">Les intervenants restent visibles sur la zone, mais les situations critiques ne sont pas encore suffisamment localisees pour apparaitre sur la carte.</div>
+          <div class="hc-risk-map-empty__capacity" id="riskMapEmptyCapacity">Capacite terrain en cours de lecture.</div>
           <div class="hc-risk-map-empty__actions">
-            <a class="btn btn-primary btn-sm" id="riskMapEmptyCta" href="{{ url_for('admin.admin_requests') }}">Voir les demandes</a>
-            <div class="hc-risk-map-empty__hint">Recommandé : compléter les adresses des situations critiques.</div>
+            <a class="btn btn-primary btn-sm" id="riskMapEmptyCta" href="{{ url_for('admin.admin_requests') }}">Ouvrir la file des demandes</a>
+            <div class="hc-risk-map-empty__hint">Recommande : completer les adresses des situations critiques avant priorisation territoriale.</div>
           </div>
         </div>
       </div>
@@ -131,19 +144,13 @@
       <div class="hc-risk-map-actionstrip__content">
         <div class="hc-risk-map-actionstrip__title">Actions sur la zone</div>
         <div class="hc-risk-map-actionstrip__meta" id="riskMapActionMeta">{{ zone_city or 'Boulogne-Billancourt' }}</div>
-        <div class="hc-risk-map-actionstrip__meta">Passez de la lecture territoriale a la file operateur sans perdre le contexte de zone.</div>
+        <div class="hc-risk-map-actionstrip__meta">Passez de la carte a la file operateur sans perdre le contexte de zone.</div>
       </div>
       <div class="hc-risk-map-actionstrip__actions">
         <a class="btn btn-primary btn-sm" id="riskMapOpenCases" href="{{ url_for('ops.ops_cases_list', city='Boulogne-Billancourt') }}">Ouvrir les cas actifs</a>
-        <a class="btn btn-outline-secondary btn-sm" id="riskMapOpenRequests" href="{{ url_for('admin.admin_requests', status='open', city='Boulogne-Billancourt') }}">Voir les demandes non traitées</a>
+        <a class="btn btn-outline-secondary btn-sm" id="riskMapOpenRequests" href="{{ url_for('admin.admin_requests', status='open', city='Boulogne-Billancourt') }}">Voir les demandes non traitees</a>
         <a class="btn btn-outline-secondary btn-sm" id="riskMapOpenStale" href="{{ url_for('ops.ops_cases_list', stale='1', city='Boulogne-Billancourt') }}">Voir les situations sans action</a>
       </div>
-    </div>
-
-    <div class="hc-section-thread" aria-label="Continuité du pilotage territorial">
-      <span class="hc-section-thread__label">Après lecture territoriale</span>
-      <a class="hc-section-thread__link" href="{{ url_for('admin.admin_requests', city='Boulogne-Billancourt') }}">Ouvrir la file des demandes</a>
-      <a class="hc-section-thread__link" href="{{ url_for('ops.ops_cases_list', stale='1', city='Boulogne-Billancourt') }}">Voir les cas sans action</a>
     </div>
   </div>
 </div>

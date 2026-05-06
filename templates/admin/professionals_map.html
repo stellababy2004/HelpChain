@@ -1,55 +1,133 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}Admin • Carte des intervenants | HelpChain{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page{% endblock %}
+{% block title %}Carte des intervenants | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-risk-map-page hc-admin-professionals-map-page{% endblock %}
+
+{% block admin_workspace_css %}
+  {{ super() }}
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+{% endblock %}
 
 {% block admin_content %}
-<div class="hc-admin-wrap">
-  <div class="hc-card p-3 mb-3">
-    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--risk-map">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
+    <span>/</span>
+    <span>Carte des intervenants</span>
+  </nav>
+
+  <div class="hc-card mb-3 p-3 hc-risk-map-toolbar-card">
+    <div class="hc-section-intro">
       <div>
-        <h1 class="hc-admin-title mb-1">Carte des intervenants</h1>
-        <div class="hc-muted">Intervenants actifs visibles par ville, charge et disponibilité.</div>
+        <div class="hc-admin-kicker">Pilotage territorial</div>
+        <h1 class="hc-admin-title">Carte des intervenants</h1>
+        <p class="hc-section-subtitle">Visualisez la couverture disponible par ville et profession, puis ouvrez la file operateur avec le bon contexte territorial.</p>
       </div>
-      <div class="hc-actions">
-        <a href="{{ url_for('admin.admin_intervenants') }}" class="hc-btn hc-btn--ghost">Liste</a>
-        <a href="{{ url_for('admin.admin_intervenants_new') }}" class="hc-btn hc-btn--primary">+ Ajouter</a>
+    </div>
+
+    <div class="hc-risk-map-kpis" aria-label="Indicateurs de synthese intervenants">
+      <div class="hc-risk-map-kpi">
+        <span class="hc-risk-map-kpi__label">Villes couvertes</span>
+        <div class="hc-risk-map-kpi__value" id="proMapCitiesCount">0</div>
+        <div class="hc-risk-map-kpi__hint">Lecture de la couverture territoriale.</div>
       </div>
+      <div class="hc-risk-map-kpi hc-risk-map-kpi--capacity">
+        <span class="hc-risk-map-kpi__label">Intervenants visibles</span>
+        <div class="hc-risk-map-kpi__value" id="proMapProfessionalsCount">0</div>
+        <div class="hc-risk-map-kpi__hint">Capacite disponible sur la carte.</div>
+      </div>
+      <div class="hc-risk-map-kpi">
+        <span class="hc-risk-map-kpi__label">Ville la plus couverte</span>
+        <div class="hc-risk-map-kpi__value" id="proMapTopCity">N/A</div>
+        <div class="hc-risk-map-kpi__hint">Territoire dominant observe.</div>
+      </div>
+      <div class="hc-risk-map-kpi">
+        <span class="hc-risk-map-kpi__label">Profession dominante</span>
+        <div class="hc-risk-map-kpi__value" id="proMapTopProfession">N/A</div>
+        <div class="hc-risk-map-kpi__hint">Lecture rapide de la ressource terrain.</div>
+      </div>
+    </div>
+
+    <div class="hc-risk-map-contextbar" aria-live="polite">
+      <div class="hc-risk-map-contextbar__primary">
+        <span class="hc-risk-map-contextbar__label">Zone active</span>
+        <strong>Boulogne-Billancourt</strong>
+      </div>
+      <div class="hc-risk-map-contextbar__secondary">Reperez la couverture disponible avant attribution, relance ou orientation vers la file operateur.</div>
+    </div>
+
+    <div class="hc-risk-map-queue-note" aria-live="polite">
+      La carte presente la couverture visible des intervenants sur la zone, sans quitter l'espace de pilotage.
     </div>
   </div>
 
-  <div class="hc-card p-3 mb-3">
-    <div class="row g-2 mb-3" aria-label="Indicateurs carte intervenants">
-      <div class="col-6 col-lg-3">
-        <div class="border rounded-3 p-2 h-100">
-          <div class="small text-muted">Villes couvertes</div>
-          <div class="fw-semibold" id="proMapCitiesCount">0</div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="border rounded-3 p-2 h-100">
-          <div class="small text-muted">Intervenants visibles</div>
-          <div class="fw-semibold" id="proMapProfessionalsCount">0</div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="border rounded-3 p-2 h-100">
-          <div class="small text-muted">Ville la plus couverte</div>
-          <div class="fw-semibold text-truncate" id="proMapTopCity">N/A</div>
-        </div>
-      </div>
-      <div class="col-6 col-lg-3">
-        <div class="border rounded-3 p-2 h-100">
-          <div class="small text-muted">Profession dominante</div>
-          <div class="fw-semibold text-truncate" id="proMapTopProfession">N/A</div>
+  <div class="hc-card hc-risk-map-card">
+    <div class="hc-card__header">
+      <div class="hc-risk-map-header">
+        <div class="hc-risk-map-header__main">
+          <div>
+            <h2 class="hc-section-title">Carte des intervenants territoriaux</h2>
+            <p class="hc-section-subtitle">Reperez les zones couvertes, verifiez la densite disponible et ouvrez ensuite la liste detaillee ou la file operateur.</p>
+          </div>
+          <div class="hc-risk-map-controls__group">
+            <div class="hc-risk-map-control">
+              <label class="form-label" for="proMapZoneSelect">Zone</label>
+              <select class="form-select" id="proMapZoneSelect" disabled>
+                <option selected>Boulogne-Billancourt</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div id="professionalsMap" role="region" aria-label="Carte des intervenants" style="height: 600px; border-radius: 12px;"></div>
+    <div class="hc-risk-map-shell">
+      <div class="hc-map-command-panel hc-map-command-panel--coverage" aria-label="Lecture instantanee">
+        <div class="hc-map-command-panel__eyebrow">Vue instantanee</div>
+        <div class="hc-map-command-panel__title">Couverture disponible</div>
+        <div class="hc-map-command-panel__copy">Reperez les zones visibles, la densite de couverture et la ressource dominante avant attribution.</div>
+        <div class="hc-map-command-panel__metrics">
+          <span class="hc-map-command-panel__metric">
+            <strong>Boulogne</strong>
+            <span>zone active</span>
+          </span>
+          <span class="hc-map-command-panel__metric">
+            <strong>Live</strong>
+            <span>couverture carte</span>
+          </span>
+        </div>
+      </div>
+      <div id="professionalsMap" class="hc-risk-map-canvas" role="region" aria-label="Carte des intervenants"></div>
+    </div>
+
+    <div class="hc-risk-map-actionstrip" aria-label="Actions sur la couverture">
+      <div class="hc-risk-map-actionstrip__content">
+        <div class="hc-risk-map-actionstrip__title">Actions sur la zone</div>
+        <div class="hc-risk-map-actionstrip__meta">Boulogne-Billancourt</div>
+        <div class="hc-risk-map-actionstrip__meta">Passez de la carte a la liste detaillee ou a la file operateur sans quitter le contexte territorial.</div>
+      </div>
+      <div class="hc-risk-map-actionstrip__actions">
+        <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-primary btn-sm">Voir la liste</a>
+        <a href="{{ url_for('admin.admin_intervenants_new') }}" class="btn btn-outline-secondary btn-sm">Ajouter un intervenant</a>
+        <a href="{{ url_for('ops.ops_cases_list', city='Boulogne-Billancourt') }}" class="btn btn-outline-secondary btn-sm">Ouvrir les cas actifs</a>
+      </div>
+    </div>
   </div>
 </div>
+{% endblock %}
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="{{ url_for('static', filename='js/admin-professionals-map.js') }}"></script>
+{% block scripts %}
+  {{ super() }}
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="{{ url_for('static', filename='js/admin-professionals-map.js') }}"></script>
 {% endblock %}
