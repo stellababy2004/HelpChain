@@ -35,6 +35,7 @@
   var openStaleEl = document.getElementById("riskMapOpenStale");
   var queueNoteEl = document.getElementById("riskMapQueueNote");
   var emptyCapacityEl = document.getElementById("riskMapEmptyCapacity");
+  var commandPanelEl = document.querySelector(".hc-map-command-panel--risk");
 
   var map = null;
   var markersLayer = null;
@@ -140,6 +141,14 @@
     }
   }
 
+  function setMarkerState(marker, state, enabled) {
+    var icon = marker && marker.getElement && marker.getElement();
+    if (!icon) {
+      return;
+    }
+    icon.classList.toggle(state, Boolean(enabled));
+  }
+
   function parseUtcDate(value) {
     if (!value) {
       return null;
@@ -155,6 +164,98 @@
 
   function pluralize(count, singular, plural) {
     return count + " " + (count > 1 ? plural : singular);
+  }
+
+  function pressureClass(level) {
+    if (level === "critical") return "hc-pressure-critical";
+    if (level === "elevated") return "hc-pressure-elevated";
+    if (level === "watch") return "hc-pressure-watch";
+    return "hc-pressure-calm";
+  }
+
+  function setPressureClass(el, level) {
+    if (!el) {
+      return;
+    }
+    el.classList.remove("hc-pressure-calm", "hc-pressure-watch", "hc-pressure-elevated", "hc-pressure-critical");
+    el.classList.add(pressureClass(level));
+  }
+
+  function ensureCommandPanelStatus() {
+    if (!commandPanelEl) {
+      return null;
+    }
+    var existing = commandPanelEl.querySelector(".hc-map-command-panel__status");
+    if (existing) {
+      return existing;
+    }
+    var wrapper = document.createElement("div");
+    wrapper.className = "hc-map-command-panel__status hc-pressure-calm";
+    wrapper.innerHTML =
+      '<div class="hc-map-command-panel__status-label">Etat territorial</div>' +
+      '<div class="hc-map-command-panel__status-value">Zone stable</div>' +
+      '<div class="hc-map-command-panel__status-note">Lecture initiale de la zone en cours.</div>';
+    commandPanelEl.appendChild(wrapper);
+    return wrapper;
+  }
+
+  function updateCommandPanelNarrative(criticalCount, staleCount, visibleProfessionals, zoneCount) {
+    var statusEl = ensureCommandPanelStatus();
+    if (!statusEl) {
+      return;
+    }
+    var valueEl = statusEl.querySelector(".hc-map-command-panel__status-value");
+    var noteEl = statusEl.querySelector(".hc-map-command-panel__status-note");
+    var level = "calm";
+    var value = "Zone stable";
+    var note =
+      visibleProfessionals > 0
+        ? pluralize(visibleProfessionals, "capacite disponible", "capacites disponibles") + " sur la zone."
+        : "Lecture territoriale en attente de capacite visible.";
+
+    if (criticalCount > 0) {
+      level = "critical";
+      value = "Attention operationnelle";
+      note =
+        pluralize(criticalCount, "situation critique localisee", "situations critiques localisees") +
+        " a traiter sur " + currentCity() + ".";
+    } else if (staleCount > 0) {
+      level = "elevated";
+      value = "Relances en attente";
+      note =
+        pluralize(staleCount, "relance a prioriser", "relances a prioriser") +
+        " avant ouverture de nouveaux traitements.";
+    } else if (visibleProfessionals === 0 && criticalQueueCount > 0) {
+      level = "watch";
+      value = "Couverture limitee";
+      note =
+        pluralize(criticalQueueCount, "situation critique en file", "situations critiques en file") +
+        " sans capacite visible sur la carte.";
+    } else if (zoneCount > 1) {
+      level = "watch";
+      value = "Charge territoriale moderee";
+      note = pluralize(zoneCount, "zone active", "zones actives") + " en lecture simultanee.";
+    }
+
+    setPressureClass(commandPanelEl, level);
+    setPressureClass(statusEl, level);
+    if (valueEl) {
+      valueEl.textContent = value;
+    }
+    if (noteEl) {
+      noteEl.textContent = note;
+    }
+  }
+
+  function updateKpiPressure(criticalCount, zoneCount, staleCount, visibleProfessionals) {
+    var kpis = document.querySelectorAll(".hc-risk-map-kpi");
+    if (!kpis.length) {
+      return;
+    }
+    setPressureClass(kpis[0], criticalCount > 0 ? "critical" : "calm");
+    setPressureClass(kpis[1], zoneCount > 1 ? "watch" : "calm");
+    setPressureClass(kpis[2], visibleProfessionals > 0 ? "calm" : "watch");
+    setPressureClass(kpis[3], staleCount > 0 ? "elevated" : "calm");
   }
 
   function updateQueueNote(hasGeolocatedCritical) {
@@ -222,6 +323,17 @@
     mapHintEl.classList.toggle("is-visible", Boolean(isVisible));
   }
 
+  function refreshSurfacePressure(hasVisibleProfessionals) {
+    setPressureClass(commandPanelEl, hasVisibleProfessionals ? "calm" : (criticalQueueCount > 0 ? "watch" : "calm"));
+    setPressureClass(mapHintEl, hasVisibleProfessionals ? "calm" : "watch");
+    if (emptyState) {
+      setPressureClass(
+        emptyState.querySelector(".hc-risk-map-empty__card"),
+        hasVisibleProfessionals ? "calm" : (criticalQueueCount > 0 ? "watch" : "calm")
+      );
+    }
+  }
+
   function ensureMap() {
     if (!mapEl) {
       return false;
@@ -245,7 +357,7 @@
 
     window.setTimeout(function () {
       map.invalidateSize();
-    }, 0);
+    }, 120);
 
     return true;
   }
@@ -360,6 +472,9 @@
         : "Aucune situation en dépassement."
     );
 
+    updateKpiPressure(criticalCount, zones.size, staleCount, lastVisibleProfessionalsCount);
+    updateCommandPanelNarrative(criticalCount, staleCount, lastVisibleProfessionalsCount, zones.size);
+
     if (coverageLineEl) {
       if (rows.length > 0) {
         coverageLineEl.textContent =
@@ -437,6 +552,10 @@
           riseOnHover: true,
         });
         marker.bindPopup(professionalPopupHtml(item));
+        marker.on("mouseover", function () { setMarkerState(marker, "is-hover", true); });
+        marker.on("mouseout", function () { setMarkerState(marker, "is-hover", false); });
+        marker.on("popupopen", function () { setMarkerState(marker, "is-active", true); });
+        marker.on("popupclose", function () { setMarkerState(marker, "is-active", false); });
         marker.on("click", function () {
           storeCityContext(item && item.city ? item.city : currentCity());
           syncActionUrls(item && item.city ? item.city : currentCity());
@@ -467,6 +586,7 @@
           true
         );
       }
+      refreshSurfacePressure(visibleMarkers > 0);
       updateEmptyCapacity(visibleMarkers);
       updateRiskKpis(currentRiskItems);
       syncEmptyStateVisibility();
@@ -479,6 +599,7 @@
         professionalsLayer.clearLayers();
       }
       setMapHint("", false);
+      refreshSurfacePressure(false);
       updateEmptyCapacity(0);
       updateRiskKpis(currentRiskItems);
       syncEmptyStateVisibility();
@@ -505,6 +626,10 @@
         riseOnHover: true,
       });
       marker.bindPopup(popupHtml(item));
+      marker.on("mouseover", function () { setMarkerState(marker, "is-hover", true); });
+      marker.on("mouseout", function () { setMarkerState(marker, "is-hover", false); });
+      marker.on("popupopen", function () { setMarkerState(marker, "is-active", true); });
+      marker.on("popupclose", function () { setMarkerState(marker, "is-active", false); });
       marker.on("click", function () {
         storeCityContext(item && item.city ? item.city : currentCity());
         syncActionUrls(item && item.city ? item.city : currentCity());

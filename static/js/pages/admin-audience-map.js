@@ -735,6 +735,45 @@
   var defaultZoom = Number(root.dataset.defaultZoom || 10);
   var totalNeeds = LOCATIONS.reduce(function (sum, point) { return sum + point.needs; }, 0);
   var totalStructures = LOCATIONS.reduce(function (sum, point) { return sum + point.structures; }, 0);
+  var highPriorityCount = LOCATIONS.filter(function (point) { return point.priority === "Haute"; }).length;
+  var mediumPriorityCount = LOCATIONS.filter(function (point) { return point.priority === "Moyenne"; }).length;
+
+  function audiencePressureClass(level) {
+    if (level === "critical") return "hc-pressure-critical";
+    if (level === "elevated") return "hc-pressure-elevated";
+    if (level === "watch") return "hc-pressure-watch";
+    return "hc-pressure-calm";
+  }
+
+  function setAudiencePressure(el, level) {
+    if (!el) {
+      return;
+    }
+    el.classList.remove("hc-pressure-calm", "hc-pressure-watch", "hc-pressure-elevated", "hc-pressure-critical");
+    el.classList.add(audiencePressureClass(level));
+  }
+
+  function audienceNarrativeSummary() {
+    if (highPriorityCount >= 4) {
+      return {
+        level: "elevated",
+        title: "Attention operationnelle",
+        note: highPriorityCount + " territoires prioritaires a suivre sur l'Ile-de-France."
+      };
+    }
+    if (mediumPriorityCount >= 4) {
+      return {
+        level: "watch",
+        title: "Charge territoriale moderee",
+        note: mediumPriorityCount + " territoires a qualifier avant acceleration."
+      };
+    }
+    return {
+      level: "calm",
+      title: "Capacite disponible",
+      note: "Lecture territoriale stable sur les signaux actuellement cartographies."
+    };
+  }
 
   var map = L.map(mapEl, {
     zoomControl: true,
@@ -792,6 +831,8 @@
     }),
   }).addTo(overlayLayer);
 
+  var summaryNarrative = audienceNarrativeSummary();
+
   createControl(
     "topleft",
     "audience-map-summary",
@@ -801,6 +842,11 @@
       "<div class=\"audience-map-summary__stats\">",
       "<span><strong>" + totalNeeds + "</strong><em>Demandes estimees</em></span>",
       "<span><strong>" + totalStructures + "</strong><em>Structures cibles</em></span>",
+      "</div>",
+      '<div class="audience-map-summary__status ' + summaryNarrative.level + '">',
+      '<div class="audience-map-summary__status-label">Etat territorial</div>',
+      '<div class="audience-map-summary__status-value">' + summaryNarrative.title + "</div>",
+      '<div class="audience-map-summary__status-note">' + summaryNarrative.note + "</div>",
       "</div>",
     ].join("")
   );
@@ -819,6 +865,10 @@
       "</div>",
     ].join("")
   );
+
+  setAudiencePressure(document.querySelector(".audience-map-summary"), summaryNarrative.level);
+  setAudiencePressure(document.querySelector(".audience-map-summary__status"), summaryNarrative.level);
+  setAudiencePressure(document.querySelector(".audience-map-legend"), "calm");
 
   var markerRegistry = {};
   var cityRegistry = {};
@@ -868,6 +918,7 @@
   }
 
   function updateSidebar(point) {
+    var detailCard = document.getElementById("audienceMapDetailCard");
     setText("audienceMapDetailCity", point.city);
     setText("audienceMapDetailDemand", point.needs);
     setText("audienceMapDetailStructures", point.structures);
@@ -876,6 +927,10 @@
     setText("audienceMapDetailIntensity", getPriorityMeta(point.priority).intensity);
     setText("audienceMapDetailRecommendation", point.recommendation);
     setText("audienceMapDetailAction", buildActionSuggestion(point.priority));
+    setAudiencePressure(
+      detailCard,
+      point.priority === "Haute" ? "elevated" : (point.priority === "Moyenne" ? "watch" : "calm")
+    );
     highlightButtons(cityListEl, "data-city-slug", point.slug);
     pulseSidebar();
   }

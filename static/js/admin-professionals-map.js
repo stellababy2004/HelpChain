@@ -14,6 +14,87 @@
     el.textContent = value;
   }
 
+  function pressureClass(level) {
+    if (level === "critical") return "hc-pressure-critical";
+    if (level === "elevated") return "hc-pressure-elevated";
+    if (level === "watch") return "hc-pressure-watch";
+    return "hc-pressure-calm";
+  }
+
+  function setPressureClass(el, level) {
+    if (!el) return;
+    el.classList.remove("hc-pressure-calm", "hc-pressure-watch", "hc-pressure-elevated", "hc-pressure-critical");
+    el.classList.add(pressureClass(level));
+  }
+
+  function setMarkerState(marker, state, enabled) {
+    var icon = marker && marker.getElement && marker.getElement();
+    if (!icon) return;
+    icon.classList.toggle(state, Boolean(enabled));
+  }
+
+  function ensureCommandPanelStatus() {
+    var panel = document.querySelector(".hc-map-command-panel--coverage");
+    if (!panel) return null;
+    var existing = panel.querySelector(".hc-map-command-panel__status");
+    if (existing) return existing;
+    var wrapper = document.createElement("div");
+    wrapper.className = "hc-map-command-panel__status hc-pressure-calm";
+    wrapper.innerHTML =
+      '<div class="hc-map-command-panel__status-label">Etat territorial</div>' +
+      '<div class="hc-map-command-panel__status-value">Capacite disponible</div>' +
+      '<div class="hc-map-command-panel__status-note">Lecture initiale de la couverture en cours.</div>';
+    panel.appendChild(wrapper);
+    return wrapper;
+  }
+
+  function updateNarrative(cityCount, listCount, topCity, topCityCount, dominantProfession, dominantProfessionCount) {
+    var statusEl = ensureCommandPanelStatus();
+    var panel = document.querySelector(".hc-map-command-panel--coverage");
+    var contextBar = document.querySelector(".hc-risk-map-contextbar");
+    var queueNote = document.querySelector(".hc-risk-map-queue-note");
+    var kpis = document.querySelectorAll(".hc-risk-map-kpi");
+    var level = "calm";
+    var value = "Capacite disponible";
+    var note = listCount > 0
+      ? listCount + (listCount > 1 ? " intervenants visibles sur la carte." : " intervenant visible sur la carte.")
+      : "Aucune capacite cartographiee disponible pour le moment.";
+
+    if (listCount === 0) {
+      level = "watch";
+      value = "Couverture limitee";
+    } else if (cityCount <= 1) {
+      level = "watch";
+      value = "Couverture concentree";
+      note = "La couverture visible reste concentree sur une zone principale.";
+    } else if (topCityCount >= Math.max(4, Math.ceil(listCount * 0.55))) {
+      level = "elevated";
+      value = "Attention operationnelle";
+      note = "La ressource terrain se concentre majoritairement sur " + topCity + ".";
+    } else if (dominantProfessionCount >= Math.max(3, Math.ceil(listCount * 0.5))) {
+      level = "watch";
+      value = "Capacite specialisee";
+      note = "La couverture est surtout portee par le metier " + dominantProfession + ".";
+    }
+
+    setPressureClass(panel, level);
+    setPressureClass(statusEl, level);
+    setPressureClass(contextBar, level);
+    setPressureClass(queueNote, level === "elevated" ? "watch" : level);
+    if (statusEl) {
+      var valueEl = statusEl.querySelector(".hc-map-command-panel__status-value");
+      var noteEl = statusEl.querySelector(".hc-map-command-panel__status-note");
+      if (valueEl) valueEl.textContent = value;
+      if (noteEl) noteEl.textContent = note;
+    }
+    if (kpis.length) {
+      setPressureClass(kpis[0], cityCount > 1 ? "calm" : "watch");
+      setPressureClass(kpis[1], listCount > 0 ? "calm" : "watch");
+      setPressureClass(kpis[2], topCityCount >= Math.max(4, Math.ceil(listCount * 0.55)) ? "elevated" : "calm");
+      setPressureClass(kpis[3], dominantProfessionCount >= Math.max(3, Math.ceil(listCount * 0.5)) ? "watch" : "calm");
+    }
+  }
+
   function popupActionsHtml(city) {
     var selectedCity = encodeURIComponent(city || "Boulogne-Billancourt");
     return [
@@ -101,6 +182,14 @@
       topCityCount > 0 ? topCity + " (" + topCityCount + ")" : "N/A"
     );
     setText("proMapTopProfession", dominantProfession);
+    updateNarrative(
+      Object.keys(cityCounts).length,
+      list.length,
+      topCity,
+      Math.max(0, topCityCount),
+      dominantProfession,
+      Math.max(0, dominantProfessionCount)
+    );
   }
 
   async function initProfessionalsMap() {
@@ -119,7 +208,7 @@
 
     setTimeout(function () {
       map.invalidateSize();
-    }, 0);
+    }, 120);
 
     try {
       var res = await fetch("/admin/api/professionals", {
@@ -146,7 +235,11 @@
         L.marker([lat, lng])
           .setIcon(buildRingIcon("professional"))
           .addTo(layer)
-          .bindPopup(professionalPopupHtml(item));
+          .bindPopup(professionalPopupHtml(item))
+          .on("mouseover", function (event) { setMarkerState(event.target, "is-hover", true); })
+          .on("mouseout", function (event) { setMarkerState(event.target, "is-hover", false); })
+          .on("popupopen", function (event) { setMarkerState(event.target, "is-active", true); })
+          .on("popupclose", function (event) { setMarkerState(event.target, "is-active", false); });
 
         bounds.push([lat, lng]);
       });

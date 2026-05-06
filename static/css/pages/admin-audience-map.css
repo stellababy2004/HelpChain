@@ -1216,3 +1216,42 @@ body.hc-admin-audience-page :is(.hc-map-pressure-low, .hc-map-pressure-medium, .
     height: clamp(500px, 66vh, 680px);
   }
 }
+
+body.hc-admin-audience-page .audience-map-summary__status {
+  display: grid;
+  gap: 0.28rem;
+  margin-top: 0.72rem;
+  padding: 0.72rem 0.8rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(208, 228, 245, 0.1);
+}
+
+body.hc-admin-audience-page .audience-map-summary__status-label {
+  font-size: 0.68rem;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(205, 223, 241, 0.72);
+}
+
+body.hc-admin-audience-page .audience-map-summary__status-value {
+  font-size: 0.94rem;
+  font-weight: 760;
+  letter-spacing: -0.01em;
+  color: #f4f9fd;
+}
+
+body.hc-admin-audience-page .audience-map-summary__status-note {
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(219, 233, 245, 0.76);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.hc-admin-audience-page .audience-marker,
+  body.hc-admin-audience-page .hc-audience-detailCard {
+    animation: none !important;
+    transition: none !important;
+  }
+}
