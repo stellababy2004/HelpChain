@@ -39,6 +39,17 @@
       <h2 class="hc-command-panel__title">{{ relay_event.sync_status or "—" }}</h2>
       <div class="hc-muted">Statut de synchronisation enregistré</div>
     </section>
+    <section class="hc-card hc-command-panel">
+      <div class="hc-command-panel__kicker">Connecteur</div>
+      <h2 class="hc-command-panel__title">
+        {% if relay_event.connector %}
+          <a href="{{ url_for('admin.admin_integration_connector_detail', connector_id=relay_event.connector.id) }}">{{ relay_event.connector.name }}</a>
+        {% else %}
+          —
+        {% endif %}
+      </h2>
+      <div class="hc-muted">Connecteur authentifié lors de la réception</div>
+    </section>
   </div>
 
   <div class="hc-command-grid">

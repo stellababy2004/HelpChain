@@ -72,6 +72,7 @@ from ..models import (
     CaseEvent,
     CaseParticipant,
     CaseCollaborator,
+    IntegrationConnector,
     Notification,
     NotificationJob,
     OrganizationAccessRequest,
@@ -96,6 +97,20 @@ from ..models import (
     User,
     current_structure,
     utc_now,
+)
+
+INTEGRATION_CONNECTOR_STATUS_CHOICES = ("active", "paused", "revoked")
+INTEGRATION_CONNECTOR_ALLOWED_FIELDS = (
+    "external_source",
+    "external_reference_id",
+    "status",
+    "priority",
+    "category",
+    "due_date",
+    "relance_at",
+    "structure_id",
+    "structure_slug",
+    "summary_label",
 )
 
 try:
@@ -1951,6 +1966,99 @@ def _relay_event_scope_query():
     if _is_global_admin():
         return query
     return query.filter(RelayEvent.structure_id == _current_structure_id())
+
+
+def _integration_connector_scope_query():
+    query = IntegrationConnector.query
+    if _is_global_admin():
+        return query
+    return query.filter(IntegrationConnector.structure_id == _current_structure_id())
+
+
+def _integration_connector_allowed_fields(connector: IntegrationConnector) -> list[str]:
+    raw_value = getattr(connector, "allowed_fields_json", None)
+    if not raw_value:
+        return []
+    try:
+        parsed = json.loads(raw_value)
+    except Exception:
+        return []
+    if not isinstance(parsed, list):
+        return []
+    allowed_values = set(INTEGRATION_CONNECTOR_ALLOWED_FIELDS)
+    return [
+        str(item)
+        for item in parsed
+        if str(item or "").strip() and str(item) in allowed_values
+    ]
+
+
+def _normalize_connector_source_slug(raw_value: str | None) -> str:
+    source_slug = re.sub(r"[^a-z0-9._-]+", "-", (raw_value or "").strip().lower()).strip("._-")
+    if not source_slug:
+        raise ValueError("Le slug source est requis.")
+    if len(source_slug) > 120:
+        raise ValueError("Le slug source est trop long.")
+    return source_slug
+
+
+def _parse_connector_allowed_fields(raw_value: str | None) -> list[str]:
+    if not raw_value:
+        return []
+    seen = set()
+    output = []
+    allowed_values = set(INTEGRATION_CONNECTOR_ALLOWED_FIELDS)
+    for part in re.split(r"[\n,;]+", raw_value):
+        value = str(part or "").strip()
+        if not value or value not in allowed_values or value in seen:
+            continue
+        seen.add(value)
+        output.append(value)
+    return output
+
+
+def _connector_secret_session_key() -> str:
+    return "integration_connector_secret_once"
+
+
+def _pop_connector_secret_once(connector_id: int) -> str | None:
+    payload = session.pop(_connector_secret_session_key(), None)
+    if not isinstance(payload, dict):
+        return None
+    try:
+        stored_connector_id = int(payload.get("connector_id"))
+    except Exception:
+        return None
+    if stored_connector_id != int(connector_id):
+        return None
+    secret = str(payload.get("secret") or "").strip()
+    return secret or None
+
+
+def _connector_event_count_map() -> dict[int, int]:
+    rows = (
+        _relay_event_scope_query()
+        .with_entities(RelayEvent.connector_id, func.count(RelayEvent.id))
+        .filter(RelayEvent.connector_id.isnot(None))
+        .group_by(RelayEvent.connector_id)
+        .all()
+    )
+    return {int(connector_id): int(count) for connector_id, count in rows if connector_id is not None}
+
+
+def _connector_last_event_map() -> dict[int, datetime]:
+    rows = (
+        _relay_event_scope_query()
+        .with_entities(RelayEvent.connector_id, func.max(RelayEvent.created_at))
+        .filter(RelayEvent.connector_id.isnot(None))
+        .group_by(RelayEvent.connector_id)
+        .all()
+    )
+    return {
+        int(connector_id): last_event_at
+        for connector_id, last_event_at in rows
+        if connector_id is not None and last_event_at is not None
+    }
 
 
 def _relay_event_rejected_fields(relay_event: RelayEvent) -> list[str]:
@@ -6676,12 +6784,45 @@ def admin_integrations():
     admin_required_404()
 
     relay_available = _table_exists("relay_events")
+    connectors_available = _table_exists("integration_connectors")
     total_events = 0
     received_count = 0
     processed_count = 0
     rejected_count = 0
     latest_received_at = None
     recent_rows = []
+    connector_rows = []
+    structure_options = []
+    can_manage_connectors = _normalize_admin_role_value(getattr(current_user, "role", None)) in {
+        "admin",
+        "superadmin",
+    }
+
+    if connectors_available:
+        connector_counts = _connector_event_count_map() if relay_available else {}
+        connector_last_events = _connector_last_event_map() if relay_available else {}
+        connectors = (
+            _integration_connector_scope_query()
+            .options(joinedload(IntegrationConnector.structure))
+            .order_by(IntegrationConnector.created_at.desc(), IntegrationConnector.id.desc())
+            .all()
+        )
+        connector_rows = [
+            SimpleNamespace(
+                connector=connector,
+                event_count=connector_counts.get(int(connector.id), 0),
+                last_event_at=connector_last_events.get(int(connector.id)) or connector.last_event_at,
+            )
+            for connector in connectors
+        ]
+
+    if can_manage_connectors:
+        if _is_global_admin():
+            structure_options = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
+        else:
+            current_structure_id = _current_structure_id()
+            structure = db.session.get(Structure, current_structure_id)
+            structure_options = [structure] if structure is not None else []
 
     if relay_available:
         relay_query = _relay_event_scope_query()
@@ -6693,6 +6834,7 @@ def admin_integrations():
 
         recent_events = (
             relay_query.options(joinedload(RelayEvent.structure))
+            .options(joinedload(RelayEvent.connector))
             .order_by(RelayEvent.created_at.desc(), RelayEvent.id.desc())
             .limit(25)
             .all()
@@ -6708,12 +6850,129 @@ def admin_integrations():
     return render_template(
         "admin/integrations.html",
         relay_available=relay_available,
+        connectors_available=connectors_available,
         total_events=total_events,
         received_count=received_count,
         processed_count=processed_count,
         rejected_count=rejected_count,
         latest_received_at=latest_received_at,
+        connector_rows=connector_rows,
+        can_manage_connectors=can_manage_connectors,
+        structure_options=structure_options,
+        connector_status_choices=INTEGRATION_CONNECTOR_STATUS_CHOICES,
+        connector_allowed_fields=INTEGRATION_CONNECTOR_ALLOWED_FIELDS,
         recent_rows=recent_rows,
+    )
+
+
+@admin_bp.post("/integrations/connectors")
+@admin_required
+@admin_role_required("superadmin", "admin")
+def admin_create_integration_connector():
+    admin_required_404()
+
+    if not _table_exists("integration_connectors"):
+        flash("La table des connecteurs n'est pas encore disponible. Exécutez d'abord les migrations.", "warning")
+        return redirect(url_for("admin.admin_integrations"), code=303)
+
+    try:
+        name = str(request.form.get("name") or "").strip()
+        if not name:
+            raise ValueError("Le nom du connecteur est requis.")
+        if len(name) > 120:
+            raise ValueError("Le nom du connecteur est trop long.")
+
+        source_slug = _normalize_connector_source_slug(request.form.get("source_slug"))
+        status = str(request.form.get("status") or "active").strip().lower()
+        if status not in INTEGRATION_CONNECTOR_STATUS_CHOICES:
+            raise ValueError("Le statut du connecteur est invalide.")
+
+        if _is_global_admin():
+            raw_structure_id = str(request.form.get("structure_id") or "").strip()
+            if not raw_structure_id:
+                raise ValueError("La structure du connecteur est requise.")
+            try:
+                structure_id = int(raw_structure_id)
+            except Exception as exc:
+                raise ValueError("La structure du connecteur est invalide.") from exc
+        else:
+            structure_id = int(_current_structure_id())
+
+        structure = db.session.get(Structure, int(structure_id))
+        if structure is None:
+            raise ValueError("La structure sélectionnée est introuvable.")
+
+        if IntegrationConnector.query.filter(IntegrationConnector.source_slug == source_slug).first():
+            raise ValueError("Ce slug source est déjà utilisé.")
+
+        allowed_fields = _parse_connector_allowed_fields(request.form.get("allowed_fields"))
+        notes = str(request.form.get("notes") or "").strip()
+        if len(notes) > 4000:
+            raise ValueError("Les notes du connecteur sont trop longues.")
+
+        raw_secret = secrets.token_urlsafe(24)
+        connector = IntegrationConnector(
+            structure_id=structure.id,
+            name=name,
+            source_slug=source_slug,
+            api_key_hash=generate_password_hash(raw_secret),
+            status=status,
+            allowed_fields_json=json.dumps(allowed_fields, ensure_ascii=True) if allowed_fields else None,
+            notes=notes or None,
+        )
+        db.session.add(connector)
+        db.session.commit()
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "warning")
+        return redirect(url_for("admin.admin_integrations"), code=303)
+
+    session[_connector_secret_session_key()] = {
+        "connector_id": int(connector.id),
+        "secret": raw_secret,
+    }
+    flash("Connecteur créé. Conservez la clé affichée ci-dessous: elle ne sera plus montrée ensuite.", "success")
+    return redirect(
+        url_for("admin.admin_integration_connector_detail", connector_id=connector.id),
+        code=303,
+    )
+
+
+@admin_bp.get("/integrations/connectors/<int:connector_id>")
+@admin_required
+@admin_role_required("readonly", "ops", "superadmin", "admin")
+def admin_integration_connector_detail(connector_id: int):
+    admin_required_404()
+
+    if not _table_exists("integration_connectors"):
+        abort(404)
+
+    connector = (
+        _integration_connector_scope_query()
+        .options(joinedload(IntegrationConnector.structure))
+        .filter(IntegrationConnector.id == int(connector_id))
+        .first()
+    )
+    if connector is None:
+        abort(404)
+
+    recent_events = []
+    if _table_exists("relay_events"):
+        recent_events = (
+            _relay_event_scope_query()
+            .options(joinedload(RelayEvent.structure))
+            .filter(RelayEvent.connector_id == int(connector.id))
+            .order_by(RelayEvent.created_at.desc(), RelayEvent.id.desc())
+            .limit(15)
+            .all()
+        )
+
+    return render_template(
+        "admin/integration_connector_detail.html",
+        connector=connector,
+        allowed_fields=_integration_connector_allowed_fields(connector),
+        recent_events=recent_events,
+        one_time_secret=_pop_connector_secret_once(connector.id),
     )
 
 
@@ -6726,9 +6985,13 @@ def admin_relay_event_detail(event_id: int):
     if not _table_exists("relay_events"):
         abort(404)
 
-    relay_event = _relay_event_scope_query().options(joinedload(RelayEvent.structure)).filter(
-        RelayEvent.id == int(event_id)
-    ).first()
+    relay_event = (
+        _relay_event_scope_query()
+        .options(joinedload(RelayEvent.structure))
+        .options(joinedload(RelayEvent.connector))
+        .filter(RelayEvent.id == int(event_id))
+        .first()
+    )
     if relay_event is None:
         abort(404)
 

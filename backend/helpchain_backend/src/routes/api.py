@@ -9,6 +9,7 @@ from flask import Blueprint, current_app, g, jsonify, request, send_file, sessio
 from flask_login import current_user
 from pywebpush import WebPushException, webpush
 from sqlalchemy import func, inspect as sa_inspect, or_
+from werkzeug.security import check_password_hash
 
 from backend.ai_service import ai_service
 
@@ -18,6 +19,7 @@ from ..models import (
     Case,
     CaseCollaborator,
     CaseEvent,
+    IntegrationConnector,
     NotificationSubscription,
     RelayEvent,
     Request,
@@ -63,6 +65,7 @@ _RELAY_MAX_LENGTHS = {
     "summary_label": 255,
 }
 _RELAY_TEXT_NORMALIZER = re.compile(r"[^a-z0-9._-]+")
+_RELAY_CONNECTOR_STATUSES_BLOCKED = {"paused", "revoked"}
 
 
 def _relay_table_available() -> bool:
@@ -70,6 +73,14 @@ def _relay_table_available() -> bool:
         return bool(sa_inspect(db.engine).has_table("relay_events"))
     except Exception:
         current_app.logger.exception("RelayEvent table inspection failed")
+        return False
+
+
+def _relay_connector_table_available() -> bool:
+    try:
+        return bool(sa_inspect(db.engine).has_table("integration_connectors"))
+    except Exception:
+        current_app.logger.exception("IntegrationConnector table inspection failed")
         return False
 
 
@@ -202,6 +213,30 @@ def _sanitize_relay_payload(payload: dict) -> tuple[dict, list[str], dict | None
     return sanitized, rejected_fields, (metadata or None)
 
 
+def _relay_connector_authenticate() -> tuple[IntegrationConnector | None, tuple | None]:
+    source_slug = (request.headers.get("X-HC-Connector") or "").strip()
+    provided_key = (request.headers.get("X-HC-Relay-Key") or "").strip()
+
+    if not source_slug:
+        return None, None
+    if not provided_key:
+        return None, (jsonify({"error": "Unauthorized relay key."}), 401)
+    if not _relay_connector_table_available():
+        return None, (jsonify({"error": "Relay connector storage is unavailable."}), 503)
+
+    connector = IntegrationConnector.query.filter_by(source_slug=source_slug).first()
+    if connector is None:
+        return None, (jsonify({"error": "Unauthorized connector."}), 401)
+
+    if not connector.api_key_hash or not check_password_hash(connector.api_key_hash, provided_key):
+        return None, (jsonify({"error": "Unauthorized relay key."}), 401)
+
+    if (connector.status or "").strip().lower() in _RELAY_CONNECTOR_STATUSES_BLOCKED:
+        return None, (jsonify({"error": "Connector is not active."}), 403)
+
+    return connector, None
+
+
 @api_bp.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json(silent=True) or {}
@@ -231,16 +266,6 @@ def chat():
 
 @api_bp.post("/integrations/relay")
 def integrations_relay():
-    expected_key = (
-        current_app.config.get("HC_RELAY_API_KEY") or os.getenv("HC_RELAY_API_KEY") or ""
-    ).strip()
-    if not expected_key:
-        return jsonify({"error": "Relay integration is not enabled."}), 503
-
-    provided_key = (request.headers.get("X-HC-Relay-Key") or "").strip()
-    if not provided_key or not hmac.compare_digest(provided_key, expected_key):
-        return jsonify({"error": "Unauthorized relay key."}), 401
-
     if not request.is_json:
         return jsonify({"error": "JSON body required."}), 415
 
@@ -251,10 +276,38 @@ def integrations_relay():
     if not _relay_table_available():
         return jsonify({"error": "Relay storage is unavailable."}), 503
 
+    connector, connector_error = _relay_connector_authenticate()
+    if connector_error is not None:
+        return connector_error
+
+    if connector is None:
+        expected_key = (
+            current_app.config.get("HC_RELAY_API_KEY") or os.getenv("HC_RELAY_API_KEY") or ""
+        ).strip()
+        if not expected_key:
+            return jsonify({"error": "Relay integration is not enabled."}), 503
+
+        provided_key = (request.headers.get("X-HC-Relay-Key") or "").strip()
+        if not provided_key or not hmac.compare_digest(provided_key, expected_key):
+            return jsonify({"error": "Unauthorized relay key."}), 401
+
     try:
         sanitized_payload, rejected_fields, sanitized_metadata = _sanitize_relay_payload(payload)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
+
+    if connector is not None:
+        sanitized_payload["external_source"] = connector.source_slug
+        connector_structure_id = getattr(connector, "structure_id", None)
+        if connector_structure_id is not None:
+            if (
+                sanitized_payload["structure_id"] is not None
+                and int(sanitized_payload["structure_id"]) != int(connector_structure_id)
+            ):
+                return jsonify({"error": "structure mismatch for connector."}), 400
+            sanitized_payload["structure_id"] = int(connector_structure_id)
+
+    event_timestamp = datetime.now(timezone.utc)
 
     relay_event = RelayEvent(
         external_source=sanitized_payload["external_source"],
@@ -265,6 +318,7 @@ def integrations_relay():
         due_date=sanitized_payload["due_date"],
         relance_at=sanitized_payload["relance_at"],
         structure_id=sanitized_payload["structure_id"],
+        connector_id=getattr(connector, "id", None),
         summary_label=sanitized_payload["summary_label"],
         rejected_fields_json=json.dumps(rejected_fields, ensure_ascii=True)
         if rejected_fields
@@ -273,6 +327,9 @@ def integrations_relay():
         if sanitized_metadata
         else None,
     )
+    if connector is not None:
+        connector.last_seen_at = event_timestamp
+        connector.last_event_at = event_timestamp
     db.session.add(relay_event)
     db.session.commit()
 
@@ -283,6 +340,7 @@ def integrations_relay():
                 "relay_event_id": relay_event.id,
                 "sync_status": relay_event.sync_status,
                 "rejected_fields": rejected_fields,
+                "connector_id": getattr(connector, "id", None),
             }
         ),
         201,

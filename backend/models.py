@@ -891,6 +891,7 @@ class RelayEvent(db.Model):
     due_date = Column(DateTime(timezone=True), nullable=True, index=True)
     relance_at = Column(DateTime(timezone=True), nullable=True, index=True)
     structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True, index=True)
+    connector_id = Column(Integer, ForeignKey("integration_connectors.id"), nullable=True, index=True)
     summary_label = Column(String(255), nullable=True)
     sync_status = Column(
         String(32), nullable=False, default="received", server_default="received", index=True
@@ -899,6 +900,31 @@ class RelayEvent(db.Model):
     metadata_json = Column(Text, nullable=True)
 
     structure = relationship("Structure", lazy="joined")
+    connector = relationship("IntegrationConnector", back_populates="relay_events", lazy="joined")
+
+
+class IntegrationConnector(db.Model):
+    __tablename__ = "integration_connectors"
+
+    id = Column(Integer, primary_key=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True, index=True)
+    name = Column(String(120), nullable=False)
+    source_slug = Column(String(120), nullable=False, unique=True, index=True)
+    api_key_hash = Column(String(255), nullable=False)
+    status = Column(String(32), nullable=False, default="active", server_default="active", index=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, index=True)
+    last_seen_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    last_event_at = Column(DateTime(timezone=True), nullable=True, index=True)
+    allowed_fields_json = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+
+    structure = relationship("Structure", lazy="joined")
+    relay_events = relationship(
+        "RelayEvent",
+        back_populates="connector",
+        lazy="select",
+        foreign_keys="RelayEvent.connector_id",
+    )
 
 
 def get_default_structure():

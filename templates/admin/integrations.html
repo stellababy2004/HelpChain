@@ -15,7 +15,7 @@
     <div class="hc-row hc-admin-headerTop">
       <div>
         <h1 class="hc-admin-title">Connecteurs</h1>
-        <div class="hc-muted">Vue de supervision du relais de coordination et du connecteur léger.</div>
+        <div class="hc-muted">Supervision du relais de coordination et des connecteurs legers rattaches aux structures.</div>
       </div>
     </div>
   </div>
@@ -23,25 +23,25 @@
   <div class="hc-card mb-3 p-3">
     <div class="hc-ops-summary mb-3">
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Événements relayés</div>
+        <div class="hc-ops-summary__label">Evenements relayes</div>
         <div class="hc-ops-summary__value">{{ total_events or 0 }}</div>
-        <div class="hc-muted small">Total enregistré dans le relais opérationnel</div>
+        <div class="hc-muted small">Total enregistre dans le relais operationnel</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Reçus</div>
+        <div class="hc-ops-summary__label">Recus</div>
         <div class="hc-ops-summary__value">{{ received_count or 0 }}</div>
-        <div class="hc-muted small">Événements en attente d’un traitement aval</div>
+        <div class="hc-muted small">Evenements en attente d'un traitement aval</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Traités</div>
+        <div class="hc-ops-summary__label">Traites</div>
         <div class="hc-ops-summary__value">{{ processed_count or 0 }}</div>
-        <div class="hc-muted small">Événements marqués comme traités</div>
+        <div class="hc-muted small">Evenements marques comme traites</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Rejetés</div>
+        <div class="hc-ops-summary__label">Rejetes</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if rejected_count }}">{{ rejected_count or 0 }}</div>
         <div class="hc-muted small">
-          Dernière réception :
+          Derniere reception :
           {% if latest_received_at %}
             {{ latest_received_at|format_datetime_fr }}
           {% else %}
@@ -52,34 +52,139 @@
     </div>
 
     <div class="hc-muted">
-      HelpChain conserve uniquement des signaux opérationnels minimisés pour la coordination. Aucun payload brut ni contenu sensible n’est affiché ici.
+      HelpChain conserve uniquement des signaux operationnels minimises pour la coordination. Aucun payload brut ni contenu sensible n'est affiche ici.
     </div>
-    {% if not relay_available %}
+
+    {% if not connectors_available %}
       <div class="alert alert-warning mt-3 mb-0" role="alert">
-        La table <code>relay_events</code> n’est pas encore disponible sur cette base. Exécutez la migration avant d’utiliser le relais de coordination.
+        La table <code>integration_connectors</code> n'est pas encore disponible sur cette base. Executez la migration avant de configurer des connecteurs.
+      </div>
+    {% elif not relay_available %}
+      <div class="alert alert-warning mt-3 mb-0" role="alert">
+        La table <code>relay_events</code> n'est pas encore disponible sur cette base. Executez la migration avant d'utiliser le relais de coordination.
       </div>
     {% endif %}
   </div>
 
-  <div class="hc-card hc-admin-table-shell">
+  {% if can_manage_connectors and connectors_available %}
+    <div class="hc-card mb-3 p-3">
+      <div class="hc-card__header px-0 pt-0">
+        <h2 class="h6 mb-1">Creer un connecteur</h2>
+        <div class="hc-muted">La cle secrete est generee une seule fois puis uniquement stockee sous forme de hash.</div>
+      </div>
+      <form method="post" action="{{ url_for('admin.admin_create_integration_connector') }}" class="row g-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-4">
+          <label class="form-label" for="connector-name">Nom</label>
+          <input class="form-control" id="connector-name" name="name" maxlength="120" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="connector-structure">Structure</label>
+          <select class="form-select" id="connector-structure" name="structure_id" required>
+            <option value="">Selectionner</option>
+            {% for structure in structure_options %}
+              <option value="{{ structure.id }}">{{ structure.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="connector-status">Statut</label>
+          <select class="form-select" id="connector-status" name="status" required>
+            {% for status in connector_status_choices %}
+              <option value="{{ status }}" {% if status == 'active' %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="connector-source-slug">Slug source</label>
+          <input class="form-control" id="connector-source-slug" name="source_slug" maxlength="120" required>
+          <div class="form-text">Exemple: <code>ccas-paris-relai</code></div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="connector-allowed-fields">Champs autorises</label>
+          <textarea class="form-control" id="connector-allowed-fields" name="allowed_fields" rows="3" placeholder="status, priority, category, relance_at, summary_label"></textarea>
+          <div class="form-text">Valeurs admises: {{ connector_allowed_fields|join(', ') }}</div>
+        </div>
+        <div class="col-12">
+          <label class="form-label" for="connector-notes">Notes internes</label>
+          <textarea class="form-control" id="connector-notes" name="notes" rows="3"></textarea>
+        </div>
+        <div class="col-12">
+          <button class="btn btn-primary" type="submit">Creer le connecteur</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  <div class="hc-card hc-admin-table-shell mb-3">
     <div class="hc-card__header">
-      <h2 class="h6 mb-1">Événements récents</h2>
-      <div class="hc-muted">Flux récents reçus via le relais de coordination.</div>
+      <h2 class="h6 mb-1">Connecteurs configures</h2>
+      <div class="hc-muted">Connecteurs actifs, suspendus ou revoques par structure.</div>
     </div>
     <div class="table-responsive">
       <table class="table align-middle mb-0">
         <thead>
           <tr>
-            <th>Reçu le</th>
-            <th>Source</th>
-            <th>Référence externe</th>
+            <th>Nom</th>
+            <th>Slug source</th>
             <th>Statut</th>
-            <th>Priorité</th>
-            <th>Catégorie</th>
+            <th>Structure</th>
+            <th>Derniere activite</th>
+            <th>Dernier evenement</th>
+            <th>Evenements</th>
+            <th class="text-end">Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in connector_rows %}
+            {% set connector = row.connector %}
+            <tr>
+              <td>{{ connector.name }}</td>
+              <td><code>{{ connector.source_slug }}</code></td>
+              <td>{{ connector.status }}</td>
+              <td>{{ connector.structure.name if connector.structure else "—" }}</td>
+              <td>{{ connector.last_seen_at|format_datetime_fr if connector.last_seen_at else "—" }}</td>
+              <td>{{ row.last_event_at|format_datetime_fr if row.last_event_at else "—" }}</td>
+              <td>{{ row.event_count }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_integration_connector_detail', connector_id=connector.id) }}">Voir</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="8" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun connecteur configure pour le moment.</div>
+                  <div class="hc-empty-state__text">La liste apparaitra des que les premiers connecteurs seront crees.</div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell">
+    <div class="hc-card__header">
+      <h2 class="h6 mb-1">Boite de reception du relais</h2>
+      <div class="hc-muted">Flux recents recus via les connecteurs de coordination.</div>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Recu le</th>
+            <th>Source</th>
+            <th>Connecteur</th>
+            <th>Reference externe</th>
+            <th>Statut</th>
+            <th>Priorite</th>
+            <th>Categorie</th>
             <th>Structure</th>
             <th>Sync status</th>
-            <th>Champs rejetés</th>
-            <th class="text-end">Détail</th>
+            <th>Champs rejetes</th>
+            <th class="text-end">Detail</th>
           </tr>
         </thead>
         <tbody>
@@ -88,6 +193,13 @@
             <tr>
               <td>{{ relay_event.created_at|format_datetime_fr if relay_event.created_at else "—" }}</td>
               <td>{{ relay_event.external_source }}</td>
+              <td>
+                {% if relay_event.connector %}
+                  <a href="{{ url_for('admin.admin_integration_connector_detail', connector_id=relay_event.connector.id) }}">{{ relay_event.connector.name }}</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
               <td><code>{{ relay_event.external_reference_id }}</code></td>
               <td>{{ relay_event.status or "—" }}</td>
               <td>{{ relay_event.priority or "—" }}</td>
@@ -101,10 +213,10 @@
             </tr>
           {% else %}
             <tr>
-              <td colspan="10" class="py-4">
+              <td colspan="11" class="py-4">
                 <div class="hc-empty-state">
-                  <div class="hc-empty-state__title">Aucun événement relayé pour le moment.</div>
-                  <div class="hc-empty-state__text">Le tableau s’alimentera dès réception des premiers signaux opérationnels.</div>
+                  <div class="hc-empty-state__title">Aucun evenement relaye pour le moment.</div>
+                  <div class="hc-empty-state__text">Le tableau s'alimentera des reception des premiers signaux operationnels.</div>
                 </div>
               </td>
             </tr>

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy.pool import NullPool
+from werkzeug.security import check_password_hash, generate_password_hash
 
 
 DB_ROOT = Path(os.getcwd()) / ".tmp_test_dbs"
@@ -171,6 +172,33 @@ def admin_client(client, session):
     return client
 
 
+def _make_connector(
+    session,
+    *,
+    structure_id: int | None,
+    name: str,
+    source_slug: str,
+    secret: str,
+    status: str = "active",
+    allowed_fields: list[str] | None = None,
+    notes: str | None = None,
+):
+    from backend.models import IntegrationConnector
+
+    connector = IntegrationConnector(
+        structure_id=structure_id,
+        name=name,
+        source_slug=source_slug,
+        api_key_hash=generate_password_hash(secret),
+        status=status,
+        allowed_fields_json=json.dumps(allowed_fields, ensure_ascii=True) if allowed_fields else None,
+        notes=notes,
+    )
+    session.add(connector)
+    session.commit()
+    return connector
+
+
 def test_relay_endpoint_disabled_without_api_key(client):
     os.environ.pop("HC_RELAY_API_KEY", None)
 
@@ -191,6 +219,107 @@ def test_relay_endpoint_rejects_invalid_key(client):
 
     assert response.status_code == 401
     assert response.get_json()["error"] == "Unauthorized relay key."
+
+
+def test_relay_endpoint_accepts_valid_connector_key(client, session):
+    from backend.models import RelayEvent, Structure
+
+    os.environ.pop("HC_RELAY_API_KEY", None)
+    structure = session.query(Structure).filter_by(slug="default").first()
+    connector = _make_connector(
+        session,
+        structure_id=structure.id,
+        name="CCAS Paris",
+        source_slug="ccas-paris-relai",
+        secret="connector-secret",
+        allowed_fields=["status", "priority", "category", "summary_label"],
+    )
+
+    response = client.post(
+        "/api/integrations/relay",
+        json={
+            "external_source": "ignored-source",
+            "external_reference_id": "REQ-202",
+            "status": "A relancer",
+            "priority": "Haute",
+            "category": "Orientation",
+            "summary_label": "Relance coordination",
+        },
+        headers={
+            "X-HC-Connector": connector.source_slug,
+            "X-HC-Relay-Key": "connector-secret",
+        },
+    )
+
+    assert response.status_code == 201
+    body = response.get_json()
+    relay_event = session.get(RelayEvent, body["relay_event_id"])
+    connector = session.get(type(connector), connector.id)
+
+    assert relay_event.connector_id == connector.id
+    assert relay_event.external_source == connector.source_slug
+    assert relay_event.structure_id == structure.id
+    assert connector.last_seen_at is not None
+    assert connector.last_event_at is not None
+
+
+def test_relay_endpoint_rejects_invalid_connector_key(client, session):
+    from backend.models import Structure
+
+    os.environ.pop("HC_RELAY_API_KEY", None)
+    structure = session.query(Structure).filter_by(slug="default").first()
+    connector = _make_connector(
+        session,
+        structure_id=structure.id,
+        name="CCAS Lyon",
+        source_slug="ccas-lyon-relai",
+        secret="connector-secret",
+    )
+
+    response = client.post(
+        "/api/integrations/relay",
+        json={
+            "external_source": connector.source_slug,
+            "external_reference_id": "REQ-401",
+        },
+        headers={
+            "X-HC-Connector": connector.source_slug,
+            "X-HC-Relay-Key": "bad-secret",
+        },
+    )
+
+    assert response.status_code == 401
+    assert response.get_json()["error"] == "Unauthorized relay key."
+
+
+def test_relay_endpoint_rejects_paused_connector(client, session):
+    from backend.models import Structure
+
+    os.environ.pop("HC_RELAY_API_KEY", None)
+    structure = session.query(Structure).filter_by(slug="default").first()
+    connector = _make_connector(
+        session,
+        structure_id=structure.id,
+        name="CCAS Lille",
+        source_slug="ccas-lille-relai",
+        secret="connector-secret",
+        status="paused",
+    )
+
+    response = client.post(
+        "/api/integrations/relay",
+        json={
+            "external_source": connector.source_slug,
+            "external_reference_id": "REQ-403",
+        },
+        headers={
+            "X-HC-Connector": connector.source_slug,
+            "X-HC-Relay-Key": "connector-secret",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.get_json()["error"] == "Connector is not active."
 
 
 def test_relay_endpoint_rejects_non_json_requests(client):
@@ -256,6 +385,22 @@ def test_relay_endpoint_accepts_valid_minimal_payload(client, session):
     assert relay_event.summary_label == "Relance dossier logement"
 
 
+def test_connector_key_is_hashed_not_stored_raw(session):
+    from backend.models import Structure
+
+    structure = session.query(Structure).filter_by(slug="default").first()
+    connector = _make_connector(
+        session,
+        structure_id=structure.id,
+        name="CCAS Nantes",
+        source_slug="ccas-nantes-relai",
+        secret="ultra-secret-key",
+    )
+
+    assert connector.api_key_hash != "ultra-secret-key"
+    assert check_password_hash(connector.api_key_hash, "ultra-secret-key")
+
+
 def test_relay_endpoint_persists_only_sanitized_fields(client, session):
     from backend.models import RelayEvent
 
@@ -307,6 +452,13 @@ def test_admin_integrations_page_loads(admin_client, session):
     from backend.models import RelayEvent, Structure
 
     structure = session.query(Structure).filter_by(slug="default").first()
+    connector = _make_connector(
+        session,
+        structure_id=structure.id,
+        name="Connecteur Demo",
+        source_slug="connecteur-demo",
+        secret="connector-secret",
+    )
     session.add(
         RelayEvent(
             external_source="connecteur_demo",
@@ -315,6 +467,7 @@ def test_admin_integrations_page_loads(admin_client, session):
             priority="haute",
             category="orientation",
             structure_id=structure.id,
+            connector_id=connector.id,
             sync_status="received",
             rejected_fields_json='["medical_notes"]',
         )
@@ -326,8 +479,46 @@ def test_admin_integrations_page_loads(admin_client, session):
     assert response.status_code == 200
     html = response.get_data(as_text=True)
     assert "Connecteurs" in html
-    assert "connecteur_demo" in html
+    assert "Connecteur Demo" in html
+    assert "connecteur-demo" in html
     assert "REL-100" in html
+
+
+def test_admin_connector_detail_page_loads(admin_client, session):
+    from backend.models import RelayEvent, Structure
+
+    structure = session.query(Structure).filter_by(slug="default").first()
+    connector = _make_connector(
+        session,
+        structure_id=structure.id,
+        name="Connecteur Detail",
+        source_slug="connecteur-detail",
+        secret="detail-secret",
+        allowed_fields=["status", "priority"],
+        notes="Usage pilote",
+    )
+    session.add(
+        RelayEvent(
+            external_source=connector.source_slug,
+            external_reference_id="REL-DETAIL",
+            status="received",
+            priority="haute",
+            category="orientation",
+            structure_id=structure.id,
+            connector_id=connector.id,
+            sync_status="received",
+        )
+    )
+    session.commit()
+
+    response = admin_client.get(f"/admin/integrations/connectors/{connector.id}")
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Connecteur Detail" in html
+    assert "connecteur-detail" in html
+    assert "REL-DETAIL" in html
+    assert "detail-secret" not in html
 
 
 def test_admin_relay_detail_does_not_expose_sensitive_values(admin_client, session):
