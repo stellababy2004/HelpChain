@@ -15008,3 +15008,271 @@ body.hc-admin-professionals-map-page .leaflet-popup-tip {
   }
 }
 
+/* Operational Map Surface V2 */
+body.hc-admin-risk-map-page .hc-admin-wrap--risk-map {
+  gap: 0.85rem;
+}
+
+body.hc-admin-risk-map-page .hc-admin-breadcrumb {
+  margin-bottom: 0.45rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card {
+  margin-bottom: 0.75rem !important;
+  padding: 12px 14px 13px !important;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-section-intro {
+  margin-bottom: 0.45rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-toolbar-card .hc-section-subtitle {
+  max-width: 72ch;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpis {
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi {
+  min-height: 76px;
+  padding: 0.78rem 0.85rem 0.8rem;
+  border-radius: 18px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-kpi__value {
+  font-size: clamp(1.3rem, 1rem + 0.62vw, 1.82rem);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-contextbar,
+body.hc-admin-risk-map-page .hc-risk-map-queue-note {
+  padding-top: 0.72rem;
+  padding-bottom: 0.72rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-card {
+  padding: 0.25rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-card .hc-card__header {
+  padding-bottom: 0.65rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header {
+  gap: 0.75rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header .hc-section-title {
+  margin-bottom: 0.22rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-header .hc-section-subtitle {
+  max-width: 64ch;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-controls__group {
+  align-self: start;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend {
+  gap: 0.75rem;
+  padding: 10px 12px;
+  border-radius: 16px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend__item {
+  gap: 0.45rem;
+  font-size: 0.78rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-legend__dot {
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell {
+  padding: 0.9rem;
+  border-radius: 28px;
+  box-shadow:
+    0 34px 56px rgba(15, 23, 42, 0.16),
+    0 0 0 1px rgba(196, 220, 240, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell::before {
+  background:
+    linear-gradient(180deg, rgba(12, 24, 40, 0.12), rgba(12, 24, 40, 0.18)),
+    radial-gradient(circle at 84% 10%, rgba(189, 225, 242, 0.16), transparent 32%);
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-canvas {
+  height: clamp(560px, 74vh, 860px);
+  min-height: clamp(560px, 74vh, 860px);
+  border-radius: 24px;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel,
+body.hc-admin-professionals-map-page .hc-map-command-panel {
+  top: 14px;
+  left: 14px;
+  width: min(320px, calc(100% - 28px));
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__title,
+body.hc-admin-professionals-map-page .hc-map-command-panel__title {
+  font-size: 1.02rem;
+  letter-spacing: -0.01em;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__copy,
+body.hc-admin-professionals-map-page .hc-map-command-panel__copy {
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metrics,
+body.hc-admin-professionals-map-page .hc-map-command-panel__metrics {
+  gap: 0.55rem;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric,
+body.hc-admin-professionals-map-page .hc-map-command-panel__metric {
+  padding: 0.52rem 0.62rem;
+  border-radius: 14px;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric strong,
+body.hc-admin-professionals-map-page .hc-map-command-panel__metric strong {
+  font-size: 1rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-maphint {
+  right: 14px;
+  bottom: 14px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 14px;
+  font-size: 0.78rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty {
+  inset: auto auto 18px 18px;
+  align-items: end;
+  justify-items: start;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__card {
+  max-width: 360px;
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__title {
+  font-size: 1rem;
+  margin-bottom: 0.32rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__text,
+body.hc-admin-risk-map-page .hc-risk-map-empty__hint,
+body.hc-admin-risk-map-page .hc-risk-map-empty__capacity {
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__actions {
+  gap: 0.55rem;
+  margin-top: 0.7rem;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-empty__actions .btn {
+  min-height: 36px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip {
+  margin-top: 0.7rem;
+  padding: 0.9rem 1rem;
+  border-radius: 18px;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-actionstrip__actions {
+  gap: 0.55rem;
+}
+
+body.hc-page-admin .hc-map-ringMarker {
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+body.hc-page-admin .leaflet-marker-icon:hover .hc-map-ringMarker,
+body.hc-page-admin .leaflet-marker-icon:focus .hc-map-ringMarker,
+body.hc-page-admin .leaflet-marker-icon.leaflet-interactive:active .hc-map-ringMarker {
+  filter: saturate(1.04);
+}
+
+body.hc-page-admin .leaflet-marker-icon:focus-visible .hc-map-ringMarker {
+  transform: scale(1.16);
+}
+
+body.hc-page-admin :is(.hc-map-pressure-low, .hc-map-pressure-medium, .hc-map-pressure-high, .hc-map-pressure-critical) {
+  position: relative;
+  --hc-map-pressure-accent: rgba(94, 124, 154, 0.42);
+  border-color: rgba(170, 193, 216, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+}
+
+body.hc-page-admin .hc-map-pressure-low {
+  --hc-map-pressure-accent: rgba(83, 128, 165, 0.32);
+  background: linear-gradient(180deg, rgba(240, 246, 252, 0.96), rgba(234, 242, 249, 0.94));
+}
+
+body.hc-page-admin .hc-map-pressure-medium {
+  --hc-map-pressure-accent: rgba(104, 146, 186, 0.44);
+  background: linear-gradient(180deg, rgba(238, 245, 252, 0.98), rgba(229, 239, 248, 0.96));
+}
+
+body.hc-page-admin .hc-map-pressure-high {
+  --hc-map-pressure-accent: rgba(217, 144, 70, 0.36);
+  background: linear-gradient(180deg, rgba(249, 245, 239, 0.98), rgba(245, 239, 232, 0.96));
+}
+
+body.hc-page-admin .hc-map-pressure-critical {
+  --hc-map-pressure-accent: rgba(204, 93, 112, 0.34);
+  background: linear-gradient(180deg, rgba(250, 243, 245, 0.98), rgba(246, 236, 239, 0.96));
+}
+
+body.hc-page-admin :is(.hc-map-pressure-low, .hc-map-pressure-medium, .hc-map-pressure-high, .hc-map-pressure-critical)::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: inherit;
+  background: var(--hc-map-pressure-accent);
+}
+
+@media (max-width: 991.98px) {
+  body.hc-admin-risk-map-page .hc-risk-map-toolbar-card {
+    padding: 11px 12px 12px !important;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-canvas {
+    height: clamp(480px, 66vh, 700px);
+    min-height: clamp(480px, 66vh, 700px);
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hc-admin-risk-map-page .hc-risk-map-empty {
+    inset: auto 12px 12px 12px;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-empty__card {
+    max-width: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-risk-map-actionstrip {
+    padding: 0.85rem;
+  }
+}
+
