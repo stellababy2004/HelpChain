@@ -4,10 +4,19 @@ import logging
 from datetime import UTC, datetime, timedelta
 
 from flask import current_app, has_app_context
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select, union_all
 
 from backend.extensions import db
-from backend.models import AdminUser, Request, RequestActivity, canonical_role, utc_now
+from backend.models import (
+    AdminUser,
+    Request,
+    RequestActivity,
+    RequestLog,
+    canonical_role,
+    utc_now,
+)
+from ..models.case import Case
+from ..models.case_event import CaseEvent
 
 from .notification_jobs import enqueue_email_notification
 
@@ -97,6 +106,65 @@ def _meaningful_activity_query(request_id: int):
         .filter(RequestActivity.request_id == int(request_id))
         .filter(~RequestActivity.action.in_(tuple(SLA_MARKER_ACTIONS)))
     )
+
+
+def build_request_meaningful_activity_subquery():
+    activity_union = union_all(
+        select(
+            RequestActivity.request_id.label("request_id"),
+            RequestActivity.created_at.label("activity_at"),
+        ).where(~RequestActivity.action.in_(tuple(SLA_MARKER_ACTIONS))),
+        select(
+            RequestLog.request_id.label("request_id"),
+            RequestLog.timestamp.label("activity_at"),
+        ).where(RequestLog.timestamp.is_not(None)),
+        select(
+            Case.request_id.label("request_id"),
+            Case.last_activity_at.label("activity_at"),
+        ).where(Case.last_activity_at.is_not(None)),
+        select(
+            Case.request_id.label("request_id"),
+            Case.updated_at.label("activity_at"),
+        ).where(Case.updated_at.is_not(None)),
+        select(
+            Case.request_id.label("request_id"),
+            Case.created_at.label("activity_at"),
+        ).where(Case.created_at.is_not(None)),
+        select(
+            Case.request_id.label("request_id"),
+            CaseEvent.created_at.label("activity_at"),
+        )
+        .select_from(CaseEvent)
+        .join(Case, Case.id == CaseEvent.case_id)
+        .where(CaseEvent.created_at.is_not(None)),
+    ).subquery()
+    return (
+        db.session.query(
+            activity_union.c.request_id.label("request_id"),
+            func.max(activity_union.c.activity_at).label("last_activity_at"),
+        )
+        .group_by(activity_union.c.request_id)
+        .subquery()
+    )
+
+
+def touch_request_case_activity(
+    *,
+    request_obj: Request | None = None,
+    case_row=None,
+    when: datetime | None = None,
+) -> datetime:
+    touched_at = when or utc_now()
+    if case_row is not None:
+        if hasattr(case_row, "last_activity_at"):
+            case_row.last_activity_at = touched_at
+        if hasattr(case_row, "updated_at"):
+            case_row.updated_at = touched_at
+        if request_obj is None:
+            request_obj = getattr(case_row, "request", None)
+    if request_obj is not None and hasattr(request_obj, "updated_at"):
+        request_obj.updated_at = touched_at
+    return touched_at
 
 
 def _base_open_requests_query():
@@ -247,7 +315,12 @@ def get_request_last_meaningful_activity(request_obj: Request) -> datetime | Non
         return _to_utc_naive(getattr(request_obj, "updated_at", None)) or _to_utc_naive(
             getattr(request_obj, "created_at", None)
         )
-    last_activity = _meaningful_activity_query(int(request_id)).scalar()
+    activity_sq = build_request_meaningful_activity_subquery()
+    last_activity = (
+        db.session.query(activity_sq.c.last_activity_at)
+        .filter(activity_sq.c.request_id == int(request_id))
+        .scalar()
+    )
     return (
         _to_utc_naive(last_activity)
         or _to_utc_naive(getattr(request_obj, "updated_at", None))
