@@ -104,22 +104,22 @@
       </div>
     </div>
     <div class="hc-risk-overview mb-3">
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale='1' if stale else None, city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale_72h='1' if stale_72h else None, city=city or None) }}">
         <span class="hc-risk-overview__label">Situations critiques</span>
         <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
         <span class="hc-risk-overview__context">À traiter en premier</span>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='high', stale='1' if stale else None, city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='attention', stale_72h='1' if stale_72h else None, city=city or None) }}">
         <span class="hc-risk-overview__label">Situations a verifier</span>
         <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Vigilance renforcée</span>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale='1' if stale else None, city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale_72h='1' if stale_72h else None, city=city or None) }}">
         <span class="hc-risk-overview__label">Cas sans responsable</span>
         <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Affectation attendue</span>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale='1', city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale_72h='1', city=city or None) }}">
         <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
         <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Relance nécessaire</span>
@@ -171,14 +171,14 @@
         <select name="risk" class="form-select form-select-sm">
           <option value="">Tous</option>
           <option value="critical" {% if risk == 'critical' %}selected{% endif %}>Critique</option>
-          <option value="high" {% if risk == 'high' %}selected{% endif %}>Eleve</option>
+          <option value="attention" {% if risk == 'attention' %}selected{% endif %}>A verifier</option>
           <option value="normal" {% if risk == 'normal' %}selected{% endif %}>Normal</option>
           <option value="low" {% if risk == 'low' %}selected{% endif %}>Faible</option>
         </select>
       </div>
       <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 align-items-center hc-ops-filters__actions">
         <label class="form-check mb-0 hc-ops-filters__toggle">
-          <input type="checkbox" class="form-check-input" name="stale" value="1" {% if stale %}checked{% endif %}>
+          <input type="checkbox" class="form-check-input" name="stale_72h" value="1" {% if stale_72h %}checked{% endif %}>
           <span class="form-check-label">Sans action 72h</span>
         </label>
         <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
@@ -221,7 +221,7 @@
           {% if cases %}
           {% for c in cases %}
             {% set ops_level = (ops_priority_levels.get(c.id) or 'normal') %}
-            {% set activity_ref = c.last_activity_at or c.updated_at or c.created_at %}
+            {% set activity_ref = (case_last_activity_by_id or {}).get(c.id) or c.last_activity_at or c.updated_at or c.created_at %}
             {% set case_sla = case_sla_snapshot(c) %}
             {% set status_key = (c.status or 'open')|replace('_', '-')|lower %}
             {% set status_label = status_display_labels.get((c.status or '')|lower, (c.status or '-')|replace('_', ' ')|title) %}

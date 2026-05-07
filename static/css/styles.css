@@ -12591,3 +12591,746 @@ body.hc-page-home .hc-home-premium__cta-title-line {
     grid-template-columns: 1fr;
   }
 }
+
+/* === NAVBAR COMPACT FIX - public header === */
+.hc-public-nav,
+.site-nav,
+.navbar,
+.public-nav {
+  gap: 0.35rem !important;
+}
+
+.hc-public-nav a,
+.site-nav a,
+.navbar a,
+.public-nav a {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  white-space: nowrap !important;
+}
+
+.hc-public-nav .nav-link,
+.site-nav .nav-link,
+.navbar .nav-link,
+.public-nav .nav-link {
+  font-size: 0.96rem !important;
+  letter-spacing: -0.01em;
+}
+
+.hc-public-nav .btn,
+.site-nav .btn,
+.navbar .btn,
+.public-nav .btn {
+  padding-left: 1.1rem !important;
+  padding-right: 1.1rem !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 1200px) {
+  .hc-public-nav a,
+  .site-nav a,
+  .navbar a,
+  .public-nav a {
+    padding-left: 0.55rem !important;
+    padding-right: 0.55rem !important;
+    font-size: 0.92rem !important;
+  }
+}
+
+/* === FIX: remove tiny vertical divider over active nav item === */
+.public-nav a.active,
+.public-nav .active,
+.site-nav a.active,
+.site-nav .active,
+.hc-public-nav a.active,
+.hc-public-nav .active,
+.navbar a.active,
+.navbar .active {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none;
+}
+
+.public-nav a.active::before,
+.public-nav a.active::after,
+.site-nav a.active::before,
+.site-nav a.active::after,
+.hc-public-nav a.active::before,
+.hc-public-nav a.active::after,
+.navbar a.active::before,
+.navbar a.active::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* === FIX: remove public navbar action divider line === */
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .hc-public-nav-actions {
+  border-left: 0 !important;
+  padding-left: 0 !important;
+  margin-left: clamp(0.4rem, 0.8vw, 0.8rem) !important;
+}
+
+/* === FIX: navbar spacing between last links === */
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link {
+  margin-inline: 0.12rem !important;
+}
+
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link[href*="pilotage"],
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link[href*="connexion"],
+body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link[href*="login"] {
+  margin-inline: 0.2rem !important;
+}
+
+/* === FIX: public navbar compact layout on medium desktop === */
+@media (max-width: 1400px) {
+  body:not([data-hc-page^="/admin"]) .hc-public-nav-root {
+    column-gap: 0.45rem !important;
+  }
+
+  body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link:not(.hc-nav-cta) {
+    padding-inline: 0.5rem !important;
+    font-size: 0.95rem !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  body:not([data-hc-page^="/admin"]) .hc-public-nav-root .hc-nav-cta,
+  body:not([data-hc-page^="/admin"]) .hc-public-nav-root .btn-primary {
+    padding-inline: 1rem !important;
+    min-width: auto !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* === Homepage product screenshot polish === */
+body.hc-page-home .hc-home-premium__shot-img {
+  filter: contrast(1.05) saturate(1.03) brightness(1.01);
+  image-rendering: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.14) !important;
+}
+
+
+/* === Screenshot visibility boost === */
+body.hc-page-home .hc-home-premium__shot-img {
+  filter:
+    contrast(1.12)
+    saturate(1.08)
+    brightness(1.015);
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  box-shadow:
+    0 30px 80px rgba(15, 23, 42, 0.16),
+    0 8px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+
+/* === HOME HERO compact premium pass === */
+body.hc-page-home .hc-home-premium__hero {
+  padding-top: clamp(42px, 4.5vw, 62px) !important;
+  padding-bottom: clamp(28px, 3.5vw, 44px) !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-grid {
+  gap: clamp(28px, 4vw, 52px) !important;
+  align-items: center !important;
+}
+
+body.hc-page-home .hc-home-premium__title {
+  margin-bottom: clamp(18px, 2vw, 26px) !important;
+}
+
+body.hc-page-home .hc-home-premium__lead {
+  margin-bottom: clamp(20px, 2.4vw, 30px) !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  margin-top: 0 !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  transform: translateY(-10px);
+}
+
+
+/* === Screenshot depth pass === */
+body.hc-page-home .hc-home-premium__shot-card {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.98) 0%,
+      rgba(244,248,255,0.96) 100%
+    ) !important;
+
+  border: 1px solid rgba(120, 144, 180, 0.18) !important;
+
+  overflow: hidden;
+}
+
+body.hc-page-home .hc-home-premium__shot-img {
+  filter:
+    contrast(1.16)
+    saturate(1.12)
+    brightness(0.98)
+    sharpen(0.2);
+}
+
+
+/* === Final screenshot polish === */
+body.hc-page-home .hc-home-premium__shot-card {
+  transform: translateY(-2px);
+}
+
+body.hc-page-home .hc-home-premium__shot-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.10),
+    rgba(15,23,42,0.025)
+  );
+}
+
+body.hc-page-home .hc-home-premium__shot-img {
+  opacity: 0.98;
+}
+
+/* === Final home section breathing fix === */
+body.hc-page-home .hc-home-premium__section {
+  scroll-margin-top: 110px;
+}
+
+body.hc-page-home .hc-home-premium__workflow {
+  padding-top: clamp(72px, 7vw, 96px) !important;
+}
+
+/* === Final screenshot breathing: workflow blocks === */
+body.hc-page-home .hc-home-premium__workflow-step,
+body.hc-page-home .hc-home-premium__workflow-item,
+body.hc-page-home .hc-home-premium__sequence-step {
+  padding-top: clamp(56px, 5vw, 84px) !important;
+}
+
+/* === FIX: homepage proof cards spacing / readability === */
+body.hc-page-home .hc-home-premium__proof-cards,
+body.hc-page-home .hc-home-premium__callouts,
+body.hc-page-home .hc-home-premium__proof-row {
+  gap: clamp(18px, 2vw, 28px) !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-card,
+body.hc-page-home .hc-home-premium__callout,
+body.hc-page-home .hc-home-premium__proof-item {
+  padding: clamp(24px, 2.4vw, 34px) !important;
+  min-height: 170px !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-card h3,
+body.hc-page-home .hc-home-premium__callout h3,
+body.hc-page-home .hc-home-premium__proof-item h3 {
+  margin-bottom: 14px !important;
+  line-height: 1.2 !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-card p,
+body.hc-page-home .hc-home-premium__callout p,
+body.hc-page-home .hc-home-premium__proof-item p {
+  line-height: 1.55 !important;
+  max-width: 95% !important;
+}
+
+@media (max-width: 1100px) {
+  body.hc-page-home .hc-home-premium__proof-cards,
+  body.hc-page-home .hc-home-premium__callouts,
+  body.hc-page-home .hc-home-premium__proof-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* === FIX V2: stronger spacing for homepage hero callout cards === */
+body.hc-page-home .hc-home-premium__callouts,
+body.hc-page-home .hc-home-premium__proof-cards,
+body.hc-page-home .hc-home-premium__proof-row {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(220px, 1fr)) !important;
+  gap: clamp(26px, 3vw, 42px) !important;
+  margin-top: clamp(28px, 3vw, 44px) !important;
+}
+
+body.hc-page-home .hc-home-premium__callout,
+body.hc-page-home .hc-home-premium__proof-card,
+body.hc-page-home .hc-home-premium__proof-item {
+  padding: 28px 32px !important;
+  min-height: 178px !important;
+  border-radius: 28px !important;
+}
+
+body.hc-page-home .hc-home-premium__callout h3,
+body.hc-page-home .hc-home-premium__proof-card h3,
+body.hc-page-home .hc-home-premium__proof-item h3 {
+  margin-bottom: 16px !important;
+  letter-spacing: .06em !important;
+}
+
+body.hc-page-home .hc-home-premium__callout p,
+body.hc-page-home .hc-home-premium__proof-card p,
+body.hc-page-home .hc-home-premium__proof-item p {
+  font-size: clamp(1rem, 1.05vw, 1.12rem) !important;
+  line-height: 1.65 !important;
+}
+
+/* === FIX V3: separate hero callout cards from screenshot === */
+body.hc-page-home .hc-home-premium__proof-cards,
+body.hc-page-home .hc-home-premium__callouts,
+body.hc-page-home .hc-home-premium__proof-row {
+  margin-top: 34px !important;
+  gap: 34px !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-card,
+body.hc-page-home .hc-home-premium__callout,
+body.hc-page-home .hc-home-premium__proof-item {
+  transform: translateY(18px) !important;
+}
+
+/* === FIX V4: give hero title safe top breathing room === */
+body.hc-page-home .hc-home-premium__hero,
+body.hc-page-home .hc-hero {
+  padding-top: 120px !important;
+}
+
+/* === FIX V5: stop hero title cropping === */
+body.hc-page-home .hc-home-premium__hero {
+  padding-top: 180px !important;
+  overflow: visible !important;
+}
+
+body.hc-page-home .hc-home-premium__title,
+body.hc-page-home .hc-hero h1 {
+  margin-top: 0 !important;
+  transform: none !important;
+  line-height: 0.92 !important;
+}
+
+/* === FIX V6: balanced hero positioning === */
+body.hc-page-home .hc-home-premium__hero {
+  padding-top: 120px !important;
+  overflow: hidden !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-inner,
+body.hc-page-home .hc-home-premium__hero-grid {
+  max-width: 1480px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 48px !important;
+  padding-right: 48px !important;
+}
+
+body.hc-page-home .hc-home-premium__title {
+  font-size: clamp(56px, 6vw, 92px) !important;
+  line-height: 0.96 !important;
+}
+
+/* === FIX V7: restore proper hero split layout === */
+body.hc-page-home .hc-home-premium__hero-inner,
+body.hc-page-home .hc-home-premium__hero-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(620px, 760px) !important;
+  align-items: center !important;
+  gap: clamp(48px, 5vw, 90px) !important;
+
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+
+  padding-left: clamp(28px, 4vw, 56px) !important;
+  padding-right: clamp(28px, 4vw, 56px) !important;
+}
+
+body.hc-page-home .hc-home-premium__content,
+body.hc-page-home .hc-home-premium__left {
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+body.hc-page-home .hc-home-premium__title {
+  max-width: 720px !important;
+  font-size: clamp(62px, 6vw, 96px) !important;
+}
+
+ /* === HOME HERO — wider title layout === */
+body.hc-page-home .hc-home-premium__hero-copy,
+body.hc-page-home .hc-home-premium__content {
+  max-width: 760px !important;
+}
+
+body.hc-page-home .hc-home-premium__title,
+body.hc-page-home .hc-home-premium__headline,
+body.hc-page-home h1 {
+  max-width: 900px !important;
+  font-size: clamp(64px, 6.4vw, 104px) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.065em !important;
+}
+
+body.hc-page-home .hc-home-premium__hero {
+  column-gap: clamp(56px, 6vw, 110px) !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  transform: translateX(18px) !important;
+}
+
+ /* === HOME HERO — bold editorial split v2 === */
+body.hc-page-home .hc-home-premium__hero {
+  grid-template-columns: minmax(720px, 1.12fr) minmax(520px, 0.88fr) !important;
+  align-items: start !important;
+  column-gap: clamp(40px, 5vw, 90px) !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-copy,
+body.hc-page-home .hc-home-premium__content {
+  max-width: 980px !important;
+}
+
+body.hc-page-home .hc-home-premium__title,
+body.hc-page-home .hc-home-premium__headline,
+body.hc-page-home h1 {
+  max-width: 1120px !important;
+  width: 1120px !important;
+  font-size: clamp(74px, 7.8vw, 132px) !important;
+  line-height: 0.88 !important;
+  letter-spacing: -0.075em !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  margin-top: 230px !important;
+  transform: translateX(-20px) scale(1.08) !important;
+  transform-origin: top right !important;
+}
+
+body.hc-page-home .hc-home-premium__subhead,
+body.hc-page-home .hc-home-premium__lead {
+  max-width: 720px !important;
+  font-size: clamp(20px, 1.45vw, 28px) !important;
+  line-height: 1.42 !important;
+}
+
+ /* === HOME HERO — balanced enterprise layout === */
+
+body.hc-page-home .hc-home-premium__hero {
+  display: grid !important;
+  grid-template-columns: minmax(620px, 0.95fr) minmax(760px, 1.05fr) !important;
+  align-items: center !important;
+  column-gap: clamp(36px, 4vw, 72px) !important;
+}
+
+body.hc-page-home .hc-home-premium__title,
+body.hc-page-home .hc-home-premium__headline,
+body.hc-page-home h1 {
+  max-width: 760px !important;
+  width: auto !important;
+  font-size: clamp(72px, 7vw, 118px) !important;
+  line-height: 0.9 !important;
+  letter-spacing: -0.07em !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  margin-top: 0 !important;
+  transform: translateX(0) scale(1.02) !important;
+  align-self: center !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-copy {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  max-width: 1180px !important;
+}
+
+ /* === FIX: push hero preview to the right, stop overlap === */
+
+body.hc-page-home .hc-home-premium__hero {
+  grid-template-columns: minmax(520px, 0.78fr) minmax(760px, 1.22fr) !important;
+  column-gap: clamp(80px, 7vw, 140px) !important;
+  overflow: visible !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  transform: translateX(90px) scale(1.02) !important;
+  margin-left: 0 !important;
+  z-index: 1 !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-copy {
+  z-index: 3 !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  max-width: 1120px !important;
+}
+
+ /* === EMERGENCY FIX: hero preview stays right, text stays clean === */
+
+body.hc-page-home .hc-home-premium__hero {
+  position: relative !important;
+  display: block !important;
+  min-height: 880px !important;
+  overflow: hidden !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-copy {
+  width: 46vw !important;
+  max-width: 760px !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  position: absolute !important;
+  top: 190px !important;
+  left: 50vw !important;
+  width: 47vw !important;
+  max-width: 980px !important;
+  transform: none !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-cards {
+  gap: 22px !important;
+}
+
+ /* === FIX: proof cards visible and not covered === */
+
+body.hc-page-home .hc-home-premium__proof-cards {
+  position: relative !important;
+  z-index: 6 !important;
+  margin-top: 28px !important;
+  padding-bottom: 120px !important;
+}
+
+body.hc-page-home .hc-home-premium__preview {
+  z-index: 2 !important;
+}
+
+body.hc-page-home .hc-home-premium__hero-copy {
+  z-index: 7 !important;
+}
+
+body.hc-page-home .hc-a11y-fab,
+body.hc-page-home .hc-a11y-toggle,
+body.hc-page-home .hc-a11y-widget {
+  z-index: 20 !important;
+}
+
+ /* === FINAL HOME HERO BALANCE === */
+
+body.hc-page-home .hc-home-premium__preview {
+  transform: translateY(42px) !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-cards {
+  margin-top: 48px !important;
+  padding-bottom: 80px !important;
+}
+
+body.hc-page-home .hc-home-premium__hero {
+  padding-bottom: 92px !important;
+}
+body.hc-page-home .hc-home-premium__preview {
+  transform: translateY(10px) !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card {
+  min-height: 430px !important;
+}
+
+/* === SECTION RHYTHM / DEPTH === */
+
+body.hc-page-pros section {
+  position: relative;
+  z-index: 1;
+}
+
+body.hc-page-pros section + section {
+  margin-top: 42px !important;
+}
+
+body.hc-page-pros .hc-pro-card,
+body.hc-page-pros .hc-value-card,
+body.hc-page-pros .hc-territory-card {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.92) 0%,
+      rgba(248,250,252,0.98) 100%
+    ) !important;
+
+  border: 1px solid rgba(148,163,184,0.16) !important;
+
+  box-shadow:
+    0 10px 30px rgba(15,23,42,0.04),
+    0 2px 10px rgba(15,23,42,0.03) !important;
+
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease;
+}
+
+body.hc-page-pros .hc-pro-card:hover,
+body.hc-page-pros .hc-value-card:hover,
+body.hc-page-pros .hc-territory-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 20px 44px rgba(15,23,42,0.08),
+    0 6px 18px rgba(15,23,42,0.06) !important;
+}
+
+
+/* === A11Y FAB REFINEMENT === */
+
+.hc-a11y-fab {
+  width: 58px !important;
+  height: 58px !important;
+
+  right: 22px !important;
+  bottom: 22px !important;
+
+  background:
+    linear-gradient(
+      180deg,
+      #17345f 0%,
+      #112847 100%
+    ) !important;
+
+  border: 1px solid rgba(255,255,255,0.18) !important;
+
+  box-shadow:
+    0 10px 24px rgba(15,23,42,0.16),
+    0 2px 8px rgba(15,23,42,0.08) !important;
+
+  backdrop-filter: blur(10px);
+}
+
+.hc-a11y-fab::before {
+  opacity: 0.45 !important;
+  transform: scale(1.08) !important;
+}
+
+.hc-a11y-fab:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+
+/* === HOME HERO FIX: tighter product preview + cleaner callout spacing === */
+body.hc-page-home .hc-home-premium__shot-card {
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-img {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-cards,
+body.hc-page-home .hc-home-premium__callouts,
+body.hc-page-home .hc-home-premium__preview-cards {
+  margin-top: 28px !important;
+  gap: 24px !important;
+  position: relative !important;
+  z-index: 3 !important;
+}
+
+body.hc-page-home .hc-home-premium__proof-card,
+body.hc-page-home .hc-home-premium__callout,
+body.hc-page-home .hc-home-premium__preview-card {
+  padding: 24px 28px !important;
+  min-height: 136px !important;
+  border-radius: 24px !important;
+}
+
+/* === HOME PROOF SHOTS: remove oversized empty preview bottom === */
+body.hc-page-home .hc-home-premium__shot-card {
+  max-height: 560px !important;
+  overflow: hidden !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card .hc-home-premium__shot-img {
+  height: 430px !important;
+  object-fit: cover !important;
+  object-position: top center !important;
+}
+
+body.hc-page-home .hc-home-premium__shot-card--security .hc-home-premium__shot-img,
+body.hc-page-home .hc-home-premium__shot-card:has(img[src*="image.png"]) .hc-home-premium__shot-img {
+  height: 390px !important;
+  object-position: top center !important;
+}
+
+/* === HOME PROOF SHOTS: security preview better framing === */
+body.hc-page-home .hc-home-premium__shot-card:has(img[src*="image.png"]) .hc-home-premium__shot-img {
+  height: 410px !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  padding: 22px 28px 34px !important;
+  background: #f8fbff !important;
+}
+
+/* === HOME PROOF SHOTS: security preview balanced zoom === */
+body.hc-page-home .hc-home-premium__shot-card:has(img[src*="image.png"]) .hc-home-premium__shot-img {
+  height: 430px !important;
+  width: 100% !important;
+  object-fit: cover !important;
+  object-position: center 34% !important;
+  padding: 0 !important;
+}
+
+/* === Premium workflow section tightening === */
+body.hc-page-home .hc-home-premium__workflow-row,
+body.hc-page-home .hc-home-premium__sequence-row,
+body.hc-page-home .hc-home-premium__platform-row {
+  gap: clamp(40px, 5vw, 64px) !important;
+  align-items: center !important;
+}
+
+body.hc-page-home .hc-home-premium__workflow-copy,
+body.hc-page-home .hc-home-premium__sequence-copy,
+body.hc-page-home .hc-home-premium__platform-copy {
+  max-width: 620px !important;
+}
+
+body.hc-page-home .hc-home-premium__workflow-card,
+body.hc-page-home .hc-home-premium__sequence-card,
+body.hc-page-home .hc-home-premium__platform-card {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.07) !important;
+  backdrop-filter: blur(14px) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease !important;
+}
+
+body.hc-page-home .hc-home-premium__workflow-card:hover,
+body.hc-page-home .hc-home-premium__sequence-card:hover,
+body.hc-page-home .hc-home-premium__platform-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(37, 99, 235, 0.22) !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.11) !important;
+}

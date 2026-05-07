@@ -223,7 +223,10 @@
     if (!row) return;
     const ownerMeta = row.querySelector("[data-request-owner-label]");
     const ownerBadge = row.querySelector("[data-request-owner-badge]");
-    row.dataset.ownerId = ownerState === "none" ? "" : ownerState;
+    const hasOwner = ownerState === "mine" || ownerState === "taken";
+    row.dataset.ownerId = hasOwner ? row.dataset.ownerId || "assigned" : "";
+    row.dataset.hasOwner = hasOwner ? "1" : "0";
+    row.dataset.ownerMissing = hasOwner ? "0" : "1";
     row.dataset.ownerState = ownerState;
     if (ownerMeta) {
       ownerMeta.textContent = ownerState === "none" ? "Sans responsable" : ownerLabel;
@@ -614,10 +617,10 @@
 
   function rowMatchesQuickFilters(row) {
     if (!quickState.size) return true;
-    const hasNoOwner = !String(row.dataset.ownerId || "").trim();
+    const hasNoOwner = row.dataset.ownerMissing === "1";
     const isUrgent = String(row.dataset.priority || "").toUpperCase() === "URGENT";
     const hasCanHelp = Number(row.dataset.sigCanHelp || 0) > 0;
-    const isStale = !!row.querySelector('[title*="Stale request"], [title*="Stale"]');
+    const isStale = row.dataset.stale72h === "1";
     for (const key of quickState) {
       if (key === "no_owner" && !hasNoOwner) return false;
       if (key === "urgent" && !isUrgent) return false;
@@ -629,12 +632,12 @@
 
   function matchesRiskShortcutKey(row, shortcutKey) {
     const riskLevel = normalize(row.dataset.riskLevel);
-    const hasNoOwner = !String(row.dataset.ownerId || "").trim();
-    const notSeenHours = Number(row.dataset.notSeenHours || 0);
+    const hasNoOwner = row.dataset.ownerMissing === "1";
+    const isStale = row.dataset.stale72h === "1";
     if (shortcutKey === "critical") return riskLevel === "critical";
     if (shortcutKey === "attention") return riskLevel === "attention";
     if (shortcutKey === "no_owner") return hasNoOwner;
-    if (shortcutKey === "stale") return notSeenHours >= 72;
+    if (shortcutKey === "stale") return isStale;
     return true;
   }
 

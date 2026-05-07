@@ -35,17 +35,123 @@
       width: 100%;
       max-width: 100%;
       overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
     }
     .hc-import-preview-table {
-      width: 100%;
+      width: max-content;
+      min-width: 100%;
       border-collapse: collapse;
       table-layout: auto;
     }
     .hc-import-preview-table th,
     .hc-import-preview-table td {
-      vertical-align: top;
+      padding: .8rem .9rem;
+      vertical-align: middle;
+      border-bottom: 1px solid rgba(15, 23, 42, .08);
+      white-space: normal;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
+    .hc-import-preview-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: rgba(248, 250, 252, .98);
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col,
+    .hc-import-preview-table .hc-import-control-col {
+      min-width: 140px;
+    }
+    .hc-import-preview-table .hc-import-row-col {
+      min-width: 76px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-status-col {
+      min-width: 132px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-control-col {
+      min-width: 120px;
+    }
+    .hc-import-preview-table .hc-import-col--organization {
+      min-width: 220px;
+    }
+    .hc-import-preview-table .hc-import-col--contact-name {
+      min-width: 180px;
+    }
+    .hc-import-preview-table .hc-import-col--email {
+      min-width: 240px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col--phone {
+      min-width: 160px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col--profession {
+      min-width: 220px;
+    }
+    .hc-import-preview-table .hc-import-col--city {
+      min-width: 160px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col--department {
+      min-width: 90px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col--status {
+      min-width: 120px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col--priority {
+      min-width: 120px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-col--source {
+      min-width: 140px;
+    }
+    .hc-import-preview-table .hc-import-col--notes {
+      min-width: 320px;
+      max-width: 420px;
       white-space: normal;
       overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+    .hc-import-preview-table .hc-import-col--next-action {
+      min-width: 260px;
+      max-width: 340px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      line-height: 1.45;
+    }
+    .hc-import-preview-table .hc-import-col--relance-at {
+      min-width: 140px;
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-control-cell {
+      min-width: 120px;
+    }
+    .hc-import-preview-table .hc-import-cell--notes,
+    .hc-import-preview-table .hc-import-cell--next-action {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hc-import-preview-table .hc-import-cell--email,
+    .hc-import-preview-table .hc-import-cell--phone,
+    .hc-import-preview-table .hc-import-cell--city,
+    .hc-import-preview-table .hc-import-cell--department,
+    .hc-import-preview-table .hc-import-cell--status,
+    .hc-import-preview-table .hc-import-cell--priority {
+      white-space: nowrap;
+    }
+    .hc-import-preview-table .hc-import-status-cell,
+    .hc-import-preview-table .hc-import-row-cell,
+    .hc-import-preview-table .hc-import-control-cell {
+      vertical-align: middle;
     }
     .hc-import-warning-list {
       margin: 0;
@@ -166,19 +272,20 @@
         <table class="hc-import-preview-table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Statut</th>
+              <th class="hc-import-row-col">#</th>
+              <th class="hc-import-status-col">Statut</th>
               {% for header in preview.headers %}
-                <th>{{ header }}</th>
+                {% set mapped_field = (preview.mapping.get(header) or 'unmapped')|replace('_', '-') %}
+                <th class="hc-import-col hc-import-col--{{ mapped_field }}">{{ header }}</th>
               {% endfor %}
-              <th>Controles</th>
+              <th class="hc-import-control-col">Controles</th>
             </tr>
           </thead>
           <tbody>
             {% for row in preview.sample_rows %}
               <tr class="hc-import-preview-row--{{ row.status }}">
-                <td class="text-muted">L{{ row.row_number }}</td>
-                <td>
+                <td class="text-muted hc-import-row-cell">L{{ row.row_number }}</td>
+                <td class="hc-import-status-cell">
                   <span class="hc-import-status hc-import-status--{{ row.status }}">
                     {% if row.status == 'valid' %}
                       Valide
@@ -192,9 +299,10 @@
                   </span>
                 </td>
                 {% for header in preview.headers %}
-                  <td>{{ row.values.get(header, '-') or '-' }}</td>
+                  {% set mapped_field = (preview.mapping.get(header) or 'unmapped')|replace('_', '-') %}
+                  <td class="hc-import-col hc-import-col--{{ mapped_field }} hc-import-cell--{{ mapped_field }}">{{ row.values.get(header, '-') or '-' }}</td>
                 {% endfor %}
-                <td>
+                <td class="hc-import-control-cell">
                   {% if row.warnings %}
                     <ul class="hc-import-warning-list">
                       {% for warning in row.warnings %}

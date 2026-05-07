@@ -14218,6 +14218,16 @@ body.hc-admin-risk-map-page .leaflet-control-zoom a{
   -webkit-backdrop-filter: blur(14px);
 }
 
+body.hc-admin-risk-map-page .leaflet-control-attribution,
+body.hc-admin-professionals-map-page .leaflet-control-attribution,
+body.hc-admin-risk-map-page .leaflet-control-container .leaflet-bottom.leaflet-right .leaflet-control-attribution,
+body.hc-admin-professionals-map-page .leaflet-control-container .leaflet-bottom.leaflet-right .leaflet-control-attribution,
+body.hc-admin-risk-map-page .leaflet-control-container .leaflet-bottom .leaflet-control-attribution,
+body.hc-admin-professionals-map-page .leaflet-control-container .leaflet-bottom .leaflet-control-attribution {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 body.hc-admin-risk-map-page .hc-map-command-panel{
   position: absolute;
   top: 16px;
@@ -15626,5 +15636,737 @@ body.hc-page-admin .leaflet-marker-icon.is-selected .hc-map-ringMarker--critical
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Admin Home - Operational intelligence layer */
+body.hc-admin-home-page .hc-admin-wrap {
+  display: grid;
+  gap: 1rem;
+}
+
+body.hc-admin-home-page .hc-admin-wrap > .hc-card,
+body.hc-admin-home-page .hc-admin-wrap > .hc-command-grid,
+body.hc-admin-home-page .hc-admin-wrap > .hc-ops-intelligence-grid {
+  margin-bottom: 0 !important;
+}
+
+body.hc-admin-home-page .hc-ops-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 1.45rem 1.5rem;
+}
+
+body.hc-admin-home-page .hc-ops-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top right, rgba(157, 193, 221, 0.24), transparent 34%),
+    radial-gradient(circle at bottom left, rgba(86, 122, 160, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+body.hc-admin-home-page .hc-ops-hero__header {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 1.2rem;
+  align-items: stretch;
+}
+
+body.hc-admin-home-page .hc-ops-hero__intro {
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+
+body.hc-admin-home-page .hc-ops-hero__eyebrow,
+body.hc-admin-home-page .hc-ops-hero__microkicker,
+body.hc-admin-home-page .hc-admin-map-access__status-label,
+body.hc-admin-home-page .hc-ops-intelligence__label {
+  font-size: 0.72rem;
+  font-weight: 780;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body.hc-admin-home-page .hc-ops-hero__eyebrow {
+  color: rgba(44, 79, 116, 0.78);
+}
+
+body.hc-admin-home-page .hc-ops-hero__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  padding: 0.38rem 0.8rem;
+  border: 1px solid rgba(144, 173, 201, 0.42);
+  border-radius: 999px;
+  background: rgba(248, 251, 255, 0.72);
+  color: rgba(31, 63, 98, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.66);
+}
+
+body.hc-admin-home-page .hc-ops-hero__status-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 0 rgba(84, 127, 170, 0.28);
+}
+
+body.hc-admin-home-page .hc-ops-hero__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 2vw, 2.35rem);
+  letter-spacing: -0.035em;
+}
+
+body.hc-admin-home-page .hc-ops-hero__lede {
+  max-width: 62ch;
+  font-size: 0.98rem;
+  line-height: 1.65;
+  color: rgba(15, 23, 42, 0.72);
+}
+
+body.hc-admin-home-page .hc-ops-hero__microgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+body.hc-admin-home-page .hc-ops-hero__microcard,
+body.hc-admin-home-page .hc-admin-map-access__status,
+body.hc-admin-home-page .hc-ops-intelligence__metric {
+  position: relative;
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(170, 197, 220, 0.42);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(245, 249, 253, 0.94));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 18px 30px rgba(23, 52, 84, 0.08);
+}
+
+body.hc-admin-home-page .hc-ops-hero__microvalue,
+body.hc-admin-home-page .hc-admin-map-access__status-value,
+body.hc-admin-home-page .hc-ops-intelligence__value {
+  font-size: clamp(1.15rem, 1.6vw, 1.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: #10233a;
+}
+
+body.hc-admin-home-page .hc-ops-hero__microtext,
+body.hc-admin-home-page .hc-admin-map-access__status-note,
+body.hc-admin-home-page .hc-ops-intelligence__meta {
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: rgba(15, 23, 42, 0.68);
+}
+
+body.hc-admin-home-page .hc-ops-snapshot-shell {
+  padding: 1rem !important;
+}
+
+body.hc-admin-home-page .hc-ops-summary__item {
+  min-height: 138px;
+  display: grid;
+  align-content: start;
+  gap: 0.32rem;
+}
+
+body.hc-admin-home-page .hc-ops-summary__item .small {
+  line-height: 1.5;
+}
+
+body.hc-admin-home-page .hc-ops-command-grid {
+  align-items: stretch;
+}
+
+body.hc-admin-home-page .hc-command-panel {
+  min-height: 100%;
+}
+
+body.hc-admin-home-page .hc-command-panel__body,
+body.hc-admin-home-page .hc-command-list {
+  gap: 0.72rem;
+}
+
+body.hc-admin-home-page .hc-command-action {
+  position: relative;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.5);
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.hc-admin-home-page .hc-command-action:hover,
+body.hc-admin-home-page .hc-command-action:focus-visible {
+  background: rgba(255, 255, 255, 0.76);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 26px rgba(24, 56, 89, 0.1);
+}
+
+body.hc-admin-home-page .hc-admin-map-access .hc-card__header {
+  display: grid;
+  gap: 0.9rem;
+}
+
+body.hc-admin-home-page .hc-admin-map-access__status {
+  margin-top: 0.25rem;
+  max-width: 540px;
+}
+
+body.hc-admin-home-page .hc-admin-map-access__grid,
+body.hc-admin-home-page .hc-ops-intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+body.hc-admin-home-page .hc-ops-intelligence {
+  min-height: 100%;
+}
+
+body.hc-admin-home-page .hc-ops-intelligence .hc-card__header {
+  padding-bottom: 0.9rem;
+}
+
+body.hc-admin-home-page .hc-ops-intelligence__body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+body.hc-admin-home-page .hc-ops-intelligence__metric::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, currentColor, transparent 72%);
+  opacity: 0.18;
+}
+
+body.hc-admin-home-page .hc-ops-table-shell .hc-card__header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+body.hc-admin-home-page .hc-ops-queue-table tbody tr {
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.hc-admin-home-page .hc-ops-queue-table tbody tr td {
+  position: relative;
+}
+
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-critical td:first-child,
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-elevated td:first-child,
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-watch td:first-child,
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-calm td:first-child {
+  padding-left: 1rem;
+}
+
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-critical td:first-child::before,
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-elevated td:first-child::before,
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-watch td:first-child::before,
+body.hc-admin-home-page .hc-ops-queue-row.hc-pressure-calm td:first-child::before {
+  content: "";
+  position: absolute;
+  left: 0.35rem;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.38;
+}
+
+body.hc-admin-home-page .hc-ops-queue-row:hover td {
+  background: rgba(248, 251, 255, 0.86);
+}
+
+body.hc-admin-home-page .hc-ops-hero.hc-pressure-calm .hc-ops-hero__status-dot,
+body.hc-admin-home-page .hc-ops-hero__microcard.hc-pressure-calm .hc-ops-hero__microvalue,
+body.hc-admin-home-page .hc-admin-map-access__status.hc-pressure-calm .hc-admin-map-access__status-value,
+body.hc-admin-home-page .hc-ops-intelligence.hc-pressure-calm .hc-ops-intelligence__value {
+  color: #35689c;
+}
+
+body.hc-admin-home-page .hc-ops-hero.hc-pressure-watch .hc-ops-hero__status-dot,
+body.hc-admin-home-page .hc-ops-hero__microcard.hc-pressure-watch .hc-ops-hero__microvalue,
+body.hc-admin-home-page .hc-admin-map-access__status.hc-pressure-watch .hc-admin-map-access__status-value,
+body.hc-admin-home-page .hc-ops-intelligence.hc-pressure-watch .hc-ops-intelligence__value {
+  color: #8d6b2e;
+}
+
+body.hc-admin-home-page .hc-ops-hero.hc-pressure-elevated .hc-ops-hero__status-dot,
+body.hc-admin-home-page .hc-ops-hero__microcard.hc-pressure-elevated .hc-ops-hero__microvalue,
+body.hc-admin-home-page .hc-admin-map-access__status.hc-pressure-elevated .hc-admin-map-access__status-value,
+body.hc-admin-home-page .hc-ops-intelligence.hc-pressure-elevated .hc-ops-intelligence__value {
+  color: #9a5f21;
+}
+
+body.hc-admin-home-page .hc-ops-hero.hc-pressure-critical .hc-ops-hero__status-dot,
+body.hc-admin-home-page .hc-ops-hero__microcard.hc-pressure-critical .hc-ops-hero__microvalue,
+body.hc-admin-home-page .hc-admin-map-access__status.hc-pressure-critical .hc-admin-map-access__status-value,
+body.hc-admin-home-page .hc-ops-intelligence.hc-pressure-critical .hc-ops-intelligence__value {
+  color: #a34a60;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.hc-admin-home-page .hc-ops-hero__status-dot {
+    animation: hcOpsPulse 3.6s ease-in-out infinite;
+  }
+
+  body.hc-admin-home-page .hc-ops-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.18) 48%, transparent 72%);
+    transform: translateX(-120%);
+    animation: hcOpsShimmer 11s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  body.hc-admin-home-page :is(.hc-ops-hero__microcard, .hc-admin-map-access__status, .hc-ops-intelligence__metric) {
+    animation: hcOpsFloat 9s ease-in-out infinite;
+  }
+
+  body.hc-admin-home-page :is(.hc-ops-hero__microcard, .hc-admin-map-access__status, .hc-ops-intelligence__metric):nth-child(2n) {
+    animation-delay: 1.2s;
+  }
+
+  body.hc-admin-home-page .hc-ops-summary__item.is-alert,
+  body.hc-admin-home-page .hc-ops-summary__value.is-alert {
+    animation: hcOpsBreath 4.8s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.hc-admin-home-page *,
+  body.hc-admin-home-page *::before,
+  body.hc-admin-home-page *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes hcOpsPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(84, 127, 170, 0.22);
+  }
+
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 6px rgba(84, 127, 170, 0);
+  }
+}
+
+@keyframes hcOpsShimmer {
+  0%, 78%, 100% {
+    transform: translateX(-120%);
+  }
+
+  16%, 34% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes hcOpsBreath {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.84;
+  }
+}
+
+@keyframes hcOpsFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 1199.98px) {
+  body.hc-admin-home-page .hc-ops-hero__header {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-admin-home-page .hc-ops-intelligence__body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.hc-admin-home-page .hc-admin-map-access__grid,
+  body.hc-admin-home-page .hc-ops-intelligence-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hc-admin-home-page .hc-ops-hero,
+  body.hc-admin-home-page .hc-ops-snapshot-shell {
+    padding: 1rem !important;
+  }
+
+  body.hc-admin-home-page .hc-ops-hero__microgrid,
+  body.hc-admin-home-page .hc-ops-intelligence__body {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-admin-home-page .hc-ops-summary__item {
+    min-height: 0;
+  }
+}
+
+/* Risk map territorial status pill should replace the old attribution zone cleanly */
+body.hc-admin-risk-map-page .hc-risk-map-shell,
+body.hc-admin-professionals-map-page .hc-risk-map-shell {
+  position: relative;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell > .hc-risk-map-maphint,
+body.hc-admin-professionals-map-page .hc-risk-map-shell > .hc-risk-map-maphint {
+  top: auto !important;
+  left: auto !important;
+  right: 14px !important;
+  bottom: 12px !important;
+  z-index: 500 !important;
+  margin: 0 !important;
+  min-height: 34px;
+  max-width: min(360px, calc(100% - 5.5rem));
+  padding: 0.45rem 0.9rem 0.48rem !important;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(220, 236, 252, 0.62);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(11, 38, 61, 0.96), rgba(21, 72, 109, 0.92)) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  opacity: 1 !important;
+  text-shadow: 0 1px 1px rgba(8, 22, 37, 0.22);
+  box-shadow: 0 8px 18px rgba(15, 47, 75, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+
+body.hc-admin-risk-map-page .hc-risk-map-shell > .hc-risk-map-maphint,
+body.hc-admin-risk-map-page .hc-risk-map-shell > .hc-risk-map-maphint *,
+body.hc-admin-professionals-map-page .hc-risk-map-shell > .hc-risk-map-maphint,
+body.hc-admin-professionals-map-page .hc-risk-map-shell > .hc-risk-map-maphint * {
+  color: #fff !important;
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel,
+body.hc-admin-professionals-map-page .hc-map-command-panel {
+  border-color: rgba(198, 220, 238, 0.24);
+  background:
+    linear-gradient(180deg, rgba(13, 29, 46, 0.94), rgba(18, 38, 60, 0.88)),
+    radial-gradient(circle at top left, rgba(136, 187, 220, 0.12), transparent 46%);
+  box-shadow:
+    0 18px 32px rgba(8, 18, 31, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+body.hc-admin-risk-map-page .hc-map-command-panel__metric,
+body.hc-admin-professionals-map-page .hc-map-command-panel__metric,
+body.hc-admin-risk-map-page .hc-map-command-panel__status,
+body.hc-admin-professionals-map-page .hc-map-command-panel__status {
+  border-color: rgba(203, 224, 241, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 767.98px) {
+  body.hc-admin-risk-map-page .hc-risk-map-shell > .hc-risk-map-maphint,
+  body.hc-admin-professionals-map-page .hc-risk-map-shell > .hc-risk-map-maphint {
+    max-width: calc(100% - 4.75rem);
+    padding-inline: 0.78rem !important;
+    padding-block: 0.42rem 0.45rem !important;
+    font-size: 0.76rem;
+  }
+}
+
+/* Admin operational palette correction: remove rose/beige drift, keep calm navy/steel-blue authority */
+body.hc-page-admin,
+body[data-hc-page^="/ops"] {
+  --hc-primary: #16324f;
+  --hc-primary-soft: rgba(22, 50, 79, 0.08);
+  --hc-warning: #9b7740;
+  --hc-warning-soft: rgba(155, 119, 64, 0.12);
+  --hc-danger: #b42335;
+  --hc-danger-soft: rgba(180, 35, 53, 0.08);
+  --hc-neutral: #48627d;
+  --hc-neutral-soft: rgba(72, 98, 125, 0.1);
+  --hc-critical-surface: linear-gradient(180deg, rgba(246, 248, 251, 0.99), rgba(255, 255, 255, 0.98));
+  --hc-warning-surface: linear-gradient(180deg, rgba(248, 247, 243, 0.99), rgba(255, 255, 255, 0.98));
+  --hc-activity-surface: linear-gradient(180deg, rgba(244, 247, 251, 0.99), rgba(255, 255, 255, 0.98));
+}
+
+body.hc-page-admin .hc-pressure-watch,
+body[data-hc-page^="/ops"] .hc-pressure-watch {
+  --hc-pressure-border: rgba(174, 151, 104, 0.72);
+  --hc-pressure-shadow: 0 16px 28px rgba(67, 56, 36, 0.08);
+  --hc-pressure-glow: rgba(155, 119, 64, 0.06);
+  --hc-pressure-wash-start: rgba(248, 247, 243, 0.98);
+  --hc-pressure-wash-end: rgba(243, 240, 234, 0.96);
+  color: #8a6837;
+}
+
+body.hc-page-admin .hc-pressure-elevated,
+body[data-hc-page^="/ops"] .hc-pressure-elevated {
+  --hc-pressure-border: rgba(156, 134, 88, 0.74);
+  --hc-pressure-shadow: 0 18px 30px rgba(52, 64, 82, 0.09);
+  --hc-pressure-glow: rgba(104, 130, 160, 0.06);
+  --hc-pressure-wash-start: rgba(244, 247, 251, 0.98);
+  --hc-pressure-wash-end: rgba(237, 243, 248, 0.96);
+  color: #6d5f46;
+}
+
+body.hc-page-admin .hc-pressure-critical,
+body[data-hc-page^="/ops"] .hc-pressure-critical {
+  --hc-pressure-border: rgba(180, 35, 53, 0.34);
+  --hc-pressure-shadow: 0 18px 32px rgba(94, 27, 40, 0.1);
+  --hc-pressure-glow: rgba(180, 35, 53, 0.05);
+  --hc-pressure-wash-start: rgba(247, 248, 251, 0.99);
+  --hc-pressure-wash-end: rgba(242, 245, 249, 0.97);
+  color: #b42335;
+}
+
+body.hc-page-admin .hc-map-pressure-high {
+  --hc-map-pressure-accent: rgba(200, 139, 43, 0.34);
+}
+
+body.hc-page-admin .hc-map-pressure-critical {
+  --hc-map-pressure-accent: rgba(180, 35, 53, 0.28);
+}
+
+body.hc-admin-risk-map-page :is(.hc-map-command-panel, .hc-map-command-panel__status).hc-pressure-elevated,
+body.hc-admin-professionals-map-page :is(.hc-map-command-panel, .hc-map-command-panel__status).hc-pressure-elevated {
+  --hc-pressure-accent: rgba(200, 139, 43, 0.92);
+  --hc-pressure-panel-glow: 0 0 0 10px rgba(155, 119, 64, 0.08);
+}
+
+body.hc-admin-risk-map-page :is(.hc-map-command-panel, .hc-map-command-panel__status).hc-pressure-critical,
+body.hc-admin-professionals-map-page :is(.hc-map-command-panel, .hc-map-command-panel__status).hc-pressure-critical {
+  --hc-pressure-accent: rgba(180, 35, 53, 0.92);
+  --hc-pressure-panel-glow: 0 0 0 10px rgba(180, 35, 53, 0.08);
+}
+
+body.hc-page-admin .leaflet-marker-icon.is-active .hc-map-ringMarker--critical,
+body.hc-page-admin .leaflet-marker-icon.is-selected .hc-map-ringMarker--critical {
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.96),
+    0 0 0 14px rgba(180, 35, 53, 0.16),
+    0 22px 34px rgba(94, 27, 40, 0.22);
+}
+
+body.hc-page-admin :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red),
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert),
+body.hc-page-admin .hc-risk-overview__item:nth-child(1),
+body[data-hc-page^="/ops"] :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red),
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert),
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(1) {
+  border-color: rgba(180, 35, 53, 0.26) !important;
+  background:
+    linear-gradient(180deg, rgba(247, 249, 252, 0.995), rgba(255, 255, 255, 0.98)) !important;
+  box-shadow:
+    0 14px 28px rgba(94, 27, 40, 0.065),
+    0 2px 7px rgba(15, 23, 42, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+}
+
+body.hc-page-admin :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red)::before,
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert)::before,
+body.hc-page-admin .hc-risk-overview__item:nth-child(1)::before,
+body[data-hc-page^="/ops"] :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red)::before,
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert)::before,
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(1)::before {
+  background: linear-gradient(180deg, rgba(180, 35, 53, 0.94), rgba(180, 35, 53, 0.34));
+}
+
+body.hc-page-admin :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red) :is(.hc-kpi__value, .hc-kpi-value, .hc-riskcard__value),
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert) :is(.hc-ops-summary__value, .hc-notify-summary__value),
+body.hc-page-admin .hc-risk-overview__item:nth-child(1) .hc-risk-overview__value,
+body[data-hc-page^="/ops"] :is(.hc-kpi-card--alert, .hc-kpi--critical, .hc-kpi--failed, .hc-riskcard--red) :is(.hc-kpi__value, .hc-kpi-value, .hc-riskcard__value),
+body[data-hc-page^="/ops"] :is(.hc-ops-summary__item, .hc-notify-summary__item):has(.is-alert) :is(.hc-ops-summary__value, .hc-notify-summary__value),
+body[data-hc-page^="/ops"] .hc-risk-overview__item:nth-child(1) .hc-risk-overview__value {
+  color: #8c1d2e;
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-case-row--critical td {
+  background: linear-gradient(180deg, rgba(247, 249, 252, 0.99), rgba(255, 255, 255, 0.97)) !important;
+}
+
+.hc-admin-requests-page .hc-cases-table .hc-case-row--critical td:first-child {
+  box-shadow: inset 3px 0 0 rgba(180, 35, 53, 0.72);
+}
+
+body.hc-admin-home-page .hc-ops-hero.hc-pressure-critical .hc-ops-hero__status-dot,
+body.hc-admin-home-page .hc-ops-hero__microcard.hc-pressure-critical .hc-ops-hero__microvalue,
+body.hc-admin-home-page .hc-admin-map-access__status.hc-pressure-critical .hc-admin-map-access__status-value,
+body.hc-admin-home-page .hc-ops-intelligence.hc-pressure-critical .hc-ops-intelligence__value {
+  color: #b42335;
+}
+
+/* Admin home polish: calmer hierarchy, fewer competing mini-boxes */
+body.hc-admin-home-page .hc-admin-wrap {
+  gap: 1.25rem;
+}
+
+body.hc-admin-home-page :is(.hc-ops-hero, .hc-ops-snapshot-shell, .hc-command-panel, .hc-admin-map-access, .hc-ops-intelligence, .hc-ops-table-shell) {
+  border-radius: 22px;
+  border-color: rgba(216, 226, 239, 0.92) !important;
+  box-shadow:
+    0 18px 34px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82) !important;
+}
+
+body.hc-admin-home-page :is(.hc-ops-snapshot-shell, .hc-command-panel, .hc-admin-map-access, .hc-ops-intelligence, .hc-ops-table-shell) {
+  padding: 1.15rem 1.2rem !important;
+}
+
+body.hc-admin-home-page :is(.hc-command-grid, .hc-ops-intelligence-grid, .hc-admin-map-access__grid) {
+  gap: 1.15rem;
+}
+
+body.hc-admin-home-page :is(.hc-command-panel__kicker, .hc-admin-kicker, .hc-ops-hero__eyebrow) {
+  margin-bottom: 0.22rem;
+  color: rgba(72, 98, 125, 0.82);
+}
+
+body.hc-admin-home-page :is(.hc-command-panel__title, .hc-section-title, .hc-ops-intelligence .h6, .hc-ops-table-shell .h6) {
+  margin-bottom: 0.3rem !important;
+  color: #16324f;
+  letter-spacing: -0.02em;
+}
+
+body.hc-admin-home-page :is(.hc-command-panel .hc-muted, .hc-card__header .hc-muted, .hc-ops-hero__lede) {
+  color: rgba(72, 98, 125, 0.82);
+}
+
+body.hc-admin-home-page .hc-ops-hero {
+  padding: 1.6rem 1.65rem;
+}
+
+body.hc-admin-home-page .hc-ops-hero__header {
+  gap: 1.45rem;
+}
+
+body.hc-admin-home-page .hc-ops-hero__microgrid {
+  gap: 0.95rem;
+}
+
+body.hc-admin-home-page .hc-ops-summary__item {
+  min-height: 124px;
+  padding: 0.95rem 1rem;
+}
+
+body.hc-admin-home-page .hc-ops-hero__microcard,
+body.hc-admin-home-page .hc-ops-summary__item,
+body.hc-admin-home-page .hc-admin-map-access__status {
+  border-width: 1px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+body.hc-admin-home-page .hc-command-panel__body,
+body.hc-admin-home-page .hc-command-list,
+body.hc-admin-home-page .hc-ops-intelligence__body {
+  gap: 0.75rem;
+}
+
+body.hc-admin-home-page .hc-command-action,
+body.hc-admin-home-page .hc-ops-intelligence__metric {
+  border: 1px solid rgba(216, 226, 239, 0.66);
+  background: rgba(244, 247, 251, 0.58);
+  box-shadow: none;
+}
+
+body.hc-admin-home-page .hc-command-action {
+  padding: 0.78rem 0.88rem;
+}
+
+body.hc-admin-home-page .hc-command-action strong,
+body.hc-admin-home-page .hc-ops-intelligence__value {
+  color: #16324f;
+}
+
+body.hc-admin-home-page .hc-command-action__label,
+body.hc-admin-home-page .hc-ops-intelligence__label {
+  color: rgba(72, 98, 125, 0.84);
+}
+
+body.hc-admin-home-page .hc-ops-hero__microtext,
+body.hc-admin-home-page .hc-admin-map-access__status-note,
+body.hc-admin-home-page .hc-ops-intelligence__meta,
+body.hc-admin-home-page .hc-command-list a,
+body.hc-admin-home-page .hc-command-action__label {
+  color: rgba(72, 98, 125, 0.82);
+}
+
+body.hc-admin-home-page .hc-command-action--focus,
+body.hc-admin-home-page .hc-ops-intelligence__metric--focus,
+body.hc-admin-home-page .hc-ops-hero__microcard--focus {
+  border-color: rgba(194, 208, 224, 0.9);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(244, 247, 251, 0.94));
+}
+
+body.hc-admin-home-page .hc-command-action--focus strong,
+body.hc-admin-home-page .hc-ops-intelligence__metric--focus .hc-ops-intelligence__value,
+body.hc-admin-home-page .hc-ops-hero__microcard--focus .hc-ops-hero__microvalue {
+  color: #0f2740;
+}
+
+body.hc-admin-home-page .hc-command-action:hover,
+body.hc-admin-home-page .hc-command-action:focus-visible {
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 10px 18px rgba(24, 56, 89, 0.06);
+}
+
+body.hc-admin-home-page .hc-command-list a {
+  padding: 0.1rem 0;
+}
+
+body.hc-admin-home-page .hc-command-list a + a {
+  border-top: 1px solid rgba(216, 226, 239, 0.58);
+  padding-top: 0.72rem;
+}
+
+body.hc-admin-home-page .hc-ops-intelligence .hc-card__header,
+body.hc-admin-home-page .hc-admin-map-access .hc-card__header,
+body.hc-admin-home-page .hc-ops-table-shell .hc-card__header {
+  padding-bottom: 1rem;
+}
+
+body.hc-admin-home-page .hc-ops-intelligence__metric::before {
+  opacity: 0.1;
+}
+
+body.hc-admin-home-page .hc-ops-table-shell .hc-card__header {
+  margin-bottom: 0.2rem;
+}
+
+body.hc-admin-home-page .hc-ops-queue-table thead th {
+  color: rgba(72, 98, 125, 0.86);
 }
 

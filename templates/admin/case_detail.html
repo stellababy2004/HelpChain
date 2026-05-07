@@ -87,7 +87,7 @@
       </div>
       <div class="hc-case-detail-hero__actions">
         <span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_cases_list') }}">Retour aux cas</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list') if request.path.startswith('/ops') else url_for('admin.admin_cases_list') }}">Retour aux cas</a>
       </div>
     </div>
   </div>

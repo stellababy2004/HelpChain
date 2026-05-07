@@ -233,3 +233,160 @@ body.hc-page-home .hc-trust-layer__grid {
     justify-content: flex-start;
   }
 }
+
+/* Homepage nav hard override
+   Keeps the premium home navbar flush to the top even when legacy public-nav
+   spacing rules are still active higher in the stack. */
+body.hc-page-home {
+  padding-top: 0 !important;
+}
+
+body.hc-page-home .hc-main-content {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+body.hc-page-home .hc-main-content > .hc-home-premium {
+  margin-top: 0 !important;
+}
+
+body.hc-page-home .hc-public-nav-root {
+  display: none !important;
+}
+
+body.hc-page-home .hc-home-premium__nav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  margin-top: 0 !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  background: rgba(251, 252, 254, 0.96) !important;
+  border-bottom: 1px solid rgba(203, 213, 225, 0.92) !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05) !important;
+}
+
+body.hc-page-home .hc-home-premium__nav-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(16px, 2vw, 32px);
+  max-width: 1320px;
+  min-height: 68px;
+  margin: 0 auto;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+body.hc-page-home .hc-home-premium__brand {
+  white-space: nowrap;
+}
+
+body.hc-page-home .hc-home-premium__brand-mark {
+  width: 32px;
+  height: 32px;
+}
+
+body.hc-page-home .hc-home-premium__brand-text {
+  font-size: 1.02rem;
+  line-height: 1;
+}
+
+body.hc-page-home .hc-home-premium__menu {
+  justify-content: center;
+  gap: clamp(8px, 1vw, 18px);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+body.hc-page-home .hc-home-premium__menu a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.55rem 0.9rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+body.hc-page-home .hc-home-premium__nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+body.hc-page-home .hc-home-premium__nav-actions .btn {
+  min-height: 44px;
+  padding: 0.7rem 1.45rem;
+  border-radius: 18px;
+  white-space: nowrap;
+}
+
+body.hc-page-home .hc-home-premium__hero {
+  padding-top: 48px !important;
+}
+
+@media (max-width: 991.98px) {
+  body.hc-page-home .hc-home-premium__nav {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-inner {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+    min-height: 0;
+    gap: 12px;
+  }
+
+  body.hc-page-home .hc-home-premium__brand {
+    justify-self: center;
+  }
+
+  body.hc-page-home .hc-home-premium__menu {
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-actions {
+    justify-content: center;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-actions .btn {
+    width: min(100%, 320px);
+  }
+}
+
+@media (max-width: 767.98px) {
+  body.hc-page-home .hc-home-premium__nav {
+    padding-inline: 14px;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-inner {
+    gap: 10px;
+  }
+
+  body.hc-page-home .hc-home-premium__menu {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.hc-page-home .hc-home-premium__menu a {
+    width: 100%;
+    min-height: 46px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+  }
+
+  body.hc-page-home .hc-home-premium__nav-actions .btn {
+    width: 100%;
+  }
+
+  body.hc-page-home .hc-home-premium__hero {
+    padding-top: 36px !important;
+  }
+}

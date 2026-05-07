@@ -975,7 +975,9 @@
 
         }.get(row_status, row_status|upper) %}
 
-        {% if not r.owner_id %}
+        {% set owner_missing = (owner_missing_by_id or {}).get(r.id, (not r.owner_id)) %}
+
+        {% if owner_missing %}
 
           {% set owner_state = 'free' %}
 
@@ -1010,10 +1012,13 @@
         {% set category_label = request_category_label(r.category) %}
         {% set sig = last_signal_by_req.get(r.id) %}
         {% set eng = engagement_by_request.get(r.id) %}
-        {% set activity_at = (sig.updated_at or sig.created_at) if sig else r.created_at %}
+        {% set last_activity_at = (last_activity_at_by_id or {}).get(r.id) %}
+        {% set activity_at = last_activity_at or ((sig.updated_at or sig.created_at) if sig else r.created_at) %}
         {% set activity_label = 'Dernière activité' %}
         {% set nu = (nudge_ui or {}).get(r.id, {}) %}
         {% set is_disabled = nu.get('disabled', False) %}
+        {% set not_seen_hours = (not_seen_hours_by_id or {}).get(r.id, 0) %}
+        {% set stale_72h = (stale_72h_by_id or {}).get(r.id, false) %}
 
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
 
@@ -1026,6 +1031,8 @@
             data-assigned-volunteer-id="{{ r.assigned_volunteer_id or '' }}"
 
             data-owner-id="{{ r.owner_id or '' }}"
+            data-has-owner="{{ '0' if owner_missing else '1' }}"
+            data-owner-missing="{{ '1' if owner_missing else '0' }}"
 
             data-owner-state="{{ owner_state }}"
 
@@ -1034,14 +1041,18 @@
             data-service="{{ ((r.service.name if r.service else '') or '')|lower }}"
 
             data-priority-label="{{ row_priority }}"
+            data-status="{{ row_status }}"
 
             data-sig-can-help="{{ ch }}"
 
             data-sig-cant-help="{{ cc }}"
 
             data-risk-level="{{ (r.risk_level or 'standard')|lower }}"
+            data-risk-score="{{ r.risk_score or 0 }}"
 
-            data-not-seen-hours="{{ risk_notseen_tier_hours or 0 }}"
+            data-last-activity-at="{{ activity_at.isoformat() if activity_at else '' }}"
+            data-not-seen-hours="{{ not_seen_hours }}"
+            data-stale-72h="{{ '1' if stale_72h else '0' }}"
 
             data-priority="{{ row_priority }}"
 
@@ -1205,9 +1216,9 @@
 
                         {% endif %}
 
-                        {% if risk_notseen_tier_hours %}
+                        {% if not_seen_hours %}
 
-                          {% if risk_notseen_tier_hours >= 72 %}
+                          {% if not_seen_hours >= 72 %}
 
                             {% set risk_badge_class = 'text-bg-danger' %}
 
@@ -1217,17 +1228,17 @@
 
                           {% endif %}
 
-                          <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ risk_notseen_tier_hours }}h+</span>
+                          <span class="badge {{ risk_badge_class }}" title="{{ _('Not seen risk tier') }}">{{ not_seen_hours }}h+</span>
 
                         {% endif %}
 
-                        {% if not r.owner_id and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
+                        {% if owner_missing and age_days >= SLA_WARN_NO_OWNER_DAYS and r.status not in ['done','rejected'] %}
 
                           <span class="badge text-bg-warning" title="Aucun responsable assign">Sans responsable</span>
 
                         {% endif %}
 
-                        {% if age_days >= SLA_STALE_DAYS and r.status not in ['done','rejected'] %}
+                        {% if stale_72h and r.status not in ['done','rejected'] %}
 
                           <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
 
@@ -1307,7 +1318,7 @@
 
                     </div>
 
-                    {% if not r.owner_id %}
+                    {% if owner_missing %}
 
                       <span class="badge text-bg-primary" data-request-owner-badge>Sans responsable</span>
 
@@ -1347,7 +1358,7 @@
 
                     </a>
 
-                    {% if not r.owner_id %}
+                    {% if owner_missing %}
 
                       <form
                         method="post"

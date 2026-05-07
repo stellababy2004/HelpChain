@@ -432,9 +432,159 @@
           flex-wrap: wrap;
           gap: 0.8rem 1rem;
         }
-    }
-  </style>
+      }
+    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}?v=20260506-ux-pass">
+    <style>
+      body.hc-page-home {
+        padding-top: 0 !important;
+      }
+
+      body.hc-page-home .main-nav {
+        top: 0;
+        min-height: 0;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        background: rgba(247, 250, 253, 0.96) !important;
+        border-bottom: 1px solid rgba(17, 35, 60, 0.1) !important;
+        box-shadow: 0 10px 28px rgba(14, 27, 48, 0.06) !important;
+      }
+
+      body.hc-page-home .main-nav .container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        max-width: 1320px;
+        min-height: 74px;
+        padding-top: 0.45rem !important;
+        padding-bottom: 0.45rem !important;
+      }
+
+      body.hc-page-home .navbar-brand-light {
+        display: inline-flex;
+        align-items: center;
+        flex: 0 0 auto;
+        color: var(--hc-b2b-ink);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      body.hc-page-home .main-nav .navbar-toggler {
+        margin-left: auto;
+        border: 1px solid rgba(17, 35, 60, 0.12);
+        border-radius: 14px;
+        padding: 0.55rem 0.7rem;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 8px 18px rgba(14, 27, 48, 0.08);
+      }
+
+      body.hc-page-home .main-nav .navbar-toggler:focus {
+        box-shadow: 0 0 0 0.2rem rgba(21, 59, 111, 0.14);
+      }
+
+      body.hc-page-home .main-nav .navbar-collapse {
+        display: flex;
+        flex-grow: 1;
+        align-items: center;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+
+      body.hc-page-home .nav-menu {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: flex-end;
+        gap: clamp(0.45rem, 1vw, 1rem);
+      }
+
+      body.hc-page-home .nav-link-light {
+        display: inline-flex;
+        align-items: center;
+        min-height: 42px;
+        padding: 0.6rem 0.9rem;
+        border-radius: 14px;
+        color: #35506d;
+        line-height: 1.1;
+        transition: color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+      }
+
+      body.hc-page-home .nav-link-light:hover {
+        background: rgba(21, 59, 111, 0.06);
+        color: #153b6f;
+      }
+
+      body.hc-page-home .nav-menu li:last-child .nav-link-light {
+        justify-content: center;
+        min-width: clamp(172px, 16vw, 236px);
+        min-height: 48px;
+        padding-inline: 1.25rem;
+        color: #ffffff;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        box-shadow: 0 16px 30px rgba(37, 99, 235, 0.18);
+      }
+
+      body.hc-page-home .nav-menu li:last-child .nav-link-light:hover {
+        color: #ffffff;
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+        box-shadow: 0 18px 34px rgba(37, 99, 235, 0.22);
+      }
+
+      @media (min-width: 768px) {
+        body.hc-page-home .main-nav .navbar-collapse {
+          display: flex !important;
+        }
+      }
+
+      @media (max-width: 767.98px) {
+        body.hc-page-home .main-nav .container {
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          min-height: 64px;
+          padding-top: 0.35rem !important;
+          padding-bottom: 0.35rem !important;
+        }
+
+        body.hc-page-home .main-nav .navbar-collapse {
+          display: block;
+          flex-basis: 100%;
+          margin-top: 0.2rem;
+          padding-top: 0.2rem;
+          border-top: 1px solid rgba(17, 35, 60, 0.08);
+        }
+
+        body.hc-page-home .main-nav .navbar-collapse:not(.show) {
+          display: none;
+        }
+
+        body.hc-page-home .nav-menu {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.45rem;
+          padding: 0.4rem 0 0.7rem;
+        }
+
+        body.hc-page-home .nav-link-light {
+          justify-content: center;
+          width: 100%;
+          min-height: 46px;
+          background: rgba(255, 255, 255, 0.72);
+          border: 1px solid rgba(17, 35, 60, 0.08);
+          box-shadow: 0 8px 18px rgba(14, 27, 48, 0.04);
+        }
+
+        body.hc-page-home .nav-menu li:last-child .nav-link-light {
+          width: 100%;
+          min-width: 0;
+        }
+
+        body.hc-page-home .hc-home__hero {
+          padding-top: 52px;
+        }
+      }
+    </style>
   </head>
 
   <body class="hc-page-home" data-theme="light">
@@ -456,7 +606,7 @@
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+        <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="nav-menu ms-auto">
             <li><a class="nav-link-light" href="#how-it-works">{{ _('Fonctionnement') }}</a></li>
             <li><a class="nav-link-light" href="#pilotage">{{ _('Pilotage') }}</a></li>

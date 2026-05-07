@@ -9,19 +9,7 @@
 
   const closeEls = nav.querySelectorAll("[data-mobile-nav-close='1']");
   const firstLink = nav.querySelector(".hc-mobile-nav__item a");
-  const isHomePage = document.body.classList.contains("hc-page-home");
   const widthSwitch = 1079;
-
-  function isCrowdedDesktop() {
-    const navList = desktopNav.querySelector(".navbar-nav");
-    const actionRow = desktopNav.querySelector(".hc-public-nav-actions");
-    const tooTallDesktop = desktopNav.scrollHeight > desktopNav.clientHeight + 8;
-    const navWrap = navList && navList.scrollHeight > navList.clientHeight + 4;
-    const tooWideDesktop = desktopNav.scrollWidth > desktopNav.clientWidth + 56;
-    const navOverflow = navList && navList.scrollWidth > navList.clientWidth + 36;
-    const actionsOverflow = actionRow && actionRow.scrollWidth > actionRow.clientWidth + 10;
-    return Boolean(tooTallDesktop || navWrap || tooWideDesktop || navOverflow || actionsOverflow);
-  }
 
   function closeNav(returnFocus) {
     nav.classList.remove("is-open");
@@ -32,11 +20,7 @@
   }
 
   function applyResponsiveNavMode() {
-    let useMobile = window.innerWidth <= widthSwitch;
-    if (!useMobile) {
-      navRoot.classList.remove("hc-nav-mobile-mode");
-      useMobile = !isHomePage && isCrowdedDesktop();
-    }
+    const useMobile = window.innerWidth <= widthSwitch;
     navRoot.classList.toggle("hc-nav-mobile-mode", useMobile);
     if (!useMobile && nav.classList.contains("is-open")) closeNav(false);
   }

@@ -379,6 +379,106 @@
         position: relative;
         z-index: 1105;
       }
+
+      /* Public navbar stability contract: same height, same position and same
+         visual state across public pages and scroll positions. */
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar,
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar.is-scrolled {
+        position: sticky;
+        top: 0;
+        inset-inline: 0;
+        z-index: 1100;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        border-inline: 0;
+        border-top: 0;
+        min-height: 56px;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.985), rgba(247, 250, 253, 0.975));
+        box-shadow: none;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: none;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .container-fluid {
+        min-height: 56px;
+        align-items: center;
+        max-width: 1380px;
+        margin-inline: auto;
+        padding-inline: 1.4rem !important;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .navbar-brand {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-brand-mark {
+        width: 23px;
+        height: 23px;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-brand-title {
+        font-size: 0.98rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-main,
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-actions,
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .navbar-collapse {
+        align-items: center;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-main {
+        gap: 0.25rem;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link {
+        min-height: 36px;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.98rem;
+        font-weight: 600;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link:not(.hc-nav-cta) {
+        border-radius: 999px;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-actions {
+        gap: 0.85rem !important;
+        margin-left: 1rem;
+        padding-left: 1.1rem;
+        border-left: 1px solid rgba(197, 208, 220, 0.9);
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-public-nav-login {
+        color: #5b6780;
+        font-weight: 600;
+      }
+
+      body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .nav-link.hc-nav-cta {
+        min-height: 38px;
+        padding: 0.7rem 1.35rem;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #2a4f92 0%, #1d457f 100%);
+        box-shadow: 0 10px 22px rgba(29, 69, 127, 0.18);
+      }
+
+      @media (max-width: 1079.98px) {
+        body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar,
+        body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar.is-scrolled,
+        body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .container-fluid {
+          min-height: 72px;
+        }
+
+        body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .navbar-brand {
+          min-height: 46px;
+        }
+      }
     </style>
     {% block head %}{% endblock %}
   </head>

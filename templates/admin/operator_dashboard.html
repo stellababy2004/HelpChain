@@ -13,7 +13,7 @@
       </div>
       <div class="hc-admin-actions">
         <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">+ Nouvelle demande</a>
-        <a class="btn btn-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
+        <button type="button" class="btn btn-primary btn-sm hc-ops-quickbtn" data-ops-quick-filter="critical" aria-pressed="false">Voir cas critiques</button>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir sécurité</a>
       </div>
     </div>
@@ -60,10 +60,11 @@
         <p class="hc-section-subtitle">Basculez directement vers les files qui nécessitent une action.</p>
       </div>
     </div>
-    <div class="hc-ops-actions">
-      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', owner='none') }}">Voir non assignés</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', stale='1') }}">Voir cas sans action</a>
+    <div class="hc-ops-actions" id="hcOpsQuickFilters">
+      <button type="button" class="btn btn-outline-primary btn-sm hc-ops-quickbtn" data-ops-quick-filter="critical" aria-pressed="false">Voir cas critiques</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm hc-ops-quickbtn" data-ops-quick-filter="owner_missing" aria-pressed="false">Voir non assignés</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm hc-ops-quickbtn" data-ops-quick-filter="stale_72h" aria-pressed="false">Voir cas sans action</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm hc-ops-quickbtn hc-ops-quickbtn--clear" data-ops-quick-filter="clear" aria-pressed="false" hidden>Effacer le filtre rapide</button>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">Notifications en échec</a>
     </div>
   </div>
@@ -90,10 +91,16 @@
             <th class="col-action text-end">Action</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="hcOpsWorkspaceRows">
           {% for r in queue_rows %}
-            {% set activity_ref = r.updated_at or r.created_at %}
-            <tr>
+            {% set activity_ref = (workspace_last_activity_by_id or {}).get(r.id) or r.updated_at or r.created_at %}
+            {% set row_flags = workspace_row_flags.get(r.id, {}) %}
+            <tr
+              data-critical="{{ row_flags.get('critical', 0) }}"
+              data-owner-missing="{{ row_flags.get('owner_missing', 0) }}"
+              data-stale-72h="{{ row_flags.get('stale_72h', 0) }}"
+              data-notification-failed="{{ row_flags.get('notification_failed', 0) }}"
+            >
               <td class="text-muted hc-ops-cell-id">#{{ r.id }}</td>
               <td class="hc-ops-cell-request col-request">
                 <span class="hc-ops-title" title="{{ r.title }}">{{ r.title or '—' }}</span>
@@ -139,7 +146,7 @@
                 {% else %}
                   {% set linked_case_id = case_links_by_request.get(r.id) if case_links_by_request is defined else None %}
                   {% if linked_case_id %}
-                    <a class="btn btn-sm btn-primary" href="{{ url_for('admin.admin_case_detail', case_id=linked_case_id) }}">Ouvrir</a>
+                    <a class="btn btn-sm btn-primary" href="{{ url_for('ops.ops_case_detail', case_id=linked_case_id) }}">Ouvrir</a>
                   {% else %}
                     <a class="btn btn-sm btn-primary" href="{{ url_for('ops.ops_request_detail', req_id=r.id) }}">Ouvrir</a>
                   {% endif %}
@@ -147,7 +154,7 @@
               </td>
             </tr>
           {% else %}
-            <tr>
+            <tr id="hcOpsWorkspaceServerEmpty">
               <td colspan="8" class="py-4">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">Aucune situation urgente</div>
@@ -156,6 +163,16 @@
               </td>
             </tr>
           {% endfor %}
+          {% if queue_rows %}
+            <tr id="hcOpsWorkspaceNoMatch" hidden>
+              <td colspan="8" class="py-4">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucune ligne pour ce filtre rapide</div>
+                  <div class="hc-empty-state__text">Aucune situation affichée ne correspond au filtre sélectionné. Effacez le filtre rapide pour revoir toute la file.</div>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
@@ -191,4 +208,9 @@
     </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/ops-workspace.js') }}"></script>
 {% endblock %}

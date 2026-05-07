@@ -1,6 +1,25 @@
 {% extends "layouts/admin_workspace.html" %}
 {% block title %}{{ _('Admin') }} • {{ _('Roles') }} | HelpChain{% endblock %}
-{% block admin_body_class %} hc-admin-requests-page hc-admin-table-page hc-admin-roles-page{% endblock %}
+{% block admin_body_class %} hc-admin-table-page hc-admin-roles-page{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    body.hc-page-admin.hc-admin-roles-page .hc-admin-table thead th{
+      position: static !important;
+      top: auto !important;
+    }
+
+    @media (min-width: 1201px){
+      body.hc-page-admin.hc-admin-roles-page .hc-admin-table :is(th, td):nth-child(1),
+      body.hc-page-admin.hc-admin-roles-page .hc-admin-table :is(th, td):nth-child(2),
+      body.hc-page-admin.hc-admin-roles-page .hc-admin-table :is(th, td):nth-child(3){
+        position: static !important;
+        left: auto !important;
+        z-index: auto !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-shell hc-admin-shell--narrow">
@@ -27,28 +46,29 @@
         </thead>
         <tbody>
           {% for u in admins %}
+          {% set role_form_id = 'admin-role-form-' ~ u.id %}
           <tr>
             <td class="small">{{ u.username }}</td>
             <td class="small">{{ u.email }}</td>
             <td>
-              <form method="POST" action="{{ url_for('admin.admin_roles_set_role', admin_id=u.id) }}" class="d-flex gap-2 align-items-center">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                {% set normalized = (u.role.value if u.role and u.role.value is defined else u.role)|string|lower %}
-                {% if normalized in ['admin', 'super_admin'] %}
-                  {% set normalized = 'superadmin' %}
-                {% endif %}
-                <select class="form-select form-select-sm" name="role" style="max-width: 180px;"
-                        {% if last_superadmin_id == u.id %}title="{{ _('Last superadmin') }}"{% endif %}>
-                  {% for val, label in role_options %}
-                    <option value="{{ val }}" {% if normalized == val %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-                <button type="submit" class="btn btn-primary btn-sm">{{ _('Save') }}</button>
-              </form>
+              {% set normalized = (u.role.value if u.role and u.role.value is defined else u.role)|string|lower %}
+              {% if normalized in ['admin', 'super_admin'] %}
+                {% set normalized = 'superadmin' %}
+              {% endif %}
+              <select class="form-select form-select-sm" name="role" form="{{ role_form_id }}" style="max-width: 180px;"
+                      {% if last_superadmin_id == u.id %}title="{{ _('Last superadmin') }}"{% endif %}>
+                {% for val, label in role_options %}
+                  <option value="{{ val }}" {% if normalized == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
             </td>
             <td class="small text-muted">
+              <form id="{{ role_form_id }}" method="POST" action="{{ url_for('admin.admin_roles_set_role', admin_id=u.id) }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              </form>
+              <button type="submit" class="btn btn-primary btn-sm" form="{{ role_form_id }}">{{ _('Save') }}</button>
               {% if last_superadmin_id == u.id %}
-                {{ _('Last superadmin') }}
+                <span class="ms-2">{{ _('Last superadmin') }}</span>
               {% endif %}
             </td>
           </tr>

@@ -8,11 +8,17 @@
   {{ super() }}
   <style>
     .hc-page-structures .hc-hero {
-      padding: 4.6rem 0 3.6rem;
+      padding: 5.5rem 0 3.9rem;
       border-bottom: 1px solid rgba(20, 35, 55, 0.08);
     }
     .hc-page-structures .hc-hero > .hc-container > * + * {
       margin-top: 0.95rem;
+    }
+    .hc-page-structures .hc-hero h1 {
+      max-width: 14ch;
+      margin: 0;
+      line-height: 0.98;
+      letter-spacing: -0.04em;
     }
     .hc-page-structures .hc-hero__eyebrow {
       display: inline-block;
@@ -28,6 +34,20 @@
       font-size: 1.08rem;
       line-height: 1.65;
       color: #31465d;
+    }
+    .hc-page-structures .hc-dossier-note {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      padding: 0.95rem 1.1rem;
+      border: 1px solid rgba(20, 35, 55, 0.1);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.84);
+      box-shadow: 0 12px 28px rgba(20, 35, 55, 0.06);
+    }
+    .hc-page-structures .hc-dossier-note__title,
+    .hc-page-structures .hc-dossier-note__text {
+      margin: 0;
     }
     .hc-page-structures .hc-audience-row {
       display: flex;
@@ -48,6 +68,31 @@
     }
     .hc-page-structures .hc-cta-row {
       margin-top: 1rem;
+    }
+    .hc-page-structures .hc-proof-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.4rem;
+    }
+    .hc-page-structures .hc-proof-card {
+      padding: 1rem 1rem 0.95rem;
+      border: 1px solid rgba(20, 35, 55, 0.1);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.96));
+      box-shadow: 0 18px 40px rgba(20, 35, 55, 0.06);
+    }
+    .hc-page-structures .hc-proof-card__title {
+      margin: 0 0 0.35rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #142337;
+    }
+    .hc-page-structures .hc-proof-card__text {
+      margin: 0;
+      color: #4f6277;
+      font-size: 0.95rem;
+      line-height: 1.55;
     }
     .hc-page-structures .hc-section {
       padding: 3.7rem 0;
@@ -145,6 +190,12 @@
     }
     .hc-page-structures .hc-final-cta {
       padding: 2rem;
+      border: 1px solid rgba(20, 35, 55, 0.1);
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at top right, rgba(95, 135, 170, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(243, 247, 252, 0.98));
+      box-shadow: 0 22px 46px rgba(20, 35, 55, 0.08);
     }
     .hc-page-structures .hc-final-cta__actions {
       margin-top: 1.25rem;
@@ -158,12 +209,14 @@
       margin-top: 2rem;
     }
     @media (max-width: 1024px) {
+      .hc-page-structures .hc-proof-grid,
       .hc-page-structures .hc-process-grid,
       .hc-page-structures .hc-trust-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
     @media (max-width: 768px) {
+      .hc-page-structures .hc-proof-grid,
       .hc-page-structures .hc-split,
       .hc-page-structures .hc-contrast-grid,
       .hc-page-structures .hc-pilot-grid,
@@ -172,24 +225,27 @@
         grid-template-columns: 1fr;
       }
       .hc-page-structures .hc-hero {
-        padding: 3.25rem 0 2.5rem;
+        padding: 3.4rem 0 2.5rem;
       }
     }
     @media (max-width: 768px) {
       .hc-page-structures .hc-hero {
-        padding: 1.5rem 0 1.6rem;
+        padding: 2.35rem 0 1.8rem;
       }
       .hc-page-structures .hc-hero > .hc-container > * + * {
         margin-top: 0.75rem;
       }
       .hc-page-structures .hc-hero h1 {
+        max-width: 11ch;
         margin-bottom: 0.75rem;
+        line-height: 1.02;
       }
       .hc-page-structures .hc-hero p {
         margin-bottom: 0.75rem;
       }
       .hc-page-structures .hc-dossier-note {
         margin-top: 0.25rem;
+        padding: 0.85rem 0.95rem;
       }
       .hc-page-structures .hc-cta-row {
         gap: 0.75rem;
@@ -232,6 +288,7 @@
       .hc-page-structures .hc-process-grid,
       .hc-page-structures .hc-contrast-grid,
       .hc-page-structures .hc-grid-3,
+      .hc-page-structures .hc-proof-grid,
       .hc-page-structures .hc-trust-grid,
       .hc-page-structures .hc-pilot-grid {
         gap: 1rem;
@@ -266,10 +323,10 @@
 <main class="hc-institutional">
   <section class="hc-hero">
     <div class="hc-container">
-      <p class="hc-hero__eyebrow">{{ _('Coordination territoriale et sociale') }}</p>
-      <h1>{{ _('Infrastructure de coordination opérationnelle pour les structures sociales et territoriales') }}</h1>
+      <p class="hc-hero__eyebrow">{{ _('Coordination opérationnelle des structures territoriales') }}</p>
+      <h1>{{ _('Moins de dispersion. Plus de lisibilité. Un cadre commun pour piloter les demandes sociales.') }}</h1>
       <p class="hc-hero__intro">
-        {{ _('Lorsque le suivi repose sur des appels, des emails et des outils dispersés, le traitement devient plus fragile. HelpChain établit un cadre commun pour structurer les demandes, clarifier les responsabilités et renforcer la visibilité opérationnelle.') }}
+        {{ _('HelpChain structure la réception, l’orientation, l’attribution et le suivi des demandes dans un environnement lisible, traçable et adapté aux structures publiques, associatives et territoriales.') }}
       </p>
 
       <div class="hc-dossier-note">
@@ -279,8 +336,8 @@
         </p>
       </div>
       <div class="hc-cta-row">
-        <a href="/demo" class="hc-btn hc-btn--primary">{{ _('Échanger sur un pilote') }}</a>
-        <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost">{{ _('Échanger sur un pilote') }}</a>
+        <a href="/demo" class="hc-btn hc-btn--primary">{{ _('Demander un accès pilote') }}</a>
+        <a href="#hc-structures-workflow" class="hc-btn hc-btn--ghost">{{ _('Voir le cadre de fonctionnement') }}</a>
       </div>
       <ul class="hc-audience-row" aria-label="{{ _('Publics concernés') }}">
         <li class="hc-audience-pill">{{ _('CCAS') }}</li>
@@ -288,16 +345,62 @@
         <li class="hc-audience-pill">{{ _('associations') }}</li>
         <li class="hc-audience-pill">{{ _('réseaux de professionnels') }}</li>
       </ul>
+      <div class="hc-proof-grid" aria-label="{{ _('Repères opérationnels') }}">
+        <article class="hc-proof-card">
+          <h3 class="hc-proof-card__title">{{ _('Responsable identifié') }}</h3>
+          <p class="hc-proof-card__text">{{ _('Chaque demande garde un point de responsabilité lisible dans le temps.') }}</p>
+        </article>
+        <article class="hc-proof-card">
+          <h3 class="hc-proof-card__title">{{ _('Historique exploitable') }}</h3>
+          <p class="hc-proof-card__text">{{ _('Les actions et décisions restent relisibles sans dépendre d’échanges dispersés.') }}</p>
+        </article>
+        <article class="hc-proof-card">
+          <h3 class="hc-proof-card__title">{{ _('Accès par rôles') }}</h3>
+          <p class="hc-proof-card__text">{{ _('La visibilité est cadrée selon les responsabilités et le périmètre d’intervention.') }}</p>
+        </article>
+        <article class="hc-proof-card">
+          <h3 class="hc-proof-card__title">{{ _('Pilotage lisible') }}</h3>
+          <p class="hc-proof-card__text">{{ _('L’activité devient plus facile à relire, arbitrer et superviser.') }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-section" id="hc-structures-workflow">
+    <div class="hc-container">
+      <div class="hc-section__head">
+        <p class="hc-section__eyebrow">{{ _('Pour qui') }}</p>
+        <h2>{{ _('Conçu pour les structures qui doivent coordonner sans perdre le contrôle') }}</h2>
+        <p class="hc-lead">
+          {{ _('HelpChain s’adresse aux organisations qui reçoivent des demandes, mobilisent plusieurs intervenants et doivent garder une lecture claire des responsabilités, des délais et du suivi.') }}
+        </p>
+      </div>
+      <div class="hc-grid-3">
+        <article class="hc-card hc-card-pad">
+          <h3>{{ _('CCAS et collectivités') }}</h3>
+          <p>{{ _('Pour organiser le traitement des demandes et piloter l’activité sur un périmètre territorial défini.') }}</p>
+        </article>
+
+        <article class="hc-card hc-card-pad">
+          <h3>{{ _('Associations') }}</h3>
+          <p>{{ _('Pour structurer la prise en charge et garder un historique exploitable sur plusieurs étapes de traitement.') }}</p>
+        </article>
+
+        <article class="hc-card hc-card-pad">
+          <h3>{{ _('Réseaux de professionnels') }}</h3>
+          <p>{{ _('Pour coordonner l’orientation entre équipes concernées ou structures partenaires dans un cadre partagé.') }}</p>
+        </article>
+      </div>
     </div>
   </section>
 
   <section class="hc-section hc-section--contrast">
     <div class="hc-container">
       <div class="hc-section__head">
-        <p class="hc-section__eyebrow">{{ _('Constat opérationnel') }}</p>
-        <h2>{{ _('Quand le suivi repose sur des outils dispersés, le traitement devient fragile') }}</h2>
+        <p class="hc-section__eyebrow">{{ _('Constats terrain') }}</p>
+        <h2>{{ _('Quand le suivi repose sur des outils dispersés, la coordination devient fragile') }}</h2>
         <p class="hc-lead">
-          {{ _('Dans de nombreuses structures, les situations sont encore suivies au moyen d’appels, d’emails, de tableaux partagés ou d’outils hétérogènes.') }}
+          {{ _('Appels, emails, tableaux partagés et reprises manuelles finissent par brouiller les responsabilités et ralentir le traitement.') }}
         </p>
       </div>
       <div class="hc-split">
@@ -326,57 +429,9 @@
           </ul>
         </article>
       </div>
-    </div>
-  </section>
-
-  <section class="hc-section">
-    <div class="hc-container">
-      <div class="hc-section__head">
-        <p class="hc-section__eyebrow">{{ _('Traitement structuré') }}</p>
-        <h2>{{ _('Un cadre commun pour traiter, suivre et clôturer les demandes') }}</h2>
-        <p class="hc-lead">
-          {{ _('HelpChain propose un cadre de coordination structuré, lisible et partagé entre les équipes concernées.') }}
-        </p>
-      </div>
-      <div class="hc-process-grid">
-        <article class="hc-card hc-card-pad hc-step-card">
-          <span class="hc-step-card__index">{{ _('Étape 1') }}</span>
-          <h3>{{ _('Enregistrement') }}</h3>
-          <p>{{ _('Saisie du contexte, du besoin, du niveau d’urgence et de la localisation.') }}</p>
-        </article>
-
-        <article class="hc-card hc-card-pad hc-step-card">
-          <span class="hc-step-card__index">{{ _('Étape 2') }}</span>
-          <h3>{{ _('Qualification') }}</h3>
-          <p>{{ _('Examen de la situation par un utilisateur habilité et confirmation de la priorité.') }}</p>
-        </article>
-
-        <article class="hc-card hc-card-pad hc-step-card">
-          <span class="hc-step-card__index">{{ _('Étape 3') }}</span>
-          <h3>{{ _('Attribution') }}</h3>
-          <p>{{ _('Désignation d’un responsable clairement identifié pour la prise en charge.') }}</p>
-        </article>
-
-        <article class="hc-card hc-card-pad hc-step-card">
-          <span class="hc-step-card__index">{{ _('Étape 4') }}</span>
-          <h3>{{ _('Suivi') }}</h3>
-          <p>{{ _('Enregistrement des actions, mises à jour et éléments de coordination dans un même espace.') }}</p>
-        </article>
-
-        <article class="hc-card hc-card-pad hc-step-card">
-          <span class="hc-step-card__index">{{ _('Étape 5') }}</span>
-          <h3>{{ _('Clôture') }}</h3>
-          <p>{{ _('Clôture de la demande une fois le traitement terminé, avec historique complet.') }}</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="hc-section hc-section--contrast">
-    <div class="hc-container">
-      <div class="hc-section__head">
-        <p class="hc-section__eyebrow">{{ _('Effets opérationnels') }}</p>
+      <div class="hc-section__head hc-architecture-stack">
         <h2>{{ _('Ce que cela change concrètement') }}</h2>
+        <p>{{ _('HelpChain ne remplace pas l’engagement des équipes. Il apporte un cadre commun qui rend l’activité plus lisible, vérifiable et pilotable.') }}</p>
       </div>
       <div class="hc-contrast-grid">
         <article class="hc-card hc-card-pad hc-contrast-card">
@@ -398,15 +453,9 @@
         </article>
 
         <article class="hc-card hc-card-pad hc-contrast-card">
-          <div class="hc-contrast-card__from">{{ _('Coordination incertaine') }}</div>
-          <div class="hc-contrast-card__arrow">{{ _('→') }}</div>
-          <div class="hc-contrast-card__to">{{ _('Coordination maîtrisée entre structures et équipes concernées') }}</div>
-        </article>
-
-        <article class="hc-card hc-card-pad hc-contrast-card">
           <div class="hc-contrast-card__from">{{ _('Pilotage partiel') }}</div>
           <div class="hc-contrast-card__arrow">{{ _('→') }}</div>
-          <div class="hc-contrast-card__to">{{ _('Pilotage fondé sur des informations consolidées') }}</div>
+          <div class="hc-contrast-card__to">{{ _('Lecture consolidée de l’activité') }}</div>
         </article>
       </div>
     </div>
@@ -415,94 +464,63 @@
   <section class="hc-section">
     <div class="hc-container">
       <div class="hc-section__head">
-        <p class="hc-section__eyebrow">{{ _('Architecture') }}</p>
-        <h2>{{ _('Architecture de coordination et de pilotage') }}</h2>
+        <p class="hc-section__eyebrow">{{ _('Cadre de traitement') }}</p>
+        <h2>{{ _('Un enchaînement clair de la réception au suivi') }}</h2>
         <p class="hc-lead">
-          {{ _('HelpChain repose sur une architecture conçue pour organiser le traitement des demandes, encadrer les accès et assurer le suivi des actions dans un cadre commun.') }}
+          {{ _('Chaque demande suit un cadre lisible, avec une responsabilité identifiable à chaque étape du traitement.') }}
         </p>
-        <p>{{ _('Chaque niveau répond à un rôle spécifique dans le traitement des situations.') }}</p>
       </div>
 
+      <div class="hc-process-grid">
+        <article class="hc-card hc-card-pad hc-step-card">
+          <span class="hc-step-card__index">{{ _('Étape 1') }}</span>
+          <h3>{{ _('Réception') }}</h3>
+          <p>{{ _('Saisie du contexte, du besoin, du niveau d’urgence et de la localisation.') }}</p>
+        </article>
+        <article class="hc-card hc-card-pad hc-step-card">
+          <span class="hc-step-card__index">{{ _('Étape 2') }}</span>
+          <h3>{{ _('Qualification') }}</h3>
+          <p>{{ _('Examen de la situation par un utilisateur habilité et confirmation de la priorité.') }}</p>
+        </article>
+        <article class="hc-card hc-card-pad hc-step-card">
+          <span class="hc-step-card__index">{{ _('Étape 3') }}</span>
+          <h3>{{ _('Attribution') }}</h3>
+          <p>{{ _('Désignation d’un responsable clairement identifié pour la prise en charge.') }}</p>
+        </article>
+        <article class="hc-card hc-card-pad hc-step-card">
+          <span class="hc-step-card__index">{{ _('Étape 4') }}</span>
+          <h3>{{ _('Suivi') }}</h3>
+          <p>{{ _('Enregistrement des actions, mises à jour et éléments de coordination dans un même espace.') }}</p>
+        </article>
+        <article class="hc-card hc-card-pad hc-step-card">
+          <span class="hc-step-card__index">{{ _('Étape 5') }}</span>
+          <h3>{{ _('Clôture') }}</h3>
+          <p>{{ _('Clôture de la demande une fois le traitement terminé, avec historique complet.') }}</p>
+        </article>
+      </div>
+
+      <div class="hc-section__head hc-architecture-stack">
+        <p class="hc-section__eyebrow">{{ _('Architecture') }}</p>
+        <h2>{{ _('Une architecture pensée pour la coordination et le pilotage') }}</h2>
+        <p>{{ _('HelpChain n’est pas un simple outil de mise en relation. C’est une infrastructure de coordination opérationnelle conçue pour des environnements structurés.') }}</p>
+      </div>
       <div class="hc-grid-3">
         <article class="hc-card hc-card-pad">
-          <h3>{{ _('Entrée dans le dispositif') }}</h3>
-          <p>{{ _('Dépôt et orientation initiale des demandes.') }}</p>
+          <h3>{{ _('Entrée et orientation initiale') }}</h3>
+          <p>{{ _('Réception des demandes, qualification initiale et premier cadrage du traitement.') }}</p>
         </article>
         <article class="hc-card hc-card-pad">
           <h3>{{ _('Espace des professionnels habilités') }}</h3>
-          <p>{{ _('Coordination des actions, attribution et suivi des situations.') }}</p>
+          <p>{{ _('Attribution, coordination des actions et suivi structuré dans un cadre partagé.') }}</p>
         </article>
         <article class="hc-card hc-card-pad">
-          <h3>{{ _('Outils administratifs') }}</h3>
-          <p>{{ _('Pilotage, supervision et gestion des responsabilités.') }}</p>
-        </article>
-        <article class="hc-card hc-card-pad">
-          <h3>{{ _('Infrastructure applicative') }}</h3>
-          <p>{{ _('Gestion des flux, des règles de traitement et des accès.') }}</p>
+          <h3>{{ _('Pilotage et supervision') }}</h3>
+          <p>{{ _('Lecture consolidée de l’activité, gouvernance des accès et supervision administrative.') }}</p>
         </article>
       </div>
-
       <p class="hc-lead hc-architecture-flow">
-        {{ _('Ces niveaux fonctionnent ensemble comme un système coordonné, dans lequel l’enregistrement, l’attribution, le suivi et le pilotage restent alignés.') }}
+        {{ _('Réception → Qualification → Attribution → Suivi → Pilotage') }}
       </p>
-      <p>{{ _('Entrée dans le dispositif → Qualification → Attribution → Suivi → Pilotage') }}</p>
-
-      <div class="hc-section__head hc-architecture-stack">
-        <h3>{{ _('Séparation opérationnelle des usages') }}</h3>
-        <p>{{ _('La séparation des usages évite les confusions de rôle, sécurise les interventions et améliore la cohérence du traitement entre acteurs autorisés.') }}</p>
-      </div>
-      <div class="hc-grid-3">
-        <article class="hc-card hc-card-pad">
-          <ul class="hc-list">
-            <li>{{ _('Dépôt des demandes') }}</li>
-            <li>{{ _('Qualification des situations') }}</li>
-            <li>{{ _('Attribution des responsabilités') }}</li>
-          </ul>
-        </article>
-        <article class="hc-card hc-card-pad">
-          <ul class="hc-list">
-            <li>{{ _('Coordination des actions') }}</li>
-            <li>{{ _('Suivi des situations') }}</li>
-          </ul>
-        </article>
-        <article class="hc-card hc-card-pad">
-          <ul class="hc-list">
-            <li>{{ _('Accès professionnels et institutionnels') }}</li>
-            <li>{{ _('Pilotage de l’activité') }}</li>
-          </ul>
-        </article>
-      </div>
-
-      <div class="hc-section__head hc-architecture-stack">
-        <h3>{{ _('Gouvernance des accès et des responsabilités') }}</h3>
-        <p>{{ _('Les accès sont définis selon les rôles, les responsabilités et le périmètre d’intervention. Cette organisation renforce le caractère contrôlé de l’environnement et la fiabilité du traitement opérationnel.') }}</p>
-      </div>
-      <div class="hc-grid-3">
-        <article class="hc-card hc-card-pad">
-          <ul class="hc-list">
-            <li>{{ _('Profils d’accès différenciés') }}</li>
-            <li>{{ _('Permissions adaptées aux responsabilités') }}</li>
-          </ul>
-        </article>
-        <article class="hc-card hc-card-pad">
-          <ul class="hc-list">
-            <li>{{ _('Visibilité encadrée selon le périmètre d’intervention') }}</li>
-          </ul>
-        </article>
-        <article class="hc-card hc-card-pad">
-          <ul class="hc-list">
-            <li>{{ _('Traçabilité des actions et des décisions') }}</li>
-          </ul>
-        </article>
-      </div>
-
-      <div class="hc-section__head hc-architecture-stack">
-        <h3>{{ _('Positionnement de l’architecture') }}</h3>
-      </div>
-      <p>{{ _('HelpChain n’est pas une interface simple de mise en relation.') }}</p>
-      <p>{{ _('C’est une infrastructure de coordination opérationnelle conçue pour des environnements structurés.') }}</p>
-      <p>{{ _('Le traitement des demandes, la répartition des responsabilités et le suivi de l’activité y restent lisibles, contrôlés et traçables.') }}</p>
-      <p>{{ _('Elle permet de transformer un fonctionnement fragmenté en un système structuré et pilotable.') }}</p>
     </div>
   </section>
 
@@ -528,31 +546,6 @@
         <article class="hc-trust-card">
           <h3>{{ _('Traçabilité des actions') }}</h3>
           <p>{{ _('Historique des interventions et des décisions conservé dans la durée.') }}</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="hc-section">
-    <div class="hc-container">
-      <div class="hc-section__head">
-        <p class="hc-section__eyebrow">{{ _('Publics et usages') }}</p>
-        <h2>{{ _('Pour quels usages') }}</h2>
-      </div>
-      <div class="hc-grid-3">
-        <article class="hc-card hc-card-pad">
-          <h3>{{ _('CCAS et collectivités') }}</h3>
-          <p>{{ _('Pour organiser le traitement des demandes et piloter l’activité sur un périmètre territorial défini.') }}</p>
-        </article>
-
-        <article class="hc-card hc-card-pad">
-          <h3>{{ _('Associations') }}</h3>
-          <p>{{ _('Pour structurer la prise en charge et assurer le suivi de situations nécessitant plusieurs étapes de traitement.') }}</p>
-        </article>
-
-        <article class="hc-card hc-card-pad">
-          <h3>{{ _('Réseaux de professionnels') }}</h3>
-          <p>{{ _('Pour coordonner l’orientation entre équipes concernées ou structures partenaires dans un cadre partagé.') }}</p>
         </article>
       </div>
     </div>
@@ -589,8 +582,8 @@
           {{ _('Une démonstration permet de visualiser le cadre de traitement. Un pilote permet de l’éprouver sur un périmètre maîtrisé.') }}
         </p>
         <div class="hc-cta-row hc-final-cta__actions">
-          <a href="/demo" class="hc-btn hc-btn--primary">{{ _('Échanger sur un pilote') }}</a>
-          <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost">{{ _('Échanger sur un pilote') }}</a>
+          <a href="/demo" class="hc-btn hc-btn--primary">{{ _('Demander un accès pilote') }}</a>
+          <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost">{{ _('Nous contacter') }}</a>
         </div>
       </div>
     </div>
