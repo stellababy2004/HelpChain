@@ -16370,3 +16370,34 @@ body.hc-admin-home-page .hc-ops-queue-table thead th {
   color: rgba(72, 98, 125, 0.86);
 }
 
+.hc-high-intent-panel {
+  margin-top: 1.5rem;
+}
+
+.hc-intent-row {
+  border: 1px solid rgba(120,140,180,.16);
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+  background: rgba(255,255,255,.72);
+}
+
+.hc-intent-row__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .55rem;
+  font-size: .95rem;
+}
+
+.hc-intent-row__path {
+  font-weight: 600;
+  color: #243b63;
+  margin-bottom: .45rem;
+  line-height: 1.5;
+}
+
+.hc-intent-row__meta {
+  font-size: .82rem;
+  color: #6b7a90;
+}

@@ -315,4 +315,20 @@
     crossorigin=""
   ></script>
   <script src="{{ url_for('static', filename='js/pages/admin-audience-map.js') }}"></script>
+
+<section class="hc-admin-card hc-live-intelligence-card">
+  <div class="hc-admin-card__header">
+    <div>
+      <div class="hc-section-eyebrow">INTELLIGENCE LIVE</div>
+      <h2>Sessions qualifiees</h2>
+      <p>Parcours recents, score d'intention et signaux utiles pour prioriser l'action commerciale.</p>
+    </div>
+    <span class="hc-pill">Live ? 30s</span>
+  </div>
+
+  <div id="hc-high-intent-sessions">
+    <div class="hc-empty-state">Chargement des signaux...</div>
+  </div>
+</section>
+
 {% endblock %}

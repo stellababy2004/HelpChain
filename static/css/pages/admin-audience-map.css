@@ -1412,3 +1412,350 @@ body.hc-admin-audience-page .audience-map-summary__status-value {
 body.hc-admin-audience-page .audience-map-summary__status-note {
   color: #475569 !important;
 }
+.hc-live-intelligence-card {
+  margin: 2rem 0;
+}
+
+.hc-live-intelligence-card .hc-admin-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.hc-live-intent-row {
+  border: 1px solid rgba(120, 145, 180, .22);
+  border-radius: 18px;
+  padding: 1rem 1.15rem;
+  margin-top: 1rem;
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 14px 34px rgba(15, 35, 70, .06);
+}
+
+.hc-live-intent-row__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #0f2442;
+  margin-bottom: .45rem;
+}
+
+.hc-live-intent-row__head span {
+  background: #e8f0ff;
+  color: #1854c9;
+  border-radius: 999px;
+  padding: .25rem .65rem;
+  font-weight: 800;
+}
+
+.hc-live-intent-row__path {
+  color: #2f4b72;
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.hc-live-intent-row__meta {
+  margin-top: .45rem;
+  color: #6b7c92;
+  font-size: .85rem;
+}
+/* Audience Map — live intelligence premium polish */
+body.hc-admin-audience-page .hc-live-intelligence-card {
+  max-width: 1180px;
+  margin: 2.5rem auto 0;
+  padding: 1.6rem;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 34%),
+    rgba(255,255,255,.84);
+  border: 1px solid rgba(120,145,180,.22);
+  box-shadow: 0 24px 70px rgba(15,35,70,.10);
+}
+
+body.hc-admin-audience-page .hc-live-intelligence-card .hc-admin-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.2rem;
+}
+
+body.hc-admin-audience-page .hc-live-intelligence-card h2 {
+  font-size: clamp(1.55rem, 2.4vw, 2.25rem);
+  letter-spacing: -.035em;
+  margin: .25rem 0 .35rem;
+}
+
+body.hc-admin-audience-page .hc-live-intelligence-card p {
+  max-width: 760px;
+  color: #536783;
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row {
+  border: 1px solid rgba(120,145,180,.20);
+  border-radius: 22px;
+  padding: 1.15rem 1.25rem;
+  margin-top: .9rem;
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(248,251,255,.92));
+  box-shadow: 0 16px 40px rgba(15,35,70,.07);
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: .75rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: .3rem .75rem;
+  border-radius: 999px;
+  background: #eef5ff;
+  color: #16417b;
+  font-size: .88rem;
+  letter-spacing: .02em;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head span {
+  background: #e6efff;
+  color: #1854c9;
+  border-radius: 999px;
+  padding: .32rem .72rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__path {
+  color: #17345b;
+  font-weight: 750;
+  line-height: 1.65;
+  word-break: break-word;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__meta {
+  margin-top: .6rem;
+  color: #6b7c92;
+  font-size: .9rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__path::before {
+  content: "Parcours ";
+  color: #6b7c92;
+  font-weight: 700;
+  margin-right: .25rem;
+}
+/* Audience Map — compact live intelligence override */
+body.hc-admin-audience-page .hc-live-intelligence-card {
+  max-width: 1040px !important;
+  margin: 2rem auto !important;
+  padding: 1.25rem !important;
+  border-radius: 24px !important;
+}
+
+body.hc-admin-audience-page .hc-live-intelligence-card h2 {
+  font-size: 1.85rem !important;
+  margin: .15rem 0 .25rem !important;
+}
+
+body.hc-admin-audience-page .hc-live-intelligence-card p {
+  font-size: .98rem !important;
+  max-width: 680px !important;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row {
+  padding: .9rem 1rem !important;
+  border-radius: 18px !important;
+  margin-top: .75rem !important;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__path {
+  font-size: .95rem !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__meta {
+  font-size: .82rem !important;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head strong,
+body.hc-admin-audience-page .hc-live-intent-row__head span {
+  font-size: .82rem !important;
+}
+body.hc-admin-audience-page .hc-live-intent-row__action {
+  margin-top: .85rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+  align-items: center;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__action span {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: .32rem .7rem;
+  background: #eef5ff;
+  color: #17457e;
+  font-weight: 800;
+  font-size: .82rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__action strong {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: .32rem .75rem;
+  background: rgba(34, 197, 94, .10);
+  color: #166534;
+  font-weight: 850;
+  font-size: .84rem;
+}
+body.hc-admin-audience-page .hc-live-intent-row {
+  position: relative;
+  padding: 1.1rem 1.25rem;
+  border-radius: 24px;
+  background: linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+  border: 1px solid rgba(140,160,190,.18);
+  box-shadow:
+    0 10px 30px rgba(15,23,42,.04),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .8rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head strong:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .42rem .85rem;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #18407c;
+  font-size: .88rem;
+  font-weight: 850;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__head span {
+  padding: .42rem .82rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg,#edf4ff 0%,#dfeaff 100%);
+  color: #1d4ed8;
+  font-size: .95rem;
+  font-weight: 900;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__path {
+  font-size: 1.3rem;
+  line-height: 1.45;
+  font-weight: 800;
+  color: #0f2d5c;
+  margin-bottom: .7rem;
+  word-break: break-word;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__path::before {
+  content: "Parcours";
+  display: inline-block;
+  margin-right: .65rem;
+  color: #6b7a90;
+  font-size: .95rem;
+  font-weight: 700;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__meta {
+  color: #6f7f96;
+  font-size: .95rem;
+  margin-bottom: .9rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__action span {
+  display: inline-flex;
+  align-items: center;
+  padding: .45rem .8rem;
+  border-radius: 999px;
+  background: #eef5ff;
+  color: #18407c;
+  font-weight: 800;
+  font-size: .84rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row__action strong {
+  display: inline-flex;
+  align-items: center;
+  padding: .45rem .9rem;
+  border-radius: 999px;
+  background: rgba(34,197,94,.10);
+  color: #166534;
+  font-weight: 850;
+  font-size: .84rem;
+}
+body.hc-admin-audience-page .hc-live-intelligence {
+  margin-top: -2.5rem !important;
+  position: relative;
+  z-index: 8;
+}
+
+body.hc-admin-audience-page .hc-live-intelligence::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at top right,
+    rgba(59,130,246,.06),
+    transparent 38%);
+  pointer-events: none;
+}
+
+body.hc-admin-audience-page .hc-live-intelligence__header {
+  margin-bottom: 1.2rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-list {
+  gap: 1rem;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row {
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59,130,246,.22);
+  box-shadow:
+    0 18px 40px rgba(15,23,42,.06),
+    0 2px 8px rgba(15,23,42,.04);
+}
+
+body.hc-admin-audience-page .hc-live-intent-row--high {
+  border-left: 4px solid #2563eb;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row--medium {
+  border-left: 4px solid #7c9cff;
+}
+
+body.hc-admin-audience-page .hc-live-intent-row--low {
+  border-left: 4px solid #c7d2e5;
+}

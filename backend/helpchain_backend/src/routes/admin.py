@@ -9847,6 +9847,119 @@ def admin_revenue_quick_action(item_type: str, item_id: int):
     return redirect(url_for("admin.admin_revenue"), code=303)
 
 
+
+
+@admin_bp.get("/api/high-intent-sessions")
+def admin_high_intent_sessions():
+
+    from collections import defaultdict
+    from datetime import datetime, timedelta
+    from urllib.parse import urlparse
+
+    try:
+        from backend.models_with_analytics import AnalyticsEvent
+    except Exception:
+        return jsonify({"sessions": []})
+
+    since = datetime.utcnow() - timedelta(days=7)
+
+    rows = (
+        db.session.query(AnalyticsEvent)
+        .filter(AnalyticsEvent.created_at >= since)
+        .order_by(AnalyticsEvent.created_at.asc())
+        .limit(5000)
+        .all()
+    )
+
+    grouped = defaultdict(list)
+
+    for row in rows:
+        key = row.user_session or row.user_ip or "anonymous"
+        grouped[key].append(row)
+
+    sessions = []
+
+    def normalize(value):
+        if not value:
+            return "/"
+
+        try:
+            parsed = urlparse(value)
+            return parsed.path or "/"
+        except Exception:
+            return value
+
+    for session_id, events in grouped.items():
+
+        score = 0
+        paths = []
+
+        for event in events:
+
+            event_type = event.event_type or ""
+            path = normalize(event.page_url)
+
+            if path:
+                paths.append(path)
+
+            if event_type == "page_view":
+                score += 1
+
+            if event_type == "page_engagement":
+                score += 10
+
+            if event_type == "cta_demo_click":
+                score += 25
+
+            if event_type == "form_start":
+                score += 40
+
+            if "/offre" in path:
+                score += 10
+
+            if "/deploiement" in path:
+                score += 15
+
+            if "/demo" in path:
+                score += 20
+
+        deduped = []
+
+        for p in paths:
+            if not deduped or deduped[-1] != p:
+                deduped.append(p)
+
+        intent = "low"
+
+        if score >= 40:
+            intent = "medium"
+
+        if score >= 80:
+            intent = "high"
+
+        if score >= 140:
+            intent = "very_high"
+
+        if intent == "low":
+            continue
+
+        sessions.append({
+            "session_id": session_id[:16],
+            "score": score,
+            "intent": intent,
+            "path": deduped[:10],
+            "events": len(events),
+            "last_seen": str(events[-1].created_at),
+        })
+
+    sessions.sort(key=lambda x: x["score"], reverse=True)
+
+    return jsonify({
+        "sessions": sessions[:25]
+    })
+
+
+
 @admin_bp.get("/audience-map")
 @login_required
 @admin_required
