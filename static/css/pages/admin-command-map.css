@@ -1,0 +1,786 @@
+body.hc-admin-command-map-page .hc-command-map-hero {
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(15, 39, 64, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.94)),
+    radial-gradient(circle at top right, rgba(72, 98, 125, 0.12), transparent 58%);
+}
+
+body.hc-admin-command-map-page .hc-command-map-hero__row {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-layout {
+  display: grid;
+  grid-template-columns: minmax(296px, 320px) minmax(0, 1fr) minmax(360px, 400px);
+  gap: 0.9rem;
+  align-items: stretch;
+  min-height: calc(100vh - 10.5rem);
+}
+
+body.hc-admin-command-map-page .hc-command-map-sidebar,
+body.hc-admin-command-map-page .hc-command-map-drawer,
+body.hc-admin-command-map-page .hc-command-map-stageCard {
+  border: 1px solid rgba(15, 39, 64, 0.1);
+  box-shadow: 0 18px 42px rgba(15, 39, 64, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-map-sidebar,
+body.hc-admin-command-map-page .hc-command-map-drawer {
+  position: sticky;
+  top: 5rem;
+  align-self: start;
+  max-height: calc(100vh - 5.9rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.92rem 0.92rem 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.96)),
+    radial-gradient(circle at top right, rgba(72, 98, 125, 0.08), transparent 62%);
+}
+
+body.hc-admin-command-map-page .hc-command-map-sidebar {
+  box-shadow: 0 12px 28px rgba(15, 39, 64, 0.05);
+}
+
+body.hc-admin-command-map-page .hc-command-map-sidebar__intro,
+body.hc-admin-command-map-page .hc-command-map-drawer__intro {
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+body.hc-admin-command-map-page .hc-command-map-section + .hc-command-map-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(15, 39, 64, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-map-section__title {
+  margin-bottom: 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(15, 39, 64, 0.68);
+}
+
+body.hc-admin-command-map-page .hc-command-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+  padding: 0.58rem 0.72rem;
+  border: 1px solid rgba(72, 98, 125, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #16324f;
+}
+
+body.hc-admin-command-map-page .hc-command-toggle--compact {
+  margin-bottom: 0;
+  padding: 0.46rem 0.62rem;
+}
+
+body.hc-admin-command-map-page .hc-command-toggle input {
+  margin: 0;
+}
+
+body.hc-admin-command-map-page .hc-command-map-filterGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-filterGrid .form-select[multiple] {
+  min-height: 4.5rem;
+  border-radius: 14px;
+  border-color: rgba(72, 98, 125, 0.22);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+body.hc-admin-command-map-page .hc-command-map-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-kpis {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-kpi {
+  padding: 0.8rem 0.85rem;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 39, 64, 0.12);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+body.hc-admin-command-map-page .hc-command-map-kpi__label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(15, 39, 64, 0.62);
+}
+
+body.hc-admin-command-map-page .hc-command-map-kpi__value {
+  display: block;
+  font-size: 1.55rem;
+  line-height: 1;
+  color: #0f2740;
+}
+
+body.hc-admin-command-map-page .hc-command-map-kpi__meta {
+  display: block;
+  margin-top: 0.28rem;
+  color: rgba(15, 39, 64, 0.62);
+  line-height: 1.35;
+}
+
+body.hc-admin-command-map-page .hc-command-map-stage {
+  min-width: 0;
+}
+
+body.hc-admin-command-map-page .hc-command-map-stageCard {
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  min-height: calc(100vh - 5.9rem);
+  max-height: calc(100vh - 5.9rem);
+  overflow: hidden;
+  padding: 0.9rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.96)),
+    radial-gradient(circle at top right, rgba(72, 98, 125, 0.08), transparent 60%);
+}
+
+body.hc-admin-command-map-page .hc-command-map-stageCard__header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-stageStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-stageChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(72, 98, 125, 0.2);
+  background: rgba(255, 255, 255, 0.86);
+  color: #16324f;
+}
+
+body.hc-admin-command-map-page .hc-command-map-stageChip strong {
+  font-size: 1rem;
+  color: #0f2740;
+}
+
+body.hc-admin-command-map-page .hc-command-map-shell {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: clamp(35rem, 78vh, 56rem);
+  border-radius: 24px;
+  border: 1px solid rgba(72, 98, 125, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(49, 94, 134, 0.14), transparent 36%),
+    linear-gradient(180deg, rgba(19, 47, 74, 0.14), rgba(255, 255, 255, 0.9));
+}
+
+body.hc-admin-command-map-page .hc-command-map-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(14, 42, 67, 0.06), transparent 20%, transparent 80%, rgba(14, 42, 67, 0.08)),
+    radial-gradient(circle at bottom right, rgba(72, 98, 125, 0.14), transparent 34%);
+  z-index: 2;
+}
+
+body.hc-admin-command-map-page .hc-command-map-canvas {
+  height: 100%;
+  min-height: clamp(35rem, 78vh, 56rem);
+}
+
+body.hc-admin-command-map-page .hc-command-map-canvas .leaflet-container {
+  height: 100%;
+}
+
+body.hc-admin-command-map-page .leaflet-container {
+  background: linear-gradient(180deg, rgba(222, 232, 242, 0.7), rgba(201, 216, 229, 0.85));
+}
+
+body.hc-admin-command-map-page .leaflet-tile {
+  filter: saturate(0.92) contrast(1.03);
+}
+
+body.hc-admin-command-map-page .leaflet-left .leaflet-control-zoom {
+  margin-top: 112px;
+  margin-left: 14px;
+  border: 1px solid rgba(214, 228, 243, 0.72);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 34px rgba(15, 39, 64, 0.18);
+  backdrop-filter: blur(8px);
+  isolation: isolate;
+}
+
+body.hc-admin-command-map-page .leaflet-left .leaflet-control-zoom a {
+  width: 38px;
+  height: 38px;
+  line-height: 38px;
+  color: #ffffff;
+  font-weight: 700;
+  border-color: rgba(216, 226, 239, 0.24);
+  background: linear-gradient(135deg, rgba(14, 42, 67, 0.98), rgba(24, 72, 108, 0.94));
+}
+
+body.hc-admin-command-map-page .leaflet-left .leaflet-control-zoom a:hover,
+body.hc-admin-command-map-page .leaflet-left .leaflet-control-zoom a:focus-visible {
+  background: linear-gradient(135deg, rgba(11, 34, 54, 0.99), rgba(20, 62, 95, 0.96));
+  color: #ffffff;
+}
+
+body.hc-admin-command-map-page .leaflet-left .leaflet-control {
+  z-index: 760;
+}
+
+body.hc-admin-command-map-page .leaflet-control-attribution {
+  display: none !important;
+}
+
+body.hc-admin-command-map-page .hc-command-map-overlay {
+  position: absolute;
+  left: 74px;
+  top: 14px;
+  z-index: 430;
+  max-width: min(228px, calc(100% - 164px));
+  padding: 0.66rem 0.78rem;
+  border-radius: 16px;
+  border: 1px solid rgba(216, 235, 255, 0.28);
+  background: rgba(14, 42, 67, 0.84);
+  box-shadow: 0 10px 20px rgba(15, 47, 75, 0.12);
+  color: #f8fbff;
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-calm,
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-watch,
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-elevated,
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-critical {
+  overflow: visible;
+  border-color: rgba(216, 235, 255, 0.32) !important;
+  background: linear-gradient(135deg, rgba(13, 39, 63, 0.88), rgba(20, 60, 90, 0.82)) !important;
+  box-shadow: 0 12px 22px rgba(15, 39, 64, 0.14) !important;
+  color: #f8fbff !important;
+}
+
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-calm::after,
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-watch::after,
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-elevated::after,
+body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-critical::after {
+  display: none !important;
+}
+
+body.hc-admin-command-map-page .hc-command-map-emptyState {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 520;
+  width: min(360px, calc(100% - 2rem));
+  transform: translate(-50%, -50%);
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(216, 235, 255, 0.28);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(14, 42, 67, 0.94), rgba(22, 67, 100, 0.88));
+  box-shadow: 0 18px 42px rgba(15, 39, 64, 0.14);
+  color: #f8fbff;
+  text-align: left;
+  backdrop-filter: blur(8px);
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 640;
+  width: min(260px, calc(100% - 32px));
+  border: 1px solid rgba(216, 235, 255, 0.22);
+  border-radius: 18px;
+  background: rgba(14, 42, 67, 0.9);
+  box-shadow: 0 12px 24px rgba(15, 39, 64, 0.12);
+  color: #f8fbff;
+  backdrop-filter: blur(8px);
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__toggle {
+  width: 100%;
+  border: 0;
+  border-radius: 18px;
+  padding: 0.72rem 0.88rem;
+  background: transparent;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__toggle::after {
+  content: "";
+  float: right;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend:not(.is-open) .hc-command-map-legend__toggle::after {
+  content: "+";
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__panel {
+  padding: 0 0.88rem 0.82rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: rgba(239, 247, 255, 0.9);
+  line-height: 1.35;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__item + .hc-command-map-legend__item {
+  margin-top: 0.45rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__swatch {
+  width: 11px;
+  height: 11px;
+  flex: 0 0 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(248, 251, 255, 0.4);
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__swatch--urgent {
+  background: #b42335;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__swatch--intervenant {
+  background: #1f5880;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__swatch--pressure {
+  background: #c88b2b;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__swatch--alert {
+  background: #6f8194;
+}
+
+body.hc-admin-command-map-page .hc-command-map-emptyState__title {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+body.hc-admin-command-map-page .hc-command-map-emptyState__text {
+  margin-top: 0.32rem;
+  line-height: 1.45;
+  color: rgba(239, 247, 255, 0.88);
+}
+
+body.hc-admin-command-map-page .hc-command-map-overlay__eyebrow {
+  margin-bottom: 0.16rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(226, 238, 250, 0.82) !important;
+}
+
+body.hc-admin-command-map-page .hc-command-map-overlay__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff !important;
+  text-shadow: 0 1px 1px rgba(8, 20, 32, 0.18);
+}
+
+body.hc-admin-command-map-page .hc-command-map-overlay__text {
+  margin-top: 0.24rem;
+  font-size: 0.84rem;
+  line-height: 1.38;
+  color: rgba(242, 248, 255, 0.9) !important;
+  text-shadow: 0 1px 1px rgba(8, 20, 32, 0.14);
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__eyebrow {
+  margin-bottom: 0.24rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(15, 39, 64, 0.58);
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__title {
+  margin: 0 0 0.45rem;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: #0f2740;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer {
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer.is-active {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 34px rgba(15, 39, 64, 0.12);
+  border-color: rgba(31, 88, 128, 0.2);
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__status {
+  margin-bottom: 1rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 39, 64, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__statusLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(15, 39, 64, 0.6);
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__statusValue {
+  margin-top: 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f2740;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__statusNote {
+  margin-top: 0.3rem;
+  line-height: 1.45;
+  color: rgba(15, 39, 64, 0.72);
+}
+
+body.hc-admin-command-map-page .hc-command-map-detailList {
+  margin: 0 0 1rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-detailList > div {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0.52rem 0;
+  border-bottom: 1px solid rgba(15, 39, 64, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-map-detailList dt {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(15, 39, 64, 0.56);
+}
+
+body.hc-admin-command-map-page .hc-command-map-detailList dd {
+  margin: 0;
+  color: #16324f;
+  line-height: 1.4;
+}
+
+body.hc-admin-command-map-page .hc-command-map-timeline ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: rgba(15, 39, 64, 0.78);
+}
+
+body.hc-admin-command-map-page .hc-command-map-timeline li + li {
+  margin-top: 0.38rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding-bottom: 0.15rem;
+}
+
+body.hc-admin-command-map-page .hc-command-markerWrap,
+body.hc-admin-command-map-page .hc-command-clusterWrap {
+  background: transparent;
+  border: 0;
+}
+
+body.hc-admin-command-map-page .hc-command-marker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(248, 251, 255, 0.92);
+  box-shadow: 0 12px 24px rgba(15, 39, 64, 0.18);
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+
+body.hc-admin-command-map-page .hc-command-marker::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+body.hc-admin-command-map-page .leaflet-marker-icon.is-hovered .hc-command-marker,
+body.hc-admin-command-map-page .leaflet-marker-icon:hover .hc-command-marker,
+body.hc-admin-command-map-page .leaflet-interactive:hover + .leaflet-marker-icon .hc-command-marker {
+  transform: scale(1.12);
+  box-shadow: 0 16px 30px rgba(15, 39, 64, 0.24);
+  filter: saturate(1.06);
+}
+
+body.hc-admin-command-map-page .hc-command-marker--urgence,
+body.hc-admin-command-map-page .hc-command-marker--sla_risk,
+body.hc-admin-command-map-page .hc-command-marker--saturation {
+  background: linear-gradient(135deg, rgba(180, 35, 53, 0.96), rgba(217, 45, 32, 0.9));
+}
+
+body.hc-admin-command-map-page .hc-command-marker--urgence::before,
+body.hc-admin-command-map-page .hc-command-marker--sla_risk::before,
+body.hc-admin-command-map-page .hc-command-marker--saturation::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 45, 32, 0.24);
+  opacity: 0.9;
+}
+
+body.hc-admin-command-map-page .hc-command-marker--stale,
+body.hc-admin-command-map-page .hc-command-marker--no_activity,
+body.hc-admin-command-map-page .hc-command-marker--relance_overdue,
+body.hc-admin-command-map-page .hc-command-marker--pressure {
+  background: linear-gradient(135deg, rgba(155, 119, 64, 0.96), rgba(200, 139, 43, 0.92));
+}
+
+body.hc-admin-command-map-page .hc-command-marker--sans_assignation,
+body.hc-admin-command-map-page .hc-command-marker--bloquee,
+body.hc-admin-command-map-page .hc-command-marker--association,
+body.hc-admin-command-map-page .hc-command-marker--partenaire {
+  background: linear-gradient(135deg, rgba(70, 98, 125, 0.96), rgba(49, 94, 134, 0.9));
+}
+
+body.hc-admin-command-map-page .hc-command-marker--professionnel,
+body.hc-admin-command-map-page .hc-command-marker--ccas,
+body.hc-admin-command-map-page .hc-command-marker--centre_social,
+body.hc-admin-command-map-page .hc-command-marker--mairie,
+body.hc-admin-command-map-page .hc-command-marker--service_territorial,
+body.hc-admin-command-map-page .hc-command-marker--stable,
+body.hc-admin-command-map-page .hc-command-marker--situation {
+  background: linear-gradient(135deg, rgba(15, 47, 75, 0.95), rgba(31, 88, 128, 0.88));
+}
+
+body.hc-admin-command-map-page .hc-command-cluster {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(216, 235, 255, 0.34);
+  background: linear-gradient(135deg, rgba(14, 42, 67, 0.92), rgba(22, 67, 100, 0.86));
+  box-shadow: 0 16px 34px rgba(15, 39, 64, 0.18);
+  color: #f8fbff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.hc-admin-command-map-page .hc-command-marker--urgence::before,
+  body.hc-admin-command-map-page .hc-command-marker--sla_risk::before,
+  body.hc-admin-command-map-page .hc-command-marker--saturation::before {
+    animation: hcCommandPulse 2.2s ease-out infinite;
+  }
+}
+
+@keyframes hcCommandPulse {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.8;
+  }
+
+  70% {
+    transform: scale(1.28);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.28);
+    opacity: 0;
+  }
+}
+
+body.hc-admin-command-map-page .leaflet-popup-content-wrapper,
+body.hc-admin-command-map-page .leaflet-popup-tip {
+  background: linear-gradient(135deg, rgba(14, 42, 67, 0.96), rgba(22, 67, 100, 0.9));
+  color: #f8fbff;
+  border: 1px solid rgba(216, 235, 255, 0.24);
+  box-shadow: 0 18px 42px rgba(15, 39, 64, 0.22);
+}
+
+body.hc-admin-command-map-page .leaflet-popup-content {
+  margin: 0.8rem 0.95rem;
+  color: #f8fbff;
+  line-height: 1.45;
+}
+
+body.hc-admin-command-map-page .hc-command-popup__eyebrow {
+  display: block;
+  margin-bottom: 0.18rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(216, 232, 246, 0.76);
+}
+
+body.hc-admin-command-map-page .hc-command-popup__title {
+  display: block;
+  font-weight: 700;
+}
+
+body.hc-admin-command-map-page .hc-command-popup__meta {
+  display: block;
+  color: rgba(239, 247, 255, 0.88);
+}
+
+body.hc-admin-command-map-page .hc-command-popup__action {
+  display: inline-block;
+  margin-top: 0.45rem;
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+@media (max-width: 1179.98px) {
+  body.hc-admin-command-map-page .hc-command-map-layout {
+    grid-template-columns: minmax(264px, 292px) minmax(0, 1fr);
+    min-height: auto;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-drawer {
+    grid-column: 1 / -1;
+    top: auto;
+    position: relative;
+    max-height: none;
+    overflow: visible;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-stageCard {
+    position: relative;
+    top: auto;
+    min-height: auto;
+    max-height: none;
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.hc-admin-command-map-page .hc-command-map-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-sidebar,
+  body.hc-admin-command-map-page .hc-command-map-drawer,
+  body.hc-admin-command-map-page .hc-command-map-stageCard {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-shell,
+  body.hc-admin-command-map-page .hc-command-map-canvas {
+    min-height: clamp(27rem, 64vh, 40rem);
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-stageCard__header {
+    flex-direction: column;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-drawer {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 920;
+    max-height: min(46vh, 420px);
+    border-radius: 22px;
+    box-shadow: 0 22px 44px rgba(15, 39, 64, 0.16);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 247, 251, 0.98)),
+      radial-gradient(circle at top right, rgba(72, 98, 125, 0.08), transparent 62%);
+  }
+}
+
+@media (max-width: 575.98px) {
+  body.hc-admin-command-map-page .hc-command-map-overlay {
+    left: 12px;
+    right: 12px;
+    max-width: calc(100% - 24px);
+    top: 62px;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-legend {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-detailList > div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

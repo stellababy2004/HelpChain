@@ -30,7 +30,11 @@
     {% set is_conversion_active = current_path.startswith('/admin/conversion-dashboard') %}
     {% set is_audience_active = current_path.startswith('/admin/audience-map') %}
     {% set is_integrations_active = current_path.startswith('/admin/integrations') %}
-    {% set is_pilotage_active = current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/risk') %}
+    {% set is_pilotage_active = current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/risk') or current_path.startswith('/admin/professionals-map') or current_path.startswith('/admin/command-map') %}
+    {% set is_pilotage_dashboard_active = current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') %}
+    {% set is_command_map_active = current_path.startswith('/admin/command-map') %}
+    {% set is_risk_map_active = current_path.startswith('/admin/risk-map') %}
+    {% set is_professionals_map_active = current_path.startswith('/admin/professionals-map') %}
     {% set is_security_active = current_path.startswith('/admin/security') or current_path.startswith('/admin/audit') or current_path.startswith('/admin/roles') %}
     {% set is_platform_active = current_path.startswith('/admin/structures') or current_path.startswith('/admin/organizations') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') %}
     <div class="hc-admin-shellbar">
@@ -50,10 +54,16 @@
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_conversion_active else '' }}" href="/admin/conversion-dashboard" {% if is_conversion_active %}aria-current="page"{% endif %}>Conversion</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_audience_active else '' }}" href="{{ url_for('admin.admin_audience_map') }}" {% if is_audience_active %}aria-current="page"{% endif %}>Audience</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_integrations_active else '' }}" href="{{ url_for('admin.admin_integrations') }}" {% if is_integrations_active %}aria-current="page"{% endif %}>Connecteurs</a>
-          <a class="hc-admin-shellnav__link {{ 'is-active' if is_pilotage_active else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}" {% if is_pilotage_active %}aria-current="page"{% endif %}>Pilotage</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_security_active else '' }}" href="{{ url_for('admin.admin_security') }}" {% if is_security_active %}aria-current="page"{% endif %}>Sécurité</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_platform_active else '' }}" href="{{ url_for('admin.admin_structures') }}" {% if is_platform_active %}aria-current="page"{% endif %}>Plateforme</a>
         </nav>
+        <div class="hc-admin-shellsubnav" aria-label="Navigation pilotage">
+          <span class="hc-admin-shellsubnav__label">Pilotage</span>
+          <a class="hc-admin-shellsubnav__link {{ 'is-active' if is_pilotage_dashboard_active else '' }}" href="{{ url_for('admin.admin_sla_breakdown') }}" {% if is_pilotage_dashboard_active %}aria-current="page"{% endif %}>Tableau de pilotage</a>
+          <a class="hc-admin-shellsubnav__link {{ 'is-active' if is_command_map_active else '' }}" href="{{ url_for('admin_command.admin_command_map') }}" {% if is_command_map_active %}aria-current="page"{% endif %}>Carte opérationnelle</a>
+          <a class="hc-admin-shellsubnav__link {{ 'is-active' if is_risk_map_active else '' }}" href="{{ url_for('admin.admin_risk_map') }}" {% if is_risk_map_active %}aria-current="page"{% endif %}>Carte des risques</a>
+          <a class="hc-admin-shellsubnav__link {{ 'is-active' if is_professionals_map_active else '' }}" href="{{ url_for('admin.admin_professionals_map') }}" {% if is_professionals_map_active %}aria-current="page"{% endif %}>Carte des intervenants</a>
+        </div>
       </div>
     </div>
     {% block admin_content %}{% endblock %}

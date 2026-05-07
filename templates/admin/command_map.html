@@ -1,0 +1,275 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Carte opérationnelle territoriale | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-command-map-page{% endblock %}
+
+{% block admin_workspace_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-command-map.css') }}">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+{% endblock %}
+
+{% block admin_content %}
+<div
+  class="hc-admin-wrap hc-admin-wrap--wide hc-command-map-page"
+  data-command-map-root
+  data-endpoint="{{ url_for('admin_command.admin_command_map_api') }}"
+  data-risk-map-url="{{ url_for('admin.admin_risk_map') }}"
+  data-professionals-map-url="{{ url_for('admin.admin_professionals_map') }}"
+  data-audience-map-url="{{ url_for('admin.admin_audience_map') if audience_available else '' }}"
+>
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_sla_breakdown') }}">Pilotage</a>
+    <span>/</span>
+    <span>Carte opérationnelle</span>
+  </nav>
+
+  <div class="hc-card hc-command-map-hero">
+    <div class="hc-row hc-admin-headerTop hc-command-map-hero__row">
+      <div>
+        <div class="hc-admin-kicker">Pilotage territorial unifié</div>
+        <h1 class="hc-admin-title">Carte opérationnelle territoriale</h1>
+        <p class="hc-section-subtitle">
+          Surface unifiée de coordination pour les situations, la couverture intervenants, la pression territoriale,
+          les structures partenaires et les alertes opérationnelles.
+        </p>
+      </div>
+      <div class="hc-command-map-hero__actions">
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_risk_map') }}">Carte des risques</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_professionals_map') }}">Carte des intervenants</a>
+        {% if audience_available %}
+          <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_audience_map') }}">Audience</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-command-map-layout">
+    <aside class="hc-command-map-sidebar hc-card" aria-label="Filtres et couches">
+      <div class="hc-command-panel__kicker">Vue de commande</div>
+      <h2 class="hc-section-title">Couches et filtres</h2>
+      <p class="hc-muted hc-command-map-sidebar__intro">
+        Activez les couches utiles, resserrez la lecture territoriale et gardez la carte centrée sur les signaux actionnables.
+      </p>
+
+      <section class="hc-command-map-section">
+        <div class="hc-command-map-section__title">Couches</div>
+        <label class="hc-command-toggle">
+          <input type="checkbox" data-layer-toggle="situations" checked>
+          <span>Situations</span>
+        </label>
+        <label class="hc-command-toggle">
+          <input type="checkbox" data-layer-toggle="intervenants" checked>
+          <span>Intervenants</span>
+        </label>
+        <label class="hc-command-toggle">
+          <input type="checkbox" data-layer-toggle="pressure" checked>
+          <span>Pression territoriale</span>
+        </label>
+        <label class="hc-command-toggle">
+          <input type="checkbox" data-layer-toggle="structures" checked>
+          <span>Structures partenaires</span>
+        </label>
+        <label class="hc-command-toggle">
+          <input type="checkbox" data-layer-toggle="alerts" checked>
+          <span>Alertes opérationnelles</span>
+        </label>
+      </section>
+
+      <section class="hc-command-map-section">
+        <div class="hc-command-map-section__title">Filtres</div>
+        <div class="hc-command-map-filterGrid">
+          <div>
+            <label class="form-label" for="commandMapDepartment">Département</label>
+            <select id="commandMapDepartment" class="form-select" multiple data-filter="departments"></select>
+          </div>
+          <div>
+            <label class="form-label" for="commandMapCity">Ville</label>
+            <select id="commandMapCity" class="form-select" multiple data-filter="cities"></select>
+          </div>
+          <div>
+            <label class="form-label" for="commandMapPriority">Priorité</label>
+            <select id="commandMapPriority" class="form-select" multiple data-filter="priorities"></select>
+          </div>
+          <div>
+            <label class="form-label" for="commandMapStatus">Statut</label>
+            <select id="commandMapStatus" class="form-select" multiple data-filter="statuses"></select>
+          </div>
+          <div>
+            <label class="form-label" for="commandMapStructure">Structure</label>
+            <select id="commandMapStructure" class="form-select" multiple data-filter="structures"></select>
+          </div>
+          <div>
+            <label class="form-label" for="commandMapActorType">Type d’acteur</label>
+            <select id="commandMapActorType" class="form-select" multiple data-filter="actor_types"></select>
+          </div>
+        </div>
+        <div class="hc-command-map-checks">
+          <label class="hc-command-toggle hc-command-toggle--compact">
+            <input type="checkbox" id="commandMapOnlyStale">
+            <span>stale / inactif</span>
+          </label>
+          <label class="hc-command-toggle hc-command-toggle--compact">
+            <input type="checkbox" id="commandMapWithAssignment">
+            <span>avec assignation</span>
+          </label>
+          <label class="hc-command-toggle hc-command-toggle--compact">
+            <input type="checkbox" id="commandMapWithoutAssignment">
+            <span>sans assignation</span>
+          </label>
+        </div>
+        <div class="hc-command-map-actions">
+          <button type="button" class="btn btn-primary btn-sm" id="commandMapFitView">Recentrer</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="commandMapResetFilters">Réinitialiser</button>
+        </div>
+      </section>
+
+      <section class="hc-command-map-section">
+        <div class="hc-command-map-section__title">Compteurs opérationnels</div>
+        <div class="hc-command-map-kpis">
+          <article class="hc-command-map-kpi hc-pressure-critical">
+            <span class="hc-command-map-kpi__label">urgences</span>
+            <strong class="hc-command-map-kpi__value" id="commandMapUrgentCount">0</strong>
+            <span class="hc-command-map-kpi__meta">situations critiques visibles</span>
+          </article>
+          <article class="hc-command-map-kpi hc-pressure-elevated">
+            <span class="hc-command-map-kpi__label">situations sans action</span>
+            <strong class="hc-command-map-kpi__value" id="commandMapStaleCount">0</strong>
+            <span class="hc-command-map-kpi__meta">stale ou bloquées</span>
+          </article>
+          <article class="hc-command-map-kpi hc-pressure-watch">
+            <span class="hc-command-map-kpi__label">relances dues</span>
+            <strong class="hc-command-map-kpi__value" id="commandMapFollowupCount">0</strong>
+            <span class="hc-command-map-kpi__meta">leads ou alertes à reprendre</span>
+          </article>
+          <article class="hc-command-map-kpi hc-pressure-watch">
+            <span class="hc-command-map-kpi__label">territoires sous pression</span>
+            <strong class="hc-command-map-kpi__value" id="commandMapPressureCount">0</strong>
+            <span class="hc-command-map-kpi__meta">zones en saturation ou vigilance</span>
+          </article>
+        </div>
+      </section>
+    </aside>
+
+    <section class="hc-command-map-stage">
+      <div class="hc-card hc-command-map-stageCard">
+        <div class="hc-command-map-stageCard__header">
+          <div>
+            <div class="hc-admin-kicker">Lecture instantanée</div>
+            <h2 class="hc-section-title">Carte centrale de coordination</h2>
+            <div class="hc-muted" id="commandMapLiveNarrative">Chargement de la lecture territoriale…</div>
+          </div>
+          <div class="hc-command-map-stageStats">
+            <span class="hc-command-map-stageChip"><strong id="commandMapVisibleCount">0</strong><span>signaux visibles</span></span>
+            <span class="hc-command-map-stageChip"><strong id="commandMapFocusCity">—</strong><span>territoire dominant</span></span>
+          </div>
+        </div>
+
+        <div class="hc-command-map-shell">
+          <div id="commandMapCanvas" class="hc-command-map-canvas" aria-label="Carte opérationnelle territoriale"></div>
+          <div class="hc-command-map-emptyState" id="commandMapEmptyState" hidden>
+            <div class="hc-command-map-emptyState__title" id="commandMapEmptyStateTitle">Données de carte indisponibles</div>
+            <div class="hc-command-map-emptyState__text" id="commandMapEmptyStateText">
+              La lecture territoriale n’a pas pu être chargée pour le moment.
+            </div>
+          </div>
+          <div class="hc-command-map-overlay hc-pressure-calm" id="commandMapOverlay">
+            <div class="hc-command-map-overlay__eyebrow">Coordination live</div>
+            <div class="hc-command-map-overlay__title" id="commandMapOverlayTitle">Vue consolidée en préparation</div>
+            <div class="hc-command-map-overlay__text" id="commandMapOverlayText">Les couches actives s’agrègent autour des situations, de la couverture et des alertes territoriales.</div>
+          </div>
+          <div class="hc-command-map-legend is-open" id="commandMapLegend">
+            <button type="button" class="hc-command-map-legend__toggle" id="commandMapLegendToggle" aria-expanded="true" aria-controls="commandMapLegendPanel">
+              Légende opérationnelle
+            </button>
+            <div class="hc-command-map-legend__panel" id="commandMapLegendPanel">
+              <div class="hc-command-map-legend__item">
+                <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--urgent"></span>
+                <span>Rouge : situation urgente</span>
+              </div>
+              <div class="hc-command-map-legend__item">
+                <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--intervenant"></span>
+                <span>Bleu : intervenant</span>
+              </div>
+              <div class="hc-command-map-legend__item">
+                <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--pressure"></span>
+                <span>Orange : pression territoriale</span>
+              </div>
+              <div class="hc-command-map-legend__item">
+                <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--alert"></span>
+                <span>Gris : alerte opérationnelle</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="hc-command-map-drawer hc-card" id="commandMapDrawer" aria-live="polite">
+      <div class="hc-command-map-drawer__eyebrow">Détail opérationnel</div>
+      <h2 class="hc-command-map-drawer__title" id="commandMapDrawerTitle">Sélectionnez un signal</h2>
+      <p class="hc-command-map-drawer__intro" id="commandMapDrawerIntro">
+        Cliquez un marqueur ou une zone de pression pour ouvrir le détail opérationnel sans recharger la page.
+      </p>
+
+      <div class="hc-command-map-drawer__status hc-pressure-calm" id="commandMapDrawerStatus">
+        <div class="hc-command-map-drawer__statusLabel">Niveau de lecture</div>
+        <div class="hc-command-map-drawer__statusValue" id="commandMapDrawerRisk">En attente</div>
+        <div class="hc-command-map-drawer__statusNote" id="commandMapDrawerNextAction">Aucune action sélectionnée.</div>
+      </div>
+
+      <dl class="hc-command-map-detailList">
+        <div>
+          <dt>Structure</dt>
+          <dd id="commandMapDrawerStructure">—</dd>
+        </div>
+        <div>
+          <dt>Localisation</dt>
+          <dd id="commandMapDrawerLocation">—</dd>
+        </div>
+        <div>
+          <dt>Dernière activité</dt>
+          <dd id="commandMapDrawerActivity">—</dd>
+        </div>
+        <div>
+          <dt>Statut</dt>
+          <dd id="commandMapDrawerStatusValue">—</dd>
+        </div>
+        <div>
+          <dt>Professionnel assigné</dt>
+          <dd id="commandMapDrawerAssigned">—</dd>
+        </div>
+      </dl>
+
+      <div class="hc-command-map-timeline">
+        <div class="hc-command-map-section__title">Synthèse chronologique</div>
+        <ul id="commandMapTimeline"></ul>
+      </div>
+
+      <div class="hc-command-map-drawer__actions">
+        <a class="btn btn-primary btn-sm" id="commandMapDrawerOpen" href="{{ url_for('admin.admin_home') }}">Ouvrir le détail</a>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="commandMapDrawerClear">Effacer</button>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script src="{{ url_for('static', filename='js/pages/admin-command-map.js') }}"></script>
+{% endblock %}
+
+
