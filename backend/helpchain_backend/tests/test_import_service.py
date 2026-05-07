@@ -37,6 +37,24 @@ def test_parse_csv_and_auto_map_french_headers():
     assert mapping["Fonction"] == "profession"
 
 
+def test_common_contact_name_aliases_map_to_full_name():
+    headers = [
+        "contact_name",
+        "contact",
+        "name",
+        "nom",
+        "contact_person",
+    ]
+
+    mapping = infer_mapping(headers)
+
+    assert mapping["contact_name"] == "full_name"
+    assert mapping["contact"] == "full_name"
+    assert mapping["name"] == "full_name"
+    assert mapping["nom"] == "full_name"
+    assert mapping["contact_person"] == "full_name"
+
+
 def test_sentence_like_full_name_is_rejected():
     mapping = {
         "Nom": "full_name",

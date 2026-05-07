@@ -65,11 +65,17 @@ _NAME_WORD_RE = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ'-]+")
 _SENTENCE_START_RE = re.compile(r"^\s*(?:\d+\s*[\.\)]|[A-Za-z]\.|[-•])")
 _HEADER_ALIASES = {
     "nom": "full_name",
+    "name": "full_name",
     "contact": "full_name",
+    "contact name": "full_name",
+    "contactname": "full_name",
+    "contact person": "full_name",
+    "contactperson": "full_name",
     "prenom nom": "full_name",
     "prenomnom": "full_name",
     "nom complet": "full_name",
     "nomcomplet": "full_name",
+    "nom du contact": "full_name",
     "full name": "full_name",
     "fullname": "full_name",
     "email": "email",
