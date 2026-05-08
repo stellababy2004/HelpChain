@@ -2573,3 +2573,61 @@ body.hc-admin-audience-page .hc-audience-map-embedded .audience-module-header {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Active territory synchronization */
+body.hc-admin-audience-page :is(
+  .audience-radar-row,
+  .audience-opportunity-card,
+  .audience-signal-item,
+  .audience-action-item,
+  .audience-founder-row,
+  .audience-city-item
+).is-active {
+  border-color: rgba(37, 99, 235, .75) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12), 0 14px 34px rgba(37, 99, 235, .12) !important;
+  transform: translateY(-1px);
+}
+
+body.hc-admin-audience-page .audience-founder-row.is-active {
+  background: linear-gradient(135deg, rgba(37, 99, 235, .08), rgba(255,255,255,.96)) !important;
+}
+
+/* Journey chips */
+.audience-founder-row__journey{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:6px;
+}
+
+.audience-inline-tag--page{
+  background:rgba(37,99,235,.08);
+  color:#1d4ed8;
+  border:1px solid rgba(37,99,235,.12);
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:-.01em;
+}
+
+/* High intent path chips */
+.hc-live-intent-row__path{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+
+.hc-live-path-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 12px;
+  border-radius:999px;
+  background:rgba(37,99,235,.08);
+  border:1px solid rgba(37,99,235,.16);
+  color:#173b6d;
+  font-size:.85rem;
+  font-weight:700;
+  line-height:1.1;
+}

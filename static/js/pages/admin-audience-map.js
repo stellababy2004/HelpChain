@@ -521,7 +521,7 @@
           emailMasked: maskEmail(row.email),
           pagesViewed: pagesViewed,
           territory: territoryLabel,
-          detectedSignal: (pagesViewed.length ? pagesViewed.join(" + ") : "Pages non renseignees") + " - " + (row.territory || "France"),
+          detectedSignal: pagesViewed,
           score: Number(row.score) || 0,
           scoreLabel: "Score " + (Number(row.score) || 0),
           priority: String(row.priority || "Observation"),
@@ -917,6 +917,15 @@
     });
   }
 
+  function syncActivePanels(slug) {
+    highlightButtons(cityListEl, "data-city-slug", slug);
+    highlightButtons(radarEl, "data-radar-focus", slug);
+    highlightButtons(deptScoresEl, "data-dept-focus", slug);
+    highlightButtons(liveSignalsEl, "data-signal-focus", slug);
+    highlightButtons(recommendationsEl, "data-rec-focus", slug);
+    highlightButtons(founderQueueEl, "data-founder-focus", slug);
+  }
+
   function updateSidebar(point) {
     var detailCard = document.getElementById("audienceMapDetailCard");
     setText("audienceMapDetailCity", point.city);
@@ -931,7 +940,7 @@
       detailCard,
       point.priority === "Haute" ? "elevated" : (point.priority === "Moyenne" ? "watch" : "calm")
     );
-    highlightButtons(cityListEl, "data-city-slug", point.slug);
+    syncActivePanels(point.slug);
     pulseSidebar();
   }
 
@@ -1005,6 +1014,7 @@
       var button = document.createElement("button");
       button.type = "button";
       button.className = "audience-opportunity-card " + scoreClass(dept.score);
+      button.setAttribute("data-dept-focus", dept.focusSlug);
       button.innerHTML = [
         '<span class="audience-opportunity-card__label">' + escapeHtml(dept.number + " " + dept.name) + "</span>",
         '<strong class="audience-opportunity-card__score">' + escapeHtml(dept.score) + "</strong>",
@@ -1025,6 +1035,7 @@
       var button = document.createElement("button");
       button.type = "button";
       button.className = "audience-signal-item";
+      button.setAttribute("data-signal-focus", signal.focusSlug);
       button.innerHTML =
         '<span class="audience-signal-item__dot" aria-hidden="true"></span>' +
         '<span class="audience-signal-item__content"><strong>' + escapeHtml(signal.territory) + "</strong><span>" + escapeHtml(signal.detail) + '</span><em>' + escapeHtml(signal.when) + "</em></span>";
@@ -1044,6 +1055,7 @@
       var button = document.createElement("button");
       button.type = "button";
       button.className = "audience-action-item";
+      button.setAttribute("data-rec-focus", item.focusSlug);
       button.innerHTML =
         '<span class="audience-action-item__index">' + (index + 1) + "</span>" +
         '<span class="audience-action-item__content"><strong>' + escapeHtml(item.title) + "</strong><span>" + escapeHtml(item.reason) + "</span></span>";
@@ -1166,7 +1178,11 @@
           '<strong>' + escapeHtml(item.organizationName || item.organization || item.emailMasked || item.territory) + "</strong>",
           '<span class="audience-founder-row__reason">' + escapeHtml(item.emailMasked || item.email || "-") + "</span>",
           '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + "</span></span>",
-          '<span class="audience-founder-row__reason">Pages vues: ' + escapeHtml((item.pagesViewed || []).join(", ") || "Pages non renseignÃ©es") + "</span>",
+          '<span class="audience-founder-row__reason audience-founder-row__journey">' +
+((item.pagesViewed || []).map(function(page) {
+  return '<span class="audience-inline-tag audience-inline-tag--page">' + escapeHtml(page) + '</span>';
+}).join("") || '<span class="audience-inline-tag audience-inline-tag--page">Pages non renseignees</span>') +
+"</span>",
           intelligenceLines.join(""),
           '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
@@ -1184,11 +1200,16 @@
       var button = document.createElement("button");
       button.type = "button";
       button.className = "audience-founder-row";
+      button.setAttribute("data-founder-focus", item.focusSlug);
       button.innerHTML = [
         '<span class="audience-founder-row__main">',
         '<strong>' + escapeHtml(item.territory) + "</strong>",
         '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + "</span></span>",
-        '<span class="audience-founder-row__reason">' + escapeHtml(item.detectedSignal) + "</span>",
+        '<span class="audience-founder-row__journey">' +
+((item.detectedSignal || []).map(function(page) {
+  return '<span class="audience-inline-tag audience-inline-tag--page">' + escapeHtml(page) + '</span>';
+}).join("") || '<span class="audience-inline-tag audience-inline-tag--page">Aucun parcours</span>') +
+"</span>",
         '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
         "</span>",
         '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
