@@ -390,3 +390,111 @@ body.hc-page-home .hc-home-premium__hero {
     padding-top: 36px !important;
   }
 }
+/* Homepage mobile hero final fix */
+@media (max-width: 768px) {
+  body.hc-page-home .hc-home-premium__hero {
+    padding: 1.5rem 1rem 2rem !important;
+    overflow: hidden !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-copy {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-copy h1 {
+    font-size: clamp(2rem, 10vw, 2.75rem) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -.05em !important;
+    margin-bottom: 1rem !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-copy p {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+  }
+
+  body.hc-page-home .hc-home-premium__preview {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 330px !important;
+    min-height: auto !important;
+    margin: .75rem auto 0 !important;
+    transform: none !important;
+    inset: auto !important;
+  }
+
+  body.hc-page-home .hc-home-premium__preview::before,
+  body.hc-page-home .hc-home-premium__preview::after {
+    display: none !important;
+  }
+
+  body.hc-page-home .hc-home-premium__app-shell,
+  body.hc-page-home .hc-home-premium__screen,
+  body.hc-page-home .hc-home-premium__snapshot,
+  body.hc-page-home .hc-home-premium__snapshot-card,
+  body.hc-page-home .hc-home-premium__snapshot-card--visual {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 330px !important;
+    margin: 0 auto !important;
+    transform: none !important;
+    inset: auto !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: .75rem !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-actions .btn,
+  body.hc-page-home .hc-home-premium__hero-actions .hc-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+@media (max-width: 768px) {
+
+  body.hc-page-home .hc-home-premium__hero-copy {
+    padding-inline: .25rem !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-copy h1 {
+    max-width: 8ch !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-copy p {
+    max-width: 30ch !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero {
+    padding-top: 1rem !important;
+  }
+
+  body.hc-page-home .hc-home-premium__preview,
+  body.hc-page-home .hc-home-premium__snapshot,
+  body.hc-page-home .hc-home-premium__snapshot-card,
+  body.hc-page-home .hc-home-premium__snapshot-card--visual {
+    display: none !important;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-actions {
+    margin-top: 1rem !important;
+  }
+}
+@media (max-width: 768px) {
+  .hc-floating-help,
+  .hc-floating-action,
+  .hc-assistant-fab,
+  .hc-help-fab,
+  .hc-chat-fab {
+    display: none !important;
+  }
+}
