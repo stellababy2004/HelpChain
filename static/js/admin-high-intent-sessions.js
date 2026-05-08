@@ -12,12 +12,15 @@
       "/": "Accueil",
       "/comment_ca_marche": "Fonctionnement",
       "/offre": "Offre",
-      "/deploiement": "Deploiement",
-      "/demo": "Acces pilote",
+      "/deploiement": "Déploiement",
+      "/demo": "Accès pilote",
       "/professionnels": "Professionnels",
-      "/collectivites": "Collectivites",
-      "/securite": "Securite",
-      "/contact": "Contact"
+      "/collectivites": "Collectivités",
+      "/securite": "Sécurité",
+      "/contact": "Contact",
+      "/requests": "Demandes",
+      "/requests/dashboard": "Pilotage",
+      "/requests/operations": "Operations"
     };
 
     return map[path] || path;
@@ -53,7 +56,9 @@
       cleaned = raw.filter(function (p) { return p && p !== "/"; }).slice(-4);
     }
 
-    return cleaned.map(function (p) { return esc(labelPath(p)); }).join(" → ");
+    return cleaned.map(function (p) {
+      return '<span class="hc-live-path-chip">' + esc(labelPath(p)) + '</span>';
+    }).join("");
   }
 
 
@@ -120,4 +125,7 @@
     window.setInterval(loadHighIntentSessions, 30000);
   });
 })();
+
+
+
 
