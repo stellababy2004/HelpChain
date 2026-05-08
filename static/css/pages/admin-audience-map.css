@@ -1,4 +1,4 @@
-body.hc-admin-audience-page .audience-map-shell,
+﻿body.hc-admin-audience-page .audience-map-shell,
 body.hc-admin-audience-page .hc-audience-mapFrame {
   position: relative;
   border: 1px solid rgba(190, 203, 220, 0.9);
@@ -1459,12 +1459,12 @@ body.hc-admin-audience-page .audience-map-summary__status-note {
   color: #6b7c92;
   font-size: .85rem;
 }
-/* Audience Map — live intelligence premium polish */
+/* Audience Map â€” live intelligence premium polish */
 body.hc-admin-audience-page .hc-live-intelligence-card {
   max-width: 1180px;
   margin: 2.5rem auto 0;
   padding: 1.6rem;
-  border-radius: 28px;
+  border-radius: 18px;
   background:
     radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 34%),
     rgba(255,255,255,.84);
@@ -1550,7 +1550,7 @@ body.hc-admin-audience-page .hc-live-intent-row__path::before {
   font-weight: 700;
   margin-right: .25rem;
 }
-/* Audience Map — compact live intelligence override */
+/* Audience Map â€” compact live intelligence override */
 body.hc-admin-audience-page .hc-live-intelligence-card {
   max-width: 1040px !important;
   margin: 2rem auto !important;
@@ -1758,4 +1758,818 @@ body.hc-admin-audience-page .hc-live-intent-row--medium {
 
 body.hc-admin-audience-page .hc-live-intent-row--low {
   border-left: 4px solid #c7d2e5;
+}
+body.hc-admin-audience-page .hc-live-intent-row__type {
+  display: inline-flex;
+  margin-bottom: .65rem;
+  padding: .28rem .7rem;
+  border-radius: 999px;
+  background: rgba(15, 35, 70, .06);
+  color: #415878;
+  font-weight: 800;
+  font-size: .82rem;
+  letter-spacing: .01em;
+}
+
+
+
+
+
+/* LEFT OVERLAY */
+.hc-audience-map .hc-map-overlay,
+.hc-audience-map-shell .hc-map-overlay {
+    width: 320px !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
+}
+
+
+/* SMALLER KPI BUTTONS */
+.hc-audience-map .hc-map-overlay .metric,
+.hc-audience-map .hc-map-overlay .hc-mini-stat {
+    min-height: 72px !important;
+    padding: 10px 14px !important;
+    border-radius: 16px !important;
+}
+
+.hc-audience-map .hc-map-overlay .metric strong,
+.hc-audience-map .hc-map-overlay .hc-mini-stat strong {
+    font-size: 24px !important;
+}
+
+.hc-audience-map .hc-map-overlay .metric span,
+.hc-audience-map .hc-map-overlay .hc-mini-stat span {
+    font-size: 12px !important;
+}
+
+
+/* LEGEND SMALLER */
+.hc-audience-map .hc-map-legend {
+    width: 220px !important;
+    padding: 14px !important;
+    border-radius: 18px !important;
+}
+
+
+/* RIGHT PANEL CLEANER */
+.hc-audience-sidepanel {
+    border-radius: 26px !important;
+}
+
+
+/* MAP ZOOM BUTTONS */
+.leaflet-control-zoom a {
+    width: 38px !important;
+    height: 38px !important;
+    line-height: 38px !important;
+    font-size: 20px !important;
+}
+
+
+/* MOBILE */
+@media (max-width: 1200px) {
+
+    .hc-audience-map-shell,
+    .hc-audience-map,
+    #audience-map {
+        height: 68vh !important;
+        min-height: 620px !important;
+    }
+
+    .hc-audience-map .hc-map-overlay {
+        width: 280px !important;
+    }
+}
+
+
+
+
+
+
+/* MAIN LEFT COLUMN */
+.hc-audience-main,
+.hc-audience-map-column,
+.hc-audience-map-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+
+/* REMOVE EMPTY DEAD SPACE */
+.hc-audience-map-card,
+.hc-audience-map-shell {
+    flex: 1 1 auto !important;
+    min-height: 920px !important;
+    height: auto !important;
+}
+
+
+/* REAL MAP HEIGHT */
+#audience-map,
+.hc-audience-map,
+.hc-audience-map-shell .leaflet-container {
+    min-height: 820px !important;
+    height: 820px !important;
+}
+
+
+/* GEO ENRICHMENT BLOCK SMALLER */
+.hc-geo-enrichment-empty,
+.hc-audience-empty {
+    margin-top: 18px !important;
+    padding: 24px !important;
+    min-height: auto !important;
+}
+
+
+/* RIGHT SIDEBAR SAME VISUAL HEIGHT */
+.hc-audience-sidepanel {
+    min-height: 920px !important;
+}
+
+
+/* CLEANER INTERNAL BUTTONS */
+.hc-audience-sidepanel button,
+.hc-audience-sidepanel .btn,
+.hc-audience-sidepanel .hc-chip {
+    min-height: 34px !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    border-radius: 12px !important;
+}
+
+
+
+
+
+
+/* MAP MORE VISIBLE */
+.hc-audience-map-shell .leaflet-container,
+#audience-map {
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+
+/* DARK PANEL SMALLER */
+.hc-map-overlay {
+    width: 270px !important;
+    padding: 14px !important;
+    border-radius: 20px !important;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(22,32,56,.92),
+            rgba(28,42,72,.88)
+        ) !important;
+
+    box-shadow:
+        0 12px 30px rgba(15,23,42,.18) !important;
+}
+
+
+/* KPI BLOCKS SMALLER */
+.hc-map-overlay .metric,
+.hc-map-overlay .hc-mini-stat {
+    min-height: 60px !important;
+    padding: 8px 10px !important;
+}
+
+.hc-map-overlay .metric strong,
+.hc-map-overlay .hc-mini-stat strong {
+    font-size: 20px !important;
+}
+
+
+/* LEGEND MUCH SMALLER */
+.hc-map-legend {
+    width: 150px !important;
+    padding: 10px !important;
+    border-radius: 16px !important;
+    font-size: 12px !important;
+}
+
+
+/* CENTER WHITE CARD CLEANER */
+.hc-map-popup-card,
+.hc-map-focus-card {
+    width: 260px !important;
+    padding: 16px !important;
+    border-radius: 20px !important;
+
+    background: rgba(255,255,255,.92) !important;
+    backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 10px 28px rgba(15,23,42,.10) !important;
+}
+
+
+/* MAP TAKES VISUAL PRIORITY */
+.hc-audience-map-shell {
+    background: #edf3fb !important;
+}
+
+
+/* REMOVE EXCESSIVE EMPTY FEEL */
+.hc-audience-map-card {
+    padding: 14px !important;
+}
+
+
+/* ZOOM BUTTONS CLEAN */
+.leaflet-control-zoom a {
+    width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    border-radius: 12px !important;
+}
+
+
+
+.hc-audience-map,
+.hc-audience-map .leaflet-container,
+#audience-map {
+    height: 560px !important;
+    min-height: 560px !important;
+}
+
+.hc-audience-map .leaflet-pane,
+.hc-audience-map .leaflet-map-pane,
+.hc-audience-map .leaflet-tile-pane {
+    transform: translate3d(0,0,0);
+}
+
+
+
+
+.hc-audience-map-layout,
+.hc-audience-map-shell,
+.hc-audience-map-card,
+.hc-audience-map-wrapper {
+    height: auto !important;
+    min-height: unset !important;
+}
+
+.hc-audience-map-section {
+    padding-bottom: 24px !important;
+}
+
+
+.hc-audience-layout,
+.hc-audience-grid,
+.hc-audience-main {
+    align-items: start !important;
+}
+
+.hc-audience-map-column {
+    height: auto !important;
+    align-self: start !important;
+}
+
+
+
+
+/* REMOVE DEAD EMPTY SPACE */
+.hc-audience-map-bottom,
+.hc-audience-empty-state,
+.hc-audience-footer-note {
+    margin-top: 14px !important;
+    min-height: auto !important;
+    height: auto !important;
+    padding: 18px 24px !important;
+}
+
+/* MAIN MAP CARD */
+.hc-audience-map-shell {
+    padding: 14px !important;
+    border-radius: 22px !important;
+}
+
+/* MAKE MAP VISUALLY DOMINANT */
+#hcAudienceMap,
+#audienceMap,
+.audience-map-canvas {
+    height: 720px !important;
+    min-height: 720px !important;
+    max-height: 720px !important;
+}
+
+/* LESS AIR INSIDE LEFT COLUMN */
+.hc-audience-main-column {
+    gap: 14px !important;
+}
+
+/* TIGHTER RIGHT PANEL */
+.hc-audience-sidepanel {
+    gap: 12px !important;
+}
+
+/* SMALLER TOP CITY ROWS */
+.hc-audience-city-list li {
+    min-height: 40px !important;
+    font-size: 13px !important;
+}
+
+/* DEPARTMENT BOXES */
+.hc-audience-department-card {
+    min-height: 64px !important;
+    border-radius: 14px !important;
+}
+
+/* ==================================================
+   AUDIENCE MAP — FINAL LAYOUT COMPOSITION PASS
+   Goal: stronger map, tighter sidebar, no dead space
+================================================== */
+
+/* Wider left map column, tighter right intelligence rail */
+body.hc-admin-audience-map-page .hc-audience-layout,
+body.hc-admin-audience-map-page .hc-audience-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 2.15fr) minmax(280px, .85fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+/* Main card should stop behaving like a giant empty container */
+body.hc-admin-audience-map-page .hc-card:has(#audienceMap),
+body.hc-admin-audience-map-page .hc-audience-map-card,
+body.hc-admin-audience-map-page .hc-audience-map-shell,
+body.hc-admin-audience-map-page .hc-audience-mapWrap {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 14px !important;
+  border-radius: 22px !important;
+}
+
+/* Make the actual map larger and visually useful */
+body.hc-admin-audience-map-page #audienceMap,
+body.hc-admin-audience-map-page .audience-map-canvas,
+body.hc-admin-audience-map-page .leaflet-container {
+  height: 620px !important;
+  min-height: 620px !important;
+  max-height: 620px !important;
+}
+
+/* Compact the geo message so it does not look like missing content */
+body.hc-admin-audience-map-page .hc-empty-state,
+body.hc-admin-audience-map-page .hc-geo-enrichment-empty,
+body.hc-admin-audience-map-page .hc-audience-empty {
+  margin-top: 14px !important;
+  margin-bottom: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 16px 20px !important;
+  border-radius: 16px !important;
+}
+
+/* Dark overlay: smaller, sharper, less intrusive */
+body.hc-admin-audience-map-page .hc-map-overlay,
+body.hc-admin-audience-map-page .audience-map-summary,
+body.hc-admin-audience-map-page .audience-map-legend {
+  transform: scale(.88) !important;
+  transform-origin: top left !important;
+}
+
+/* Right sidebar: more compact, more institutional */
+body.hc-admin-audience-map-page .hc-audience-sidepanel {
+  padding: 16px !important;
+  border-radius: 22px !important;
+}
+
+body.hc-admin-audience-map-page .hc-audience-sidepanel :is(.card, .hc-card, .audience-card) {
+  border-radius: 16px !important;
+}
+
+body.hc-admin-audience-map-page .hc-audience-city-list li,
+body.hc-admin-audience-map-page .audience-city-list > * {
+  min-height: 38px !important;
+  padding: 7px 10px !important;
+  font-size: 12.5px !important;
+}
+
+body.hc-admin-audience-map-page .hc-audience-department-card,
+body.hc-admin-audience-map-page .audience-opportunity-grid > * {
+  min-height: 58px !important;
+  padding: 8px 10px !important;
+  border-radius: 14px !important;
+}
+
+/* Prevent the lower cards from sticking too close */
+body.hc-admin-audience-map-page .hc-card:has(#audienceMap) {
+  margin-bottom: 18px !important;
+}
+
+@media (max-width: 1180px) {
+  body.hc-admin-audience-map-page .hc-audience-layout,
+  body.hc-admin-audience-map-page .hc-audience-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.hc-admin-audience-map-page #audienceMap,
+  body.hc-admin-audience-map-page .audience-map-canvas,
+  body.hc-admin-audience-map-page .leaflet-container {
+    height: 560px !important;
+    min-height: 560px !important;
+    max-height: 560px !important;
+  }
+}
+
+/* AUDIENCE MAP — BOLDER BALANCE FIX */
+body.hc-admin-audience-map-page .hc-audience-layout,
+body.hc-admin-audience-map-page .hc-audience-grid {
+  grid-template-columns: minmax(0, 2.35fr) minmax(300px, .75fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+body.hc-admin-audience-map-page #audienceMap,
+body.hc-admin-audience-map-page .audience-map-canvas,
+body.hc-admin-audience-map-page .leaflet-container {
+  height: 760px !important;
+  min-height: 760px !important;
+  max-height: 760px !important;
+}
+
+body.hc-admin-audience-map-page .hc-card:has(#audienceMap),
+body.hc-admin-audience-map-page .hc-audience-map-card,
+body.hc-admin-audience-map-page .hc-audience-map-shell,
+body.hc-admin-audience-map-page .hc-audience-mapWrap {
+  min-height: 0 !important;
+  height: auto !important;
+  padding-bottom: 12px !important;
+}
+
+body.hc-admin-audience-map-page .hc-empty-state,
+body.hc-admin-audience-map-page .hc-geo-enrichment-empty,
+body.hc-admin-audience-map-page .hc-audience-empty {
+  margin-top: 10px !important;
+  padding: 12px 16px !important;
+  font-size: 12px !important;
+  min-height: 0 !important;
+}
+
+body.hc-admin-audience-map-page .hc-map-overlay,
+body.hc-admin-audience-map-page .audience-map-summary,
+body.hc-admin-audience-map-page .audience-map-legend {
+  transform: scale(.78) !important;
+  transform-origin: top left !important;
+}
+
+body.hc-admin-audience-map-page .hc-audience-sidepanel {
+  padding: 14px !important;
+}
+
+body.hc-admin-audience-map-page .audience-city-list > *,
+body.hc-admin-audience-map-page .hc-audience-city-list li {
+  min-height: 34px !important;
+  padding: 6px 10px !important;
+}
+
+body.hc-admin-audience-map-page .audience-opportunity-grid > *,
+body.hc-admin-audience-map-page .hc-audience-department-card {
+  min-height: 52px !important;
+  padding: 7px 10px !important;
+}
+
+/* ==================================================
+   AUDIENCE MAP ? STABLE FINAL LAYOUT
+   Clean, compact, no dead white space
+================================================== */
+
+body.hc-admin-audience-map-page .hc-audience-layout,
+body.hc-admin-audience-map-page .hc-audience-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.65fr) minmax(320px, .85fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+body.hc-admin-audience-map-page .hc-card:has(#audienceMap),
+body.hc-admin-audience-map-page .hc-audience-map-card,
+body.hc-admin-audience-map-page .hc-audience-map-shell,
+body.hc-admin-audience-map-page .hc-audience-mapWrap,
+body.hc-admin-audience-map-page .hc-audience-map-wrapper {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 16px !important;
+  padding-bottom: 16px !important;
+  border-radius: 22px !important;
+  align-self: start !important;
+}
+
+body.hc-admin-audience-map-page #audienceMap,
+body.hc-admin-audience-map-page .audience-map-canvas {
+  height: 560px !important;
+  min-height: 560px !important;
+  max-height: 560px !important;
+  border-radius: 18px !important;
+}
+
+body.hc-admin-audience-map-page #audienceMap .leaflet-container,
+body.hc-admin-audience-map-page .audience-map-canvas .leaflet-container {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+body.hc-admin-audience-map-page .hc-empty-state,
+body.hc-admin-audience-map-page .hc-geo-enrichment-empty,
+body.hc-admin-audience-map-page .hc-audience-empty {
+  margin-top: 12px !important;
+  margin-bottom: 0 !important;
+  padding: 14px 18px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  border-radius: 16px !important;
+  font-size: 12px !important;
+}
+
+body.hc-admin-audience-map-page .hc-map-overlay,
+body.hc-admin-audience-map-page .audience-map-summary {
+  transform: scale(.82) !important;
+  transform-origin: top left !important;
+}
+
+body.hc-admin-audience-map-page .audience-map-legend {
+  transform: scale(.78) !important;
+  transform-origin: bottom left !important;
+}
+
+body.hc-admin-audience-map-page .hc-audience-sidepanel {
+  padding: 16px !important;
+  border-radius: 22px !important;
+  align-self: start !important;
+}
+
+body.hc-admin-audience-map-page .audience-city-list > *,
+body.hc-admin-audience-map-page .hc-audience-city-list li {
+  min-height: 38px !important;
+  padding: 7px 10px !important;
+  font-size: 12.5px !important;
+}
+
+body.hc-admin-audience-map-page .audience-opportunity-grid > *,
+body.hc-admin-audience-map-page .hc-audience-department-card {
+  min-height: 58px !important;
+  padding: 8px 10px !important;
+  border-radius: 14px !important;
+}
+
+@media (max-width: 1180px) {
+  body.hc-admin-audience-map-page .hc-audience-layout,
+  body.hc-admin-audience-map-page .hc-audience-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ==================================================
+   EMERGENCY CLEAN FIX — AUDIENCE MAP
+   Force sane layout, remove giant empty area
+================================================== */
+
+body.hc-admin-audience-map-page .hc-card:has(#audienceMap),
+body.hc-admin-audience-map-page .hc-card:has(.audience-map-canvas) {
+  height: fit-content !important;
+  min-height: 0 !important;
+  max-height: 720px !important;
+  overflow: hidden !important;
+  padding-bottom: 16px !important;
+}
+
+/* Actual map size */
+body.hc-admin-audience-map-page #audienceMap,
+body.hc-admin-audience-map-page .audience-map-canvas {
+  height: 500px !important;
+  min-height: 500px !important;
+  max-height: 500px !important;
+}
+
+/* Kill the useless geo block spacing */
+body.hc-admin-audience-map-page .hc-empty-state,
+body.hc-admin-audience-map-page .hc-geo-enrichment-empty,
+body.hc-admin-audience-map-page .hc-audience-empty {
+  display: none !important;
+}
+
+/* Stop grid/card stretch */
+body.hc-admin-audience-map-page .hc-audience-layout,
+body.hc-admin-audience-map-page .hc-audience-grid,
+body.hc-admin-audience-map-page .hc-audience-main,
+body.hc-admin-audience-map-page .hc-audience-map-column {
+  align-items: start !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* ==================================================
+   REAL FIX — STOP LEFT PANEL STRETCH
+================================================== */
+
+body.hc-admin-audience-map-page .hc-audience-layout,
+body.hc-admin-audience-map-page .hc-audience-grid {
+    align-items: start !important;
+}
+
+body.hc-admin-audience-map-page .hc-audience-layout > *,
+body.hc-admin-audience-map-page .hc-audience-grid > * {
+    height: auto !important;
+    align-self: start !important;
+    min-height: 0 !important;
+}
+
+/* left map column MUST NOT inherit sidebar height */
+body.hc-admin-audience-map-page .hc-audience-map-column,
+body.hc-admin-audience-map-page .hc-audience-main-column,
+body.hc-admin-audience-map-page .hc-audience-map-wrapper {
+    height: auto !important;
+    min-height: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+/* keep map itself stable */
+body.hc-admin-audience-map-page #audienceMap,
+body.hc-admin-audience-map-page .audience-map-canvas {
+    height: 520px !important;
+    min-height: 520px !important;
+    max-height: 520px !important;
+}
+
+/* HARD TARGET: audience map card only */
+.hc-card:has(.audience-map-canvas),
+.hc-card:has(#audienceMap),
+div:has(> .audience-map-canvas),
+div:has(> #audienceMap) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  align-self: start !important;
+  padding-bottom: 14px !important;
+}
+
+/* force the real Leaflet viewport */
+#audienceMap,
+.audience-map-canvas,
+.hc-audience-mapCanvas {
+  height: 620px !important;
+  min-height: 620px !important;
+  max-height: 620px !important;
+}
+
+/* remove the useless block under map */
+.hc-card:has(.audience-map-canvas) .hc-empty-state,
+.hc-card:has(#audienceMap) .hc-empty-state {
+  display: none !important;
+}
+
+/* make Leaflet recalculate correctly */
+#audienceMap .leaflet-container,
+.audience-map-canvas .leaflet-container {
+  height: 100% !important;
+}
+
+/* ==================================================
+   REAL FINAL FIX — correct body class: hc-admin-audience-page
+================================================== */
+
+body.hc-admin-audience-page .hc-audience-mapFrame,
+body.hc-admin-audience-page .audience-map-shell {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+body.hc-admin-audience-page #audienceMap,
+body.hc-admin-audience-page .hc-audience-mapCanvas,
+body.hc-admin-audience-page .audience-map-canvas {
+  height: 620px !important;
+  min-height: 620px !important;
+  max-height: 620px !important;
+}
+
+body.hc-admin-audience-page .hc-empty-state,
+body.hc-admin-audience-page .hc-geo-enrichment-empty,
+body.hc-admin-audience-page .hc-audience-empty {
+  display: none !important;
+}
+
+body.hc-admin-audience-page .audience-map-summary {
+  transform: scale(.82) !important;
+  transform-origin: top left !important;
+}
+
+body.hc-admin-audience-page .audience-map-legend {
+  transform: scale(.78) !important;
+  transform-origin: bottom left !important;
+}
+
+body.hc-admin-audience-page .hc-audience-layout,
+body.hc-admin-audience-page .hc-audience-grid {
+  grid-template-columns: minmax(0, 1.75fr) minmax(320px, .85fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+/* Live intelligence moved into audience right rail */
+body.hc-admin-audience-page .hc-audience-sidepanel-live {
+  margin-top: 14px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intelligence-card {
+  padding: 14px !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .08) !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-admin-card__header {
+  gap: 10px !important;
+  align-items: flex-start !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-section-eyebrow {
+  font-size: 10px !important;
+  letter-spacing: .08em !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live h2 {
+  font-size: 18px !important;
+  line-height: 1.15 !important;
+  margin: 0 0 4px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live p {
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  margin-bottom: 0 !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-pill {
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  white-space: nowrap !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intent-row {
+  padding: 10px !important;
+  border-radius: 14px !important;
+  margin-top: 10px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intent-row__path {
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intent-row__meta,
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intent-row__action {
+  font-size: 11px !important;
+}
+
+/* Embed analytics blocks under map, inside left panel */
+body.hc-admin-audience-page .hc-audience-map-embedded {
+  margin-top: 16px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr) !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-card {
+  border-radius: 16px !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .06) !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-card__section--header {
+  padding: 12px 14px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .table {
+  font-size: 12px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-admin-table th,
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-admin-table td {
+  padding: 8px 10px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .audience-side-module {
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  margin-bottom: 10px !important;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .audience-module-header {
+  margin-bottom: 8px !important;
+}
+
+@media (max-width: 1400px) {
+  body.hc-admin-audience-page .hc-audience-map-embedded-grid {
+    grid-template-columns: 1fr !important;
+  }
 }

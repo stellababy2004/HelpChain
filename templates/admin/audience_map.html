@@ -1,4 +1,4 @@
-{% extends "layouts/admin_workspace.html" %}
+﻿{% extends "layouts/admin_workspace.html" %}
 {% block title %}Carte d'interet - France | {{ _('Admin') }}{% endblock %}
 {% block admin_body_class %} hc-admin-audience-page hc-density-compact{% endblock %}
 
@@ -59,7 +59,7 @@
     </div>
     <div class="hc-kpi hc-kpi--estimated">
       <div class="hc-kpi__label" id="audienceOpportunityTitle">Opportunite estimee cette semaine <span class="audience-data-tag audience-data-tag--estimated" id="audienceOpportunityMode">Estimation interne</span></div>
-      <div class="hc-kpi__value" id="audienceEstimatedOpportunityValue">€1,770</div>
+      <div class="hc-kpi__value" id="audienceEstimatedOpportunityValue">â‚¬1,770</div>
       <div class="hc-kpi__context" id="audienceOpportunityLabel">Valeur estimee</div>
       <div class="hc-kpi__context" id="audienceOpportunityContext">Projection interne, non facturee.</div>
     </div>
@@ -107,6 +107,123 @@
               <div class="hc-empty-state__text">Les signaux territoriaux apparaitront ici des qu'un volume suffisant de visites qualifiees avec localisation sera observe.</div>
             </div>
           {% endif %}
+
+          <div class="hc-audience-map-embedded">
+<div class="row g-3 mt-0">
+    <div class="hc-audience-map-embedded-main">
+      <div class="hc-card hc-admin-table-shell">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Pages les plus consultees</strong>
+          <span class="hc-muted small">Lecture commerciale des pages a intention.</span>
+        </div>
+        <div class="table-responsive hc-admin-tablewrap">
+          <table class="table table-hover align-middle hc-admin-table mb-0">
+            <thead>
+              <tr>
+                <th>Page</th>
+                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></th>
+                <th>Meaning</th>
+                <th>Sales Weight <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in audience.page_rows %}
+                {% set page_label = row.label|lower %}
+                {% if '/offre' in page_label %}
+                  {% set page_meaning = 'buying intent' %}
+                  {% set page_weight = '82' %}
+                {% elif '/demo' in page_label %}
+                  {% set page_meaning = 'strong intent' %}
+                  {% set page_weight = '91' %}
+                {% elif '/deploiement' in page_label %}
+                  {% set page_meaning = 'operational interest' %}
+                  {% set page_weight = '74' %}
+                {% elif '/securite' in page_label %}
+                  {% set page_meaning = 'trust concern' %}
+                  {% set page_weight = '63' %}
+                {% elif '/contact' in page_label %}
+                  {% set page_meaning = 'ready to talk' %}
+                  {% set page_weight = '95' %}
+                {% elif '/professionnels' in page_label %}
+                  {% set page_meaning = 'ecosystem qualification' %}
+                  {% set page_weight = '58' %}
+                {% else %}
+                  {% set page_meaning = 'awareness / discovery' %}
+                  {% set page_weight = '31' %}
+                {% endif %}
+                <tr>
+                  <td><strong>{{ row.label_display or row.label }}</strong></td>
+                  <td class="text-end fw-semibold">{{ row.count }}</td>
+                  <td>{{ page_meaning }}</td>
+                  <td><span class="badge text-bg-light border">{{ page_weight }}</span></td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="4">
+                    <div class="hc-empty-state">
+                      <div class="hc-empty-state__title">Pas encore assez de signaux consolides.</div>
+                      <div class="hc-empty-state__text">Le radar se renforce avec le trafic reel.</div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-audience-map-embedded-side">
+      <div class="hc-card">
+        <div class="hc-card__section hc-card__section--header">
+          <strong>Intelligence de closing</strong>
+          <span class="hc-muted small">Lecture fondateur pour savoir ou vendre ensuite.</span>
+        </div>
+        <div class="p-3">
+          <div class="audience-side-module">
+            <div class="audience-module-header">
+              <div>
+                <h2 class="h6 mb-1">Founder Action Queue</h2>
+                <div class="hc-muted small">Comptes probables puis leads qualifies, sinon cartes estimees de prospection.</div>
+              </div>
+              <span class="audience-data-tag audience-data-tag--estimated" id="audienceFounderQueueMode">Estimation interne</span>
+            </div>
+            <div class="audience-founder-queue" id="audienceFounderQueue" aria-live="polite"></div>
+          </div>
+
+          <div class="audience-side-module">
+            <div class="audience-module-header">
+              <h2 class="h6 mb-0">Signaux en direct</h2>
+              <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span>
+            </div>
+            <div class="audience-signal-list" id="audienceLiveSignals" aria-live="polite"></div>
+          </div>
+
+          <div class="audience-side-module">
+            <div class="audience-module-header">
+              <h2 class="h6 mb-0">Actions recommandees</h2>
+              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
+            </div>
+            <div class="audience-action-list" id="audienceRecommendations" aria-live="polite"></div>
+          </div>
+
+          <div class="audience-side-module">
+            <div class="audience-module-header">
+              <h2 class="h6 mb-0">Prevision 30 jours</h2>
+              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
+            </div>
+            <div class="audience-forecast-card" id="audienceForecastPanel" aria-live="polite"></div>
+          </div>
+
+          <div class="audience-side-module">
+            <h2 class="h6 mb-2">Prospection immediate</h2>
+            <div class="audience-shortlist" id="audienceProspectionShortlist" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+          </div>
         </div>
       </div>
     </div>
@@ -168,6 +285,24 @@
             </div>
           {% endif %}
 
+          
+          <div class="hc-audience-sidepanel-live mt-3">
+<section class="hc-admin-card hc-live-intelligence-card">
+  <div class="hc-admin-card__header">
+    <div>
+      <div class="hc-section-eyebrow">INTELLIGENCE LIVE</div>
+      <h2>Sessions qualifiees</h2>
+      <p>Parcours recents, score d'intention et signaux utiles pour prioriser l'action commerciale.</p>
+    </div>
+    <span class="hc-pill">Live ? 30s</span>
+  </div>
+
+  <div id="hc-high-intent-sessions">
+    <div class="hc-empty-state">Chargement des signaux...</div>
+  </div>
+</section>
+          </div>
+
           <div class="audience-sidebar-footer mt-3">
             <span class="hc-muted small">Derniere mise a jour: Aujourd'hui 10:42</span>
           </div>
@@ -176,120 +311,6 @@
     </div>
   </div>
 
-  <div class="row g-3 mt-0">
-    <div class="col-12 col-xl-7">
-      <div class="hc-card hc-admin-table-shell h-100">
-        <div class="hc-card__section hc-card__section--header">
-          <strong>Pages les plus consultees</strong>
-          <span class="hc-muted small">Lecture commerciale des pages a intention.</span>
-        </div>
-        <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
-            <thead>
-              <tr>
-                <th>Page</th>
-                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></th>
-                <th>Meaning</th>
-                <th>Sales Weight <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in audience.page_rows %}
-                {% set page_label = row.label|lower %}
-                {% if '/offre' in page_label %}
-                  {% set page_meaning = 'buying intent' %}
-                  {% set page_weight = '82' %}
-                {% elif '/demo' in page_label %}
-                  {% set page_meaning = 'strong intent' %}
-                  {% set page_weight = '91' %}
-                {% elif '/deploiement' in page_label %}
-                  {% set page_meaning = 'operational interest' %}
-                  {% set page_weight = '74' %}
-                {% elif '/securite' in page_label %}
-                  {% set page_meaning = 'trust concern' %}
-                  {% set page_weight = '63' %}
-                {% elif '/contact' in page_label %}
-                  {% set page_meaning = 'ready to talk' %}
-                  {% set page_weight = '95' %}
-                {% elif '/professionnels' in page_label %}
-                  {% set page_meaning = 'ecosystem qualification' %}
-                  {% set page_weight = '58' %}
-                {% else %}
-                  {% set page_meaning = 'awareness / discovery' %}
-                  {% set page_weight = '31' %}
-                {% endif %}
-                <tr>
-                  <td><code>{{ row.label }}</code></td>
-                  <td class="text-end fw-semibold">{{ row.count }}</td>
-                  <td>{{ page_meaning }}</td>
-                  <td><span class="badge text-bg-light border">{{ page_weight }}</span></td>
-                </tr>
-              {% else %}
-                <tr>
-                  <td colspan="4">
-                    <div class="hc-empty-state">
-                      <div class="hc-empty-state__title">Pas encore assez de signaux consolides.</div>
-                      <div class="hc-empty-state__text">Le radar se renforce avec le trafic reel.</div>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12 col-xl-5">
-      <div class="hc-card h-100">
-        <div class="hc-card__section hc-card__section--header">
-          <strong>Intelligence de closing</strong>
-          <span class="hc-muted small">Lecture fondateur pour savoir ou vendre ensuite.</span>
-        </div>
-        <div class="p-3">
-          <div class="audience-side-module">
-            <div class="audience-module-header">
-              <div>
-                <h2 class="h6 mb-1">Founder Action Queue</h2>
-                <div class="hc-muted small">Comptes probables puis leads qualifies, sinon cartes estimees de prospection.</div>
-              </div>
-              <span class="audience-data-tag audience-data-tag--estimated" id="audienceFounderQueueMode">Estimation interne</span>
-            </div>
-            <div class="audience-founder-queue" id="audienceFounderQueue" aria-live="polite"></div>
-          </div>
-
-          <div class="audience-side-module">
-            <div class="audience-module-header">
-              <h2 class="h6 mb-0">Signaux en direct</h2>
-              <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span>
-            </div>
-            <div class="audience-signal-list" id="audienceLiveSignals" aria-live="polite"></div>
-          </div>
-
-          <div class="audience-side-module">
-            <div class="audience-module-header">
-              <h2 class="h6 mb-0">Actions recommandees</h2>
-              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
-            </div>
-            <div class="audience-action-list" id="audienceRecommendations" aria-live="polite"></div>
-          </div>
-
-          <div class="audience-side-module">
-            <div class="audience-module-header">
-              <h2 class="h6 mb-0">Prevision 30 jours</h2>
-              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
-            </div>
-            <div class="audience-forecast-card" id="audienceForecastPanel" aria-live="polite"></div>
-          </div>
-
-          <div class="audience-side-module">
-            <h2 class="h6 mb-2">Prospection immediate</h2>
-            <div class="audience-shortlist" id="audienceProspectionShortlist" aria-live="polite"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 <script id="audienceMapPayload" type="application/json">
   {{ {
@@ -316,19 +337,7 @@
   ></script>
   <script src="{{ url_for('static', filename='js/pages/admin-audience-map.js') }}"></script>
 
-<section class="hc-admin-card hc-live-intelligence-card">
-  <div class="hc-admin-card__header">
-    <div>
-      <div class="hc-section-eyebrow">INTELLIGENCE LIVE</div>
-      <h2>Sessions qualifiees</h2>
-      <p>Parcours recents, score d'intention et signaux utiles pour prioriser l'action commerciale.</p>
-    </div>
-    <span class="hc-pill">Live ? 30s</span>
-  </div>
 
-  <div id="hc-high-intent-sessions">
-    <div class="hc-empty-state">Chargement des signaux...</div>
-  </div>
-</section>
 
 {% endblock %}
+

@@ -8883,9 +8883,40 @@ def _build_audience_map_context() -> dict:
         {"label": region, "count": count}
         for region, count in region_counts.most_common(6)
     ]
+    blocked_page_prefixes = (
+        "/admin",
+        "/ops",
+        "/api",
+        "/events",
+        "/static",
+        "/favicon",
+    )
+
+    public_page_counts = [
+        (page, count)
+        for page, count in page_counts.most_common(30)
+        if page and not str(page).startswith(blocked_page_prefixes)
+    ]
+
+    page_display_map = {
+        "/": "Accueil",
+        "/offre": "Offre",
+        "/demo": "Acces pilote",
+        "/deploiement": "Deploiement",
+        "/professionnels": "Professionnels",
+        "/contact": "Contact",
+        "/comment_ca_marche": "Fonctionnement",
+        "/cas_usage": "Cas d'usage",
+        "/securite": "Securite",
+        "/collectivites": "Collectivites",
+    }
+
     context["page_rows"] = [
-        {"label": page, "count": count}
-        for page, count in page_counts.most_common(8)
+        {
+            "label": page_display_map.get(page, page),
+            "count": count,
+        }
+        for page, count in public_page_counts[:8]
     ]
     context["source_rows"] = [
         {"label": source, "count": count}
@@ -9849,6 +9880,8 @@ def admin_revenue_quick_action(item_type: str, item_id: int):
 
 
 
+
+
 @admin_bp.get("/api/high-intent-sessions")
 def admin_high_intent_sessions():
 
@@ -9860,6 +9893,65 @@ def admin_high_intent_sessions():
         from backend.models_with_analytics import AnalyticsEvent
     except Exception:
         return jsonify({"sessions": []})
+
+    def normalize(value):
+        if not value:
+            return "/"
+
+        try:
+            parsed = urlparse(value)
+            return parsed.path or "/"
+        except Exception:
+            return value
+
+    def is_internal_path(path):
+        if not path:
+            return True
+
+        internal_prefixes = (
+            "/admin",
+            "/ops",
+            "/static",
+            "/events",
+            "/api",
+            "/favicon",
+        )
+
+        return path.startswith(internal_prefixes)
+
+    def classify_type(paths):
+        joined = " ".join(paths)
+
+        if "/demo" in joined or "/offre" in joined:
+            return "Prospect institutionnel"
+
+        if "/deploiement" in joined or "/securite" in joined:
+            return "Exploration decisionnelle"
+
+        if "/professionnels" in joined or "/collectivites" in joined:
+            return "Exploration secteur"
+
+        return "Signal public"
+
+    def recommendation_for(score, paths):
+        joined = " ".join(paths)
+
+        if "/demo" in joined:
+            return "Verifier si une prise de contact est possible sous 48h"
+
+        if "/offre" in joined and "/deploiement" in joined:
+            return "Qualifier le besoin et proposer un cadrage pilote"
+
+        if "/securite" in joined:
+            return "Mettre en avant le cadre securite, roles et tracabilite"
+
+        if "/professionnels" in joined or "/collectivites" in joined:
+            return "Orienter vers le discours secteur et cas d'usage"
+
+        if score >= 80:
+            return "Surveiller le signal et preparer une relance ciblee"
+
+        return "Observer les prochaines visites"
 
     since = datetime.utcnow() - timedelta(days=7)
 
@@ -9879,28 +9971,24 @@ def admin_high_intent_sessions():
 
     sessions = []
 
-    def normalize(value):
-        if not value:
-            return "/"
-
-        try:
-            parsed = urlparse(value)
-            return parsed.path or "/"
-        except Exception:
-            return value
-
     for session_id, events in grouped.items():
 
         score = 0
-        paths = []
+        public_paths = []
+        public_event_count = 0
 
         for event in events:
 
             event_type = event.event_type or ""
             path = normalize(event.page_url)
 
+            if is_internal_path(path):
+                continue
+
+            public_event_count += 1
+
             if path:
-                paths.append(path)
+                public_paths.append(path)
 
             if event_type == "page_view":
                 score += 1
@@ -9911,8 +9999,14 @@ def admin_high_intent_sessions():
             if event_type == "cta_demo_click":
                 score += 25
 
+            if event_type == "cta_pilot_click":
+                score += 25
+
             if event_type == "form_start":
                 score += 40
+
+            if event_type == "demo_form_submit":
+                score += 100
 
             if "/offre" in path:
                 score += 10
@@ -9923,15 +10017,24 @@ def admin_high_intent_sessions():
             if "/demo" in path:
                 score += 20
 
+            if "/securite" in path:
+                score += 12
+
+            if "/professionnels" in path or "/collectivites" in path:
+                score += 8
+
+        if not public_paths:
+            continue
+
         deduped = []
 
-        for p in paths:
+        for p in public_paths:
             if not deduped or deduped[-1] != p:
                 deduped.append(p)
 
         intent = "low"
 
-        if score >= 40:
+        if score >= 35:
             intent = "medium"
 
         if score >= 80:
@@ -9947,8 +10050,10 @@ def admin_high_intent_sessions():
             "session_id": session_id[:16],
             "score": score,
             "intent": intent,
+            "session_type": classify_type(deduped),
+            "recommendation": recommendation_for(score, deduped),
             "path": deduped[:10],
-            "events": len(events),
+            "events": public_event_count,
             "last_seen": str(events[-1].created_at),
         })
 

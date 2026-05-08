@@ -7,17 +7,60 @@
     });
   }
 
-  function compactPath(paths) {
-    var raw = paths || [];
-    var compact = raw.length > 5 ? raw.slice(0, 2).concat(["..."]).concat(raw.slice(-3)) : raw;
-    return compact.map(esc).join(" → ");
+  function labelPath(path) {
+    var map = {
+      "/": "Accueil",
+      "/comment_ca_marche": "Fonctionnement",
+      "/offre": "Offre",
+      "/deploiement": "Deploiement",
+      "/demo": "Acces pilote",
+      "/professionnels": "Professionnels",
+      "/collectivites": "Collectivites",
+      "/securite": "Securite",
+      "/contact": "Contact"
+    };
+
+    return map[path] || path;
   }
 
-  function actionFor(session) {
-    if (session.intent === "very_high") return "Planifier un contact sous 48h";
-    if (session.intent === "high") return "Qualifier le signal commercial";
-    if (session.intent === "medium") return "Suivre les prochaines visites";
-    return "Surveiller le parcours";
+  function compactPath(paths) {
+    var important = {
+      "/comment_ca_marche": true,
+      "/offre": true,
+      "/deploiement": true,
+      "/demo": true,
+      "/professionnels": true,
+      "/collectivites": true,
+      "/securite": true,
+      "/contact": true,
+      "/cas_usage": true
+    };
+
+    var raw = paths || [];
+    var cleaned = [];
+    var seen = {};
+
+    raw.forEach(function (p) {
+      if (!important[p]) return;
+      if (cleaned.length && cleaned[cleaned.length - 1] === p) return;
+      if (seen[p] && cleaned.length >= 3) return;
+
+      cleaned.push(p);
+      seen[p] = true;
+    });
+
+    if (!cleaned.length) {
+      cleaned = raw.filter(function (p) { return p && p !== "/"; }).slice(-4);
+    }
+
+    return cleaned.map(function (p) { return esc(labelPath(p)); }).join(" → ");
+  }
+
+
+  function badgeFor(session) {
+    if (session.intent === "very_high") return "Priorite elevee";
+    if (session.intent === "high") return "Priorite active";
+    return "A surveiller";
   }
 
   function momentumFor(session) {
@@ -36,29 +79,33 @@
       var sessions = data.sessions || [];
 
       if (!sessions.length) {
-        root.innerHTML = '<div class="hc-empty-state">Aucun signal qualifie pour le moment.</div>';
+        root.innerHTML = '<div class="hc-empty-state">Aucun signal public qualifie pour le moment.</div>';
         return;
       }
 
       root.innerHTML = sessions.map(function (s) {
-        var badge = s.intent === "very_high" ? "Priorite elevee" : s.intent === "high" ? "Priorite active" : "A surveiller";
-        var path = compactPath(s.path);
-        var action = actionFor(s);
-        var momentum = momentumFor(s);
-
         return '' +
           '<div class="hc-live-intent-row">' +
             '<div class="hc-live-intent-row__head">' +
-              '<strong>' + esc(badge) + '</strong>' +
+              '<strong>' + esc(badgeFor(s)) + '</strong>' +
               '<span>Score ' + esc(s.score) + '</span>' +
             '</div>' +
-            '<div class="hc-live-intent-row__path">' + path + '</div>' +
-            '<div class="hc-live-intent-row__meta">' +
-              esc(s.events) + ' evenements · Dernier signal: ' + esc(s.last_seen) +
+
+            '<div class="hc-live-intent-row__type">' +
+              esc(s.session_type || "Signal public") +
             '</div>' +
+
+            '<div class="hc-live-intent-row__path">' +
+              compactPath(s.path) +
+            '</div>' +
+
+            '<div class="hc-live-intent-row__meta">' +
+              esc(s.events) + ' evenements publics · Dernier signal: ' + esc(s.last_seen) +
+            '</div>' +
+
             '<div class="hc-live-intent-row__action">' +
-              '<span>' + esc(momentum) + '</span>' +
-              '<strong>Action recommandee: ' + esc(action) + '</strong>' +
+              '<span>' + esc(momentumFor(s)) + '</span>' +
+              '<strong>Action recommandee: ' + esc(s.recommendation || "Observer les prochaines visites") + '</strong>' +
             '</div>' +
           '</div>';
       }).join("");
@@ -73,3 +120,4 @@
     window.setInterval(loadHighIntentSessions, 30000);
   });
 })();
+

@@ -1,0 +1,72 @@
+﻿.hc-map-shell,
+.hc-command-map,
+.hc-risk-map,
+.hc-professionals-map {
+    background: linear-gradient(180deg,#f4f7fb 0%,#edf3fb 100%);
+    border: 1px solid rgba(148,163,184,.18);
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+}
+
+.hc-map-shell .leaflet-container,
+.hc-command-map .leaflet-container,
+.hc-risk-map .leaflet-container,
+.hc-professionals-map .leaflet-container {
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.hc-map-overlay,
+.hc-territory-panel,
+.hc-command-panel,
+.hc-risk-panel {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15,23,42,.92),
+            rgba(17,37,65,.88)
+        );
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 24px;
+    box-shadow:
+        0 12px 40px rgba(15,23,42,.28);
+    color: #fff;
+}
+
+.hc-map-overlay h3,
+.hc-territory-panel h3,
+.hc-command-panel h3,
+.hc-risk-panel h3 {
+    color: #fff;
+    font-weight: 800;
+}
+
+.hc-map-overlay .metric,
+.hc-territory-panel .metric,
+.hc-command-panel .metric,
+.hc-risk-panel .metric {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 18px;
+}
+
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.leaflet-control-zoom a {
+    background: rgba(15,23,42,.92) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 18px;
+}
+
+.leaflet-popup-tip {
+    background: white;
+}

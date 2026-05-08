@@ -560,7 +560,20 @@ class AdvancedAnalytics:
                 except Exception:
                     pass
 
-            top_pages = [{"url": row[0], "views": row[1]} for row in top_pages_rows]
+            blocked_prefixes = (
+                "/admin",
+                "/ops",
+                "/events",
+                "/api",
+                "/static",
+                "/favicon",
+            )
+
+            top_pages = [
+                {"url": row[0], "views": row[1]}
+                for row in top_pages_rows
+                if row[0] and not str(row[0]).startswith(blocked_prefixes)
+            ]
 
             # Device breakdown - uses idx_user_behaviors_session_start
             device_stats = (

@@ -1,0 +1,92 @@
+﻿.hc-map-shell{
+  position:relative;
+  overflow:hidden;
+  border-radius:28px;
+  border:1px solid rgba(160,180,220,.18);
+  background:#f4f7fb;
+  box-shadow:
+    0 10px 30px rgba(15,23,42,.06),
+    inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+.hc-map-canvas{
+  width:100%;
+  min-height:680px;
+  border-radius:28px;
+  overflow:hidden;
+}
+
+.hc-map-overlay{
+  position:absolute;
+  top:24px;
+  left:24px;
+  z-index:500;
+  width:340px;
+  border-radius:24px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(12,27,48,.96),
+      rgba(8,20,38,.92)
+    );
+  border:1px solid rgba(120,160,255,.16);
+  box-shadow:
+    0 20px 60px rgba(2,6,23,.35),
+    inset 0 1px 0 rgba(255,255,255,.04);
+  backdrop-filter:blur(14px);
+  padding:20px;
+}
+
+.hc-map-overlay h3,
+.hc-map-overlay h4{
+  color:#fff;
+}
+
+.hc-map-overlay p,
+.hc-map-overlay span,
+.hc-map-overlay div{
+  color:rgba(255,255,255,.78);
+}
+
+.hc-map-kpis{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:18px;
+}
+
+.hc-map-kpi{
+  border-radius:18px;
+  padding:14px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.hc-map-status{
+  margin-top:18px;
+  border-radius:18px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0,0,0,.16),
+      rgba(0,0,0,.22)
+    );
+  border:1px solid rgba(120,160,255,.10);
+  padding:16px;
+}
+
+.leaflet-control-zoom{
+  border:none !important;
+  box-shadow:
+    0 10px 24px rgba(15,23,42,.16) !important;
+}
+
+.leaflet-control-zoom a{
+  border:none !important;
+  background:#fff !important;
+  color:#0f172a !important;
+}
+
+.leaflet-popup-content-wrapper{
+  border-radius:18px;
+}
