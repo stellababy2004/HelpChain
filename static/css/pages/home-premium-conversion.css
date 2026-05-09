@@ -498,3 +498,101 @@ body.hc-page-home .hc-home-premium__hero {
     display: none !important;
   }
 }
+
+/* Mobile homepage polish — iPhone 13/14 safe layout */
+@media (max-width: 640px) {
+  body.hc-page-home {
+    overflow-x: hidden;
+  }
+
+  body.hc-page-home .hc-home-premium {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-inner {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-height: auto;
+    padding: 18px 20px 16px !important;
+  }
+
+  body.hc-page-home .hc-home-premium__brand {
+    justify-content: center;
+  }
+
+  body.hc-page-home .hc-home-premium__menu {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  body.hc-page-home .hc-home-premium__menu a {
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    font-size: 1.35rem;
+    line-height: 1.15;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-actions {
+    width: 100%;
+  }
+
+  body.hc-page-home .hc-home-premium__nav-actions .hc-btn {
+    width: 100%;
+    max-width: 100%;
+    min-height: 56px;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+    line-height: 1.15;
+    padding-left: 18px;
+    padding-right: 18px;
+    font-size: 1.15rem;
+  }
+
+  body.hc-page-home .hc-home-premium__hero {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-home .hc-home-premium__hero h1 {
+    max-width: 100%;
+    font-size: clamp(3.05rem, 14vw, 4.65rem);
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+    text-align: left;
+  }
+
+  body.hc-page-home .hc-home-premium__lead {
+    max-width: 100%;
+    font-size: clamp(1.25rem, 5.8vw, 1.7rem);
+    line-height: 1.42;
+    letter-spacing: -0.02em;
+    text-align: left;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  body.hc-page-home .hc-home-premium__hero-actions .hc-btn {
+    width: 100%;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    justify-content: center;
+  }
+}
