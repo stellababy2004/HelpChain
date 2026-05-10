@@ -8852,16 +8852,22 @@ def _build_audience_map_context() -> dict:
             int(point["default_structures"]),
             min(int(point["default_structures"]) + 2, max(1, math.ceil(estimated_demands * 0.6))),
         )
+        department_name = AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("department", "Ile-de-France")
+        department_code = _audience_department_code(point["label"]) or "--"
         business_points.append(
             {
                 "slug": point["slug"],
                 "label": point["label"],
+                "city": point["label"],
                 "lat": float(point["lat"]),
                 "lng": float(point["lng"]),
-                "department": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("department", "Ile-de-France"),
-                "department_code": _audience_department_code(point["label"]),
+                "department": department_name,
+                "department_code": department_code,
+                "departmentNumber": department_code,
+                "departmentName": department_name,
                 "region": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("region", "Ile-de-France"),
                 "estimated_demands": estimated_demands,
+                "needs": estimated_demands,
                 "structures": structures,
                 "priority": point["priority"],
                 "recommendation": point["recommendation"],
