@@ -31,46 +31,15 @@
     { slug: "courbevoie", city: "Courbevoie", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8973, lng: 2.256, needs: 4, structures: 3, priority: "Observation", recommendation: "Maintenir une veille active avant qualification territoriale." },
   ];
 
-  var REVENUE_RADAR = [
-    { territory: "Paris (75)", departmentNumber: "75", priority: "Haute", repeatLabel: "2 repeat visits", pages: ["/offre", "/demo", "/deploiement"], score: 82, potential: 590, focusSlug: "paris" },
-    { territory: "Hauts-de-Seine (92)", departmentNumber: "92", priority: "Moyenne", repeatLabel: "Viewed /professionnels", pages: ["/professionnels"], score: 64, potential: 390, focusSlug: "nanterre" },
-    { territory: "Seine-Saint-Denis (93)", departmentNumber: "93", priority: "Haute", repeatLabel: "Viewed /contact twice", pages: ["/contact", "/contact"], score: 78, potential: 590, focusSlug: "saint-denis" },
-    { territory: "Yvelines (78)", departmentNumber: "78", priority: "Observation", repeatLabel: "Signal leger", pages: ["/offre"], score: 41, potential: 190, focusSlug: "versailles" },
-  ];
+  var REVENUE_RADAR = [];
 
-  var DEPARTMENT_SCORES = [
-    { number: "75", name: "Paris", score: 82, focusSlug: "paris" },
-    { number: "92", name: "Hauts-de-Seine", score: 76, focusSlug: "nanterre" },
-    { number: "93", name: "Seine-Saint-Denis", score: 74, focusSlug: "saint-denis" },
-    { number: "94", name: "Val-de-Marne", score: 63, focusSlug: "creteil" },
-    { number: "95", name: "Val-d'Oise", score: 55, focusSlug: "argenteuil" },
-    { number: "78", name: "Yvelines", score: 41, focusSlug: "versailles" },
-    { number: "91", name: "Essonne", score: 39, focusSlug: "evry-courcouronnes" },
-  ];
+  var DEPARTMENT_SCORES = [];
 
-  var LIVE_SIGNALS = [
-    { territory: "Paris", detail: "Session viewed /offre then /demo", when: "2 min ago", focusSlug: "paris" },
-    { territory: "Nanterre", detail: "Session returned 3rd time this week", when: "11 min ago", focusSlug: "nanterre" },
-    { territory: "Saint-Denis", detail: "Session viewed /contact", when: "18 min ago", focusSlug: "saint-denis" },
-  ];
+  var LIVE_SIGNALS = [];
 
-  var PIPELINE_SHORTLIST = [
-    "CCAS Paris",
-    "Associations 92",
-    "Reseau insertion 93",
-    "Structures multi-sites 94",
-    "Ville pilote 95",
-  ];
+  var PIPELINE_SHORTLIST = [];
 
-  var HEAT_ZONES = [
-    { lat: 48.8566, lng: 2.3522, radius: 18000, color: "#1d4ed8", fillOpacity: 0.14, opacity: 0.2 },
-    { lat: 48.8924, lng: 2.206, radius: 15000, color: "#2563eb", fillOpacity: 0.12, opacity: 0.18 },
-    { lat: 48.9362, lng: 2.3574, radius: 15500, color: "#2563eb", fillOpacity: 0.12, opacity: 0.18 },
-    { lat: 48.7904, lng: 2.4556, radius: 12500, color: "#3b82f6", fillOpacity: 0.09, opacity: 0.14 },
-    { lat: 48.9472, lng: 2.2467, radius: 12000, color: "#60a5fa", fillOpacity: 0.08, opacity: 0.13 },
-    { lat: 48.8049, lng: 2.1204, radius: 11000, color: "#93c5fd", fillOpacity: 0.035, opacity: 0.1 },
-    { lat: 48.623, lng: 2.429, radius: 10500, color: "#93c5fd", fillOpacity: 0.05, opacity: 0.09 },
-  ];
+  var HEAT_ZONES = [];
 
   var PRIORITY_META = {
     Haute: { cssClass: "audience-marker--high", popupEyebrow: "Territoire prioritaire", action: "Planifier une prise de contact cette semaine.", intensity: "High", zoom: 12, zIndexOffset: 500 },
@@ -99,6 +68,10 @@
   }
 
   var audiencePayload = parseAudiencePayload();
+
+  REVENUE_RADAR = Array.isArray(audiencePayload.revenue_radar_rows) ? audiencePayload.revenue_radar_rows : [];
+  DEPARTMENT_SCORES = Array.isArray(audiencePayload.department_scores) ? audiencePayload.department_scores : [];
+  LIVE_SIGNALS = Array.isArray(audiencePayload.live_signals) ? audiencePayload.live_signals : [];
   var FOUNDER_QUEUE_ACCOUNT_ROWS = Array.isArray(audiencePayload.founder_queue_account_rows)
     ? audiencePayload.founder_queue_account_rows
     : [];
