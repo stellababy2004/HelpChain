@@ -22,7 +22,7 @@
     { slug: "creteil", city: "Creteil", departmentNumber: "94", departmentName: "Val-de-Marne", lat: 48.7904, lng: 2.4556, needs: 6, structures: 4, priority: "Moyenne", recommendation: "Identifier les interlocuteurs municipaux et associatifs." },
     { slug: "boulogne-billancourt", city: "Boulogne-Billancourt", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8397, lng: 2.2399, needs: 5, structures: 4, priority: "Moyenne", recommendation: "Tester une approche aupres des structures privees et associatives." },
     { slug: "argenteuil", city: "Argenteuil", departmentNumber: "95", departmentName: "Val-d'Oise", lat: 48.9472, lng: 2.2467, needs: 5, structures: 3, priority: "Moyenne", recommendation: "Qualifier les besoins avant lancement d'un pilote." },
-    { slug: "versailles", city: "Versailles", departmentNumber: "78", departmentName: "Yvelines", lat: 48.8049, lng: 2.1204, needs: 4, structures: 3, priority: "Observation", recommendation: "Surveiller le potentiel institutionnel avant prospection active." },
+    { slug: "versailles", city: "Versailles", departmentNumber: "78", departmentName: "Yvelines", lat: 48.8049, lng: 2.1204, needs: 4, structures: 3, priority: "Observation", recommendation: "Surveiller le potentiel institutionnel avant qualification active." },
     { slug: "cergy", city: "Cergy", departmentNumber: "95", departmentName: "Val-d'Oise", lat: 49.0364, lng: 2.0761, needs: 4, structures: 3, priority: "Observation", recommendation: "Garder en veille pour extension Val-d'Oise." },
     { slug: "evry-courcouronnes", city: "Evry-Courcouronnes", departmentNumber: "91", departmentName: "Essonne", lat: 48.623, lng: 2.429, needs: 4, structures: 3, priority: "Observation", recommendation: "Veille territoriale pour extension Essonne." },
     { slug: "aulnay-sous-bois", city: "Aulnay-sous-Bois", departmentNumber: "93", departmentName: "Seine-Saint-Denis", lat: 48.9382, lng: 2.4943, needs: 6, structures: 4, priority: "Moyenne", recommendation: "Structurer un ciblage des dispositifs de coordination locale et municipale." },
@@ -74,7 +74,7 @@
 
   var PRIORITY_META = {
     Haute: { cssClass: "audience-marker--high", popupEyebrow: "Territoire prioritaire", action: "Planifier une prise de contact cette semaine.", intensity: "High", zoom: 12, zIndexOffset: 500 },
-    Moyenne: { cssClass: "audience-marker--medium", popupEyebrow: "Territoire a qualifier", action: "Qualifier les interlocuteurs avant prospection.", intensity: "Medium", zoom: 11.4, zIndexOffset: 350 },
+    Moyenne: { cssClass: "audience-marker--medium", popupEyebrow: "Territoire a qualifier", action: "Qualifier les interlocuteurs avant priorisation territoriale.", intensity: "Medium", zoom: 11.4, zIndexOffset: 350 },
     Observation: { cssClass: "audience-marker--watch", popupEyebrow: "Territoire en observation", action: "Conserver en observation territoriale.", intensity: "Watch", zoom: 11, zIndexOffset: 220 },
   };
   var QUALIFIED_PAGE_WEIGHTS = {
