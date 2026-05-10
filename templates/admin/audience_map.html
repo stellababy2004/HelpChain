@@ -1,4 +1,4 @@
-﻿{% extends "layouts/admin_workspace.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Carte d'interet - France | {{ _('Admin') }}{% endblock %}
 {% block admin_body_class %} hc-admin-audience-page hc-density-compact{% endblock %}
 
@@ -33,12 +33,12 @@
 
   <div class="hc-kpis mb-3">
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Visiteurs 24h <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
+      <div class="hc-kpi__label">Visiteurs 24h <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.visitors_24h }}</div>
       <div class="hc-kpi__context">sessions ou IP distinctes</div>
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Visiteurs 7 jours <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
+      <div class="hc-kpi__label">Visiteurs 7 jours <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.visitors_7d }}</div>
       <div class="hc-kpi__context">audience recente</div>
     </div>
@@ -48,20 +48,20 @@
       <div class="hc-kpi__context">si localisation disponible</div>
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Pages cles vues <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
+      <div class="hc-kpi__label">Pages cles vues <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.key_pages }}</div>
       <div class="hc-kpi__context">parcours institutionnels</div>
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Intentions detectees <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></div>
+      <div class="hc-kpi__label">Intentions detectees <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.intent_signals }}</div>
       <div class="hc-kpi__context">vues sur pages a intention</div>
     </div>
     <div class="hc-kpi hc-kpi--estimated">
-      <div class="hc-kpi__label" id="audienceOpportunityTitle">Opportunite estimee cette semaine <span class="audience-data-tag audience-data-tag--estimated" id="audienceOpportunityMode">Estimation interne</span></div>
-      <div class="hc-kpi__value" id="audienceEstimatedOpportunityValue">â‚¬1,770</div>
-      <div class="hc-kpi__context" id="audienceOpportunityLabel">Valeur estimee</div>
-      <div class="hc-kpi__context" id="audienceOpportunityContext">Projection interne, non facturee.</div>
+      <div class="hc-kpi__label" id="audienceOpportunityTitle">ACTIVITÉ TERRITORIALE <span class="audience-data-tag audience-data-tag--estimated" id="audienceOpportunityMode">Analyse interne</span></div>
+      <div class="hc-kpi__value" id="audienceEstimatedOpportunityValue">Faible</div>
+      <div class="hc-kpi__context" id="audienceOpportunityLabel">Niveau observé</div>
+      <div class="hc-kpi__context" id="audienceOpportunityContext">Lecture analytique, non commerciale.</div>
     </div>
   </div>
 
@@ -71,7 +71,7 @@
         <strong>Revenue Radar</strong>
         <div class="hc-muted small">Sessions anonymes classees par intention commerciale probable.</div>
       </div>
-      <span class="badge text-bg-light border">Estimation interne</span>
+      <span class="badge text-bg-light border">Signal analytique</span>
     </div>
     <div class="p-3">
       <div class="audience-radar-list" id="audienceRevenueRadar" aria-live="polite"></div>
@@ -88,8 +88,8 @@
     <div class="col-12 col-xl-8">
       <div class="hc-card h-100">
         <div class="hc-card__section hc-card__section--header">
-          <strong>Lecture territoriale Ile-de-France</strong>
-          <span class="hc-muted small">Carte operationnelle interactive, basee sur des tuiles legeres et structuree pour la prospection territoriale.</span>
+          <strong>Lecture opérationnelle territoriale Île-de-France</strong>
+          <span class="hc-muted small">Carte opérationnelle interactive, basée sur des tuiles légères et structurée pour la coordination territoriale.</span>
         </div>
         <div class="p-3">
           <div class="hc-audience-mapFrame audience-map-shell">
@@ -121,9 +121,9 @@
             <thead>
               <tr>
                 <th>Page</th>
-                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span></th>
+                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Signal live</span></th>
                 <th>Meaning</th>
-                <th>Sales Weight <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></th>
+                <th>Operational Weight <span class="audience-data-tag audience-data-tag--estimated">Signal analytique</span></th>
               </tr>
             </thead>
             <tbody>
@@ -183,10 +183,10 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <div>
-                <h2 class="h6 mb-1">Founder Action Queue</h2>
+                <h2 class="h6 mb-1">Territorial Priorities</h2>
                 <div class="hc-muted small">Comptes probables puis leads qualifies, sinon cartes estimees de prospection.</div>
               </div>
-              <span class="audience-data-tag audience-data-tag--estimated" id="audienceFounderQueueMode">Estimation interne</span>
+              <span class="audience-data-tag audience-data-tag--estimated" id="audienceFounderQueueMode">Signal analytique</span>
             </div>
             <div class="audience-founder-queue" id="audienceFounderQueue" aria-live="polite"></div>
           </div>
@@ -194,7 +194,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Signaux en direct</h2>
-              <span class="audience-data-tag audience-data-tag--raw">Donnee brute</span>
+              <span class="audience-data-tag audience-data-tag--raw">Signal live</span>
             </div>
             <div class="audience-signal-list" id="audienceLiveSignals" aria-live="polite"></div>
           </div>
@@ -202,7 +202,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Actions recommandees</h2>
-              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
+              <span class="audience-data-tag audience-data-tag--estimated">Signal analytique</span>
             </div>
             <div class="audience-action-list" id="audienceRecommendations" aria-live="polite"></div>
           </div>
@@ -210,7 +210,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Prevision 30 jours</h2>
-              <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span>
+              <span class="audience-data-tag audience-data-tag--estimated">Signal analytique</span>
             </div>
             <div class="audience-forecast-card" id="audienceForecastPanel" aria-live="polite"></div>
           </div>
@@ -240,7 +240,7 @@
             <h2 class="hc-audience-detailCard__title" id="audienceMapDetailCity">Paris</h2>
             <div class="hc-audience-detailGrid audience-sidebar-kpis">
               <div class="hc-audience-detailMetric audience-kpi-card">
-                <span class="hc-audience-detailMetric__label">Demandes estimees <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></span>
+                <span class="hc-audience-detailMetric__label">Demandes observées <span class="audience-data-tag audience-data-tag--estimated">Signal analytique</span></span>
                 <strong id="audienceMapDetailDemand">12</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
@@ -252,11 +252,11 @@
                 <strong id="audienceMapDetailDepartment">75</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
-                <span class="hc-audience-detailMetric__label">Priorite <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></span>
+                <span class="hc-audience-detailMetric__label">Priorite <span class="audience-data-tag audience-data-tag--estimated">Signal analytique</span></span>
                 <strong id="audienceMapDetailPriority">Haute</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
-                <span class="hc-audience-detailMetric__label">Intensite marche <span class="audience-data-tag audience-data-tag--estimated">Estimation interne</span></span>
+                <span class="hc-audience-detailMetric__label">Intensité territoriale <span class="audience-data-tag audience-data-tag--estimated">Signal analytique</span></span>
                 <strong id="audienceMapDetailIntensity">High</strong>
               </div>
             </div>
@@ -340,4 +340,7 @@
 
 
 {% endblock %}
+
+
+
 

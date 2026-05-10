@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   var root = document.querySelector("[data-audience-map-root]");
   if (!root) {
     return;
@@ -28,7 +28,7 @@
     { slug: "aulnay-sous-bois", city: "Aulnay-sous-Bois", departmentNumber: "93", departmentName: "Seine-Saint-Denis", lat: 48.9382, lng: 2.4943, needs: 6, structures: 4, priority: "Moyenne", recommendation: "Structurer un ciblage des dispositifs de coordination locale et municipale." },
     { slug: "ivry-sur-seine", city: "Ivry-sur-Seine", departmentNumber: "94", departmentName: "Val-de-Marne", lat: 48.813, lng: 2.3889, needs: 5, structures: 4, priority: "Moyenne", recommendation: "Qualifier les acteurs associatifs et les relais de proximite avant prise de contact." },
     { slug: "colombes", city: "Colombes", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.9226, lng: 2.2522, needs: 5, structures: 4, priority: "Moyenne", recommendation: "Positionner HelpChain sur les besoins de coordination inter-services et reporting." },
-    { slug: "courbevoie", city: "Courbevoie", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8973, lng: 2.256, needs: 4, structures: 3, priority: "Observation", recommendation: "Maintenir une veille active avant acceleration commerciale." },
+    { slug: "courbevoie", city: "Courbevoie", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8973, lng: 2.256, needs: 4, structures: 3, priority: "Observation", recommendation: "Maintenir une veille active avant qualification territoriale." },
   ];
 
   var REVENUE_RADAR = [
@@ -75,7 +75,7 @@
   var PRIORITY_META = {
     Haute: { cssClass: "audience-marker--high", popupEyebrow: "Territoire prioritaire", action: "Planifier une prise de contact cette semaine.", intensity: "High", zoom: 12, zIndexOffset: 500 },
     Moyenne: { cssClass: "audience-marker--medium", popupEyebrow: "Territoire a qualifier", action: "Qualifier les interlocuteurs avant prospection.", intensity: "Medium", zoom: 11.4, zIndexOffset: 350 },
-    Observation: { cssClass: "audience-marker--watch", popupEyebrow: "Territoire en observation", action: "Conserver en veille commerciale.", intensity: "Watch", zoom: 11, zIndexOffset: 220 },
+    Observation: { cssClass: "audience-marker--watch", popupEyebrow: "Territoire en observation", action: "Conserver en observation territoriale.", intensity: "Watch", zoom: 11, zIndexOffset: 220 },
   };
   var QUALIFIED_PAGE_WEIGHTS = {
     "/demo": 40,
@@ -594,7 +594,7 @@
         scoreLabel: "Score " + fallbackScore,
         priority: item.badge,
         badgeClass: item.badgeClass,
-        sourceLabel: "Estimation interne",
+        sourceLabel: "Signal analytique",
         action: item.action,
         focusSlug: item.focusSlug,
         estimatedValue: 0,
@@ -649,7 +649,7 @@
     }
     return {
       title: "Opportunite estimee cette semaine",
-      modeLabel: "Estimation interne",
+      modeLabel: "Signal analytique",
       label: "Valeur estimee",
       context: "Projection interne, non facturee.",
       value: estimatedOpportunityThisWeek(),
@@ -709,7 +709,7 @@
     return [
       {
         title: "Prioriser Paris cette semaine.",
-        reason: "Fort volume + pages commerciales vues.",
+        reason: "Fort volume + pages institutionnelles vues.",
         focusSlug: "paris",
       },
       {
@@ -992,7 +992,7 @@
         '<span class="audience-radar-row__pages">Pages vues: ' + escapeHtml(row.pages.join(" ")) + "</span>",
         "</span>",
         '<span class="audience-radar-row__score">',
-        '<span class="audience-inline-tag">Estimation interne</span>',
+        '<span class="audience-inline-tag">Signal analytique</span>',
         '<span class="audience-radar-row__badge">' + escapeHtml(row.priority) + "</span>",
         '<strong>Score: ' + escapeHtml(row.score) + "</strong>",
         '<em>Potentiel: ' + escapeHtml(euroPerMonth(row.potential)) + "</em>",
@@ -1073,7 +1073,7 @@
     var queue = founderQueueRows();
     founderQueueEl.innerHTML = "";
     if (founderQueueModeEl) {
-      founderQueueModeEl.textContent = queue.mode === "qualified" ? "Signal qualifie" : "Estimation interne";
+      founderQueueModeEl.textContent = queue.mode === "qualified" ? "Signal qualifie" : "Signal analytique";
     }
     if (!queue.rows.length) {
       renderFounderQueueEmptyState();
@@ -1116,7 +1116,7 @@
         accountLines.push('<span class="audience-founder-row__reason">Derniere activite: ' + escapeHtml(item.lastActivity) + "</span>");
         accountLines.push('<span class="audience-founder-row__reason"><span class="audience-inline-tag">ACCOUNT</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + '</span> <span class="audience-inline-tag">Confiance ' + escapeHtml(item.confidence) + "</span></span>");
         if (item.salesNote) {
-          accountLines.push('<span class="audience-founder-row__reason">Note commerciale: ' + escapeHtml(item.salesNote) + "</span>");
+          accountLines.push('<span class="audience-founder-row__reason">Note de qualification: ' + escapeHtml(item.salesNote) + "</span>");
         }
         accountCard.innerHTML = [
           '<span class="audience-founder-row__main">',
@@ -1171,7 +1171,7 @@
           intelligenceLines.push('<span class="audience-founder-row__reason">Confiance: ' + escapeHtml(item.organizationConfidence) + "</span>");
         }
         if (item.salesNote) {
-          intelligenceLines.push('<span class="audience-founder-row__reason">Note commerciale: ' + escapeHtml(item.salesNote) + "</span>");
+          intelligenceLines.push('<span class="audience-founder-row__reason">Note de qualification: ' + escapeHtml(item.salesNote) + "</span>");
         }
         card.innerHTML = [
           '<span class="audience-founder-row__main">',
@@ -1226,7 +1226,7 @@
       return;
     }
     var mode = estimatedOpportunityMode();
-    estimatedOpportunityEl.textContent = formatEuro(mode.value);
+    estimatedOpportunityEl.textContent = operationalActivityLevel(mode.value);
     if (opportunityTitleEl) {
       opportunityTitleEl.innerHTML =
         escapeHtml(mode.title) +
@@ -1253,9 +1253,9 @@
     forecastEl.innerHTML = [
       '<div class="audience-forecast-card__grid">',
       '<span><strong>' + expectedDemos + '</strong><em>Demos attendues <span class="audience-inline-tag">Donnee brute</span></em></span>',
-      '<span><strong>' + likelyPilots + '</strong><em>Pilotes probables <span class="audience-inline-tag">Estimation interne</span></em></span>',
-      '<span><strong>' + escapeHtml(formatEuro(590)) + " - " + escapeHtml(formatEuro(maxMrr)) + '</strong><em>Valeur estimee <span class="audience-inline-tag">Estimation interne</span></em></span>',
-      '<span><strong>Moyenne</strong><em>Confiance <span class="audience-inline-tag">Estimation interne</span></em></span>',
+      '<span><strong>' + likelyPilots + '</strong><em>Pilotes probables <span class="audience-inline-tag">Signal analytique</span></em></span>',
+      '<span><strong>' + escapeHtml(formatEuro(590)) + " - " + escapeHtml(formatEuro(maxMrr)) + '</strong><em>Valeur estimee <span class="audience-inline-tag">Signal analytique</span></em></span>',
+      '<span><strong>Moyenne</strong><em>Confiance <span class="audience-inline-tag">Signal analytique</span></em></span>',
       "</div>",
     ].join("");
   }
@@ -1316,11 +1316,11 @@
   }
 
   runSafeRender("Estimated Opportunity", renderEstimatedOpportunity);
-  runSafeRender("Revenue Radar", renderRevenueRadar);
+  runSafeRender("Signal Radar", renderRevenueRadar);
   runSafeRender("Department Scores", renderDepartmentScores);
   runSafeRender("Live Signals", renderLiveSignals);
   runSafeRender("Recommendations", renderRecommendations);
-  runSafeRender("FounderSalesQueue", renderFounderSalesQueue, renderFounderQueueEmptyState);
+  runSafeRender("TerritorialPriorityQueue", renderFounderSalesQueue, renderFounderQueueEmptyState);
   runSafeRender("Forecast", renderForecast);
   runSafeRender("Shortlist", renderShortlist);
 
