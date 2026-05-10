@@ -209,10 +209,10 @@
 
   function suggestedActionForScore(score) {
     if (score >= 90) {
-      return "Appeler / contacter aujourd'hui";
+      return "Qualifier le signal aujourd'hui";
     }
     if (score >= 75) {
-      return "Envoyer un email cible aujourd'hui";
+      return "Preparer une prise de contact ciblee";
     }
     if (score >= 55) {
       return "Qualifier les interlocuteurs";
@@ -298,7 +298,7 @@
     if (row.priority === "Observation") {
       return "Garder en observation";
     }
-    return "Preparer campagne locale";
+    return "Preparer une qualification territoriale";
   }
 
   function buildFounderReason(row) {
@@ -438,7 +438,7 @@
           territory: territoryLabel,
           detectedSignal: detectedSignal,
           score: score,
-          scoreLabel: "Score " + score,
+          scoreLabel: "Signal " + score,
           priority: scorePriority(score),
           badgeClass: scoreBadgeClass(score),
           sourceLabel: "Signal qualifie",
@@ -483,7 +483,7 @@
           territory: territoryLabel,
           detectedSignal: pagesViewed,
           score: Number(row.score) || 0,
-          scoreLabel: "Score " + (Number(row.score) || 0),
+          scoreLabel: "Signal " + (Number(row.score) || 0),
           priority: String(row.priority || "Observation"),
           badgeClass: founderLeadBadgeClass(String(row.priority || "")),
           sourceLabel: "Signal qualifie",
@@ -523,7 +523,7 @@
           bestScore: bestScore,
           avgScore: avgScore,
           score: bestScore,
-          scoreLabel: "Score " + bestScore,
+          scoreLabel: "Signal " + bestScore,
           priority: String(row.priority || scorePriority(bestScore)),
           badgeClass: founderLeadBadgeClass(String(row.priority || scorePriority(bestScore))),
           sourceLabel: String(row.source_label || "Signal qualifie"),
@@ -538,20 +538,20 @@
 
   function buildEstimatedQueue() {
     return buildFounderQueue().map(function (item) {
-      var fallbackScore = 0;
+      var fallbackSignal = 0;
       if (item.badge === "Haute priorite") {
-        fallbackScore = 82;
+        fallbackSignal = 82;
       } else if (item.badge === "Chaud") {
-        fallbackScore = 68;
+        fallbackSignal = 68;
       } else {
-        fallbackScore = 42;
+        fallbackSignal = 42;
       }
       return {
         kind: "estimated",
         territory: item.territory,
         detectedSignal: item.reason,
-        score: fallbackScore,
-        scoreLabel: "Score " + fallbackScore,
+        score: fallbackSignal,
+        scoreLabel: "Signal " + fallbackSignal,
         priority: item.badge,
         badgeClass: item.badgeClass,
         sourceLabel: "Signal analytique",
@@ -678,13 +678,13 @@
         focusSlug: "nanterre",
       },
       {
-        title: "Tester campagne locale Seine-Saint-Denis.",
+        title: "Suivre le signal territorial Seine-Saint-Denis.",
         reason: "Interet croissant.",
         focusSlug: "saint-denis",
       },
       {
         title: "Suspendre Yvelines pour l'instant.",
-        reason: "Momentum trop faible pour concentrer du temps commercial.",
+        reason: "Signal trop faible pour prioriser l'action.",
         focusSlug: "versailles",
       },
     ];
@@ -954,8 +954,8 @@
         '<span class="audience-radar-row__score">',
         '<span class="audience-inline-tag">Signal analytique</span>',
         '<span class="audience-radar-row__badge">' + escapeHtml(row.priority) + "</span>",
-        '<strong>Score: ' + escapeHtml(row.score) + "</strong>",
-        '<em>Potentiel: ' + escapeHtml(euroPerMonth(row.potential)) + "</em>",
+        '<strong>Signal: ' + escapeHtml(row.score) + "</strong>",
+        '<em>Niveau: ' + escapeHtml(euroPerMonth(row.potential)) + "</em>",
         "</span>",
       ].join("");
       button.addEventListener("click", function () {
@@ -1082,7 +1082,7 @@
           '<span class="audience-founder-row__main">',
           '<strong>' + escapeHtml(item.accountName || item.domain || "Compte probable") + "</strong>",
           '<span class="audience-founder-row__reason">Organisation probable: ' + escapeHtml(item.accountName || item.domain || "-") + "</span>",
-          '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">Moyenne ' + escapeHtml(item.avgScore) + "</span></span>",
+          '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">Niveau moyen ' + escapeHtml(item.avgScore) + "</span></span>",
           accountLines.join(""),
           '<span class="audience-founder-row__action">Action suggeree: ' + escapeHtml(item.action) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
