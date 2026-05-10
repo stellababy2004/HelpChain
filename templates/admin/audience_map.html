@@ -122,33 +122,33 @@
               <tr>
                 <th>Page</th>
                 <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Signal live</span></th>
-                <th>Meaning</th>
-                <th>Operational Weight <span class="audience-data-tag audience-data-tag--estimated">Analyse territoriale</span></th>
+                <th>Lecture</th>
+                <th>Poids opérationnel <span class="audience-data-tag audience-data-tag--estimated">Analyse territoriale</span></th>
               </tr>
             </thead>
             <tbody>
               {% for row in audience.page_rows %}
                 {% set page_label = row.label|lower %}
                 {% if '/offre' in page_label %}
-                  {% set page_meaning = 'buying intent' %}
+                  {% set page_meaning = 'intention forte' %}
                   {% set page_weight = '82' %}
                 {% elif '/demo' in page_label %}
-                  {% set page_meaning = 'strong intent' %}
+                  {% set page_meaning = 'intention confirmée' %}
                   {% set page_weight = '91' %}
                 {% elif '/deploiement' in page_label %}
-                  {% set page_meaning = 'operational interest' %}
+                  {% set page_meaning = 'intérêt opérationnel' %}
                   {% set page_weight = '74' %}
                 {% elif '/securite' in page_label %}
-                  {% set page_meaning = 'trust concern' %}
+                  {% set page_meaning = 'point de confiance' %}
                   {% set page_weight = '63' %}
                 {% elif '/contact' in page_label %}
-                  {% set page_meaning = 'ready to talk' %}
+                  {% set page_meaning = 'prise de contact possible' %}
                   {% set page_weight = '95' %}
                 {% elif '/professionnels' in page_label %}
-                  {% set page_meaning = 'ecosystem qualification' %}
+                  {% set page_meaning = 'qualification écosystème' %}
                   {% set page_weight = '58' %}
                 {% else %}
-                  {% set page_meaning = 'awareness / discovery' %}
+                  {% set page_meaning = 'découverte / orientation' %}
                   {% set page_weight = '31' %}
                 {% endif %}
                 <tr>

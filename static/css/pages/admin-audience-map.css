@@ -2631,3 +2631,99 @@ body.hc-admin-audience-page .audience-founder-row.is-active {
   font-weight:700;
   line-height:1.1;
 }
+
+/* =========================================
+   Audience map — operational tables polish
+========================================= */
+
+.hc-audience-table-wrap {
+  overflow-x: auto;
+  border-radius: 18px;
+}
+
+.hc-audience-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 980px;
+}
+
+.hc-audience-table thead th {
+  padding: 14px 18px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  color: #5f6f86;
+  background: #f7f9fc;
+  border-bottom: 1px solid #dbe4f0;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.hc-audience-table tbody td {
+  padding: 14px 18px;
+  vertical-align: middle;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 0.94rem;
+  color: #243247;
+}
+
+.hc-audience-table tbody tr:hover {
+  background: rgba(37, 99, 235, 0.035);
+}
+
+.hc-audience-table .audience-data-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.hc-audience-table td:nth-child(1),
+.hc-audience-table th:nth-child(1) {
+  width: 26%;
+  font-weight: 700;
+}
+
+.hc-audience-table td:nth-child(2),
+.hc-audience-table th:nth-child(2) {
+  width: 12%;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.hc-audience-table td:nth-child(3),
+.hc-audience-table th:nth-child(3) {
+  width: 34%;
+}
+
+.hc-audience-table td:nth-child(4),
+.hc-audience-table th:nth-child(4) {
+  width: 28%;
+  text-align: right;
+}
+
+.hc-audience-table-wrap::-webkit-scrollbar {
+  height: 8px;
+}
+
+.hc-audience-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(120, 138, 165, 0.38);
+  border-radius: 999px;
+}
+
+.hc-audience-table-wrap::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.55);
+  border-radius: 999px;
+}
+
+.leaflet-control-attribution {
+  display: none !important;
+}
+
