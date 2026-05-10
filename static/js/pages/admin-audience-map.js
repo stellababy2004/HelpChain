@@ -600,7 +600,7 @@
       return {
         title: "Opportunite qualifiee cette semaine",
         modeLabel: "Signal qualifie",
-        label: "Signal qualifie + valeur estimee",
+        label: "Signal qualifie + niveau d'activité",
         context: "Projection interne basee sur signaux qualifies, non facturee.",
         value: queue.rows.reduce(function (sum, row) {
           return sum + (Number(row.estimatedValue) || 0);
@@ -610,7 +610,7 @@
     return {
       title: "Opportunite estimee cette semaine",
       modeLabel: "Signal analytique",
-      label: "Valeur estimee",
+      label: "Niveau d'activité",
       context: "Projection interne, non facturee.",
       value: estimatedOpportunityThisWeek(),
     };
@@ -623,7 +623,7 @@
     founderQueueEl.innerHTML = [
       '<div class="hc-empty-state">',
       '<div class="hc-empty-state__title">Pas encore assez de signaux comptes.</div>',
-      '<div class="hc-empty-state__text">Les recommandations s\'affineront avec les prochains leads qualifies.</div>',
+      '<div class="hc-empty-state__text">Les recommandations s\'affineront avec les prochains signaux qualifiés.</div>',
       "</div>",
     ].join("");
   }
@@ -1207,15 +1207,23 @@
       return;
     }
     var hotCount = DEPARTMENT_SCORES.filter(function (dept) { return dept.score >= 70; }).length;
-    var expectedDemos = hotCount;
-    var likelyPilots = hotCount >= 2 ? 1 : 0;
-    var maxMrr = hotCount * 590;
+    if (!hotCount) {
+      forecastEl.innerHTML = [
+        '<div class="hc-empty-state">',
+        '<div class="hc-empty-state__title">Données insuffisantes.</div>',
+        '<div class="hc-empty-state__text">Les tendances apparaîtront lorsqu’un volume suffisant de signaux territoriaux sera observé.</div>',
+        '</div>',
+      ].join("");
+      return;
+    }
+    var territoriesToFollow = hotCount;
+    var coordinationPoints = Math.max(1, Math.ceil(hotCount / 2));
     forecastEl.innerHTML = [
       '<div class="audience-forecast-card__grid">',
-      '<span><strong>' + expectedDemos + '</strong><em>Demos attendues <span class="audience-inline-tag">Donnee brute</span></em></span>',
-      '<span><strong>' + likelyPilots + '</strong><em>Pilotes probables <span class="audience-inline-tag">Signal analytique</span></em></span>',
-      '<span><strong>' + escapeHtml(formatEuro(590)) + " - " + escapeHtml(formatEuro(maxMrr)) + '</strong><em>Valeur estimee <span class="audience-inline-tag">Signal analytique</span></em></span>',
-      '<span><strong>Moyenne</strong><em>Confiance <span class="audience-inline-tag">Signal analytique</span></em></span>',
+      '<span><strong>' + territoriesToFollow + '</strong><em>Territoires à suivre <span class="audience-inline-tag">Analyse territoriale</span></em></span>',
+      '<span><strong>' + coordinationPoints + '</strong><em>Points de coordination <span class="audience-inline-tag">Analyse territoriale</span></em></span>',
+      '<span><strong>Stable</strong><em>Tendance récente <span class="audience-inline-tag">Signal consolidé</span></em></span>',
+      '<span><strong>Moyenne</strong><em>Confiance <span class="audience-inline-tag">Analyse territoriale</span></em></span>',
       "</div>",
     ].join("");
   }
