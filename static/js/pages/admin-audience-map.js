@@ -14,22 +14,7 @@
     return;
   }
 
-  var LOCATIONS = [
-    { slug: "paris", city: "Paris", departmentNumber: "75", departmentName: "Paris", lat: 48.8566, lng: 2.3522, needs: 12, structures: 8, priority: "Haute", recommendation: "Prioriser les comptes publics deja engages et proposer un cadrage pilote." },
-    { slug: "saint-denis", city: "Saint-Denis", departmentNumber: "93", departmentName: "Seine-Saint-Denis", lat: 48.9362, lng: 2.3574, needs: 9, structures: 6, priority: "Haute", recommendation: "Approcher les acteurs sociaux et associations de coordination locale." },
-    { slug: "montreuil", city: "Montreuil", departmentNumber: "93", departmentName: "Seine-Saint-Denis", lat: 48.8638, lng: 2.4485, needs: 8, structures: 5, priority: "Haute", recommendation: "Prioriser les associations locales et dispositifs d'accompagnement." },
-    { slug: "nanterre", city: "Nanterre", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8924, lng: 2.206, needs: 7, structures: 5, priority: "Haute", recommendation: "Cibler les structures departementales et services sociaux." },
-    { slug: "creteil", city: "Creteil", departmentNumber: "94", departmentName: "Val-de-Marne", lat: 48.7904, lng: 2.4556, needs: 6, structures: 4, priority: "Moyenne", recommendation: "Identifier les interlocuteurs municipaux et associatifs." },
-    { slug: "boulogne-billancourt", city: "Boulogne-Billancourt", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8397, lng: 2.2399, needs: 5, structures: 4, priority: "Moyenne", recommendation: "Tester une approche aupres des structures privees et associatives." },
-    { slug: "argenteuil", city: "Argenteuil", departmentNumber: "95", departmentName: "Val-d'Oise", lat: 48.9472, lng: 2.2467, needs: 5, structures: 3, priority: "Moyenne", recommendation: "Qualifier les besoins avant lancement d'un pilote." },
-    { slug: "versailles", city: "Versailles", departmentNumber: "78", departmentName: "Yvelines", lat: 48.8049, lng: 2.1204, needs: 4, structures: 3, priority: "Observation", recommendation: "Surveiller le potentiel institutionnel avant qualification active." },
-    { slug: "cergy", city: "Cergy", departmentNumber: "95", departmentName: "Val-d'Oise", lat: 49.0364, lng: 2.0761, needs: 4, structures: 3, priority: "Observation", recommendation: "Garder en veille pour extension Val-d'Oise." },
-    { slug: "evry-courcouronnes", city: "Evry-Courcouronnes", departmentNumber: "91", departmentName: "Essonne", lat: 48.623, lng: 2.429, needs: 4, structures: 3, priority: "Observation", recommendation: "Veille territoriale pour extension Essonne." },
-    { slug: "aulnay-sous-bois", city: "Aulnay-sous-Bois", departmentNumber: "93", departmentName: "Seine-Saint-Denis", lat: 48.9382, lng: 2.4943, needs: 6, structures: 4, priority: "Moyenne", recommendation: "Structurer un ciblage des dispositifs de coordination locale et municipale." },
-    { slug: "ivry-sur-seine", city: "Ivry-sur-Seine", departmentNumber: "94", departmentName: "Val-de-Marne", lat: 48.813, lng: 2.3889, needs: 5, structures: 4, priority: "Moyenne", recommendation: "Qualifier les acteurs associatifs et les relais de proximite avant prise de contact." },
-    { slug: "colombes", city: "Colombes", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.9226, lng: 2.2522, needs: 5, structures: 4, priority: "Moyenne", recommendation: "Positionner HelpChain sur les besoins de coordination inter-services et reporting." },
-    { slug: "courbevoie", city: "Courbevoie", departmentNumber: "92", departmentName: "Hauts-de-Seine", lat: 48.8973, lng: 2.256, needs: 4, structures: 3, priority: "Observation", recommendation: "Maintenir une veille active avant qualification territoriale." },
-  ];
+  var LOCATIONS = [];
 
   var REVENUE_RADAR = [];
 
@@ -81,6 +66,8 @@
   var QUALIFIED_SIGNAL_ROWS = Array.isArray(audiencePayload.qualified_signal_rows)
     ? audiencePayload.qualified_signal_rows
     : [];
+  LOCATIONS = Array.isArray(audiencePayload.map_locations) ? audiencePayload.map_locations : [];
+
   var BACKEND_MAP_LOCATIONS = Array.isArray(audiencePayload.map_locations)
     ? audiencePayload.map_locations
     : [];
