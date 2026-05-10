@@ -8844,7 +8844,10 @@ def _build_audience_map_context() -> dict:
     for point in AUDIENCE_BUSINESS_MAP_POINTS:
         normalized_label = _audience_normalize_text(point["label"])
         observed = int(map_location_counts.get(normalized_label, 0) or 0)
-        estimated_demands = max(int(point["default_demands"]), observed)
+        if current_app.config.get("DEMO_MODE"):
+            estimated_demands = max(int(point["default_demands"]), observed)
+        else:
+            estimated_demands = observed
         structures = max(
             int(point["default_structures"]),
             min(int(point["default_structures"]) + 2, max(1, math.ceil(estimated_demands * 0.6))),
