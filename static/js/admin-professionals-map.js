@@ -197,13 +197,13 @@
     if (!mapEl || typeof L === "undefined") return;
 
     var fallbackCenter = [48.8566, 2.3522];
-    var map = L.map("professionalsMap").setView(fallbackCenter, 11);
+    var map = L.map("professionalsMap", { attributionControl: false, zoomControl: true }).setView(fallbackCenter, 11);
     var layer = L.layerGroup().addTo(map);
     var bounds = [];
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors",
+      attribution: "",
     }).addTo(map);
 
     setTimeout(function () {

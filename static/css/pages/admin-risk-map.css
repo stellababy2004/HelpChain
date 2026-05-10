@@ -1,0 +1,308 @@
+
+/* =========================================
+   Risk map — cinematic operational mode
+========================================= */
+
+.hc-risk-map .leaflet-tile-pane {
+  filter:
+    saturate(0.72)
+    brightness(0.96)
+    contrast(0.92);
+}
+
+.hc-risk-map .leaflet-container {
+  background: #dfe7f2;
+}
+
+.hc-risk-map .leaflet-control-zoom a {
+  border-radius: 14px !important;
+  backdrop-filter: blur(10px);
+}
+
+.hc-risk-map .leaflet-popup-content-wrapper {
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.22);
+}
+
+
+/* =========================================
+   Floating operational panel polish
+========================================= */
+
+.hc-risk-map .territory-overlay,
+.hc-risk-map .risk-overlay-card,
+.hc-risk-map .territory-panel {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.28),
+    0 2px 10px rgba(15, 23, 42, 0.12);
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.hc-risk-map .territory-overlay::before,
+.hc-risk-map .risk-overlay-card::before,
+.hc-risk-map .territory-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.06),
+      rgba(255,255,255,0)
+    );
+
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+
+/* =========================================
+   Secondary intelligence panel polish
+========================================= */
+
+.hc-risk-map .hc-risk-secondary-card,
+.hc-risk-map .territory-secondary-panel,
+.hc-risk-map .risk-map-sidecard {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.78),
+      rgba(255,255,255,0.72)
+    ) !important;
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255,255,255,0.45);
+
+  box-shadow:
+    0 12px 40px rgba(15, 23, 42, 0.12);
+
+  border-radius: 26px;
+}
+
+.hc-risk-map .hc-risk-secondary-card h2,
+.hc-risk-map .territory-secondary-panel h2,
+.hc-risk-map .risk-map-sidecard h2 {
+  letter-spacing: -0.02em;
+}
+
+
+/* Hide map provider attribution in admin operational maps */
+.hc-risk-map .leaflet-control-attribution {
+  display: none !important;
+}
+
+/* Risk map — bottom command bar polish */
+.hc-risk-map .risk-zone-actions,
+.hc-risk-map .territory-actions,
+.hc-risk-map .map-action-bar {
+  background: rgba(255,255,255,0.82) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(203,213,225,0.8);
+  box-shadow: 0 16px 42px rgba(15,23,42,0.12);
+  border-radius: 22px;
+}
+
+
+/* Fix risk map overlay collision */
+.hc-risk-map .risk-map-sidecard,
+.hc-risk-map .territory-secondary-panel,
+.hc-risk-map .hc-risk-secondary-card {
+  margin-top: 180px !important;
+  max-width: 440px;
+  position: relative;
+  z-index: 2;
+}
+
+.hc-risk-map .territory-overlay,
+.hc-risk-map .risk-overlay-card,
+.hc-risk-map .territory-panel {
+  z-index: 5;
+}
+
+.hc-risk-map .risk-map-sidecard,
+.hc-risk-map .territory-secondary-panel {
+  background: rgba(248, 252, 255, 0.92) !important;
+  color: #1e344f;
+}
+
+.hc-risk-map .risk-map-sidecard p,
+.hc-risk-map .territory-secondary-panel p,
+.hc-risk-map .hc-risk-secondary-card p {
+  color: #415b76 !important;
+  line-height: 1.55;
+}
+
+
+/* Fix overlay stacking: keep risk panels readable */
+.hc-risk-map .territory-overlay,
+.hc-risk-map .risk-overlay-card,
+.hc-risk-map .territory-panel {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  max-width: 430px;
+  z-index: 20;
+}
+
+.hc-risk-map .risk-map-sidecard,
+.hc-risk-map .territory-secondary-panel,
+.hc-risk-map .hc-risk-secondary-card {
+  position: absolute;
+  top: 430px;
+  left: 24px;
+  max-width: 430px;
+  z-index: 15;
+  margin-top: 0 !important;
+}
+
+.hc-risk-map .risk-map-sidecard,
+.hc-risk-map .territory-secondary-panel,
+.hc-risk-map .hc-risk-secondary-card {
+  background: rgba(248, 252, 255, 0.94) !important;
+  color: #18324d !important;
+}
+
+.hc-risk-map .risk-map-sidecard *,
+.hc-risk-map .territory-secondary-panel *,
+.hc-risk-map .hc-risk-secondary-card * {
+  color: inherit;
+}
+
+@media (max-width: 900px) {
+  .hc-risk-map .territory-overlay,
+  .hc-risk-map .risk-overlay-card,
+  .hc-risk-map .territory-panel,
+  .hc-risk-map .risk-map-sidecard,
+  .hc-risk-map .territory-secondary-panel,
+  .hc-risk-map .hc-risk-secondary-card {
+    position: relative;
+    top: auto;
+    left: auto;
+    max-width: none;
+    margin: 12px !important;
+  }
+}
+
+/* Hard fix: separate dark summary overlay from light action panel */
+.hc-risk-map [class*="sidecard"],
+.hc-risk-map [class*="secondary"],
+.hc-risk-map [class*="zone-card"],
+.hc-risk-map [class*="zone-panel"] {
+  transform: none !important;
+}
+
+.hc-risk-map .risk-map-sidecard,
+.hc-risk-map .territory-secondary-panel,
+.hc-risk-map .hc-risk-secondary-card,
+.hc-risk-map .risk-zone-card,
+.hc-risk-map .risk-zone-panel {
+  position: absolute !important;
+  left: 24px !important;
+  bottom: 28px !important;
+  top: auto !important;
+  max-width: 430px !important;
+  z-index: 10 !important;
+  margin: 0 !important;
+  background: rgba(248,252,255,0.96) !important;
+  border: 1px solid rgba(203,213,225,0.85) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 16px 46px rgba(15,23,42,0.16) !important;
+}
+
+.hc-risk-map .territory-overlay,
+.hc-risk-map .risk-overlay-card,
+.hc-risk-map .territory-panel {
+  position: absolute !important;
+  top: 24px !important;
+  left: 24px !important;
+  bottom: auto !important;
+  max-width: 430px !important;
+  z-index: 30 !important;
+}
+
+
+/* Risk map — prevent empty-state card from overlapping the main overlay */
+.hc-risk-map-empty {
+  left: auto !important;
+  right: 24px !important;
+  top: 24px !important;
+  bottom: auto !important;
+  max-width: 420px !important;
+  z-index: 12 !important;
+}
+
+.hc-risk-map-empty__card {
+  background: rgba(248,252,255,0.94) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(203,213,225,0.85) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 18px 48px rgba(15,23,42,0.16) !important;
+}
+
+@media (max-width: 1100px) {
+  .hc-risk-map-empty {
+    display: none !important;
+  }
+}
+
+
+/* Demo polish — hide empty geo card when no mapped incidents */
+.hc-risk-map-empty {
+  display: none !important;
+}
+
+
+/* Professionals map — align with risk map operational surface */
+body.hc-admin-professionals-map-page .leaflet-tile-pane {
+  filter:
+    saturate(0.72)
+    brightness(0.96)
+    contrast(0.92);
+}
+
+body.hc-admin-professionals-map-page .leaflet-container {
+  background: #dfe7f2;
+}
+
+body.hc-admin-professionals-map-page .leaflet-control-attribution {
+  display: none !important;
+}
+
+body.hc-admin-professionals-map-page .leaflet-control-zoom a {
+  border-radius: 14px !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+body.hc-admin-professionals-map-page .hc-risk-map-card,
+body.hc-admin-professionals-map-page .hc-risk-map-shell {
+  border-radius: 28px;
+}
+
+body.hc-admin-professionals-map-page .hc-risk-map-canvas {
+  min-height: 560px;
+}
+
+body.hc-admin-professionals-map-page .hc-risk-map-actionstrip {
+  background: rgba(255,255,255,0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(203,213,225,0.82);
+  box-shadow: 0 16px 42px rgba(15,23,42,0.12);
+  border-radius: 22px;
+}
+
+body.hc-admin-professionals-map-page .hc-map-command-panel--coverage {
+  max-width: 430px;
+  box-shadow: 0 22px 60px rgba(15,23,42,0.26);
+}
+
