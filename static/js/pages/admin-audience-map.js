@@ -1086,9 +1086,9 @@
           accountLines.join(""),
           '<span class="audience-founder-row__action">Action suggeree: ' + escapeHtml(item.action) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
-            renderActionLink("Voir leads", "btn btn-sm btn-outline-primary", accountLeadsUrl, "Ouvrir la liste des leads filtres") +
-            renderActionLink("Preparer email", "btn btn-sm btn-outline-primary", accountEmailHref, item.actionEmail ? "Preparer un email" : "Email non disponible") +
-            renderActionLink("Planifier appel", "btn btn-sm btn-primary", accountCallHref, item.actionEmail ? "Proposer un echange" : "Ouvrir la liste des leads filtres") +
+            renderActionLink("Voir activité", "btn btn-sm btn-outline-primary", accountLeadsUrl, "Ouvrir l'activité qualifiée") +
+            renderActionLink("Préparer contact", "btn btn-sm btn-outline-primary", accountEmailHref, item.actionEmail ? "Préparer un contact" : "Email non disponible") +
+            renderActionLink("Planifier échange", "btn btn-sm btn-primary", accountCallHref, item.actionEmail ? "Proposer un échange" : "Ouvrir l'activité qualifiée") +
           "</span>",
           "</span>",
           '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
@@ -1146,9 +1146,9 @@
           intelligenceLines.join(""),
           '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
-            renderActionLink("Voir leads", "btn btn-sm btn-outline-primary", leadLeadsUrl, "Ouvrir la liste des leads filtres") +
-            renderActionLink("Envoyer email", "btn btn-sm btn-outline-primary", leadEmailHref, item.actionEmail ? "Preparer un email" : "Email non disponible") +
-            renderActionLink("Planifier appel", "btn btn-sm btn-primary", leadCallHref, item.actionEmail ? "Proposer un echange" : "Ouvrir la liste des leads filtres") +
+            renderActionLink("Voir activité", "btn btn-sm btn-outline-primary", leadLeadsUrl, "Ouvrir l'activité qualifiée") +
+            renderActionLink("Préparer contact", "btn btn-sm btn-outline-primary", leadEmailHref, item.actionEmail ? "Préparer un contact" : "Email non disponible") +
+            renderActionLink("Planifier échange", "btn btn-sm btn-primary", leadCallHref, item.actionEmail ? "Proposer un échange" : "Ouvrir l'activité qualifiée") +
           "</span>",
           "</span>",
           '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
@@ -1237,7 +1237,7 @@
     cityRegistry[point.slug] = point;
     var marker = L.marker([point.lat, point.lng], {
       icon: buildMarkerIcon(point),
-      title: point.city + " - " + point.needs + " demandes",
+      title: point.city + " - " + point.needs + " signaux",
       riseOnHover: true,
       keyboard: true,
     });
@@ -1262,11 +1262,11 @@
         button.type = "button";
         button.className = "audience-city-item";
         button.setAttribute("data-city-slug", point.slug);
-        button.setAttribute("title", point.city + " - " + point.needs + " demandes");
+        button.setAttribute("title", point.city + " - " + point.needs + " signaux");
         button.innerHTML =
           '<span class="audience-city-item__rank">' + (index + 1) + '.</span>' +
           '<span class="audience-city-item__label">' + escapeHtml(point.city) + '</span>' +
-          '<span class="audience-city-item__meta">' + escapeHtml(point.needs) + ' demandes</span>' +
+          '<span class="audience-city-item__meta">' + escapeHtml(point.needs) + ' signaux</span>' +
           '<span class="audience-city-item__arrow" aria-hidden="true">›</span>';
         button.addEventListener("click", function () {
           focusCity(point.slug);
