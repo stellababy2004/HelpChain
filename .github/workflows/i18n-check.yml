@@ -1,4 +1,4 @@
-name: Translation Check
+﻿name: Translation Check
 
 on:
   pull_request:
@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@82c7e631bb3cdc910f00a6bba0e8bb59e8c1ef3d
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -45,4 +45,5 @@ jobs:
           python scripts/i18n_ci_guard.py \
             --base-ref origin/main \
             --fr-po translations/fr/LC_MESSAGES/messages.po
+
 
