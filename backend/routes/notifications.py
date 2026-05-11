@@ -39,7 +39,7 @@ def get_db():
 try:
     from backend.models import PushSubscription, User
 except Exception:
-    from models import PushSubscription, User
+    from backend.models import PushSubscription, User
 
 notification_bp = Blueprint("notification", __name__)
 
