@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 from typing import Iterable, Optional
@@ -25,6 +25,7 @@ def compute_ops_priority(
     case_row=None,
     request_row=None,
     notification_failed: bool = False,
+    activity_ref=None,
     now: datetime | None = None,
 ) -> dict:
     now_utc = now or datetime.now(timezone.utc)
@@ -32,7 +33,7 @@ def compute_ops_priority(
     priority_val = ""
     risk_score = 0
     owner_id = None
-    activity_ref = None
+    activity_ref = activity_ref
     title = ""
     description = ""
     message = ""
@@ -67,10 +68,10 @@ def compute_ops_priority(
 
     if priority_val == "critical":
         score += 45
-        reasons.append("Priorité critique")
+        reasons.append("PrioritÃ© critique")
     elif priority_val == "high":
         score += 30
-        reasons.append("Priorité élevée")
+        reasons.append("PrioritÃ© Ã©levÃ©e")
 
     if risk_score >= 85:
         score += 35
@@ -78,8 +79,8 @@ def compute_ops_priority(
             reasons.append("Risque critique")
     elif risk_score >= 60:
         score += 20
-        if "Risque élevé" not in reasons:
-            reasons.append("Risque élevé")
+        if "Risque Ã©levÃ©" not in reasons:
+            reasons.append("Risque Ã©levÃ©")
 
     if owner_id is None:
         score += 20
@@ -99,40 +100,40 @@ def compute_ops_priority(
     essential_keywords = (
         "sans nourriture",
         "faim",
-        "pas à manger",
+        "pas Ã  manger",
         "pas a manger",
         "sans manger",
         "sans logement",
         "sans abri",
-        "à la rue",
+        "Ã  la rue",
         "a la rue",
         "dehors ce soir",
         "sans chauffage",
         "pas de chauffage",
-        "sans électricité",
+        "sans Ã©lectricitÃ©",
         "sans electricite",
         "sans eau",
         "pas d'eau",
-        "plus de médicaments",
+        "plus de mÃ©dicaments",
         "plus de medicaments",
-        "sans médicaments",
+        "sans mÃ©dicaments",
         "sans medicaments",
     )
     if text and _has_any(text, essential_keywords):
         score += 20
-        reasons.append("Besoin essentiel détecté")
+        reasons.append("Besoin essentiel dÃ©tectÃ©")
 
     vulnerability_keywords = (
-        "personne âgée",
+        "personne Ã¢gÃ©e",
         "personne agee",
-        "âgée",
+        "Ã¢gÃ©e",
         "agee",
         "senior",
         "handicap",
-        "handicapé",
+        "handicapÃ©",
         "handicape",
         "enfant",
-        "bébé",
+        "bÃ©bÃ©",
         "bebe",
         "mineur",
         "grossesse",
@@ -140,20 +141,22 @@ def compute_ops_priority(
     )
     if text and _has_any(text, vulnerability_keywords):
         score += 10
-        reasons.append("Vulnérabilité probable")
+        reasons.append("VulnÃ©rabilitÃ© probable")
 
     if notification_failed:
         score += 15
-        reasons.append("Notification échouée")
+        reasons.append("Notification Ã©chouÃ©e")
 
     level = "normal"
     if score >= 80:
         level = "critique"
     elif score >= 50:
-        level = "élevé"
+        level = "Ã©levÃ©"
 
     return {
         "ops_priority_score": score,
         "ops_priority_level": level,
         "ops_priority_reasons": reasons,
     }
+
+
