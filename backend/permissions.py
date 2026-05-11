@@ -55,7 +55,7 @@ except ImportError:
     except Exception:
         # Last-resort: fall back to legacy top-level imports if present
         from extensions import db
-        from models import (
+        from backend.models import (
             Permission,
             PermissionEnum,
             Role,

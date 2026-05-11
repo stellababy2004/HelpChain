@@ -18,7 +18,7 @@ AdminUser = None
 User = None
 Volunteer = None
 try:
-    from models import AdminUser, User, Volunteer
+    from backend.models import AdminUser, User, Volunteer
 except Exception:
     AdminUser = User = Volunteer = None
 
@@ -84,7 +84,7 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
         # Prefer importing the canonical backend.models module to ensure
         # we reference the single shared AdminUser class object.
         try:
-            from models import AdminUser as RealAdminUser
+            from backend.models import AdminUser as RealAdminUser
 
             AdminUser = RealAdminUser
         except Exception:
@@ -96,7 +96,7 @@ if AdminUser is None or not hasattr(AdminUser, "__tablename__"):
             except Exception:
                 # Final fallback: try old top-level layout if present
                 try:
-                    from models import AdminUser as RealAdminUser
+                    from backend.models import AdminUser as RealAdminUser
 
                     AdminUser = RealAdminUser
                 except Exception:
