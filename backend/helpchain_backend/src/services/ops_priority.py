@@ -25,6 +25,7 @@ def compute_ops_priority(
     case_row=None,
     request_row=None,
     notification_failed: bool = False,
+    activity_ref: datetime | None = None,
     now: datetime | None = None,
 ) -> dict:
     now_utc = now or datetime.now(timezone.utc)

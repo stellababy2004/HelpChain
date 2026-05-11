@@ -146,7 +146,7 @@
                 {% else %}
                   {% set linked_case_id = case_links_by_request.get(r.id) if case_links_by_request is defined else None %}
                   {% if linked_case_id %}
-                    <a class="btn btn-sm btn-primary" href="{{ url_for('ops.ops_case_detail', case_id=linked_case_id) }}">Ouvrir</a>
+                    <a class="btn btn-sm btn-primary" href="{{ url_for('ops.ops_request_detail', req_id=r.id) }}">Ouvrir</a>
                   {% else %}
                     <a class="btn btn-sm btn-primary" href="{{ url_for('ops.ops_request_detail', req_id=r.id) }}">Ouvrir</a>
                   {% endif %}
@@ -210,7 +210,3 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
-  {{ super() }}
-  <script src="{{ url_for('static', filename='js/ops-workspace.js') }}"></script>
-{% endblock %}

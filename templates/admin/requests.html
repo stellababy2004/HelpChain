@@ -1,4 +1,4 @@
-﻿{% extends "layouts/admin_workspace.html" %}
+{% extends "layouts/admin_workspace.html" %}
 
 {% block title %}{{ _('Admin') }}  {{ _('Requests') }} | HelpChain{% endblock %}
 
@@ -612,7 +612,7 @@
 
     <div class="dropdown">
 
-      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-display="static" data-bs-boundary="viewport" aria-expanded="false">
 
         {{ _('Export') }}
 
@@ -1648,18 +1648,6 @@
 <script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
-
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
 
 

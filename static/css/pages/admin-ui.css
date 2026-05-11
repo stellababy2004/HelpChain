@@ -1,4 +1,4 @@
-/* Admin UI – clean SaaS cards */
+﻿/* Admin UI – clean SaaS cards */
 .hc-admin-workspace__content{
   padding: 24px 24px 48px;
 }
@@ -16400,4 +16400,408 @@ body.hc-admin-home-page .hc-ops-queue-table thead th {
 .hc-intent-row__meta {
   font-size: .82rem;
   color: #6b7a90;
+}
+
+/* =========================================
+   PREMIUM SCREENSHOT MODE V1
+========================================= */
+
+body.hc-admin-workspace,
+body.hc-ops-console-page {
+  background:
+    radial-gradient(circle at top right, rgba(66, 133, 244, 0.08), transparent 28%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+}
+
+/* Shell */
+.hc-admin-shellbar {
+  border-radius: 28px;
+  border: 1px solid rgba(190, 205, 230, 0.65);
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow:
+    0 20px 60px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255,255,255,0.65);
+  padding: 1.15rem 1.35rem;
+}
+
+/* Main cards */
+.hc-card,
+.hc-admin-table-shell,
+.hc-page-hero,
+.hc-ops-toolbar-card,
+.hc-admin-linkcard {
+  border-radius: 28px !important;
+  border: 1px solid rgba(210,220,235,.75) !important;
+  background: rgba(255,255,255,.88) !important;
+
+  box-shadow:
+    0 10px 30px rgba(15,23,42,.05),
+    0 1px 2px rgba(15,23,42,.04),
+    inset 0 1px 0 rgba(255,255,255,.7);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Hero banner */
+.hc-page-hero {
+  overflow: hidden;
+  position: relative;
+}
+
+.hc-page-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(circle at top right,
+      rgba(59,130,246,.14),
+      transparent 34%);
+
+  pointer-events: none;
+}
+
+/* Typography */
+.hc-admin-title {
+  font-size: clamp(2rem, 3vw, 3.15rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.hc-admin-kicker {
+  letter-spacing: .16em;
+  font-weight: 700;
+  font-size: .78rem;
+  color: #4f6b95;
+}
+
+/* Nav pills */
+.hc-admin-shellnav__link,
+.hc-admin-shellsubnav__link {
+  border-radius: 999px;
+  padding: .72rem 1rem;
+  transition: all .18s ease;
+}
+
+.hc-admin-shellnav__link:hover,
+.hc-admin-shellsubnav__link:hover {
+  background: rgba(59,130,246,.08);
+}
+
+.hc-admin-shellnav__link.is-active,
+.hc-admin-shellsubnav__link.is-active {
+  background: linear-gradient(
+    180deg,
+    rgba(59,130,246,.18),
+    rgba(59,130,246,.08)
+  );
+
+  border: 1px solid rgba(59,130,246,.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.6),
+    0 4px 10px rgba(59,130,246,.08);
+}
+
+/* KPI cards */
+.hc-risk-overview .hc-card,
+.hc-ops-metric,
+.hc-stat-card {
+  border-radius: 24px !important;
+  overflow: hidden;
+  position: relative;
+}
+
+.hc-risk-overview .hc-card::after,
+.hc-ops-metric::after,
+.hc-stat-card::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 4px;
+
+  background: linear-gradient(
+    90deg,
+    #2563eb,
+    #60a5fa
+  );
+}
+
+/* Tables */
+.hc-admin-table-shell table {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.hc-admin-table-shell tbody tr {
+  background: rgba(255,255,255,.72);
+  transition: all .16s ease;
+}
+
+.hc-admin-table-shell tbody tr:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 22px rgba(15,23,42,.05);
+}
+
+/* Buttons */
+.btn-primary {
+  border-radius: 14px;
+  box-shadow:
+    0 10px 22px rgba(37,99,235,.22);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+/* =========================================
+   PREMIUM MODE V1.1 — COMPACT REFINEMENT
+========================================= */
+
+.hc-admin-shellbar{
+  padding: .82rem 1rem !important;
+  border-radius: 22px !important;
+}
+
+/* tighter page spacing */
+.hc-admin-workspace__content{
+  padding-top: 14px !important;
+}
+
+/* reduce giant whitespace */
+.hc-card,
+.hc-admin-table-shell,
+.hc-page-hero,
+.hc-ops-toolbar-card,
+.hc-admin-linkcard{
+  border-radius: 22px !important;
+}
+
+/* compact hero */
+.hc-page-hero{
+  padding-top: 1.15rem !important;
+  padding-bottom: 1.15rem !important;
+}
+
+/* compact titles */
+.hc-admin-title{
+  font-size: clamp(1.6rem,2vw,2.45rem) !important;
+  line-height: 1.06 !important;
+}
+
+/* tighter metric cards */
+.hc-risk-overview .hc-card,
+.hc-ops-metric,
+.hc-stat-card{
+  border-radius: 18px !important;
+}
+
+/* less floating feeling */
+.hc-card,
+.hc-admin-table-shell{
+  box-shadow:
+    0 6px 18px rgba(15,23,42,.045),
+    0 1px 2px rgba(15,23,42,.03) !important;
+}
+
+/* tables more enterprise */
+.hc-admin-table-shell table{
+  border-spacing: 0 6px !important;
+}
+
+/* request page giant empty zones fix */
+.hc-page-hero:empty,
+.hc-card:empty{
+  display:none !important;
+}
+
+/* tighter sections */
+.hc-admin-section,
+.hc-ops-section{
+  margin-bottom: 1rem !important;
+}
+
+/* nav pills smaller */
+.hc-admin-shellnav__link,
+.hc-admin-shellsubnav__link{
+  padding: .56rem .82rem !important;
+  font-size: .92rem !important;
+}
+
+/* ==========================================
+   REQUESTS / CASES COMPACT ENTERPRISE MODE
+========================================== */
+
+body[data-hc-page^="/admin/requests"] .hc-card,
+body[data-hc-page^="/admin/cases"] .hc-card{
+  border-radius: 18px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-card__header,
+body[data-hc-page^="/admin/cases"] .hc-card__header{
+  padding: .82rem 1rem .78rem !important;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-card__body,
+body[data-hc-page^="/admin/cases"] .hc-card__body{
+  padding-top: .65rem !important;
+}
+
+body[data-hc-page^="/admin/requests"] tbody tr,
+body[data-hc-page^="/admin/cases"] tbody tr{
+  min-height: 0 !important;
+}
+
+body[data-hc-page^="/admin/requests"] tbody td,
+body[data-hc-page^="/admin/cases"] tbody td{
+  padding: .62rem .85rem !important;
+  vertical-align: middle !important;
+}
+
+body[data-hc-page^="/admin/requests"] tbody tr:first-child td,
+body[data-hc-page^="/admin/cases"] tbody tr:first-child td{
+  padding-top: .72rem !important;
+}
+
+body[data-hc-page^="/admin/requests"] .table-responsive,
+body[data-hc-page^="/admin/cases"] .table-responsive{
+  padding-top: 0 !important;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-admin-empty,
+body[data-hc-page^="/admin/cases"] .hc-admin-empty{
+  min-height: 0 !important;
+  padding: 2rem 1rem !important;
+}
+
+body[data-hc-page^="/admin/requests"] .btn,
+body[data-hc-page^="/admin/cases"] .btn{
+  min-height: 34px;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-requests-toolbar,
+body[data-hc-page^="/admin/cases"] .hc-requests-toolbar{
+  margin-bottom: .8rem !important;
+}
+
+Add-Content .\static\css\pages\admin-ui.css @"
+
+/* ==========================================
+   REQUEST ACTION DROPDOWN FIX
+========================================== */
+
+body[data-hc-page^="/admin/requests"] .hc-admin-table-shell,
+body[data-hc-page^="/admin/requests"] .hc-card,
+body[data-hc-page^="/admin/requests"] .table-responsive,
+body[data-hc-page^="/admin/requests"] .hc-request-card,
+body[data-hc-page^="/admin/requests"] tbody,
+body[data-hc-page^="/admin/requests"] tr,
+body[data-hc-page^="/admin/requests"] td {
+  overflow: visible !important;
+}
+
+body[data-hc-page^="/admin/requests"] .dropdown,
+body[data-hc-page^="/admin/requests"] .dropdown-menu {
+  z-index: 9999 !important;
+}
+
+body[data-hc-page^="/admin/requests"] .dropdown-menu {
+  border-radius: 14px;
+  border: 1px solid rgba(203, 213, 225, .85);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, .16);
+  padding: .45rem;
+  min-width: 190px;
+}
+
+body[data-hc-page^="/admin/requests"] .dropdown-item {
+  border-radius: 10px;
+  padding: .55rem .75rem;
+  font-weight: 600;
+}
+
+/* Stronger request dropdown stacking fix */
+body[data-hc-page^="/admin/requests"] .hc-request-card,
+body[data-hc-page^="/admin/requests"] .hc-request-row,
+body[data-hc-page^="/admin/requests"] tr {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-request-card:has(.dropdown-menu.show),
+body[data-hc-page^="/admin/requests"] tr:has(.dropdown-menu.show) {
+  z-index: 10000 !important;
+}
+
+body[data-hc-page^="/admin/requests"] .dropdown-menu.show {
+  z-index: 10001 !important;
+}
+
+Add-Content .\static\css\pages\admin-ui.css @"
+
+/* Request actions dropdown visual polish */
+body[data-hc-page^="/admin/requests"] .dropdown-menu.show {
+  margin-top: .45rem !important;
+  box-shadow:
+    0 24px 70px rgba(15, 23, 42, .22),
+    0 4px 12px rgba(15, 23, 42, .10) !important;
+}
+body[data-hc-page^="/admin/requests"] .hc-request-card,
+body[data-hc-page^="/admin/requests"] .requests-card,
+body[data-hc-page^="/admin/requests"] .request-row,
+body[data-hc-page^="/admin/requests"] .hc-requests-list,
+body[data-hc-page^="/admin/requests"] .hc-admin-table-shell {
+  overflow: visible !important;
+}
+
+body[data-hc-page^="/admin/requests"] .dropdown-menu {
+  z-index: 9999 !important;
+}
+
+/* FINAL FIX: remove unstable per-request Actions dropdown from premium cards */
+body[data-hc-page^='/admin/requests'] .hc-request-card .dropdown,
+body[data-hc-page^='/admin/requests'] .hc-request-card .dropdown-menu,
+body[data-hc-page^='/admin/requests'] .hc-request-card .dropdown-toggle {
+  display: none !important;
+}
+
+body[data-hc-page^="/admin/requests"] .hc-request-card,
+body[data-hc-page^="/admin/requests"] .hc-request-row,
+body[data-hc-page^="/admin/requests"] .hc-requests-list,
+body[data-hc-page^="/admin/requests"] .hc-requests-section {
+  overflow: visible !important;
+}
+
+body[data-hc-page^="/admin/requests"] .dropdown-menu {
+  z-index: 99999 !important;
+}
+
+/* FINAL: hide per-request Actions button/menu on admin requests cards */
+body[data-hc-page^='/admin/requests'] button[title='Open actions menu'],
+body[data-hc-page^='/admin/requests'] button[aria-haspopup='menu'],
+body[data-hc-page^='/admin/requests'] .dropdown-menu {
+  display: none !important;
+}
+
+/* FINAL: KPI summary cards on admin requests are display-only, not clickable */
+body[data-hc-page^='/admin/requests'] .hc-risk-overview .hc-card,
+body[data-hc-page^='/admin/requests'] .hc-requests-kpi-card,
+body[data-hc-page^='/admin/requests'] .hc-request-kpi-card,
+body[data-hc-page^='/admin/requests'] .hc-ops-metric {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+body[data-hc-page^='/admin/requests'] .hc-risk-overview .hc-card *,
+body[data-hc-page^='/admin/requests'] .hc-requests-kpi-card *,
+body[data-hc-page^='/admin/requests'] .hc-request-kpi-card *,
+body[data-hc-page^='/admin/requests'] .hc-ops-metric * {
+  pointer-events: none !important;
 }
