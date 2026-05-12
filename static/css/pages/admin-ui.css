@@ -16401,3 +16401,50 @@ body.hc-admin-home-page .hc-ops-queue-table thead th {
   font-size: .82rem;
   color: #6b7a90;
 }
+/* Actionable operational blockers */
+.hc-blockers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.hc-blocker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.hc-blocker-text {
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 550;
+}
+
+.hc-blocker-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hc-inline-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.hc-inline-action:hover {
+  background: rgba(37, 99, 235, 0.14);
+}

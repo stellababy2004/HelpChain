@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from collections import defaultdict
@@ -556,7 +556,7 @@ def admin_case_set_status(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/assign-owner")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_owner(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -831,3 +831,4 @@ def admin_case_set_priority(case_id: int):
         flash("Case priority updated.", "success")
 
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
