@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _("Conditions d’utilisation") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Conditions d’utilisation HelpChain : objet du service, accès, responsabilités, disponibilité, propriété intellectuelle et évolution des conditions.') }}{% endblock %}
-{% block og_title %}{{ _('Conditions d’utilisation | HelpChain') }}{% endblock %}
+{% block meta_description %}{{ _("Conditions d’utilisation HelpChain : objet du service, accès, responsabilités, disponibilité, sécurité, propriété intellectuelle et évolution des conditions.") }}{% endblock %}
+{% block og_title %}{{ _("Conditions d’utilisation | HelpChain") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-terms-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu visuel des conditions d’utilisation HelpChain") }}{% endblock %}
 
@@ -38,20 +38,42 @@
 
   <section class="card mb-3">
     <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Sécurité et accès") }}</h2>
+      <p class="mb-0">
+        {{ _("Les utilisateurs doivent préserver la sécurité de leurs identifiants et signaler sans délai tout accès non autorisé, toute perte de contrôle du compte ou toute suspicion de compromission.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Responsabilités de l’utilisateur") }}</h2>
       <ul class="mb-0">
         <li>{{ _("Fournir des informations exactes, loyales et à jour.") }}</li>
         <li>{{ _("Utiliser la plateforme dans le respect du cadre légal et des droits des tiers.") }}</li>
         <li>{{ _("S’abstenir de tout usage abusif, frauduleux ou portant atteinte à la sécurité du service.") }}</li>
+        <li>{{ _("Ne pas tenter de contourner les mesures de sécurité, d’accès ou de contrôle mises en place sur la plateforme.") }}</li>
       </ul>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Disponibilité du service") }}</h2>
+      <h2 class="h5 mb-3">{{ _("Suspension ou restriction d’accès") }}</h2>
       <p class="mb-0">
+        {{ _("HelpChain se réserve la possibilité de suspendre, restreindre ou supprimer l’accès à tout compte en cas d’usage abusif, frauduleux, contraire aux présentes conditions ou portant atteinte à la sécurité ou au bon fonctionnement du service.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Disponibilité et évolution du service") }}</h2>
+      <p class="mb-2">
         {{ _("HelpChain met en œuvre des moyens raisonnables pour assurer la continuité et la qualité du service. Des interruptions temporaires peuvent toutefois survenir, notamment pour maintenance, évolution technique ou contraintes externes.") }}
+      </p>
+      <p class="mb-0">
+        {{ _("HelpChain peut faire évoluer, modifier, suspendre ou interrompre certaines fonctionnalités afin d’améliorer le service, d’en assurer la sécurité ou de répondre à des contraintes techniques, contractuelles ou réglementaires.") }}
       </p>
     </div>
   </section>
@@ -61,6 +83,9 @@
       <h2 class="h5 mb-3">{{ _("Limitation de responsabilité") }}</h2>
       <p class="mb-2">
         {{ _("HelpChain intervient en qualité d’outil de coordination numérique. La plateforme ne constitue pas un service d’urgence ni un dispositif médical, social ou juridique autonome.") }}
+      </p>
+      <p class="mb-2">
+        {{ _("En cas d’urgence immédiate, les services compétents doivent être contactés directement.") }}
       </p>
       <p class="mb-0">
         {{ _("Chaque utilisateur et chaque structure demeure responsable des décisions et actions engagées dans son périmètre d’intervention.") }}
@@ -72,7 +97,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Propriété intellectuelle") }}</h2>
       <p class="mb-0">
-        {{ _("L’ensemble des éléments composant la plateforme relève de la propriété intellectuelle de HelpChain ou de ses ayants droit. Toute utilisation non autorisée est interdite.") }}
+        {{ _("Les marques, contenus, interfaces, éléments graphiques, logiciels et composants techniques de la plateforme sont protégés par les règles applicables en matière de propriété intellectuelle. Toute utilisation non autorisée est interdite.") }}
       </p>
     </div>
   </section>
@@ -99,7 +124,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Droit applicable") }}</h2>
       <p class="mb-0">
-        {{ _("Les présentes conditions sont régies par le droit français, sous réserve des règles impératives plus protectrices éventuellement applicables. En cas de difficulté, les parties rechercheront d’abord une solution amiable.") }}
+        {{ _("Les présentes conditions sont régies par le droit français, sous réserve des règles impératives plus protectrices éventuellement applicables. En cas de difficulté, les parties rechercheront d’abord une solution amiable. Sous réserve des dispositions légales applicables, les juridictions françaises territorialement compétentes pourront être saisies.") }}
       </p>
     </div>
   </section>
