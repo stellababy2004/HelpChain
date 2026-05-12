@@ -1,23 +1,9 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _("Gouvernance de la plateforme") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Présentation du cadre de gouvernance de HelpChain : principes de pilotage, responsabilités, accès structurés et évolution du dispositif.") }}{% endblock %}
+{% block meta_description %}{{ _("Présentation du cadre de gouvernance de HelpChain : principes de pilotage, responsabilités, accès structurés, traçabilité et évolution du dispositif.") }}{% endblock %}
 {% block og_title %}{{ _("Gouvernance de la plateforme") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Gouvernance de la plateforme") }}{% endblock %}
-{% block head %}
-  {{ super() }}
-  <style>
-    .hc-doc-page ul {
-      padding-left: 1rem;
-    }
-    .hc-doc-page li {
-      margin-bottom: 0.375rem;
-    }
-    .hc-doc-page li:last-child {
-      margin-bottom: 0;
-    }
-  </style>
-{% endblock %}
 
 {% block content %}
 <div class="container hc-doc-page public-page-shell">
@@ -25,7 +11,7 @@
     <p class="hc-doc-intro__label">{{ _("Gouvernance") }}</p>
     <h1 class="hc-doc-intro__title">{{ _("Gouvernance de la plateforme") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("La gouvernance de HelpChain vise à garantir un cadre opérationnel lisible pour les acteurs territoriaux, associatifs et institutionnels impliqués dans la coordination des situations sociales.") }}
+      {{ _("La gouvernance de HelpChain vise à garantir un cadre opérationnel lisible, sécurisé et traçable pour les acteurs territoriaux, associatifs, professionnels et institutionnels impliqués dans la coordination des situations sociales.") }}
     </p>
   </header>
 
@@ -33,7 +19,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Cadre du projet") }}</h2>
       <p class="mb-0">
-        {{ _("HelpChain a pour mission de fournir une infrastructure numérique de coordination permettant l’orientation, le suivi et le pilotage des situations sociales entre acteurs habilités.") }}
+        {{ _("HelpChain a pour mission de fournir une infrastructure numérique de coordination permettant l’orientation, le suivi et le pilotage des situations sociales entre acteurs habilités, sans se substituer aux responsabilités propres des structures compétentes.") }}
       </p>
     </div>
   </section>
@@ -43,10 +29,11 @@
       <h2 class="h5 mb-3">{{ _("Principes de gouvernance") }}</h2>
       <p class="mb-2">{{ _("Le dispositif s’appuie sur des principes directeurs structurants :") }}</p>
       <ul class="mb-0">
-        <li>{{ _("responsabilité dans la conduite des opérations") }}</li>
-        <li>{{ _("transparence des règles d’usage et de pilotage") }}</li>
-        <li>{{ _("protection des données et maîtrise des accès") }}</li>
-        <li>{{ _("coopération avec les acteurs territoriaux") }}</li>
+        <li>{{ _("responsabilité dans la conduite des opérations et le suivi des situations ;") }}</li>
+        <li>{{ _("transparence des règles d’usage, d’accès et de pilotage ;") }}</li>
+        <li>{{ _("protection des données personnelles et maîtrise des accès ;") }}</li>
+        <li>{{ _("traçabilité des actions autorisées et des principaux événements opérationnels ;") }}</li>
+        <li>{{ _("coopération avec les acteurs territoriaux, associatifs et institutionnels.") }}</li>
       </ul>
     </div>
   </section>
@@ -55,13 +42,41 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Accès et responsabilités") }}</h2>
       <p class="mb-2">
-        {{ _("Les droits d’accès sont structurés selon les responsabilités exercées dans HelpChain.") }}
+        {{ _("Les droits d’accès sont structurés selon les responsabilités exercées dans HelpChain afin de limiter les accès aux seules informations nécessaires à chaque rôle.") }}
       </p>
       <ul class="mb-0">
-        <li>{{ _("intervenants") }}</li>
-        <li>{{ _("administrateurs") }}</li>
-        <li>{{ _("structures partenaires") }}</li>
+        <li>{{ _("intervenants : accès limité aux informations nécessaires à leur mission ;") }}</li>
+        <li>{{ _("administrateurs : pilotage opérationnel, gestion des accès et suivi des actions autorisées ;") }}</li>
+        <li>{{ _("structures partenaires : coordination, supervision et suivi des situations relevant de leur périmètre ;") }}</li>
+        <li>{{ _("accès techniques : encadrés selon les besoins de sécurité, de maintenance et d’exploitation.") }}</li>
       </ul>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Pilotage opérationnel") }}</h2>
+      <p class="mb-0">
+        {{ _("La plateforme vise à fournir aux structures autorisées une vision structurée des demandes, des priorités, des statuts et des actions réalisées, afin de soutenir la coordination sans remplacer l’appréciation humaine ni les procédures internes des organisations.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Traçabilité et contrôle") }}</h2>
+      <p class="mb-0">
+        {{ _("HelpChain privilégie une logique de traçabilité des actions importantes, de journalisation adaptée et de contrôle des accès afin de renforcer la lisibilité opérationnelle, la sécurité et la confiance entre acteurs autorisés.") }}
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">{{ _("Protection des données") }}</h2>
+      <p class="mb-0">
+        {{ _("La gouvernance de la plateforme intègre la protection des données personnelles, la limitation des accès, la minimisation des informations traitées et l’amélioration continue des pratiques de sécurité. Les modalités détaillées sont précisées dans la Politique de confidentialité.") }}
+      </p>
     </div>
   </section>
 
@@ -69,7 +84,7 @@
     <div class="card-body">
       <h2 class="h5 mb-3">{{ _("Évolution du dispositif") }}</h2>
       <p class="mb-0">
-        {{ _("Le dispositif évolue de manière progressive sur la base des retours d’usage, des besoins opérationnels et des échanges avec les partenaires institutionnels.") }}
+        {{ _("Le dispositif évolue de manière progressive sur la base des retours d’usage, des besoins opérationnels, des contraintes réglementaires, des exigences de sécurité et des échanges avec les partenaires institutionnels.") }}
       </p>
     </div>
   </section>
