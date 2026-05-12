@@ -1,106 +1,74 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Questions fréquentes") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Questions fréquentes sur le fonctionnement de HelpChain pour les structures, collectivités, associations et professionnels impliqués dans la coordination des situations.") }}{% endblock %}
-{% block og_title %}{{ _("Questions fréquentes") }}{% endblock %}
+
+{% block title %}{{ _("Questions fr\u00e9quentes") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Questions fr\u00e9quentes concernant le fonctionnement, la coordination, la s\u00e9curit\u00e9 et le cadre op\u00e9rationnel de HelpChain.") }}{% endblock %}
+{% block og_title %}{{ _("Questions fr\u00e9quentes") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
-{% block og_image_alt %}{{ _("Aperçu de la page Questions fréquentes") }}{% endblock %}
+{% block og_image_alt %}{{ _("Aper\u00e7u de la page Questions fr\u00e9quentes") }}{% endblock %}
 
 {% block content %}
 <div class="container hc-doc-page public-page-shell">
-  <header class="hc-doc-intro public-page-hero">
+
+  <header class="hc-doc-intro public-page-hero public-page-hero--trust">
     <p class="hc-doc-intro__label">{{ _("Documentation") }}</p>
-    <h1 class="hc-doc-intro__title">{{ _("Questions fréquentes") }}</h1>
+    <h1 class="hc-doc-intro__title">{{ _("Questions fr\u00e9quentes") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("Cette page répond aux principales questions concernant le fonctionnement de la plateforme HelpChain.") }}
+      {{ _("Cette page r\u00e9pond aux principales questions concernant le fonctionnement, la coordination et le cadre op\u00e9rationnel de la plateforme HelpChain.") }}
     </p>
   </header>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Qu’est-ce que HelpChain ?") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain est une infrastructure numérique de coordination conçue pour les structures, collectivités, associations et professionnels impliqués dans le traitement organisé des situations sociales.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Elle permet de structurer l’orientation, le suivi et le pilotage des situations dans un cadre opérationnel partagé.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Qu\u2019est-ce que HelpChain ?") }}</h2>
+    <p>{{ _("HelpChain est une infrastructure num\u00e9rique de coordination con\u00e7ue pour les structures, collectivit\u00e9s, associations et professionnels impliqu\u00e9s dans le traitement organis\u00e9 des situations sociales.") }}</p>
+    <p class="mb-0">{{ _("La plateforme permet de structurer l\u2019orientation, le suivi, l\u2019attribution et le pilotage op\u00e9rationnel des situations dans un cadre partag\u00e9, tra\u00e7able et ma\u00eetris\u00e9.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Qui peut utiliser la plateforme ?") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain s’adresse en priorité aux structures, associations, collectivités et professionnels habilités qui doivent coordonner des situations dans un cadre structuré.") }}
-      </p>
-      <ul class="mb-2">
-        <li>{{ _("collectivités et services publics locaux") }}</li>
-        <li>{{ _("associations et structures sociales") }}</li>
-        <li>{{ _("professionnels habilités") }}</li>
-        <li>{{ _("structures locales impliquées dans la coordination") }}</li>
-      </ul>
-      <p class="mb-2">
-        {{ _("Selon l’organisation mise en place, des citoyens ou des partenaires externes peuvent aussi faire partie du circuit de signalement ou d’entrée de la demande.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("La finalité principale reste la coordination structurée, le suivi et la visibilité opérationnelle pour les organisations qui portent le traitement.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Qui peut utiliser la plateforme ?") }}</h2>
+    <p>{{ _("HelpChain s\u2019adresse principalement aux structures et professionnels habilit\u00e9s impliqu\u00e9s dans des logiques de coordination et de suivi op\u00e9rationnel.") }}</p>
+    <ul>
+      <li>{{ _("collectivit\u00e9s et services publics locaux ;") }}</li>
+      <li>{{ _("associations et structures sociales ;") }}</li>
+      <li>{{ _("professionnels habilit\u00e9s ;") }}</li>
+      <li>{{ _("structures impliqu\u00e9es dans la coordination territoriale ou multi-acteurs.") }}</li>
+    </ul>
+    <p>{{ _("Selon le cadre retenu par une structure, certains dispositifs peuvent \u00e9galement inclure un canal de signalement ou d\u2019entr\u00e9e de demande destin\u00e9 \u00e0 des usagers, partenaires ou acteurs externes.") }}</p>
+    <p class="mb-0">{{ _("La finalit\u00e9 principale reste la coordination structur\u00e9e, la visibilit\u00e9 op\u00e9rationnelle et le pilotage des situations.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("La plateforme remplace-t-elle les structures existantes ?") }}</h2>
-      <p class="mb-2"><strong>{{ _("Non.") }}</strong></p>
-      <p class="mb-0">
-        {{ _("HelpChain ne remplace pas les structures existantes. La plateforme agit comme un cadre complémentaire pour structurer la coordination, clarifier les responsabilités et améliorer le suivi entre acteurs autorisés.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("La plateforme remplace-t-elle les structures existantes ?") }}</h2>
+    <p>{{ _("Non.") }}</p>
+    <p class="mb-0">{{ _("HelpChain ne remplace pas les structures, services ou outils m\u00e9tiers existants. La plateforme agit comme une couche de coordination compl\u00e9mentaire permettant de clarifier les responsabilit\u00e9s, structurer les flux et am\u00e9liorer la continuit\u00e9 de suivi entre acteurs autoris\u00e9s.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Les données personnelles sont-elles protégées ?") }}</h2>
-      <p class="mb-2"><strong>{{ _("Oui.") }}</strong></p>
-      <p class="mb-2">
-        {{ _("HelpChain est conçu dans le respect des principes du Règlement Général sur la Protection des Données (RGPD).") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Les données collectées sont limitées aux informations nécessaires au fonctionnement du service.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Les donn\u00e9es personnelles sont-elles prot\u00e9g\u00e9es ?") }}</h2>
+    <p>{{ _("Oui.") }}</p>
+    <p>{{ _("HelpChain est con\u00e7u selon les principes du RGPD, avec une logique de minimisation des donn\u00e9es, de contr\u00f4le des acc\u00e8s et de tra\u00e7abilit\u00e9 des actions.") }}</p>
+    <p class="mb-0">{{ _("Selon l\u2019organisation retenue, la plateforme peut fonctionner sans centraliser le contenu sensible des dossiers, en utilisant uniquement des signaux op\u00e9rationnels n\u00e9cessaires \u00e0 la coordination.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Faut-il installer un logiciel ?") }}</h2>
-      <p class="mb-2"><strong>{{ _("Non.") }}</strong></p>
-      <p class="mb-0">
-        {{ _("HelpChain est accessible directement via un navigateur internet et ne nécessite aucune installation spécifique.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Faut-il installer un logiciel ?") }}</h2>
+    <p>{{ _("Non.") }}</p>
+    <p class="mb-0">{{ _("HelpChain est accessible via un navigateur s\u00e9curis\u00e9 et ne n\u00e9cessite pas d\u2019installation sp\u00e9cifique sur les postes utilisateurs.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Qui gère la plateforme ?") }}</h2>
-      <p class="mb-0">
-        {{ _("La plateforme est développée et maintenue dans le cadre du projet HelpChain, avec pour objectif de soutenir la coordination opérationnelle entre structures, collectivités, associations et professionnels habilités.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Qui g\u00e8re la plateforme ?") }}</h2>
+    <p>{{ _("La plateforme est d\u00e9velopp\u00e9e et maintenue dans le cadre du projet HelpChain afin de soutenir la coordination op\u00e9rationnelle entre structures, collectivit\u00e9s, associations et professionnels habilit\u00e9s.") }}</p>
+    <p class="mb-0">{{ _("L\u2019approche retenue privil\u00e9gie un d\u00e9ploiement progressif, ma\u00eetris\u00e9 et compatible avec les contraintes organisationnelles des structures locales.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
-      <p class="mb-2">
-        {{ _("Pour toute question complémentaire, vous pouvez contacter l’équipe HelpChain à l’adresse suivante :") }}
-      </p>
-      <p class="mb-0">
-        <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
+    <p class="mb-0">
+      {{ _("Pour toute question compl\u00e9mentaire ou demande d\u2019\u00e9change, vous pouvez contacter l\u2019\u00e9quipe HelpChain \u00e0 l\u2019adresse suivante :") }}
+      <br><br>
+      <a href="mailto:contact@helpchain.live">contact@helpchain.live</a>
+    </p>
+  </div></section>
+
 </div>
 {% endblock %}
-
