@@ -118,16 +118,7 @@
                       {% else %}
                         {% set chip_class = 'hc-reason-chip--neutral' %}
                       {% endif %}
-                      {% set reason_display = reason
-      |replace('Priorit?? ??lev??e', 'Priorit? ?lev?e')
-      |replace('Priorit?? critique', 'Priorit? critique')
-      |replace('??', '?')
-      |replace('??', '?')
-      |replace('??', '?')
-      |replace('? ', '?')
-      |replace('???', '?')
-    %}
-                      <span class="badge hc-reason-chip {{ chip_class }}">{{ reason_display }}</span>
+                      <span class="badge hc-reason-chip {{ chip_class }}">{{ reason }}</span>
                     {% endfor %}
                   </div>
                 {% endif %}
