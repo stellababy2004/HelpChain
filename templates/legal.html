@@ -1,7 +1,7 @@
-{% extends "base.html" %}
-{% block title %}{{ _('Mentions légales') }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _('Mentions légales HelpChain : éditeur, publication, contact, hébergement et cadre de propriété intellectuelle.') }}{% endblock %}
-{% block og_title %}{{ _('Mentions légales | HelpChain') }}{% endblock %}
+﻿{% extends "base.html" %}
+{% block title %}{{ _("Mentions légales") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("Mentions légales HelpChain : éditeur, publication, contact, hébergement, disponibilité, protection des données et propriété intellectuelle.") }}{% endblock %}
+{% block og_title %}{{ _("Mentions légales | HelpChain") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-legal-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu visuel de la page Mentions légales de HelpChain") }}{% endblock %}
 
@@ -11,7 +11,9 @@
     <p class="hc-doc-intro__label">Cadre juridique</p>
     <h1 class="hc-doc-intro__title">Mentions légales</h1>
     <p class="hc-doc-intro__lead">
-      Les présentes mentions légales ont pour objet d’identifier l’éditeur du site, son cadre de publication et les principaux éléments d’information relatifs à l’infrastructure et au contact.
+      Les présentes mentions légales ont pour objet d’identifier l’éditeur du site,
+      son cadre de publication et les principaux éléments d’information relatifs
+      à l’infrastructure, au contact et à la protection des données.
     </p>
   </header>
 
@@ -19,16 +21,29 @@
     <div class="card-body">
       <h2 class="h5 mb-3">Éditeur du site</h2>
       <p class="mb-2"><strong>HelpChain</strong></p>
-      <p class="mb-2">Plateforme numérique destinée à faciliter la coordination des situations sociales entre personnes concernées, intervenants, structures associatives et partenaires institutionnels.</p>
-      <p class="mb-2"><strong>Site web</strong><br><a href="https://helpchain.live" rel="noopener">https://helpchain.live</a></p>
-      <p class="mb-0"><strong>[À compléter avant mise en production : raison sociale / forme juridique / adresse du siège / SIREN ou RNA / numéro de TVA intracommunautaire si applicable]</strong></p>
+      <p class="mb-2">
+        Plateforme numérique destinée à faciliter la coordination des situations sociales
+        entre personnes concernées, intervenants, structures associatives et partenaires institutionnels.
+      </p>
+      <p class="mb-2">
+        <strong>Site web</strong><br>
+        <a href="https://helpchain.live" rel="noopener">https://helpchain.live</a>
+      </p>
+      <p class="mb-0">
+        Les informations juridiques complémentaires relatives à l’éditeur seront précisées
+        dans le cadre de la structuration juridique définitive du service.
+      </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">Responsable de publication</h2>
-      <p class="mb-0"><strong>[À compléter avant mise en production : nom et qualité du directeur ou de la directrice de publication]</strong></p>
+      <p class="mb-0">
+        La responsabilité de publication est actuellement assurée dans le cadre du pilotage
+        opérationnel de HelpChain. Les informations nominatives complémentaires seront mises
+        à jour lors de la structuration juridique définitive du service.
+      </p>
     </div>
   </section>
 
@@ -43,17 +58,46 @@
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">Hébergement et infrastructure</h2>
-      <p class="mb-2">Le site HelpChain s’appuie sur une infrastructure cloud sécurisée pour l’exécution applicative et la base de données.</p>
-      <p class="mb-2"><strong>Prestataire d’hébergement applicatif mentionné dans le dépôt</strong><br>Render, Inc.<br><a href="https://render.com" rel="noopener">https://render.com</a></p>
-      <p class="mb-0"><strong>Prestataire base de données de production mentionné dans l’environnement de déploiement</strong><br>Neon, Inc.<br><a href="https://neon.tech" rel="noopener">https://neon.tech</a></p>
+      <p class="mb-2">
+        Le site HelpChain s’appuie sur une infrastructure cloud sécurisée pour
+        l’exécution applicative et la gestion de la base de données.
+      </p>
+      <p class="mb-2">
+        <strong>Hébergement applicatif</strong><br>
+        Render, Inc.<br>
+        <a href="https://render.com" rel="noopener">https://render.com</a>
+      </p>
+      <p class="mb-0">
+        <strong>Infrastructure de base de données utilisée pour l’environnement de production</strong><br>
+        Neon, Inc.<br>
+        <a href="https://neon.tech" rel="noopener">https://neon.tech</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Disponibilité du site</h2>
+      <p class="mb-0">
+        HelpChain met en œuvre des moyens raisonnables afin d’assurer l’accessibilité
+        et le bon fonctionnement du site, sans garantie d’absence d’interruption ou d’erreur.
+      </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">Protection des données</h2>
-      <p class="mb-2">HelpChain accorde une importance particulière à la protection des données personnelles et s’engage à inscrire ses traitements dans un cadre conforme au Règlement Général sur la Protection des Données (RGPD – UE 2016/679).</p>
-      <p class="mb-0">Les informations relatives aux traitements, aux bases légales, aux durées de conservation et aux droits des personnes sont détaillées dans la <a href="{{ url_for('main.confidentialite') }}">Politique de confidentialité</a>.</p>
+      <p class="mb-2">
+        HelpChain accorde une importance particulière à la protection des données personnelles
+        et s’inscrit dans un cadre conforme au Règlement Général sur la Protection des Données
+        (RGPD – UE 2016/679).
+      </p>
+      <p class="mb-0">
+        Les informations relatives aux traitements, aux bases légales, aux durées de conservation
+        et aux droits des personnes sont détaillées dans la
+        <a href="{{ url_for('main.confidentialite') }}">Politique de confidentialité</a>.
+      </p>
     </div>
   </section>
 
@@ -62,9 +106,10 @@
       <h2 class="h5 mb-3">Finalité du service</h2>
       <p class="mb-2">La plateforme HelpChain vise à faciliter :</p>
       <ul class="mb-0">
-        <li>l’orientation des demandes</li>
-        <li>la coordination entre acteurs associatifs et intervenants</li>
-        <li>le suivi des situations dans un cadre structuré</li>
+        <li>l’orientation des demandes ;</li>
+        <li>la coordination entre acteurs associatifs, professionnels et institutionnels ;</li>
+        <li>le suivi des situations dans un cadre structuré ;</li>
+        <li>la traçabilité opérationnelle des échanges et actions autorisés.</li>
       </ul>
     </div>
   </section>
@@ -72,24 +117,48 @@
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">Cookies</h2>
-      <p class="mb-2">Le site HelpChain utilise uniquement des cookies strictement nécessaires au fonctionnement technique de la plateforme, à la sécurité des accès et à la mémorisation de préférences utiles comme la langue.</p>
-      <p class="mb-0">Aucun cookie publicitaire ou de suivi commercial tiers n’est utilisé sur le site public à la date de mise à jour de cette page.</p>
+      <p class="mb-2">
+        Le site HelpChain utilise uniquement des cookies strictement nécessaires
+        au fonctionnement technique de la plateforme, à la sécurité des accès
+        et à la mémorisation de préférences utiles comme la langue.
+      </p>
+      <p class="mb-0">
+        Aucun cookie publicitaire ou de suivi commercial tiers n’est utilisé sur le site public
+        à la date de mise à jour de cette page.
+      </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">Propriété intellectuelle</h2>
-      <p class="mb-2">L'ensemble du contenu du site HelpChain (textes, structure, éléments graphiques et fonctionnalités) est protégé par les dispositions applicables en matière de propriété intellectuelle.</p>
-      <p class="mb-0">Toute reproduction, modification ou diffusion sans autorisation préalable est interdite.</p>
+      <p class="mb-2">
+        L’ensemble du contenu du site HelpChain, notamment les textes, la structure,
+        les éléments graphiques, les interfaces et les fonctionnalités, est protégé
+        par les dispositions applicables en matière de propriété intellectuelle.
+      </p>
+      <p class="mb-0">
+        Toute reproduction, modification, diffusion ou réutilisation sans autorisation préalable est interdite.
+      </p>
     </div>
   </section>
 
   <section class="card mb-3">
     <div class="card-body">
       <h2 class="h5 mb-3">Évolution du site</h2>
-      <p class="mb-2">La plateforme HelpChain est actuellement en phase de développement et d’amélioration continue.</p>
-      <p class="mb-0">Certaines fonctionnalités peuvent évoluer afin d'améliorer la qualité du service proposé.</p>
+      <p class="mb-0">
+        La plateforme HelpChain fait l’objet d’une évolution continue afin d’améliorer
+        progressivement ses fonctionnalités, sa sécurité et ses capacités opérationnelles.
+      </p>
+    </div>
+  </section>
+
+  <section class="card mb-3">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Droit applicable</h2>
+      <p class="mb-0">
+        Le présent site et son contenu sont soumis au droit français.
+      </p>
     </div>
   </section>
 </div>
