@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}{{ _("Sécurité & conformité") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : accès selon les rôles, journal d'audit, RGPD, hébergement France / UE, sauvegardes et disponibilité pour des usages institutionnels.") }}{% endblock %}
+{% block meta_description %}{{ _("Cadre de sécurité et de conformité de HelpChain : accès selon les rôles, journal d’audit, RGPD, cadre européen, sauvegardes, disponibilité et gouvernance pour des usages institutionnels.") }}{% endblock %}
 {% block og_title %}{{ _("Sécurité & conformité") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aperçu de la page Sécurité et conformité") }}{% endblock %}
@@ -26,8 +26,8 @@
         </div>
         <ul class="hc-trust-page__chips">
           <li>{{ _("Cadre RGPD") }}</li>
-          <li>{{ _("Hébergement France / UE") }}</li>
-          <li>{{ _("Traçabilité complète") }}</li>
+          <li>{{ _("Cadre européen maîtrisé") }}</li>
+          <li>{{ _("Traçabilité opérationnelle") }}</li>
           <li>{{ _("Accès par rôles") }}</li>
         </ul>
       </div>
@@ -62,7 +62,7 @@
       <div class="hc-trust-page__section-head">
         <p>{{ _("Cadre de sécurité") }}</p>
         <h2>{{ _("Des garanties lisibles pour les structures publiques et associatives") }}</h2>
-        <p>{{ _("La plateforme est conçue pour soutenir des usages sensibles sans alourdir les équipes, avec un niveau de contrôle compatible avec un déploiement institutionnel.") }}</p>
+        <p>{{ _("La plateforme est conçue pour soutenir des usages sensibles sans alourdir les équipes, avec un niveau de contrôle compatible avec un déploiement institutionnel progressif.") }}</p>
       </div>
 
       <div class="hc-trust-page__card-grid">
@@ -81,13 +81,13 @@
         <article class="hc-trust-page__card">
           <span>{{ _("Conformité") }}</span>
           <h3>{{ _("RGPD") }}</h3>
-          <p>{{ _("Le cadre d’usage privilégie nécessité, finalité et proportionnalité pour limiter l’exposition des données personnelles.") }}</p>
+          <p>{{ _("Le cadre d’usage privilégie nécessité, finalité, proportionnalité et minimisation pour limiter l’exposition des données personnelles.") }}</p>
         </article>
 
         <article class="hc-trust-page__card">
           <span>{{ _("Infrastructure") }}</span>
-          <h3>{{ _("Hébergement France / UE") }}</h3>
-          <p>{{ _("L’exploitation s’inscrit dans un cadre européen lisible, compatible avec les attentes de souveraineté et de maîtrise institutionnelle.") }}</p>
+          <h3>{{ _("Cadre européen maîtrisé") }}</h3>
+          <p>{{ _("L’exploitation s’inscrit dans une logique de maîtrise contractuelle, technique et organisationnelle compatible avec les attentes institutionnelles européennes.") }}</p>
         </article>
 
         <article class="hc-trust-page__card">
@@ -126,12 +126,12 @@
           <p>{{ _("Les équipes disposent d’éléments concrets pour instruire un pilote, une validation interne ou un échange avec leur DPO.") }}</p>
         </article>
       </div>
-      
-      <div class="hc-reality-proof hc-reality-proof--clean" aria-label="Rep&egrave;res de cr&eacute;dibilit&eacute;">
-        <span class="hc-reality-proof__chip">Pilot en pr&eacute;paration</span>
-        <span class="hc-reality-proof__chip">Con&ccedil;u et op&eacute;r&eacute; depuis la France</span>
-        <span class="hc-reality-proof__chip">D&eacute;ploiement progressif en &Icirc;le-de-France</span>
-        <span class="hc-reality-proof__chip">Approche institutionnelle sobre</span>
+
+      <div class="hc-reality-proof hc-reality-proof--clean" aria-label="Repères de crédibilité">
+        <span class="hc-reality-proof__chip">{{ _("Pilote en préparation") }}</span>
+        <span class="hc-reality-proof__chip">{{ _("Conçu et opéré depuis la France") }}</span>
+        <span class="hc-reality-proof__chip">{{ _("Déploiement progressif en Île-de-France") }}</span>
+        <span class="hc-reality-proof__chip">{{ _("Approche institutionnelle sobre") }}</span>
       </div>
     </div>
   </section>
@@ -140,13 +140,13 @@
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__data-min-card">
         <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
-          <p>Minimisation des données</p>
-          <h2 id="hc-securite-minimisation-title">Données minimisées par conception</h2>
+          <p>{{ _("Minimisation des données") }}</p>
+          <h2 id="hc-securite-minimisation-title">{{ _("Données minimisées par conception") }}</h2>
         </div>
         <div class="hc-trust-page__data-min-copy">
-          <p>HelpChain peut être déployé selon un principe de minimisation stricte des données.</p>
-          <p>Dans un scénario avec agent relais ou connecteur, la plateforme ne reçoit pas le contenu sensible des dossiers. Elle reçoit uniquement des signaux opérationnels nécessaires à la coordination : statut, priorité, échéance, catégorie ou référence interne.</p>
-          <p>Cette approche permet à une structure de conserver ses outils métiers tout en améliorant la visibilité, le suivi et la traçabilité des situations.</p>
+          <p>{{ _("HelpChain peut être déployé selon un principe de minimisation stricte des données.") }}</p>
+          <p>{{ _("Dans un scénario avec agent relais ou connecteur, la plateforme ne reçoit pas le contenu sensible des dossiers. Elle reçoit uniquement des signaux opérationnels nécessaires à la coordination : statut, priorité, échéance, catégorie ou référence interne.") }}</p>
+          <p>{{ _("Cette approche permet à une structure de conserver ses outils métiers tout en améliorant la visibilité, le suivi et la traçabilité des situations.") }}</p>
         </div>
       </div>
     </div>
