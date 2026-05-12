@@ -1,119 +1,67 @@
 {% extends "base.html" %}
-{% block title %}{{ _("Pour les collectivités et associations") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Présentation institutionnelle de HelpChain pour les collectivités locales, CCAS, associations et structures sociales.") }}{% endblock %}
-{% block og_title %}{{ _("Pour les collectivités et associations") }}{% endblock %}
+{% block title %}{{ _("Pour les collectivit\u00e9s et associations") }} | HelpChain{% endblock %}
+{% block meta_description %}{{ _("HelpChain pour collectivit\u00e9s, CCAS, associations structur\u00e9es et services locaux : coordination, suivi, pilotage, tra\u00e7abilit\u00e9 et d\u00e9ploiement progressif.") }}{% endblock %}
+{% block og_title %}{{ _("Pour les collectivit\u00e9s et associations") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
-{% block og_image_alt %}{{ _("Aperçu de la page Pour les collectivités et associations") }}{% endblock %}
-{% block head %}
-  {{ super() }}
-  <style>
-    .hc-doc-page ul {
-      padding-left: 1rem;
-    }
-    .hc-doc-page li {
-      margin-bottom: 0.375rem;
-    }
-    .hc-doc-page li:last-child {
-      margin-bottom: 0;
-    }
-  </style>
-{% endblock %}
+{% block og_image_alt %}{{ _("Aper\u00e7u de la page Pour les collectivit\u00e9s et associations") }}{% endblock %}
 
 {% block content %}
 <div class="container hc-doc-page public-page-shell">
-  <header class="hc-doc-intro public-page-hero">
-    <p class="hc-doc-intro__label">{{ _("Collectivités & associations") }}</p>
-    <h1 class="hc-doc-intro__title">{{ _("Pour les collectivités et associations") }}</h1>
+  <header class="hc-doc-intro public-page-hero public-page-hero--trust">
+    <p class="hc-doc-intro__label">{{ _("Collectivit\u00e9s & associations") }}</p>
+    <h1 class="hc-doc-intro__title">{{ _("Pour les collectivit\u00e9s et associations") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("HelpChain est une infrastructure numérique conçue pour structurer la coordination entre personnes concernées, intervenants et structures impliquées.") }}
+      {{ _("HelpChain aide les collectivit\u00e9s, CCAS, associations structur\u00e9es et services locaux \u00e0 organiser le suivi des situations sociales dans un cadre commun, lisible et tra\u00e7able.") }}
     </p>
     <p class="hc-doc-intro__lead">
-      {{ _("HelpChain peut être utilisé par des collectivités locales, des centres communaux d’action sociale (CCAS) et des associations.") }}
-    </p>
-    <p class="hc-doc-intro__lead">
-      {{ _("Le cadre permet d’organiser le traitement de situations nécessitant un suivi ou une coordination.") }}
+      {{ _("La plateforme ne remplace pas les structures existantes : elle apporte une couche de coordination op\u00e9rationnelle pour clarifier les demandes, les responsabilit\u00e9s, les priorit\u00e9s et les actions engag\u00e9es.") }}
     </p>
   </header>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Un cadre de coordination") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain permet de centraliser et d’organiser différentes demandes dans un même cadre de traitement.") }}
-      </p>
-      <p class="mb-2">{{ _("Les structures peuvent ainsi :") }}</p>
-      <ul class="mb-0">
-        <li>{{ _("visualiser les demandes en cours") }}</li>
-        <li>{{ _("suivre l’évolution de certaines situations") }}</li>
-        <li>{{ _("structurer la coordination entre différents intervenants") }}</li>
-      </ul>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Un cadre de coordination op\u00e9rationnelle") }}</h2>
+    <p class="mb-2">{{ _("HelpChain permet de regrouper les demandes, de structurer leur traitement et de suivre leur \u00e9volution dans un cadre partag\u00e9 entre acteurs habilit\u00e9s.") }}</p>
+    <ul class="mb-0">
+      <li>{{ _("visualiser les demandes en cours ;") }}</li>
+      <li>{{ _("suivre l\u2019avancement des situations ;") }}</li>
+      <li>{{ _("clarifier les responsabilit\u00e9s ;") }}</li>
+      <li>{{ _("coordonner les actions entre services, associations ou partenaires.") }}</li>
+    </ul>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Une meilleure visibilité des situations") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain permet d’assurer une vue d’ensemble des demandes et de leur évolution.") }}
-      </p>
-      <p class="mb-2">{{ _("Cela permet notamment :") }}</p>
-      <ul class="mb-0">
-        <li>{{ _("l’identification des situations prioritaires") }}</li>
-        <li>{{ _("la répartition des actions") }}</li>
-        <li>{{ _("la coordination entre intervenants et structures locales") }}</li>
-      </ul>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Une meilleure visibilit\u00e9 des situations") }}</h2>
+    <p class="mb-2">{{ _("Les structures disposent d\u2019une lecture plus claire des situations suivies, des statuts, des priorit\u00e9s et des actions engag\u00e9es.") }}</p>
+    <ul class="mb-0">
+      <li>{{ _("identifier les situations prioritaires ;") }}</li>
+      <li>{{ _("r\u00e9duire la dispersion des informations ;") }}</li>
+      <li>{{ _("suivre les actions dans la dur\u00e9e ;") }}</li>
+      <li>{{ _("consolider une vision utile au pilotage local.") }}</li>
+    </ul>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Un appui au cadre local de traitement") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain n’a pas vocation à remplacer les structures existantes.") }}
-      </p>
-      <p class="mb-2">
-        {{ _("Le dispositif agit comme un cadre complémentaire pour soutenir l’organisation et la coordination d’initiatives locales.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Il permet de structurer les échanges entre les différents acteurs impliqués.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Un appui aux organisations existantes") }}</h2>
+    <p class="mb-2">{{ _("HelpChain s\u2019int\u00e8gre dans les pratiques des structures sans imposer une rupture brutale avec les circuits existants.") }}</p>
+    <p class="mb-0">{{ _("Le dispositif agit comme un cadre compl\u00e9mentaire pour structurer les flux, fiabiliser le suivi et faciliter la coordination entre acteurs autoris\u00e9s.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Respect des données et confidentialité") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain est conçu dans le respect des principes du Règlement Général sur la Protection des Données (RGPD).") }}
-      </p>
-      <p class="mb-0">
-        {{ _("Les données collectées sont limitées aux informations nécessaires au fonctionnement du service et sont traitées avec un niveau de sécurité adapté.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Donn\u00e9es, confidentialit\u00e9 et acc\u00e8s") }}</h2>
+    <p class="mb-2">{{ _("HelpChain est con\u00e7u selon les principes du RGPD, avec une logique de minimisation des donn\u00e9es, de contr\u00f4le des acc\u00e8s et de tra\u00e7abilit\u00e9 des actions importantes.") }}</p>
+    <p class="mb-0">{{ _("Les informations trait\u00e9es doivent rester proportionn\u00e9es aux finalit\u00e9s de coordination, de suivi et de pilotage op\u00e9rationnel.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Un cadre de déploiement progressif") }}</h2>
-      <p class="mb-2">
-        {{ _("Le dispositif évolue progressivement afin de s’adapter aux besoins des structures et des acteurs impliqués dans la coordination des situations sociales.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("HelpChain vise à proposer un cadre sécurisé et adapté à la coordination d’initiatives locales.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Un d\u00e9ploiement progressif") }}</h2>
+    <p class="mb-2">{{ _("Le d\u00e9ploiement peut commencer sur un p\u00e9rim\u00e8tre limit\u00e9 : une \u00e9quipe, un service, un type de demande ou un territoire restreint.") }}</p>
+    <p class="mb-0">{{ _("Cette approche permet de valider les usages, les r\u00f4les, les indicateurs et les r\u00e8gles de gouvernance avant un \u00e9largissement \u00e9ventuel.") }}</p>
+  </div></section>
 
-  <section class="card mb-3">
-    <div class="card-body">
-      <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
-      <p class="mb-2">
-        {{ _("HelpChain a pour objectif de structurer la coopération entre citoyens, intervenants, associations et structures publiques.") }}
-      </p>
-      <p class="mb-0">
-        {{ _("HelpChain constitue une infrastructure numérique destinée à soutenir l’organisation, le suivi et la coordination des situations sociales.") }}
-      </p>
-    </div>
-  </section>
+  <section class="card mb-3"><div class="card-body">
+    <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
+    <p class="mb-2">{{ _("HelpChain aide les structures locales \u00e0 passer d\u2019un suivi dispers\u00e9 \u00e0 une coordination plus structur\u00e9e, partag\u00e9e et pilotable.") }}</p>
+    <p class="mb-0">{{ _("La plateforme soutient l\u2019organisation, le suivi et la coordination des situations sociales sans remplacer les d\u00e9cisions m\u00e9tier ni les circuits institutionnels existants.") }}</p>
+  </div></section>
 </div>
 {% endblock %}
