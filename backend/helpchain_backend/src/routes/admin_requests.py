@@ -1513,6 +1513,11 @@ def admin_request_details(req_id: int):
     if _cases_enabled():
         linked_case = Case.query.filter(Case.request_id == req.id).first()
     risk_ai_suggestion = _build_risk_ai_suggestion(req)
+    if linked_case and linked_case.owner_user_id != req.owner_id:
+        linked_case.owner_user_id = req.owner_id
+        linked_case.last_activity_at = utc_now()
+        db.session.commit()
+
     operational_blockages = _build_operational_blockages(req, linked_case)
     volunteer_request_states_supported = _table_exists("volunteer_request_states")
     volunteer_interests_supported = _table_exists("volunteer_interests")
@@ -2150,6 +2155,16 @@ def admin_request_unassign(req_id: int):
     old_owner = req.owner_id
     req.owner_id = None
     req.owned_at = None
+
+    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
+    if linked_case and linked_case.owner_user_id == old_owner:
+        linked_case.owner_user_id = None
+        linked_case.last_activity_at = utc_now()
+
+    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
+    if linked_case and linked_case.owner_user_id == old_owner:
+        linked_case.owner_user_id = None
+        linked_case.last_activity_at = utc_now()
     log_request_activity(
         req,
         "unassign",
@@ -2359,3 +2374,6 @@ def admin_request_notes_get_alias(req_id: int):
 @login_required
 def admin_request_notes_post_alias(req_id: int):
     return admin_request_add_note(req_id)
+
+
+
