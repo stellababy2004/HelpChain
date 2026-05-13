@@ -1,4 +1,4 @@
-name: UI Keys Extract (report)
+﻿name: UI Keys Extract (report)
 
 on:
   pull_request:
@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Python
-        uses: actions/setup-python@82c7e631bb3cdc910f00a6bba0e8bb59e8c1ef3d
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -31,4 +31,5 @@ jobs:
         with:
           name: ui-keys-report
           path: reports/ui_keys_extract.json
+
 
