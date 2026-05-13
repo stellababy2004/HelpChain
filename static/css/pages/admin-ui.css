@@ -16448,3 +16448,38 @@ body.hc-admin-home-page .hc-ops-queue-table thead th {
 .hc-inline-action:hover {
   background: rgba(37, 99, 235, 0.14);
 }
+
+/* Prevent row action dropdown from being clipped at the bottom of request lists */
+.hc-requests-table-shell,
+.hc-admin-table-shell {
+  overflow: visible;
+}
+
+.hc-requests-table-shell {
+  padding-bottom: 7rem;
+}
+
+.hc-rowmenu__list {
+  z-index: 50;
+}
+
+/* Open action menu upward only for the last request card */
+.hc-request-card:last-child .hc-rowmenu__list,
+.hc-admin-row:last-child .hc-rowmenu__list {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
+}
+
+/* Request queue: open the last row action menu upward to avoid viewport clipping */
+.hc-request-row:last-child .hc-rowmenu__list,
+.hc-admin-row:last-child .hc-rowmenu__list,
+.hc-request-card:last-child .hc-rowmenu__list {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
+}
+
+/* Request queue: last table row opens actions menu upward */
+.hc-requests-table-shell tbody tr:last-child .hc-rowmenu__list {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
+}
