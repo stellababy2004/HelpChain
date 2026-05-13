@@ -452,6 +452,34 @@
 
 
 
+  <div class="hc-saved-views mb-2 d-flex flex-wrap gap-2 align-items-center">
+    <span class="small text-muted fw-semibold">Vues rapides</span>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests') }}">
+      Tous
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', no_owner='1') }}">
+      Sans responsable
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk='stale') }}">
+      Stale
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk_level='critical') }}">
+      Critique
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
+      Sans activité 72h
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', queue='sla', sla_kind='owner_assignment_overdue', sla_days=sla_days or 30) }}">
+      SLA attribution
+    </a>
+  </div>
+
   <div class="hc-risk-filters mb-2 hc-requests-toolbar__shortcuts">
 
     <a
@@ -1651,5 +1679,3 @@
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 
 {% endblock %}
-
-
