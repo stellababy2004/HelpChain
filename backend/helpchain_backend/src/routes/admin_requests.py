@@ -593,7 +593,10 @@ def admin_requests():
             func.lower(func.coalesce(Request.risk_level, "")) == "attention"
         ).count()
         no_owner_count = overview_query.filter(
-            func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+            or_(
+                Request.owner_id.is_(None),
+                func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
+            )
         ).count()
         not_seen_72h_count = overview_query.filter(
             func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
@@ -1152,7 +1155,10 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
         )
     if no_owner:
         base_query = base_query.filter(
-            func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+            or_(
+                Request.owner_id.is_(None),
+                func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
+            )
         )
     if not_seen_72h:
         base_query = base_query.filter(
@@ -2374,6 +2380,8 @@ def admin_request_notes_get_alias(req_id: int):
 @login_required
 def admin_request_notes_post_alias(req_id: int):
     return admin_request_add_note(req_id)
+
+
 
 
 
