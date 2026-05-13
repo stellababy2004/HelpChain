@@ -305,13 +305,13 @@
                 <div class="hc-blocker-row">
                   <div class="hc-blocker-text">• {{ item }}</div>
                   <div class="hc-blocker-actions">
-                    {% if "responsable" in item|lower %}
+                    {% if "responsable" in item|lower and linked_case %}
                       <a href="{{ url_for('admin.admin_case_detail', case_id=linked_case.id) }}#owner-actions" class="hc-inline-action">Attribuer</a>
                     {% endif %}
                     {% if "activité" in item|lower or "action" in item|lower %}
                       <a href="#notes-internes" class="hc-inline-action">Créer relance</a>
                     {% endif %}
-                    {% if "professionnel" in item|lower %}
+                    {% if "professionnel" in item|lower and linked_case %}
                       <a href="{{ url_for('admin.admin_case_detail', case_id=linked_case.id) }}#matching-mobilisation" class="hc-inline-action">Voir matching</a>
                     {% endif %}
                   </div>

@@ -1397,7 +1397,7 @@ def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
     if structure_id is not None and role == "admin":
         return url_for("admin.admin_ops")
     if role == "admin":
-        return url_for("admin.admin_pilotage")
+        return url_for("admin.admin_home")
     if role == "ops":
         return url_for("ops.ops_workspace")
     if role == "readonly":

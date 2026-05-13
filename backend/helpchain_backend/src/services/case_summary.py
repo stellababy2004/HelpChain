@@ -23,6 +23,8 @@ def _signals_set(value) -> set[str]:
 
 
 def _context_sentence(req_obj, signals: set[str]) -> str:
+    if req_obj is None:
+        return "Situation nécessitant un suivi social."
     title = (getattr(req_obj, "title", "") or "").strip().lower()
     description = (getattr(req_obj, "description", "") or "").strip().lower()
     corpus = f"{title} {description}"
@@ -45,6 +47,8 @@ def _context_sentence(req_obj, signals: set[str]) -> str:
 
 
 def _issue_sentence(req_obj, signals: set[str]) -> str:
+    if req_obj is None:
+        return "La situation reste active et demande une coordination régulière."
     risk_level = (getattr(req_obj, "risk_level", "") or "").strip().lower()
     has_owner = bool(getattr(req_obj, "owner_id", None))
 
