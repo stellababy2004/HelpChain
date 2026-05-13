@@ -1,4 +1,4 @@
-name: Database Backup
+﻿name: Database Backup
 
 on:
   workflow_dispatch:
@@ -45,7 +45,7 @@ jobs:
 
       - name: Setup Python
         if: ${{ steps.detect_db.outputs.db_path != '' }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
         with:
           python-version: "3.11"
 
@@ -97,7 +97,7 @@ jobs:
 
       - name: Upload backup artifact
         if: ${{ steps.detect_db.outputs.db_path != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
         with:
           name: database-backup
           path: backups/*.sqlite.gz
@@ -107,7 +107,7 @@ jobs:
       # ---- S3 UPLOAD (matches your tightened IAM policy) ----
       - name: Configure AWS credentials
         if: ${{ steps.detect_db.outputs.db_path != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@ff717079ee2060e4bcee96c4779b553acc87447c
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -134,4 +134,5 @@ jobs:
       - name: Skipped (no DB found)
         if: ${{ steps.detect_db.outputs.db_path == '' }}
         run: echo "No database file found; backup job skipped."
+
 

@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
         with:
           python-version: "3.11"
 
@@ -45,5 +45,6 @@ jobs:
           python scripts/i18n_ci_guard.py \
             --base-ref origin/main \
             --fr-po translations/fr/LC_MESSAGES/messages.po
+
 
 

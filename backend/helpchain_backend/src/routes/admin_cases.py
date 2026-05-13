@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from collections import defaultdict
@@ -556,7 +556,7 @@ def admin_case_set_status(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/assign-owner")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_owner(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -576,6 +576,10 @@ def admin_case_assign_owner(case_id: int):
         now = _now_utc()
         case_row.owner_user_id = owner_id
         case_row.last_activity_at = now
+
+        if _req:
+            _req.owner_id = owner_id
+            _req.owned_at = now if owner_id else None
 
         if owner_id and not case_row.assigned_at:
             case_row.assigned_at = now

@@ -1,4 +1,4 @@
-name: i18n Auto Translate (EU24)
+﻿name: i18n Auto Translate (EU24)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,6 @@ on:
 jobs:
   translate:
     runs-on: ubuntu-latest
-    if: ${{ secrets.DEEPL_API_KEY != '' }}
     permissions:
       contents: write
 
@@ -20,7 +19,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
         with:
           python-version: "3.11"
 
@@ -33,6 +32,10 @@ jobs:
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: |
+          if [ -z "$DEEPL_API_KEY" ]; then
+            echo "DEEPL_API_KEY is not configured; skipping auto-translation."
+            exit 0
+          fi
           python translate_all.py \
             --provider deepl \
             --api-key "$DEEPL_API_KEY" \

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import csv
 import secrets
@@ -593,7 +593,10 @@ def admin_requests():
             func.lower(func.coalesce(Request.risk_level, "")) == "attention"
         ).count()
         no_owner_count = overview_query.filter(
-            func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+            or_(
+                Request.owner_id.is_(None),
+                func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
+            )
         ).count()
         not_seen_72h_count = overview_query.filter(
             func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
@@ -1152,7 +1155,10 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
         )
     if no_owner:
         base_query = base_query.filter(
-            func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+            or_(
+                Request.owner_id.is_(None),
+                func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
+            )
         )
     if not_seen_72h:
         base_query = base_query.filter(
@@ -1513,6 +1519,11 @@ def admin_request_details(req_id: int):
     if _cases_enabled():
         linked_case = Case.query.filter(Case.request_id == req.id).first()
     risk_ai_suggestion = _build_risk_ai_suggestion(req)
+    if linked_case and linked_case.owner_user_id != req.owner_id:
+        linked_case.owner_user_id = req.owner_id
+        linked_case.last_activity_at = utc_now()
+        db.session.commit()
+
     operational_blockages = _build_operational_blockages(req, linked_case)
     volunteer_request_states_supported = _table_exists("volunteer_request_states")
     volunteer_interests_supported = _table_exists("volunteer_interests")
@@ -1579,61 +1590,25 @@ def admin_request_details(req_id: int):
         volunteer_engagement.sort(key=lambda x: (-x["score"], x["volunteer_id"]))
 
     locked_by = None
-    if req.owner_id is None:
-        req.owner_id = admin_id
-        req.owned_at = now
+    if req.owner_id is not None and req.owner_id != admin_id:
+        locked_by = req.owner_id
+        activities = []
         if activities_supported:
-            db.session.add(
-                RequestActivity(
-                    request_id=req.id,
-                    actor_admin_id=admin_id,
-                    action="lock",
-                    old_value="",
-                    new_value=str(admin_id),
-                    created_at=now,
-                )
+            activities = sorted(
+                (req.activities or []),
+                key=lambda a: a.created_at or datetime.min,
+                reverse=True,
+            )[:50]
+        interests = []
+        if volunteer_interests_supported:
+            interests = (
+                VolunteerInterest.query.filter_by(request_id=req_id)
+                .order_by(VolunteerInterest.created_at.desc())
+                .all()
             )
-        db.session.commit()
-    elif req.owner_id == admin_id:
-        if _lock_expired(req, now):
-            req.owned_at = now
-            db.session.commit()
-    else:
-        if _lock_expired(req, now):
-            old_owner = req.owner_id
-            req.owner_id = admin_id
-            req.owned_at = now
-            if activities_supported:
-                db.session.add(
-                    RequestActivity(
-                        request_id=req.id,
-                        actor_admin_id=admin_id,
-                        action="lock",
-                        old_value=str(old_owner),
-                        new_value=str(admin_id),
-                        created_at=now,
-                    )
-                )
-            db.session.commit()
-        else:
-            locked_by = req.owner_id
-            activities = []
-            if activities_supported:
-                activities = sorted(
-                    (req.activities or []),
-                    key=lambda a: a.created_at or datetime.min,
-                    reverse=True,
-                )[:50]
-            interests = []
-            if volunteer_interests_supported:
-                interests = (
-                    VolunteerInterest.query.filter_by(request_id=req_id)
-                    .order_by(VolunteerInterest.created_at.desc())
-                    .all()
-                )
-            locked_recommendation = compute_recommendation(req)
-            return (
-                render_template(
+        locked_recommendation = compute_recommendation(req)
+        return (
+            render_template(
                     "admin/request_details.html",
                     req=req,
                     activities=activities,
@@ -2072,7 +2047,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
 @admin_bp.post("/requests/<int:req_id>/assign", endpoint="admin_request_assign")
 @login_required
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 @require_fresh_mfa
 def admin_request_assign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
@@ -2102,6 +2077,13 @@ def admin_request_assign(req_id: int):
     old_owner = req.owner_id
     req.owner_id = current_user.id
     req.owned_at = utc_now()
+
+    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
+    if linked_case and linked_case.owner_user_id != current_user.id:
+        linked_case.owner_user_id = current_user.id
+        linked_case.last_activity_at = utc_now()
+        if linked_case.status in {"new", "open", "pending", "triaged"}:
+            linked_case.status = "assigned"
     if _table_exists("request_metrics"):
         metric = db.session.query(RequestMetric).filter_by(request_id=req.id).first()
         if metric is None:
@@ -2179,6 +2161,16 @@ def admin_request_unassign(req_id: int):
     old_owner = req.owner_id
     req.owner_id = None
     req.owned_at = None
+
+    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
+    if linked_case and linked_case.owner_user_id == old_owner:
+        linked_case.owner_user_id = None
+        linked_case.last_activity_at = utc_now()
+
+    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
+    if linked_case and linked_case.owner_user_id == old_owner:
+        linked_case.owner_user_id = None
+        linked_case.last_activity_at = utc_now()
     log_request_activity(
         req,
         "unassign",
@@ -2388,5 +2380,8 @@ def admin_request_notes_get_alias(req_id: int):
 @login_required
 def admin_request_notes_post_alias(req_id: int):
     return admin_request_add_note(req_id)
+
+
+
 
 

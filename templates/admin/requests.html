@@ -428,7 +428,7 @@
 
     </a>
 
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none', city=request.args.get('city') or None) }}">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_requests', no_owner='1', city=request.args.get('city') or None) }}">
 
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
 
@@ -451,6 +451,34 @@
   </div>
 
 
+
+  <div class="hc-saved-views mb-2 d-flex flex-wrap gap-2 align-items-center">
+    <span class="small text-muted fw-semibold">Vues rapides</span>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests') }}">
+      Tous
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', no_owner='1') }}">
+      Sans responsable
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk='stale') }}">
+      Stale
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk_level='critical') }}">
+      Critique
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
+      Sans activité 72h
+    </a>
+
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', queue='sla', sla_kind='owner_assignment_overdue', sla_days=sla_days or 30) }}">
+      SLA attribution
+    </a>
+  </div>
 
   <div class="hc-risk-filters mb-2 hc-requests-toolbar__shortcuts">
 
@@ -1358,42 +1386,36 @@
 
                     </a>
 
-                    {% if owner_missing %}
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.admin_request_assign', req_id=r.id) }}"
+                      class="hc-request-native-form"
+                      data-no-rowclick
+                      
+                      data-success-message="{{ _('Responsable assigné') }}"
+                    >
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
 
-                      <form
-                        method="post"
-                        action="{{ url_for('admin.admin_request_assign', req_id=r.id) }}"
-                        class="hc-request-action-form"
+                      <button
+                        type="submit"
+                        class="btn btn-outline-primary btn-sm hc-request-action-btn"
                         data-no-rowclick
-                        data-request-action="assign-owner"
-                        data-success-message="{{ _('Responsable assigné') }}"
+                        data-loading-text="{{ _('Traitement...') }}"
+                        data-success-label="{{ _('Ouvrir') }}"
+                        title="{% if owner_missing %}{{ _('Assign yourself as owner') }}{% elif r.owner_id == current_user.id %}{{ _('Already assigned to you') }}{% else %}{{ _('Already assigned to another owner') }}{% endif %}"
+                        aria-label="{% if owner_missing %}{{ _('Assign yourself as owner') }}{% elif r.owner_id == current_user.id %}{{ _('Already assigned to you') }}{% else %}{{ _('Already assigned to another owner') }}{% endif %}"
+                        {% if not owner_missing %}disabled aria-disabled="true"{% endif %}
                       >
-
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                        <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
-
-                        <button
-
-                          type="submit"
-
-                          class="btn btn-outline-primary btn-sm hc-request-action-btn"
-
-                          data-no-rowclick
-                          data-loading-text="{{ _('Traitement...') }}"
-                          data-success-label="{{ _('Ouvrir') }}"
-                          title="{{ _('Assign yourself as owner') }}"
-                          aria-label="{{ _('Assign yourself as owner') }}"
-
-                        >
-
+                        {% if owner_missing %}
                           {{ _("Me l'attribuer") }}
-
-                        </button>
-
-                      </form>
-
-                    {% endif %}
+                        {% elif r.owner_id == current_user.id %}
+                          {{ _("Déjà à moi") }}
+                        {% else %}
+                          {{ _("Pris par") }} {{ owner_label }}
+                        {% endif %}
+                      </button>
+                    </form>
 
                     <details class="hc-rowmenu" data-no-rowclick data-request-rowmenu>
 
@@ -1424,6 +1446,28 @@
                   {{ _('Ouvrir le dossier') }}
 
                 </a>
+
+                {% if not owner_missing %}
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.admin_request_unassign', req_id=r.id) }}"
+                    class="hc-rowmenu__form"
+                    data-no-rowclick
+                    role="none"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button
+                      type="submit"
+                      class="hc-rowmenu__item hc-rowmenu__item--button"
+                      data-no-rowclick
+                      role="menuitem"
+                      title="{{ _('Remettre cette demande dans la file') }}"
+                      aria-label="{{ _('Remettre cette demande dans la file') }}"
+                    >
+                      {{ _('Remettre dans la file') }}
+                    </button>
+                  </form>
+                {% endif %}
 
 
 
@@ -1474,32 +1518,39 @@
 
 
 
-                <form
-                  method="post"
-                  action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}"
-                  class="hc-rowmenu__form hc-request-action-form"
-                  data-no-rowclick
-                  data-request-action="nudge-volunteer"
-                  data-success-message="{{ _('Intervenant relancé') }}"
-                >
-
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                  <button
-                    type="submit"
-                    class="hc-rowmenu__item hc-rowmenu__item--button hc-request-action-btn"
-                    title="{{ _('Relancer intervenant') }}"
+                {% if r.assigned_volunteer_id %}
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.admin_request_nudge', req_id=r.id) }}"
+                    class="hc-rowmenu__form hc-request-action-form"
                     data-no-rowclick
-                    data-loading-text="{{ _('Traitement...') }}"
-                    aria-label="{{ _('Relancer intervenant') }}"
-                    {% if is_disabled %}disabled aria-disabled="true"{% endif %}
+                    data-request-action="nudge-volunteer"
+                    data-success-message="{{ _('Intervenant relancé') }}"
                   >
-
-                    {{ _('Relancer intervenant') }}
-
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button
+                      type="submit"
+                      class="hc-rowmenu__item hc-rowmenu__item--button hc-request-action-btn"
+                      title="{{ _('Relancer intervenant') }}"
+                      data-no-rowclick
+                      data-loading-text="{{ _('Traitement...') }}"
+                      aria-label="{{ _('Relancer intervenant') }}"
+                    >
+                      {{ _('Relancer intervenant') }}
+                    </button>
+                  </form>
+                {% else %}
+                  <button
+                    type="button"
+                    class="hc-rowmenu__item hc-rowmenu__item--button hc-request-action-btn"
+                    title="{{ _('Aucun intervenant à relancer') }}"
+                    data-no-rowclick
+                    disabled
+                    aria-disabled="true"
+                  >
+                    {{ _('Aucun intervenant à relancer') }}
                   </button>
-
-                </form>
+                {% endif %}
 
                 <div class="hc-rowmenu__feedback small" data-request-menu-feedback aria-live="polite"></div>
 
@@ -1650,16 +1701,5 @@
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
 
 

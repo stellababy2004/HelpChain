@@ -13,7 +13,7 @@ Write-Host "------------------------" -ForegroundColor Cyan
 Set-Location "C:\dev\HelpChain"
 
 $env:FLASK_APP = "backend.appy:app"
-$env:HC_SKIP_SELFHEAL = "0"
+$env:HC_SKIP_SELFHEAL = "1"
 $env:HC_LOCAL_DEV = "1"
 $env:REQUIRE_ADMIN_MFA = "false"
 
@@ -47,13 +47,9 @@ else:
 "@ | .\.venv\Scripts\python.exe
 
 if ($dbOk.Trim() -ne "YES") {
-  Write-Host "Database is missing required tables. Rebuilding local DB..." -ForegroundColor Red
-
-  Remove-Item .\instance\hc_local_dev.db -Force -ErrorAction SilentlyContinue
-  Remove-Item .\instance\hc_local_dev.db-* -Force -ErrorAction SilentlyContinue
-
-  .\.venv\Scripts\python.exe -m flask db stamp base
-  .\.venv\Scripts\python.exe -m flask db upgrade
+  Write-Host "Database is missing required tables. Local DB was NOT deleted." -ForegroundColor Red
+  Write-Host "Run migrations manually: .\.venv\Scripts\python.exe -m flask db upgrade" -ForegroundColor Yellow
+  exit 1
 }
 else {
   Write-Host "Database schema looks OK." -ForegroundColor Green
@@ -111,3 +107,8 @@ Write-Host "Admin: $AdminUser / $AdminPassword" -ForegroundColor Green
 Write-Host ""
 
 .\.venv\Scripts\python.exe -m flask --app backend.appy:app run --host 127.0.0.1 --port $Port --debug
+
+
+
+
+
