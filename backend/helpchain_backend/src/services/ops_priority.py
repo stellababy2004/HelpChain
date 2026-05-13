@@ -68,10 +68,10 @@ def compute_ops_priority(
 
     if priority_val == "critical":
         score += 45
-        reasons.append("PrioritÃ© critique")
+        reasons.append("Priorité critique")
     elif priority_val == "high":
         score += 30
-        reasons.append("PrioritÃ© Ã©levÃ©e")
+        reasons.append("Priorité élevée")
 
     if risk_score >= 85:
         score += 35
@@ -79,8 +79,8 @@ def compute_ops_priority(
             reasons.append("Risque critique")
     elif risk_score >= 60:
         score += 20
-        if "Risque Ã©levÃ©" not in reasons:
-            reasons.append("Risque Ã©levÃ©")
+        if "Risque élevé" not in reasons:
+            reasons.append("Risque élevé")
 
     if owner_id is None:
         score += 20
@@ -100,40 +100,40 @@ def compute_ops_priority(
     essential_keywords = (
         "sans nourriture",
         "faim",
-        "pas Ã  manger",
+        "pas à manger",
         "pas a manger",
         "sans manger",
         "sans logement",
         "sans abri",
-        "Ã  la rue",
+        "à la rue",
         "a la rue",
         "dehors ce soir",
         "sans chauffage",
         "pas de chauffage",
-        "sans Ã©lectricitÃ©",
+        "sans électricité",
         "sans electricite",
         "sans eau",
         "pas d'eau",
-        "plus de mÃ©dicaments",
+        "plus de médicaments",
         "plus de medicaments",
-        "sans mÃ©dicaments",
+        "sans médicaments",
         "sans medicaments",
     )
     if text and _has_any(text, essential_keywords):
         score += 20
-        reasons.append("Besoin essentiel dÃ©tectÃ©")
+        reasons.append("Besoin essentiel détecté")
 
     vulnerability_keywords = (
-        "personne Ã¢gÃ©e",
+        "personne âgée",
         "personne agee",
-        "Ã¢gÃ©e",
+        "âgée",
         "agee",
         "senior",
         "handicap",
-        "handicapÃ©",
+        "handicapé",
         "handicape",
         "enfant",
-        "bÃ©bÃ©",
+        "bébé",
         "bebe",
         "mineur",
         "grossesse",
@@ -141,17 +141,17 @@ def compute_ops_priority(
     )
     if text and _has_any(text, vulnerability_keywords):
         score += 10
-        reasons.append("VulnÃ©rabilitÃ© probable")
+        reasons.append("Vulnérabilité probable")
 
     if notification_failed:
         score += 15
-        reasons.append("Notification Ã©chouÃ©e")
+        reasons.append("Notification échouée")
 
     level = "normal"
     if score >= 80:
         level = "critique"
     elif score >= 50:
-        level = "Ã©levÃ©"
+        level = "élevé"
 
     return {
         "ops_priority_score": score,

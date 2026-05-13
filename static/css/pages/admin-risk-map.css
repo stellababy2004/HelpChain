@@ -1,6 +1,6 @@
 
 /* =========================================
-   Risk map — cinematic operational mode
+   Risk map - cinematic operational mode
 ========================================= */
 
 .hc-risk-map .leaflet-tile-pane {
@@ -98,7 +98,7 @@
   display: none !important;
 }
 
-/* Risk map — bottom command bar polish */
+/* Risk map - bottom command bar polish */
 .hc-risk-map .risk-zone-actions,
 .hc-risk-map .territory-actions,
 .hc-risk-map .map-action-bar {
@@ -229,7 +229,7 @@
 }
 
 
-/* Risk map — prevent empty-state card from overlapping the main overlay */
+/* Risk map - prevent empty-state card from overlapping the main overlay */
 .hc-risk-map-empty {
   left: auto !important;
   right: 24px !important;
@@ -255,13 +255,13 @@
 }
 
 
-/* Demo polish — hide empty geo card when no mapped incidents */
+/* Demo polish - hide empty geo card when no mapped incidents */
 .hc-risk-map-empty {
   display: none !important;
 }
 
 
-/* Professionals map — align with risk map operational surface */
+/* Professionals map - align with risk map operational surface */
 body.hc-admin-professionals-map-page .leaflet-tile-pane {
   filter:
     saturate(0.72)

@@ -1018,7 +1018,7 @@
       if (!speechSupported) {
         setAudioReadStatus("unsupported", unsupportedMsg);
       } else if (!audioReadStatus || !audioReadStatus.textContent.trim()) {
-        setAudioReadStatus("idle", "PrÃªt Ã  lire le texte sÃ©lectionnÃ© ou le contenu de la page.");
+        setAudioReadStatus("idle", "Prêt à lire le texte sélectionné ou le contenu de la page.");
       }
       updateAudioPlaybackButtons();
     }
@@ -1438,14 +1438,14 @@
       try {
         window.speechSynthesis.speak(utterance);
       } catch (_) {
-        finishReading("stopped", "Lecture arrÃªtÃ©e.");
+        finishReading("stopped", "Lecture arrêtée.");
       }
       updateAudioPlaybackButtons();
     }
 
     function startReadingQueue(queue, modeKey) {
       if (!speechSupported) {
-        setAudioReadStatus("unsupported", "La lecture audio nâ€™est pas disponible dans ce navigateur.");
+        setAudioReadStatus("unsupported", "La lecture audio n’est pas disponible dans ce navigateur.");
         return false;
       }
       if (!queue || !queue.length) return false;
@@ -1462,7 +1462,7 @@
       speechReader.suppressEnd = false;
       setAudioReadStatus(
         modeKey === "selection" ? "reading-selection" : "reading-page",
-        modeKey === "selection" ? "Lecture du texte sÃ©lectionnÃ©â€¦" : "Lecture du contenu de la pageâ€¦",
+        modeKey === "selection" ? "Lecture du texte sélectionné…" : "Lecture du contenu de la page…",
       );
       speakQueueIndex(0);
       return true;
@@ -1488,7 +1488,7 @@
         speechReader.paused = false;
         setAudioReadStatus(
           speechReader.mode === "selection" ? "reading-selection" : "reading-page",
-          speechReader.mode === "selection" ? "Lecture du texte sÃ©lectionnÃ©â€¦" : "Lecture du contenu de la pageâ€¦",
+          speechReader.mode === "selection" ? "Lecture du texte sélectionné…" : "Lecture du contenu de la page…",
         );
         updateAudioPlaybackButtons();
         return true;
@@ -1702,7 +1702,7 @@
       } catch (_) {}
     }
     applyState(initial);
-    setAudioReadStatus("idle", "PrÃªt Ã  lire le texte sÃ©lectionnÃ© ou le contenu de la page.");
+    setAudioReadStatus("idle", "Prêt à lire le texte sélectionné ou le contenu de la page.");
     initVoiceGuidanceObservers();
     showA11yPane(currentPane);
 
@@ -1857,7 +1857,7 @@
         }
         var sample =
           audioTestBtn.getAttribute("data-sample-text") ||
-          "Test vocal dâ€™accessibilitÃ©. Voici un aperÃ§u de vos rÃ©glages audio.";
+          "Test vocal d’accessibilité. Voici un aperçu de vos réglages audio.";
         stopSpeechPreview();
         try {
           var utterance = createSpeechUtterance(sample);
@@ -1889,7 +1889,7 @@
       selectionAudioPlayBtn.addEventListener("click", function () {
         var queue = buildSelectionReadQueue();
         if (!queue.length) {
-          setAudioReadStatus("no-selection", "Aucun texte sÃ©lectionnÃ©.");
+          setAudioReadStatus("no-selection", "Aucun texte sélectionné.");
           hideSelectionAudioToolbar();
           return;
         }
@@ -1927,7 +1927,7 @@
       readSelectionBtn.addEventListener("click", function () {
         var queue = buildSelectionReadQueue();
         if (!queue.length) {
-          setAudioReadStatus("no-selection", "Aucun texte sÃ©lectionnÃ©.");
+          setAudioReadStatus("no-selection", "Aucun texte sélectionné.");
           return;
         }
         startReadingQueue(queue, "selection");
@@ -1938,7 +1938,7 @@
       readPageBtn.addEventListener("click", function () {
         var queue = buildPageReadQueue();
         if (!queue.length) {
-          setAudioReadStatus("no-content", "Aucun contenu lisible dÃ©tectÃ© sur la page.");
+          setAudioReadStatus("no-content", "Aucun contenu lisible détecté sur la page.");
           return;
         }
         startReadingQueue(queue, "page");
@@ -1982,7 +1982,7 @@
         if (!ok) return;
         saveProfileBtn.classList.add("is-saved");
         saveProfileBtn.textContent =
-          saveProfileBtn.getAttribute("data-label-saved") || "EnregistrÃ©";
+          saveProfileBtn.getAttribute("data-label-saved") || "Enregistré";
         window.setTimeout(function () {
           saveProfileBtn.classList.remove("is-saved");
           saveProfileBtn.textContent =
@@ -2215,7 +2215,7 @@
       const updateDescStatus = () => {
         const value = desc.value.trim();
         if (value.length >= 20) {
-          status.textContent = "âœ“ Sufficient information";
+          status.textContent = "✓ Sufficient information";
           status.classList.remove("hc-sr__status--hidden");
           status.classList.add("hc-sr__status--ok");
         } else {
@@ -2286,7 +2286,7 @@
           return;
         }
         if (state === "ok") {
-          hintEl.textContent = `âœ“ ${hintOk}`;
+          hintEl.textContent = `✓ ${hintOk}`;
           return;
         }
         if (state === "min") {
@@ -2308,7 +2308,7 @@
         const base = (first || t).trim();
         const max = 64;
         if (base.length <= max) return base;
-        return base.slice(0, max).replace(/\s+\S*$/, "") + "â€¦";
+        return base.slice(0, max).replace(/\s+\S*$/, "") + "…";
       }
 
       function buildTitle() {
@@ -2428,11 +2428,11 @@
     var href = el.getAttribute("href") || "";
     var type = null;
 
-    if (href.indexOf("/demo") >= 0 || /dÃ©mo|demo|planifier/i.test(text)) {
+    if (href.indexOf("/demo") >= 0 || /démo|demo|planifier/i.test(text)) {
       return; // disabled duplicate CTA tracking; handled by hc-intent-tracking.js
-    } else if (href.indexOf("/contact") >= 0 || /contact|Ã©changer/i.test(text)) {
+    } else if (href.indexOf("/contact") >= 0 || /contact|échanger/i.test(text)) {
       type = "cta_contact_click";
-    } else if (href.indexOf("/demander-acces") >= 0 || /accÃ¨s|access/i.test(text)) {
+    } else if (href.indexOf("/demander-acces") >= 0 || /accès|access/i.test(text)) {
       type = "cta_access_request_click";
     } else if (href.indexOf("/professionnels") >= 0 || href.indexOf("/pilote") >= 0 || /pilote|professionnel/i.test(text)) {
       return; // disabled duplicate CTA tracking; handled by hc-intent-tracking.js
