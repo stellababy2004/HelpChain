@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from collections import Counter
 import csv
@@ -890,6 +890,8 @@ def _build_operational_blockages(
         if not current_case:
             return bool(getattr(req, "owner_id", None))
         if getattr(current_case, "owner_user_id", None):
+            return True
+        if getattr(req, "owner_id", None):
             return True
         participants = getattr(current_case, "participants", None) or []
         return any(

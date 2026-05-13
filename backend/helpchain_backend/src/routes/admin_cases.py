@@ -577,6 +577,10 @@ def admin_case_assign_owner(case_id: int):
         case_row.owner_user_id = owner_id
         case_row.last_activity_at = now
 
+        if _req:
+            _req.owner_id = owner_id
+            _req.owned_at = now if owner_id else None
+
         if owner_id and not case_row.assigned_at:
             case_row.assigned_at = now
             if case_row.status in {"new", "triaged"}:
@@ -831,4 +835,3 @@ def admin_case_set_priority(case_id: int):
         flash("Case priority updated.", "success")
 
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
-
