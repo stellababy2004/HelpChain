@@ -13,7 +13,7 @@ Write-Host "------------------------" -ForegroundColor Cyan
 Set-Location "C:\dev\HelpChain"
 
 $env:FLASK_APP = "backend.appy:app"
-$env:HC_SKIP_SELFHEAL = "0"
+$env:HC_SKIP_SELFHEAL = "1"
 $env:HC_LOCAL_DEV = "1"
 $env:REQUIRE_ADMIN_MFA = "false"
 
@@ -111,3 +111,4 @@ Write-Host "Admin: $AdminUser / $AdminPassword" -ForegroundColor Green
 Write-Host ""
 
 .\.venv\Scripts\python.exe -m flask --app backend.appy:app run --host 127.0.0.1 --port $Port --debug
+
