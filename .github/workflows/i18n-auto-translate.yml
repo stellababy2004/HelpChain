@@ -11,7 +11,6 @@ on:
 jobs:
   translate:
     runs-on: ubuntu-latest
-    if: ${{ secrets.DEEPL_API_KEY != '' }}
     permissions:
       contents: write
 
@@ -33,6 +32,10 @@ jobs:
         env:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
         run: |
+          if [ -z "$DEEPL_API_KEY" ]; then
+            echo "DEEPL_API_KEY is not configured; skipping auto-translation."
+            exit 0
+          fi
           python translate_all.py \
             --provider deepl \
             --api-key "$DEEPL_API_KEY" \
@@ -52,5 +55,4 @@ jobs:
           git add translations
           git commit -m "chore(i18n): auto-update EU24 translations from FR"
           git push
-
 
