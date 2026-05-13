@@ -428,7 +428,7 @@
 
     </a>
 
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', owner='none', city=request.args.get('city') or None) }}">
+    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_requests', no_owner='1', city=request.args.get('city') or None) }}">
 
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
 
@@ -1679,3 +1679,4 @@
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 
 {% endblock %}
+
