@@ -1447,6 +1447,28 @@
 
                 </a>
 
+                {% if not owner_missing %}
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.admin_request_unassign', req_id=r.id) }}"
+                    class="hc-rowmenu__form"
+                    data-no-rowclick
+                    role="none"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button
+                      type="submit"
+                      class="hc-rowmenu__item hc-rowmenu__item--button"
+                      data-no-rowclick
+                      role="menuitem"
+                      title="{{ _('Remettre cette demande dans la file') }}"
+                      aria-label="{{ _('Remettre cette demande dans la file') }}"
+                    >
+                      {{ _('Remettre dans la file') }}
+                    </button>
+                  </form>
+                {% endif %}
+
 
 
                 {% if sig and sig.action == 'CAN_HELP' and sig.volunteer_id %}
@@ -1679,4 +1701,5 @@
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 
 {% endblock %}
+
 
