@@ -1,68 +1,43 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} • {{ _('Intervenants') }} | HelpChain{% endblock %}
+{% set scoped_structure = structure is defined and structure %}
+{% block title %}{{ _('Admin') }} · {{ _('Intervenants') }} | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-intervenants{% endblock %}
-{% block admin_workspace_css %}
-  <style>
-    .hc-intervenants-table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    .hc-intervenants-table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: auto;
-    }
-
-    .hc-intervenants-table thead {
-      display: table-header-group;
-    }
-
-    .hc-intervenants-table tbody {
-      display: table-row-group;
-    }
-
-    .hc-intervenants-table tr {
-      display: table-row;
-    }
-
-    .hc-intervenants-table th,
-    .hc-intervenants-table td {
-      display: table-cell;
-      position: static;
-      vertical-align: middle;
-      white-space: normal;
-    }
-
-    .hc-intervenants-table th {
-      background: #f8fbff;
-      font-size: .78rem;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: #40536b;
-    }
-
-    .hc-intervenants-table td {
-      color: #10233f;
-    }
-  </style>
-{% endblock %}
 
 {% block admin_content %}
 <div class="hc-admin-wrap hc-admin-shell hc-admin-shell--narrow">
   <div class="hc-card hc-admin-headerCard">
     <div class="hc-row hc-admin-headerTop">
       <div>
-        <h1 class="hc-admin-title">Intervenants</h1>
-        <div class="hc-muted">Gestion des intervenants de la structure</div>
+        <h1 class="hc-admin-title">
+          {% if scoped_structure %}
+            Intervenants · {{ structure.name }}
+          {% else %}
+            Intervenants
+          {% endif %}
+        </h1>
+        <div class="hc-muted">
+          {% if scoped_structure %}
+            Référents, professionnels et partenaires associés à cette structure
+          {% else %}
+            Gestion des intervenants de la structure
+          {% endif %}
+        </div>
         <div class="small text-muted mt-1">
           {{ total_intervenants }} intervenant{% if total_intervenants != 1 %}s{% endif %}
-          {% if total_pages > 1 %} • page {{ page }} / {{ total_pages }}{% endif %}
+          {% if total_pages > 1 %} · page {{ page }} / {{ total_pages }}{% endif %}
         </div>
       </div>
 
       <div class="hc-admin-actions">
-        <a href="{{ url_for('admin.admin_intervenants_new') }}" class="btn btn-primary btn-sm">
+        {% if scoped_structure %}
+        <a href="{{ url_for('admin.admin_structure_detail', structure_id=structure.id) }}" class="btn btn-outline-secondary btn-sm">
+          Retour structure
+        </a>
+        {% endif %}
+        <a
+          href="{% if scoped_structure %}{{ url_for('admin.admin_intervenants_new', structure_id=structure.id) }}{% else %}{{ url_for('admin.admin_intervenants_new') }}{% endif %}"
+          class="btn btn-primary btn-sm"
+        >
           Ajouter
         </a>
         <a href="{{ url_for('admin.admin_professionals_map') }}" class="btn btn-outline-secondary btn-sm">
@@ -96,7 +71,12 @@
       </select>
       <input type="hidden" name="order" value="{{ sort_order }}">
       <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
-      <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Réinitialiser</a>
+      <a
+        href="{% if scoped_structure %}{{ url_for('admin.admin_structure_intervenants', structure_id=structure.id) }}{% else %}{{ url_for('admin.admin_intervenants') }}{% endif %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        Réinitialiser
+      </a>
     </form>
   </div>
 
@@ -111,8 +91,9 @@
         {% endif %}
       </span>
     </div>
-    <div class="hc-intervenants-table-wrap">
-      <table class="hc-intervenants-table">
+
+    <div class="table-responsive hc-admin-tablewrap hc-intervenants-table-wrap">
+      <table class="table table-hover align-middle hc-admin-table hc-intervenants-table mb-0">
         <colgroup>
           <col class="hc-col-id">
           <col class="hc-col-name">
@@ -124,19 +105,21 @@
           <col class="hc-col-availability">
           <col class="hc-col-workload">
           <col class="hc-col-created">
+          <col class="hc-col-action">
         </colgroup>
         <thead>
           <tr>
-            <th class="hc-col-id">ID</th>
-            <th class="hc-col-name">Nom</th>
-            <th class="hc-col-profession">Profession</th>
-            <th class="hc-col-email">Email</th>
-            <th class="hc-col-phone">Téléphone</th>
-            <th class="hc-col-city">Ville</th>
-            <th class="hc-col-address">Adresse</th>
-            <th class="hc-col-availability">Disponibilité</th>
-            <th class="hc-col-workload">Charge</th>
-            <th class="hc-col-created">Créé le</th>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Profession</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Ville</th>
+            <th>Adresse</th>
+            <th>Disponibilité</th>
+            <th>Charge</th>
+            <th>Créé le</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -157,11 +140,19 @@
               </td>
               <td class="text-muted hc-intervenants-workload">{{ intervenant.current_workload }}</td>
               <td class="text-muted">{% if intervenant.created_at %}{{ intervenant.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</td>
+              <td class="hc-td-action">
+                <a
+                  class="btn btn-outline-secondary btn-sm"
+                  href="{% if scoped_structure %}{{ url_for('admin.admin_structure_intervenant_detail', structure_id=structure.id, intervenant_id=intervenant.id) }}{% else %}{{ url_for('admin.admin_intervenant_detail', intervenant_id=intervenant.id) }}{% endif %}"
+                >
+                  Voir
+                </a>
+              </td>
             </tr>
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="10" class="text-center py-5 hc-intervenants-emptyCell hc-intervenants-empty-cell">
+              <td colspan="11" class="text-center py-5">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">Aucun intervenant trouvé</div>
                   <div class="hc-empty-state__text">
@@ -171,7 +162,12 @@
                     Aucun intervenant n'est encore enregistré.
                   {% endif %}
                   </div>
-                  <a href="{{ url_for('admin.admin_intervenants_new') }}" class="btn btn-primary btn-sm">Ajouter</a>
+                  <a
+                    href="{% if scoped_structure %}{{ url_for('admin.admin_intervenants_new', structure_id=structure.id) }}{% else %}{{ url_for('admin.admin_intervenants_new') }}{% endif %}"
+                    class="btn btn-primary btn-sm"
+                  >
+                    Ajouter
+                  </a>
                 </div>
               </td>
             </tr>
@@ -188,12 +184,17 @@
       {% if end_page > total_pages %}{% set end_page = total_pages %}{% endif %}
 
       {% if page > 1 %}
-      <a href="{{ url_for('admin.admin_intervenants', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}" class="btn btn-outline-secondary btn-sm">‹</a>
+      <a
+        href="{% if scoped_structure %}{{ url_for('admin.admin_structure_intervenants', structure_id=structure.id, page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}{% else %}{{ url_for('admin.admin_intervenants', page=page-1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}{% endif %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        ‹
+      </a>
       {% endif %}
 
       {% for page_num in range(start_page, end_page + 1) %}
       <a
-        href="{{ url_for('admin.admin_intervenants', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}"
+        href="{% if scoped_structure %}{{ url_for('admin.admin_structure_intervenants', structure_id=structure.id, page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}{% else %}{{ url_for('admin.admin_intervenants', page=page_num, search=search, location=location_filter, sort=sort_by, order=sort_order) }}{% endif %}"
         class="btn btn-sm {% if page_num == page %}btn-primary{% else %}btn-outline-secondary{% endif %}"
       >
         {{ page_num }}
@@ -201,7 +202,12 @@
       {% endfor %}
 
       {% if page < total_pages %}
-      <a href="{{ url_for('admin.admin_intervenants', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}" class="btn btn-outline-secondary btn-sm">›</a>
+      <a
+        href="{% if scoped_structure %}{{ url_for('admin.admin_structure_intervenants', structure_id=structure.id, page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}{% else %}{{ url_for('admin.admin_intervenants', page=page+1, search=search, location=location_filter, sort=sort_by, order=sort_order) }}{% endif %}"
+        class="btn btn-outline-secondary btn-sm"
+      >
+        ›
+      </a>
       {% endif %}
     </div>
     {% endif %}

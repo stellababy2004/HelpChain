@@ -551,6 +551,7 @@ class Intervenant(db.Model):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True, server_default=db.true())
+    internal_notes = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
 
     structure = relationship("Structure", lazy="joined")

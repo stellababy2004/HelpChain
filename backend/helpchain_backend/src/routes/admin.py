@@ -593,6 +593,114 @@ def _intervenant_display_name(intervenant: Intervenant) -> str:
     return (getattr(intervenant, "name", None) or "").strip() or f"Intervenant #{intervenant.id}"
 
 
+def _intervenant_or_403(intervenant_id: int, structure_id: int | None = None) -> Intervenant:
+    intervenant = db.session.get(Intervenant, intervenant_id)
+    if intervenant is None:
+        abort(404)
+
+    intervenant_structure_id = int(getattr(intervenant, "structure_id", 0) or 0)
+    if structure_id is not None and intervenant_structure_id != int(structure_id):
+        abort(403)
+
+    if not _is_global_admin():
+        current_sid = getattr(current_user, "structure_id", None)
+        if current_sid is None or int(current_sid) != intervenant_structure_id:
+            abort(403)
+
+    return intervenant
+
+
+def _intervenant_detail_form_data(intervenant: Intervenant) -> dict[str, object]:
+    return {
+        "name": getattr(intervenant, "name", "") or "",
+        "actor_type": getattr(intervenant, "actor_type", "") or "",
+        "email": getattr(intervenant, "email", "") or "",
+        "phone": getattr(intervenant, "phone", "") or "",
+        "location": getattr(intervenant, "location", "") or "",
+        "latitude": getattr(intervenant, "latitude", None),
+        "longitude": getattr(intervenant, "longitude", None),
+        "is_active": "1" if bool(getattr(intervenant, "is_active", False)) else "0",
+        "internal_notes": getattr(intervenant, "internal_notes", "") or "",
+    }
+
+
+def _intervenant_detail_template(
+    intervenant: Intervenant,
+    *,
+    structure_context_id: int | None = None,
+    form_data: dict[str, object] | None = None,
+    status_code: int = 200,
+):
+    city = _intervenant_city(intervenant)
+    address = _intervenant_address(intervenant)
+    structure = getattr(intervenant, "structure", None)
+
+    return (
+        render_template(
+            "admin/intervenant_detail.html",
+            intervenant=intervenant,
+            structure=structure,
+            structure_context_id=structure_context_id,
+            city=city,
+            address=address,
+            form_data=form_data or _intervenant_detail_form_data(intervenant),
+            has_coordinates=(
+                hasattr(intervenant, "latitude")
+                and hasattr(intervenant, "longitude")
+                and _table_has_column("intervenants", "latitude")
+                and _table_has_column("intervenants", "longitude")
+            ),
+        ),
+        status_code,
+    )
+
+
+def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
+    errors: list[str] = []
+    name = (request.form.get("name") or "").strip()
+    actor_type = _normalize_smart_assign_text(request.form.get("actor_type") or "").replace(" ", "_")
+
+    if not name:
+        errors.append("Nom requis.")
+    if not actor_type:
+        errors.append("Profession requise.")
+
+    if errors:
+        return errors
+
+    intervenant.name = name
+    intervenant.actor_type = actor_type
+    intervenant.email = (request.form.get("email") or "").strip() or None
+    intervenant.phone = (request.form.get("phone") or "").strip() or None
+    intervenant.location = (request.form.get("location") or "").strip() or None
+    intervenant.is_active = (request.form.get("is_active") or "0") == "1"
+
+    if hasattr(intervenant, "internal_notes") and _table_has_column("intervenants", "internal_notes"):
+        intervenant.internal_notes = (request.form.get("internal_notes") or "").strip() or None
+
+    if hasattr(intervenant, "latitude") and _table_has_column("intervenants", "latitude"):
+        lat_raw = (request.form.get("latitude") or "").strip()
+        if lat_raw:
+            try:
+                intervenant.latitude = float(lat_raw)
+            except Exception:
+                errors.append("Latitude invalide.")
+        else:
+            intervenant.latitude = None
+
+    if hasattr(intervenant, "longitude") and _table_has_column("intervenants", "longitude"):
+        lng_raw = (request.form.get("longitude") or "").strip()
+        if lng_raw:
+            try:
+                intervenant.longitude = float(lng_raw)
+            except Exception:
+                errors.append("Longitude invalide.")
+        else:
+            intervenant.longitude = None
+
+    return errors
+
+
 def _assignment_workload_subquery():
     return (
         db.session.query(
@@ -7106,6 +7214,72 @@ def admin_intervenants():
         sort_by=sort_by,
         sort_order=sort_order,
     )
+
+
+@admin_bp.route("/intervenants/<int:intervenant_id>", methods=["GET", "POST"])
+@admin_required
+def admin_intervenant_detail(intervenant_id: int):
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("Access denied."), "error")
+        return redirect(url_for("main.index"))
+
+    intervenant = _intervenant_or_403(intervenant_id)
+
+    if request.method == "POST":
+        errors = _update_intervenant_from_form(intervenant)
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return _intervenant_detail_template(
+                intervenant,
+                form_data=request.form,
+                status_code=400,
+            )
+
+        db.session.commit()
+        flash("Intervenant mis à jour.", "success")
+        return redirect(url_for("admin.admin_intervenant_detail", intervenant_id=intervenant.id))
+
+    return _intervenant_detail_template(intervenant)
+
+
+@admin_bp.route(
+    "/structures/<int:structure_id>/intervenants/<int:intervenant_id>",
+    methods=["GET", "POST"],
+)
+@admin_required
+def admin_structure_intervenant_detail(structure_id: int, intervenant_id: int):
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("Access denied."), "error")
+        return redirect(url_for("main.index"))
+
+    intervenant = _intervenant_or_403(intervenant_id, structure_id=structure_id)
+
+    if request.method == "POST":
+        errors = _update_intervenant_from_form(intervenant)
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return _intervenant_detail_template(
+                intervenant,
+                structure_context_id=structure_id,
+                form_data=request.form,
+                status_code=400,
+            )
+
+        db.session.commit()
+        flash("Intervenant mis à jour.", "success")
+        return redirect(
+            url_for(
+                "admin.admin_structure_intervenant_detail",
+                structure_id=structure_id,
+                intervenant_id=intervenant.id,
+            )
+        )
+
+    return _intervenant_detail_template(intervenant, structure_context_id=structure_id)
 
 
 @admin_bp.route("/intervenants/new", methods=["GET", "POST"])

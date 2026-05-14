@@ -16483,3 +16483,159 @@ body.hc-admin-home-page .hc-ops-queue-table thead th {
   top: auto;
   bottom: calc(100% + 0.5rem);
 }
+
+/* Intervenants table: keep operational contact data readable and scrollable. */
+body.hc-admin-intervenants .hc-intervenants-table-wrap{
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table{
+  width: 100%;
+  min-width: 1290px;
+  table-layout: fixed;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table :is(th, td){
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  vertical-align: middle;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-id{
+  width: 64px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-name{
+  width: 230px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-profession{
+  width: 150px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-email{
+  width: 240px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-phone{
+  width: 155px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-city{
+  width: 130px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-address{
+  width: 210px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-availability{
+  width: 130px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-workload{
+  width: 92px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-created{
+  width: 112px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-col-action{
+  width: 90px;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-intervenants-name{
+  min-width: 220px;
+  max-width: 230px;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-intervenants-email{
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-intervenants-phone{
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-intervenants-address{
+  max-width: 210px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-intervenants-workload{
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+body.hc-admin-intervenants .hc-admin-table.hc-intervenants-table .hc-intervenants-badge{
+  min-width: 104px;
+  text-align: center;
+}
+
+body.hc-admin-intervenants .hc-intervenant-detail-grid{
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.85fr);
+  gap: 16px;
+}
+
+body.hc-admin-intervenants .hc-intervenant-summary{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+
+body.hc-admin-intervenants .hc-intervenant-summary__item{
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.74);
+}
+
+body.hc-admin-intervenants .hc-intervenant-summary__item span{
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.76rem;
+  font-weight: 650;
+  color: rgba(71, 85, 105, 0.82);
+}
+
+body.hc-admin-intervenants .hc-intervenant-summary__item strong{
+  display: block;
+  color: rgba(15, 23, 42, 0.96);
+  overflow-wrap: anywhere;
+}
+
+body.hc-admin-intervenants .hc-intervenant-notes{
+  margin: 0;
+  white-space: pre-wrap;
+  color: rgba(15, 23, 42, 0.9);
+}
+
+@media (max-width: 992px){
+  body.hc-admin-intervenants .hc-intervenant-detail-grid{
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-admin-intervenants .hc-intervenant-summary{
+    grid-template-columns: 1fr;
+  }
+}

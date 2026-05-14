@@ -1,0 +1,210 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}{{ intervenant.name or 'Intervenant' }} | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-intervenants{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
+  <div class="hc-card hc-admin-headerCard">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="hc-muted small">Intervenant</div>
+        <h1 class="hc-admin-title">{{ intervenant.name or ('Intervenant #' ~ intervenant.id) }}</h1>
+        <div class="hc-muted">
+          {{ intervenant.actor_type|replace('_', ' ')|title if intervenant.actor_type else 'Profession non renseignée' }}
+          {% if structure %} · {{ structure.name }}{% endif %}
+        </div>
+      </div>
+
+      <div class="hc-admin-actions">
+        {% if structure_context_id %}
+        <a
+          href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure_context_id) }}"
+          class="btn btn-outline-secondary btn-sm"
+        >
+          Retour intervenants
+        </a>
+        <a
+          href="{{ url_for('admin.admin_structure_detail', structure_id=structure_context_id) }}"
+          class="btn btn-outline-secondary btn-sm"
+        >
+          Retour structure
+        </a>
+        {% else %}
+        <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">
+          Retour intervenants
+        </a>
+        {% endif %}
+        <a href="#intervenant-edit" class="btn btn-primary btn-sm">Modifier</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-intervenant-detail-grid">
+    <div class="hc-card hc-intervenant-profile-card">
+      <div class="hc-card__section hc-card__section--header">
+        <strong>Profil opérationnel</strong>
+      </div>
+      <div class="hc-intervenant-summary">
+        <div class="hc-intervenant-summary__item">
+          <span>Nom</span>
+          <strong>{{ intervenant.name or '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Profession</span>
+          <strong>{{ intervenant.actor_type|replace('_', ' ')|title if intervenant.actor_type else '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Email</span>
+          <strong>{{ intervenant.email or '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Téléphone</span>
+          <strong>{{ intervenant.phone or '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Ville / localisation</span>
+          <strong>{{ city or intervenant.location or '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Adresse</span>
+          <strong>{{ address or '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Structure assignée</span>
+          <strong>{{ structure.name if structure else '—' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Disponibilité</span>
+          {% if intervenant.is_active %}
+          <strong><span class="badge text-bg-success">Disponible</span></strong>
+          {% else %}
+          <strong><span class="badge text-bg-secondary">Indisponible</span></strong>
+          {% endif %}
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Créé le</span>
+          <strong>{% if intervenant.created_at %}{{ intervenant.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="hc-card hc-intervenant-notes-card">
+      <div class="hc-card__section hc-card__section--header">
+        <strong>Notes internes</strong>
+      </div>
+      <div class="hc-card__section">
+        {% if intervenant.internal_notes %}
+        <p class="hc-intervenant-notes">{{ intervenant.internal_notes }}</p>
+        {% else %}
+        <div class="hc-empty-state">
+          <div class="hc-empty-state__title">Aucune note interne</div>
+          <div class="hc-empty-state__text">
+            Les informations opérationnelles peuvent être ajoutées dans le formulaire.
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div id="intervenant-edit" class="hc-card hc-admin-form-shell">
+    <div class="hc-card__section hc-card__section--header hc-intervenants-formHeader">
+      <strong>Modifier l’intervenant</strong>
+      <span class="hc-muted small">Identité, contact, disponibilité et notes internes.</span>
+    </div>
+
+    <form method="post" class="row g-3 hc-intervenants-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+          <label class="form-label" for="name">Nom complet</label>
+          <input class="form-control" id="name" name="name" value="{{ form_data.get('name', '') }}" required>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+          <label class="form-label" for="actor_type">Profession</label>
+          <input class="form-control" id="actor_type" name="actor_type" value="{{ form_data.get('actor_type', '') }}" required>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+          <label class="form-label" for="email">Email</label>
+          <input class="form-control" id="email" name="email" type="email" value="{{ form_data.get('email', '') }}">
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <div class="hc-field">
+          <label class="form-label" for="phone">Téléphone</label>
+          <input class="form-control" id="phone" name="phone" value="{{ form_data.get('phone', '') }}">
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-8">
+        <div class="hc-field">
+          <label class="form-label" for="location">Localisation</label>
+          <input class="form-control" id="location" name="location" value="{{ form_data.get('location', '') }}">
+          <div class="form-text">Ville, adresse ou zone d’intervention.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-4">
+        <div class="hc-field">
+          <label class="form-label" for="is_active">Disponibilité</label>
+          {% set active_value = form_data.get('is_active', '1') %}
+          <select class="form-select" id="is_active" name="is_active">
+            <option value="1" {% if active_value == '1' %}selected{% endif %}>Disponible</option>
+            <option value="0" {% if active_value == '0' %}selected{% endif %}>Indisponible</option>
+          </select>
+        </div>
+      </div>
+
+      {% if has_coordinates %}
+      <div class="col-12 col-md-6">
+        <div class="hc-field">
+          <label class="form-label" for="latitude">Latitude</label>
+          <input class="form-control" id="latitude" name="latitude" value="{{ form_data.get('latitude', '') or '' }}">
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="hc-field">
+          <label class="form-label" for="longitude">Longitude</label>
+          <input class="form-control" id="longitude" name="longitude" value="{{ form_data.get('longitude', '') or '' }}">
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="col-12">
+        <div class="hc-field">
+          <label class="form-label" for="internal_notes">Notes internes</label>
+          <textarea class="form-control" id="internal_notes" name="internal_notes" rows="5">{{ form_data.get('internal_notes', '') }}</textarea>
+          <div class="form-text">
+            Informations visibles uniquement par les administrateurs autorisés de la structure.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="hc-admin-actions mt-2 hc-intervenants-formActions">
+          <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+          {% if structure_context_id %}
+          <a
+            href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure_context_id) }}"
+            class="btn btn-outline-secondary btn-sm"
+          >
+            Annuler
+          </a>
+          {% else %}
+          <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Annuler</a>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
