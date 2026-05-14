@@ -11,6 +11,7 @@ $InstanceDir = Join-Path $Root "instance"
 $LocalDbPath = Join-Path $InstanceDir "hc_local_dev.db"
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $SeedScript = Join-Path $Root "scripts\seed_local_demo.py"
+$OperationalSeedScript = Join-Path $Root "scripts\seed_local_operational_demo.py"
 $RequiredTables = @(
   "admin_users",
   "structures",
@@ -167,6 +168,72 @@ function Invoke-LocalSeed {
   }
 }
 
+function Invoke-OperationalSeed {
+  if (-not (Test-Path $OperationalSeedScript)) {
+    throw "Operational local seed script not found at $OperationalSeedScript"
+  }
+
+  Write-Host "Seeding local operational demo..."
+  & $Python $OperationalSeedScript
+  if ($LASTEXITCODE -ne 0) {
+    throw "Operational local seed script failed."
+  }
+}
+
+function Test-DemoDataReady {
+  $script = @"
+import os
+import sqlite3
+
+db_path = os.environ.get("HC_DB_PATH", "")
+
+try:
+    con = sqlite3.connect(db_path)
+    cur = con.cursor()
+    requests_total = cur.execute("select count(*) from requests").fetchone()[0]
+    structures_total = cur.execute("select count(*) from structures").fetchone()[0]
+    intervenants_ccas = cur.execute(
+        "select count(*) from intervenants where structure_id = 2"
+    ).fetchone()[0]
+    services_ccas = cur.execute(
+        "select count(*) from structure_services where structure_id = 2"
+    ).fetchone()[0]
+    active_requests_ccas = cur.execute(
+        "select count(*) from requests where structure_id = 2 and lower(coalesce(status, '')) <> 'closed'"
+    ).fetchone()[0]
+    con.close()
+except Exception as exc:
+    print(f"NO error={exc}")
+else:
+    ready = (
+        requests_total >= 25
+        and structures_total >= 2
+        and intervenants_ccas >= 8
+        and services_ccas >= 4
+        and active_requests_ccas > 0
+    )
+    if ready:
+        print("YES")
+    else:
+        print(
+            "NO "
+            f"requests={requests_total} "
+            f"structures={structures_total} "
+            f"intervenants_ccas={intervenants_ccas} "
+            f"services_ccas={services_ccas} "
+            f"active_requests_ccas={active_requests_ccas}"
+        )
+"@
+
+  $result = (Invoke-PythonBlock $script | Select-Object -Last 1).Trim()
+  if ($result -eq "YES") {
+    return $true
+  }
+
+  Write-Host "Demo data check failed: $result" -ForegroundColor Yellow
+  return $false
+}
+
 function Ensure-LocalAdmin {
   $script = @"
 import os
@@ -234,9 +301,19 @@ if (Test-DatabaseSchema) {
   Write-Host "Local DB repaired" -ForegroundColor Green
 }
 
+Invoke-FlaskMigrations
+
+if (-not (Test-DatabaseSchema)) {
+  throw "Database schema is incomplete after migrations."
+}
+
 $adminMissing = -not (Test-AdminExists)
-if ($databaseRecreated -or $adminMissing) {
+$demoMissing = -not (Test-DemoDataReady)
+if ($databaseRecreated -or $adminMissing -or $demoMissing) {
   Invoke-LocalSeed
+  Invoke-OperationalSeed
+} else {
+  Write-Host "Local demo data OK" -ForegroundColor Green
 }
 
 Ensure-LocalAdmin
