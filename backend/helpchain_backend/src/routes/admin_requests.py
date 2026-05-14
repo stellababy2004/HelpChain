@@ -126,6 +126,14 @@ def _is_request_locked(req) -> bool:
     return s in ("done", "cancelled")
 
 
+REQUEST_LOCKED_BY_ADMIN_MESSAGE = (
+    "🔒 Situation verrouillée pour éviter les modifications simultanées."
+)
+REQUEST_LOCKED_BY_STATUS_MESSAGE = (
+    "🔒 Situation verrouillée. Modifiez d’abord le statut pour réactiver les actions."
+)
+
+
 @admin_bp.route("/emergency-requests", methods=["GET"])
 @admin_required
 def emergency_requests():
@@ -360,12 +368,12 @@ def update_status(req_id):
     )
 
     try:
-        subject = f"Ð¡Ñ‚Ð°Ñ‚ÑƒÑÑŠÑ‚ Ð½Ð° Ð²Ð°ÑˆÐ°Ñ‚Ð° Ð·Ð°ÑÐ²ÐºÐ° #{req.id} Ðµ Ð¿Ñ€Ð¾Ð¼ÐµÐ½ÐµÐ½ Ð½Ð° {new_status}"
+        subject = f"Statut de votre demande #{req.id} mis à jour : {new_status}"
         recipient = getattr(req, "email", None)
-        recipient_name = getattr(req, "name", "ÐŸÐ¾Ñ‚Ñ€ÐµÐ±Ð¸Ñ‚ÐµÐ»")
+        recipient_name = getattr(req, "name", "Demandeur")
         content = (
-            f"Ð¡Ñ‚Ð°Ñ‚ÑƒÑÑŠÑ‚ Ð½Ð° Ð²Ð°ÑˆÐ°Ñ‚Ð° Ð·Ð°ÑÐ²ÐºÐ° Ðµ Ð¿Ñ€Ð¾Ð¼ÐµÐ½ÐµÐ½ Ð½Ð° <b>{new_status}</b>.\n\n"
-            f"ÐžÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ: {req.description or ''}"
+            f"Le statut de votre demande a été mis à jour en <b>{new_status}</b>.\n\n"
+            f"Description : {req.description or ''}"
         )
         context = {
             "subject": subject,
@@ -549,12 +557,12 @@ def admin_requests():
         )
         abort(403)
     status_labels_bg = {
-        "new": "ÐÐ¾Ð²Ð¸",
-        "pending": "Ð§Ð°ÐºÐ°Ñ‰Ð¸",
-        "approved": "ÐžÐ´Ð¾Ð±Ñ€ÐµÐ½Ð¸",
-        "in_progress": "Ð’ Ð¿Ñ€Ð¾Ñ†ÐµÑ",
-        "done": "ÐŸÑ€Ð¸ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸",
-        "rejected": "ÐžÑ‚Ñ…Ð²ÑŠÑ€Ð»ÐµÐ½Ð¸",
+        "new": "Nouvelles",
+        "pending": "En attente",
+        "approved": "Approuvées",
+        "in_progress": "En cours",
+        "done": "Clôturées",
+        "rejected": "Rejetées",
     }
 
     queue = (request.args.get("queue") or "").strip().lower()
@@ -1895,10 +1903,7 @@ def admin_interest_approve(req_id: int, interest_id: int):
         abort(404)
 
     if _locked_by_other(req, admin_id):
-        flash(
-            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_ADMIN_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     vi = db.session.get(VolunteerInterest, interest_id)
@@ -1906,10 +1911,7 @@ def admin_interest_approve(req_id: int, interest_id: int):
         abort(404)
 
     if _is_request_locked(req):
-        flash(
-            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° (done/cancelled). Ð¡Ð¼ÐµÐ½Ð¸ ÑÑ‚Ð°Ñ‚ÑƒÑÐ°, Ð·Ð° Ð´Ð° Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñˆ Ð´ÐµÐ¹ÑÑ‚Ð²Ð¸ÑÑ‚Ð°.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_STATUS_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     old_vi = vi.status
@@ -1980,10 +1982,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
         abort(404)
 
     if _locked_by_other(req, admin_id):
-        flash(
-            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_ADMIN_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     interest = db.session.get(VolunteerInterest, interest_id)
@@ -1991,10 +1990,7 @@ def admin_interest_reject(req_id: int, interest_id: int):
         abort(404)
 
     if _is_request_locked(req):
-        flash(
-            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° (done/cancelled). Ð¡Ð¼ÐµÐ½Ð¸ ÑÑ‚Ð°Ñ‚ÑƒÑÐ°, Ð·Ð° Ð´Ð° Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñˆ Ð´ÐµÐ¹ÑÑ‚Ð²Ð¸ÑÑ‚Ð°.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_STATUS_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     old_vi = interest.status
@@ -2052,16 +2048,10 @@ def admin_interest_reject(req_id: int, interest_id: int):
 def admin_request_assign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
-        flash(
-            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_ADMIN_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if _is_request_locked(req):
-        flash(
-            "This request is locked (done/cancelled). Unlock it by changing status first.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_STATUS_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if req.owner_id and req.owner_id != getattr(current_user, "id", None):
         flash("Deja pris en charge.", "warning")
@@ -2145,16 +2135,10 @@ def admin_request_assign(req_id: int):
 def admin_request_unassign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
-        flash(
-            "ðŸ”’ Ð—Ð°ÑÐ²ÐºÐ°Ñ‚Ð° Ðµ Ð·Ð°ÐºÐ»ÑŽÑ‡ÐµÐ½Ð° Ð¾Ñ‚ Ð´Ñ€ÑƒÐ³ Ð°Ð´Ð¼Ð¸Ð½. ÐœÐ¾Ð¶Ðµ Ð´Ð° Ñ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ð¸Ñ‚Ðµ Ñ€ÑŠÑ‡Ð½Ð¾.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_ADMIN_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if _is_request_locked(req):
-        flash(
-            "This request is locked (done/cancelled). Unlock it by changing status first.",
-            "warning",
-        )
+        flash(REQUEST_LOCKED_BY_STATUS_MESSAGE, "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if not can_edit_request(req, current_user):
         abort(403)

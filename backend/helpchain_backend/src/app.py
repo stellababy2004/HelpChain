@@ -209,6 +209,14 @@ def add_security_headers(app: Flask):
         )
         resp.headers["X-Frame-Options"] = "DENY"
 
+        content_type = resp.headers.get("Content-Type", "")
+        mime = (resp.mimetype or "").lower()
+        if (
+            mime in {"text/html", "text/plain", "application/json"}
+            and "charset=" not in content_type.lower()
+        ):
+            resp.headers["Content-Type"] = f"{mime}; charset=utf-8"
+
         plausible_enabled = bool(app.config.get("PLAUSIBLE_ENABLED", False))
         plausible_script_url = (app.config.get("PLAUSIBLE_SCRIPT_URL") or "").strip()
         plausible_api_host = (app.config.get("PLAUSIBLE_API_HOST") or "").strip()

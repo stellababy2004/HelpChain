@@ -167,8 +167,8 @@
       {% if is_locked %}
         <div class="alert alert-warning d-flex justify-content-between align-items-center">
           <div>
-            Situation verrouillée par l’admin #{{ locked_by }}.
-            Seul cet administrateur peut modifier la demande sauf déverrouillage manuel.
+            🔒 Situation verrouillée pour éviter les modifications simultanées.
+            {% if locked_by %} Cette demande est actuellement prise en charge par l’admin #{{ locked_by }}.{% endif %}
           </div>
           <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
