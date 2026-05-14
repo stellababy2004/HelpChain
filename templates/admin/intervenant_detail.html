@@ -3,92 +3,127 @@
 {% block admin_body_class %} hc-admin-intervenants{% endblock %}
 
 {% block admin_content %}
+{% set last_activity = operational_timeline[0] if operational_timeline else none %}
+{% set selected_competencies = form_data.getlist('competencies') if form_data.getlist is defined else form_data.get('competencies', []) %}
+{% set assignable_statuses = ['new', 'pending', 'in_progress'] %}
 <div class="hc-admin-wrap hc-admin-shell hc-admin-shell--compact">
-  <div class="hc-card hc-admin-headerCard">
-    <div class="hc-row hc-admin-headerTop">
-      <div>
-        <div class="hc-muted small">Intervenant</div>
+  <div class="hc-intervenant-command-header">
+    <div class="hc-intervenant-command-header__identity">
+      <div class="hc-intervenant-avatar" aria-hidden="true">{{ avatar_initials }}</div>
+      <div class="hc-intervenant-command-header__main">
+        <div class="hc-muted small">Profil operationnel intervenant</div>
         <h1 class="hc-admin-title">{{ intervenant.name or ('Intervenant #' ~ intervenant.id) }}</h1>
-        <div class="hc-muted">
-          {{ intervenant.actor_type|replace('_', ' ')|title if intervenant.actor_type else 'Profession non renseignée' }}
-          {% if structure %} · {{ structure.name }}{% endif %}
+        <div class="hc-intervenant-command-header__subtitle">
+          <span>{{ actor_type_label }}</span>
+          {% if structure %}<span>{{ structure.name }}</span>{% endif %}
+          <span>{{ city or intervenant.location or 'Territoire non renseigne' }}</span>
         </div>
       </div>
+    </div>
 
-      <div class="hc-admin-actions">
-        {% if structure_context_id %}
-        <a
-          href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure_context_id) }}"
-          class="btn btn-outline-secondary btn-sm"
-        >
-          Retour intervenants
-        </a>
-        <a
-          href="{{ url_for('admin.admin_structure_detail', structure_id=structure_context_id) }}"
-          class="btn btn-outline-secondary btn-sm"
-        >
-          Retour structure
-        </a>
-        {% else %}
-        <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">
-          Retour intervenants
-        </a>
-        {% endif %}
-        <a href="#intervenant-edit" class="btn btn-primary btn-sm">Modifier</a>
-      </div>
+    <div class="hc-intervenant-command-header__badges">
+      <span class="badge hc-badge-availability {{ availability_badge_class }}">{{ availability_label }}</span>
+      <span class="badge hc-badge-workload">{{ operational_summary[0].value if operational_summary else 0 }} affectation(s)</span>
+    </div>
+
+    <div class="hc-intervenant-command-header__contacts hc-intervenant-quick-actions" aria-label="Actions rapides">
+      {% if intervenant.phone %}
+      <a class="btn btn-outline-secondary btn-sm" href="tel:{{ intervenant.phone }}">
+        <i class="fas fa-phone" aria-hidden="true"></i>
+        <span>Appeler</span>
+      </a>
+      {% endif %}
+      {% if intervenant.email %}
+      <a class="btn btn-outline-secondary btn-sm" href="mailto:{{ intervenant.email }}">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <span>Email</span>
+      </a>
+      {% endif %}
+      <a class="btn btn-outline-secondary btn-sm" href="#assigner-dossier">
+        <i class="fas fa-folder-plus" aria-hidden="true"></i>
+        <span>Assigner dossier</span>
+      </a>
+      <button
+        class="btn btn-primary btn-sm"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#intervenant-edit-panel"
+        aria-expanded="{% if edit_panel_open %}true{% else %}false{% endif %}"
+        aria-controls="intervenant-edit-panel"
+      >
+        <i class="fas fa-user-edit" aria-hidden="true"></i>
+        <span>Modifier profil</span>
+      </button>
     </div>
   </div>
 
-  <div class="hc-intervenant-detail-grid">
-    <div class="hc-card hc-intervenant-profile-card">
+  <div class="hc-card hc-intervenant-status-card">
+    <div>
+      <strong>{{ availability_helper }}</strong>
+      <span>
+        Derniere activite:
+        {% if last_activity %}{{ last_activity.label }} - {{ last_activity.value }}{% else %}aucune activite tracee{% endif %}
+      </span>
+    </div>
+    <div class="hc-admin-actions">
+      {% if structure_context_id %}
+      <a href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure_context_id) }}" class="btn btn-outline-secondary btn-sm">Retour intervenants</a>
+      {% if can_view_structure_detail %}
+      <a href="{{ url_for('admin.admin_structure_detail', structure_id=structure_context_id) }}" class="btn btn-outline-secondary btn-sm">Retour structure</a>
+      {% endif %}
+      {% else %}
+      <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Retour intervenants</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="hc-intervenant-ops-summary">
+    {% for item in operational_summary %}
+    <div class="hc-card hc-intervenant-ops-card">
+      <span>{{ item.label }}</span>
+      {% if item.badge_class is defined %}
+      <strong><span class="badge hc-badge-availability {{ item.badge_class }}">{{ item.value }}</span></strong>
+      {% else %}
+      <strong>{{ item.value }}</strong>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="hc-intervenant-workspace-grid">
+    <section class="hc-card hc-intervenant-profile-card">
       <div class="hc-card__section hc-card__section--header">
-        <strong>Profil opérationnel</strong>
+        <strong>Identite operationnelle</strong>
       </div>
       <div class="hc-intervenant-summary">
         <div class="hc-intervenant-summary__item">
           <span>Nom</span>
-          <strong>{{ intervenant.name or '—' }}</strong>
+          <strong>{{ intervenant.name or '-' }}</strong>
         </div>
         <div class="hc-intervenant-summary__item">
           <span>Profession</span>
-          <strong>{{ intervenant.actor_type|replace('_', ' ')|title if intervenant.actor_type else '—' }}</strong>
+          <strong>{{ actor_type_label or '-' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Structure</span>
+          <strong>{{ structure.name if structure else '-' }}</strong>
+        </div>
+        <div class="hc-intervenant-summary__item">
+          <span>Territoire</span>
+          <strong>{{ city or intervenant.location or '-' }}</strong>
         </div>
         <div class="hc-intervenant-summary__item">
           <span>Email</span>
-          <strong>{{ intervenant.email or '—' }}</strong>
+          <strong>{{ intervenant.email or '-' }}</strong>
         </div>
         <div class="hc-intervenant-summary__item">
-          <span>Téléphone</span>
-          <strong>{{ intervenant.phone or '—' }}</strong>
-        </div>
-        <div class="hc-intervenant-summary__item">
-          <span>Ville / localisation</span>
-          <strong>{{ city or intervenant.location or '—' }}</strong>
-        </div>
-        <div class="hc-intervenant-summary__item">
-          <span>Adresse</span>
-          <strong>{{ address or '—' }}</strong>
-        </div>
-        <div class="hc-intervenant-summary__item">
-          <span>Structure assignée</span>
-          <strong>{{ structure.name if structure else '—' }}</strong>
-        </div>
-        <div class="hc-intervenant-summary__item">
-          <span>Disponibilité</span>
-          {% if intervenant.is_active %}
-          <strong><span class="badge text-bg-success">Disponible</span></strong>
-          {% else %}
-          <strong><span class="badge text-bg-secondary">Indisponible</span></strong>
-          {% endif %}
-        </div>
-        <div class="hc-intervenant-summary__item">
-          <span>Créé le</span>
-          <strong>{% if intervenant.created_at %}{{ intervenant.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</strong>
+          <span>Telephone</span>
+          <strong>{{ intervenant.phone or '-' }}</strong>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="hc-card hc-intervenant-notes-card">
+    <section class="hc-card hc-intervenant-notes-card">
       <div class="hc-card__section hc-card__section--header">
         <strong>Notes internes</strong>
       </div>
@@ -98,21 +133,207 @@
         {% else %}
         <div class="hc-empty-state">
           <div class="hc-empty-state__title">Aucune note interne</div>
-          <div class="hc-empty-state__text">
-            Les informations opérationnelles peuvent être ajoutées dans le formulaire.
-          </div>
+          <div class="hc-empty-state__text">Les informations utiles a la coordination peuvent etre ajoutees dans le formulaire.</div>
         </div>
         {% endif %}
       </div>
-    </div>
+    </section>
   </div>
 
-  <div id="intervenant-edit" class="hc-card hc-admin-form-shell">
+  <div class="hc-intervenant-workspace-grid">
+    <section class="hc-card hc-intervenant-tags-card">
+      <div class="hc-card__section hc-card__section--header">
+        <strong>Competences</strong>
+      </div>
+      <div class="hc-card__section">
+        {% if competencies %}
+        <div class="hc-intervenant-taglist">
+          {% for item in competencies %}
+          <span class="hc-intervenant-tag">{{ item.label }}</span>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="hc-muted">Aucune competence structuree.</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="hc-card hc-intervenant-coverage-card">
+      <div class="hc-card__section hc-card__section--header">
+        <strong>Couverture territoriale</strong>
+      </div>
+      <div class="hc-card__section">
+        <div class="hc-intervenant-coverage-grid">
+          <div>
+            <span class="hc-intervenant-section-label">Zones</span>
+            {% if coverage_zones %}
+            <div class="hc-intervenant-taglist hc-intervenant-taglist--preview">
+              {% for zone in coverage_zones[:6] %}<span class="hc-intervenant-tag">{{ zone }}</span>{% endfor %}
+              {% if coverage_zones|length > 6 %}<span class="hc-intervenant-tag hc-intervenant-tag--muted">+{{ coverage_zones|length - 6 }}</span>{% endif %}
+            </div>
+            {% else %}
+            <div class="hc-coverage-empty">Aucune zone configurée</div>
+            {% endif %}
+          </div>
+          <div>
+            <span class="hc-intervenant-section-label">Communes</span>
+            {% if coverage_communes %}
+            <div class="hc-intervenant-taglist hc-intervenant-taglist--preview">
+              {% for commune in coverage_communes[:6] %}<span class="hc-intervenant-tag">{{ commune }}</span>{% endfor %}
+              {% if coverage_communes|length > 6 %}<span class="hc-intervenant-tag hc-intervenant-tag--muted">+{{ coverage_communes|length - 6 }}</span>{% endif %}
+            </div>
+            {% else %}
+            <div class="hc-coverage-empty">Territoire non défini</div>
+            {% endif %}
+          </div>
+          <div>
+            <span class="hc-intervenant-section-label">Rayon</span>
+            <strong>{% if intervenant.radius_km %}{{ intervenant.radius_km }} km{% else %}-{% endif %}</strong>
+          </div>
+        </div>
+
+        <div class="hc-intervenant-map-mini" aria-label="Apercu de position">
+          {% if has_coordinates and intervenant.latitude is not none and intervenant.longitude is not none %}
+          <div class="hc-intervenant-map-mini__pin"></div>
+          <span>{{ intervenant.latitude }}, {{ intervenant.longitude }}</span>
+          {% else %}
+          <div class="hc-intervenant-map-mini__placeholder">
+            <strong>Carte territoriale</strong>
+            <span>Support cartographique a venir</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="hc-card hc-intervenant-cases-card">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Dossiers actifs</strong>
+      <span class="hc-muted small">{{ active_cases|length }} dossier(s) rattache(s)</span>
+    </div>
+    <div class="hc-card__section">
+      {% if active_cases %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle hc-admin-table hc-intervenant-cases-table">
+          <thead>
+            <tr>
+              <th>Demande</th>
+              <th>Statut</th>
+              <th>Priorite</th>
+              <th>Assigne le</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for assignment in active_cases %}
+            {% set req = assignment.request %}
+            <tr>
+              {% set req_status = (req.status or 'new')|lower %}
+              {% set req_priority = (req.priority or 'normal')|lower %}
+              <td class="hc-intervenant-case-title">
+                <strong title="{{ request_operational_title(req) }}">{{ request_operational_title(req) }}</strong>
+                <span>#{{ req.id }}</span>
+              </td>
+              <td><span class="badge hc-request-status-badge hc-request-status-badge--{{ req_status }}">{{ req.status or 'new' }}</span></td>
+              <td><span class="badge hc-priority-badge hc-priority-badge--{{ req_priority }}">{{ req.priority or '-' }}</span></td>
+              <td>{% if assignment.assigned_at %}{{ assignment.assigned_at.strftime('%d/%m/%Y') }}{% else %}-{% endif %}</td>
+              <td class="hc-td-action">
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">Ouvrir</a>
+                <form method="post" class="hc-inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="intervenant_action" value="remove_assignment">
+                  <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                  <button type="submit" class="btn btn-outline-danger btn-sm">Retirer</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="hc-empty-state">
+        <div class="hc-empty-state__title">Aucun dossier actif</div>
+        <div class="hc-empty-state__text">Les affectations actives de la structure apparaitront ici.</div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section id="assigner-dossier" class="hc-card hc-intervenant-assign-card">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Assigner a une demande</strong>
+      <span class="hc-muted small">Demandes ouvertes de la meme structure uniquement.</span>
+    </div>
+    <div class="hc-card__section">
+      <form method="post" class="hc-intervenant-assign-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="intervenant_action" value="assign_request">
+        <select class="form-select" name="request_id" required>
+          <option value="">Selectionner une demande active</option>
+          {% for req in assignment_options %}
+          {% set req_status = (req.status or '')|lower %}
+          {% if req_status in assignable_statuses %}
+          <option value="{{ req.id }}">#{{ req.id }} - {{ request_operational_title(req) }} - {{ req.status or 'new' }}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm" {% if not assignment_options %}disabled{% endif %}>Assigner</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="hc-card hc-intervenant-history-card">
+    <div class="hc-card__section hc-card__section--header">
+      <strong>Timeline operationnelle</strong>
+      <span class="hc-muted small">Evenements de coordination et mises a jour du profil.</span>
+    </div>
+    <div class="hc-intervenant-timeline">
+      {% if operational_timeline %}
+      {% for item in operational_timeline %}
+      <div class="hc-intervenant-timeline__item">
+        <span class="hc-intervenant-timeline__icon" aria-hidden="true">
+          <i class="fas {{ item.icon or 'fa-stream' }}"></i>
+        </span>
+        <div class="hc-intervenant-timeline__content">
+          <strong>{{ item.label }}</strong>
+          <span>
+            {{ item.meta }}
+            {% if item.request_ref %}<a href="{{ url_for('admin.admin_request_details', req_id=item.request.id) }}">{{ item.request_ref }}</a>{% endif %}
+          </span>
+        </div>
+        <em>{{ item.value }}</em>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="hc-empty-state">
+        <div class="hc-empty-state__title">Aucune activite tracee</div>
+        <div class="hc-empty-state__text">Les mises a jour et affectations seront journalisees ici.</div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section id="intervenant-edit" class="hc-card hc-admin-form-shell hc-intervenant-edit-card">
     <div class="hc-card__section hc-card__section--header hc-intervenants-formHeader">
-      <strong>Modifier l’intervenant</strong>
-      <span class="hc-muted small">Identité, contact, disponibilité et notes internes.</span>
+      <div>
+        <strong>Modifier l'intervenant</strong>
+        <span class="hc-muted small">Identite, disponibilite, competences, couverture et notes internes.</span>
+      </div>
+      <button
+        class="btn btn-outline-secondary btn-sm"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#intervenant-edit-panel"
+        aria-expanded="{% if edit_panel_open %}true{% else %}false{% endif %}"
+        aria-controls="intervenant-edit-panel"
+      >
+        Modifier
+      </button>
     </div>
 
+    <div class="collapse{% if edit_panel_open %} show{% endif %}" id="intervenant-edit-panel">
     <form method="post" class="row g-3 hc-intervenants-form">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -126,7 +347,12 @@
       <div class="col-12 col-lg-6">
         <div class="hc-field">
           <label class="form-label" for="actor_type">Profession</label>
-          <input class="form-control" id="actor_type" name="actor_type" value="{{ form_data.get('actor_type', '') }}" required>
+          {% set actor_value = form_data.get('actor_type', 'social_worker') %}
+          <select class="form-select" id="actor_type" name="actor_type" required>
+            {% for value, label in actor_type_options %}
+            <option value="{{ value }}" {% if actor_value == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
         </div>
       </div>
 
@@ -139,27 +365,66 @@
 
       <div class="col-12 col-lg-6">
         <div class="hc-field">
-          <label class="form-label" for="phone">Téléphone</label>
+          <label class="form-label" for="phone">Telephone</label>
           <input class="form-control" id="phone" name="phone" value="{{ form_data.get('phone', '') }}">
         </div>
       </div>
 
       <div class="col-12 col-lg-8">
         <div class="hc-field">
-          <label class="form-label" for="location">Localisation</label>
+          <label class="form-label" for="location">Territoire / localisation</label>
           <input class="form-control" id="location" name="location" value="{{ form_data.get('location', '') }}">
-          <div class="form-text">Ville, adresse ou zone d’intervention.</div>
+          <div class="form-text">Ville principale, adresse ou zone d'intervention.</div>
         </div>
       </div>
 
       <div class="col-12 col-lg-4">
         <div class="hc-field">
-          <label class="form-label" for="is_active">Disponibilité</label>
-          {% set active_value = form_data.get('is_active', '1') %}
-          <select class="form-select" id="is_active" name="is_active">
-            <option value="1" {% if active_value == '1' %}selected{% endif %}>Disponible</option>
-            <option value="0" {% if active_value == '0' %}selected{% endif %}>Indisponible</option>
+          <label class="form-label" for="availability">Disponibilite</label>
+          {% set availability_value = form_data.get('availability', 'available') %}
+          <select class="form-select" id="availability" name="availability">
+            {% for value, label in availability_options %}
+            <option value="{{ value }}" {% if availability_value == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
           </select>
+          <div class="form-text">{{ availability_helper }}</div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="hc-field">
+          <label class="form-label">Competences</label>
+          <div class="hc-intervenant-checkgrid">
+            {% for value, label in competency_options %}
+            <label class="hc-intervenant-check">
+              <input class="hc-intervenant-check__input" type="checkbox" name="competencies" value="{{ value }}" {% if value in selected_competencies %}checked{% endif %}>
+              <span class="hc-intervenant-check__chip">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="hc-field">
+          <label class="form-label" for="coverage_zones">Zones d'intervention</label>
+          <textarea class="form-control" id="coverage_zones" name="coverage_zones" rows="3">{{ form_data.get('coverage_zones', '') }}</textarea>
+          <div class="form-text">Une zone par ligne ou separee par virgules.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="hc-field">
+          <label class="form-label" for="coverage_communes">Communes couvertes</label>
+          <textarea class="form-control" id="coverage_communes" name="coverage_communes" rows="3">{{ form_data.get('coverage_communes', '') }}</textarea>
+          <div class="form-text">Communes principales couvertes par l'intervenant.</div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-2">
+        <div class="hc-field">
+          <label class="form-label" for="radius_km">Rayon km</label>
+          <input class="form-control" id="radius_km" name="radius_km" value="{{ form_data.get('radius_km', '') or '' }}">
         </div>
       </div>
 
@@ -183,9 +448,7 @@
         <div class="hc-field">
           <label class="form-label" for="internal_notes">Notes internes</label>
           <textarea class="form-control" id="internal_notes" name="internal_notes" rows="5">{{ form_data.get('internal_notes', '') }}</textarea>
-          <div class="form-text">
-            Informations visibles uniquement par les administrateurs autorisés de la structure.
-          </div>
+          <div class="form-text">Informations visibles uniquement par les administrateurs autorises de la structure.</div>
         </div>
       </div>
 
@@ -193,18 +456,14 @@
         <div class="hc-admin-actions mt-2 hc-intervenants-formActions">
           <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
           {% if structure_context_id %}
-          <a
-            href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure_context_id) }}"
-            class="btn btn-outline-secondary btn-sm"
-          >
-            Annuler
-          </a>
+          <a href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure_context_id) }}" class="btn btn-outline-secondary btn-sm">Annuler</a>
           {% else %}
           <a href="{{ url_for('admin.admin_intervenants') }}" class="btn btn-outline-secondary btn-sm">Annuler</a>
           {% endif %}
         </div>
       </div>
     </form>
-  </div>
+    </div>
+  </section>
 </div>
 {% endblock %}
