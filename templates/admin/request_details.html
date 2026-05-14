@@ -167,8 +167,8 @@
       {% if is_locked %}
         <div class="alert alert-warning d-flex justify-content-between align-items-center">
           <div>
-            Situation verrouillée par l’admin #{{ locked_by }}.
-            Seul cet administrateur peut modifier la demande sauf déverrouillage manuel.
+            🔒 Situation verrouillée pour éviter les modifications simultanées.
+            {% if locked_by %} Cette demande est actuellement prise en charge par l’admin #{{ locked_by }}.{% endif %}
           </div>
           <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -305,13 +305,13 @@
                 <div class="hc-blocker-row">
                   <div class="hc-blocker-text">• {{ item }}</div>
                   <div class="hc-blocker-actions">
-                    {% if "responsable" in item|lower %}
+                    {% if "responsable" in item|lower and linked_case %}
                       <a href="{{ url_for('admin.admin_case_detail', case_id=linked_case.id) }}#owner-actions" class="hc-inline-action">Attribuer</a>
                     {% endif %}
                     {% if "activité" in item|lower or "action" in item|lower %}
                       <a href="#notes-internes" class="hc-inline-action">Créer relance</a>
                     {% endif %}
-                    {% if "professionnel" in item|lower %}
+                    {% if "professionnel" in item|lower and linked_case %}
                       <a href="{{ url_for('admin.admin_case_detail', case_id=linked_case.id) }}#matching-mobilisation" class="hc-inline-action">Voir matching</a>
                     {% endif %}
                   </div>

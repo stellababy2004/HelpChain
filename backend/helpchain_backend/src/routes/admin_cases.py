@@ -16,6 +16,7 @@ from ..models import (
     CaseEvent,
     CaseParticipant,
     ProfessionalLead,
+    Intervenant,
     Request,
     Structure,
     User,
@@ -620,7 +621,7 @@ def admin_case_assign_professional(case_id: int):
             lead_id = int(lead_raw)
         except Exception:
             lead_id = None
-    if lead_id is not None and not db.session.get(ProfessionalLead, lead_id):
+    if lead_id is not None and not (db.session.get(ProfessionalLead, lead_id) or db.session.get(Intervenant, lead_id)):
         flash("Selected professional lead does not exist.", "warning")
         return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
@@ -699,7 +700,7 @@ def admin_case_add_participant(case_id: int):
             url_for("admin.admin_case_detail", case_id=case_row.id),
             code=303,
         )
-    if lead_id is not None and not db.session.get(ProfessionalLead, lead_id):
+    if lead_id is not None and not (db.session.get(ProfessionalLead, lead_id) or db.session.get(Intervenant, lead_id)):
         flash("Selected professional lead does not exist.", "warning")
         return redirect(
             url_for("admin.admin_case_detail", case_id=case_row.id),
@@ -835,3 +836,4 @@ def admin_case_set_priority(case_id: int):
         flash("Case priority updated.", "success")
 
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+

@@ -54,6 +54,8 @@ def _risk_bucket(score: int) -> str:
 
 
 def calculate_case_risk(case: Case) -> int:
+    if case is None:
+        return 0
     if str(getattr(case, "status", "")).lower() == "closed":
         return 0
 
@@ -93,12 +95,16 @@ def calculate_case_risk(case: Case) -> int:
 
 
 def update_case_risk(case: Case) -> int:
+    if case is None:
+        return 0
     score = calculate_case_risk(case)
     case.risk_score = int(score)
     return int(score)
 
 
 def compute_case_risk(case_id: int) -> dict | None:
+    if not case_id:
+        return None
     case = db.session.get(Case, int(case_id))
     if not case:
         return None

@@ -1,4 +1,4 @@
-{% extends "layouts/admin_workspace.html" %}
+﻿{% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Cas #{{ case_row.id }} | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page hc-admin-case-detail-page{% endblock %}
 
@@ -69,7 +69,7 @@
 {% set pro_ns = namespace(label='Non attribue') %}
 {% for lead in professionals %}
   {% if case_row.assigned_professional_lead_id == lead.id %}
-    {% set pro_ns.label = lead.full_name or lead.email or ('Lead #' ~ lead.id) %}
+    {% set pro_ns.label = lead.full_name or lead.email or ('Intervenant #' ~ lead.id) %}
   {% endif %}
 {% endfor %}
 <div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--case-detail">
@@ -254,8 +254,8 @@
                 <strong>{{ item.score }}</strong>
               </div>
               <div class="hc-case-pro-card__body">
-                <div class="hc-case-pro-card__name">{{ lead.full_name or ('Lead #' ~ lead.id) }}</div>
-                <div class="hc-case-pro-card__meta">{{ lead.organization or '-' }} / {{ lead.city or '-' }} / {{ lead.profession or '-' }}</div>
+                <div class="hc-case-pro-card__name">{{ (lead.full_name or lead.name or '?')[0:1] if (lead.full_name or lead.name) else '?' }} {{ lead.full_name or lead.name or lead.email or ('Intervenant #' ~ lead.id) }}</div>
+                <div class="hc-case-pro-card__meta">{{ (lead.profession or lead.actor_type or 'Intervenant')|replace('social_worker','Travailleur social')|replace('legal_advisor','Juriste')|replace('health_professional','Professionnel santé')|replace('partner_association','Association partenaire')|replace('field_referent','Référent terrain')|replace('_',' ')|title }} / {{ lead.city or lead.location or 'Territoire non renseigné' }}{% if lead.availability %} / {{ lead.availability|replace('available','Disponible')|replace('busy','Occupé')|replace('paused','Pause')|replace('unavailable','Indisponible') }}{% endif %}</div>
                 <div class="hc-case-pro-card__contact">
                   {% if lead.phone %}
                     <span>{{ lead.phone }}</span>
@@ -323,7 +323,7 @@
                   {% if p.admin_user %}
                     {{ p.admin_user.username or p.admin_user.email or ('Admin #' ~ p.admin_user_id) }}
                   {% elif p.professional_lead %}
-                    {{ p.professional_lead.full_name or p.professional_lead.email or ('Lead #' ~ p.professional_lead_id) }}
+                    {{ p.professional_lead.full_name or p.professional_lead.email or ('Intervenant #' ~ p.professional_lead_id) }}
                   {% elif p.user %}
                     {{ p.user.username or p.user.email or ('User #' ~ p.user_id) }}
                   {% elif p.external_name %}
@@ -628,3 +628,4 @@
   </div>
 </div>
 {% endblock %}
+

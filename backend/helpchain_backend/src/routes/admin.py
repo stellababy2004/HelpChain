@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from collections import Counter
 import csv
@@ -80,6 +80,7 @@ from ..models import (
     ProfessionalLeadActivity,
     RelayEvent,
     Intervenant,
+    IntervenantActivity,
     Request,
     RequestActivity,
     RequestLog,
@@ -392,6 +393,8 @@ def _is_screened_professional_lead_status(status: str | None) -> bool:
 def _professional_lead_is_business_pipeline(status: str | None) -> bool:
     return not _is_screened_professional_lead_status(status)
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
+INTERVENANT_EXCLUDED_REQUEST_STATUSES = CLOSED_STATUSES | {"closed", "archived"}
+INTERVENANT_ASSIGNABLE_REQUEST_STATUSES = {"new", "pending", "in_progress"}
 ASSIGN_SLA_HOURS = 48
 RESOLVE_SLA_DAYS = 7
 VOLUNTEER_ASSIGN_SLA_HOURS = 72
@@ -426,6 +429,9 @@ ADMIN_SESSION_IDLE_TIMEOUT_MIN = 20
 ADMIN_FRESH_AUTH_MIN = 10
 _SCHEMA_COLUMN_CACHE: dict[tuple[str, str], bool] = {}
 _SCHEMA_TABLE_CACHE: dict[str, bool] = {}
+_ADMIN_LOGIN_REQUIRED_TABLES = ("admin_users", "structures", "requests")
+_HELP_PS1_LOCAL_DATABASE_URL = "sqlite:///C:/dev/HelpChain/instance/hc_local_dev.db"
+_HELP_PS1_LOCAL_DB_PATH = r"C:\dev\HelpChain\instance\hc_local_dev.db"
 _CTRL_CHARS_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
 _ONBOARDING_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _UI_KEYS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_keys.json"
@@ -491,6 +497,70 @@ def _table_exists(table_name: str) -> bool:
     return exists
 
 
+def _looks_like_help_ps1_local_db(value: str | None) -> bool:
+    normalized = (value or "").strip().replace("/", "\\").lower()
+    if normalized.startswith("sqlite:\\\\\\"):
+        normalized = normalized.replace("sqlite:\\\\\\", "", 1)
+    elif normalized.startswith("sqlite:\\\\"):
+        normalized = normalized.replace("sqlite:\\\\", "", 1)
+    expected_path = _HELP_PS1_LOCAL_DB_PATH.lower()
+    expected_url = _HELP_PS1_LOCAL_DATABASE_URL.replace("/", "\\").lower()
+    return (
+        normalized == expected_path
+        or normalized == expected_url
+        or "c:\\dev\\helpchain\\instance\\hc_local_dev.db" in normalized
+        or normalized.endswith("instance\\hc_local_dev.db")
+    )
+
+
+def _admin_login_database_not_ready_message() -> str:
+    candidates = (
+        os.getenv("DATABASE_URL"),
+        os.getenv("HC_DB_PATH"),
+        current_app.config.get("SQLALCHEMY_DATABASE_URI"),
+    )
+    if any(_looks_like_help_ps1_local_db(str(candidate)) for candidate in candidates):
+        return (
+            "Local database is not ready. Run .\\help.ps1 to repair, migrate, "
+            "and seed hc_local_dev.db."
+        )
+    return "Database is not ready. Run migrations and seed an admin user."
+
+
+def _admin_login_database_ready() -> tuple[bool, str | None]:
+    try:
+        inspector = sa_inspect(db.session.get_bind())
+        table_status = {
+            table_name: bool(inspector.has_table(table_name))
+            for table_name in _ADMIN_LOGIN_REQUIRED_TABLES
+        }
+    except Exception:
+        db.session.rollback()
+        for table_name in _ADMIN_LOGIN_REQUIRED_TABLES:
+            _SCHEMA_TABLE_CACHE.pop(table_name, None)
+        return False, _admin_login_database_not_ready_message()
+
+    _SCHEMA_TABLE_CACHE.update(table_status)
+    if not all(table_status.values()):
+        return False, _admin_login_database_not_ready_message()
+
+    try:
+        admin_exists = (
+            db.session.query(AdminUser.id).order_by(AdminUser.id.asc()).limit(1).first()
+            is not None
+        )
+    except Exception:
+        db.session.rollback()
+        for table_name in _ADMIN_LOGIN_REQUIRED_TABLES:
+            _SCHEMA_TABLE_CACHE.pop(table_name, None)
+        return False, _admin_login_database_not_ready_message()
+
+    if not admin_exists:
+        return False, _admin_login_database_not_ready_message()
+
+    return True, None
+
+
 def _normalize_smart_assign_text(value: str | None) -> str:
     txt = (value or "").strip().lower().replace("-", " ").replace("_", " ")
     return re.sub(r"\s+", " ", txt).strip()
@@ -546,6 +616,95 @@ INTERVENANT_CITY_COORDS = {
 }
 INTERVENANT_DEFAULT_COORDS = INTERVENANT_CITY_COORDS["paris"]
 ACTIVE_ASSIGNMENT_STATUSES = {"active", "pending", "accepted", "in_progress"}
+INTERVENANT_ACTOR_TYPE_OPTIONS = (
+    ("social_worker", "Travailleur social"),
+    ("coordinator", "Coordinateur"),
+    ("psychologist", "Psychologue"),
+    ("field_referent", "Référent terrain"),
+    ("partner_association", "Association partenaire"),
+    ("health_professional", "Professionnel santé"),
+    ("legal_advisor", "Juriste"),
+    ("mediator", "Médiateur"),
+)
+INTERVENANT_ACTOR_TYPE_LABELS = dict(INTERVENANT_ACTOR_TYPE_OPTIONS)
+INTERVENANT_ACTOR_TYPE_ALIASES = {
+    "assistant_social": "social_worker",
+    "social": "social_worker",
+    "social_worker": "social_worker",
+    "travailleur_social": "social_worker",
+    "coordinateur": "coordinator",
+    "coordinator": "coordinator",
+    "psychologue": "psychologist",
+    "psychologist": "psychologist",
+    "referent_social": "field_referent",
+    "referent_terrain": "field_referent",
+    "field_referent": "field_referent",
+    "partner": "partner_association",
+    "association": "partner_association",
+    "partner_association": "partner_association",
+    "doctor": "health_professional",
+    "nurse": "health_professional",
+    "health_professional": "health_professional",
+    "professionnel_sante": "health_professional",
+    "professional": "field_referent",
+    "professionnel": "field_referent",
+    "volunteer": "field_referent",
+    "lawyer": "legal_advisor",
+    "legal_advisor": "legal_advisor",
+    "juriste": "legal_advisor",
+    "mediator": "mediator",
+    "mediateur": "mediator",
+}
+INTERVENANT_AVAILABILITY_OPTIONS = (
+    ("available", "Disponible"),
+    ("busy", "Occupé"),
+    ("in_intervention", "En intervention"),
+    ("unavailable", "Indisponible"),
+    ("paused", "Pause"),
+)
+INTERVENANT_AVAILABILITY_LABELS = dict(INTERVENANT_AVAILABILITY_OPTIONS)
+INTERVENANT_AVAILABILITY_ALIASES = {
+    "disponible": "available",
+    "occupe": "busy",
+    "occupé": "busy",
+    "en_intervention": "in_intervention",
+    "indisponible": "unavailable",
+    "pause": "paused",
+}
+INTERVENANT_AVAILABILITY_BADGES = {
+    "available": "hc-badge-availability--available",
+    "busy": "hc-badge-availability--busy",
+    "in_intervention": "hc-badge-availability--intervention",
+    "unavailable": "hc-badge-availability--unavailable",
+    "paused": "hc-badge-availability--paused",
+}
+INTERVENANT_AVAILABILITY_HELPERS = {
+    "available": "Peut recevoir une nouvelle affectation.",
+    "busy": "Charge elevee, a affecter avec prudence.",
+    "in_intervention": "Actuellement mobilise sur le terrain.",
+    "paused": "Pause temporaire, eviter les nouvelles affectations.",
+    "unavailable": "Non mobilisable pour le moment.",
+}
+INTERVENANT_COMPETENCY_OPTIONS = (
+    ("aide_administrative", "Aide administrative"),
+    ("accompagnement_social", "Accompagnement social"),
+    ("sante_mentale", "Sante mentale"),
+    ("mediation", "Mediation"),
+    ("urgence_terrain", "Urgence terrain"),
+    ("coordination", "Coordination"),
+    ("juridique", "Juridique"),
+)
+INTERVENANT_COMPETENCY_LABELS = dict(INTERVENANT_COMPETENCY_OPTIONS)
+INTERVENANT_ACTIVITY_LABELS = {
+    "profile_updated": "Profil mis a jour",
+    "affectation_created": "Affectation creee",
+    "affectation_removed": "Affectation retiree",
+    "assigned_to_request": "Affectation creee",
+    "removed_from_request": "Affectation retiree",
+    "availability_changed": "Disponibilite modifiee",
+    "competencies_updated": "Competences mises a jour",
+    "notes_updated": "Notes mises a jour",
+}
 
 
 def _normalize_intervenant_city_key(value: str | None) -> str:
@@ -581,16 +740,683 @@ def _intervenant_address(intervenant: Intervenant) -> str:
     return address
 
 
+def _normalize_intervenant_actor_type(value: str | None) -> str:
+    raw = _normalize_smart_assign_text(value or "").replace(" ", "_")
+    return INTERVENANT_ACTOR_TYPE_ALIASES.get(raw, raw)
+
+
+def _intervenant_actor_type_label(value: str | None) -> str:
+    normalized = _normalize_intervenant_actor_type(value)
+    if normalized in INTERVENANT_ACTOR_TYPE_LABELS:
+        return INTERVENANT_ACTOR_TYPE_LABELS[normalized]
+    return (value or "Professionnel").replace("_", " ").strip().title()
+
+
 def _intervenant_profession(intervenant: Intervenant) -> str:
-    return (getattr(intervenant, "actor_type", None) or "professional").strip()
+    return _intervenant_actor_type_label(getattr(intervenant, "actor_type", None))
+
+
+def _normalize_intervenant_availability(value: str | None) -> str:
+    raw = (value or "").strip().lower()
+    raw = raw.replace("-", "_").replace(" ", "_")
+    if not raw:
+        return "available"
+    return INTERVENANT_AVAILABILITY_ALIASES.get(raw, raw)
 
 
 def _intervenant_availability(intervenant: Intervenant) -> str:
+    raw = getattr(intervenant, "availability", None)
+    if raw:
+        return _normalize_intervenant_availability(raw)
     return "available" if bool(getattr(intervenant, "is_active", False)) else "unavailable"
+
+
+def _intervenant_availability_label(value: str | None) -> str:
+    return INTERVENANT_AVAILABILITY_LABELS.get(
+        _normalize_intervenant_availability(value),
+        "Disponible",
+    )
+
+
+def _intervenant_availability_badge(value: str | None) -> str:
+    return INTERVENANT_AVAILABILITY_BADGES.get(
+        _normalize_intervenant_availability(value),
+        INTERVENANT_AVAILABILITY_BADGES["available"],
+    )
+
+
+def _intervenant_availability_helper(value: str | None) -> str:
+    return INTERVENANT_AVAILABILITY_HELPERS.get(
+        _normalize_intervenant_availability(value),
+        INTERVENANT_AVAILABILITY_HELPERS["available"],
+    )
+
+
+def _split_operational_tokens(value: str | None) -> list[str]:
+    raw = (value or "").strip()
+    if not raw:
+        return []
+    tokens = re.split(r"[\n,;]+", raw)
+    return [token.strip() for token in tokens if token and token.strip()]
+
+
+def _normalize_intervenant_competency(value: str | None) -> str:
+    raw = _normalize_smart_assign_text(value or "")
+    raw = (
+        raw.replace("é", "e")
+        .replace("è", "e")
+        .replace("ê", "e")
+        .replace("à", "a")
+        .replace("ç", "c")
+    )
+    return raw.replace(" ", "_")
+
+
+def _intervenant_competencies(intervenant: Intervenant) -> list[dict[str, str]]:
+    raw = getattr(intervenant, "competencies_json", None)
+    values: list[str] = []
+    if raw:
+        try:
+            parsed = json.loads(raw)
+        except Exception:
+            parsed = None
+        if isinstance(parsed, list):
+            values = [str(item).strip() for item in parsed if str(item or "").strip()]
+        else:
+            values = _split_operational_tokens(str(raw))
+
+    normalized: list[str] = []
+    for value in values:
+        key = _normalize_intervenant_competency(value)
+        if key and key not in normalized:
+            normalized.append(key)
+
+    return [
+        {
+            "value": key,
+            "label": INTERVENANT_COMPETENCY_LABELS.get(
+                key, key.replace("_", " ").title()
+            ),
+        }
+        for key in normalized
+    ]
+
+
+def _encode_intervenant_competencies(values: list[str]) -> str | None:
+    normalized: list[str] = []
+    for value in values:
+        key = _normalize_intervenant_competency(value)
+        if key and key not in normalized:
+            normalized.append(key)
+    return json.dumps(normalized, ensure_ascii=True) if normalized else None
+
+
+def _intervenant_coverage_zones(intervenant: Intervenant) -> list[str]:
+    return _split_operational_tokens(getattr(intervenant, "coverage_zones", None))
+
+
+def _intervenant_coverage_communes(intervenant: Intervenant) -> list[str]:
+    return _split_operational_tokens(getattr(intervenant, "coverage_communes", None))
+
+
+def _intervenant_initials(intervenant: Intervenant) -> str:
+    name = _intervenant_display_name(intervenant)
+    parts = [part for part in re.split(r"\s+", name.strip()) if part]
+    if not parts:
+        return "IN"
+    initials = "".join(part[0].upper() for part in parts[:2])
+    return initials[:2] or "IN"
 
 
 def _intervenant_display_name(intervenant: Intervenant) -> str:
     return (getattr(intervenant, "name", None) or "").strip() or f"Intervenant #{intervenant.id}"
+
+
+def _intervenant_or_403(intervenant_id: int, structure_id: int | None = None) -> Intervenant:
+    intervenant = db.session.get(Intervenant, intervenant_id)
+    if intervenant is None:
+        abort(404)
+
+    intervenant_structure_id = int(getattr(intervenant, "structure_id", 0) or 0)
+    if structure_id is not None and intervenant_structure_id != int(structure_id):
+        abort(403)
+
+    if not _is_global_admin():
+        current_sid = getattr(current_user, "structure_id", None)
+        if current_sid is None or int(current_sid) != intervenant_structure_id:
+            abort(403)
+
+    return intervenant
+
+
+def _intervenant_assignment_counts(intervenant: Intervenant) -> dict[str, int]:
+    try:
+        workload = (
+            db.session.query(func.count(Assignment.id))
+            .filter(Assignment.intervenant_id == intervenant.id)
+            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .scalar()
+        )
+    except Exception:
+        workload = 0
+
+    try:
+        active_cases = (
+            db.session.query(func.count(func.distinct(Assignment.request_id)))
+            .join(Request, Request.id == Assignment.request_id)
+            .filter(Assignment.intervenant_id == intervenant.id)
+            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .filter(
+                or_(
+                    Request.status.is_(None),
+                    ~func.lower(func.coalesce(Request.status, "")).in_(
+                        list(INTERVENANT_EXCLUDED_REQUEST_STATUSES)
+                    ),
+                )
+            )
+            .filter(Request.is_archived.is_(False))
+            .scalar()
+        )
+    except Exception:
+        active_cases = 0
+
+    return {
+        "workload": int(workload or 0),
+        "active_cases": int(active_cases or 0),
+    }
+
+
+def _active_intervenant_assignments(intervenant: Intervenant) -> list[Assignment]:
+    try:
+        return (
+            Assignment.query.join(Request, Request.id == Assignment.request_id)
+            .filter(Assignment.intervenant_id == intervenant.id)
+            .filter(Assignment.structure_id == intervenant.structure_id)
+            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .filter(
+                or_(
+                    Request.status.is_(None),
+                    ~func.lower(func.coalesce(Request.status, "")).in_(
+                        list(INTERVENANT_EXCLUDED_REQUEST_STATUSES)
+                    ),
+                )
+            )
+            .filter(Request.is_archived.is_(False))
+            .order_by(Assignment.assigned_at.desc(), Assignment.id.desc())
+            .limit(20)
+            .all()
+        )
+    except Exception:
+        db.session.rollback()
+        return []
+
+
+def _intervenant_assignment_options(intervenant: Intervenant) -> list[Request]:
+    try:
+        active_request_ids = [
+            row[0]
+            for row in (
+                db.session.query(Assignment.request_id)
+                .filter(Assignment.intervenant_id == intervenant.id)
+                .filter(Assignment.structure_id == intervenant.structure_id)
+                .filter(
+                    func.lower(func.coalesce(Assignment.status, "")).in_(
+                        ACTIVE_ASSIGNMENT_STATUSES
+                    )
+                )
+                .all()
+            )
+        ]
+        query = Request.query.filter(Request.structure_id == intervenant.structure_id)
+        query = (
+            query
+            .filter(
+                func.lower(func.coalesce(Request.status, "")).in_(
+                    list(INTERVENANT_ASSIGNABLE_REQUEST_STATUSES)
+                )
+            )
+        )
+        if hasattr(Request, "is_archived"):
+            query = query.filter(Request.is_archived.is_(False))
+        if active_request_ids:
+            query = query.filter(~Request.id.in_(active_request_ids))
+        return query.order_by(Request.created_at.desc(), Request.id.desc()).limit(100).all()
+    except Exception:
+        db.session.rollback()
+        return []
+
+
+def _request_operational_title(req: Request | None) -> str:
+    if req is None:
+        return "Demande"
+    return (
+        getattr(req, "title", None)
+        or getattr(req, "category", None)
+        or getattr(req, "message", None)
+        or f"Demande #{getattr(req, 'id', '')}"
+    )
+
+
+def _intervenant_activity_table_available() -> bool:
+    return _table_exists("intervenant_activities")
+
+
+def _log_intervenant_activity(
+    intervenant: Intervenant,
+    event_type: str,
+    *,
+    label: str | None = None,
+    request_id: int | None = None,
+    old_value: object | None = None,
+    new_value: object | None = None,
+    meta: dict | None = None,
+) -> None:
+    if not _intervenant_activity_table_available():
+        return
+    db.session.add(
+        IntervenantActivity(
+            intervenant_id=int(intervenant.id),
+            structure_id=int(intervenant.structure_id),
+            request_id=request_id,
+            actor_admin_id=getattr(current_user, "id", None),
+            event_type=event_type,
+            label=label or INTERVENANT_ACTIVITY_LABELS.get(event_type, event_type),
+            old_value=str(old_value) if old_value is not None else None,
+            new_value=str(new_value) if new_value is not None else None,
+            meta_json=json.dumps(meta or {}, ensure_ascii=True, sort_keys=True),
+        )
+    )
+
+
+def _intervenant_state_snapshot(intervenant: Intervenant) -> dict[str, object]:
+    return {
+        "name": getattr(intervenant, "name", None),
+        "actor_type": getattr(intervenant, "actor_type", None),
+        "email": getattr(intervenant, "email", None),
+        "phone": getattr(intervenant, "phone", None),
+        "location": getattr(intervenant, "location", None),
+        "availability": _intervenant_availability(intervenant),
+        "internal_notes": getattr(intervenant, "internal_notes", None),
+        "competencies_json": getattr(intervenant, "competencies_json", None),
+        "coverage_zones": getattr(intervenant, "coverage_zones", None),
+        "coverage_communes": getattr(intervenant, "coverage_communes", None),
+        "radius_km": getattr(intervenant, "radius_km", None),
+    }
+
+
+def _log_intervenant_profile_changes(
+    intervenant: Intervenant, before: dict[str, object]
+) -> None:
+    after = _intervenant_state_snapshot(intervenant)
+    if before.get("availability") != after.get("availability"):
+        _log_intervenant_activity(
+            intervenant,
+            "availability_changed",
+            old_value=_intervenant_availability_label(str(before.get("availability") or "")),
+            new_value=_intervenant_availability_label(str(after.get("availability") or "")),
+        )
+    if before.get("internal_notes") != after.get("internal_notes"):
+        _log_intervenant_activity(intervenant, "notes_updated")
+    if before.get("competencies_json") != after.get("competencies_json"):
+        _log_intervenant_activity(intervenant, "competencies_updated")
+
+    profile_fields = {
+        "name",
+        "actor_type",
+        "email",
+        "phone",
+        "location",
+        "coverage_zones",
+        "coverage_communes",
+        "radius_km",
+    }
+    if any(before.get(field) != after.get(field) for field in profile_fields):
+        _log_intervenant_activity(intervenant, "profile_updated")
+
+
+def _relative_timestamp(value: datetime | None) -> str:
+    if value is None:
+        return ""
+    now = utc_now()
+    if getattr(value, "tzinfo", None) is None and getattr(now, "tzinfo", None) is not None:
+        now = now.replace(tzinfo=None)
+    delta = now - value
+    seconds = max(0, int(delta.total_seconds()))
+    if seconds < 60:
+        return "a l'instant"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"il y a {minutes} min"
+    hours = minutes // 60
+    if hours < 24:
+        return f"il y a {hours} h"
+    days = hours // 24
+    if days < 30:
+        return f"il y a {days} j"
+    return value.strftime("%d/%m/%Y")
+
+
+def _intervenant_activity_icon(event_type: str | None) -> str:
+    return {
+        "affectation_created": "fa-link",
+        "assigned_to_request": "fa-link",
+        "affectation_removed": "fa-unlink",
+        "removed_from_request": "fa-unlink",
+        "availability_changed": "fa-clock",
+        "profile_updated": "fa-user-edit",
+        "competencies_updated": "fa-layer-group",
+        "notes_updated": "fa-sticky-note",
+    }.get(event_type or "", "fa-stream")
+
+
+def _intervenant_activity_display_label(row: IntervenantActivity, req: Request | None) -> str:
+    event_type = row.event_type
+    request_title = _request_operational_title(req) if req is not None else None
+    if event_type in {"affectation_created", "assigned_to_request"} and request_title:
+        return f"Affecte a {request_title}"
+    if event_type in {"affectation_removed", "removed_from_request"} and request_title:
+        return f"Retire de {request_title}"
+    if event_type == "availability_changed":
+        next_value = (row.new_value or "").strip()
+        return f"Disponibilite changee -> {next_value}" if next_value else "Disponibilite changee"
+    if event_type == "competencies_updated":
+        return "Competences mises a jour"
+    if event_type == "notes_updated":
+        return "Notes mises a jour"
+    if event_type == "profile_updated":
+        return "Profil mis a jour"
+    return row.label or INTERVENANT_ACTIVITY_LABELS.get(event_type, "Activite")
+
+
+def _intervenant_activity_items(intervenant: Intervenant) -> list[dict[str, object]]:
+    if not _intervenant_activity_table_available():
+        return []
+    try:
+        rows = (
+            IntervenantActivity.query.filter_by(intervenant_id=intervenant.id)
+            .order_by(IntervenantActivity.created_at.desc(), IntervenantActivity.id.desc())
+            .limit(30)
+            .all()
+        )
+    except Exception:
+        db.session.rollback()
+        _SCHEMA_TABLE_CACHE.pop("intervenant_activities", None)
+        return []
+
+    items: list[dict[str, object]] = []
+    for row in rows:
+        req = getattr(row, "request", None)
+        actor = getattr(row, "actor", None)
+        items.append(
+            {
+                "label": _intervenant_activity_display_label(row, req),
+                "meta": getattr(actor, "username", None) or "Equipe coordination",
+                "value": _relative_timestamp(row.created_at),
+                "request_ref": f"#{req.id}" if req is not None else "",
+                "icon": _intervenant_activity_icon(row.event_type),
+                "request": req,
+                "event_type": row.event_type,
+            }
+        )
+    return items
+
+
+def _intervenant_operational_context(intervenant: Intervenant, city: str) -> dict[str, object]:
+    counts = _intervenant_assignment_counts(intervenant)
+    availability = _intervenant_availability(intervenant)
+    activity_items = _intervenant_activity_items(intervenant)
+
+    summary_cards = [
+        {"label": "Charge actuelle", "value": counts["workload"]},
+        {"label": "Dossiers actifs", "value": counts["active_cases"]},
+        {
+            "label": "Disponibilité",
+            "value": _intervenant_availability_label(availability),
+            "badge_class": _intervenant_availability_badge(availability),
+        },
+        {"label": "Zone principale", "value": city or "—"},
+    ]
+    return {
+        "summary_cards": summary_cards,
+        "timeline_items": activity_items,
+        "workload": counts["workload"],
+        "active_cases": counts["active_cases"],
+    }
+
+
+def _intervenant_detail_form_data(intervenant: Intervenant) -> dict[str, object]:
+    availability = _intervenant_availability(intervenant)
+    return {
+        "name": getattr(intervenant, "name", "") or "",
+        "actor_type": _normalize_intervenant_actor_type(getattr(intervenant, "actor_type", "") or ""),
+        "email": getattr(intervenant, "email", "") or "",
+        "phone": getattr(intervenant, "phone", "") or "",
+        "location": getattr(intervenant, "location", "") or "",
+        "latitude": getattr(intervenant, "latitude", None),
+        "longitude": getattr(intervenant, "longitude", None),
+        "availability": availability,
+        "internal_notes": getattr(intervenant, "internal_notes", "") or "",
+        "competencies": [item["value"] for item in _intervenant_competencies(intervenant)],
+        "coverage_zones": getattr(intervenant, "coverage_zones", "") or "",
+        "coverage_communes": getattr(intervenant, "coverage_communes", "") or "",
+        "radius_km": getattr(intervenant, "radius_km", None),
+    }
+
+
+def _intervenant_detail_template(
+    intervenant: Intervenant,
+    *,
+    structure_context_id: int | None = None,
+    form_data: dict[str, object] | None = None,
+    status_code: int = 200,
+):
+    city = _intervenant_city(intervenant)
+    address = _intervenant_address(intervenant)
+    structure = getattr(intervenant, "structure", None)
+    availability = _intervenant_availability(intervenant)
+    operational_context = _intervenant_operational_context(intervenant, city)
+    active_cases = _active_intervenant_assignments(intervenant)
+    assignment_options = _intervenant_assignment_options(intervenant)
+
+    return (
+        render_template(
+            "admin/intervenant_detail.html",
+            intervenant=intervenant,
+            structure=structure,
+            structure_context_id=structure_context_id,
+            can_view_structure_detail=_is_global_admin(),
+            city=city,
+            address=address,
+            actor_type_options=INTERVENANT_ACTOR_TYPE_OPTIONS,
+            availability_options=INTERVENANT_AVAILABILITY_OPTIONS,
+            actor_type_label=_intervenant_actor_type_label(getattr(intervenant, "actor_type", None)),
+            availability=availability,
+            availability_label=_intervenant_availability_label(availability),
+            availability_badge_class=_intervenant_availability_badge(availability),
+            availability_helper=_intervenant_availability_helper(availability),
+            avatar_initials=_intervenant_initials(intervenant),
+            competencies=_intervenant_competencies(intervenant),
+            competency_options=INTERVENANT_COMPETENCY_OPTIONS,
+            coverage_zones=_intervenant_coverage_zones(intervenant),
+            coverage_communes=_intervenant_coverage_communes(intervenant),
+            active_cases=active_cases,
+            assignment_options=assignment_options,
+            request_operational_title=_request_operational_title,
+            operational_summary=operational_context["summary_cards"],
+            operational_timeline=operational_context["timeline_items"],
+            form_data=form_data or _intervenant_detail_form_data(intervenant),
+            edit_panel_open=status_code >= 400,
+            has_coordinates=(
+                hasattr(intervenant, "latitude")
+                and hasattr(intervenant, "longitude")
+                and _table_has_column("intervenants", "latitude")
+                and _table_has_column("intervenants", "longitude")
+            ),
+        ),
+        status_code,
+    )
+
+
+def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
+    errors: list[str] = []
+    name = (request.form.get("name") or "").strip()
+    actor_type = _normalize_intervenant_actor_type(request.form.get("actor_type"))
+    availability = _normalize_intervenant_availability(request.form.get("availability"))
+
+    if not name:
+        errors.append("Nom requis.")
+    if actor_type not in INTERVENANT_ACTOR_TYPE_LABELS:
+        errors.append("Profession requise.")
+    if availability not in INTERVENANT_AVAILABILITY_LABELS:
+        errors.append("Disponibilité invalide.")
+
+    if errors:
+        return errors
+
+    intervenant.name = name
+    intervenant.actor_type = actor_type
+    intervenant.email = (request.form.get("email") or "").strip() or None
+    intervenant.phone = (request.form.get("phone") or "").strip() or None
+    intervenant.location = (request.form.get("location") or "").strip() or None
+    if hasattr(intervenant, "availability") and _table_has_column("intervenants", "availability"):
+        intervenant.availability = availability
+    intervenant.is_active = availability != "unavailable"
+
+    if hasattr(intervenant, "internal_notes") and _table_has_column("intervenants", "internal_notes"):
+        intervenant.internal_notes = (request.form.get("internal_notes") or "").strip() or None
+
+    if hasattr(intervenant, "competencies_json") and _table_has_column("intervenants", "competencies_json"):
+        intervenant.competencies_json = _encode_intervenant_competencies(
+            request.form.getlist("competencies")
+        )
+    if hasattr(intervenant, "coverage_zones") and _table_has_column("intervenants", "coverage_zones"):
+        intervenant.coverage_zones = (request.form.get("coverage_zones") or "").strip() or None
+    if hasattr(intervenant, "coverage_communes") and _table_has_column("intervenants", "coverage_communes"):
+        intervenant.coverage_communes = (request.form.get("coverage_communes") or "").strip() or None
+    if hasattr(intervenant, "radius_km") and _table_has_column("intervenants", "radius_km"):
+        radius_raw = (request.form.get("radius_km") or "").strip()
+        if radius_raw:
+            try:
+                intervenant.radius_km = float(radius_raw)
+            except Exception:
+                errors.append("Rayon invalide.")
+        else:
+            intervenant.radius_km = None
+
+    if hasattr(intervenant, "latitude") and _table_has_column("intervenants", "latitude"):
+        lat_raw = (request.form.get("latitude") or "").strip()
+        if lat_raw:
+            try:
+                intervenant.latitude = float(lat_raw)
+            except Exception:
+                errors.append("Latitude invalide.")
+        else:
+            intervenant.latitude = None
+
+    if hasattr(intervenant, "longitude") and _table_has_column("intervenants", "longitude"):
+        lng_raw = (request.form.get("longitude") or "").strip()
+        if lng_raw:
+            try:
+                intervenant.longitude = float(lng_raw)
+            except Exception:
+                errors.append("Longitude invalide.")
+        else:
+            intervenant.longitude = None
+
+    return errors
+
+
+def _intervenant_detail_url(intervenant: Intervenant, structure_context_id: int | None):
+    if structure_context_id is not None:
+        return url_for(
+            "admin.admin_structure_intervenant_detail",
+            structure_id=structure_context_id,
+            intervenant_id=intervenant.id,
+        )
+    return url_for("admin.admin_intervenant_detail", intervenant_id=intervenant.id)
+
+
+def _handle_intervenant_operational_action(
+    intervenant: Intervenant, structure_context_id: int | None = None
+):
+    action = (request.form.get("intervenant_action") or "").strip()
+    if action not in {"assign_request", "remove_assignment"}:
+        return None
+
+    if action == "assign_request":
+        raw_request_id = (request.form.get("request_id") or "").strip()
+        try:
+            request_id = int(raw_request_id)
+        except Exception:
+            flash("Demande invalide.", "warning")
+            return redirect(_intervenant_detail_url(intervenant, structure_context_id))
+
+        req = db.session.get(Request, request_id)
+        if req is None or int(getattr(req, "structure_id", 0) or 0) != int(intervenant.structure_id):
+            abort(403)
+
+        status = (getattr(req, "status", None) or "").strip().lower()
+        if bool(getattr(req, "is_archived", False)) or status not in INTERVENANT_ASSIGNABLE_REQUEST_STATUSES:
+            flash("Cette demande n'est plus active.", "warning")
+            return redirect(_intervenant_detail_url(intervenant, structure_context_id))
+
+        existing = (
+            Assignment.query.filter_by(
+                request_id=req.id,
+                intervenant_id=intervenant.id,
+                structure_id=intervenant.structure_id,
+            )
+            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .first()
+        )
+        if existing is not None:
+            flash("Cet intervenant est deja assigne a cette demande.", "info")
+            return redirect(_intervenant_detail_url(intervenant, structure_context_id))
+
+        assignment = Assignment(
+            request_id=req.id,
+            intervenant_id=intervenant.id,
+            structure_id=intervenant.structure_id,
+            assigned_by_admin_id=getattr(current_user, "id", None),
+            status="active",
+        )
+        db.session.add(assignment)
+        db.session.flush()
+        _log_intervenant_activity(
+            intervenant,
+            "affectation_created",
+            request_id=req.id,
+            new_value=_request_operational_title(req),
+        )
+        db.session.commit()
+        flash("Intervenant assigne a la demande.", "success")
+        return redirect(_intervenant_detail_url(intervenant, structure_context_id))
+
+    raw_assignment_id = (request.form.get("assignment_id") or "").strip()
+    try:
+        assignment_id = int(raw_assignment_id)
+    except Exception:
+        flash("Affectation invalide.", "warning")
+        return redirect(_intervenant_detail_url(intervenant, structure_context_id))
+
+    assignment = db.session.get(Assignment, assignment_id)
+    if (
+        assignment is None
+        or int(getattr(assignment, "intervenant_id", 0) or 0) != int(intervenant.id)
+        or int(getattr(assignment, "structure_id", 0) or 0) != int(intervenant.structure_id)
+    ):
+        abort(403)
+
+    assignment.status = "removed"
+    _log_intervenant_activity(
+        intervenant,
+        "affectation_removed",
+        request_id=assignment.request_id,
+        old_value=_request_operational_title(getattr(assignment, "request", None)),
+    )
+    db.session.commit()
+    flash("Affectation retiree.", "success")
+    return redirect(_intervenant_detail_url(intervenant, structure_context_id))
 
 
 def _assignment_workload_subquery():
@@ -1397,7 +2223,7 @@ def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
     if structure_id is not None and role == "admin":
         return url_for("admin.admin_ops")
     if role == "admin":
-        return url_for("admin.admin_pilotage")
+        return url_for("admin.admin_home")
     if role == "ops":
         return url_for("ops.ops_workspace")
     if role == "readonly":
@@ -5037,8 +5863,9 @@ def admin_login_legacy():
     next_url = _safe_next_url(next_candidate)
 
     if request.method == "POST":
-        if not _table_exists("admin_users"):
-            flash("Database not initialized. Run dev_bootstrap.py", "danger")
+        database_ready, database_message = _admin_login_database_ready()
+        if not database_ready:
+            flash(database_message, "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
         username = request.form.get("username", "").strip()
         username_norm = _norm_username(username)
@@ -7076,6 +7903,7 @@ def admin_intervenants():
     for intervenant, workload in rows:
         city = _intervenant_city(intervenant)
         address = _intervenant_address(intervenant)
+        availability = _intervenant_availability(intervenant)
         intervenants.append(
             SimpleNamespace(
                 id=intervenant.id,
@@ -7087,7 +7915,9 @@ def admin_intervenants():
                 city=city or "—",
                 address=address or "—",
                 location=intervenant.location or "",
-                availability=_intervenant_availability(intervenant),
+                availability=availability,
+                availability_label=_intervenant_availability_label(availability),
+                availability_badge_class=_intervenant_availability_badge(availability),
                 is_active=bool(getattr(intervenant, "is_active", False)),
                 created_at=intervenant.created_at,
                 current_workload=int(workload or 0),
@@ -7106,6 +7936,86 @@ def admin_intervenants():
         sort_by=sort_by,
         sort_order=sort_order,
     )
+
+
+@admin_bp.route("/intervenants/<int:intervenant_id>", methods=["GET", "POST"])
+@admin_required
+def admin_intervenant_detail(intervenant_id: int):
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("Access denied."), "error")
+        return redirect(url_for("main.index"))
+
+    intervenant = _intervenant_or_403(intervenant_id)
+
+    if request.method == "POST":
+        action_response = _handle_intervenant_operational_action(intervenant)
+        if action_response is not None:
+            return action_response
+
+        before = _intervenant_state_snapshot(intervenant)
+        errors = _update_intervenant_from_form(intervenant)
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return _intervenant_detail_template(
+                intervenant,
+                form_data=request.form,
+                status_code=400,
+            )
+
+        _log_intervenant_profile_changes(intervenant, before)
+        db.session.commit()
+        flash("Intervenant mis à jour.", "success")
+        return redirect(url_for("admin.admin_intervenant_detail", intervenant_id=intervenant.id))
+
+    return _intervenant_detail_template(intervenant)
+
+
+@admin_bp.route(
+    "/structures/<int:structure_id>/intervenants/<int:intervenant_id>",
+    methods=["GET", "POST"],
+)
+@admin_required
+def admin_structure_intervenant_detail(structure_id: int, intervenant_id: int):
+    admin_required_404()
+    if not current_user.is_admin:
+        flash(_("Access denied."), "error")
+        return redirect(url_for("main.index"))
+
+    intervenant = _intervenant_or_403(intervenant_id, structure_id=structure_id)
+
+    if request.method == "POST":
+        action_response = _handle_intervenant_operational_action(
+            intervenant, structure_context_id=structure_id
+        )
+        if action_response is not None:
+            return action_response
+
+        before = _intervenant_state_snapshot(intervenant)
+        errors = _update_intervenant_from_form(intervenant)
+        if errors:
+            for error in errors:
+                flash(error, "warning")
+            return _intervenant_detail_template(
+                intervenant,
+                structure_context_id=structure_id,
+                form_data=request.form,
+                status_code=400,
+            )
+
+        _log_intervenant_profile_changes(intervenant, before)
+        db.session.commit()
+        flash("Intervenant mis à jour.", "success")
+        return redirect(
+            url_for(
+                "admin.admin_structure_intervenant_detail",
+                structure_id=structure_id,
+                intervenant_id=intervenant.id,
+            )
+        )
+
+    return _intervenant_detail_template(intervenant, structure_context_id=structure_id)
 
 
 @admin_bp.route("/intervenants/new", methods=["GET", "POST"])
@@ -7137,18 +8047,20 @@ def admin_intervenants_new():
     if request.method == "POST":
         full_name = (request.form.get("full_name") or "").strip()
         email = (request.form.get("email") or "").strip() or None
-        profession = _normalize_smart_assign_text(request.form.get("profession") or "").replace(" ", "_")
+        profession = _normalize_intervenant_actor_type(request.form.get("profession"))
         city = (request.form.get("city") or "").strip()
         address = (request.form.get("address") or "").strip()
-        availability = (request.form.get("availability") or "available").strip().lower()
+        availability = _normalize_intervenant_availability(request.form.get("availability"))
 
         errors: list[str] = []
         if not selected_structure_id:
             errors.append("Structure is required.")
         if not full_name:
             errors.append("Nom complet requis.")
-        if not profession:
+        if profession not in INTERVENANT_ACTOR_TYPE_LABELS:
             errors.append("Profession requise.")
+        if availability not in INTERVENANT_AVAILABILITY_LABELS:
+            errors.append("Disponibilité invalide.")
         if not city:
             errors.append("Ville requise.")
 
@@ -7159,6 +8071,8 @@ def admin_intervenants_new():
                 "admin/intervenant_form.html",
                 structures=structures,
                 selected_structure_id=selected_structure_id,
+                actor_type_options=INTERVENANT_ACTOR_TYPE_OPTIONS,
+                availability_options=INTERVENANT_AVAILABILITY_OPTIONS,
                 form_data=request.form,
             )
 
@@ -7169,7 +8083,8 @@ def admin_intervenants_new():
             email=email,
             phone=(request.form.get("phone") or "").strip() or None,
             location=_join_intervenant_location(city, address),
-            is_active=availability == "available",
+            availability=availability if _table_has_column("intervenants", "availability") else None,
+            is_active=availability != "unavailable",
         )
 
         if hasattr(intervenant, "latitude") and _table_has_column("intervenants", "latitude"):
@@ -7201,6 +8116,8 @@ def admin_intervenants_new():
         "admin/intervenant_form.html",
         structures=structures,
         selected_structure_id=selected_structure_id,
+        actor_type_options=INTERVENANT_ACTOR_TYPE_OPTIONS,
+        availability_options=INTERVENANT_AVAILABILITY_OPTIONS,
         form_data={},
     )
 

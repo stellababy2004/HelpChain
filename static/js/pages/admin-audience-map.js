@@ -1047,14 +1047,14 @@
         var accountLeadsUrl = buildProfessionalLeadsUrl(item.domain || item.accountName);
         var accountEmailHref = buildMailtoHref(
           item.actionEmail,
-          "HelpChain - Ã©change sur la coordination",
-          "Bonjour,\n\nJe me permets de revenir vers vous au sujet de HelpChain, une solution de coordination pour structures locales.\n\nSeriez-vous disponible pour un Ã©change de 15 minutes cette semaine ?\n\nBien cordialement,\nStela"
+          "HelpChain - échange sur la coordination",
+          "Bonjour,\n\nJe me permets de revenir vers vous au sujet de HelpChain, une solution de coordination pour structures locales.\n\nSeriez-vous disponible pour un échange de 15 minutes cette semaine ?\n\nBien cordialement,\nStela"
         );
         var accountCallHref = item.actionEmail
           ? buildMailtoHref(
               item.actionEmail,
-              "Planification Ã©change HelpChain",
-              "Bonjour,\nJe vous propose de planifier un Ã©change court autour de vos besoins de coordination.\nQuels crÃ©neaux vous conviendraient cette semaine ?\nBien cordialement,\nStela"
+              "Planification échange HelpChain",
+              "Bonjour,\nJe vous propose de planifier un échange court autour de vos besoins de coordination.\nQuels créneaux vous conviendraient cette semaine ?\nBien cordialement,\nStela"
             )
           : accountLeadsUrl;
         var accountLines = [];
@@ -1104,19 +1104,19 @@
         var leadLeadsUrl = buildProfessionalLeadsUrl(leadSearchTerm);
         var leadEmailHref = buildMailtoHref(
           item.actionEmail,
-          "HelpChain - Ã©change sur la coordination",
-          "Bonjour,\n\nJe me permets de revenir vers vous au sujet de HelpChain, une solution de coordination pour structures locales.\n\nSeriez-vous disponible pour un Ã©change de 15 minutes cette semaine ?\n\nBien cordialement,\nStela"
+          "HelpChain - échange sur la coordination",
+          "Bonjour,\n\nJe me permets de revenir vers vous au sujet de HelpChain, une solution de coordination pour structures locales.\n\nSeriez-vous disponible pour un échange de 15 minutes cette semaine ?\n\nBien cordialement,\nStela"
         );
         var leadCallHref = item.actionEmail
           ? buildMailtoHref(
               item.actionEmail,
-              "Planification Ã©change HelpChain",
-              "Bonjour,\nJe vous propose de planifier un Ã©change court autour de vos besoins de coordination.\nQuels crÃ©neaux vous conviendraient cette semaine ?\nBien cordialement,\nStela"
+              "Planification échange HelpChain",
+              "Bonjour,\nJe vous propose de planifier un échange court autour de vos besoins de coordination.\nQuels créneaux vous conviendraient cette semaine ?\nBien cordialement,\nStela"
             )
           : leadLeadsUrl;
         var intelligenceLines = [];
         if (item.organizationName) {
-          intelligenceLines.push('<span class="audience-founder-row__reason">Organisation dÃ©tectÃ©e: ' + escapeHtml(item.organizationName) + "</span>");
+          intelligenceLines.push('<span class="audience-founder-row__reason">Organisation détectée: ' + escapeHtml(item.organizationName) + "</span>");
         }
         if (item.organizationType) {
           intelligenceLines.push('<span class="audience-founder-row__reason">Type probable: ' + escapeHtml(item.organizationType) + "</span>");
