@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+from types import SimpleNamespace
 from datetime import datetime, timedelta
 
 from flask import abort, flash, redirect, render_template, request, session, url_for
@@ -7,7 +9,8 @@ from flask_login import current_user
 from sqlalchemy import and_, func, or_
 
 from backend.extensions import db
-from ..models import AdminUser, OrganizationAccessRequest, Request, Structure
+from backend.models import StructureService
+from ..models import AdminUser, Intervenant, OrganizationAccessRequest, Request, Structure
 from ..services.organization_onboarding import (
     AccessRequestAlreadyApproved,
     AccessRequestEmailAlreadyUsed,
@@ -23,6 +26,10 @@ from ..services.prospect_auto_capture import (
 )
 from .admin import (
     CLOSED_STATUSES,
+    _intervenant_availability,
+    _intervenant_availability_badge,
+    _intervenant_availability_label,
+    _intervenant_actor_type_label,
     _is_global_admin,
     _require_global_admin,
     admin_bp,
@@ -103,6 +110,70 @@ def compute_structure_alerts(structure_id: int) -> dict[str, int]:
         "stale_count": int(stale_count or 0),
         "overdue_count": int(overdue_count or 0),
     }
+
+
+def _structure_or_403(structure_id: int) -> Structure:
+    if not _is_global_admin():
+        current_sid = getattr(current_user, "structure_id", None)
+        if current_sid is None or int(current_sid) != int(structure_id):
+            abort(403)
+    return Structure.query.get_or_404(structure_id)
+
+
+def _safe_count(query) -> int | None:
+    try:
+        return int(query.count())
+    except Exception:
+        return None
+
+
+def _structure_capacity_metrics(structure_id: int) -> dict[str, int | None]:
+    active_intervenants = _safe_count(
+        Intervenant.query.filter(Intervenant.structure_id == structure_id).filter(
+            Intervenant.is_active.is_(True)
+        )
+    )
+    services_available = _safe_count(
+        StructureService.query.filter(StructureService.structure_id == structure_id).filter(
+            StructureService.is_active.is_(True)
+        )
+    )
+
+    try:
+        coverage_rows = (
+            db.session.query(func.count(func.distinct(Intervenant.location)))
+            .filter(Intervenant.structure_id == structure_id)
+            .filter(Intervenant.location.isnot(None))
+            .scalar()
+        )
+        territorial_coverage = int(coverage_rows or 0)
+    except Exception:
+        territorial_coverage = None
+
+    return {
+        "active_intervenants": active_intervenants,
+        "services_available": services_available,
+        "territorial_coverage": territorial_coverage,
+        "estimated_capacity": None,
+    }
+
+
+def _intervenant_display_name(row: Intervenant) -> str:
+    return getattr(row, "name", None) or f"Intervenant #{row.id}"
+
+
+def _intervenant_profession(row: Intervenant) -> str:
+    return _intervenant_actor_type_label(getattr(row, "actor_type", None))
+
+
+def _split_intervenant_location(row: Intervenant) -> tuple[str, str]:
+    location = (getattr(row, "location", None) or "").strip()
+    if not location:
+        return "—", "—"
+    parts = [part.strip() for part in location.split("·", 1)]
+    if len(parts) == 2:
+        return parts[0] or "—", parts[1] or "—"
+    return location, "—"
 
 
 @admin_bp.get("/structures")
@@ -346,12 +417,7 @@ def admin_structure_create():
 @admin_required
 @admin_role_required("superadmin")
 def admin_structure_detail(structure_id: int):
-    if not _is_global_admin():
-        current_sid = getattr(current_user, "structure_id", None)
-        if current_sid is None or int(current_sid) != int(structure_id):
-            abort(403)
-
-    structure = Structure.query.get_or_404(structure_id)
+    structure = _structure_or_403(structure_id)
     users_count = AdminUser.query.filter(AdminUser.structure_id == structure_id).count()
 
     open_filter = or_(
@@ -383,8 +449,92 @@ def admin_structure_detail(structure_id: int):
             recent_requests=recent_requests,
             health_score=compute_structure_health(structure_id),
             alerts=compute_structure_alerts(structure_id),
+            capacity_metrics=_structure_capacity_metrics(structure_id),
         ),
         200,
+    )
+
+
+@admin_bp.get("/structures/<int:structure_id>/intervenants")
+@admin_required
+@admin_role_required("superadmin", "admin")
+def admin_structure_intervenants(structure_id: int):
+    structure = _structure_or_403(structure_id)
+
+    search = (request.args.get("search") or "").strip()
+    location_filter = (request.args.get("location") or "").strip()
+    sort_by = (request.args.get("sort") or "created_at").strip().lower()
+    sort_order = (request.args.get("order") or "desc").strip().lower()
+    page = max(int(request.args.get("page") or 1), 1)
+    per_page = max(min(int(request.args.get("per_page") or 25), 100), 10)
+
+    query = Intervenant.query.filter(Intervenant.structure_id == structure.id)
+    if search:
+        q = f"%{search}%"
+        query = query.filter(
+            or_(
+                Intervenant.name.ilike(q),
+                Intervenant.email.ilike(q),
+                Intervenant.phone.ilike(q),
+            )
+        )
+    if location_filter:
+        query = query.filter(Intervenant.location.ilike(f"%{location_filter}%"))
+
+    sort_map = {
+        "name": Intervenant.name,
+        "email": Intervenant.email,
+        "location": Intervenant.location,
+        "created_at": Intervenant.created_at,
+    }
+    sort_col = sort_map.get(sort_by, Intervenant.created_at)
+    if sort_order == "asc":
+        query = query.order_by(sort_col.asc(), Intervenant.id.asc())
+    else:
+        query = query.order_by(sort_col.desc(), Intervenant.id.desc())
+
+    total_intervenants = query.count()
+    total_pages = max(1, int(math.ceil(total_intervenants / float(per_page)))) if total_intervenants else 1
+    if page > total_pages:
+        page = total_pages
+
+    rows = query.offset((page - 1) * per_page).limit(per_page).all()
+    intervenants = []
+    for intervenant in rows:
+        city, address = _split_intervenant_location(intervenant)
+        availability = _intervenant_availability(intervenant)
+        intervenants.append(
+            SimpleNamespace(
+                id=intervenant.id,
+                legacy_volunteer_id=intervenant.legacy_volunteer_id,
+                full_name=_intervenant_display_name(intervenant),
+                profession=_intervenant_profession(intervenant),
+                email=intervenant.email,
+                phone=intervenant.phone,
+                city=city,
+                address=address,
+                location=intervenant.location or "",
+                availability=availability,
+                availability_label=_intervenant_availability_label(availability),
+                availability_badge_class=_intervenant_availability_badge(availability),
+                is_active=bool(getattr(intervenant, "is_active", False)),
+                created_at=intervenant.created_at,
+                current_workload=0,
+            )
+        )
+
+    return render_template(
+        "admin/intervenants_list.html",
+        structure=structure,
+        intervenants=intervenants,
+        total_intervenants=total_intervenants,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        search=search,
+        location_filter=location_filter,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
 
 

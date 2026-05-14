@@ -6,6 +6,36 @@ Test admin login with email 2FA
 import pytest
 
 
+def test_admin_login_ready_db_does_not_show_not_initialized(
+    client, init_test_data, session
+):
+    """Smoke test for a repaired local DB with admin, structures, and requests."""
+    from sqlalchemy import inspect
+
+    from backend.models import AdminUser
+    from backend.helpchain_backend.src.routes import admin as admin_routes
+
+    inspector = inspect(session.get_bind())
+    for table_name in ("admin_users", "structures", "requests"):
+        assert inspector.has_table(table_name)
+    assert session.query(AdminUser.id).first() is not None
+
+    admin_routes._SCHEMA_TABLE_CACHE["admin_users"] = False
+    try:
+        resp = client.post(
+            "/admin/login",
+            data={"username": "missing-admin", "password": "wrong"},
+            follow_redirects=True,
+        )
+    finally:
+        admin_routes._SCHEMA_TABLE_CACHE.pop("admin_users", None)
+
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert "Database not initialized" not in html
+    assert "Run dev_bootstrap.py" not in html
+
+
 def test_admin_login_using_client(client, init_test_data):
     """Use the Flask test client and fixtures instead of an external HTTP call.
 

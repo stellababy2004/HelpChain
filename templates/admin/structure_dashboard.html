@@ -1,5 +1,5 @@
 {% extends "layouts/admin_workspace.html" %}
-{% block title %}{{ _('Admin') }} • Structure | HelpChain{% endblock %}
+{% block title %}{{ _('Admin') }} · Structure | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
 {% block admin_content %}
@@ -37,12 +37,72 @@
         <h6 class="mb-1">Structure Health</h6>
         <h2 class="mb-1">{{ health_score }}</h2>
         {% if health_score >= 80 %}
-        <span class="badge bg-success">Healthy</span>
+        <span class="badge bg-success">Stable</span>
         {% elif health_score >= 50 %}
-        <span class="badge bg-warning">Warning</span>
+        <span class="badge bg-warning text-dark">Sous surveillance</span>
         {% else %}
-        <span class="badge bg-danger">At risk</span>
+        <span class="badge bg-danger">À traiter</span>
         {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm p-3 mb-4">
+    <div class="d-flex flex-wrap gap-3 align-items-start justify-content-between mb-3">
+      <div>
+        <h5 class="mb-1">Intervenants &amp; capacité terrain</h5>
+        <div class="text-muted">
+          Gérez les référents, professionnels et partenaires associés à cette structure.
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a
+          class="btn btn-primary btn-sm"
+          href="{{ url_for('admin.admin_structure_intervenants', structure_id=structure.id) }}"
+        >
+          Gérer les intervenants
+        </a>
+        <a
+          class="btn btn-outline-secondary btn-sm"
+          href="{{ url_for('admin.admin_intervenants_new', structure_id=structure.id) }}"
+        >
+          Ajouter un intervenant
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="border rounded-3 p-3 h-100 bg-light">
+          <div class="text-muted small">Intervenants actifs</div>
+          <div class="h4 mb-0">
+            {{ capacity_metrics.active_intervenants if capacity_metrics.active_intervenants is not none else '—' }}
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="border rounded-3 p-3 h-100 bg-light">
+          <div class="text-muted small">Services disponibles</div>
+          <div class="h4 mb-0">
+            {{ capacity_metrics.services_available if capacity_metrics.services_available is not none else '—' }}
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="border rounded-3 p-3 h-100 bg-light">
+          <div class="text-muted small">Couverture territoriale</div>
+          <div class="h4 mb-0">
+            {{ capacity_metrics.territorial_coverage if capacity_metrics.territorial_coverage is not none else '—' }}
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="border rounded-3 p-3 h-100 bg-light">
+          <div class="text-muted small">Capacité estimée</div>
+          <div class="h4 mb-0">
+            {{ capacity_metrics.estimated_capacity if capacity_metrics.estimated_capacity is not none else '—' }}
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -134,8 +134,8 @@
               <td>{{ intervenant.city or '—' }}</td>
               <td class="hc-intervenants-address">{{ intervenant.address or '—' }}</td>
               <td>
-                <span class="badge hc-intervenants-badge {% if intervenant.availability == 'available' %}text-bg-success{% else %}text-bg-secondary{% endif %}">
-                  {{ 'Disponible' if intervenant.availability == 'available' else 'Indisponible' }}
+                <span class="badge hc-intervenants-badge hc-badge-availability {{ intervenant.availability_badge_class }}">
+                  {{ intervenant.availability_label }}
                 </span>
               </td>
               <td class="text-muted hc-intervenants-workload">{{ intervenant.current_workload }}</td>

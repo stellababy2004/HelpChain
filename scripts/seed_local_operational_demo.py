@@ -14,6 +14,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+import requests as _requests
+
+def _disable_external_geocoding_for_local_seed(*args, **kwargs):
+    raise RuntimeError("External geocoding disabled for local operational seed.")
+
+_requests.get = _disable_external_geocoding_for_local_seed
 from backend.appy import app
 from backend.extensions import db
 from backend.models import (
@@ -40,14 +46,14 @@ DEMO_DOMAIN = "helpchain.local"
 SERVICES = (
     ("food", "Aide alimentaire"),
     ("admin", "Accompagnement administratif"),
-    ("housing", "Logement et hébergement"),
-    ("legal", "Accès aux droits"),
-    ("health", "Coordination santé"),
+    ("housing", "Logement et hebergement"),
+    ("legal", "Acces aux droits"),
+    ("health", "Coordination sante"),
     ("orientation", "Orientation partenaire"),
 )
 
 INTERVENANTS = (
-    ("Amélie Durand", "social_worker", "available", "amelie.durand"),
+    ("Amelie Durand", "social_worker", "available", "amelie.durand"),
     ("Karim Benali", "coordinator", "busy", "karim.benali"),
     ("Sophie Martin", "psychologist", "in_intervention", "sophie.martin"),
     ("Lucas Petit", "field_referent", "available", "lucas.petit"),
@@ -55,23 +61,23 @@ INTERVENANTS = (
     ("Thomas Bernard", "health_professional", "paused", "thomas.bernard"),
     ("Claire Moreau", "legal_advisor", "available", "claire.moreau"),
     ("Mehdi Rousseau", "mediator", "busy", "mehdi.rousseau"),
-    ("Inès Garnier", "social_worker", "available", "ines.garnier"),
-    ("Julien Lefèvre", "field_referent", "unavailable", "julien.lefevre"),
+    ("Ines Garnier", "social_worker", "available", "ines.garnier"),
+    ("Julien Lefevre", "field_referent", "unavailable", "julien.lefevre"),
 )
 
 STATUSES = ("new", "pending", "in_progress", "closed")
-PRIORITIES = ("normal", "élevée", "critique")
+PRIORITIES = ("normal", "elevee", "critique")
 CATEGORIES = ("food", "admin", "housing", "legal", "health", "orientation")
 REQUEST_TOPICS = (
     "Aide alimentaire urgente",
-    "Dossier administratif bloqué",
+    "Dossier administratif bloque",
     "Orientation logement",
-    "Accès aux droits",
-    "Suivi santé",
+    "Acces aux droits",
+    "Suivi sante",
     "Coordination partenaire",
     "Situation familiale en attente",
     "Relance de justificatifs",
-    "Appui mobilité",
+    "Appui mobilite",
     "Evaluation sociale rapide",
 )
 
@@ -243,7 +249,7 @@ def ensure_intervenants(structure: Structure) -> list[Intervenant]:
         intervenant.location = "Boulogne-Billancourt"
         intervenant.availability = availability
         intervenant.is_active = availability != "unavailable"
-        intervenant.internal_notes = "Profil local de démonstration opérationnelle."
+        intervenant.internal_notes = "Profil local de demonstration operationnelle."
         rows.append(intervenant)
     db.session.flush()
     return rows
@@ -278,23 +284,32 @@ def ensure_requests(
     requesters: list[User],
 ) -> list[Request]:
     rows: list[Request] = []
+    Request.query.filter_by(source_channel="local_operational_demo").delete(synchronize_session=False)
+    db.session.flush()
+    titles = [str(request_spec(index)["title"]) for index in range(30)]
+    existing_requests = {
+        req.title: req
+        for req in Request.query.filter(Request.title.in_(titles)).all()
+    }
+
     for index in range(30):
         spec = request_spec(index)
         title = str(spec["title"])
-        req = Request.query.filter_by(title=title).first()
+        req = existing_requests.get(title)
         if req is None:
             req = Request(title=title, user_id=requesters[index % len(requesters)].id)
             db.session.add(req)
+            existing_requests[title] = req
         service = services.get(str(spec["service_code"])) or services["orientation"]
         req.structure_id = structure.id
         req.user_id = requesters[index % len(requesters)].id
         req.service_id = service.id
         req.title = title
         req.description = (
-            "Situation locale de démonstration pour tester la file de traitement, "
+            "Situation locale de demonstration pour tester la file de traitement, "
             "les relances et la coordination terrain."
         )
-        req.name = f"Personne accompagnée {index + 1:02d}"
+        req.name = f"Personne accompagnee {index + 1:02d}"
         req.email = f"beneficiaire{index + 1:02d}@{DEMO_DOMAIN}"
         req.phone = f"06{index + 10:08d}"
         req.city = "Boulogne-Billancourt"
@@ -303,6 +318,8 @@ def ensure_requests(
         req.address_line = f"{10 + index} rue de la Demo"
         req.postcode = "92100"
         req.country = "France"
+        req.latitude = 48.8353 + ((index % 5) * 0.002)
+        req.longitude = 2.2409 + ((index % 6) * 0.002)
         req.message = "Besoin de suivi actif et d'une coordination locale lisible."
         req.status = str(spec["status"])
         req.priority = str(spec["priority"])
@@ -346,7 +363,7 @@ def ensure_assignments(
         assignment.assigned_by_admin_id = admin.id
         assignment.assigned_at = req.updated_at or req.created_at
         assignment.status = "active" if req.status != "pending" else "pending"
-        assignment.notes = "Affectation locale de démonstration."
+        assignment.notes = "Affectation locale de demonstration."
 
 
 def print_summary(structure: Structure) -> None:
@@ -379,31 +396,24 @@ def print_summary(structure: Structure) -> None:
 
 
 def main() -> int:
-    with app.app_context():
-        assert_local_only()
-        ensure_required_columns()
-        ensure_admin()
-        _default, ccas = ensure_structures()
-        services = ensure_services(ccas)
-        ccas_admin = ensure_structure_admin(ccas)
-        requesters = [ensure_requester(index, ccas) for index in range(6)]
-        intervenants = ensure_intervenants(ccas)
-        requests = ensure_requests(
+    with app.app_context():        assert_local_only()        ensure_required_columns()        ensure_admin()        _default, ccas = ensure_structures()        services = ensure_services(ccas)        ccas_admin = ensure_structure_admin(ccas)        requesters = [ensure_requester(index, ccas) for index in range(6)]        intervenants = ensure_intervenants(ccas)        requests = ensure_requests(
             structure=ccas,
             services=services,
             owner=ccas_admin,
             requesters=requesters,
-        )
-        ensure_assignments(
+        )        ensure_assignments(
             requests=requests,
             intervenants=intervenants,
             structure=ccas,
             admin=ccas_admin,
-        )
-        db.session.commit()
-        print_summary(ccas)
+        )        db.session.commit()        print_summary(ccas)
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+
+
+

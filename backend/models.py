@@ -550,11 +550,40 @@ class Intervenant(db.Model):
     location = Column(String(200), nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    availability = Column(String(32), nullable=True)
+    competencies_json = Column(Text, nullable=True)
+    coverage_zones = Column(Text, nullable=True)
+    coverage_communes = Column(Text, nullable=True)
+    radius_km = Column(Float, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True, server_default=db.true())
     internal_notes = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime, nullable=True, onupdate=utc_now)
 
     structure = relationship("Structure", lazy="joined")
+
+
+class IntervenantActivity(db.Model):
+    """Operational activity timeline for intervenant coordination."""
+
+    __tablename__ = "intervenant_activities"
+
+    id = Column(Integer, primary_key=True)
+    intervenant_id = Column(Integer, ForeignKey("intervenants.id"), nullable=False, index=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    request_id = Column(Integer, ForeignKey("requests.id"), nullable=True, index=True)
+    actor_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    event_type = Column(String(64), nullable=False, index=True)
+    label = Column(String(255), nullable=False)
+    old_value = Column(Text, nullable=True)
+    new_value = Column(Text, nullable=True)
+    meta_json = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+
+    intervenant = relationship("Intervenant", lazy="joined")
+    structure = relationship("Structure", lazy="joined")
+    request = relationship("Request", lazy="joined")
+    actor = relationship("AdminUser", foreign_keys=[actor_admin_id], lazy="joined")
 
 
 class User(db.Model):
