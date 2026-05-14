@@ -1,11 +1,11 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import re
 import unicodedata
 
 from sqlalchemy import func, or_
 
-from ..models import ProfessionalLead
+from ..models import Intervenant, ProfessionalLead
 from .case_risk import score_request_risk
 
 
@@ -137,7 +137,7 @@ def _score_contact_quality(lead: ProfessionalLead, high_risk: bool) -> tuple[int
         reasons.append("contact direct")
     if getattr(lead, "phone", None):
         score += 12 if high_risk else 8
-        reasons.append("telephone disponible")
+        reasons.append("téléphone disponible")
     if _lead_has_website(lead):
         score += 4
         reasons.append("site web")
@@ -175,7 +175,7 @@ def _score_lead(case_row, request_obj, lead: ProfessionalLead, triage: dict) -> 
     lead_city = getattr(lead, "city", None)
     if _same_city(case_city, lead_city):
         score += 18
-        reasons.append("meme ville")
+        reasons.append("même ville")
     elif _same_department_hint(case_city, lead_city):
         score += 10
         reasons.append("proche geographiquement")
@@ -262,5 +262,37 @@ def suggest_professional_leads_for_case(case_row, request_obj, limit: int = 8) -
             item["lead"].id,
         )
     )
+    if not scored:
+        intervenants = (
+            Intervenant.query.filter(Intervenant.is_active.is_(True))
+            .order_by(Intervenant.created_at.desc(), Intervenant.id.desc())
+            .limit(500)
+            .all()
+        )
+
+        for intervenant in intervenants:
+            score = 20
+            reasons = ["intervenant actif"]
+
+            if _same_city(getattr(request_obj, "city", None), getattr(intervenant, "location", None)):
+                score += 25
+                reasons.append("même ville")
+
+            if getattr(intervenant, "email", None):
+                score += 10
+                reasons.append("contact direct")
+
+            if getattr(intervenant, "phone", None):
+                score += 10
+                reasons.append("téléphone disponible")
+
+            scored.append({
+                "lead": intervenant,
+                "score": score,
+                "reason_tags": reasons,
+                "profession_family": getattr(intervenant, "actor_type", None) or "intervenant",
+            })
+
+        scored.sort(key=lambda item: -int(item["score"]))
     return scored[: max(1, int(limit or 8))]
 

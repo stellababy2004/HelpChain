@@ -48,7 +48,7 @@
 
     const address = addressInput.value.trim();
     const city = cityInput.value.trim();
-    if (!address || !city) {
+    if (!address && !city) {
       setHint("");
       return;
     }

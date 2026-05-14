@@ -1,4 +1,4 @@
-{% extends "layouts/admin_workspace.html" %}
+﻿{% extends "layouts/admin_workspace.html" %}
 {% set scoped_structure = structure is defined and structure %}
 {% block title %}{{ _('Admin') }} · {{ _('Intervenants') }} | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-intervenants{% endblock %}
@@ -101,7 +101,6 @@
           <col class="hc-col-email">
           <col class="hc-col-phone">
           <col class="hc-col-city">
-          <col class="hc-col-address">
           <col class="hc-col-availability">
           <col class="hc-col-workload">
           <col class="hc-col-created">
@@ -115,7 +114,6 @@
             <th>Email</th>
             <th>Téléphone</th>
             <th>Ville</th>
-            <th>Adresse</th>
             <th>Disponibilité</th>
             <th>Charge</th>
             <th>Créé le</th>
@@ -132,7 +130,6 @@
               <td class="hc-intervenants-email">{{ intervenant.email or '—' }}</td>
               <td class="hc-intervenants-phone">{{ intervenant.phone or '—' }}</td>
               <td>{{ intervenant.city or '—' }}</td>
-              <td class="hc-intervenants-address">{{ intervenant.address or '—' }}</td>
               <td>
                 <span class="badge hc-intervenants-badge hc-badge-availability {{ intervenant.availability_badge_class }}">
                   {{ intervenant.availability_label }}
@@ -220,3 +217,4 @@
   </div>
 </div>
 {% endblock %}
+

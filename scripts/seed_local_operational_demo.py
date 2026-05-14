@@ -396,17 +396,29 @@ def print_summary(structure: Structure) -> None:
 
 
 def main() -> int:
-    with app.app_context():        assert_local_only()        ensure_required_columns()        ensure_admin()        _default, ccas = ensure_structures()        services = ensure_services(ccas)        ccas_admin = ensure_structure_admin(ccas)        requesters = [ensure_requester(index, ccas) for index in range(6)]        intervenants = ensure_intervenants(ccas)        requests = ensure_requests(
+    with app.app_context():
+        assert_local_only()
+        ensure_required_columns()
+        ensure_admin()
+        _default, ccas = ensure_structures()
+        services = ensure_services(ccas)
+        ccas_admin = ensure_structure_admin(ccas)
+        requesters = [ensure_requester(index, ccas) for index in range(6)]
+        intervenants = ensure_intervenants(ccas)
+        requests = ensure_requests(
             structure=ccas,
             services=services,
             owner=ccas_admin,
             requesters=requesters,
-        )        ensure_assignments(
+        )
+        ensure_assignments(
             requests=requests,
             intervenants=intervenants,
             structure=ccas,
             admin=ccas_admin,
-        )        db.session.commit()        print_summary(ccas)
+        )
+        db.session.commit()
+        print_summary(ccas)
     return 0
 
 

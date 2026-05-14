@@ -1,0 +1,355 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Admin - Cas | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
+{% block admin_workspace_css %}
+  <style>
+    .hc-cases-table-wrap{
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .hc-cases-table{
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: auto;
+    }
+
+    .hc-cases-table thead{
+      position: static !important;
+      display: table-header-group !important;
+    }
+
+    .hc-cases-table tbody{
+      position: static !important;
+      display: table-row-group !important;
+    }
+
+    .hc-cases-table tr{
+      position: static !important;
+      display: table-row !important;
+    }
+
+    .hc-cases-table th,
+    .hc-cases-table td{
+      position: static !important;
+      display: table-cell !important;
+      left: auto !important;
+      right: auto !important;
+      inset-inline-start: auto !important;
+      inset-inline-end: auto !important;
+      transform: none !important;
+      vertical-align: middle;
+    }
+
+    .hc-cases-empty-cell{
+      text-align: center;
+      padding: 3rem 1rem;
+      white-space: normal;
+    }
+  </style>
+{% endblock %}
+
+{% block admin_content %}
+{% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
+{% set status_display_labels = {
+  'new': 'Nouveau',
+  'open': 'Ouvert',
+  'triaged': 'Orienté',
+  'assigned': 'Assigné',
+  'in_progress': 'En cours',
+  'in-progress': 'En cours',
+  'resolved': 'Résolu',
+  'done': 'Terminé',
+  'closed': 'Clôturé',
+  'blocked': 'Bloqué',
+  'cancelled': 'Annulé',
+  'canceled': 'Annulé'
+} %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--cases">
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="hc-admin-kicker">Console operateur</div>
+        <h1 class="hc-admin-title">Cas</h1>
+        <div class="hc-muted">File operationnelle des demandes converties en cas, priorisee par risque, responsabilite et derniere activite.</div>
+        {% if city %}
+          <div class="mt-2">
+            <span class="badge text-bg-light border hc-context-badge">Zone active: {{ city }}</span>
+          </div>
+        {% endif %}
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', city=city or None) }}">Retour aux demandes</a>
+    </div>
+  </div>
+
+  {% if city %}
+  <div class="hc-card mb-3 p-3 hc-cases-zonebar">
+    <div class="hc-cases-zonebar__eyebrow">Vue territoriale active</div>
+    <div class="hc-cases-zonebar__row">
+      <div>
+        <div class="hc-cases-zonebar__title">Zone: {{ city }}</div>
+        <div class="hc-cases-zonebar__copy">Liste filtree depuis la carte territoriale.</div>
+      </div>
+      <div class="hc-cases-zonebar__meta">Territoire actif: {{ city }} / {{ cases|length }} cas affiches</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="hc-card mb-3 p-3 hc-cases-toolbar-card hc-ops-toolbar-card{% if city %} hc-cases-toolbar-card--territorial{% endif %}">
+    <div class="hc-section-intro">
+      <div>
+        <h2 class="hc-section-title">Reperes de priorisation</h2>
+        <p class="hc-section-subtitle">Reperez les situations critiques, non attribuees ou sans action recente avant de filtrer la file.</p>
+      </div>
+    </div>
+    <div class="hc-risk-overview mb-3">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale_72h='1' if stale_72h else None, city=city or None) }}">
+        <span class="hc-risk-overview__label">Situations critiques</span>
+        <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
+        <span class="hc-risk-overview__context">À traiter en premier</span>
+      </a>
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='attention', stale_72h='1' if stale_72h else None, city=city or None) }}">
+        <span class="hc-risk-overview__label">Situations a verifier</span>
+        <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
+        <span class="hc-risk-overview__context">Vigilance renforcée</span>
+      </a>
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale_72h='1' if stale_72h else None, city=city or None) }}">
+        <span class="hc-risk-overview__label">Cas sans responsable</span>
+        <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
+        <span class="hc-risk-overview__context">Affectation attendue</span>
+      </a>
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale_72h='1', city=city or None) }}">
+        <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
+        <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
+        <span class="hc-risk-overview__context">Relance nécessaire</span>
+      </a>
+    </div>
+    <form method="get" class="row g-2 align-items-end hc-ops-filters">
+      {% if city %}
+        <input type="hidden" name="city" value="{{ city }}">
+      {% endif %}
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label">Statut</label>
+        <select name="status" class="form-select form-select-sm">
+          <option value="">Tous</option>
+          {% for s in statuses %}
+            <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ status_display_labels.get(s, s|replace('_', ' ')|title) }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label">Priorite</label>
+        <select name="priority" class="form-select form-select-sm">
+          <option value="">Toutes</option>
+          {% for p in priorities %}
+            <option value="{{ p }}" {% if priority == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <label class="form-label">Responsable</label>
+        <select name="owner" class="form-select form-select-sm">
+          <option value="">Tous</option>
+          <option value="none" {% if owner == 'none' %}selected{% endif %}>Non attribue</option>
+          {% for o in owners %}
+            <option value="{{ o[0] }}" {% if owner == (o[0]|string) %}selected{% endif %}>{{ o[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label">Categorie</label>
+        <select name="category" class="form-select form-select-sm">
+          <option value="">Toutes</option>
+          {% for code, label in REQUEST_CATEGORY_CHOICES %}
+            <option value="{{ code }}" {% if category == code %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-6 col-xl-2">
+        <label class="form-label">Risque</label>
+        <select name="risk" class="form-select form-select-sm">
+          <option value="">Tous</option>
+          <option value="critical" {% if risk == 'critical' %}selected{% endif %}>Critique</option>
+          <option value="attention" {% if risk == 'attention' %}selected{% endif %}>A verifier</option>
+          <option value="normal" {% if risk == 'normal' %}selected{% endif %}>Normal</option>
+          <option value="low" {% if risk == 'low' %}selected{% endif %}>Faible</option>
+        </select>
+      </div>
+      <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 align-items-center hc-ops-filters__actions">
+        <label class="form-check mb-0 hc-ops-filters__toggle">
+          <input type="checkbox" class="form-check-input" name="stale_72h" value="1" {% if stale_72h %}checked{% endif %}>
+          <span class="form-check-label">Sans action 72h</span>
+        </label>
+        <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}">Reinitialiser</a>
+      </div>
+    </form>
+    <div class="hc-section-thread" aria-label="Continuite cases">
+      <span class="hc-section-thread__label">Besoin d'une vue de deploiement structuree</span>
+      <a class="hc-section-thread__link" href="{{ url_for('ops.ops_workspace') if request.path.startswith('/ops') else url_for('admin.admin_sla_breakdown') }}">Echanger sur un deploiement pilote</a>
+    </div>
+  </div>
+
+  <div class="hc-card hc-admin-table-shell hc-cases-table-shell hc-ops-table-shell{% if city %} hc-cases-table-shell--territorial{% endif %}">
+    <div class="hc-card__header">
+      <div class="hc-section-intro">
+        <div>
+          <h2 class="hc-section-title">Suivi des cas</h2>
+          <p class="hc-section-subtitle">Vue filtree des situations actives, avec identifiant, territoire, responsable et derniere action.</p>
+          {% if city %}
+            <div class="hc-cases-section-meta">Territoire actif: {{ city }} / {{ cases|length }} cas affiches</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="hc-cases-table-wrap">
+      <table class="hc-cases-table">
+        <thead>
+          <tr>
+            <th class="case-col">ID</th>
+            <th class="request-col col-request">Titre</th>
+            <th class="city-col col-city">Ville</th>
+            <th class="status-col col-status">Statut</th>
+            <th class="priority-col">Priorite</th>
+            <th class="owner-col">Responsable</th>
+            <th class="activity-col col-activity">Derniere action</th>
+            <th class="actions-col col-action text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if cases %}
+          {% for c in cases %}
+            {% set ops_level = (ops_priority_levels.get(c.id) or 'normal') %}
+            {% set activity_ref = (case_last_activity_by_id or {}).get(c.id) or c.last_activity_at or c.updated_at or c.created_at %}
+            {% set case_sla = case_sla_snapshot(c) %}
+            {% set status_key = (c.status or 'open')|replace('_', '-')|lower %}
+            {% set status_label = status_display_labels.get((c.status or '')|lower, (c.status or '-')|replace('_', ' ')|title) %}
+            {% set case_detail_href = url_for('admin.admin_case_detail', case_id=c.id) %}
+            <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'élevé'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}">
+              <td class="case-col">
+                <div class="hc-case-id">#{{ c.id }}</div>
+                <div class="small text-muted">Req #{{ c.request_id }}</div>
+              </td>
+              <td class="request-col col-request">
+                <div class="hc-case-title">
+                  {% if config.DEMO_MODE %}
+                    <span class="text-muted">#{{ c.request_id }}</span>
+                  {% else %}
+                    <a href="{{ case_detail_href }}">#{{ c.request_id }}</a>
+                  {% endif %}
+                  <span class="ms-1">{{ c.request.title if c.request else '-' }}</span>
+                </div>
+                <div class="small text-muted hc-cases-request-sub" title="{{ request_category_label(c.request.category if c.request else '') }}">
+                  {{ request_category_label(c.request.category if c.request else '') }}
+                </div>
+                {% set signals = case_signals.get(c.id, []) %}
+                {% if signals %}
+                  <div class="mt-1 d-flex flex-wrap gap-1">
+                    {% for sig in signals %}
+                      {% set sig_upper = sig|upper %}
+                      {% if sig_upper in ['URGENT', 'CRITIQUE', 'NOTIF. ECHEC'] %}
+                        {% set chip_class = 'hc-reason-chip--critical' %}
+                      {% elif sig_upper in ['NON ASSIGNE', 'RISQUE ELEVE', 'A VERIFIER'] %}
+                        {% set chip_class = 'hc-reason-chip--warning' %}
+                      {% else %}
+                        {% set chip_class = 'hc-reason-chip--neutral' %}
+                      {% endif %}
+                      <span class="badge hc-reason-chip {{ chip_class }}">{{ sig }}</span>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </td>
+              <td class="city-col col-city" title="{{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '-' }}">
+                {{ (c.request.city if c.request else '') or (c.request.location_text if c.request else '') or '-' }}
+              </td>
+              <td class="status-col col-status">
+                <span class="badge text-bg-light border hc-case-status-badge hc-status-pill--{{ status_key }}" title="{{ c.status }}">{{ status_label }}</span>
+              </td>
+              <td class="priority-col">
+                {% if ops_level == 'critique' %}
+                  <span class="badge text-bg-danger">Critique</span>
+                {% elif ops_level == 'eleve' or ops_level == 'élevé' %}
+                  <span class="badge text-bg-warning text-dark">Élevé</span>
+                {% else %}
+                  <span class="badge text-bg-secondary">Normal</span>
+                {% endif %}
+                <div class="small mt-1">
+                  <span class="hc-sla hc-sla--{{ case_sla.state }}" title="Delai cible {{ case_sla.target_label }} / {{ case_sla.deadline or '-' }}">
+                    {{ case_sla.state_label }}
+                  </span>
+                </div>
+              </td>
+              <td class="owner-col" title="{% if c.owner_user %}{{ c.owner_user.username }}{% elif c.owner_user_id %}#{{ c.owner_user_id }}{% else %}Non attribue{% endif %}">
+                {% if c.owner_user %}
+                  {{ c.owner_user.username }}
+                {% elif c.owner_user_id %}
+                  #{{ c.owner_user_id }}
+                {% else %}
+                  <span class="hc-owner-empty">Non attribue</span>
+                {% endif %}
+              </td>
+              <td class="activity-col col-activity" title="{{ activity_ref|format_datetime_fr }}">
+                <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>
+                <div class="small text-muted">{{ activity_ref|format_datetime_fr }}</div>
+              </td>
+              <td class="actions-col col-action text-end">
+                {% if config.DEMO_MODE %}
+                  <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Apercu</span>
+                {% else %}
+                  <a class="btn btn-sm btn-primary" href="{{ case_detail_href }}" data-no-rowclick>Ouvrir</a>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="hc-cases-empty-cell">
+                <div class="hc-empty-state">
+                  <div class="hc-empty-state__title">Aucun cas a afficher</div>
+                  <div class="hc-empty-state__text">Aucune situation ne correspond actuellement aux filtres actifs dans la console operateur.</div>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  (() => {
+    const rows = Array.from(document.querySelectorAll(".hc-case-row"));
+    if (!rows.length) return;
+
+    const isInteractive = (el) =>
+      !!el?.closest("a, button, input, select, textarea, label, form, [role='button'], [data-no-rowclick]");
+
+    const getRowHref = (row) => {
+      const detailLink = row.querySelector("a[href*='/cases/']");
+      return detailLink ? detailLink.getAttribute("href") : "";
+    };
+
+    rows.forEach((row) => {
+      const href = getRowHref(row);
+      if (!href) return;
+
+      row.style.cursor = "pointer";
+      row.tabIndex = 0;
+      row.setAttribute("role", "link");
+
+      row.addEventListener("click", (e) => {
+        if (isInteractive(e.target)) return;
+        window.location.href = href;
+      });
+
+      row.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        if (isInteractive(e.target)) return;
+        e.preventDefault();
+        window.location.href = href;
+      });
+    });
+  })();
+</script>
+{% endblock %}
