@@ -426,7 +426,7 @@
                   {{ insight.get('urgency_label', 'Standard') }}
                 </span>
               </td>
-              <td class="small text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "-" }}</td>
+              <td class="small text-muted">{{ l.created_at|format_datetime_fr }}</td>
               <td>
                 <div class="hc-proleads-next">
                   <span class="hc-proleads-next__main">{{ insight.get('next_action', 'Ouvrir') }}</span>
@@ -505,7 +505,7 @@
           </div>
           <div>
             <span class="hc-proleads-card__label">Cree le</span>
-            <div>{{ l.created_at.strftime('%Y-%m-%d %H:%M') if l.created_at else "-" }}</div>
+            <div>{{ l.created_at|format_datetime_fr }}</div>
           </div>
           <div>
             <span class="hc-proleads-card__label">Derniere activite</span>

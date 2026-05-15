@@ -38,7 +38,7 @@
         <tbody>
           {% for row in access_requests %}
           <tr>
-            <td class="small text-muted">{{ row.created_at.strftime('%Y-%m-%d %H:%M') if row.created_at else '-' }}</td>
+            <td class="small text-muted">{{ row.created_at|format_datetime_fr }}</td>
             <td>
               <a class="fw-semibold" href="{{ url_for('admin.admin_organization_access_request_detail', req_id=row.id) }}">{{ row.organization_name }}</a>
               {% if row.message %}

@@ -28,8 +28,8 @@
         </div>
         <div class="hc-muted">Demande institutionnelle #{{ access_request.id }} recue via /demander-acces</div>
         <div class="small text-muted mt-1">
-          Cree le {{ access_request.created_at.strftime('%Y-%m-%d %H:%M') if access_request.created_at else '-' }}
-          {% if access_request.reviewed_at %} - Revue le {{ access_request.reviewed_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}
+          Cree le {{ access_request.created_at|format_datetime_fr }}
+          {% if access_request.reviewed_at %} - Revue le {{ access_request.reviewed_at|format_datetime_fr }}{% endif %}
         </div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_organization_access_requests') }}">Retour</a>
@@ -116,9 +116,9 @@
         </div>
         <dl class="row mt-3 mb-0">
           <dt class="col-sm-3 text-muted">Premiere visite</dt>
-          <dd class="col-sm-9">{{ audience_context.first_seen_at or '-' }}</dd>
+          <dd class="col-sm-9">{{ audience_context.first_seen_at|format_datetime_fr }}</dd>
           <dt class="col-sm-3 text-muted">Derniere visite</dt>
-          <dd class="col-sm-9">{{ audience_context.last_seen_at or '-' }}</dd>
+          <dd class="col-sm-9">{{ audience_context.last_seen_at|format_datetime_fr }}</dd>
           <dt class="col-sm-3 text-muted">Pages consultees</dt>
           <dd class="col-sm-9">
             {% for page in audience_context.pages_viewed or [] %}

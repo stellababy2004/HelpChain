@@ -699,12 +699,12 @@
     <div class="hc-demo-leads-followups">
       {% if lead.first_followup_sent_at %}
         <span class="hc-demo-leads-followup-pill" title="Relance 1 envoyée">
-          F1 · {{ lead.first_followup_sent_at.strftime('%Y-%m-%d') }}
+          F1 · {{ lead.first_followup_sent_at|format_datetime_fr }}
         </span>
       {% endif %}
       {% if lead.second_followup_sent_at %}
         <span class="hc-demo-leads-followup-pill" title="Relance 2 envoyée">
-          F2 · {{ lead.second_followup_sent_at.strftime('%Y-%m-%d') }}
+          F2 · {{ lead.second_followup_sent_at|format_datetime_fr }}
         </span>
       {% endif %}
     </div>
@@ -1034,11 +1034,9 @@
                     <span class="hc-demo-leads-created__date">{{ lead.last_touch_label }}</span>
                     <span class="hc-demo-leads-created__time">{{ lead.last_touch_admin_label or 'Suivi enregistré' }}</span>
                   {% elif lead.contacted_at %}
-                    <span class="hc-demo-leads-created__date">{{ lead.contacted_at.strftime('%Y-%m-%d') }}</span>
-                    <span class="hc-demo-leads-created__time">{{ lead.contacted_at.strftime('%H:%M') }}</span>
+                    <span class="hc-demo-leads-created__date">{{ lead.contacted_at|format_datetime_fr }}</span>
                   {% elif lead.created_at %}
-                    <span class="hc-demo-leads-created__date">{{ lead.created_at.strftime('%Y-%m-%d') }}</span>
-                    <span class="hc-demo-leads-created__time">{{ lead.created_at.strftime('%H:%M') }}</span>
+                    <span class="hc-demo-leads-created__date">{{ lead.created_at|format_datetime_fr }}</span>
                   {% else %}
                     <span class="hc-demo-leads-created__date">—</span>
                   {% endif %}
@@ -1199,7 +1197,7 @@
       {% endif %}
       <article class="hc-card hc-demo-leads-card">
         <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
-          <div class="small text-muted">{{ lead.created_at.strftime('%Y-%m-%d %H:%M') if lead.created_at else '-' }}</div>
+          <div class="small text-muted">{{ lead.created_at|format_datetime_fr }}</div>
           <span class="hc-demo-leads-status-badge hc-demo-leads-status-badge--{{ current_status }}">{{ status_labels.get(current_status, current_status) }}</span>
         </div>
         <div class="hc-demo-leads-contact mb-2">

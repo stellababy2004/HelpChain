@@ -9,7 +9,7 @@
       <div>
         <h1 class="hc-admin-title">Vérifications système</h1>
         <div class="hc-muted mb-1">Contrôles opérationnels de cohérence pour l'exécution applicative.</div>
-        <div class="small hc-muted">Dernière vérification : {{ checks.timestamp }}</div>
+        <div class="small hc-muted">Dernière vérification : {{ checks.timestamp|format_datetime_fr }}</div>
       </div>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests') }}">Retour aux demandes</a>
     </div>

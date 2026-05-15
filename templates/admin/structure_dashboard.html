@@ -144,7 +144,7 @@
         <tr>
           <td>{{ r.id }}</td>
           <td>{{ r.status or '—' }}</td>
-          <td>{{ r.created_at }}</td>
+          <td>{{ r.created_at|format_datetime_fr }}</td>
         </tr>
         {% endfor %}
         {% if recent_requests|length == 0 %}

@@ -241,7 +241,7 @@
             <tbody>
               {% for row in recent_logins %}
                 <tr>
-                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small text-muted">{{ row.created_at|format_datetime_fr }}</td>
                   <td class="small">{{ row.username or '—' }}</td>
                   <td class="small">{{ row.ip or '—' }}</td>
                   <td>
@@ -275,7 +275,7 @@
             <tbody>
               {% for row in recent_risky %}
                 <tr>
-                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small text-muted">{{ row.created_at|format_datetime_fr }}</td>
                   <td class="small">{{ row.admin_username or ("#" ~ row.admin_user_id) }}</td>
                   <td><span class="badge text-bg-secondary">{{ row.action }}</span></td>
                   <td class="small">
@@ -317,7 +317,7 @@
             <tbody>
               {% for row in recent_denied %}
                 <tr>
-                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small text-muted">{{ row.created_at|format_datetime_fr }}</td>
                   <td class="small">{{ row.admin_username or ("#" ~ row.admin_user_id) }}</td>
                   <td><span class="badge text-bg-secondary">{{ row.action }}</span></td>
                   <td class="small">{{ row.target_type }} #{{ row.target_id }}</td>
@@ -347,7 +347,7 @@
             <tbody>
               {% for row in recent_sensitive %}
                 <tr>
-                  <td class="small text-muted">{{ row.created_at }}</td>
+                  <td class="small text-muted">{{ row.created_at|format_datetime_fr }}</td>
                   <td class="small">{{ row.admin_username or ("#" ~ row.admin_user_id) }}</td>
                   <td><span class="badge text-bg-secondary">{{ row.action }}</span></td>
                   <td class="small">

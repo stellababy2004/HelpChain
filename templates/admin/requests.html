@@ -1274,7 +1274,7 @@
 
                         {% if r.closed_at %}
 
-                          <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at.strftime('%Y-%m-%d') if r.closed_at else '-' }}">{{ _('Closed') }}</span>
+                          <span class="badge text-bg-success" title="{{ _('Closed') }}: {{ r.closed_at|format_datetime_fr }}">{{ _('Closed') }}</span>
 
                         {% endif %}
 
@@ -1368,9 +1368,7 @@
 
                   <div class="small text-muted">{{ activity_label }}</div>
 
-                  <div class="fw-semibold">{{ activity_at.strftime('%H:%M') if activity_at else '-' }}</div>
-
-                  <div class="small text-muted">{{ activity_at.strftime('%Y-%m-%d') if activity_at else '-' }}</div>
+                  <div class="fw-semibold">{{ activity_at|format_datetime_fr }}</div>
 
                   <div class="d-flex flex-wrap align-items-center justify-content-xl-end gap-2 mt-3 hc-request-primary-action" data-request-primary-action>
 

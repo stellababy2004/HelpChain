@@ -17,7 +17,7 @@
       {{ lead.email }} • {{ lead.profession }} • {{ lead.city or "-" }}
     </p>
     <p class="hc-muted mt-1 mb-0">
-      {{ _('Created:') }} {{ lead.created_at }} | {{ _('Source:') }} {{ lead.source or "-" }}
+      {{ _('Created:') }} {{ lead.created_at|format_datetime_fr }} | {{ _('Source:') }} {{ lead.source or "-" }}
     </p>
 
     {% if audience_context %}
@@ -47,9 +47,9 @@
           </div>
           <dl class="row mt-3 mb-0">
             <dt class="col-sm-3 text-muted">Premiere visite</dt>
-            <dd class="col-sm-9">{{ audience_context.first_seen_at or '-' }}</dd>
+            <dd class="col-sm-9">{{ audience_context.first_seen_at|format_datetime_fr }}</dd>
             <dt class="col-sm-3 text-muted">Derniere visite</dt>
-            <dd class="col-sm-9">{{ audience_context.last_seen_at or '-' }}</dd>
+            <dd class="col-sm-9">{{ audience_context.last_seen_at|format_datetime_fr }}</dd>
             <dt class="col-sm-3 text-muted">Pages consultees</dt>
             <dd class="col-sm-9">
               {% for page in audience_context.pages_viewed or [] %}

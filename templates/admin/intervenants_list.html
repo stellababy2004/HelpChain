@@ -136,7 +136,7 @@
                 </span>
               </td>
               <td class="text-muted hc-intervenants-workload">{{ intervenant.current_workload }}</td>
-              <td class="text-muted">{% if intervenant.created_at %}{{ intervenant.created_at.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</td>
+              <td class="text-muted">{{ intervenant.created_at|format_datetime_fr }}</td>
               <td class="hc-td-action">
                 <a
                   class="btn btn-outline-secondary btn-sm"

@@ -804,11 +804,26 @@ def create_app(config_object=None) -> Flask:
                 value = value.replace(tzinfo=UTC)
             local_dt = value.astimezone(PARIS_TZ)
             style_key = (style or "datetime").strip().lower()
+            month_names = (
+                "janvier",
+                "février",
+                "mars",
+                "avril",
+                "mai",
+                "juin",
+                "juillet",
+                "août",
+                "septembre",
+                "octobre",
+                "novembre",
+                "décembre",
+            )
+            date_label = f"{local_dt.day} {month_names[local_dt.month - 1]} {local_dt.year}"
             if style_key == "date":
-                return local_dt.strftime("%d/%m/%Y")
+                return date_label
             if style_key == "time":
                 return local_dt.strftime("%H:%M")
-            return local_dt.strftime("%d/%m/%Y %H:%M")
+            return f"{date_label} · {local_dt:%H:%M}"
         except Exception:
             return str(value)
 

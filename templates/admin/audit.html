@@ -64,9 +64,7 @@
       {% if events|length > 0 %}
       <div class="vstack gap-3">
         {% for e in events %}
-        {% set created_at_label = e.created_at.strftime('%Y-%m-%d %H:%M:%S') if e.created_at and e.created_at.strftime is defined else e.created_at %}
-        {% set created_date = e.created_at.strftime('%Y-%m-%d') if e.created_at and e.created_at.strftime is defined else created_at_label %}
-        {% set created_time = e.created_at.strftime('%H:%M:%S') if e.created_at and e.created_at.strftime is defined else '' %}
+        {% set created_at_label = e.created_at|format_datetime_fr %}
         {% set action_key = (e.action or '')|lower %}
         {% set actor_label = e.admin_username or ("#" ~ e.admin_user_id) or "System" %}
         {% set target_label = ((e.target_type or 'Target') ~ ' #' ~ (e.target_id or '-')) if e.target_id else (e.target_type or 'Target') %}
@@ -124,8 +122,7 @@
                     <span class="badge text-bg-light border">Audit</span>
                   </div>
                   <div>
-                    <div class="fw-semibold">{{ created_time or created_at_label }}</div>
-                    <div class="small text-muted">{{ created_date if created_time else '' }}</div>
+                    <div class="fw-semibold">{{ created_at_label }}</div>
                   </div>
                 </div>
               </div>

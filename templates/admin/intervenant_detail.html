@@ -237,7 +237,7 @@
               </td>
               <td><span class="badge hc-request-status-badge hc-request-status-badge--{{ req_status }}">{{ req.status or 'new' }}</span></td>
               <td><span class="badge hc-priority-badge hc-priority-badge--{{ req_priority }}">{{ req.priority or '-' }}</span></td>
-              <td>{% if assignment.assigned_at %}{{ assignment.assigned_at.strftime('%d/%m/%Y') }}{% else %}-{% endif %}</td>
+              <td>{{ assignment.assigned_at|format_datetime_fr }}</td>
               <td class="hc-td-action">
                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">Ouvrir</a>
                 <form method="post" class="hc-inline-form">

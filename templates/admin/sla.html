@@ -156,7 +156,7 @@
                 </td>
                 <td><span class="badge text-bg-light">{{ request_category_label(r.category) }}</span></td>
                 <td><span class="badge text-bg-light">{{ r.status or "open" }}</span></td>
-                <td class="text-muted small">{{ r.created_at }}</td>
+                <td class="text-muted small">{{ r.created_at|format_datetime_fr }}</td>
                 <td><span class="fw-semibold">{{ "%.1f"|format(r.overdue_hours or 0.0) }}h</span></td>
                 <td class="text-end hc-td-action">
                   {% if config.DEMO_MODE %}
