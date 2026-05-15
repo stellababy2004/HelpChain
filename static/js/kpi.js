@@ -37,6 +37,10 @@
     requestAnimationFrame(frame);
   }
 
+  function isProtectedSummaryKpi(el) {
+    return !!el.closest(".hc-request-summary-grid, .hc-request-summary-card");
+  }
+
   async function fetchWithTimeout(url, timeoutMs) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -54,7 +58,9 @@
   }
 
   async function hydrateKpis() {
-    const kpiNodes = Array.from(document.querySelectorAll("[data-kpi]"));
+    const kpiNodes = Array.from(document.querySelectorAll("[data-kpi]")).filter(
+      (el) => !isProtectedSummaryKpi(el),
+    );
     if (kpiNodes.length === 0) return; // nothing to do on this page
 
     try {

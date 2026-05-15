@@ -6,6 +6,10 @@
   const MIN_INTERVAL_MS = 30000;
   const RELOAD_THROTTLE_MS = 15000;
   const MARKER_KEY = "hc:autosync:last-reload";
+  const SCROLL_KEY = "hc:autosync:scroll";
+  const INTERACTION_COOLDOWN_MS = 10000;
+  const isAdminRequestsPage = window.location.pathname === "/admin/requests";
+  let lastInteractionAt = Date.now();
 
   const configuredInterval = Number.parseInt(root.dataset.hcAutosyncInterval || "", 10);
   const intervalMs = Number.isFinite(configuredInterval)
@@ -28,10 +32,25 @@
       ".modal.show, dialog[open], [role='dialog'][aria-modal='true']"
     );
 
+  const isDropdownOpen = () =>
+    !!document.querySelector(
+      ".dropdown-menu.show, details[open], .hc-rowmenu[open], .hc-statusmenu[open]"
+    );
+
+  const isControlFocused = () =>
+    !!document.activeElement?.closest?.(
+      "button, a, summary, [role='button'], [data-hc-tab], .hc-request-summary-card, .hc-quickchip, .hc-rowmenu, .hc-statusmenu, .hc-requests-toolbar"
+    );
+
+  const wasRecentlyInteracting = () =>
+    Date.now() - lastInteractionAt < INTERACTION_COOLDOWN_MS;
+
   const isPaused = () =>
     document.hidden ||
     document.body.dataset.hcAutosyncPaused === "true" ||
     isEditableElement(document.activeElement) ||
+    (isAdminRequestsPage &&
+      (isControlFocused() || isDropdownOpen() || wasRecentlyInteracting())) ||
     hasDirtyForm() ||
     isModalOpen();
 
@@ -80,6 +99,45 @@
     }
   };
 
+  const writeScrollMarker = () => {
+    if (!isAdminRequestsPage) return;
+    try {
+      sessionStorage.setItem(
+        SCROLL_KEY,
+        JSON.stringify({
+          path: window.location.pathname,
+          search: window.location.search,
+          x: window.scrollX || 0,
+          y: window.scrollY || 0,
+          at: Date.now(),
+        })
+      );
+    } catch (_error) {
+      // Optional scroll restoration should never block sync.
+    }
+  };
+
+  const restoreScrollMarker = () => {
+    if (!isAdminRequestsPage) return;
+    try {
+      const marker = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || "null");
+      if (
+        !marker ||
+        marker.path !== window.location.pathname ||
+        marker.search !== window.location.search ||
+        Date.now() - Number(marker.at || 0) > 120000
+      ) {
+        return;
+      }
+      sessionStorage.removeItem(SCROLL_KEY);
+      window.setTimeout(() => {
+        window.scrollTo(Number(marker.x || 0), Number(marker.y || 0));
+      }, 0);
+    } catch (_error) {
+      // Ignore malformed storage values.
+    }
+  };
+
   const wasRecentlyReloaded = () => {
     const marker = readMarker();
     if (!marker || marker.path !== window.location.pathname) return false;
@@ -102,12 +160,46 @@
     });
   });
 
+  if (isAdminRequestsPage) {
+    const noteInteraction = () => {
+      lastInteractionAt = Date.now();
+    };
+    root.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (
+          event.target.closest(
+            "form, input, textarea, select, button, a, summary, [role='button'], [data-hc-tab], .hc-request-summary-card, .hc-quickchip, .hc-rowmenu, .hc-statusmenu, .hc-requests-toolbar"
+          )
+        ) {
+          noteInteraction();
+        }
+      },
+      true
+    );
+    root.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.target.closest(
+            "form, input, textarea, select, button, a, summary, [role='button'], [data-hc-tab], .hc-request-summary-card, .hc-quickchip, .hc-rowmenu, .hc-statusmenu, .hc-requests-toolbar"
+          )
+        ) {
+          noteInteraction();
+        }
+      },
+      true
+    );
+    restoreScrollMarker();
+  }
+
   updateStatus();
 
   window.setInterval(() => {
     if (isPaused() || wasRecentlyReloaded()) return;
     updateStatus(`Synchronisation en cours... ${formatTime(new Date())}`);
     writeMarker();
+    writeScrollMarker();
     window.location.reload();
   }, intervalMs);
 })();

@@ -97,25 +97,115 @@
   gap: 12px;
 }
 
-#hcAdminKpis{
-  display: flex;
-  gap: 8px;
-  margin-top: 0;
+#hcAdminKpis.hc-request-summary-grid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
 }
 
-#hcAdminKpis .hc-kpi-card{
-  padding: 6px 12px;
-  min-width: 70px;
+.hc-request-summary-card{
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label cta"
+    "value cta"
+    "hint cta";
+  align-items: center;
+  min-height: 104px;
+  padding: 12px 14px 12px 16px;
+  overflow: hidden;
+  color: rgba(15,23,42,.92);
+  text-decoration: none;
+  border: 1px solid rgba(15,23,42,.10);
   border-radius: 12px;
+  background: rgba(248,250,252,.78);
 }
 
-#hcAdminKpis .hc-kpi-card .hc-kpi__label{
-  font-size: 11px;
+.hc-request-summary-card::before{
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: rgba(37,99,235,.42);
 }
 
-#hcAdminKpis .hc-kpi-card .hc-kpi__value{
-  font-size: 16px;
-  margin-top: 2px;
+.hc-request-summary-card--active::before{
+  background: rgba(14,165,233,.46);
+}
+
+.hc-request-summary-card--urgent::before{
+  background: rgba(220,38,38,.46);
+}
+
+.hc-request-summary-card--completed::before{
+  background: rgba(22,163,74,.42);
+}
+
+.hc-request-summary-card:hover,
+.hc-request-summary-card:focus-visible{
+  color: rgba(15,23,42,.96);
+  border-color: rgba(37,99,235,.28);
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 10px 22px rgba(15,23,42,.08);
+}
+
+.hc-request-summary-card:focus-visible{
+  outline: 3px solid rgba(37,99,235,.22);
+  outline-offset: 2px;
+}
+
+.hc-request-summary-card__label{
+  grid-area: label;
+  min-width: 0;
+  color: rgba(15,23,42,.72);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.hc-request-summary-card__value{
+  grid-area: value;
+  margin-top: 6px;
+  font-size: 1.35rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.hc-request-summary-card__hint{
+  grid-area: hint;
+  min-width: 0;
+  margin-top: 6px;
+  color: rgba(15,23,42,.62);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hc-request-summary-card__cta{
+  grid-area: cta;
+  align-self: end;
+  justify-self: end;
+  color: rgba(37,99,235,.88);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 900px){
+  #hcAdminKpis.hc-request-summary-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px){
+  #hcAdminKpis.hc-request-summary-grid{
+    grid-template-columns: 1fr;
+  }
+  .hc-request-summary-card{
+    min-height: 96px;
+  }
 }
 
 .hc-admin-filters{
@@ -17317,5 +17407,90 @@ body.hc-admin-intervenants .hc-intervenants-form textarea.form-control{
   body.hc-admin-intervenants .hc-intervenant-timeline__item em{
     display: block;
     margin-top: 8px;
+  }
+}
+
+/* Admin requests: keep top summary cards readable after global KPI theme rules. */
+body[data-hc-page^="/admin/requests"] #hcAdminKpis.hc-request-summary-grid{
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+}
+
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card{
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas:
+    "label cta"
+    "value cta"
+    "hint cta" !important;
+  align-items: center !important;
+  min-height: 104px !important;
+  padding: 12px 14px 12px 16px !important;
+  color: rgba(15,23,42,.92) !important;
+  text-decoration: none !important;
+}
+
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__label,
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__value,
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__hint,
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__cta{
+  position: static !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  text-indent: 0 !important;
+  white-space: normal !important;
+}
+
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__label{
+  grid-area: label !important;
+  color: rgba(15,23,42,.72) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__value{
+  grid-area: value !important;
+  margin-top: 6px !important;
+  color: #0f2439 !important;
+  font-size: 1.35rem !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+}
+
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__hint{
+  grid-area: hint !important;
+  margin-top: 6px !important;
+  color: rgba(15,23,42,.62) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+}
+
+body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__cta{
+  grid-area: cta !important;
+  align-self: end !important;
+  justify-self: end !important;
+  color: rgba(37,99,235,.88) !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 900px){
+  body[data-hc-page^="/admin/requests"] #hcAdminKpis.hc-request-summary-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 520px){
+  body[data-hc-page^="/admin/requests"] #hcAdminKpis.hc-request-summary-grid{
+    grid-template-columns: 1fr !important;
   }
 }

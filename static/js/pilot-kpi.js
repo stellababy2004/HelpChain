@@ -7,9 +7,14 @@
     el.textContent = String(value ?? 0);
   }
 
+  function isProtectedSummaryKpi(el) {
+    return !!el.closest(".hc-request-summary-grid, .hc-request-summary-card");
+  }
+
   function hydrateKpis(data) {
     // Generic: any element with data-kpi="<key>"
     document.querySelectorAll("[data-kpi]").forEach((el) => {
+      if (isProtectedSummaryKpi(el)) return;
       const key = el.getAttribute("data-kpi");
       if (!key) return;
       setText(el, data?.[key] ?? 0);

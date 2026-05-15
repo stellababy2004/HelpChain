@@ -124,6 +124,12 @@
     window.alert(text);
   }
 
+  function reloadCurrentQueue() {
+    window.setTimeout(() => {
+      window.location.reload();
+    }, 120);
+  }
+
   function normalizeMessage(message) {
     const text = String(message || "").trim();
     const lower = text.toLowerCase();
@@ -430,6 +436,7 @@
           setRowFeedback(formEl, message, "success");
           flashRowState(formEl, "success");
           notify(message, "success");
+          reloadCurrentQueue();
         } else {
           setRowFeedback(formEl, message, "info");
           setMenuFeedback(formEl, message, "info");
@@ -551,6 +558,11 @@
     return String(v || "").trim().toLowerCase();
   }
 
+  function isTerminalRow(row) {
+    const status = String(row?.dataset?.hcStatusRow || "").trim().toUpperCase();
+    return status === "COMPLETED" || status === "CLOSED";
+  }
+
   const tableFilters = (() => {
     const predicates = new Map();
     const subscribers = new Set();
@@ -617,7 +629,7 @@
 
   function rowMatchesQuickFilters(row) {
     if (!quickState.size) return true;
-    const hasNoOwner = row.dataset.ownerMissing === "1";
+    const hasNoOwner = row.dataset.ownerMissing === "1" && !isTerminalRow(row);
     const isUrgent = String(row.dataset.priority || "").toUpperCase() === "URGENT";
     const hasCanHelp = Number(row.dataset.sigCanHelp || 0) > 0;
     const isStale = row.dataset.stale72h === "1";
@@ -632,7 +644,7 @@
 
   function matchesRiskShortcutKey(row, shortcutKey) {
     const riskLevel = normalize(row.dataset.riskLevel);
-    const hasNoOwner = row.dataset.ownerMissing === "1";
+    const hasNoOwner = row.dataset.ownerMissing === "1" && !isTerminalRow(row);
     const isStale = row.dataset.stale72h === "1";
     if (shortcutKey === "critical") return riskLevel === "critical";
     if (shortcutKey === "attention") return riskLevel === "attention";
@@ -749,6 +761,7 @@
 
       const ids = selected.map((cb) => cb.value);
       const links = selected.map((cb) => cb.dataset.link).filter(Boolean);
+      const currentQueueUrl = `${window.location.pathname}${window.location.search}`;
 
       if (action === "open") {
         links.forEach((href) => window.open(href, "_blank", "noopener"));
@@ -770,21 +783,28 @@
       try {
         if (action === "nudge") {
           for (const id of ids) {
-            const ok = await postForm(`/admin/requests/${id}/nudge`, { csrf_token: csrf });
+            const ok = await postForm(`/admin/requests/${id}/nudge`, {
+              csrf_token: csrf,
+              next: currentQueueUrl,
+            });
             if (ok) okCount += 1;
           }
         } else if (action === "claim_me") {
           for (const id of ids) {
             const ok = await postForm(`/admin/requests/${id}/assign`, {
               csrf_token: csrf,
-              next: "/admin/requests",
+              next: currentQueueUrl,
             });
             if (ok) okCount += 1;
           }
         } else if (action.startsWith("status:")) {
           const status = action.split(":", 2)[1];
           for (const id of ids) {
-            const ok = await postForm(`/admin/requests/${id}/status`, { csrf_token: csrf, status });
+            const ok = await postForm(`/admin/requests/${id}/status`, {
+              csrf_token: csrf,
+              status,
+              next: currentQueueUrl,
+            });
             if (ok) okCount += 1;
           }
         }

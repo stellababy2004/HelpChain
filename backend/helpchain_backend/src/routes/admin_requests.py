@@ -19,7 +19,7 @@ from flask import (
 )
 from flask_babel import gettext as _
 from flask_login import current_user, login_required
-from sqlalchemy import func, or_, select, tuple_
+from sqlalchemy import and_, exists, false, func, or_, select, tuple_
 from sqlalchemy.orm import joinedload
 
 from backend.audit import log_activity
@@ -247,6 +247,9 @@ def update_status(req_id):
                 200,
             )
         flash("No status change.", "info")
+        next_url = (request.form.get("next") or "").strip()
+        if next_url and is_safe_url(next_url):
+            return redirect(next_url)
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     req.status = new_status
@@ -398,6 +401,9 @@ def update_status(req_id):
     ):
         return jsonify({"success": True, "status": new_status or req.status})
     flash(_("Status updated."), "success")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
@@ -575,9 +581,11 @@ def admin_requests():
     show_deleted = (request.args.get("deleted") or "").strip() == "1"
     query = _scope_requests(Request.query)
     query, status, q, risk, risk_level, no_owner, not_seen_72h, sort = (
-        build_requests_query(query, request.args)
+        build_request_queue_query(query, request.args)
     )
     requests = query.all()
+    summary_cards = build_request_summary_cards(request.args)
+    summary_counts = summary_cards["counts"]
     now_aware = utc_now()
     now_naive = datetime.now(UTC).replace(tzinfo=None)
     sla_warn_no_owner_days = 2
@@ -605,7 +613,7 @@ def admin_requests():
                 Request.owner_id.is_(None),
                 func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
             )
-        ).count()
+        ).filter(_request_non_terminal_status_filter()).count()
         not_seen_72h_count = overview_query.filter(
             func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
         ).count()
@@ -820,6 +828,8 @@ def admin_requests():
         attention_count=attention_count,
         no_owner_count=no_owner_count,
         not_seen_72h_count=not_seen_72h_count,
+        summary_cards=summary_cards,
+        summary_counts=summary_counts,
     )
 
 
@@ -1102,6 +1112,192 @@ def apply_risk_filter(base_query, risk: str, now: datetime):
     return base_query
 
 
+def _request_status_bucket_filter(tab: str):
+    tab = (tab or "").strip().upper()
+    status_value = _request_status_value()
+    terminal_status = _request_terminal_status_filter()
+    if tab == "NEW":
+        return status_value.in_(["new", "pending"])
+    if tab == "IN_PROGRESS":
+        return status_value.in_(["approved", "in_progress", "in progress"])
+    if tab == "COMPLETED":
+        return status_value.in_(
+            [
+                "done",
+                "completed",
+                "closed",
+            ]
+        )
+    if tab == "CLOSED":
+        return status_value.in_(["rejected", "cancelled", "canceled", "closed"])
+    if tab == "URGENT":
+        return and_(
+            func.lower(func.coalesce(Request.priority, "low")).in_(
+                [
+                    "urgent",
+                    "critical",
+                    "high",
+                    "critique",
+                    "elevee",
+
+
+                    "haute",
+                ]
+            ),
+            ~terminal_status,
+        )
+    return None
+
+
+def _request_status_value():
+    return func.lower(func.coalesce(Request.status, ""))
+
+
+def _request_terminal_status_filter():
+    return _request_status_value().in_(
+        ["done", "completed", "rejected", "cancelled", "canceled", "closed"]
+    )
+
+
+def _request_non_terminal_status_filter():
+    return ~_request_terminal_status_filter()
+
+
+def _request_actionable_filter():
+    status_value = _request_status_value()
+    terminal_status = _request_terminal_status_filter()
+    in_progress = status_value.in_(["approved", "in_progress", "in progress"])
+    unassigned_open = and_(Request.assigned_volunteer_id.is_(None), ~terminal_status)
+
+    has_can_help = false()
+    if _table_exists("volunteer_actions"):
+        has_can_help = exists().where(
+            and_(
+                VolunteerAction.request_id == Request.id,
+                VolunteerAction.action == "CAN_HELP",
+            )
+        )
+
+    return or_(unassigned_open, in_progress, has_can_help)
+
+
+def apply_request_queue_view_filters(base_query, request_args):
+    """Apply the same tab/action predicates used by the request queue UI."""
+    tab = (request_args.get("tab") or "").strip().upper()
+    tab_filter = _request_status_bucket_filter(tab)
+    if tab_filter is not None:
+        base_query = base_query.filter(tab_filter)
+    if (request_args.get("action") or "").strip() == "1" and tab != "COMPLETED":
+        base_query = base_query.filter(_request_actionable_filter())
+    return base_query
+
+
+def build_request_queue_query(base_query, request_args, legacy: bool = False):
+    result = build_requests_query(base_query, request_args, legacy=legacy)
+    if legacy:
+        query, status, q, risk = result
+        return (apply_request_queue_view_filters(query, request_args), status, q, risk)
+    query, status, q, risk, risk_level, no_owner, not_seen_72h, sort = result
+    query = apply_request_queue_view_filters(query, request_args)
+    return (query, status, q, risk, risk_level, no_owner, not_seen_72h, sort)
+
+
+def _request_queue_count(request_args) -> int:
+    query, *_ = build_request_queue_query(Request.query, request_args)
+    return int(query.order_by(None).count())
+
+
+_REQUEST_SUMMARY_CONTEXT_KEYS = (
+    "category",
+    "q",
+    "city",
+    "deleted",
+    "risk",
+    "risk_level",
+    "no_owner",
+    "not_seen_72h",
+    "queue",
+    "sla_kind",
+    "sla_days",
+    "sort",
+)
+
+
+def _request_summary_base_args(request_args) -> dict[str, str]:
+    base_args: dict[str, str] = {}
+    for key in _REQUEST_SUMMARY_CONTEXT_KEYS:
+        value = (request_args.get(key) or "").strip()
+        if value:
+            base_args[key] = value
+    if base_args.get("category"):
+        base_args["category"] = normalize_request_category(base_args["category"])
+    return base_args
+
+
+def _request_summary_queue_args(base_args: dict[str, str], tab: str) -> dict[str, str]:
+    queue_args = dict(base_args)
+    queue_args["tab"] = tab
+    if tab != "URGENT":
+        queue_args["action"] = "1"
+    return queue_args
+
+
+def build_request_summary_counts(request_args=None) -> dict[str, int]:
+    base_args = _request_summary_base_args(request_args or {})
+    return {
+        "new_orientations": _request_queue_count(
+            _request_summary_queue_args(base_args, "NEW")
+        ),
+        "in_progress": _request_queue_count(
+            _request_summary_queue_args(base_args, "IN_PROGRESS")
+        ),
+        "urgent": _request_queue_count(
+            _request_summary_queue_args(base_args, "URGENT")
+        ),
+        "completed": _request_queue_count(
+            _request_summary_queue_args(base_args, "COMPLETED")
+        ),
+    }
+
+
+def build_request_summary_cards(request_args) -> dict[str, dict[str, object]]:
+    base_args = _request_summary_base_args(request_args)
+    is_orientation_context = base_args.get("category") == "orientation"
+    labels = {
+        "new_orientations": (
+            "Nouvelles orientations"
+            if is_orientation_context
+            else "Nouvelles demandes"
+        ),
+        "in_progress": "En traitement",
+        "urgent": "Urgentes",
+        "completed": "Clôturées",
+    }
+    hrefs = {
+        "new_orientations": url_for(
+            "admin.admin_requests",
+            **_request_summary_queue_args(base_args, "NEW"),
+        ),
+        "in_progress": url_for(
+            "admin.admin_requests",
+            **_request_summary_queue_args(base_args, "IN_PROGRESS"),
+        ),
+        "urgent": url_for(
+            "admin.admin_requests",
+            **_request_summary_queue_args(base_args, "URGENT"),
+        ),
+        "completed": url_for(
+            "admin.admin_requests",
+            **_request_summary_queue_args(base_args, "COMPLETED"),
+        ),
+    }
+    return {
+        "counts": build_request_summary_counts(base_args),
+        "labels": labels,
+        "hrefs": hrefs,
+    }
+
+
 def build_requests_query(base_query, request_args, legacy: bool = False):
     base_query = _scope_requests(base_query)
     status = (request_args.get("status") or "").strip()
@@ -1168,6 +1364,7 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
                 func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
             )
         )
+        base_query = base_query.filter(_request_non_terminal_status_filter())
     if not_seen_72h:
         base_query = base_query.filter(
             func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
@@ -2049,9 +2246,15 @@ def admin_request_assign(req_id: int):
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if _locked_by_other(req, getattr(current_user, "id", None)):
         flash(REQUEST_LOCKED_BY_ADMIN_MESSAGE, "warning")
+        next_url = (request.form.get("next") or "").strip()
+        if next_url and is_safe_url(next_url):
+            return redirect(next_url)
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if _is_request_locked(req):
         flash(REQUEST_LOCKED_BY_STATUS_MESSAGE, "warning")
+        next_url = (request.form.get("next") or "").strip()
+        if next_url and is_safe_url(next_url):
+            return redirect(next_url)
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if req.owner_id and req.owner_id != getattr(current_user, "id", None):
         flash("Deja pris en charge.", "warning")
@@ -2180,6 +2383,9 @@ def admin_request_unassign(req_id: int):
         },
     )
     flash(_("Owner removed."), "info")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
     return redirect(url_for("admin.admin_request_details", req_id=req_id))
 
 
@@ -2194,6 +2400,9 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
         abort(403)
     if _is_request_locked(req):
         flash("This request is locked (done/cancelled).", "warning")
+        next_url = (request.form.get("next") or "").strip()
+        if next_url and is_safe_url(next_url):
+            return redirect(next_url)
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     req.assigned_volunteer_id = volunteer_id
@@ -2206,6 +2415,9 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
     )
     db.session.commit()
     flash("Assigned to volunteer.", "success")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
@@ -2243,6 +2455,9 @@ def admin_request_nudge(req_id: int):
     volunteer_id = getattr(req, "assigned_volunteer_id", None)
     if not volunteer_id:
         flash("No assigned volunteer to nudge.", "warning")
+        next_url = (request.form.get("next") or "").strip()
+        if next_url and is_safe_url(next_url):
+            return redirect(next_url)
         return redirect(request.referrer or url_for("admin.admin_requests"))
 
     created = send_nudge_notification(
@@ -2254,6 +2469,9 @@ def admin_request_nudge(req_id: int):
         flash("Nudge sent.", "success")
     else:
         flash("Nudge suppressed (recently sent).", "info")
+    next_url = (request.form.get("next") or "").strip()
+    if next_url and is_safe_url(next_url):
+        return redirect(next_url)
     return redirect(request.referrer or url_for("admin.admin_requests"))
 
 

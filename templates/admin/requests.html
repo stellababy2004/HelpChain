@@ -6,7 +6,9 @@
 
 {% block admin_content %}
 
-<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact" data-hc-autosync="true" data-hc-autosync-interval="60000">
+{% set current_requests_url = request.full_path if request.query_string else request.path %}
+
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact" data-hc-autosync="true" data-hc-autosync-interval="90000">
 
 <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
 
@@ -92,47 +94,63 @@
 
 
 
-    <div class="hc-kpis" id="hcAdminKpis">
+    <div class="hc-request-summary-grid" id="hcAdminKpis" data-summary-counts-source="server">
 
-      <div class="hc-kpi" data-kpi="NEW">
+      <a class="hc-request-summary-card hc-request-summary-card--new"
+         data-request-summary-kpi="NEW"
+         href="{{ summary_cards.hrefs.new_orientations }}">
 
-        <div class="hc-kpi__label">Nouvelles</div>
+        <span class="hc-request-summary-card__label">{{ summary_cards.labels.new_orientations }}</span>
 
-        <div class="hc-kpi__value">0</div>
+        <strong class="hc-request-summary-card__value" data-kpi-target="new_orientations">{{ summary_counts.new_orientations or 0 }}</strong>
 
-        <div class="hc-kpi__context">Entrées à qualifier</div>
+        <span class="hc-request-summary-card__hint">À qualifier ou orienter</span>
 
-      </div>
+        <span class="hc-request-summary-card__cta">Voir</span>
 
-      <div class="hc-kpi" data-kpi="IN_PROGRESS">
+      </a>
 
-        <div class="hc-kpi__label">En traitement</div>
+      <a class="hc-request-summary-card hc-request-summary-card--active"
+         data-request-summary-kpi="IN_PROGRESS"
+         href="{{ summary_cards.hrefs.in_progress }}">
 
-        <div class="hc-kpi__value">0</div>
+        <span class="hc-request-summary-card__label">{{ summary_cards.labels.in_progress }}</span>
 
-        <div class="hc-kpi__context">Situations actives</div>
+        <strong class="hc-request-summary-card__value" data-kpi-target="in_progress">{{ summary_counts.in_progress or 0 }}</strong>
 
-      </div>
+        <span class="hc-request-summary-card__hint">Suivi actif en cours</span>
 
-      <div class="hc-kpi" data-kpi="URGENT">
+        <span class="hc-request-summary-card__cta">Voir</span>
 
-        <div class="hc-kpi__label">Urgentes</div>
+      </a>
 
-        <div class="hc-kpi__value">0</div>
+      <a class="hc-request-summary-card hc-request-summary-card--urgent"
+         data-request-summary-kpi="URGENT"
+         href="{{ summary_cards.hrefs.urgent }}">
 
-        <div class="hc-kpi__context">Action prioritaire</div>
+        <span class="hc-request-summary-card__label">{{ summary_cards.labels.urgent }}</span>
 
-      </div>
+        <strong class="hc-request-summary-card__value" data-kpi-target="urgent">{{ summary_counts.urgent or 0 }}</strong>
 
-      <div class="hc-kpi" data-kpi="COMPLETED">
+        <span class="hc-request-summary-card__hint">À traiter en priorité</span>
 
-        <div class="hc-kpi__label">Situations cltures</div>
+        <span class="hc-request-summary-card__cta">Voir</span>
 
-        <div class="hc-kpi__value">0</div>
+      </a>
 
-        <div class="hc-kpi__context">Cycle termin</div>
+      <a class="hc-request-summary-card hc-request-summary-card--completed"
+         data-request-summary-kpi="COMPLETED"
+         href="{{ summary_cards.hrefs.completed }}">
 
-      </div>
+        <span class="hc-request-summary-card__label">{{ summary_cards.labels.completed }}</span>
+
+        <strong class="hc-request-summary-card__value" data-kpi-target="completed">{{ summary_counts.completed or 0 }}</strong>
+
+        <span class="hc-request-summary-card__hint">Historique terminé</span>
+
+        <span class="hc-request-summary-card__cta">Voir</span>
+
+      </a>
 
     </div>
 
@@ -871,7 +889,7 @@
 
         {% set priority_raw = ((r.priority or 'LOW')|upper) %}
 
-        {% if priority_raw in ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] %}
+        {% if priority_raw in ['LOW', 'MEDIUM', 'HIGH', 'URGENT', 'CRITICAL'] %}
 
           {% set row_priority = priority_raw %}
 
@@ -883,7 +901,7 @@
 
         {% set row_status_raw = ((r.status or '')|lower) %}
 
-        {% if row_status_raw in ['new', 'pending', 'open'] %}
+        {% if row_status_raw in ['new', 'pending'] %}
 
           {% set row_status = 'pending' %}
 
@@ -1307,7 +1325,7 @@
                       data-success-message="{{ _('Responsable assigné') }}"
                     >
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="hidden" name="next" value="{{ url_for('admin.admin_request_details', req_id=r.id) }}">
+                      <input type="hidden" name="next" value="{{ current_requests_url }}">
 
                       <button
                         type="submit"
@@ -1368,6 +1386,7 @@
                     role="none"
                   >
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="next" value="{{ current_requests_url }}">
                     <button
                       type="submit"
                       class="hc-rowmenu__item hc-rowmenu__item--button"
@@ -1401,6 +1420,7 @@
                   >
 
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="next" value="{{ current_requests_url }}">
 
                     <button
                       type="submit"
@@ -1440,6 +1460,7 @@
                     data-success-message="{{ _('Intervenant relancé') }}"
                   >
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="next" value="{{ current_requests_url }}">
                     <button
                       type="submit"
                       class="hc-rowmenu__item hc-rowmenu__item--button hc-request-action-btn"

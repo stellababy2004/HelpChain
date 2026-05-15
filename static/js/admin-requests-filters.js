@@ -1,7 +1,7 @@
 (() => {
   const rows = Array.from(document.querySelectorAll("tr[data-hc-status-row]"));
   const tabs = Array.from(document.querySelectorAll("[data-hc-tab]"));
-  const kpiCards = Array.from(document.querySelectorAll("#hcAdminKpis [data-kpi]"));
+  const kpiCards = Array.from(document.querySelectorAll("#hcAdminKpis [data-request-summary-kpi]"));
   const btnAction = document.getElementById("hcToggleActionable");
   const tableFilters = window.hcAdminRequestsTableFilters;
 
@@ -13,7 +13,7 @@
 
   function normalizeTab(v){
     const val = (v || "").toUpperCase();
-    const allowed = new Set(["ALL","NEW","ASSIGNED","IN_PROGRESS","COMPLETED","CLOSED"]);
+    const allowed = new Set(["ALL","NEW","ASSIGNED","IN_PROGRESS","COMPLETED","CLOSED","URGENT"]);
     return allowed.has(val) ? val : "ALL";
   }
 
@@ -48,13 +48,25 @@
     return unassignedOpen || inProgress || hasCanHelp;
   }
 
+  function isTerminal(tr) {
+    const status = (tr.dataset.hcStatusRow || "").trim();
+    return ["CLOSED", "COMPLETED"].includes(status);
+  }
+
+  function isUrgent(tr) {
+    const p = (tr.dataset.priority || "").trim().toUpperCase();
+    return !isTerminal(tr) && (p === "URGENT" || p === "CRITICAL" || p === "HIGH");
+  }
+
   function passesTab(tr) {
     const s = (tr.dataset.hcStatusRow || "").trim();
+    if (activeTab === "URGENT") return isUrgent(tr);
     return activeTab === "ALL" || s === activeTab;
   }
 
   function applyFilters({ syncUrl = true } = {}) {
-    const predicate = (tr) => passesTab(tr) && (!actionOnly || isActionable(tr));
+    const shouldApplyActionFilter = actionOnly && activeTab !== "COMPLETED";
+    const predicate = (tr) => passesTab(tr) && (!shouldApplyActionFilter || isActionable(tr));
     const actionableCount = tableFilters
       ? tableFilters.countMatching((tr) => isActionable(tr), { exclude: ["statusTabs"] })
       : rows.filter((tr) => isActionable(tr)).length;
@@ -87,7 +99,7 @@
   kpiCards.forEach((card) => {
     card.style.cursor = "pointer";
     card.addEventListener("click", () => {
-      activeTab = card.dataset.kpi || "ALL";
+      activeTab = card.dataset.requestSummaryKpi || "ALL";
       applyFilters();
     });
   });

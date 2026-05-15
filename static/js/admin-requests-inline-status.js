@@ -71,6 +71,12 @@
     }
   }
 
+  function reloadCurrentQueue() {
+    window.setTimeout(() => {
+      window.location.reload();
+    }, 120);
+  }
+
   function wait(ms) {
     return new Promise((resolve) => {
       window.setTimeout(resolve, ms);
@@ -190,6 +196,7 @@
               ui.flashRowState(menu, "success");
             }
             menu.open = false;
+            reloadCurrentQueue();
           } else {
             showFlash(menu, result.message, "");
             showToast(result.message, "");
