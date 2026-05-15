@@ -6,20 +6,28 @@
   if (!isIntentPage) return;
   if (localStorage.getItem("hc_lead_capture_closed") === "1") return;
 
+  const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
+  const triggerDelay = isMobileViewport ? 16000 : 8000;
+  const scrollThreshold = isMobileViewport ? 0.65 : 0.55;
+
   function showCapture() {
     if (document.querySelector(".hc-lead-capture")) return;
 
     const box = document.createElement("div");
     box.className = "hc-lead-capture is-visible";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-modal", "false");
+    box.setAttribute("aria-labelledby", "hc-lead-capture-title");
+    box.setAttribute("aria-describedby", "hc-lead-capture-text");
     box.innerHTML = `
       <button class="hc-lead-capture__close" type="button" aria-label="Fermer">×</button>
 
-      <div class="hc-lead-capture__title">
-        Voir comment HelpChain fonctionnerait dans votre structure ?
+      <div class="hc-lead-capture__title" id="hc-lead-capture-title">
+        Voir HelpChain dans votre contexte ?
       </div>
 
-      <div class="hc-lead-capture__text">
-        En 15 minutes, nous vous montrons un cas concret adapté à votre organisation.
+      <div class="hc-lead-capture__text" id="hc-lead-capture-text">
+        Recevez un scénario de pilote adapté à votre organisation.
       </div>
 
       <input
@@ -30,17 +38,17 @@
         autocomplete="email"
       />
 
-      <div style="font-size:13px;color:#64748b;margin-bottom:10px;">
-        ✔ Réponse rapide sous 24h · ✔ Déploiement progressif · ✔ Cadre maîtrisé
+      <div class="hc-lead-capture__reassurance">
+        Réponse sous 24h · Pilote progressif · Cadre maîtrisé
       </div>
 
-      <div style="font-size:13px;color:#dc2626;margin-bottom:10px;">
-        ⚠ Déploiement pilote limité — créneaux en cours cette semaine
+      <div class="hc-lead-capture__note">
+        Créneaux pilote limités cette semaine
       </div>
 
       <div class="hc-lead-capture__actions">
         <button class="hc-lead-capture__primary" id="hc-lead-submit" type="button">
-          Voir un exemple concret
+          Échanger sur un pilote
         </button>
         <a class="hc-lead-capture__secondary" href="/deploiement">
           Voir le déploiement
@@ -91,7 +99,7 @@
           <div class="hc-lead-capture__title">C’est fait.</div>
 
           <div class="hc-lead-capture__text">
-            👉 Plus vous donnez de contexte, plus la démonstration sera pertinente.
+            Ajoutez votre contexte pour préparer un échange plus utile.
           </div>
 
           <div class="hc-lead-capture__actions">
@@ -106,15 +114,15 @@
         console.error("HC_LEAD_CAPTURE_API_FAILED", error);
 
         submitButton.disabled = false;
-        submitButton.textContent = "Voir un exemple concret";
+        submitButton.textContent = "Échanger sur un pilote";
 
         alert("Erreur temporaire. Vous pouvez finaliser votre demande via le formulaire de contact.");
       }
     });
   }
 
-  // show popup after 8s or on scroll >55%
-  setTimeout(showCapture, 8000);
+  // On mobile, wait longer and require stronger intent before showing the prompt.
+  setTimeout(showCapture, triggerDelay);
 
   let maxScroll = 0;
   window.addEventListener("scroll", function () {
@@ -123,7 +131,7 @@
     if (docHeight <= 0) return;
 
     maxScroll = Math.max(maxScroll, scrollTop / docHeight);
-    if (maxScroll > 0.55) showCapture();
+    if (maxScroll > scrollThreshold) showCapture();
   });
 
   // make function globally available for debug/testing
