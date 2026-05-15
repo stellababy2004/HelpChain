@@ -8,472 +8,7 @@
 
 {% block extra_css %}
   {{ super() }}
-  <style>
-    body.hc-page-offre {
-      --hc-offre-ink: #11233c;
-      --hc-offre-muted: #5b6b84;
-      --hc-offre-line: rgba(17, 35, 60, 0.1);
-      --hc-offre-surface: rgba(255, 255, 255, 0.84);
-      --hc-offre-shadow: 0 24px 80px rgba(13, 27, 46, 0.08);
-      --hc-offre-primary: #163d72;
-      --hc-offre-accent: #16766f;
-      background:
-        radial-gradient(circle at top left, rgba(22, 61, 114, 0.14), transparent 30%),
-        radial-gradient(circle at top right, rgba(22, 118, 111, 0.1), transparent 24%),
-        linear-gradient(180deg, #f6f8fc 0%, #eef3f9 100%);
-      color: var(--hc-offre-ink);
-    }
-
-    body.hc-page-offre .hc-offre {
-      padding: 2.5rem 0 0;
-    }
-
-    body.hc-page-offre .hc-offre__shell {
-      width: min(100% - 2rem, 1240px);
-      margin: 0 auto;
-    }
-
-    body.hc-page-offre .hc-offre__section {
-      padding: 5.5rem 0;
-    }
-
-    body.hc-page-offre .hc-offre__eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      padding: 0.5rem 0.95rem;
-      border: 1px solid var(--hc-offre-line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.76);
-      color: #3e5472;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    body.hc-page-offre .hc-offre__hero {
-      display: grid;
-      gap: 2rem;
-      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
-      align-items: stretch;
-    }
-
-    body.hc-page-offre .hc-offre__hero-copy,
-    body.hc-page-offre .hc-offre__hero-panel,
-    body.hc-page-offre .hc-offre__card,
-    body.hc-page-offre .hc-offre__trust-band,
-    body.hc-page-offre .hc-offre__faq-item,
-    body.hc-page-offre .hc-offre__final {
-      border: 1px solid var(--hc-offre-line);
-      background: var(--hc-offre-surface);
-      box-shadow: var(--hc-offre-shadow);
-    }
-
-    body.hc-page-offre .hc-offre__hero-copy {
-      padding: clamp(2.35rem, 5vw, 4rem);
-      border-radius: 32px;
-    }
-
-    body.hc-page-offre .hc-offre__hero-copy h1 {
-      max-width: 12ch;
-      margin: 1rem 0 1rem;
-      font-size: clamp(2.8rem, 5vw, 4.8rem);
-      line-height: 0.96;
-      letter-spacing: -0.055em;
-    }
-
-    body.hc-page-offre .hc-offre__lead {
-      max-width: 62ch;
-      margin: 0;
-      color: var(--hc-offre-muted);
-      font-size: 1.12rem;
-      line-height: 1.72;
-    }
-
-    body.hc-page-offre .hc-offre__actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.85rem;
-      margin-top: 1.8rem;
-    }
-
-    body.hc-page-offre .hc-offre__btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      min-height: 52px;
-      padding: 0 1.25rem;
-      border-radius: 16px;
-      border: 1px solid transparent;
-      font-weight: 700;
-      text-decoration: none;
-      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-    }
-
-    body.hc-page-offre .hc-offre__btn--primary {
-      color: #fff;
-      background: linear-gradient(135deg, #2563eb, #1d4ed8);
-      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
-    }
-
-    body.hc-page-offre .hc-offre__btn--primary:hover {
-      transform: translateY(-1px);
-      box-shadow:
-        0 16px 34px rgba(37, 99, 235, 0.28),
-        0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-    }
-
-    body.hc-page-offre .hc-offre__btn--secondary {
-      color: var(--hc-offre-ink);
-      background: rgba(255, 255, 255, 0.82);
-      border-color: rgba(17, 35, 60, 0.14);
-    }
-
-    body.hc-page-offre .hc-offre__hero-panel {
-      padding: 2.2rem;
-      border-radius: 28px;
-      background:
-        linear-gradient(180deg, rgba(22, 53, 95, 0.08), rgba(22, 53, 95, 0.02)),
-        linear-gradient(180deg, #f8fbff 0%, #f2f6fb 100%);
-      border: 1px solid rgba(20, 55, 95, 0.12);
-      box-shadow:
-        0 18px 38px rgba(15, 35, 70, 0.06),
-        0 6px 14px rgba(15, 35, 70, 0.04);
-      color: #173252;
-      overflow: hidden;
-      position: relative;
-    }
-
-    body.hc-page-offre .hc-offre__hero-panel::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      border-radius: 28px 28px 0 0;
-      background: linear-gradient(90deg, #1d4ed8, #60a5fa);
-      pointer-events: none;
-      opacity: 0.9;
-    }
-
-    body.hc-page-offre .hc-offre__hero-panel::before {
-      content: "";
-      position: absolute;
-      top: -12%;
-      right: -10%;
-      width: 190px;
-      height: 160px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(30, 76, 140, 0.1) 0%, rgba(30, 76, 140, 0.03) 52%, transparent 74%);
-      filter: blur(22px);
-      pointer-events: none;
-      opacity: 0.65;
-    }
-
-    body.hc-page-offre .hc-offre__panel-label {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      padding: 0.4rem 0.72rem;
-      border-radius: 999px;
-      background: rgba(23, 50, 82, 0.06);
-      color: #173252;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-    }
-
-    body.hc-page-offre .hc-offre__panel-value {
-      position: relative;
-      z-index: 1;
-      margin-top: 1.35rem;
-      font-size: clamp(40px, 4.4vw, 54px);
-      line-height: 0.99;
-      font-weight: 800;
-      letter-spacing: -0.05em;
-      color: #173252;
-    }
-
-    body.hc-page-offre .hc-offre__panel-copy {
-      position: relative;
-      z-index: 1;
-      margin: 1.35rem 0 2.2rem;
-      max-width: 88%;
-      color: #5e728d;
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    body.hc-page-offre .hc-offre__panel-list {
-      display: grid;
-      gap: 1.15rem;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      position: relative;
-      z-index: 1;
-    }
-
-    body.hc-page-offre .hc-offre__panel-list li {
-      padding: 1.35rem 1.35rem;
-      border-radius: 18px;
-      background: rgba(33, 74, 135, 0.05);
-      border: 1px solid rgba(33, 74, 135, 0.1);
-      box-shadow:
-        0 6px 12px rgba(15, 35, 70, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.55);
-      transition: all 0.22s ease;
-    }
-
-    body.hc-page-offre .hc-offre__panel-list li:hover {
-      transform: translateY(-2px);
-      background: rgba(33, 74, 135, 0.07);
-    }
-
-    body.hc-page-offre .hc-offre__panel-list strong {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #173252;
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    body.hc-page-offre .hc-offre__panel-list span {
-      color: #61758f;
-      font-size: 16px;
-      line-height: 1.62;
-    }
-
-    @media (max-width: 991.98px) {
-      body.hc-page-offre .hc-offre__panel-value {
-        font-size: clamp(34px, 8vw, 46px);
-      }
-
-      body.hc-page-offre .hc-offre__panel-copy {
-        max-width: 100%;
-      }
-    }
-
-    body.hc-page-offre .hc-offre__section-head {
-      max-width: 760px;
-      margin: 0 auto 2.75rem;
-      text-align: center;
-    }
-
-    body.hc-page-offre .hc-offre__section-head h2 {
-      margin: 0.95rem 0 0.9rem;
-      font-size: clamp(2rem, 3.6vw, 3.1rem);
-      line-height: 1.05;
-      letter-spacing: -0.045em;
-    }
-
-    body.hc-page-offre .hc-offre__section-head p {
-      margin: 0;
-      color: var(--hc-offre-muted);
-      font-size: 1.04rem;
-      line-height: 1.7;
-    }
-
-    body.hc-page-offre .hc-offre__grid {
-      display: grid;
-      gap: 1.25rem;
-    }
-
-    body.hc-page-offre .hc-offre__grid--offers {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      align-items: stretch;
-    }
-
-    body.hc-page-offre .hc-offre__card {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1.95rem;
-      border-radius: 28px;
-      min-height: 100%;
-    }
-
-    body.hc-page-offre .hc-offre__card--featured {
-      border-color: rgba(37, 99, 235, 0.46);
-      background:
-        linear-gradient(180deg, rgba(233, 241, 255, 0.94), rgba(255, 255, 255, 0.98) 48%),
-        #fff;
-      transform: translateY(-10px);
-      box-shadow:
-        0 32px 84px rgba(16, 35, 62, 0.14),
-        0 8px 24px rgba(37, 99, 235, 0.12);
-    }
-
-    body.hc-page-offre .hc-offre__badge {
-      display: inline-flex;
-      width: fit-content;
-      padding: 0.42rem 0.82rem;
-      border-radius: 999px;
-      border: 1px solid rgba(37, 99, 235, 0.26);
-      background: linear-gradient(180deg, rgba(239, 246, 255, 0.98), rgba(219, 234, 254, 0.9));
-      color: #1d4ed8;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
-      text-transform: uppercase;
-    }
-
-    body.hc-page-offre .hc-offre__card-label {
-      color: rgba(17, 35, 60, 0.58);
-      font-size: 0.8rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    body.hc-page-offre .hc-offre__card h3 {
-      margin: 0;
-      font-size: 1.7rem;
-      line-height: 1.05;
-    }
-
-    body.hc-page-offre .hc-offre__card p {
-      margin: 0;
-      color: var(--hc-offre-muted);
-      line-height: 1.7;
-    }
-
-    body.hc-page-offre .hc-offre__list {
-      display: grid;
-      gap: 0.75rem;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    body.hc-page-offre .hc-offre__list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.7rem;
-      color: #213857;
-      font-weight: 600;
-      line-height: 1.5;
-    }
-
-    body.hc-page-offre .hc-offre__list i {
-      margin-top: 0.15rem;
-      color: var(--hc-offre-accent);
-    }
-
-    body.hc-page-offre .hc-offre__card-cta {
-      margin-top: auto;
-      padding-top: 0.35rem;
-    }
-
-    body.hc-page-offre .hc-offre__trust-band {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      padding: 1.4rem;
-      border-radius: 28px;
-    }
-
-    body.hc-page-offre .hc-offre__trust-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      padding: 1rem;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.72);
-      color: #27415f;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    body.hc-page-offre .hc-offre__trust-item i {
-      color: var(--hc-offre-accent);
-    }
-
-    body.hc-page-offre .hc-offre__faq {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    body.hc-page-offre .hc-offre__faq-item {
-      padding: 1.4rem 1.45rem;
-      border-radius: 24px;
-    }
-
-    body.hc-page-offre .hc-offre__faq-item h3 {
-      margin: 0 0 0.6rem;
-      font-size: 1.08rem;
-    }
-
-    body.hc-page-offre .hc-offre__faq-item p {
-      margin: 0;
-      color: var(--hc-offre-muted);
-      line-height: 1.68;
-    }
-
-    body.hc-page-offre .hc-offre__final {
-      padding: clamp(2rem, 4.5vw, 3.5rem);
-      border-radius: 32px;
-      background:
-        radial-gradient(circle at top right, rgba(22, 118, 111, 0.16), transparent 24%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(242, 246, 252, 0.94));
-      text-align: center;
-    }
-
-    body.hc-page-offre .hc-offre__final h2 {
-      margin: 1rem 0 0.9rem;
-      font-size: clamp(2rem, 4vw, 3.3rem);
-      line-height: 1.04;
-      letter-spacing: -0.045em;
-    }
-
-    body.hc-page-offre .hc-offre__final p {
-      max-width: 760px;
-      margin: 0 auto;
-      color: var(--hc-offre-muted);
-      font-size: 1.08rem;
-      line-height: 1.72;
-    }
-
-    body.hc-page-offre .hc-offre__final .hc-offre__actions {
-      justify-content: center;
-    }
-
-    @media (max-width: 991.98px) {
-      body.hc-page-offre .hc-offre__hero,
-      body.hc-page-offre .hc-offre__grid--offers,
-      body.hc-page-offre .hc-offre__trust-band,
-      body.hc-page-offre .hc-offre__faq {
-        grid-template-columns: 1fr;
-      }
-
-      body.hc-page-offre .hc-offre__card--featured {
-        transform: none;
-      }
-    }
-
-    @media (max-width: 720px) {
-      body.hc-page-offre .hc-offre__shell {
-        width: min(100% - 1rem, 1240px);
-      }
-
-      body.hc-page-offre .hc-offre__actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      body.hc-page-offre .hc-offre__btn {
-        width: 100%;
-      }
-    }
-  </style>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/offre.css') }}?v=20260506-ux-pass">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/offre.css') }}?v=20260515-institutional-polish">
 {% endblock %}
 
 {% block content %}
@@ -490,6 +25,12 @@
           <a href="/demo" class="hc-offre__btn hc-offre__btn--primary">{{ _("Échanger sur un pilote") }}</a>
           <a href="{{ url_for('main.deploiement') }}" class="hc-offre__btn hc-offre__btn--secondary">{{ _("Voir le d\u00e9ploiement") }}</a>
         </div>
+        <ul class="hc-offre__hero-chips" aria-label="{{ _('Repères institutionnels') }}">
+          <li>{{ _("Hébergement UE") }}</li>
+          <li>{{ _("RGPD") }}</li>
+          <li>{{ _("Déploiement progressif") }}</li>
+          <li>{{ _("Accès par rôles") }}</li>
+        </ul>
       </div>
 
       <aside class="hc-offre__hero-panel" aria-label="{{ _('Cadre d’engagement') }}">
@@ -550,6 +91,7 @@
 
         <article class="hc-offre__card hc-offre__card--featured">
           <span class="hc-offre__badge">{{ _("Cadre recommandé") }}</span>
+          <div class="hc-offre__adoption-note">{{ _("Le plus adopté pour les structures en croissance") }}</div>
           <div class="hc-offre__card-label">{{ _("Structures en croissance") }}</div>
           <h3>{{ _("Professionnel") }}</h3>
           <p>{{ _("Pour les structures qui veulent un workflow complet, du suivi opérationnel et une vraie visibilité sur l’activité.") }}</p>
@@ -577,7 +119,7 @@
             <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>{{ _("Roadmap personnalisée") }}</span></li>
           </ul>
           <div class="hc-offre__card-cta">
-            <a href="{{ url_for('main.contact') }}" class="hc-offre__btn hc-offre__btn--secondary">{{ _("Parler à un expert") }}</a>
+            <a href="{{ url_for('main.contact') }}" class="hc-offre__btn hc-offre__btn--secondary">{{ _("Structurer un déploiement") }}</a>
           </div>
         </article>
       </div>
@@ -606,20 +148,20 @@
 
       <div class="hc-offre__faq">
         <article class="hc-offre__faq-item">
-          <h3>{{ _("Combien de temps pour démarrer ?") }}</h3>
-          <p>{{ _("Le démarrage dépend du périmètre retenu. Un pilote peut être préparé rapidement sur un cadre limité, puis consolidé avant élargissement.") }}</p>
+          <h3>{{ _("Peut-on garder les outils existants ?") }}</h3>
+          <p>{{ _("Oui. HelpChain ajoute une couche de coordination et de traçabilité sans imposer une migration brutale ni remplacer immédiatement vos outils en place.") }}</p>
         </article>
         <article class="hc-offre__faq-item">
-          <h3>{{ _("Peut-on commencer petit ?") }}</h3>
-          <p>{{ _("Oui. HelpChain est pensé pour permettre un premier périmètre de coordination local avant un déploiement plus large.") }}</p>
+          <h3>{{ _("Comment se déroule un pilote ?") }}</h3>
+          <p>{{ _("Nous cadrons un périmètre limité, configurons les rôles utiles, suivons quelques situations réelles et réalisons un premier bilan avant toute extension.") }}</p>
         </article>
         <article class="hc-offre__faq-item">
-          <h3>{{ _("Accompagnez-vous le déploiement ?") }}</h3>
-          <p>{{ _("Oui. L’accompagnement fait partie de l’engagement pour cadrer les usages, structurer les rôles et installer les bons indicateurs.") }}</p>
+          <h3>{{ _("Combien d’équipes peuvent commencer ?") }}</h3>
+          <p>{{ _("Une seule équipe peut suffire pour démarrer. Le périmètre peut ensuite s’élargir vers d’autres services, structures ou territoires lorsque les usages sont stabilisés.") }}</p>
         </article>
         <article class="hc-offre__faq-item">
-          <h3>{{ _("Les données restent-elles sécurisées ?") }}</h3>
-          <p>{{ _("HelpChain s’inscrit dans un cadre de sécurité, de rôles d’accès et de traçabilité adapté aux exigences des structures et collectivités.") }}</p>
+          <h3>{{ _("Le déploiement peut-il être progressif ?") }}</h3>
+          <p>{{ _("Oui. Le déploiement est volontairement progressif : périmètre pilote, responsabilités visibles, accès par rôles, puis montée en charge selon votre rythme de gouvernance.") }}</p>
         </article>
       </div>
     </div>
@@ -635,6 +177,11 @@
           <a href="/demo" class="hc-offre__btn hc-offre__btn--primary">{{ _("Échanger sur un pilote") }}</a>
           <a href="{{ url_for('main.contact') }}" class="hc-offre__btn hc-offre__btn--secondary">{{ _("Nous contacter") }}</a>
         </div>
+        <ul class="hc-offre__final-chips" aria-label="{{ _('Repères de réassurance') }}">
+          <li>{{ _("Réponse sous 24h") }}</li>
+          <li>{{ _("Sans engagement") }}</li>
+          <li>{{ _("France / UE") }}</li>
+        </ul>
       </div>
     </div>
   </section>
