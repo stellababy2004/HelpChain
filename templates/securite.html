@@ -105,7 +105,7 @@
     </div>
   </section>
 
-  <section class="hc-trust-page__section">
+  <section class="hc-trust-page__section hc-trust-page__section--approach">
     <div class="hc-trust-page__shell">
       <div class="hc-trust-page__section-head hc-trust-page__section-head--compact">
         <p>{{ _("Approche") }}</p>
@@ -165,6 +165,12 @@
           <a href="{{ url_for('main.contact') }}" class="hc-btn hc-btn--ghost btn btn-secondary">{{ _("Nous contacter") }}</a>
         </div>
       </div>
+      <ul class="hc-trust-page__cta-trust-chips" aria-label="{{ _('Repères de confiance') }}">
+        <li>{{ _("RGPD") }}</li>
+        <li>{{ _("Accès par rôles") }}</li>
+        <li>{{ _("Journal d’audit") }}</li>
+        <li>{{ _("France / UE") }}</li>
+      </ul>
     </div>
   </section>
 </main>
