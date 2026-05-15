@@ -138,6 +138,19 @@ def _workspace_kpi_value(html: str, label: str) -> int:
     return int(match.group(1))
 
 
+
+def _workspace_kpi_value_fuzzy(html: str, label_pattern: str) -> int:
+    pattern = re.compile(
+        r'<div class="hc-ops-summary__label">\s*'
+        + label_pattern
+        + r'\s*</div>\s*<div class="hc-ops-summary__value[^"]*">\s*(\d+)\s*</div>',
+        re.S,
+    )
+    match = pattern.search(html)
+    assert match, f"KPI label pattern not found: {label_pattern}"
+    return int(match.group(1))
+
+
 def _case_row_count(html: str) -> int:
     return html.count('class="hc-case-row')
 
@@ -851,7 +864,7 @@ def test_ops_workspace_kpis_match_quick_action_case_filters(
     assert _workspace_kpi_value(workspace_html, "Demandes non assignées") == _case_row_count(
         unassigned_html
     )
-    assert _workspace_kpi_value(workspace_html, "Cas sans action") == _case_row_count(
+    assert _workspace_kpi_value_fuzzy(workspace_html, r"Sans activit.") == _case_row_count(
         stale_html
     )
     assert "ops-kpi-resolved-decoy" not in critical_html

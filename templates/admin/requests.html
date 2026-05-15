@@ -372,7 +372,7 @@
 
     <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1', city=request.args.get('city') or None) }}">
 
-      <span class="hc-risk-overview__label">{{ _('Cas sans action depuis 72h') }}</span>
+      <span class="hc-risk-overview__label">{{ _('Sans activité depuis 72h') }}</span>
 
       <strong class="hc-risk-overview__value">{{ not_seen_72h_count or 0 }}</strong>
 
@@ -396,7 +396,7 @@
     </a>
 
     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk='stale') }}">
-      Stale
+      Sans activité
     </a>
 
     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk_level='critical') }}">
@@ -440,7 +440,7 @@
       href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}"
       data-risk-shortcut="stale"
       aria-pressed="{{ 'true' if not_seen_72h else 'false' }}"
-    >{{ _('Sans action 72h') }} (<span data-risk-count="stale">{{ not_seen_72h_count or 0 }}</span>)</a>
+    >{{ _('Sans activité 72h') }} (<span data-risk-count="stale">{{ not_seen_72h_count or 0 }}</span>)</a>
 
     <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Rinitialiser les filtres</a>
 
@@ -828,7 +828,7 @@
 
     <button type="button" class="hc-quickchip" data-quick-filter="no_owner">Sans responsable</button>
 
-    <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Stale') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Sans activité') }}</button>
 
     <button type="button" class="hc-quickchip" data-quick-filter="urgent">{{ _('Urgent') }}</button>
 
@@ -1200,7 +1200,7 @@
 
                         {% if stale_72h and r.status not in ['done','rejected'] %}
 
-                          <span class="badge text-bg-danger" title="{{ _('Stale request') }}">{{ _('Stale') }}</span>
+                          <span class="badge text-bg-danger" title="{{ _('Demande sans activité') }}">{{ _('Sans activité') }}</span>
 
                         {% endif %}
 

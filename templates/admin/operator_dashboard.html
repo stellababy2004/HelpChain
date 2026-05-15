@@ -38,9 +38,9 @@
         <div class="hc-ops-summary__context">À affecter</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Cas sans action</div>
+        <div class="hc-ops-summary__label">Sans activité</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
-        <div class="hc-ops-summary__context">Sans action 72h</div>
+        <div class="hc-ops-summary__context">Sans activité 72h</div>
       </div>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Notifications en échec</div>
@@ -63,7 +63,7 @@
     <div class="hc-ops-actions" id="hcOpsQuickFilters">
       <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', owner='none') }}">Voir non assignés</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}">Voir cas sans action</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}">Voir sans activité</a>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">Notifications en échec</a>
     </div>
   </div>
