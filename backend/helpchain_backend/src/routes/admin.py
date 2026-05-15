@@ -4989,21 +4989,21 @@ def _render_operator_dashboard():
     if _cases_enabled():
         try:
             case_base, case_kpi_filters = _build_scoped_cases_base_query()
-            urgent_count = _apply_cases_queue_filters(
+            urgent_count = _case_queue_count(
                 case_base,
                 case_filters=case_kpi_filters,
                 risk="critical",
-            ).count()
-            unassigned_count = _apply_cases_queue_filters(
+            )
+            unassigned_count = _case_queue_count(
                 case_base,
                 case_filters=case_kpi_filters,
                 owner="none",
-            ).count()
-            followup_count = _apply_cases_queue_filters(
+            )
+            followup_count = _case_queue_count(
                 case_base,
                 case_filters=case_kpi_filters,
                 stale_72h=True,
-            ).count()
+            )
         except Exception:
             db.session.rollback()
     updated_today_count = workspace_query.filter(updated_today_filter).count()
@@ -9093,6 +9093,94 @@ def _apply_cases_queue_filters(
     return query
 
 
+def _case_queue_count(
+    base_query,
+    *,
+    case_filters: dict[str, object],
+    status: str = "",
+    priority: str = "",
+    owner: str = "",
+    category: str = "",
+    risk: str = "",
+    stale_72h: bool = False,
+    city: str = "",
+) -> int:
+    return int(
+        _apply_cases_queue_filters(
+            base_query,
+            case_filters=case_filters,
+            status=status,
+            priority=priority,
+            owner=owner,
+            category=category,
+            risk=risk,
+            stale_72h=stale_72h,
+            city=city,
+        ).count()
+        or 0
+    )
+
+
+def _case_queue_counts_for_filters(
+    base_query,
+    *,
+    case_filters: dict[str, object],
+    status: str = "",
+    priority: str = "",
+    owner: str = "",
+    category: str = "",
+    risk: str = "",
+    stale_72h: bool = False,
+    city: str = "",
+) -> dict[str, int]:
+    return {
+        "critical": _case_queue_count(
+            base_query,
+            case_filters=case_filters,
+            status=status,
+            priority=priority,
+            owner=owner,
+            category=category,
+            risk="critical",
+            stale_72h=stale_72h,
+            city=city,
+        ),
+        "attention": _case_queue_count(
+            base_query,
+            case_filters=case_filters,
+            status=status,
+            priority=priority,
+            owner=owner,
+            category=category,
+            risk="attention",
+            stale_72h=stale_72h,
+            city=city,
+        ),
+        "no_owner": _case_queue_count(
+            base_query,
+            case_filters=case_filters,
+            status=status,
+            priority=priority,
+            owner="none",
+            category=category,
+            risk=risk,
+            stale_72h=stale_72h,
+            city=city,
+        ),
+        "stale_72h": _case_queue_count(
+            base_query,
+            case_filters=case_filters,
+            status=status,
+            priority=priority,
+            owner=owner,
+            category=category,
+            risk=risk,
+            stale_72h=True,
+            city=city,
+        ),
+    }
+
+
 def _case_active_filter_labels(
     *,
     status: str = "",
@@ -9253,7 +9341,7 @@ def _render_cases_list():
     base_query, case_kpi_filters = _build_scoped_cases_base_query()
     activity_expr = case_kpi_filters["activity_expr"]
     stale_threshold = _now_utc() - timedelta(hours=72)
-    query = _apply_cases_queue_filters(
+    queue_counts = _case_queue_counts_for_filters(
         base_query,
         case_filters=case_kpi_filters,
         status=status,
@@ -9264,12 +9352,15 @@ def _render_cases_list():
         stale_72h=stale_72h,
         city=city,
     )
-    counts_base = _apply_cases_queue_filters(
+    query = _apply_cases_queue_filters(
         base_query,
         case_filters=case_kpi_filters,
         status=status,
         priority=priority,
+        owner=owner,
         category=category,
+        risk=risk,
+        stale_72h=stale_72h,
         city=city,
     )
 
@@ -9327,11 +9418,10 @@ def _render_cases_list():
         case_signals[int(c.id)] = result.get("ops_priority_reasons") or []
         ops_priority_levels[int(c.id)] = result.get("ops_priority_level") or "normal"
 
-    # counts_base prepared above to include collaborators when applicable
-    critical_count = counts_base.filter(case_kpi_filters["critical"]).count()
-    attention_count = counts_base.filter(case_kpi_filters["attention"]).count()
-    no_owner_count = counts_base.filter(case_kpi_filters["no_owner"]).count()
-    stale_count = counts_base.filter(case_kpi_filters["stale_72h"]).count()
+    critical_count = queue_counts["critical"]
+    attention_count = queue_counts["attention"]
+    no_owner_count = queue_counts["no_owner"]
+    stale_count = queue_counts["stale_72h"]
 
     owners = (
         AdminUser.query.with_entities(AdminUser.id, AdminUser.username)

@@ -139,6 +139,18 @@ def _case_row_count(html: str) -> int:
     return html.count('class="hc-case-row')
 
 
+def _case_overview_value(html: str, label: str) -> int:
+    pattern = re.compile(
+        r'<span class="hc-risk-overview__label">\s*'
+        + re.escape(label)
+        + r'\s*</span>\s*<strong class="hc-risk-overview__value">\s*(\d+)\s*</strong>',
+        re.S,
+    )
+    match = pattern.search(html)
+    assert match, f"Case overview label not found: {label}"
+    return int(match.group(1))
+
+
 def test_admin_requests_shows_seeded_requests_even_with_null_and_new_status(client, session):
     _make_structure(session, structure_id=2, name="Structure 2", slug="structure-2")
     _make_structure(session, structure_id=3, name="Structure 3", slug="structure-3")
@@ -387,6 +399,134 @@ def test_ops_workspace_kpis_match_quick_action_case_filters(
     assert "Responsable: non attribue" in unassigned_html
     assert "Cas sans action 72h" in stale_html
     assert workspace_html.count('/ops/cases?risk=critical') >= 2
+
+
+def test_admin_cases_owner_missing_count_matches_filtered_queue(
+    authenticated_admin_client, session
+):
+    from backend.models import Structure
+
+    structure = session.query(Structure).filter_by(slug="default").first()
+    user = _make_user(
+        session,
+        username="admin_cases_owner_user",
+        email="admin_cases_owner_user@test.local",
+    )
+    operator = _make_admin(
+        session,
+        username="admin_cases_owner_operator",
+        email="admin_cases_owner_operator@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    now = datetime.now(UTC).replace(tzinfo=None, microsecond=0)
+
+    critical_no_owner_req = _make_request(
+        session,
+        title="admin-cases-critical-no-owner",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    _make_case(
+        session,
+        request_id=critical_no_owner_req.id,
+        structure_id=structure.id,
+        owner_user_id=None,
+        priority="critical",
+        risk_score=95,
+        created_at=now,
+    )
+
+    normal_no_owner_req = _make_request(
+        session,
+        title="admin-cases-normal-no-owner",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    _make_case(
+        session,
+        request_id=normal_no_owner_req.id,
+        structure_id=structure.id,
+        owner_user_id=None,
+        risk_score=0,
+        created_at=now,
+    )
+
+    critical_owned_req = _make_request(
+        session,
+        title="admin-cases-critical-owned",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=operator.id,
+        created_at=now,
+        updated_at=now,
+    )
+    _make_case(
+        session,
+        request_id=critical_owned_req.id,
+        structure_id=structure.id,
+        owner_user_id=operator.id,
+        priority="critical",
+        risk_score=95,
+        created_at=now,
+    )
+
+    resolved_no_owner_req = _make_request(
+        session,
+        title="admin-cases-resolved-no-owner",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    _make_case(
+        session,
+        request_id=resolved_no_owner_req.id,
+        structure_id=structure.id,
+        status="resolved",
+        owner_user_id=None,
+        priority="critical",
+        risk_score=95,
+        created_at=now,
+    )
+
+    critical_page = authenticated_admin_client.get(
+        "/admin/cases?risk=critical",
+        follow_redirects=False,
+    )
+    filtered_page = authenticated_admin_client.get(
+        "/admin/cases?risk=critical&owner=none",
+        follow_redirects=False,
+    )
+
+    assert critical_page.status_code == 200
+    assert filtered_page.status_code == 200
+    critical_html = critical_page.get_data(as_text=True)
+    filtered_html = filtered_page.get_data(as_text=True)
+
+    owner_missing_badge_count = _case_overview_value(
+        critical_html,
+        "Cas sans responsable",
+    )
+    assert owner_missing_badge_count == _case_row_count(filtered_html)
+    assert _case_overview_value(filtered_html, "Cas sans responsable") == _case_row_count(
+        filtered_html
+    )
+    assert "admin-cases-critical-no-owner" in filtered_html
+    assert "admin-cases-normal-no-owner" not in filtered_html
+    assert "admin-cases-critical-owned" not in filtered_html
+    assert "admin-cases-resolved-no-owner" not in filtered_html
 
 
 def test_structure_scoped_admin_requests_excludes_other_structures(client, session):
