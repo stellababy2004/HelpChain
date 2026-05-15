@@ -4986,26 +4986,9 @@ def _render_operator_dashboard():
     urgent_count = workspace_query.filter(urgent_filter).count()
     unassigned_count = workspace_query.filter(unassigned_filter).count()
     followup_count = workspace_query.filter(activity_expr <= stale_threshold).count()
-    if _cases_enabled():
-        try:
-            case_base, case_kpi_filters = _build_scoped_cases_base_query()
-            urgent_count = _case_queue_count(
-                case_base,
-                case_filters=case_kpi_filters,
-                risk="critical",
-            )
-            unassigned_count = _case_queue_count(
-                case_base,
-                case_filters=case_kpi_filters,
-                owner="none",
-            )
-            followup_count = _case_queue_count(
-                case_base,
-                case_filters=case_kpi_filters,
-                stale_72h=True,
-            )
-        except Exception:
-            db.session.rollback()
+    # /ops/workspace KPI counters intentionally stay Request-based.
+    # Case rows remain available in /ops/cases, but they do not override
+    # workspace counters until Case becomes the canonical operational source.
     updated_today_count = workspace_query.filter(updated_today_filter).count()
 
     failed_notif_count = 0

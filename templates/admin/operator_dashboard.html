@@ -13,7 +13,7 @@
       </div>
       <div class="hc-admin-actions">
         <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">+ Nouvelle demande</a>
-        <a class="btn btn-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_requests', tab='URGENT') }}">Voir cas critiques</a>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir sécurité</a>
       </div>
     </div>
@@ -27,26 +27,50 @@
       </div>
     </div>
     <div class="hc-ops-summary mb-3">
-      <div class="hc-ops-summary__item">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('admin.admin_requests', tab='URGENT') }}">
         <div class="hc-ops-summary__label">Situations critiques</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
-        <div class="hc-ops-summary__context">Priorité immédiate</div>
-      </div>
-      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__context">
+          {% if urgent_count or 0 %}
+            Priorité immédiate
+          {% else %}
+            Aucune priorité critique
+          {% endif %}
+        </div>
+      </a>
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('admin.admin_requests', no_owner='1') }}">
         <div class="hc-ops-summary__label">Demandes non assignées</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}"> {{ unassigned_count or 0 }}</div>
-        <div class="hc-ops-summary__context">À affecter</div>
-      </div>
-      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__context">
+          {% if unassigned_count or 0 %}
+            À affecter
+          {% else %}
+            File correctement attribuée
+          {% endif %}
+        </div>
+      </a>
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
         <div class="hc-ops-summary__label">Sans activité</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
-        <div class="hc-ops-summary__context">Sans activité 72h</div>
-      </div>
-      <div class="hc-ops-summary__item">
+        <div class="hc-ops-summary__context">
+          {% if followup_count or 0 %}
+            Sans activité 72h
+          {% else %}
+            Aucun dépassement 72h
+          {% endif %}
+        </div>
+      </a>
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">
         <div class="hc-ops-summary__label">Notifications en échec</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if failed_notif_count }}"> {{ failed_notif_count or 0 }}</div>
-        <div class="hc-ops-summary__context">Canal à vérifier</div>
-      </div>
+        <div class="hc-ops-summary__context">
+          {% if failed_notif_count or 0 %}
+            Canal à vérifier
+          {% else %}
+            Canaux opérationnels
+          {% endif %}
+        </div>
+      </a>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Demandes mises à jour aujourd’hui</div>
         <div class="hc-ops-summary__value"> {{ updated_today_count or 0 }}</div>
@@ -61,9 +85,9 @@
       </div>
     </div>
     <div class="hc-ops-actions" id="hcOpsQuickFilters">
-      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', owner='none') }}">Voir non assignés</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}">Voir sans activité</a>
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_requests', tab='URGENT') }}">Voir cas critiques</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', no_owner='1') }}">Voir non assignés</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">Voir sans activité</a>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">Notifications en échec</a>
     </div>
   </div>
