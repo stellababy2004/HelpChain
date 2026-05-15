@@ -17214,6 +17214,53 @@ body.hc-admin-intervenants .hc-intervenants-form textarea.form-control{
   cursor: pointer;
 }
 
+.hc-requests-table-wrap{
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hc-requests-table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.hc-requests-table thead{
+  display: table-header-group !important;
+  position: static !important;
+}
+
+.hc-requests-table tbody{
+  display: table-row-group !important;
+  position: static !important;
+}
+
+.hc-requests-table tr{
+  display: table-row !important;
+  position: static !important;
+}
+
+.hc-requests-table th,
+.hc-requests-table td{
+  display: table-cell !important;
+  position: static !important;
+  vertical-align: middle;
+}
+
+.hc-requests-empty-cell{
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.hc-autosync-status{
+  color: var(--hc-muted, #6b7280);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  margin: 0 0 0.75rem;
+  text-align: right;
+}
+
 @media (max-width: 992px){
   body.hc-admin-intervenants .hc-intervenant-ops-summary{
     grid-template-columns: repeat(2, minmax(0, 1fr));

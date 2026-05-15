@@ -50,7 +50,7 @@
   {% set hero_status = 'Couverture opérationnelle stable' %}
 {% endif %}
 
-<div class="hc-admin-wrap hc-admin-wrap--wide">
+<div class="hc-admin-wrap hc-admin-wrap--wide" data-hc-autosync="true" data-hc-autosync-interval="30000">
   <div class="hc-card mb-3 hc-page-hero hc-ops-hero {{ hero_pressure }}">
     <div class="hc-row hc-admin-headerTop hc-ops-hero__header">
       <div class="hc-ops-hero__intro">
@@ -471,4 +471,9 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-autosync.js') }}" defer></script>
 {% endblock %}

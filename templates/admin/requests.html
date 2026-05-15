@@ -4,95 +4,9 @@
 
 {% block admin_body_class %} hc-admin-requests-page{% endblock %}
 
-{% block admin_workspace_css %}
-
-  <style>
-
-    .hc-requests-table-wrap{
-
-      width: 100%;
-
-      overflow-x: auto;
-
-      overflow-y: hidden;
-
-    }
-
-
-
-    .hc-requests-table{
-
-      width: 100%;
-
-      border-collapse: collapse;
-
-      table-layout: auto;
-
-    }
-
-
-
-    .hc-requests-table thead{
-
-      display: table-header-group !important;
-
-      position: static !important;
-
-    }
-
-
-
-    .hc-requests-table tbody{
-
-      display: table-row-group !important;
-
-      position: static !important;
-
-    }
-
-
-
-    .hc-requests-table tr{
-
-      display: table-row !important;
-
-      position: static !important;
-
-    }
-
-
-
-    .hc-requests-table th,
-
-    .hc-requests-table td{
-
-      display: table-cell !important;
-
-      position: static !important;
-
-      vertical-align: middle;
-
-    }
-
-
-
-    .hc-requests-empty-cell{
-
-      text-align: center;
-
-      padding: 3rem 1rem;
-
-    }
-
-  </style>
-
-{% endblock %}
-
-
-
 {% block admin_content %}
 
-<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--requests hc-density-compact" data-hc-autosync="true" data-hc-autosync-interval="60000">
 
 <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
 
@@ -1697,6 +1611,8 @@
 <script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/admin-autosync.js') }}" defer></script>
 
 {% endblock %}
 
