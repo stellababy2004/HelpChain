@@ -17165,6 +17165,55 @@ body.hc-admin-intervenants .hc-intervenants-form textarea.form-control{
   min-height: auto;
 }
 
+.hc-cases-table-wrap{
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hc-cases-table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.hc-cases-table thead{
+  position: static !important;
+  display: table-header-group !important;
+}
+
+.hc-cases-table tbody{
+  position: static !important;
+  display: table-row-group !important;
+}
+
+.hc-cases-table tr{
+  position: static !important;
+  display: table-row !important;
+}
+
+.hc-cases-table th,
+.hc-cases-table td{
+  position: static !important;
+  display: table-cell !important;
+  left: auto !important;
+  right: auto !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: auto !important;
+  transform: none !important;
+  vertical-align: middle;
+}
+
+.hc-cases-empty-cell{
+  text-align: center;
+  padding: 3rem 1rem;
+  white-space: normal;
+}
+
+.hc-case-row--clickable{
+  cursor: pointer;
+}
+
 @media (max-width: 992px){
   body.hc-admin-intervenants .hc-intervenant-ops-summary{
     grid-template-columns: repeat(2, minmax(0, 1fr));

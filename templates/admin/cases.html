@@ -1,55 +1,6 @@
 ﻿{% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Cas | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
-{% block admin_workspace_css %}
-  <style>
-    .hc-cases-table-wrap{
-      width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-    }
-
-    .hc-cases-table{
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: auto;
-    }
-
-    .hc-cases-table thead{
-      position: static !important;
-      display: table-header-group !important;
-    }
-
-    .hc-cases-table tbody{
-      position: static !important;
-      display: table-row-group !important;
-    }
-
-    .hc-cases-table tr{
-      position: static !important;
-      display: table-row !important;
-    }
-
-    .hc-cases-table th,
-    .hc-cases-table td{
-      position: static !important;
-      display: table-cell !important;
-      left: auto !important;
-      right: auto !important;
-      inset-inline-start: auto !important;
-      inset-inline-end: auto !important;
-      transform: none !important;
-      vertical-align: middle;
-    }
-
-    .hc-cases-empty-cell{
-      text-align: center;
-      padding: 3rem 1rem;
-      white-space: normal;
-    }
-  </style>
-{% endblock %}
-
 {% block admin_content %}
 {% set cases_endpoint = 'ops.ops_cases_list' if request.path.startswith('/ops') else 'admin.admin_cases_list' %}
 {% set status_display_labels = {
@@ -185,6 +136,14 @@
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}">Reinitialiser</a>
       </div>
     </form>
+    {% if active_filter_labels %}
+      <div class="mt-3 d-flex flex-wrap gap-2 align-items-center">
+        <span class="hc-muted small">Filtres actifs</span>
+        {% for filter_label in active_filter_labels %}
+          <span class="badge text-bg-light border">{{ filter_label }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
     <div class="hc-section-thread" aria-label="Continuite cases">
       <span class="hc-section-thread__label">Besoin d'une vue de deploiement structuree</span>
       <a class="hc-section-thread__link" href="{{ url_for('ops.ops_workspace') if request.path.startswith('/ops') else url_for('admin.admin_sla_breakdown') }}">Echanger sur un deploiement pilote</a>
@@ -317,40 +276,10 @@
     </div>
   </div>
 </div>
-<script>
-  (() => {
-    const rows = Array.from(document.querySelectorAll(".hc-case-row"));
-    if (!rows.length) return;
+{% endblock %}
 
-    const isInteractive = (el) =>
-      !!el?.closest("a, button, input, select, textarea, label, form, [role='button'], [data-no-rowclick]");
-
-    const getRowHref = (row) => {
-      const detailLink = row.querySelector("a[href*='/cases/']");
-      return detailLink ? detailLink.getAttribute("href") : "";
-    };
-
-    rows.forEach((row) => {
-      const href = getRowHref(row);
-      if (!href) return;
-
-      row.style.cursor = "pointer";
-      row.tabIndex = 0;
-      row.setAttribute("role", "link");
-
-      row.addEventListener("click", (e) => {
-        if (isInteractive(e.target)) return;
-        window.location.href = href;
-      });
-
-      row.addEventListener("keydown", (e) => {
-        if (e.key !== "Enter" && e.key !== " ") return;
-        if (isInteractive(e.target)) return;
-        e.preventDefault();
-        window.location.href = href;
-      });
-    });
-  })();
-</script>
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/admin-cases.js') }}" defer></script>
 {% endblock %}
 

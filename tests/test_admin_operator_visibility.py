@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, UTC
+import re
 
 
 def _satisfy_privileged_mfa(client, session, admin_user):
@@ -90,6 +91,52 @@ def _make_request(
     session.add(req)
     session.commit()
     return req
+
+
+def _make_case(
+    session,
+    *,
+    request_id: int,
+    structure_id: int,
+    status="new",
+    owner_user_id=None,
+    priority="normal",
+    risk_score=0,
+    last_activity_at=None,
+    created_at=None,
+):
+    from backend.helpchain_backend.src.models import Case
+
+    case = Case(
+        request_id=request_id,
+        structure_id=structure_id,
+        status=status,
+        owner_user_id=owner_user_id,
+        priority=priority,
+        risk_score=risk_score,
+        last_activity_at=last_activity_at,
+        created_at=created_at,
+        updated_at=created_at,
+    )
+    session.add(case)
+    session.commit()
+    return case
+
+
+def _workspace_kpi_value(html: str, label: str) -> int:
+    pattern = re.compile(
+        r'<div class="hc-ops-summary__label">\s*'
+        + re.escape(label)
+        + r'\s*</div>\s*<div class="hc-ops-summary__value[^"]*">\s*(\d+)\s*</div>',
+        re.S,
+    )
+    match = pattern.search(html)
+    assert match, f"KPI label not found: {label}"
+    return int(match.group(1))
+
+
+def _case_row_count(html: str) -> int:
+    return html.count('class="hc-case-row')
 
 
 def test_admin_requests_shows_seeded_requests_even_with_null_and_new_status(client, session):
@@ -191,6 +238,155 @@ def test_operator_dashboard_only_shows_actionable_scoped_requests(client, sessio
     assert "ops-hidden-closed" not in html
     assert "ops-hidden-other-structure" not in html
     assert "ops-hidden-owned-normal" not in html
+
+
+def test_ops_workspace_kpis_match_quick_action_case_filters(
+    authenticated_admin_client, session
+):
+    from backend.models import NotificationJob, Structure
+
+    structure = session.query(Structure).filter_by(slug="default").first()
+    user = _make_user(
+        session,
+        username="ops_kpi_user",
+        email="ops_kpi_user@test.local",
+    )
+    operator = _make_admin(
+        session,
+        username="ops_kpi_owner",
+        email="ops_kpi_owner@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+
+    now = datetime.now(UTC).replace(tzinfo=None, microsecond=0)
+    stale_time = now - timedelta(hours=80)
+
+    critical_req = _make_request(
+        session,
+        title="ops-kpi-critical",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=operator.id,
+        created_at=now,
+        updated_at=now,
+    )
+    _make_case(
+        session,
+        request_id=critical_req.id,
+        structure_id=structure.id,
+        owner_user_id=operator.id,
+        priority="critical",
+        risk_score=90,
+        created_at=now,
+    )
+
+    unassigned_req = _make_request(
+        session,
+        title="ops-kpi-unassigned",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=None,
+        created_at=now,
+        updated_at=now,
+    )
+    _make_case(
+        session,
+        request_id=unassigned_req.id,
+        structure_id=structure.id,
+        owner_user_id=None,
+        created_at=now,
+    )
+
+    stale_req = _make_request(
+        session,
+        title="ops-kpi-stale",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=operator.id,
+        created_at=stale_time,
+        updated_at=stale_time,
+    )
+    _make_case(
+        session,
+        request_id=stale_req.id,
+        structure_id=structure.id,
+        owner_user_id=operator.id,
+        last_activity_at=stale_time,
+        created_at=stale_time,
+    )
+
+    resolved_req = _make_request(
+        session,
+        title="ops-kpi-resolved-decoy",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="open",
+        owner_id=None,
+        created_at=stale_time,
+        updated_at=stale_time,
+    )
+    _make_case(
+        session,
+        request_id=resolved_req.id,
+        structure_id=structure.id,
+        status="resolved",
+        owner_user_id=None,
+        priority="critical",
+        risk_score=95,
+        last_activity_at=stale_time,
+        created_at=stale_time,
+    )
+
+    session.add(
+        NotificationJob(
+            channel="email",
+            event_type="ops_test",
+            recipient="ops-test@example.invalid",
+            status="failed",
+            structure_id=structure.id,
+        )
+    )
+    session.commit()
+
+    workspace = authenticated_admin_client.get("/ops/workspace", follow_redirects=False)
+    assert workspace.status_code == 200
+    workspace_html = workspace.get_data(as_text=True)
+
+    critical = authenticated_admin_client.get("/ops/cases?risk=critical")
+    unassigned = authenticated_admin_client.get("/ops/cases?owner=none")
+    stale = authenticated_admin_client.get("/ops/cases?stale_72h=1")
+    failed_notifications = authenticated_admin_client.get("/ops/notifications?status=failed")
+
+    assert critical.status_code == 200
+    assert unassigned.status_code == 200
+    assert stale.status_code == 200
+    assert failed_notifications.status_code == 200
+
+    critical_html = critical.get_data(as_text=True)
+    unassigned_html = unassigned.get_data(as_text=True)
+    stale_html = stale.get_data(as_text=True)
+
+    assert _workspace_kpi_value(workspace_html, "Situations critiques") == _case_row_count(
+        critical_html
+    )
+    assert _workspace_kpi_value(workspace_html, "Demandes non assignées") == _case_row_count(
+        unassigned_html
+    )
+    assert _workspace_kpi_value(workspace_html, "Cas sans action") == _case_row_count(
+        stale_html
+    )
+    assert "ops-kpi-resolved-decoy" not in critical_html
+    assert "ops-kpi-resolved-decoy" not in unassigned_html
+    assert "ops-kpi-resolved-decoy" not in stale_html
+    assert "Filtres actifs" in critical_html
+    assert "Risque: Critique" in critical_html
+    assert "Responsable: non attribue" in unassigned_html
+    assert "Cas sans action 72h" in stale_html
+    assert workspace_html.count('/ops/cases?risk=critical') >= 2
 
 
 def test_structure_scoped_admin_requests_excludes_other_structures(client, session):

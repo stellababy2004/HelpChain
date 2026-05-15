@@ -13,7 +13,7 @@
       </div>
       <div class="hc-admin-actions">
         <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">+ Nouvelle demande</a>
-        <button type="button" class="btn btn-primary btn-sm hc-ops-quickbtn" data-ops-quick-filter="critical" aria-pressed="false">Voir cas critiques</button>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir sécurité</a>
       </div>
     </div>
@@ -38,9 +38,9 @@
         <div class="hc-ops-summary__context">À affecter</div>
       </div>
       <div class="hc-ops-summary__item">
-        <div class="hc-ops-summary__label">Relances à faire</div>
+        <div class="hc-ops-summary__label">Cas sans action</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
-        <div class="hc-ops-summary__context">Suivi attendu</div>
+        <div class="hc-ops-summary__context">Sans action 72h</div>
       </div>
       <div class="hc-ops-summary__item">
         <div class="hc-ops-summary__label">Notifications en échec</div>
@@ -61,10 +61,9 @@
       </div>
     </div>
     <div class="hc-ops-actions" id="hcOpsQuickFilters">
-      <button type="button" class="btn btn-outline-primary btn-sm hc-ops-quickbtn" data-ops-quick-filter="critical" aria-pressed="false">Voir cas critiques</button>
-      <button type="button" class="btn btn-outline-secondary btn-sm hc-ops-quickbtn" data-ops-quick-filter="owner_missing" aria-pressed="false">Voir non assignés</button>
-      <button type="button" class="btn btn-outline-secondary btn-sm hc-ops-quickbtn" data-ops-quick-filter="stale_72h" aria-pressed="false">Voir cas sans action</button>
-      <button type="button" class="btn btn-outline-secondary btn-sm hc-ops-quickbtn hc-ops-quickbtn--clear" data-ops-quick-filter="clear" aria-pressed="false" hidden>Effacer le filtre rapide</button>
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', owner='none') }}">Voir non assignés</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}">Voir cas sans action</a>
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">Notifications en échec</a>
     </div>
   </div>
@@ -208,9 +207,4 @@
     </div>
   {% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-  {{ super() }}
-  <script src="{{ url_for('static', filename='js/ops-workspace.js') }}"></script>
 {% endblock %}

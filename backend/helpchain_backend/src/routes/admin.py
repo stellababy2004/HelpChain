@@ -197,6 +197,7 @@ CATEGORY_CASE_STATUSES = (
     "closed",
     "cancelled",
 )
+ACTIVE_CASE_QUEUE_STATUSES = ("new", "triaged", "assigned", "in_progress")
 CASE_PRIORITIES = ("low", "normal", "high", "critical")
 CASE_PRIORITY_RANK = {
     "low": 0,
@@ -4985,32 +4986,37 @@ def _render_operator_dashboard():
     urgent_count = workspace_query.filter(urgent_filter).count()
     unassigned_count = workspace_query.filter(unassigned_filter).count()
     followup_count = workspace_query.filter(activity_expr <= stale_threshold).count()
+    if _cases_enabled():
+        try:
+            case_base, case_kpi_filters = _build_scoped_cases_base_query()
+            urgent_count = _apply_cases_queue_filters(
+                case_base,
+                case_filters=case_kpi_filters,
+                risk="critical",
+            ).count()
+            unassigned_count = _apply_cases_queue_filters(
+                case_base,
+                case_filters=case_kpi_filters,
+                owner="none",
+            ).count()
+            followup_count = _apply_cases_queue_filters(
+                case_base,
+                case_filters=case_kpi_filters,
+                stale_72h=True,
+            ).count()
+        except Exception:
+            db.session.rollback()
     updated_today_count = workspace_query.filter(updated_today_filter).count()
 
     failed_notif_count = 0
     retry_notif_count = 0
     if _table_exists("notification_jobs"):
-        notif_base = NotificationJob.query
-        try:
-            if not _is_global_admin():
-                sid = _current_structure_id()
-                notif_base = notif_base.filter(
-                    (NotificationJob.structure_id == sid)
-                    | (NotificationJob.structure_id.is_(None))
-                )
-        except Exception:
-            pass
+        notif_base = _scoped_notification_jobs_query()
         failed_notif_count = notif_base.filter(
-            NotificationJob.status.in_(("dead_letter", "failed"))
+            _notification_bucket_filter("failed")
         ).count()
         retry_notif_count = notif_base.filter(
-            or_(
-                NotificationJob.status == "retry",
-                and_(
-                    NotificationJob.status == "pending",
-                    NotificationJob.attempts > 0,
-                ),
-            )
+            _notification_bucket_filter("retry")
         ).count()
 
     workspace_total_count = workspace_query.count()
@@ -9007,6 +9013,137 @@ def _apply_cases_risk_filter(query, risk_value: str, *, case_filters: dict[str, 
     return query
 
 
+def _build_scoped_cases_base_query():
+    scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+    activity_sq = build_request_meaningful_activity_subquery()
+    case_activity_expr = func.coalesce(
+        activity_sq.c.last_activity_at,
+        Case.last_activity_at,
+        Case.updated_at,
+        Request.updated_at,
+        Case.created_at,
+        Request.created_at,
+    )
+    query = (
+        Case.query.join(Request, Case.request_id == Request.id)
+        .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
+        .outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+    )
+    case_filters = _build_case_kpi_filters(activity_expr_override=case_activity_expr)
+    return query, case_filters
+
+
+def _case_category_filter(category: str):
+    category_variants = {category}
+    for legacy_code in ("general", "social", "medical", "tech", "admin", "other"):
+        if normalize_request_category(legacy_code) == category:
+            category_variants.add(legacy_code)
+    return func.lower(func.coalesce(Request.category, "")).in_(
+        [c.lower() for c in category_variants]
+    )
+
+
+def _case_city_filter(city: str):
+    city_like = f"%{city.lower()}%"
+    return or_(
+        func.lower(func.coalesce(Request.city, "")).like(city_like),
+        func.lower(func.coalesce(Request.location_text, "")).like(city_like),
+        func.lower(func.coalesce(Request.address_line, "")).like(city_like),
+    )
+
+
+def _apply_cases_queue_filters(
+    query,
+    *,
+    case_filters: dict[str, object],
+    status: str = "",
+    priority: str = "",
+    owner: str = "",
+    category: str = "",
+    risk: str = "",
+    stale_72h: bool = False,
+    city: str = "",
+):
+    owner_value = (owner or "").strip()
+    owner_id = None
+    owner_none = owner_value.lower() == "none"
+    if owner_value:
+        try:
+            owner_id = int(owner_value)
+        except Exception:
+            owner_id = None
+
+    if status in CATEGORY_CASE_STATUSES:
+        query = query.filter(Case.status == status)
+    else:
+        query = query.filter(Case.status.in_(ACTIVE_CASE_QUEUE_STATUSES))
+    if priority in CASE_PRIORITIES:
+        query = query.filter(Case.priority == priority)
+    if category:
+        query = query.filter(_case_category_filter(category))
+    if city:
+        query = query.filter(_case_city_filter(city))
+    if owner_id:
+        query = query.filter(Case.owner_user_id == owner_id)
+    elif owner_none:
+        query = query.filter(case_filters["no_owner"])
+    query = _apply_cases_risk_filter(query, risk, case_filters=case_filters)
+    if stale_72h:
+        query = query.filter(case_filters["stale_72h"])
+    return query
+
+
+def _case_active_filter_labels(
+    *,
+    status: str = "",
+    priority: str = "",
+    owner: str = "",
+    category: str = "",
+    risk: str = "",
+    stale_72h: bool = False,
+    city: str = "",
+) -> list[str]:
+    labels: list[str] = []
+    if status:
+        labels.append(f"Statut: {status.replace('_', ' ')}")
+    if priority:
+        labels.append(f"Priorite: {priority}")
+    if owner:
+        if owner.lower() == "none":
+            labels.append("Responsable: non attribue")
+        else:
+            labels.append(f"Responsable: #{owner}")
+    if category:
+        labels.append(f"Categorie: {category.replace('_', ' ')}")
+    if risk:
+        risk_labels = {
+            "critical": "Critique",
+            "attention": "A verifier",
+            "normal": "Normal",
+            "low": "Faible",
+        }
+        labels.append(f"Risque: {risk_labels.get(risk, risk)}")
+    if stale_72h:
+        labels.append("Cas sans action 72h")
+    if city:
+        labels.append(f"Zone: {city}")
+    return labels
+
+
+def _scoped_notification_jobs_query():
+    query = NotificationJob.query
+    try:
+        if not _is_global_admin():
+            sid = _current_structure_id()
+            query = query.filter(
+                (NotificationJob.structure_id == sid)
+                | (NotificationJob.structure_id.is_(None))
+            )
+    except Exception:
+        pass
+    return query
+
+
 def _notification_bucket_filter(bucket: str):
     bucket_value = (bucket or "").strip().lower()
     if bucket_value == "pending":
@@ -9069,6 +9206,7 @@ def _render_cases_list():
             category="",
             risk="",
             stale_72h=False,
+            active_filter_labels=[],
             statuses=list(CATEGORY_CASE_STATUSES),
             priorities=list(CASE_PRIORITIES),
             owners=[(1, "Marie Dupont"), (2, "Nadia Bernard")],
@@ -9091,6 +9229,7 @@ def _render_cases_list():
             category="",
             risk="",
             stale_72h=False,
+            active_filter_labels=[],
             statuses=list(CATEGORY_CASE_STATUSES),
             priorities=list(CASE_PRIORITIES),
             owners=[],
@@ -9110,71 +9249,29 @@ def _render_cases_list():
         (request.args.get("stale_72h") or request.args.get("stale") or "").strip()
         == "1"
     )
-    owner_id = None
-    owner_none = owner.lower() == "none"
-    if owner:
-        try:
-            owner_id = int(owner)
-        except Exception:
-            owner_id = None
 
-    scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
-    activity_sq = build_request_meaningful_activity_subquery()
-    case_activity_expr = func.coalesce(
-        activity_sq.c.last_activity_at,
-        Case.last_activity_at,
-        Case.updated_at,
-        Request.updated_at,
-        Case.created_at,
-        Request.created_at,
-    )
-    query = (
-        Case.query.join(Request, Case.request_id == Request.id)
-        .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
-        .outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
-    )
-    counts_base = (
-        Case.query.join(Request, Case.request_id == Request.id)
-        .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
-        .outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
-    )
-    case_kpi_filters = _build_case_kpi_filters(activity_expr_override=case_activity_expr)
+    base_query, case_kpi_filters = _build_scoped_cases_base_query()
     activity_expr = case_kpi_filters["activity_expr"]
     stale_threshold = _now_utc() - timedelta(hours=72)
-    if status in CATEGORY_CASE_STATUSES:
-        query = query.filter(Case.status == status)
-        counts_base = counts_base.filter(Case.status == status)
-    else:
-        active_statuses = ("new", "triaged", "assigned", "in_progress", "resolved")
-        query = query.filter(Case.status.in_(active_statuses))
-        counts_base = counts_base.filter(Case.status.in_(active_statuses))
-    if priority in CASE_PRIORITIES:
-        query = query.filter(Case.priority == priority)
-        counts_base = counts_base.filter(Case.priority == priority)
-    if category:
-        category_variants = {category}
-        for legacy_code in ("general", "social", "medical", "tech", "admin", "other"):
-            if normalize_request_category(legacy_code) == category:
-                category_variants.add(legacy_code)
-        category_filter = func.lower(func.coalesce(Request.category, "")).in_([c.lower() for c in category_variants])
-        query = query.filter(category_filter)
-        counts_base = counts_base.filter(category_filter)
-    if city:
-        city_like = f"%{city.lower()}%"
-        city_filter = or_(
-            func.lower(func.coalesce(Request.city, "")).like(city_like),
-            func.lower(func.coalesce(Request.location_text, "")).like(city_like),
-            func.lower(func.coalesce(Request.address_line, "")).like(city_like),
-        )
-        query = query.filter(city_filter)
-        counts_base = counts_base.filter(city_filter)
-    if owner_id:
-        query = query.filter(Case.owner_user_id == owner_id)
-    elif owner_none:
-        query = query.filter(case_kpi_filters["no_owner"])
-    query = _apply_cases_risk_filter(query, risk, case_filters=case_kpi_filters)
-    if stale_72h:
-        query = query.filter(case_kpi_filters["stale_72h"])
+    query = _apply_cases_queue_filters(
+        base_query,
+        case_filters=case_kpi_filters,
+        status=status,
+        priority=priority,
+        owner=owner,
+        category=category,
+        risk=risk,
+        stale_72h=stale_72h,
+        city=city,
+    )
+    counts_base = _apply_cases_queue_filters(
+        base_query,
+        case_filters=case_kpi_filters,
+        status=status,
+        priority=priority,
+        category=category,
+        city=city,
+    )
 
     case_rows = (
         query.options(
@@ -9252,6 +9349,15 @@ def _render_cases_list():
         risk=risk,
         city=city,
         stale_72h=stale_72h,
+        active_filter_labels=_case_active_filter_labels(
+            status=status,
+            priority=priority,
+            owner=owner,
+            category=category,
+            risk=risk,
+            stale_72h=stale_72h,
+            city=city,
+        ),
         statuses=list(CATEGORY_CASE_STATUSES),
         priorities=list(CASE_PRIORITIES),
         owners=owners,
@@ -9308,16 +9414,7 @@ def _render_notifications_list():
     event_type = (request.args.get("event_type") or "").strip()
     recipient = (request.args.get("recipient") or "").strip()
 
-    query = NotificationJob.query
-    try:
-        if not _is_global_admin():
-            sid = _current_structure_id()
-            query = query.filter(
-                (NotificationJob.structure_id == sid)
-                | (NotificationJob.structure_id.is_(None))
-            )
-    except Exception:
-        pass
+    query = _scoped_notification_jobs_query()
 
     bucket_filter = _notification_bucket_filter(status)
     if bucket_filter is not None:
@@ -9352,16 +9449,7 @@ def _render_notifications_list():
         setattr(job, "ui_status_bucket", bucket)
         setattr(job, "ui_status_label", _notification_bucket_label(bucket))
 
-    counts_base = NotificationJob.query
-    try:
-        if not _is_global_admin():
-            sid = _current_structure_id()
-            counts_base = counts_base.filter(
-                (NotificationJob.structure_id == sid)
-                | (NotificationJob.structure_id.is_(None))
-            )
-    except Exception:
-        pass
+    counts_base = _scoped_notification_jobs_query()
 
     pending_count = counts_base.filter(_notification_bucket_filter("pending")).count()
     processing_count = counts_base.filter(_notification_bucket_filter("processing")).count()
