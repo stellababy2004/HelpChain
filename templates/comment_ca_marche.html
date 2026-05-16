@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ _("Comment fonctionne HelpChain") }} | HelpChain{% endblock %}
-{% block meta_description %}{{ _("Fonctionnement de HelpChain : enregistrement des demandes, qualification, orientation, attribution, suivi, tra\u00e7abilit\u00e9 et pilotage pour structures locales.") }}{% endblock %}
+{% block meta_description %}{{ _("Fonctionnement de HelpChain : enregistrement, qualification, orientation, coordination, tra\u00e7abilit\u00e9 et pilotage des demandes sociales.") }}{% endblock %}
 {% block og_title %}{{ _("Comment fonctionne HelpChain") }}{% endblock %}
 {% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
 {% block og_image_alt %}{{ _("Aper\u00e7u de la page Comment fonctionne HelpChain") }}{% endblock %}
@@ -11,63 +11,63 @@
     <p class="hc-doc-intro__label">{{ _("Fonctionnement") }}</p>
     <h1 class="hc-doc-intro__title">{{ _("Comment fonctionne HelpChain") }}</h1>
     <p class="hc-doc-intro__lead">
-      {{ _("HelpChain structure le traitement des demandes sociales dans un cadre op\u00e9rationnel commun : enregistrement, qualification, orientation, attribution, suivi et pilotage.") }}
+      {{ _("HelpChain organise le traitement des demandes sociales autour d\u2019un encha\u00eenement lisible : enregistrement, qualification, orientation, coordination, suivi et pilotage.") }}
     </p>
     <p class="hc-doc-intro__lead">
-      {{ _("La plateforme aide les structures locales, associations, collectivit\u00e9s et acteurs habilit\u00e9s \u00e0 conserver une lecture claire des situations, des responsabilit\u00e9s et des actions engag\u00e9es.") }}
+      {{ _("La plateforme aide les organisations locales, associations, collectivit\u00e9s et acteurs habilit\u00e9s \u00e0 garder une lecture claire des priorit\u00e9s, des responsabilit\u00e9s et des actions engag\u00e9es.") }}
     </p>
   </header>
 
   <section class="card mb-3"><div class="card-body">
-    <h2 class="h5 mb-3">{{ _("1. Enregistrer une demande ou une situation") }}</h2>
-    <p class="mb-2">{{ _("Une demande peut \u00eatre enregistr\u00e9e par une structure, un service, un acteur habilit\u00e9 ou via un canal d\u2019entr\u00e9e d\u00e9fini par l\u2019organisation.") }}</p>
-    <p class="mb-0">{{ _("Les informations utiles permettent de comprendre le contexte, d\u2019identifier le p\u00e9rim\u00e8tre concern\u00e9 et de pr\u00e9parer la qualification de la situation.") }}</p>
+    <h2 class="h5 mb-3">{{ _("1. Enregistrer la demande") }}</h2>
+    <p class="mb-2">{{ _("Une demande peut \u00eatre saisie par un service, un acteur habilit\u00e9 ou via un canal d\u2019entr\u00e9e d\u00e9fini par l\u2019organisation.") }}</p>
+    <p class="mb-0">{{ _("Les informations utiles sont rassembl\u00e9es d\u00e8s l\u2019entr\u00e9e : contexte, p\u00e9rim\u00e8tre concern\u00e9, premiers rep\u00e8res de suivi et \u00e9l\u00e9ments n\u00e9cessaires \u00e0 la qualification.") }}</p>
   </div></section>
 
   <section class="card mb-3"><div class="card-body">
-    <h2 class="h5 mb-3">{{ _("2. Qualifier et prioriser") }}</h2>
-    <p class="mb-2">{{ _("La demande est qualifi\u00e9e selon sa nature, son niveau de priorit\u00e9, son statut et les \u00e9l\u00e9ments n\u00e9cessaires au suivi.") }}</p>
+    <h2 class="h5 mb-3">{{ _("2. Qualifier et hi\u00e9rarchiser") }}</h2>
+    <p class="mb-2">{{ _("La demande est analys\u00e9e selon sa nature, son degr\u00e9 d\u2019urgence, son statut et les informations indispensables \u00e0 une prise en charge responsable.") }}</p>
     <ul class="mb-0">
-      <li>{{ _("identifier les situations sensibles ;") }}</li>
-      <li>{{ _("clarifier le niveau de priorit\u00e9 ;") }}</li>
-      <li>{{ _("\u00e9viter la dispersion des informations ;") }}</li>
-      <li>{{ _("pr\u00e9parer une orientation adapt\u00e9e.") }}</li>
+      <li>{{ _("rep\u00e9rer les dossiers sensibles ;") }}</li>
+      <li>{{ _("objectiver le niveau de priorit\u00e9 ;") }}</li>
+      <li>{{ _("limiter la dispersion de l\u2019information ;") }}</li>
+      <li>{{ _("pr\u00e9parer une orientation coh\u00e9rente.") }}</li>
     </ul>
   </div></section>
 
   <section class="card mb-3"><div class="card-body">
     <h2 class="h5 mb-3">{{ _("3. Orienter ou attribuer") }}</h2>
-    <p class="mb-2">{{ _("La situation peut ensuite \u00eatre orient\u00e9e vers le bon service, la bonne \u00e9quipe ou le bon acteur habilit\u00e9, selon les r\u00e8gles d\u00e9finies par la structure.") }}</p>
-    <p class="mb-0">{{ _("Cette \u00e9tape permet de clarifier qui prend le relais, dans quel cadre et avec quel niveau de visibilit\u00e9.") }}</p>
+    <p class="mb-2">{{ _("Le dossier peut ensuite \u00eatre orient\u00e9 vers le service, l\u2019\u00e9quipe ou l\u2019acteur habilit\u00e9 concern\u00e9, selon les r\u00e8gles d\u00e9finies localement.") }}</p>
+    <p class="mb-0">{{ _("Cette \u00e9tape clarifie qui prend le relais, avec quelle responsabilit\u00e9 et quel niveau de visibilit\u00e9.") }}</p>
   </div></section>
 
   <section class="card mb-3"><div class="card-body">
     <h2 class="h5 mb-3">{{ _("4. Coordonner et suivre") }}</h2>
-    <p class="mb-2">{{ _("Les actions engag\u00e9es peuvent \u00eatre suivies dans un m\u00eame cadre de coordination, afin de conserver une lecture commune de l\u2019avancement.") }}</p>
+    <p class="mb-2">{{ _("Les actions engag\u00e9es sont suivies dans un espace commun de coordination afin de conserver une lecture partag\u00e9e de l\u2019avancement.") }}</p>
     <ul class="mb-0">
-      <li>{{ _("visualiser les demandes en cours ;") }}</li>
-      <li>{{ _("suivre les statuts et les \u00e9tapes ;") }}</li>
-      <li>{{ _("documenter les actions importantes ;") }}</li>
+      <li>{{ _("visualiser les dossiers en cours ;") }}</li>
+      <li>{{ _("suivre les statuts, \u00e9tapes et relances ;") }}</li>
+      <li>{{ _("documenter les d\u00e9cisions et actions importantes ;") }}</li>
       <li>{{ _("maintenir la continuit\u00e9 entre acteurs autoris\u00e9s.") }}</li>
     </ul>
   </div></section>
 
   <section class="card mb-3"><div class="card-body">
-    <h2 class="h5 mb-3">{{ _("5. Piloter et relire") }}</h2>
-    <p class="mb-2">{{ _("Les structures disposent d\u2019une vision consolid\u00e9e des demandes, des priorit\u00e9s, des responsabilit\u00e9s et de l\u2019activit\u00e9.") }}</p>
-    <p class="mb-0">{{ _("Cette capacit\u00e9 de relecture facilite le pilotage op\u00e9rationnel, l\u2019am\u00e9lioration continue et la pr\u00e9paration d\u2019un d\u00e9ploiement plus large lorsque le cadre est valid\u00e9.") }}</p>
+    <h2 class="h5 mb-3">{{ _("5. Piloter et consolider") }}</h2>
+    <p class="mb-2">{{ _("Les \u00e9quipes disposent d\u2019une vision consolid\u00e9e des demandes, des priorit\u00e9s, des responsabilit\u00e9s et de l\u2019activit\u00e9 r\u00e9elle.") }}</p>
+    <p class="mb-0">{{ _("Cette relecture facilite le pilotage op\u00e9rationnel, l\u2019am\u00e9lioration continue et la pr\u00e9paration d\u2019un d\u00e9ploiement plus large lorsque les modalit\u00e9s sont valid\u00e9es.") }}</p>
   </div></section>
 
   <section class="card mb-3"><div class="card-body">
     <h2 class="h5 mb-3">{{ _("Donn\u00e9es, acc\u00e8s et confidentialit\u00e9") }}</h2>
-    <p class="mb-2">{{ _("HelpChain est con\u00e7u selon une logique de minimisation des donn\u00e9es, de contr\u00f4le des acc\u00e8s et de tra\u00e7abilit\u00e9 des actions importantes.") }}</p>
-    <p class="mb-0">{{ _("Les acc\u00e8s sont organis\u00e9s selon les r\u00f4les, les responsabilit\u00e9s et le p\u00e9rim\u00e8tre d\u2019intervention d\u00e9fini par la structure.") }}</p>
+    <p class="mb-2">{{ _("HelpChain est con\u00e7u selon une logique de minimisation des donn\u00e9es, de contr\u00f4le des acc\u00e8s et de tra\u00e7abilit\u00e9 des actions sensibles.") }}</p>
+    <p class="mb-0">{{ _("Les droits sont organis\u00e9s selon les r\u00f4les, les responsabilit\u00e9s et le p\u00e9rim\u00e8tre d\u2019intervention d\u00e9fini par l\u2019organisation.") }}</p>
   </div></section>
 
   <section class="card mb-3"><div class="card-body">
     <h2 class="h5 mb-3">{{ _("Conclusion") }}</h2>
-    <p class="mb-2">{{ _("HelpChain transforme un suivi dispers\u00e9 en un cadre de coordination plus lisible, structur\u00e9 et pilotable.") }}</p>
-    <p class="mb-0">{{ _("La plateforme soutient l\u2019organisation des demandes et des situations sociales sans remplacer les d\u00e9cisions m\u00e9tier ni les circuits institutionnels existants.") }}</p>
+    <p class="mb-2">{{ _("HelpChain transforme un suivi dispers\u00e9 en une coordination plus lisible, tra\u00e7able et pilotable.") }}</p>
+    <p class="mb-0">{{ _("La plateforme soutient l\u2019organisation des demandes sociales, sans remplacer les d\u00e9cisions m\u00e9tier ni les circuits institutionnels existants.") }}</p>
   </div></section>
 </div>
 {% endblock %}
