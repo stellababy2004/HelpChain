@@ -4670,7 +4670,7 @@ def demander_acces():
                 raise ValueError
         except ValueError:
             form_errors["estimated_users"] = (
-                "Le nombre estime d'utilisateurs doit etre un nombre entier."
+                "Le nombre estimé d’utilisateurs doit être un nombre entier."
             )
 
     if form_errors:
@@ -4705,7 +4705,7 @@ def demander_acces():
     db.session.commit()
 
     flash(
-        "Votre demande d'acces a bien ete transmise. L'equipe HelpChain vous recontactera apres verification.",
+        "Votre demande d’accès a bien été transmise. L’équipe HelpChain vous recontactera après vérification.",
         "success",
     )
     return redirect(url_for("main.demander_acces", envoye="1"), code=303)

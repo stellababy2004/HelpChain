@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Demander un acc\u00e8s | HelpChain{% endblock %}
+{% block title %}Demander un accès | HelpChain{% endblock %}
 
 {% block content %}
 {% set form_data = form_data or {} %}
@@ -11,17 +11,17 @@
       <header class="hc-pagehead">
         <div class="hc-become-head">
           <div class="hc-become-titleblock">
-            <h1 class="hc-title">Demander un acc\u00e8s</h1>
+            <h1 class="hc-title">Demander un accès</h1>
             <p class="hc-subtitle">
-              Pour les CCAS, collectivit\u00e9s, associations structur\u00e9es, services sociaux et partenaires territoriaux
-              souhaitant d\u00e9couvrir HelpChain ou \u00e9changer autour d\u2019un d\u00e9ploiement pilote.
+              Pour les CCAS, collectivités, associations structurées, services sociaux et partenaires territoriaux
+              souhaitant découvrir HelpChain ou échanger autour d’un déploiement pilote.
             </p>
           </div>
           <aside class="hc-trust-card" aria-label="Cadre de la demande">
             <ul class="hc-trust-list">
-              <li>R\u00e9serv\u00e9 aux structures et acteurs habilit\u00e9s</li>
+              <li>Réservé aux structures et acteurs habilités</li>
               <li>Qualification manuelle des demandes</li>
-              <li>Aucun acc\u00e8s automatique cr\u00e9\u00e9</li>
+              <li>Aucun accès automatique créé</li>
             </ul>
           </aside>
         </div>
@@ -30,19 +30,19 @@
       <div class="hc-card hc-vol-join__card">
         {% if submitted %}
           <div class="hc-card__head">
-            <h2 class="hc-card__title">Demande recue</h2>
+            <h2 class="hc-card__title">Demande reçue</h2>
             <p class="hc-card__hint">
-              Votre demande a bien ete transmise. L'equipe HelpChain vous recontactera apres verification.
+              Votre demande a bien été transmise. L’équipe HelpChain vous recontactera après vérification.
             </p>
           </div>
           <div style="display:flex; justify-content:center; margin-top:1rem;">
-            <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour a l'accueil</a>
+            <a class="hc-btn hc-btn--ghost" href="{{ url_for('main.index') }}">Retour à l’accueil</a>
           </div>
         {% else %}
           <div class="hc-card__head">
-            <h2 class="hc-card__title">Acc\u00e8s institutionnel & d\u00e9ploiement pilote</h2>
+            <h2 class="hc-card__title">Accès institutionnel & déploiement pilote</h2>
             <p class="hc-card__hint">
-              Pr\u00e9sentez bri\u00e8vement votre structure, votre organisation actuelle et le besoin envisag\u00e9. Cette demande permet uniquement d\u2019initier un \u00e9change de qualification institutionnelle.
+              Présentez brièvement votre structure, votre organisation actuelle et le besoin envisagé. Cette demande permet uniquement d’initier un échange de qualification institutionnelle.
             </p>
           </div>
 
@@ -96,7 +96,7 @@
 
             <div class="hc-grid-2">
               <div class="hc-field">
-                <label class="hc-label" for="phone">T\u00e9l\u00e9phone</label>
+                <label class="hc-label" for="phone">Téléphone</label>
                 <input class="hc-input" id="phone" name="phone" value="{{ form_data.get('phone', '') }}" autocomplete="tel">
               </div>
 
@@ -110,7 +110,7 @@
               <div class="hc-field">
                 <label class="hc-label" for="org_type">Type de structure</label>
                 <select class="hc-input" id="org_type" name="org_type" aria-invalid="{{ 'true' if form_errors.get('org_type') else 'false' }}">
-                  <option value="">S\u00e9lectionner</option>
+                  <option value="">Sélectionner</option>
                   {% for choice in org_type_choices %}
                     <option value="{{ choice }}" {% if form_data.get('org_type') == choice %}selected{% endif %}>{{ choice }}</option>
                   {% endfor %}
@@ -119,7 +119,7 @@
               </div>
 
               <div class="hc-field">
-                <label class="hc-label" for="estimated_users">Nombre estim\u00e9 d\u2019utilisateurs concern\u00e9s</label>
+                <label class="hc-label" for="estimated_users">Nombre estimé d’utilisateurs concernés</label>
                 <input
                   class="hc-input"
                   id="estimated_users"
@@ -139,7 +139,7 @@
 
             <button class="hc-btn hc-btn--primary hc-btn--full" type="submit">Transmettre la demande</button>
             <p class="hc-help">
-              Les informations transmises sont utilis\u00e9es uniquement dans le cadre de la qualification d\u2019un acc\u00e8s institutionnel ou d\u2019un \u00e9change li\u00e9 \u00e0 un pilote HelpChain.
+              Les informations transmises sont utilisées uniquement dans le cadre de la qualification d’un accès institutionnel ou d’un échange lié à un pilote HelpChain.
             </p>
           </form>
         {% endif %}
