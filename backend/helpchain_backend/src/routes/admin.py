@@ -163,6 +163,11 @@ from ..services.import_service import (
     source_label,
     target_label,
 )
+from ..services.notification_jobs import (
+    count_notification_job_buckets,
+    notification_job_bucket_filter,
+    notification_job_bucket_key,
+)
 from ..services.ops_priority import compute_ops_priority
 from ..services.prospect_auto_capture import (
     append_audience_context_to_notes,
@@ -4979,12 +4984,14 @@ def _render_operator_dashboard():
         .filter(actionable_filter, priority_filter)
     )
 
-    urgent_count = workspace_query.filter(urgent_filter).count()
-    unassigned_count = workspace_query.filter(unassigned_filter).count()
-    followup_count = workspace_query.filter(stale_filter).count()
-    # /ops/workspace KPI counters intentionally stay Request-based.
-    # Case rows remain available in /ops/cases, but they do not override
-    # workspace counters until Case becomes the canonical operational source.
+    case_base_query, case_kpi_filters = _build_scoped_cases_base_query()
+    workspace_case_counts = _case_queue_counts_for_filters(
+        case_base_query,
+        case_filters=case_kpi_filters,
+    )
+    urgent_count = workspace_case_counts["critical"]
+    unassigned_count = workspace_case_counts["no_owner"]
+    followup_count = workspace_case_counts["stale_72h"]
     updated_today_count = workspace_query.filter(updated_today_filter).count()
 
     failed_notif_count = 0
@@ -7498,31 +7505,7 @@ def admin_home():
         "failed": 0,
     }
     if _table_exists("notification_jobs"):
-        notif_base = NotificationJob.query
-        try:
-            if not _is_global_admin():
-                sid = _current_structure_id()
-                notif_base = notif_base.filter(
-                    (NotificationJob.structure_id == sid)
-                    | (NotificationJob.structure_id.is_(None))
-                )
-        except Exception:
-            pass
-        queue_summary = {
-            "pending": notif_base.filter(NotificationJob.status == "pending").count(),
-            "processing": notif_base.filter(NotificationJob.status == "processing").count(),
-            "dead_letter": notif_base.filter(
-                NotificationJob.status.in_(("dead_letter", "failed"))
-            ).count(),
-            "retry": notif_base.filter(
-                or_(
-                    NotificationJob.status == "retry",
-                    and_(NotificationJob.status == "pending", NotificationJob.attempts > 0),
-                )
-            ).count(),
-            "failed": 0,
-        }
-        queue_summary["failed"] = queue_summary["dead_letter"]
+        queue_summary = count_notification_job_buckets(_scoped_notification_jobs_query())
 
     security_summary = {
         "failed_logins_24h": 0,
@@ -8986,7 +8969,15 @@ def _apply_cases_risk_filter(query, risk_value: str, *, case_filters: dict[str, 
 
 
 def _build_scoped_cases_base_query():
-    scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+    scoped_request_ids_query = _scope_requests(Request.query.with_entities(Request.id))
+    scoped_request_ids_query = scoped_request_ids_query.filter(Request.deleted_at.is_(None))
+    try:
+        scoped_request_ids_query = scoped_request_ids_query.filter(
+            Request.is_archived.is_(False)
+        )
+    except Exception:
+        pass
+    scoped_ids_subq = scoped_request_ids_query.subquery()
     activity_sq = build_request_meaningful_activity_subquery()
     case_activity_expr = func.coalesce(
         activity_sq.c.last_activity_at,
@@ -9205,41 +9196,11 @@ def _scoped_notification_jobs_query():
 
 
 def _notification_bucket_filter(bucket: str):
-    bucket_value = (bucket or "").strip().lower()
-    if bucket_value == "pending":
-        return and_(
-            NotificationJob.status == "pending",
-            func.coalesce(NotificationJob.attempts, 0) <= 0,
-        )
-    if bucket_value == "processing":
-        return NotificationJob.status == "processing"
-    if bucket_value == "retry":
-        return or_(
-            NotificationJob.status == "retry",
-            and_(
-                NotificationJob.status == "pending",
-                func.coalesce(NotificationJob.attempts, 0) > 0,
-            ),
-        )
-    if bucket_value == "failed":
-        return NotificationJob.status.in_(("dead_letter", "failed"))
-    if bucket_value == "sent":
-        return NotificationJob.status.in_(("done", "sent"))
-    return None
+    return notification_job_bucket_filter(bucket)
 
 
 def _notification_bucket_key(job) -> str:
-    status = ((getattr(job, "status", None) or "").strip().lower())
-    attempts = int(getattr(job, "attempts", 0) or 0)
-    if status in {"dead_letter", "failed"}:
-        return "failed"
-    if status in {"done", "sent"}:
-        return "sent"
-    if status == "processing":
-        return "processing"
-    if status == "retry" or (status == "pending" and attempts > 0):
-        return "retry"
-    return "pending"
+    return notification_job_bucket_key(job)
 
 
 def _notification_bucket_label(bucket: str) -> str:
@@ -9513,21 +9474,7 @@ def _render_notifications_list():
 
     counts_base = _scoped_notification_jobs_query()
 
-    pending_count = counts_base.filter(_notification_bucket_filter("pending")).count()
-    processing_count = counts_base.filter(_notification_bucket_filter("processing")).count()
-    done_count = counts_base.filter(_notification_bucket_filter("sent")).count()
-    dead_letter_count = counts_base.filter(_notification_bucket_filter("failed")).count()
-    retry_compat_count = counts_base.filter(_notification_bucket_filter("retry")).count()
-
-    summary = {
-        "pending": pending_count,
-        "processing": processing_count,
-        "done": done_count,
-        "dead_letter": dead_letter_count,
-        "retry": retry_compat_count,
-        "failed": dead_letter_count,
-        "sent": done_count,
-    }
+    summary = count_notification_job_buckets(counts_base)
 
     channels = [
         c[0]

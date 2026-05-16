@@ -13,7 +13,7 @@
       </div>
       <div class="hc-admin-actions">
         <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_request_new') }}">+ Nouvelle demande</a>
-        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.admin_requests', tab='URGENT') }}">Voir cas critiques</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">Voir cas critiques</a>
         <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir sécurité</a>
       </div>
     </div>
@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="hc-ops-summary mb-3">
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('admin.admin_requests', tab='URGENT') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">
         <div class="hc-ops-summary__label">Situations critiques</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
         <div class="hc-ops-summary__context">
@@ -38,7 +38,7 @@
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('admin.admin_requests', no_owner='1') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', owner='none') }}">
         <div class="hc-ops-summary__label">Demandes non assignées</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}"> {{ unassigned_count or 0 }}</div>
         <div class="hc-ops-summary__context">
@@ -49,7 +49,7 @@
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}">
         <div class="hc-ops-summary__label">Sans activité</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
         <div class="hc-ops-summary__context">
