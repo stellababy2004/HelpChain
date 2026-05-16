@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import timedelta
 
-from sqlalchemy import inspect
+from sqlalchemy import and_, func, inspect, or_
 
 from backend.extensions import db
 from backend.models import NotificationJob, current_structure, utc_now
@@ -40,6 +40,69 @@ def _notification_jobs_table_available() -> bool:
         return "notification_jobs" in set(inspect(db.engine).get_table_names())
     except Exception:
         return False
+
+
+def notification_job_bucket_filter(bucket: str):
+    """Return the canonical operational bucket filter for NotificationJob rows."""
+    bucket_value = (bucket or "").strip().lower()
+    status_expr = func.lower(func.coalesce(NotificationJob.status, ""))
+    attempts_expr = func.coalesce(NotificationJob.attempts, 0)
+
+    # Dashboard/ops mapping:
+    # pending = queued jobs that have not been attempted yet
+    # retry = explicit retry rows or pending rows rescheduled after a failed attempt
+    # failed = terminal delivery failures kept for operator diagnosis/retry
+    if bucket_value == "pending":
+        return and_(status_expr.in_(("pending", "queued")), attempts_expr <= 0)
+    if bucket_value == "processing":
+        return status_expr == "processing"
+    if bucket_value == "retry":
+        return or_(
+            status_expr.in_(("retry", "scheduled_retry")),
+            and_(status_expr.in_(("pending", "queued")), attempts_expr > 0),
+        )
+    if bucket_value == "failed":
+        return status_expr.in_(("dead_letter", "failed"))
+    if bucket_value == "sent":
+        return status_expr.in_(("done", "sent"))
+    return None
+
+
+def notification_job_bucket_key(job: NotificationJob) -> str:
+    status = ((getattr(job, "status", None) or "").strip().lower())
+    attempts = int(getattr(job, "attempts", 0) or 0)
+    if status in {"dead_letter", "failed"}:
+        return "failed"
+    if status in {"done", "sent"}:
+        return "sent"
+    if status == "processing":
+        return "processing"
+    if status in {"retry", "scheduled_retry"} or (
+        status in {"pending", "queued"} and attempts > 0
+    ):
+        return "retry"
+    return "pending"
+
+
+def count_notification_job_buckets(query=None) -> dict[str, int]:
+    base_query = query if query is not None else NotificationJob.query
+    pending_count = base_query.filter(notification_job_bucket_filter("pending")).count()
+    processing_count = base_query.filter(
+        notification_job_bucket_filter("processing")
+    ).count()
+    retry_count = base_query.filter(notification_job_bucket_filter("retry")).count()
+    failed_count = base_query.filter(notification_job_bucket_filter("failed")).count()
+    sent_count = base_query.filter(notification_job_bucket_filter("sent")).count()
+
+    return {
+        "pending": pending_count,
+        "processing": processing_count,
+        "retry": retry_count,
+        "failed": failed_count,
+        "dead_letter": failed_count,
+        "sent": sent_count,
+        "done": sent_count,
+    }
 
 
 def _mark_job_done(job: NotificationJob) -> bool:
