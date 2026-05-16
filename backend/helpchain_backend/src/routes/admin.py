@@ -175,8 +175,10 @@ from ..services.recommendation_engine import compute_recommendation
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
 from ..services.request_sla import (
+    build_request_inactivity_components,
     build_request_meaningful_activity_subquery,
     get_request_last_meaningful_activity,
+    request_dashboard_actionable_filter,
 )
 from ..services.event_bus import (
     publish as publish_admin_stream_event,
@@ -4953,18 +4955,12 @@ def _render_operator_dashboard():
     except Exception:
         pass
 
-    status_expr = func.lower(func.coalesce(Request.status, ""))
-    actionable_statuses = ("new", "open", "in_progress", "approved", "pending")
     # Treat unset/legacy "new" requests as operator-actionable so local/demo
     # imports do not disappear from the ops queue while still staying scoped.
-    actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
-    activity_sq = build_request_meaningful_activity_subquery()
-    activity_expr = func.coalesce(
-        activity_sq.c.last_activity_at,
-        Request.updated_at,
-        Request.created_at,
+    actionable_filter = request_dashboard_actionable_filter()
+    activity_sq, activity_expr, stale_threshold, stale_filter = (
+        build_request_inactivity_components(_now_utc())
     )
-    stale_threshold = _now_utc() - timedelta(hours=72)
     today_start = _now_utc().replace(hour=0, minute=0, second=0, microsecond=0)
     urgent_filter = or_(
         func.lower(func.coalesce(Request.priority, "")).in_(["high", "critical"]),
@@ -4975,7 +4971,7 @@ def _render_operator_dashboard():
     priority_filter = or_(
         urgent_filter,
         unassigned_filter,
-        activity_expr <= stale_threshold,
+        stale_filter,
     )
 
     workspace_query = (
@@ -4985,7 +4981,7 @@ def _render_operator_dashboard():
 
     urgent_count = workspace_query.filter(urgent_filter).count()
     unassigned_count = workspace_query.filter(unassigned_filter).count()
-    followup_count = workspace_query.filter(activity_expr <= stale_threshold).count()
+    followup_count = workspace_query.filter(stale_filter).count()
     # /ops/workspace KPI counters intentionally stay Request-based.
     # Case rows remain available in /ops/cases, but they do not override
     # workspace counters until Case becomes the canonical operational source.
@@ -5008,7 +5004,7 @@ def _render_operator_dashboard():
         .order_by(
             case((urgent_filter, 0), else_=1).asc(),
             case((unassigned_filter, 0), else_=1).asc(),
-            case((activity_expr <= stale_threshold, 0), else_=1).asc(),
+            case((stale_filter, 0), else_=1).asc(),
             case((updated_today_filter, 0), else_=1).asc(),
             activity_expr.desc().nullslast(),
             Request.id.desc(),
@@ -7460,22 +7456,15 @@ def admin_home():
     except Exception:
         pass
 
-    status_expr = func.lower(func.coalesce(Request.status, ""))
-    actionable_statuses = ("new", "open", "in_progress", "approved", "pending")
-    actionable_filter = or_(Request.status.is_(None), status_expr.in_(actionable_statuses))
-    activity_sq = build_request_meaningful_activity_subquery()
-    activity_expr = func.coalesce(
-        activity_sq.c.last_activity_at,
-        Request.updated_at,
-        Request.created_at,
+    actionable_filter = request_dashboard_actionable_filter()
+    activity_sq, activity_expr, stale_threshold, stale_filter = (
+        build_request_inactivity_components(_now_utc())
     )
-    stale_threshold = _now_utc() - timedelta(hours=72)
     urgent_filter = or_(
         func.lower(func.coalesce(Request.priority, "")).in_(["high", "critical"]),
         func.coalesce(Request.risk_score, 0) >= 85,
     )
     unassigned_filter = Request.owner_id.is_(None)
-    stale_filter = activity_expr <= stale_threshold
     attention_filter = or_(urgent_filter, unassigned_filter, stale_filter)
 
     dashboard_query = base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)

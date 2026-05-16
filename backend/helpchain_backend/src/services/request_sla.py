@@ -38,6 +38,13 @@ DEFAULT_UNOWNED_THRESHOLD_HOURS = 48
 DEFAULT_INACTIVITY_THRESHOLD_HOURS = 24
 DEFAULT_ESCALATION_THRESHOLD_HOURS = 72
 SLA_MARKER_COOLDOWN_HOURS = 24
+REQUEST_DASHBOARD_ACTIONABLE_STATUSES = (
+    "new",
+    "open",
+    "in_progress",
+    "approved",
+    "pending",
+)
 
 # The repo currently has no dedicated SLA email template. Reuse an existing
 # operational notification template so the service can enqueue real jobs without
@@ -146,6 +153,29 @@ def build_request_meaningful_activity_subquery():
         .group_by(activity_union.c.request_id)
         .subquery()
     )
+
+
+def request_dashboard_actionable_filter():
+    status_expr = func.lower(func.coalesce(Request.status, ""))
+    return or_(
+        Request.status.is_(None),
+        status_expr.in_(REQUEST_DASHBOARD_ACTIONABLE_STATUSES),
+    )
+
+
+def build_request_inactivity_components(
+    now: datetime | None = None,
+    *,
+    hours: int = DEFAULT_ESCALATION_THRESHOLD_HOURS,
+):
+    activity_sq = build_request_meaningful_activity_subquery()
+    activity_expr = func.coalesce(
+        activity_sq.c.last_activity_at,
+        Request.updated_at,
+        Request.created_at,
+    )
+    threshold = (now or utc_now()) - timedelta(hours=hours)
+    return activity_sq, activity_expr, threshold, activity_expr <= threshold
 
 
 def touch_request_case_activity(

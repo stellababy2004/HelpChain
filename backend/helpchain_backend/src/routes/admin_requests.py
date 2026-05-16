@@ -51,6 +51,10 @@ from ..services.geocoding import request_address_display_text
 from ..services.recommendation_engine import compute_recommendation
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
+from ..services.request_sla import (
+    build_request_inactivity_components,
+    request_dashboard_actionable_filter,
+)
 from ..statuses import REQUEST_STATUS_ALLOWED, normalize_request_status
 from .admin import (
     ASSIGN_SLA_HOURS,
@@ -614,9 +618,19 @@ def admin_requests():
                 func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%"),
             )
         ).filter(_request_non_terminal_status_filter()).count()
-        not_seen_72h_count = overview_query.filter(
-            func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
-        ).count()
+    overview_query = _scope_requests(Request.query).filter(Request.deleted_at.is_(None))
+    try:
+        overview_query = overview_query.filter(Request.is_archived.is_(False))
+    except Exception:
+        pass
+    activity_sq, _activity_expr, _stale_threshold, stale_filter = (
+        build_request_inactivity_components(utc_now())
+    )
+    not_seen_72h_count = (
+        overview_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+        .filter(request_dashboard_actionable_filter(), stale_filter)
+        .count()
+    )
     age_days_by_id = {}
     for r in requests:
         created_at = getattr(r, "created_at", None)
@@ -1366,9 +1380,17 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
         )
         base_query = base_query.filter(_request_non_terminal_status_filter())
     if not_seen_72h:
-        base_query = base_query.filter(
-            func.lower(func.coalesce(Request.risk_signals, "")).like("%not_seen_72h%")
+        activity_sq, _activity_expr, _stale_threshold, stale_filter = (
+            build_request_inactivity_components(utc_now())
         )
+        base_query = (
+            base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+            .filter(request_dashboard_actionable_filter(), stale_filter)
+        )
+        try:
+            base_query = base_query.filter(Request.is_archived.is_(False))
+        except Exception:
+            pass
     if queue == "sla" and sla_kind:
         base_query = _apply_sla_queue_filter(
             base_query,
@@ -2582,8 +2604,4 @@ def admin_request_notes_get_alias(req_id: int):
 @login_required
 def admin_request_notes_post_alias(req_id: int):
     return admin_request_add_note(req_id)
-
-
-
-
 
