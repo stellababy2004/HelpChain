@@ -17513,3 +17513,156 @@ body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__cta
   border-color: rgba(37, 99, 235, .28);
   box-shadow: 0 18px 42px rgba(15, 23, 42, .10);
 }
+
+
+/* ===== OPS WORKSPACE POLISH ===== */
+
+.hc-ops-summary__item{
+    min-height:140px;
+    padding:20px 22px;
+    justify-content:space-between;
+}
+
+.hc-ops-summary__value{
+    font-size:3rem;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:-0.04em;
+    margin:10px 0;
+}
+
+.hc-ops-summary__label{
+    font-size:.82rem;
+    letter-spacing:.08em;
+    font-weight:700;
+}
+
+.hc-ops-summary__context{
+    font-size:.95rem;
+    font-weight:600;
+    opacity:.9;
+}
+
+.hc-ops-queue-table tbody tr{
+    transition:background-color .18s ease;
+}
+
+.hc-ops-queue-table tbody tr:hover{
+    background:rgba(37,99,235,.04);
+}
+
+.hc-ops-queue-table tbody tr:nth-child(even){
+    background:rgba(15,23,42,.015);
+}
+
+.hc-empty-state{
+    border:none !important;
+    background:rgba(15,23,42,.03);
+    border-radius:14px;
+    padding:20px;
+    min-height:auto;
+    box-shadow:none;
+}
+
+.hc-empty-state__title{
+    font-size:1rem;
+    font-weight:700;
+}
+
+.hc-empty-state__text{
+    font-size:.92rem;
+    max-width:520px;
+    margin:auto;
+}
+
+
+/* ===== OPS WORKSPACE TIGHTENING ===== */
+
+.hc-ops-summary{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:18px;
+}
+
+.hc-ops-summary__item{
+    min-height:128px;
+    padding:18px 18px 16px;
+}
+
+.hc-ops-summary__value{
+    font-size:2.6rem;
+}
+
+.hc-ops-table-shell .hc-card__header{
+    padding-top:16px;
+    padding-bottom:16px;
+}
+
+.hc-ops-queue-table td{
+    padding-top:18px;
+    padding-bottom:18px;
+}
+
+.hc-empty-state{
+    max-width:540px;
+    margin:28px auto 8px;
+    padding:18px 20px;
+}
+
+.hc-empty-state__title{
+    margin-bottom:6px;
+}
+
+.hc-admin-linkcards{
+    margin-top:24px;
+}
+
+.hc-admin-linkcard{
+    min-height:150px;
+    transition:transform .16s ease, box-shadow .16s ease;
+}
+
+.hc-admin-linkcard:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px rgba(15,23,42,.08);
+}
+
+@media (max-width: 1200px){
+    .hc-ops-summary{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+
+@media (max-width: 768px){
+    .hc-ops-summary{
+        grid-template-columns:1fr;
+    }
+}
+
+
+/* OPS workspace: denser operational queue */
+.hc-ops-workspace-page .hc-ops-queue-table th{
+    padding-top:14px;
+    padding-bottom:14px;
+    font-size:.86rem;
+}
+
+.hc-ops-workspace-page .hc-ops-queue-table td{
+    padding-top:14px;
+    padding-bottom:14px;
+    vertical-align:middle;
+}
+
+.hc-ops-workspace-page .hc-ops-queue-table .hc-ops-cell-title{
+    max-width:520px;
+}
+
+.hc-ops-workspace-page .hc-ops-queue-table .hc-ops-cell-title strong,
+.hc-ops-workspace-page .hc-ops-queue-table .hc-ops-cell-title a{
+    font-size:1rem;
+    line-height:1.25;
+}
+
+.hc-ops-workspace-page .hc-ops-queue-table .hc-muted,
+.hc-ops-workspace-page .hc-ops-queue-table .small{
+    font-size:.82rem;
+}

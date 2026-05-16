@@ -78,19 +78,6 @@
       </div>
     </div>
 
-    <div class="hc-section-intro hc-section-intro--tight">
-      <div>
-        <h2 class="hc-section-title">Accès rapides</h2>
-        <p class="hc-section-subtitle">Basculez directement vers les files qui nécessitent une action.</p>
-      </div>
-    </div>
-    <div class="hc-ops-actions" id="hcOpsQuickFilters">
-      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_requests', tab='URGENT') }}">Voir cas critiques</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', no_owner='1') }}">Voir non assignés</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">Voir sans activité</a>
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">Notifications en échec</a>
-    </div>
-  </div>
 
   <div class="hc-card hc-admin-table-shell hc-ops-table-shell">
     <div class="hc-card__header">
@@ -186,16 +173,6 @@
               </td>
             </tr>
           {% endfor %}
-          {% if queue_rows %}
-            <tr id="hcOpsWorkspaceNoMatch" hidden>
-              <td colspan="8" class="py-4">
-                <div class="hc-empty-state">
-                  <div class="hc-empty-state__title">Aucune ligne pour ce filtre rapide</div>
-                  <div class="hc-empty-state__text">Aucune situation affichée ne correspond au filtre sélectionné. Effacez le filtre rapide pour revoir toute la file.</div>
-                </div>
-              </td>
-            </tr>
-          {% endif %}
         </tbody>
       </table>
     </div>
