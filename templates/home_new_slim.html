@@ -84,17 +84,18 @@
     }
 
     body.hc-page-home .hc-home-premium__hero {
-      padding-top: 48px !important;
+      padding-top: 36px !important;
+      padding-bottom: 30px !important;
     }
 
     body.hc-page-home .hc-home-premium__hero-grid {
       align-items: start;
-      gap: clamp(28px, 3vw, 44px);
+      gap: clamp(22px, 2.5vw, 36px);
     }
 
     body.hc-page-home .hc-home-premium__hero-copy {
       display: grid;
-      gap: 18px;
+      gap: 14px;
       align-content: start;
       max-width: 720px;
     }
@@ -133,7 +134,7 @@
     body.hc-page-home .hc-home-premium__trust-list {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px 14px;
+      gap: 8px 10px;
       margin: 0;
       padding: 0;
       list-style: none;
@@ -141,7 +142,7 @@
 
     body.hc-page-home .hc-home-premium__trust-list li {
       min-height: 100%;
-      padding: 14px 16px;
+      padding: 11px 13px;
       border: 1px solid rgba(53, 80, 122, 0.12);
       border-radius: 18px;
       background: rgba(255, 255, 255, 0.72);
@@ -153,18 +154,18 @@
 
     body.hc-page-home .hc-home-premium__preview {
       display: grid;
-      gap: 14px;
+      gap: 10px;
       align-content: start;
     }
 
     body.hc-page-home .hc-home-premium__preview-proof {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
     }
 
     body.hc-page-home .hc-home-premium__preview-proofItem {
-      padding: 12px 14px;
+      padding: 10px 12px;
       border: 1px solid rgba(53, 80, 122, 0.12);
       border-radius: 18px;
       background: rgba(255, 255, 255, 0.82);
@@ -521,10 +522,11 @@
         </div>
         <img
           class="hc-home-premium__shot-img hc-home-premium__shot-img--hero"
-          src="{{ url_for('static', filename='img/product/case.png') }}"
-          alt="{{ _('Tableau de bord HelpChain avec vue opérationnelle et indicateurs') }}"
-          width="1876"
-          height="836"
+          src="{{ url_for('static', filename='img/helpchain-hero-final.png') }}"
+          alt="Interface de pilotage HelpChain"
+          width="1672"
+          height="941"
+          loading="eager"
           decoding="async"
           fetchpriority="high"
         >
@@ -583,11 +585,11 @@
             <strong>{{ _('Module demandes') }}</strong>
           </div>
           <img
-            class="hc-home-premium__shot-img"
-            src="{{ url_for('static', filename='img/product/demandes.png') }}"
+            class="hc-home-premium__shot-img hc-home-premium__shot-img--module-demandes"
+            src="{{ url_for('static', filename='img/helpchain-module-demandes-dashboard.png') }}"
             alt="{{ _('Liste des demandes HelpChain avec statuts, responsables et priorités') }}"
-            width="1714"
-            height="949"
+            width="1695"
+            height="928"
             loading="lazy"
             decoding="async"
           >
@@ -649,11 +651,11 @@
             <strong>{{ _('Sécurité & administration') }}</strong>
           </div>
           <img
-            class="hc-home-premium__shot-img"
-            src="{{ url_for('static', filename='img/product/image.png') }}"
+            class="hc-home-premium__shot-img hc-home-premium__shot-img--module-securite"
+            src="{{ url_for('static', filename='img/helpchain-module-securite-dashboard.png') }}"
             alt="{{ _('Interface HelpChain de sécurité, gouvernance et supervision administrative') }}"
-            width="1895"
-            height="489"
+            width="1536"
+            height="1024"
             loading="lazy"
             decoding="async"
           >
