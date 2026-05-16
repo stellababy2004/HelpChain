@@ -17666,3 +17666,189 @@ body[data-hc-page^="/admin/requests"] #hcAdminKpis .hc-request-summary-card__cta
 .hc-ops-workspace-page .hc-ops-queue-table .small{
     font-size:.82rem;
 }
+
+/* Enterprise admin/operator tables: shared visual contract */
+body.hc-page-admin,
+body[data-hc-page^="/ops"]{
+  --hc-admin-table-border: rgba(199, 212, 228, .84);
+  --hc-admin-table-divider: rgba(222, 231, 241, .9);
+  --hc-admin-table-header-bg: linear-gradient(180deg, rgba(249, 251, 254, .98), rgba(241, 246, 251, .96));
+  --hc-admin-table-row: rgba(255, 255, 255, .96);
+  --hc-admin-table-row-alt: rgba(248, 251, 254, .9);
+  --hc-admin-table-row-hover: rgba(239, 246, 253, .98);
+  --hc-admin-table-text: #18324d;
+  --hc-admin-table-muted: #63758b;
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-admin-table-card, .hc-requests-table-shell, .hc-cases-table-shell, .hc-ops-table-shell),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-admin-table-card, .hc-cases-table-shell, .hc-ops-table-shell){
+  border-radius: 12px !important;
+  border-color: var(--hc-admin-table-border) !important;
+  overflow: hidden;
+}
+
+body.hc-page-admin :is(.hc-admin-tablewrap, .hc-requests-table-wrap, .hc-cases-table-wrap, .hc-proleads-table-wrap, .hc-import-preview-table-wrap, .hc-revenue-table-wrap, .hc-notify-table-wrap, .hc-structures-table-wrap, .hc-ops-queue-wrap),
+body[data-hc-page^="/ops"] :is(.hc-admin-tablewrap, .hc-cases-table-wrap, .hc-notify-table-wrap, .hc-ops-queue-wrap){
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: rgba(255, 255, 255, .72);
+  scrollbar-gutter: stable both-edges;
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table),
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table){
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  color: var(--hc-admin-table-text);
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) thead th,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) thead th,
+body.hc-page-admin .hc-revenue-pipeline__head,
+body.hc-page-admin .hc-revenue-pipeline__head .hc-revenue-pipeline__cell{
+  background: var(--hc-admin-table-header-bg) !important;
+  color: var(--hc-admin-table-muted) !important;
+  border-bottom: 1px solid var(--hc-admin-table-border) !important;
+  font-size: .69rem !important;
+  font-weight: 780 !important;
+  letter-spacing: .055em !important;
+  line-height: 1.2 !important;
+  text-transform: uppercase !important;
+  white-space: nowrap;
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) thead th,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) thead th{
+  padding: .66rem .88rem !important;
+  vertical-align: middle;
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) tbody td,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) tbody td{
+  padding: .72rem .88rem !important;
+  border-top: 1px solid var(--hc-admin-table-divider) !important;
+  background: var(--hc-admin-table-row);
+  vertical-align: middle;
+  line-height: 1.34;
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) tbody tr:first-child td,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) tbody tr:first-child td{
+  border-top: 0 !important;
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) tbody tr:nth-child(even) td,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) tbody tr:nth-child(even) td{
+  background: var(--hc-admin-table-row-alt);
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) tbody tr:hover td,
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) tbody tr:focus-within td,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) tbody tr:hover td,
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) tbody tr:focus-within td{
+  background: var(--hc-admin-table-row-hover);
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) :is(th, td):is(:last-child, .col-action, .actions-col, .hc-col-action, .hc-col-actions, .hc-td-action, .hc-import-control-col, .hc-import-control-cell),
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) :is(th, td):is(:last-child, .col-action, .actions-col, .hc-col-action, .hc-col-actions, .hc-td-action){
+  text-align: right;
+  white-space: nowrap;
+}
+
+body.hc-page-admin :is(.hc-admin-table, .hc-requests-table, .hc-cases-table, .hc-proleads-table, .hc-import-preview-table, .hc-notify-table, .hc-structures-table, .hc-ops-queue-table) td:last-child :is(form, .d-inline, .d-inline-flex, .hc-revenue-actions),
+body[data-hc-page^="/ops"] :is(.hc-admin-table, .hc-cases-table, .hc-notify-table, .hc-ops-queue-table) td:last-child :is(form, .d-inline, .d-inline-flex){
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin: 0;
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-requests-table-shell, .hc-cases-table-shell, .hc-ops-table-shell) :is(.badge, .hc-pill, .hc-chip, .hc-reason-chip, .hc-proleads-priority, .hc-import-status),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-cases-table-shell, .hc-ops-table-shell) :is(.badge, .hc-pill, .hc-chip, .hc-reason-chip){
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 720;
+  line-height: 1.1;
+  padding: .28rem .58rem;
+}
+
+body.hc-page-admin :is(.hc-admin-table-shell, .hc-requests-table-shell, .hc-cases-table-shell, .hc-ops-table-shell) td:last-child :is(.btn, .btn-sm),
+body[data-hc-page^="/ops"] :is(.hc-admin-table-shell, .hc-cases-table-shell, .hc-ops-table-shell) td:last-child :is(.btn, .btn-sm){
+  min-height: 32px;
+  border-radius: 999px;
+  padding: .38rem .74rem;
+  font-size: .76rem;
+  font-weight: 740;
+}
+
+body.hc-page-admin .hc-requests-table tbody td[colspan]{
+  padding: .55rem .75rem !important;
+}
+
+body.hc-page-admin .hc-requests-table tbody td[colspan] > .list-group-item{
+  border-radius: 8px !important;
+  border-color: var(--hc-admin-table-divider) !important;
+  background: var(--hc-admin-table-row) !important;
+  box-shadow: none !important;
+}
+
+body.hc-page-admin .hc-requests-table tbody tr:nth-child(even) td[colspan] > .list-group-item{
+  background: var(--hc-admin-table-row-alt) !important;
+}
+
+body.hc-page-admin .hc-requests-table tbody tr:hover td[colspan] > .list-group-item,
+body.hc-page-admin .hc-requests-table tbody tr:focus-within td[colspan] > .list-group-item{
+  background: var(--hc-admin-table-row-hover) !important;
+  border-color: rgba(172, 194, 218, .9) !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline{
+  border-color: var(--hc-admin-table-border) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline__head{
+  padding: 0 !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline__cell{
+  padding: .72rem .88rem !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline__row{
+  min-height: 0 !important;
+  border-bottom: 1px solid var(--hc-admin-table-divider) !important;
+  background: var(--hc-admin-table-row) !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline__row:nth-child(even){
+  background: var(--hc-admin-table-row-alt) !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline__row:hover,
+body.hc-page-admin .hc-revenue-pipeline__row:focus-within{
+  background: var(--hc-admin-table-row-hover) !important;
+}
+
+body.hc-page-admin .hc-revenue-pipeline__cell--actions{
+  text-align: right;
+}
+
+body.hc-page-admin .hc-revenue-actions{
+  justify-content: flex-end !important;
+  gap: .35rem !important;
+}
+
+@media (max-width: 1180px){
+  body.hc-page-admin .hc-revenue-pipeline__cell--actions,
+  body.hc-page-admin .hc-revenue-actions{
+    text-align: left;
+    justify-content: flex-start !important;
+  }
+}

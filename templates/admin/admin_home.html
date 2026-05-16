@@ -154,11 +154,11 @@
       <div class="hc-command-panel__kicker">Points à traiter</div>
       <h2 class="hc-command-panel__title">Où regarder maintenant</h2>
       <div class="hc-command-panel__body">
-        <a class="hc-command-action hc-command-action--focus" href="{{ url_for('admin.admin_requests', status='open', no_owner='1') }}">
+        <a class="hc-command-action hc-command-action--focus" href="{{ url_for('admin.admin_requests', no_owner='1') }}">
           <span class="hc-command-action__label">Non assignées</span>
           <strong>{{ unassigned_total }}</strong>
         </a>
-        <a class="hc-command-action hc-command-action--focus" href="{{ url_for('admin.admin_requests', risk='notseen72') }}">
+        <a class="hc-command-action hc-command-action--focus" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
           <span class="hc-command-action__label">À relancer</span>
           <strong>{{ followup_total }}</strong>
         </a>
