@@ -28,6 +28,7 @@
     {% set is_leads_active = current_path.startswith('/admin/professional-leads') %}
     {% set is_revenue_active = current_path.startswith('/admin/revenue') %}
     {% set is_conversion_active = current_path.startswith('/admin/conversion-dashboard') %}
+{% set is_reports_active = current_path.startswith('/admin/reports') %}
     {% set is_audience_active = current_path.startswith('/admin/audience-map') %}
     {% set is_integrations_active = current_path.startswith('/admin/integrations') %}
     {% set is_pilotage_active = current_path.startswith('/admin/sla') or current_path.startswith('/admin/pilotage') or current_path.startswith('/admin/risk') or current_path.startswith('/admin/professionals-map') or current_path.startswith('/admin/command-map') %}
@@ -52,6 +53,9 @@
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_leads_active else '' }}" href="{{ url_for('admin.admin_professional_leads') }}" {% if is_leads_active %}aria-current="page"{% endif %}>Leads</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_revenue_active else '' }}" href="{{ url_for('admin.admin_revenue') }}" {% if is_revenue_active %}aria-current="page"{% endif %}>Revenue</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_conversion_active else '' }}" href="/admin/conversion-dashboard" {% if is_conversion_active %}aria-current="page"{% endif %}>Conversion</a>
+<a class="hc-admin-shellnav__link {{ 'is-active' if is_reports_active else '' }}"
+href="{{ url_for('admin.admin_operations_report') }}"
+{% if is_reports_active %}aria-current="page"{% endif %}>Rapports</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_audience_active else '' }}" href="{{ url_for('admin.admin_audience_map') }}" {% if is_audience_active %}aria-current="page"{% endif %}>Audience</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_integrations_active else '' }}" href="{{ url_for('admin.admin_integrations') }}" {% if is_integrations_active %}aria-current="page"{% endif %}>Connecteurs</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_security_active else '' }}" href="{{ url_for('admin.admin_security') }}" {% if is_security_active %}aria-current="page"{% endif %}>Sécurité</a>
