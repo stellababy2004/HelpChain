@@ -2416,7 +2416,10 @@ def admin_request_unassign(req_id: int):
     endpoint="admin_assign_volunteer",
 )
 @login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
 def admin_assign_volunteer(req_id: int, volunteer_id: int):
+    admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
@@ -2448,7 +2451,10 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
     endpoint="admin_unassign_volunteer",
 )
 @login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
 def admin_unassign_volunteer(req_id: int):
+    admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
@@ -2468,6 +2474,8 @@ def admin_unassign_volunteer(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/nudge", endpoint="admin_request_nudge")
 @login_required
+@admin_required
+@admin_role_required("ops", "superadmin")
 def admin_request_nudge(req_id: int):
     admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
@@ -2499,8 +2507,11 @@ def admin_request_nudge(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/delete", endpoint="admin_request_delete")
 @login_required
+@admin_required
+@admin_role_required("superadmin")
 @require_fresh_mfa
 def admin_request_delete(req_id: int):
+    admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
@@ -2535,7 +2546,10 @@ def admin_request_delete(req_id: int):
     endpoint="admin_request_restore_deleted",
 )
 @login_required
+@admin_required
+@admin_role_required("superadmin")
 def admin_request_restore_deleted(req_id: int):
+    admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
         abort(403)
@@ -2561,7 +2575,10 @@ def admin_request_restore_deleted(req_id: int):
 
 @admin_bp.post("/requests/<int:req_id>/note")
 @login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
 def admin_request_add_note(req_id: int):
+    admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     note = (request.form.get("note") or "").strip()
     if not note:
@@ -2590,18 +2607,23 @@ def admin_request_add_note(req_id: int):
 
 @admin_bp.get("/requests/<int:req_id>/status")
 @login_required
+@admin_required
 def admin_request_status_get_alias(req_id: int):
+    admin_required_404()
     return redirect(url_for("admin.admin_request_details", req_id=req_id), code=302)
 
 
 @admin_bp.get("/requests/<int:req_id>/notes")
 @login_required
+@admin_required
 def admin_request_notes_get_alias(req_id: int):
+    admin_required_404()
     return redirect(url_for("admin.admin_request_details", req_id=req_id), code=302)
 
 
 @admin_bp.post("/requests/<int:req_id>/notes")
 @login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
 def admin_request_notes_post_alias(req_id: int):
     return admin_request_add_note(req_id)
-

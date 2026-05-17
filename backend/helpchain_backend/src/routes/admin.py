@@ -12459,7 +12459,9 @@ def admin_professionnels_leads():
 @admin_bp.get("/pro-access")
 @login_required
 @admin_required
+@admin_role_required("superadmin")
 def admin_pro_access_list():
+    _require_global_admin()
     if ProAccessRequest is None:
         flash("Pro Access module is not available in this environment.", "info")
         return redirect(url_for("admin.admin_requests"), code=303)
@@ -13082,7 +13084,9 @@ def admin_roles_set_role(admin_id: int):
 @admin_bp.get("/pro-access/<int:pro_id>")
 @login_required
 @admin_required
+@admin_role_required("superadmin")
 def admin_pro_access_detail(pro_id: int):
+    _require_global_admin()
     if ProAccessRequest is None:
         abort(404)
 
@@ -13124,7 +13128,9 @@ def _pro_access_set_status(
 @admin_bp.post("/pro-access/<int:pro_id>/review")
 @login_required
 @admin_required
+@admin_role_required("superadmin")
 def admin_pro_access_review(pro_id: int):
+    _require_global_admin()
     if ProAccessRequest is None:
         abort(404)
 
@@ -13139,7 +13145,9 @@ def admin_pro_access_review(pro_id: int):
 @admin_bp.post("/pro-access/<int:pro_id>/approve")
 @login_required
 @admin_required
+@admin_role_required("superadmin")
 def admin_pro_access_approve(pro_id: int):
+    _require_global_admin()
     if ProAccessRequest is None:
         abort(404)
 
@@ -13154,7 +13162,9 @@ def admin_pro_access_approve(pro_id: int):
 @admin_bp.post("/pro-access/<int:pro_id>/reject")
 @login_required
 @admin_required
+@admin_role_required("superadmin")
 def admin_pro_access_reject(pro_id: int):
+    _require_global_admin()
     if ProAccessRequest is None:
         abort(404)
 
@@ -13191,9 +13201,10 @@ except Exception:
 
 @admin_bp.get("/api/action-queue")
 @admin_required
+@admin_role_required("readonly", "ops", "admin", "superadmin")
 def admin_ops_action_queue_v1():
     rows = (
-        OpsActionRequest.query
+        _scope_requests(OpsActionRequest.query)
         .filter(OpsActionRequest.is_archived.is_(False))
         .order_by(
             OpsActionRequest.updated_at.desc(),
@@ -13249,8 +13260,11 @@ def admin_ops_stream_v1():
 
 @admin_bp.post("/api/action-queue/<int:request_id>/assign")
 @admin_required
+@admin_role_required("ops", "admin", "superadmin")
 def admin_ops_action_queue_assign_v1(request_id):
-    r = OpsActionRequest.query.get_or_404(request_id)
+    r = _scope_requests(OpsActionRequest.query).filter(
+        OpsActionRequest.id == int(request_id)
+    ).first_or_404()
 
     current_admin_id = session.get("admin_user_id") or session.get("user_id")
     current_admin_name = session.get("admin_username") or session.get("username") or "admin"
