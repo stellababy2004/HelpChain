@@ -152,6 +152,9 @@ def test_operations_report_payload_shape(app, db_schema):
             "sla",
             "breakdowns",
             "timeline",
+            "executive_summary",
+            "operational_severity",
+            "recommendations",
             "definition",
         }
         assert "by_category" in report["breakdowns"]

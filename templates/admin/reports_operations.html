@@ -31,6 +31,60 @@
   </div>
 
   <section class="hc-card hc-card-pad mb-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <div>
+        <div class="hc-admin-kicker mb-1">Synthèse exécutive</div>
+        <p class="mb-0">
+          {{ report.executive_summary }}
+        </p>
+      </div>
+
+      {% set severity = report.operational_severity %}
+
+      <div class="
+        badge rounded-pill px-3 py-2
+        {% if severity.level == 'critical' %}
+          text-bg-danger
+        {% elif severity.level == 'warning' %}
+          text-bg-warning
+        {% else %}
+          text-bg-success
+        {% endif %}
+      ">
+        {{ severity.label }}
+      </div>
+    </div>
+
+    <div class="mt-2 text-muted small">
+      {{ report.operational_severity.message }}
+    </div>
+  </section>
+
+  <section class="hc-card hc-card-pad mb-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+      <div>
+        <div class="hc-admin-kicker mb-1">Recommandations automatiques</div>
+        <h2 class="hc-section-title mb-1">Actions suggérées</h2>
+        <p class="hc-muted mb-0">Priorités opérationnelles générées à partir des indicateurs du rapport.</p>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      {% for item in report.recommendations %}
+        <div class="col-md-6">
+          <article class="hc-card hc-card-pad h-100">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <h3 class="h6 mb-0">{{ item.title }}</h3>
+              <span class="badge rounded-pill text-bg-light border">{{ item.priority }}</span>
+            </div>
+            <p class="hc-muted mb-0">{{ item.description }}</p>
+          </article>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="hc-card hc-card-pad mb-3">
     <div class="d-flex justify-content-between flex-wrap gap-2">
       <div>
         <div class="hc-muted small">Périmètre</div>

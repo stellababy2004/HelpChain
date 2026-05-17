@@ -128,6 +128,133 @@ def _rows_by_label(rows, label_name: str, count_name: str = "count") -> list[dic
     ]
 
 
+def _build_operational_recommendations(metrics):
+    recommendations = []
+
+    open_requests = int(metrics.get("open_requests", 0) or 0)
+    unassigned = int(metrics.get("unassigned_requests", 0) or 0)
+    stale = int(metrics.get("stale_requests", 0) or 0)
+    avg_resolution = float(metrics.get("avg_resolution_hours", 0.0) or 0.0)
+    assignment_rate = float(metrics.get("assignment_rate", 0.0) or 0.0)
+
+    if unassigned > 0:
+        recommendations.append({
+            "priority": "Haute",
+            "title": "Réassigner les demandes sans responsable",
+            "description": (
+                f"{unassigned} situation(s) restent sans responsable identifié. "
+                "Une attribution rapide réduit le risque de perte de suivi."
+            ),
+        })
+
+    if stale > 0:
+        recommendations.append({
+            "priority": "Haute" if stale >= 5 else "Normale",
+            "title": "Relancer les situations sans activité récente",
+            "description": (
+                f"{stale} situation(s) nécessitent une relance opérationnelle. "
+                "Prioriser les dossiers ouverts depuis plus de 72h."
+            ),
+        })
+
+    if avg_resolution >= 96:
+        recommendations.append({
+            "priority": "Moyenne",
+            "title": "Analyser les délais de résolution",
+            "description": (
+                f"Le délai moyen de résolution atteint {avg_resolution:.1f}h. "
+                "Identifier les catégories ou statuts qui ralentissent le traitement."
+            ),
+        })
+
+    if assignment_rate < 70 and open_requests > 0:
+        recommendations.append({
+            "priority": "Moyenne",
+            "title": "Renforcer le processus d’assignation",
+            "description": (
+                f"Le taux d’assignation est de {assignment_rate:.1f}%. "
+                "Vérifier les règles d’orientation et la disponibilité des équipes."
+            ),
+        })
+
+    if not recommendations:
+        recommendations.append({
+            "priority": "Normale",
+            "title": "Maintenir le rythme de suivi",
+            "description": (
+                "Les indicateurs restent maîtrisés. Continuer le suivi régulier "
+                "et conserver la traçabilité des actions."
+            ),
+        })
+
+    return recommendations[:4]
+
+
+def _compute_operational_severity(metrics):
+    stale = int(metrics.get("stale_requests", 0) or 0)
+    unassigned = int(metrics.get("unassigned_requests", 0) or 0)
+    avg_resolution = float(metrics.get("avg_resolution_hours", 0.0) or 0.0)
+
+    if stale >= 15 or avg_resolution >= 168:
+        return {
+            "level": "critical",
+            "label": "Critique",
+            "message": "Des situations nécessitent une intervention immédiate.",
+        }
+
+    if stale >= 5 or unassigned >= 5 or avg_resolution >= 72:
+        return {
+            "level": "warning",
+            "label": "Attention requise",
+            "message": "Une tension opérationnelle est détectée.",
+        }
+
+    return {
+        "level": "stable",
+        "label": "Stable",
+        "message": "Les indicateurs opérationnels restent maîtrisés.",
+    }
+
+
+def _build_executive_summary(metrics):
+    open_requests = int(metrics.get("open_requests", 0) or 0)
+    unassigned = int(metrics.get("unassigned_requests", 0) or 0)
+    stale = int(metrics.get("stale_requests", 0) or 0)
+
+    avg_resolution = float(metrics.get("avg_resolution_hours", 0.0) or 0.0)
+    assignment_rate = float(metrics.get("assignment_rate", 0.0) or 0.0)
+
+    activity_label = (
+        "activité soutenue"
+        if open_requests >= 20
+        else "activité modérée"
+        if open_requests >= 10
+        else "activité limitée"
+    )
+
+    resolution_label = (
+        "des délais de résolution élevés"
+        if avg_resolution >= 96
+        else "des délais de résolution maîtrisés"
+    )
+
+    assignment_label = (
+        "Le taux d’assignation reste solide."
+        if assignment_rate >= 70
+        else "Le taux d’assignation nécessite une attention opérationnelle."
+    )
+
+    return (
+        f"Le pilotage montre une {activity_label} avec "
+        f"{open_requests} situations ouvertes, dont "
+        f"{unassigned} non assignées. "
+        f"La période présente {resolution_label} "
+        f"(moyenne: {avg_resolution:.1f}h). "
+        f"{stale} situations nécessitent une relance. "
+        f"{assignment_label}"
+    )
+
+
 def build_operational_report(
     *,
     structure_id: int | None = None,
@@ -259,6 +386,17 @@ def build_operational_report(
         for key, values in timeline_map.items()
     ]
 
+    insight_metrics = {
+        "open_requests": open_count,
+        "unassigned_requests": unassigned_count,
+        "stale_requests": stale_count,
+        "avg_resolution_hours": avg_resolution_hours,
+        "assignment_rate": assignment_rate,
+    }
+    executive_summary = _build_executive_summary(insight_metrics)
+    operational_severity = _compute_operational_severity(insight_metrics)
+    recommendations = _build_operational_recommendations(insight_metrics)
+
     structure = None
     if structure_id is not None:
         structure = db.session.get(Structure, int(structure_id))
@@ -292,6 +430,9 @@ def build_operational_report(
             "by_status": _rows_by_label(by_status_rows, "status"),
         },
         "timeline": timeline,
+        "executive_summary": executive_summary,
+        "operational_severity": operational_severity,
+        "recommendations": recommendations,
         "definition": {
             "scope": "structure-scoped when structure_id is provided; excludes deleted and archived requests",
             "open": "status is not in canonical closed/resolved/cancelled/archived states",
