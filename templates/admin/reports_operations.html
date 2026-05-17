@@ -85,6 +85,67 @@
   </section>
 
   <section class="hc-card hc-card-pad mb-3">
+    <div class="hc-admin-kicker mb-1">Tendances</div>
+    <h2 class="hc-section-title mb-3">Comparaison avec la période précédente</h2>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <article class="hc-card hc-card-pad h-100">
+          <div class="hc-muted small">Nouvelles demandes</div>
+          <div class="d-flex justify-content-between align-items-end gap-2">
+            <div class="hc-kpi__value">{{ report.trends.new_requests.current }}</div>
+            <span class="badge rounded-pill border
+              {% if report.trends.new_requests.semantic == 'negative' %}
+                text-bg-warning
+              {% elif report.trends.new_requests.semantic == 'positive' %}
+                text-bg-success
+              {% else %}
+                text-bg-light
+              {% endif %}
+            ">
+              {{ report.trends.new_requests.label }}
+            </span>
+          </div>
+          <div class="hc-muted small mt-1">
+            Période précédente : {{ report.trends.new_requests.previous }}
+          </div>
+          <svg viewBox="0 0 220 52" role="img" aria-label="Évolution des demandes créées" class="w-100 mt-3 hc-report-sparkline hc-report-sparkline--pressure" height="52">
+            <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+              points="{{ report.timeline_charts.created }}" />
+          </svg>
+        </article>
+      </div>
+
+      <div class="col-md-6">
+        <article class="hc-card hc-card-pad h-100">
+          <div class="hc-muted small">Demandes clôturées</div>
+          <div class="d-flex justify-content-between align-items-end gap-2">
+            <div class="hc-kpi__value">{{ report.trends.resolved_requests.current }}</div>
+            <span class="badge rounded-pill border
+              {% if report.trends.resolved_requests.semantic == 'positive' %}
+                text-bg-success
+              {% elif report.trends.resolved_requests.semantic == 'negative' %}
+                text-bg-warning
+              {% else %}
+                text-bg-light
+              {% endif %}
+            ">
+              {{ report.trends.resolved_requests.label }}
+            </span>
+          </div>
+          <div class="hc-muted small mt-1">
+            Période précédente : {{ report.trends.resolved_requests.previous }}
+          </div>
+          <svg viewBox="0 0 220 52" role="img" aria-label="Évolution des demandes clôturées" class="w-100 mt-3 hc-report-sparkline hc-report-sparkline--positive" height="52">
+            <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+              points="{{ report.timeline_charts.closed }}" />
+          </svg>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-card hc-card-pad mb-3">
     <div class="d-flex justify-content-between flex-wrap gap-2">
       <div>
         <div class="hc-muted small">Périmètre</div>

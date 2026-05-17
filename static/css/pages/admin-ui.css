@@ -17852,3 +17852,21 @@ body.hc-page-admin .hc-revenue-actions{
     justify-content: flex-start !important;
   }
 }
+
+/* Operational reporting sparklines */
+.hc-report-sparkline {
+  display: block;
+  opacity: 0.95;
+}
+
+.hc-report-sparkline--pressure {
+  color: #b7791f;
+}
+
+.hc-report-sparkline--positive {
+  color: #047857;
+}
+
+.hc-report-sparkline__glow {
+  opacity: 0.07;
+}

@@ -118,6 +118,22 @@ def _avg_duration_hours(rows, start_attr: str, end_attr: str) -> float:
     return round(sum(values) / len(values), 2)
 
 
+
+def _build_sparkline_points(values, width=220, height=52):
+    if not values:
+        return ""
+
+    max_value = max(values) or 1
+    step_x = width / max(len(values) - 1, 1)
+
+    points = []
+
+    for idx, value in enumerate(values):
+        x = round(idx * step_x, 2)
+        y = round(height - ((value / max_value) * height), 2)
+        points.append(f"{x},{y}")
+
+    return " ".join(points)
 def _rows_by_label(rows, label_name: str, count_name: str = "count") -> list[dict]:
     return [
         {
@@ -126,6 +142,59 @@ def _rows_by_label(rows, label_name: str, count_name: str = "count") -> list[dic
         }
         for label, count in rows
     ]
+
+
+def _trend_semantic(direction: str, positive_when: str = "up") -> str:
+    if direction == "stable":
+        return "neutral"
+
+    if direction == positive_when:
+        return "positive"
+
+    return "negative"
+
+
+def _build_trend_metric(current_value: int | float, previous_value: int | float) -> dict:
+    current = float(current_value or 0)
+    previous = float(previous_value or 0)
+
+    if previous == 0:
+        if current == 0:
+            return {
+                "current": current_value,
+                "previous": previous_value,
+                "delta_percent": 0.0,
+                "direction": "stable",
+                "label": "Stable",
+            }
+        return {
+            "current": current_value,
+            "previous": previous_value,
+            "delta_percent": 100.0,
+            "direction": "up",
+            "label": "+100%",
+        }
+
+    delta = ((current - previous) / previous) * 100
+    rounded = round(delta, 1)
+
+    if rounded > 0:
+        direction = "up"
+        label = f"+{rounded}%"
+    elif rounded < 0:
+        direction = "down"
+        label = f"{rounded}%"
+    else:
+        direction = "stable"
+        label = "Stable"
+
+    return {
+        "current": current_value,
+        "previous": previous_value,
+        "delta_percent": rounded,
+        "direction": direction,
+        "label": label,
+    }
 
 
 def _build_operational_recommendations(metrics):
@@ -348,6 +417,36 @@ def build_operational_report(
     if resolved_count > 0:
         resolved_under_24h_rate = round((resolved_under_24h_count / resolved_count) * 100, 1)
 
+    previous_start = period.start - timedelta(days=days)
+    previous_end = period.start
+
+    previous_new_count = _count(
+        base.filter(Request.created_at >= previous_start, Request.created_at < previous_end)
+    )
+    previous_resolved_count = _count(
+        resolved_base.filter(
+            Request.completed_at >= previous_start,
+            Request.completed_at < previous_end,
+        )
+    )
+
+    trends = {
+        "new_requests": {
+            **_build_trend_metric(new_count, previous_new_count),
+            "semantic": _trend_semantic(
+                _build_trend_metric(new_count, previous_new_count)["direction"],
+                "down"
+            ),
+        },
+        "resolved_requests": {
+            **_build_trend_metric(resolved_count, previous_resolved_count),
+            "semantic": _trend_semantic(
+                _build_trend_metric(resolved_count, previous_resolved_count)["direction"],
+                "up"
+            ),
+        },
+    }
+
     timeline_map = OrderedDict()
     for offset in range(period.days if hasattr(period, "days") else days):
         current_day = (period.end - timedelta(days=(days - offset - 1))).date()
@@ -384,6 +483,15 @@ def build_operational_report(
             "closed": values["closed"],
         }
         for key, values in timeline_map.items()
+    ]
+    timeline_created_values = [
+        item["created"]
+        for item in timeline
+    ]
+
+    timeline_closed_values = [
+        item["closed"]
+        for item in timeline
     ]
 
     insight_metrics = {
@@ -430,9 +538,14 @@ def build_operational_report(
             "by_status": _rows_by_label(by_status_rows, "status"),
         },
         "timeline": timeline,
+        "timeline_charts": {
+            "created": _build_sparkline_points(timeline_created_values),
+            "closed": _build_sparkline_points(timeline_closed_values),
+        },
         "executive_summary": executive_summary,
         "operational_severity": operational_severity,
         "recommendations": recommendations,
+        "trends": trends,
         "definition": {
             "scope": "structure-scoped when structure_id is provided; excludes deleted and archived requests",
             "open": "status is not in canonical closed/resolved/cancelled/archived states",
