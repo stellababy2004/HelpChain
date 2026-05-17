@@ -401,6 +401,19 @@ def _is_screened_professional_lead_status(status: str | None) -> bool:
 def _professional_lead_is_business_pipeline(status: str | None) -> bool:
     return not _is_screened_professional_lead_status(status)
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
+REQUEST_KPI_CLOSED_STATUSES = CLOSED_STATUSES | {
+    "canceled",
+    "closed",
+    "completed",
+    "resolved",
+    "archived",
+}
+REQUEST_KPI_RESOLVED_STATUSES = {
+    "closed",
+    "completed",
+    "done",
+    "resolved",
+}
 INTERVENANT_EXCLUDED_REQUEST_STATUSES = CLOSED_STATUSES | {"closed", "archived"}
 INTERVENANT_ASSIGNABLE_REQUEST_STATUSES = {"new", "pending", "in_progress"}
 ASSIGN_SLA_HOURS = 48
@@ -2687,6 +2700,34 @@ def _scope_requests(query):
     """Sprint-1 tenant guard for request queries."""
     tenant_filter = _structure_scope_filter()
     return _apply_tenant_filter(query, tenant_filter)
+
+
+def _request_kpi_base_query(*entities):
+    query = db.session.query(*entities) if entities else db.session.query(Request)
+    return (
+        _scope_requests(query)
+        .filter(Request.deleted_at.is_(None))
+        .filter(Request.is_archived.is_(False))
+    )
+
+
+def _request_kpi_open_filter():
+    status_expr = func.lower(func.coalesce(Request.status, ""))
+    return or_(
+        Request.status.is_(None),
+        ~status_expr.in_(tuple(REQUEST_KPI_CLOSED_STATUSES)),
+    )
+
+
+def _request_kpi_resolved_filter():
+    status_expr = func.lower(func.coalesce(Request.status, ""))
+    return and_(
+        Request.completed_at.isnot(None),
+        or_(
+            Request.status.is_(None),
+            status_expr.in_(tuple(REQUEST_KPI_RESOLVED_STATUSES)),
+        ),
+    )
 
 
 def _engagement_label(score: int) -> str:
@@ -6419,7 +6460,7 @@ def admin_api_dashboard():
         since_dt = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
         status_rows = (
-            db.session.query(
+            _request_kpi_base_query(
                 func.coalesce(Request.status, "unknown").label("status"),
                 func.count(Request.id).label("cnt"),
             )
@@ -6435,7 +6476,7 @@ def admin_api_dashboard():
             "unknown",
         )
         city_rows = (
-            db.session.query(
+            _request_kpi_base_query(
                 city_expr.label("city"), func.count(Request.id).label("cnt")
             )
             .group_by("city")
@@ -6446,7 +6487,7 @@ def admin_api_dashboard():
         requests_by_city = [{"city": c, "count": int(cnt)} for c, cnt in city_rows]
 
         ts_rows = (
-            db.session.query(
+            _request_kpi_base_query(
                 func.date(Request.created_at).label("day"),
                 func.count(Request.id).label("cnt"),
             )
@@ -6938,57 +6979,54 @@ def admin_ops_kpis():
     now = datetime.now(UTC).replace(tzinfo=None)
     since = now - timedelta(days=days)
     stale_since = now - timedelta(days=7)
-    tenant_filter = _structure_scope_filter()
 
     new_count = (
-        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
+        _request_kpi_base_query(func.count(Request.id))
         .filter(Request.created_at >= since)
         .scalar()
         or 0
     )
 
     resolved_count = (
-        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
-        .filter(Request.completed_at.isnot(None))
+        _request_kpi_base_query(func.count(Request.id))
+        .filter(_request_kpi_resolved_filter())
         .filter(Request.completed_at >= since)
         .scalar()
         or 0
     )
 
     avg_to_owner_assign_sec = (
-        _apply_tenant_filter(
-            db.session.query(func.avg(_seconds_diff(Request.owned_at, Request.created_at))),
-            tenant_filter,
+        _request_kpi_base_query(
+            func.avg(_seconds_diff(Request.owned_at, Request.created_at))
         )
         .filter(Request.owned_at.isnot(None))
+        .filter(Request.created_at.isnot(None))
+        .filter(Request.owned_at >= Request.created_at)
         .scalar()
     )
     avg_owner_assign_hours = round(float(avg_to_owner_assign_sec or 0) / 3600.0, 2)
 
     avg_to_resolve_sec = (
-        _apply_tenant_filter(
-            db.session.query(
-                func.avg(_seconds_diff(Request.completed_at, Request.created_at))
-            ),
-            tenant_filter,
+        _request_kpi_base_query(
+            func.avg(_seconds_diff(Request.completed_at, Request.created_at))
         )
-        .filter(Request.completed_at.isnot(None))
+        .filter(_request_kpi_resolved_filter())
+        .filter(Request.created_at.isnot(None))
+        .filter(Request.completed_at >= Request.created_at)
         .scalar()
     )
     avg_resolve_hours = round(float(avg_to_resolve_sec or 0) / 3600.0, 2)
 
     stale_count = (
-        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
+        _request_kpi_base_query(func.count(Request.id))
         .filter(Request.created_at < stale_since)
-        .filter(Request.completed_at.is_(None))
+        .filter(_request_kpi_open_filter())
         .scalar()
         or 0
     )
 
     by_category_rows = (
-        _apply_tenant_filter(
-            db.session.query(Request.category, func.count(Request.id)), tenant_filter
-        )
+        _request_kpi_base_query(Request.category, func.count(Request.id))
         .filter(Request.created_at >= since)
         .group_by(Request.category)
         .all()
@@ -6999,10 +7037,8 @@ def admin_ops_kpis():
     ]
 
     by_status_rows = (
-        _apply_tenant_filter(
-            db.session.query(Request.status, func.count(Request.id)), tenant_filter
-        )
-        .filter(Request.completed_at.is_(None))
+        _request_kpi_base_query(Request.status, func.count(Request.id))
+        .filter(_request_kpi_open_filter())
         .group_by(Request.status)
         .all()
     )
@@ -7014,12 +7050,10 @@ def admin_ops_kpis():
     # --- SLA breach detection ---
     assign_deadline = now - timedelta(hours=ASSIGN_SLA_HOURS)
     resolve_deadline = now - timedelta(days=RESOLVE_SLA_DAYS)
-    open_filter = or_(
-        Request.status.is_(None), ~func.lower(Request.status).in_(CLOSED_STATUSES)
-    )
+    open_filter = _request_kpi_open_filter()
 
     assign_breach_count = (
-        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
+        _request_kpi_base_query(func.count(Request.id))
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < assign_deadline)
         .filter(Request.owned_at.is_(None))
@@ -7029,7 +7063,7 @@ def admin_ops_kpis():
     )
 
     resolve_breach_count = (
-        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
+        _request_kpi_base_query(func.count(Request.id))
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < resolve_deadline)
         .filter(Request.completed_at.is_(None))
@@ -7040,7 +7074,7 @@ def admin_ops_kpis():
 
     volunteer_assign_deadline = now - timedelta(hours=VOLUNTEER_ASSIGN_SLA_HOURS)
     volunteer_assign_breach_count = (
-        _apply_tenant_filter(db.session.query(func.count(Request.id)), tenant_filter)
+        _request_kpi_base_query(func.count(Request.id))
         .filter(Request.created_at.isnot(None))
         .filter(Request.created_at < volunteer_assign_deadline)
         .filter(Request.assigned_volunteer_id.is_(None))
@@ -7069,7 +7103,9 @@ def admin_ops_kpis():
             "by_status_open": by_status,
             "definition": {
                 "assignment": "owner assignment (owner_id + owned_at)",
-                "resolution": "completed_at not null",
+                "resolution": "completed_at in window and status done/completed/resolved/closed",
+                "scope": "current structure, excluding archived and deleted requests",
+                "open_statuses": "not done/cancelled/rejected/canceled/closed/completed/resolved/archived",
             },
             "sla": {
                 "assign_sla_hours": ASSIGN_SLA_HOURS,
