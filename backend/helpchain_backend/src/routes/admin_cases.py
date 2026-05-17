@@ -72,6 +72,16 @@ def _group_events_by_day(events):
 # interpreted as canonical auth families such as `AdminUser`.
 LEGACY_USER_PARTICIPANT_TYPES = {"admin_user", "professional_user"}
 
+CASE_STATUS_TRANSITIONS = {
+    "new": {"triaged", "assigned", "in_progress", "resolved", "cancelled"},
+    "triaged": {"assigned", "in_progress", "resolved", "cancelled"},
+    "assigned": {"in_progress", "resolved", "cancelled"},
+    "in_progress": {"resolved", "cancelled"},
+    "resolved": {"closed", "in_progress"},
+    "closed": set(),
+    "cancelled": set(),
+}
+
 
 def _safe_json_dict(raw: str | None) -> dict:
     txt = (raw or "").strip()
@@ -298,6 +308,30 @@ def _get_scoped_case_or_404(case_id: int) -> tuple[Case, Request]:
     return case_row, req
 
 
+def _case_status_transition_allowed(old_status: str, new_status: str) -> bool:
+    old_key = (old_status or "new").strip().lower()
+    new_key = (new_status or "").strip().lower()
+    if old_key == new_key:
+        return True
+    if old_key not in CASE_STATUS_TRANSITIONS:
+        return False
+    return new_key in CASE_STATUS_TRANSITIONS[old_key]
+
+
+def _owner_query_for_current_scope():
+    query = AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
+    if not _is_global_admin():
+        query = query.filter(AdminUser.structure_id == _current_structure_id())
+    return query.order_by(AdminUser.username.asc())
+
+
+def _owner_allowed_for_current_scope(owner_id: int) -> bool:
+    query = AdminUser.query.filter(AdminUser.id == int(owner_id))
+    if not _is_global_admin():
+        query = query.filter(AdminUser.structure_id == _current_structure_id())
+    return db.session.query(query.exists()).scalar()
+
+
 def _upsert_case_participant(
     case_id: int,
     participant_type: str,
@@ -345,7 +379,7 @@ def _upsert_case_participant(
 
 @admin_bp.get("/cases")
 @admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@admin_role_required("readonly", "ops", "admin", "superadmin")
 def admin_cases_list():
     admin_required_404()
     return _render_cases_list()
@@ -353,7 +387,7 @@ def admin_cases_list():
 
 @admin_bp.get("/cases/<int:case_id>")
 @admin_required
-@admin_role_required("readonly", "ops", "superadmin")
+@admin_role_required("readonly", "ops", "admin", "superadmin")
 def admin_case_detail(case_id: int):
     admin_required_404()
     if not _cases_enabled():
@@ -398,11 +432,7 @@ def admin_case_detail(case_id: int):
         .order_by(Structure.name.asc())
         .all()
     )
-    owners = (
-        AdminUser.query.with_entities(AdminUser.id, AdminUser.username)
-        .order_by(AdminUser.username.asc())
-        .all()
-    )
+    owners = _owner_query_for_current_scope().all()
     legacy_users = (
         User.query.with_entities(User.id, User.username, User.email)
         .order_by(User.username.asc())
@@ -449,7 +479,7 @@ def admin_case_detail(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/coordination-note")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_add_coordination_note(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -483,7 +513,7 @@ def admin_case_add_coordination_note(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/status")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_set_status(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -494,6 +524,9 @@ def admin_case_set_status(case_id: int):
         return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
     old_status = (case_row.status or "").strip().lower()
+    if not _case_status_transition_allowed(old_status, new_status):
+        flash("Invalid case status transition.", "warning")
+        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
     if old_status != new_status:
         now = _now_utc()
@@ -568,7 +601,7 @@ def admin_case_assign_owner(case_id: int):
             owner_id = int(owner_raw)
         except Exception:
             owner_id = None
-    if owner_id is not None and not db.session.get(AdminUser, owner_id):
+    if owner_id is not None and not _owner_allowed_for_current_scope(owner_id):
         flash("Selected owner does not exist.", "warning")
         return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
@@ -606,7 +639,7 @@ def admin_case_assign_owner(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/assign-professional")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_professional(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -661,7 +694,7 @@ def admin_case_assign_professional(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/participants")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_add_participant(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -760,7 +793,7 @@ def admin_case_add_participant(case_id: int):
 
 @admin_bp.post("/cases/<int:case_id>/events")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_add_event(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
@@ -794,7 +827,7 @@ def admin_case_add_event(case_id: int):
     
 @admin_bp.post("/cases/<int:case_id>/priority")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("ops", "admin", "superadmin")
 def admin_case_set_priority(case_id: int):
     admin_required_404()
     case_row, _req = _get_scoped_case_or_404(case_id)
