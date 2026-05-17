@@ -1,0 +1,42 @@
+﻿name: Weekly operational reports
+
+on:
+  schedule:
+    # Every Monday at 07:00 UTC / 08:00 Paris winter time
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+jobs:
+  weekly-operational-reports:
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PUBLIC_BASE_URL: https://helpchain.live
+      MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
+      MAIL_PORT: ${{ secrets.MAIL_PORT }}
+      MAIL_USE_SSL: ${{ secrets.MAIL_USE_SSL }}
+      MAIL_USE_TLS: ${{ secrets.MAIL_USE_TLS }}
+      MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+      MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+      MAIL_DEFAULT_SENDER: ${{ secrets.MAIL_DEFAULT_SENDER }}
+      REQUIRE_ADMIN_MFA: "false"
+      HC_SKIP_SELFHEAL: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Queue weekly operational reports
+        run: |
+          python -m backend.helpchain_backend.src.cli.weekly_operations_report --days 7 --all-structures --base-url https://helpchain.live --send-now
