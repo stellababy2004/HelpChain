@@ -8,6 +8,7 @@ from sqlalchemy import and_, func, or_
 
 from backend.extensions import db
 from backend.models import Request, Structure
+from backend.helpchain_backend.src.services.sla_alerts import build_sla_alerts
 
 
 CLOSED_STATUSES = {
@@ -508,6 +509,11 @@ def build_operational_report(
         for item in timeline
     ]
 
+    sla_alerts = build_sla_alerts(
+        structure_id=structure_id,
+        now=now,
+    )
+
     insight_metrics = {
         "open_requests": open_count,
         "unassigned_requests": unassigned_count,
@@ -560,6 +566,7 @@ def build_operational_report(
         "executive_summary": executive_summary,
         "operational_severity": operational_severity,
         "recommendations": recommendations,
+        "sla_alerts": sla_alerts,
         "trends": trends,
         "definition": {
             "scope": "structure-scoped when structure_id is provided; excludes deleted and archived requests",

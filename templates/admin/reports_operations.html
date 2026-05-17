@@ -66,6 +66,37 @@
     </div>
   </section>
 
+  {% if report['sla_alerts']['alerts'] %}
+    <section class="hc-card hc-card-pad mb-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+          <div class="hc-admin-kicker mb-1">Alertes SLA</div>
+          <h2 class="hc-section-title mb-1">Risques opérationnels détectés</h2>
+          <p class="hc-muted mb-0">Situations nécessitant une attention prioritaire selon les règles de suivi.</p>
+        </div>
+
+        <span class="hc-severity-pill hc-severity-pill--{{ report['sla_alerts']['severity'] }}">
+          {{ report['sla_alerts']['severity']|upper }}
+        </span>
+      </div>
+
+      <div class="row g-3">
+        {% for alert in report['sla_alerts']['alerts'] %}
+          <div class="col-lg-4">
+            <article class="hc-alert-card hc-alert-card--{{ alert.severity }}">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <div class="hc-alert-card__title">{{ alert.title }}</div>
+                <span class="hc-alert-card__count">{{ alert.count }}</span>
+              </div>
+              <div class="hc-alert-card__action">{{ alert.action }}</div>
+            </article>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+
+
   <section class="hc-card hc-card-pad mb-3">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
       <div>

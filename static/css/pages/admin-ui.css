@@ -17915,3 +17915,64 @@ body.hc-page-admin .hc-revenue-actions{
     margin: 14mm;
   }
 }
+
+/* SLA operational alerts */
+.hc-severity-pill {
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0.7rem;
+}
+
+.hc-severity-pill--critical,
+.hc-alert-card--critical {
+  border-color: rgba(185, 28, 28, 0.36);
+  background: linear-gradient(180deg, rgba(254, 242, 242, 0.95), rgba(255, 255, 255, 0.96));
+}
+
+.hc-severity-pill--high,
+.hc-alert-card--high {
+  border-color: rgba(194, 65, 12, 0.34);
+  background: linear-gradient(180deg, rgba(255, 247, 237, 0.95), rgba(255, 255, 255, 0.96));
+}
+
+.hc-severity-pill--medium,
+.hc-alert-card--medium {
+  border-color: rgba(180, 83, 9, 0.3);
+  background: linear-gradient(180deg, rgba(255, 251, 235, 0.95), rgba(255, 255, 255, 0.96));
+}
+
+.hc-alert-card {
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(15, 39, 66, 0.06);
+  min-height: 132px;
+  padding: 1.1rem;
+}
+
+.hc-alert-card__title {
+  color: #172b45;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.hc-alert-card__count {
+  align-items: center;
+  background: #0f2742;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.88rem;
+  font-weight: 800;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.28rem 0.6rem;
+}
+
+.hc-alert-card__action {
+  color: #52657d;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}

@@ -150,6 +150,7 @@ def test_operations_report_payload_shape(app, db_schema):
             "scope",
             "requests",
             "sla",
+            "sla_alerts",
             "breakdowns",
             "timeline",
             "items",
