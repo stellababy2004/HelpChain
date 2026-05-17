@@ -27,6 +27,12 @@
       >
         Exporter CSV
       </a>
+      <a
+        class="btn btn-outline-primary btn-sm"
+        href="{{ url_for('admin.admin_operations_report_pdf', days=days) }}"
+      >
+        Exporter PDF
+      </a>
     </div>
   </div>
 
@@ -306,6 +312,48 @@
   </section>
 
   <section class="hc-card hc-card-pad mt-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+      <div>
+        <div class="hc-admin-kicker mb-1">Situations incluses</div>
+        <h2 class="hc-section-title mb-1">Demandes du rapport</h2>
+        <p class="hc-muted mb-0">Liste des demandes incluses dans la période sélectionnée.</p>
+      </div>
+      <span class="badge rounded-pill text-bg-light border">{{ report['items']|length }} éléments</span>
+    </div>
+
+    {% if report['items'] %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Titre</th>
+              <th>Ville</th>
+              <th>Statut</th>
+              <th>Priorité</th>
+              <th class="text-end">Créée le</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in report['items'] %}
+              <tr>
+                <td>#{{ item.id }}</td>
+                <td class="fw-semibold">{{ item.title }}</td>
+                <td>{{ item.city or '—' }}</td>
+                <td>{{ item.status or '—' }}</td>
+                <td>{{ item.priority or '—' }}</td>
+                <td class="text-end">{{ item.created_at[:10] if item.created_at else '—' }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="hc-muted mb-0">Aucune demande incluse dans cette période.</p>
+    {% endif %}
+  </section>
+
+  <section class="hc-card hc-card-pad mt-3">
     <h2 class="hc-section-title">Définition des indicateurs</h2>
     <ul class="mb-0 hc-muted">
       <li>{{ report.definition.scope }}</li>
@@ -314,4 +362,9 @@
       <li>{{ report.definition.stale }}</li>
     </ul>
   </section>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/pages/admin-reports.js') }}" defer></script>
 {% endblock %}

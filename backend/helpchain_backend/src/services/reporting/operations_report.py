@@ -484,6 +484,20 @@ def build_operational_report(
         }
         for key, values in timeline_map.items()
     ]
+
+    report_items = [
+        {
+            "id": row.id,
+            "title": getattr(row, "title", None) or f"Demande #{row.id}",
+            "city": getattr(row, "city", None) or "",
+            "status": getattr(row, "status", None) or "",
+            "priority": getattr(row, "priority", None) or "",
+            "created_at": row.created_at.isoformat() if getattr(row, "created_at", None) else "",
+            "updated_at": row.updated_at.isoformat() if getattr(row, "updated_at", None) else "",
+            "owner_id": getattr(row, "owner_id", None),
+        }
+        for row in period_base.order_by(Request.created_at.desc()).limit(200).all()
+    ]
     timeline_created_values = [
         item["created"]
         for item in timeline
@@ -538,6 +552,7 @@ def build_operational_report(
             "by_status": _rows_by_label(by_status_rows, "status"),
         },
         "timeline": timeline,
+        "items": report_items,
         "timeline_charts": {
             "created": _build_sparkline_points(timeline_created_values),
             "closed": _build_sparkline_points(timeline_closed_values),

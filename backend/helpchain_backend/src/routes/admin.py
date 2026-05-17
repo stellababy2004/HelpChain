@@ -13298,6 +13298,162 @@ def admin_operations_report_csv():
         },
     )
 
+@admin_bp.get("/reports/operations/export.pdf")
+@admin_required
+@admin_role_required("readonly", "ops", "admin", "superadmin")
+def admin_operations_report_pdf():
+    admin_required_404()
+
+    from io import BytesIO
+
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import (
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
+
+    days = request.args.get("days", default=7, type=int) or 7
+    days = max(1, min(days, 366))
+
+    structure_id = None
+    if not _is_global_admin():
+        structure_id = _current_structure_id()
+
+    report = build_operational_report(
+        structure_id=structure_id,
+        days=days,
+    )
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=14 * mm,
+        leftMargin=14 * mm,
+        topMargin=14 * mm,
+        bottomMargin=14 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    story = []
+
+    story.append(Paragraph("Rapport opérationnel HelpChain", styles["Title"]))
+    story.append(Paragraph(report["scope"]["structure_name"] or "Toutes les structures visibles", styles["Normal"]))
+    story.append(Paragraph(f"Période : {report['period']['days']} jours", styles["Normal"]))
+    story.append(Paragraph(f"Généré le : {report['generated_at']}", styles["Normal"]))
+    story.append(Spacer(1, 8 * mm))
+
+    story.append(Paragraph("Synthèse exécutive", styles["Heading2"]))
+    story.append(Paragraph(report["executive_summary"], styles["BodyText"]))
+    story.append(Paragraph(
+        f"Niveau : {report['operational_severity']['label']} — {report['operational_severity']['message']}",
+        styles["BodyText"],
+    ))
+    story.append(Spacer(1, 6 * mm))
+
+    kpi_data = [
+        ["Indicateur", "Valeur"],
+        ["Nouvelles demandes", report["requests"]["new"]],
+        ["Demandes clôturées", report["requests"]["resolved"]],
+        ["Demandes ouvertes", report["requests"]["open"]],
+        ["Demandes non assignées", report["requests"]["unassigned"]],
+        ["Sans action récente", report["requests"]["stale"]],
+        ["Délai moyen d’assignation", f"{report['sla']['avg_assignment_hours']}h"],
+        ["Délai moyen de résolution", f"{report['sla']['avg_resolution_hours']}h"],
+        ["Taux d’assignation", f"{report['sla']['assignment_rate']}%"],
+        ["Résolues < 24h", f"{report['sla']['resolved_under_24h_rate']}%"],
+    ]
+
+    kpi_table = Table(kpi_data, colWidths=[95 * mm, 65 * mm])
+    kpi_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f6f8fb")]),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(kpi_table)
+    story.append(Spacer(1, 6 * mm))
+
+    story.append(Paragraph("Recommandations automatiques", styles["Heading2"]))
+    for item in report["recommendations"]:
+        story.append(Paragraph(f"<b>{item['priority']} — {item['title']}</b>", styles["BodyText"]))
+        story.append(Paragraph(item["description"], styles["BodyText"]))
+        story.append(Spacer(1, 2 * mm))
+
+    story.append(Spacer(1, 4 * mm))
+    story.append(Paragraph("Situations incluses dans le rapport", styles["Heading2"]))
+
+    rows = [["ID", "Titre", "Ville", "Statut", "Priorité", "Créée le"]]
+    for item in report["items"][:80]:
+        rows.append([
+            f"#{item['id']}",
+            item["title"][:42],
+            item["city"] or "—",
+            item["status"] or "—",
+            item["priority"] or "—",
+            item["created_at"][:10] if item["created_at"] else "—",
+        ])
+
+    items_table = Table(rows, colWidths=[15 * mm, 62 * mm, 28 * mm, 28 * mm, 25 * mm, 28 * mm])
+    items_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f6f8fb")]),
+    ]))
+    story.append(items_table)
+
+    def _add_footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+
+        canvas.drawString(
+            14 * mm,
+            10 * mm,
+            "Confidentiel — Usage interne HelpChain",
+        )
+
+        canvas.drawRightString(
+            196 * mm,
+            10 * mm,
+            f"Page {canvas.getPageNumber()}",
+        )
+
+        canvas.restoreState()
+
+    doc.build(
+        story,
+        onFirstPage=_add_footer,
+        onLaterPages=_add_footer,
+    )
+
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    filename = f"helpchain-rapport-operationnel-{report['period']['days']}j.pdf"
+
+    return Response(
+        pdf_data,
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
 @admin_bp.get("/reports/operations")
 @admin_required
 @admin_role_required("readonly", "ops", "admin", "superadmin")
