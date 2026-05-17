@@ -20,6 +20,25 @@ def test_database_connection(app, db_schema):
         assert result == 1
 
 
+def test_health_endpoint_is_safe_and_operational(client):
+    resp = client.get("/health")
+
+    assert resp.status_code == 200
+    assert resp.is_json
+    data = resp.get_json() or {}
+    assert data.get("status") == "ok"
+    assert data.get("app") == "ok"
+    assert data.get("db") == "ok"
+    assert "time" in data
+
+    body = resp.get_data(as_text=True).lower()
+    assert "database_url" not in body
+    assert "postgres://" not in body
+    assert "postgresql://" not in body
+    assert "secret" not in body
+    assert "password" not in body
+
+
 def test_public_routes_health(client):
     expected_ok = {200, 301, 302, 303, 307, 308}
     for path in ("/", "/submit_request", "/faq", "/contact", "/legal", "/privacy", "/terms"):

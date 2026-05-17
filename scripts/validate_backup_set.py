@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import re
@@ -44,6 +45,31 @@ def _parse_iso8601(value: str) -> None:
     if v.endswith("Z"):
         v = v[:-1] + "+00:00"
     datetime.fromisoformat(v)
+
+
+def _validate_plain_sql_gzip(path: Path) -> list[str]:
+    errors: list[str] = []
+    if path.suffix != ".gz" or not path.name.endswith(".sql.gz"):
+        return errors
+
+    try:
+        with gzip.open(path, "rb") as fh:
+            sample = fh.read(256 * 1024)
+    except Exception as exc:
+        return [f"backup gzip is not readable: {exc}"]
+
+    if not sample:
+        return ["backup gzip decompresses to empty content"]
+
+    sql_markers = (
+        b"PostgreSQL database dump",
+        b"CREATE TABLE",
+        b"INSERT INTO",
+        b"SET ",
+    )
+    if not any(marker in sample for marker in sql_markers):
+        errors.append("backup gzip does not look like a plain PostgreSQL SQL dump")
+    return errors
 
 
 def _validate(
@@ -108,6 +134,8 @@ def _validate(
         errors.append(
             f"manifest size_bytes mismatch: manifest={manifest_size} actual={backup_size}"
         )
+
+    errors.extend(_validate_plain_sql_gzip(backup_path))
 
     try:
         _parse_iso8601(str(manifest.get("generated_at_utc", "")))
