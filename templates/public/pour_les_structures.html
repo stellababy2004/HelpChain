@@ -11,14 +11,17 @@
       padding: 5.5rem 0 3.9rem;
       border-bottom: 1px solid rgba(20, 35, 55, 0.08);
     }
+    .hc-page-structures .hc-hero > .hc-container {
+      max-width: 1120px;
+    }
     .hc-page-structures .hc-hero > .hc-container > * + * {
-      margin-top: 0.95rem;
+      margin-top: 1rem;
     }
     .hc-page-structures .hc-hero h1 {
-      max-width: 14ch;
+      max-width: min(920px, 18.5ch);
       margin: 0;
-      line-height: 0.98;
-      letter-spacing: -0.04em;
+      line-height: 1.04;
+      letter-spacing: -0.025em;
     }
     .hc-page-structures .hc-hero__eyebrow {
       display: inline-block;
@@ -29,8 +32,8 @@
       color: #5d6b7c;
     }
     .hc-page-structures .hc-hero__intro {
-      max-width: 48rem;
-      margin: 0 0 1.25rem;
+      max-width: 58rem;
+      margin: 0 0 1.35rem;
       font-size: 1.08rem;
       line-height: 1.65;
       color: #31465d;
@@ -227,6 +230,9 @@
       .hc-page-structures .hc-hero {
         padding: 3.4rem 0 2.5rem;
       }
+      .hc-page-structures .hc-hero > .hc-container {
+        max-width: 100%;
+      }
     }
     @media (max-width: 768px) {
       .hc-page-structures .hc-hero {
@@ -236,9 +242,9 @@
         margin-top: 0.75rem;
       }
       .hc-page-structures .hc-hero h1 {
-        max-width: 11ch;
+        max-width: 18ch;
         margin-bottom: 0.75rem;
-        line-height: 1.02;
+        line-height: 1.07;
       }
       .hc-page-structures .hc-hero p {
         margin-bottom: 0.75rem;
@@ -564,10 +570,10 @@
         <article class="hc-card hc-card-pad">
           <h3>{{ _('Périmètre limité') }}</h3>
           <ul class="hc-list">
-            <li>{{ _('une équipe') }}</li>
-            <li>{{ _('un service') }}</li>
-            <li>{{ _('un type de demandes') }}</li>
-            <li>{{ _('un territoire restreint') }}</li>
+            <li>{{ _('Une équipe') }}</li>
+            <li>{{ _('Un service') }}</li>
+            <li>{{ _('Un type de demandes') }}</li>
+            <li>{{ _('Un territoire restreint') }}</li>
           </ul>
         </article>
         <article class="hc-card hc-card-pad">
