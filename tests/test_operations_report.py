@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
@@ -151,9 +151,35 @@ def test_operations_report_payload_shape(app, db_schema):
             "requests",
             "sla",
             "breakdowns",
+            "timeline",
             "definition",
         }
         assert "by_category" in report["breakdowns"]
         assert "by_status" in report["breakdowns"]
         assert "avg_assignment_hours" in report["sla"]
         assert "avg_resolution_hours" in report["sla"]
+
+def test_report_ignores_negative_or_invalid_resolution_durations(app, db_session):
+    from datetime import UTC, datetime, timedelta
+
+    from backend.models import Request
+    from backend.helpchain_backend.src.services.reporting.operations_report import (
+        build_operational_report,
+    )
+
+    now = datetime.now(UTC)
+
+    broken = Request(
+        title="Broken legacy request",
+        status="closed",
+        created_at=now,
+        completed_at=now - timedelta(days=7),
+    )
+
+    db_session.add(broken)
+    db_session.commit()
+
+    with app.app_context():
+        report = build_operational_report(days=30)
+
+    assert report["sla"]["avg_resolution_hours"] >= 0

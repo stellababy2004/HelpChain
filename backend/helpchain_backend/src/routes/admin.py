@@ -177,6 +177,9 @@ from ..services.prospect_auto_capture import (
 )
 from ..security_logging import log_security_event
 from ..services.recommendation_engine import compute_recommendation
+from ..services.reporting.operations_report import build_operational_report
+import csv
+from io import StringIO
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
 from ..services.request_sla import (
@@ -13224,6 +13227,100 @@ build_requests_query = _admin_requests.build_requests_query
 get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
 
 
+
+
+# --- Operational reports ---
+@admin_bp.get("/reports/operations/export.csv")
+@admin_required
+@admin_role_required("readonly", "ops", "admin", "superadmin")
+def admin_operations_report_csv():
+    admin_required_404()
+
+    days = request.args.get("days", default=7, type=int) or 7
+    days = max(1, min(days, 366))
+
+    structure_id = None
+    if not _is_global_admin():
+        structure_id = _current_structure_id()
+
+    report = build_operational_report(
+        structure_id=structure_id,
+        days=days,
+    )
+
+    output = StringIO()
+    writer = csv.writer(output, delimiter=";")
+
+    writer.writerow(["Rapport opérationnel HelpChain"])
+    writer.writerow(["Périmètre", report["scope"]["structure_name"] or "Toutes les structures visibles"])
+    writer.writerow(["Période", f'{report["period"]["days"]} jours'])
+    writer.writerow(["Généré le", report["generated_at"]])
+    writer.writerow([])
+
+    writer.writerow(["Indicateur", "Valeur"])
+    writer.writerow(["Nouvelles demandes", report["requests"]["new"]])
+    writer.writerow(["Demandes clôturées", report["requests"]["resolved"]])
+    writer.writerow(["Demandes ouvertes", report["requests"]["open"]])
+    writer.writerow(["Demandes non assignées", report["requests"]["unassigned"]])
+    writer.writerow(["Sans action récente", report["requests"]["stale"]])
+    writer.writerow(["Délai moyen d’assignation (heures)", report["sla"]["avg_assignment_hours"]])
+    writer.writerow(["Délai moyen de résolution (heures)", report["sla"]["avg_resolution_hours"]])
+    writer.writerow([])
+
+    writer.writerow(["Répartition par catégorie"])
+    writer.writerow(["Catégorie", "Volume"])
+    for row in report["breakdowns"]["by_category"]:
+        writer.writerow([row["category"], row["count"]])
+    writer.writerow([])
+
+    writer.writerow(["Répartition par statut"])
+    writer.writerow(["Statut", "Volume"])
+    for row in report["breakdowns"]["by_status"]:
+        writer.writerow([row["status"], row["count"]])
+    writer.writerow([])
+
+    writer.writerow(["Définition des indicateurs"])
+    writer.writerow(["Scope", report["definition"]["scope"]])
+    writer.writerow(["Ouvert", report["definition"]["open"]])
+    writer.writerow(["Clôturé", report["definition"]["resolved"]])
+    writer.writerow(["Sans action récente", report["definition"]["stale"]])
+
+    csv_data = "\ufeff" + output.getvalue()
+
+    filename = f"helpchain-rapport-operationnel-{report['period']['days']}j.csv"
+
+    return Response(
+        csv_data,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+@admin_bp.get("/reports/operations")
+@admin_required
+@admin_role_required("readonly", "ops", "admin", "superadmin")
+def admin_operations_report():
+    admin_required_404()
+
+    days = request.args.get("days", default=7, type=int) or 7
+    days = max(1, min(days, 366))
+
+    structure_id = None
+    if not _is_global_admin():
+        structure_id = _current_structure_id()
+
+    report = build_operational_report(
+        structure_id=structure_id,
+        days=days,
+    )
+
+    return render_template(
+        "admin/reports_operations.html",
+        report=report,
+        days=days,
+    )
 
 # --- Ops Action Queue API v1 ---
 from flask import jsonify

@@ -1,0 +1,202 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Rapport opérationnel | HelpChain{% endblock %}
+{% block admin_body_class %} hc-admin-reports-page{% endblock %}
+
+{% block admin_content %}
+  <div class="hc-admin-page-header">
+    <div>
+      <div class="hc-admin-kicker">Rapports institutionnels</div>
+      <h1 class="hc-admin-title">Rapport opérationnel</h1>
+      <p class="hc-muted">
+        Vue consolidée de l’activité, des situations ouvertes et des signaux de suivi sur la période sélectionnée.
+      </p>
+    </div>
+    <div class="d-flex gap-2 align-items-end flex-wrap">
+      <form method="get" class="d-flex gap-2 align-items-end">
+        <label class="form-label mb-0 small text-muted" for="days">Période</label>
+        <select class="form-select form-select-sm" id="days" name="days" onchange="this.form.submit()">
+          <option value="7" {% if days == 7 %}selected{% endif %}>7 jours</option>
+          <option value="14" {% if days == 14 %}selected{% endif %}>14 jours</option>
+          <option value="30" {% if days == 30 %}selected{% endif %}>30 jours</option>
+        </select>
+      </form>
+      <a
+        class="btn btn-primary btn-sm"
+        href="{{ url_for('admin.admin_operations_report_csv', days=days) }}"
+      >
+        Exporter CSV
+      </a>
+    </div>
+  </div>
+
+  <section class="hc-card hc-card-pad mb-3">
+    <div class="d-flex justify-content-between flex-wrap gap-2">
+      <div>
+        <div class="hc-muted small">Périmètre</div>
+        <strong>{{ report.scope.structure_name or "Toutes les structures visibles" }}</strong>
+      </div>
+      <div>
+        <div class="hc-muted small">Période</div>
+        <strong>{{ report.period.days }} jours</strong>
+      </div>
+      <div>
+        <div class="hc-muted small">Généré le</div>
+        <strong>{{ report.generated_at }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="row g-3 mb-3">
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Nouvelles demandes</div>
+        <div class="hc-kpi__value">{{ report.requests.new }}</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Clôturées</div>
+        <div class="hc-kpi__value">{{ report.requests.resolved }}</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Ouvertes</div>
+        <div class="hc-kpi__value">{{ report.requests.open }}</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Non assignées</div>
+        <div class="hc-kpi__value">{{ report.requests.unassigned }}</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Sans action récente</div>
+        <div class="hc-kpi__value">{{ report.requests.stale }}</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Délai résolution moyen</div>
+        <div class="hc-kpi__value">{{ report.sla.avg_resolution_hours }}h</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Taux d’assignation</div>
+        <div class="hc-kpi__value">{{ report.sla.assignment_rate }}%</div>
+      </article>
+    </div>
+    <div class="col-6 col-xl-2">
+      <article class="hc-card hc-card-pad h-100">
+        <div class="hc-muted small">Résolues &lt; 24h</div>
+        <div class="hc-kpi__value">{{ report.sla.resolved_under_24h_rate }}%</div>
+      </article>
+    </div>
+  </section>
+
+  <section class="hc-card hc-card-pad mb-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+      <div>
+        <h2 class="hc-section-title mb-1">Évolution sur la période</h2>
+        <p class="hc-muted mb-0">Demandes créées et clôturées jour par jour.</p>
+      </div>
+    </div>
+
+    {% if report.timeline %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th class="text-end">Créées</th>
+              <th class="text-end">Clôturées</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in report.timeline %}
+              <tr>
+                <td>{{ row.date }}</td>
+                <td class="text-end fw-semibold">{{ row.created }}</td>
+                <td class="text-end fw-semibold">{{ row.closed }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="hc-muted mb-0">Aucune évolution à afficher sur la période sélectionnée.</p>
+    {% endif %}
+  </section>
+
+  <section class="row g-3">
+    <div class="col-lg-6">
+      <article class="hc-card hc-card-pad h-100">
+        <h2 class="hc-section-title">Répartition par catégorie</h2>
+        {% if report.breakdowns.by_category %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Catégorie</th>
+                  <th class="text-end">Volume</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in report.breakdowns.by_category %}
+                  <tr>
+                    <td>{{ row.category }}</td>
+                    <td class="text-end fw-semibold">{{ row.count }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="hc-muted mb-0">Aucune demande sur la période sélectionnée.</p>
+        {% endif %}
+      </article>
+    </div>
+
+    <div class="col-lg-6">
+      <article class="hc-card hc-card-pad h-100">
+        <h2 class="hc-section-title">Répartition par statut</h2>
+        {% if report.breakdowns.by_status %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Statut</th>
+                  <th class="text-end">Volume</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in report.breakdowns.by_status %}
+                  <tr>
+                    <td>{{ row.status }}</td>
+                    <td class="text-end fw-semibold">{{ row.count }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="hc-muted mb-0">Aucun statut à afficher.</p>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+
+  <section class="hc-card hc-card-pad mt-3">
+    <h2 class="hc-section-title">Définition des indicateurs</h2>
+    <ul class="mb-0 hc-muted">
+      <li>{{ report.definition.scope }}</li>
+      <li>{{ report.definition.open }}</li>
+      <li>{{ report.definition.resolved }}</li>
+      <li>{{ report.definition.stale }}</li>
+    </ul>
+  </section>
+{% endblock %}

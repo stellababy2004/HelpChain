@@ -1,5 +1,6 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
@@ -84,16 +85,37 @@ def _count(query) -> int:
     return int(query.count() or 0)
 
 
-def _seconds_diff(end_col, start_col):
-    dialect = (db.session.bind.dialect.name if db.session.bind is not None else "").lower()
+def _duration_hours(start: datetime | None, end: datetime | None) -> float | None:
+    start = _normalize_dt(start)
+    end = _normalize_dt(end)
 
-    if dialect == "sqlite":
-        return func.strftime("%s", end_col) - func.strftime("%s", start_col)
+    if start is None or end is None or end < start:
+        return None
 
-    if dialect == "postgresql":
-        return func.extract("epoch", end_col - start_col)
+    seconds = (end - start).total_seconds()
 
-    return func.extract("epoch", end_col - start_col)
+    # Ignore impossible legacy/demo values. Reporting should be conservative:
+    # better no average than a misleading institutional KPI.
+    if seconds < 0 or seconds > 366 * 24 * 3600:
+        return None
+
+    return seconds / 3600.0
+
+
+def _avg_duration_hours(rows, start_attr: str, end_attr: str) -> float:
+    values = []
+    for row in rows:
+        value = _duration_hours(
+            getattr(row, start_attr, None),
+            getattr(row, end_attr, None),
+        )
+        if value is not None:
+            values.append(value)
+
+    if not values:
+        return 0.0
+
+    return round(sum(values) / len(values), 2)
 
 
 def _rows_by_label(rows, label_name: str, count_name: str = "count") -> list[dict]:
@@ -160,21 +182,82 @@ def build_operational_report(
         .all()
     )
 
-    avg_assign_sec = (
-        base.with_entities(func.avg(_seconds_diff(Request.owned_at, Request.created_at)))
-        .filter(Request.owned_at.isnot(None))
+    assignment_rows = (
+        base.filter(Request.owned_at.isnot(None))
         .filter(Request.created_at.isnot(None))
-        .filter(Request.owned_at >= Request.created_at)
-        .scalar()
+        .all()
+    )
+    resolved_rows = (
+        resolved_base.filter(Request.completed_at.isnot(None))
+        .filter(Request.created_at.isnot(None))
+        .all()
     )
 
-    avg_resolve_sec = (
-        resolved_base.with_entities(func.avg(_seconds_diff(Request.completed_at, Request.created_at)))
-        .filter(Request.completed_at.isnot(None))
-        .filter(Request.created_at.isnot(None))
-        .filter(Request.completed_at >= Request.created_at)
-        .scalar()
+    avg_assignment_hours = _avg_duration_hours(
+        assignment_rows,
+        "created_at",
+        "owned_at",
     )
+    avg_resolution_hours = _avg_duration_hours(
+        resolved_rows,
+        "created_at",
+        "completed_at",
+    )
+
+    assignment_rate = 0.0
+    if open_count > 0:
+        assignment_rate = round(((open_count - unassigned_count) / open_count) * 100, 1)
+
+    resolved_under_24h_count = 0
+    for row in resolved_rows:
+        duration = _duration_hours(
+            getattr(row, "created_at", None),
+            getattr(row, "completed_at", None),
+        )
+        if duration is not None and duration <= 24:
+            resolved_under_24h_count += 1
+
+    resolved_under_24h_rate = 0.0
+    if resolved_count > 0:
+        resolved_under_24h_rate = round((resolved_under_24h_count / resolved_count) * 100, 1)
+
+    timeline_map = OrderedDict()
+    for offset in range(period.days if hasattr(period, "days") else days):
+        current_day = (period.end - timedelta(days=(days - offset - 1))).date()
+        timeline_map[str(current_day)] = {
+            "created": 0,
+            "closed": 0,
+        }
+
+    created_timeline_rows = (
+        period_base.with_entities(func.date(Request.created_at), func.count(Request.id))
+        .group_by(func.date(Request.created_at))
+        .all()
+    )
+    for row_date, row_count in created_timeline_rows:
+        key = str(row_date)
+        if key in timeline_map:
+            timeline_map[key]["created"] = int(row_count or 0)
+
+    closed_timeline_rows = (
+        resolved_base.with_entities(func.date(Request.completed_at), func.count(Request.id))
+        .filter(Request.completed_at >= period.start, Request.completed_at <= period.end)
+        .group_by(func.date(Request.completed_at))
+        .all()
+    )
+    for row_date, row_count in closed_timeline_rows:
+        key = str(row_date)
+        if key in timeline_map:
+            timeline_map[key]["closed"] = int(row_count or 0)
+
+    timeline = [
+        {
+            "date": key,
+            "created": values["created"],
+            "closed": values["closed"],
+        }
+        for key, values in timeline_map.items()
+    ]
 
     structure = None
     if structure_id is not None:
@@ -199,13 +282,16 @@ def build_operational_report(
             "unassigned": unassigned_count,
         },
         "sla": {
-            "avg_assignment_hours": round(float(avg_assign_sec or 0) / 3600.0, 2),
-            "avg_resolution_hours": round(float(avg_resolve_sec or 0) / 3600.0, 2),
+            "avg_assignment_hours": avg_assignment_hours,
+            "avg_resolution_hours": avg_resolution_hours,
+            "assignment_rate": assignment_rate,
+            "resolved_under_24h_rate": resolved_under_24h_rate,
         },
         "breakdowns": {
             "by_category": _rows_by_label(by_category_rows, "category"),
             "by_status": _rows_by_label(by_status_rows, "status"),
         },
+        "timeline": timeline,
         "definition": {
             "scope": "structure-scoped when structure_id is provided; excludes deleted and archived requests",
             "open": "status is not in canonical closed/resolved/cancelled/archived states",
