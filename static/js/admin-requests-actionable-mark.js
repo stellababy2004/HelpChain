@@ -1,5 +1,5 @@
 (() => {
-  const rows = document.querySelectorAll("tr[data-hc-status-row]");
+  const rows = document.querySelectorAll("[data-hc-filter-row]");
   if (!rows.length) return;
 
   function isActionable(tr){

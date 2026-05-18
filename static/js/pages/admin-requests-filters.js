@@ -30,15 +30,17 @@
   const normalizeTab = (value) => {
     const tab = String(value || "").trim().toUpperCase();
     const allowed = new Set(["NEW", "ASSIGNED", "IN_PROGRESS", "COMPLETED", "CLOSED"]);
+    if (tab === "COMPLETED") return "CLOSED";
     return allowed.has(tab) ? tab : "";
   };
   const normalizeFilter = (value) => {
     const key = normalize(value);
+    if (key === "actionable" || key === "urgent_actionable") return "urgent_actionable";
     if (key === "urgent") return "critical";
     if (key === "stale" || key === "not_seen_72h") return "stale_72h";
     if (key === "owner_assignment_overdue" || key === "sla_attribution") return "unassigned_48h";
     if (key === "none") return "no_owner";
-    const allowed = new Set(["critical", "attention", "no_owner", "stale_72h", "unassigned_48h", "inactive_cases"]);
+    const allowed = new Set(["critical", "attention", "assigned", "no_owner", "stale_72h", "unassigned_48h", "inactive_cases", "urgent_actionable"]);
     return allowed.has(key) ? key : "";
   };
 
@@ -61,11 +63,15 @@
     if (key === "owner") return { tab: "", filter: normalizeFilter(value) };
     if (key === "stale") return { tab: "", filter: "stale_72h" };
     if (key === "inactive") return { tab: "", filter: "inactive_cases" };
+    if (key === "actionable") return { tab: "", filter: "urgent_actionable" };
     if (key === "sla") return { tab: "", filter: "unassigned_48h" };
     return { tab: "", filter: normalizeFilter(value) };
   }
 
   function rowMatchesFilter(row, filter) {
+    if (filter === "urgent_actionable") {
+      return row.classList.contains("hc-row-actionable");
+    }
     if (filter === "critical") {
       return rowRisk(row) === "critical" ||
         row.dataset.critical === "1" ||
@@ -74,6 +80,9 @@
     }
     if (filter === "attention") {
       return rowRisk(row) === "attention" || row.dataset.attention === "1";
+    }
+    if (filter === "assigned") {
+      return normalize(row.dataset.owner) === "assigned" && !isTerminal(row);
     }
     if (filter === "no_owner") {
       return row.dataset.noOwner === "1" && !isTerminal(row);
@@ -122,6 +131,7 @@
   function updateUrl() {
     const url = new URL(window.location.href);
     SERVER_PARAMS.forEach((param) => url.searchParams.delete(param));
+    url.searchParams.delete("action");
     url.searchParams.delete("tab");
     url.searchParams.delete("status");
 

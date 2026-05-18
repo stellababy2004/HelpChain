@@ -70,7 +70,7 @@
 
       <button type="button" class="hc-tab" data-hc-tab="NEW" data-hc-filter-card data-filter-key="status" data-filter-value="NEW" aria-pressed="false">{{ _('New') }}</button>
 
-      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED" data-hc-filter-card data-filter-key="owner" data-filter-value="assigned" aria-pressed="false">{{ _('Assigned') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED" data-hc-filter-card data-filter-key="owner" data-filter-value="assigned" aria-pressed="false">{{ _('Assignées') }}</button>
 
       <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS" data-hc-filter-card data-filter-key="status" data-filter-value="IN_PROGRESS" aria-pressed="false">{{ _('In progress') }}</button>
 
@@ -78,7 +78,7 @@
 
       <button type="button" class="hc-tab" data-hc-tab="CLOSED" data-hc-filter-card data-filter-key="status" data-filter-value="CLOSED" aria-pressed="false">{{ _('Closed') }}</button>
 
-      <button type="button" class="hc-tab" id="hcToggleActionable">Actions prioritaires</button>
+      <button type="button" class="hc-tab" id="hcToggleActionable" data-hc-filter-card data-filter-key="actionable" data-filter-value="1" aria-pressed="false">Action requise</button>
 
       <button type="button" class="hc-tab" id="hcCopyLinkBtn" title="Copier le lien">
 
@@ -133,15 +133,15 @@
       <a class="hc-request-summary-card hc-request-summary-card--urgent"
          data-request-summary-kpi="URGENT"
          data-hc-filter-card
-         data-filter-key="risk"
-         data-filter-value="critical"
+         data-filter-key="actionable"
+         data-filter-value="1"
          href="{{ summary_cards.hrefs.urgent }}">
 
-        <span class="hc-request-summary-card__label">{{ summary_cards.labels.urgent }}</span>
+        <span class="hc-request-summary-card__label">Action requise</span>
 
         <strong class="hc-request-summary-card__value" data-kpi-target="urgent">{{ summary_counts.urgent or 0 }}</strong>
 
-        <span class="hc-request-summary-card__hint">À traiter en priorité</span>
+        <span class="hc-request-summary-card__hint">File opérateur à traiter</span>
 
         <span class="hc-request-summary-card__cta">Voir</span>
 
@@ -158,7 +158,7 @@
 
         <strong class="hc-request-summary-card__value" data-kpi-target="completed">{{ summary_counts.completed or 0 }}</strong>
 
-        <span class="hc-request-summary-card__hint">Historique terminé</span>
+        <span class="hc-request-summary-card__hint">Demandes terminées</span>
 
         <span class="hc-request-summary-card__cta">Voir</span>
 

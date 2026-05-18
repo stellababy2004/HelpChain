@@ -1,5 +1,5 @@
 (() => {
-  const rows = Array.from(document.querySelectorAll("tr[data-hc-status-row]"));
+  const rows = Array.from(document.querySelectorAll("[data-hc-filter-row]"));
   const tabs = Array.from(document.querySelectorAll("[data-hc-tab]"));
   const kpiCards = Array.from(document.querySelectorAll("#hcAdminKpis [data-request-summary-kpi]"));
   const btnAction = document.getElementById("hcToggleActionable");
@@ -37,8 +37,8 @@
   }
 
   function isActionable(tr) {
-    const status = (tr.dataset.hcStatusRow || "").trim();
-    const assigned = (tr.dataset.assignedVolunteerId || "").trim();
+    const status = ((tr.dataset.statusBucket || tr.dataset.hcStatusRow || "")).trim().toUpperCase();
+    const assigned = (tr.dataset.ownerId || "").trim();
     const canHelp = parseInt(tr.dataset.sigCanHelp || "0", 10);
 
     const unassignedOpen = !assigned && !["CLOSED", "COMPLETED"].includes(status);
@@ -49,7 +49,7 @@
   }
 
   function isTerminal(tr) {
-    const status = (tr.dataset.hcStatusRow || "").trim();
+    const status = ((tr.dataset.statusBucket || tr.dataset.hcStatusRow || "")).trim().toUpperCase();
     return ["CLOSED", "COMPLETED"].includes(status);
   }
 
@@ -59,7 +59,7 @@
   }
 
   function passesTab(tr) {
-    const s = (tr.dataset.hcStatusRow || "").trim();
+    const s = ((tr.dataset.statusBucket || tr.dataset.hcStatusRow || "")).trim().toUpperCase();
     if (activeTab === "URGENT") return isUrgent(tr);
     return activeTab === "ALL" || s === activeTab;
   }
