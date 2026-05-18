@@ -13474,16 +13474,27 @@ def admin_operations_report():
     if not _is_global_admin():
         structure_id = _current_structure_id()
 
-    report = build_operational_report(
-        structure_id=structure_id,
-        days=days,
-    )
-
-    return render_template(
-        "admin/reports_operations.html",
-        report=report,
-        days=days,
-    )
+    try:
+        current_app.logger.warning(
+            "[OPS_REPORT] start days=%s structure_id=%s user=%s role=%s",
+            days,
+            structure_id,
+            getattr(current_user, "id", None),
+            getattr(current_user, "role", None),
+        )
+        report = build_operational_report(
+            structure_id=structure_id,
+            days=days,
+        )
+        current_app.logger.warning("[OPS_REPORT] built successfully")
+        return render_template(
+            "admin/reports_operations.html",
+            report=report,
+            days=days,
+        )
+    except Exception:
+        current_app.logger.exception("[OPS_REPORT] failed")
+        raise
 
 # --- Ops Action Queue API v1 ---
 from flask import jsonify
