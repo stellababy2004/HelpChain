@@ -12,6 +12,7 @@
 
   var layerOrder = ["pressure", "situations", "intervenants", "structures", "alerts"];
   var fitBoundsTimer = null;
+  var invalidateSizeTimer = null;
   var ribbonTimer = null;
   var ribbonIndex = 0;
   var state = {
@@ -599,6 +600,7 @@
 
   function fitMapToVisible() {
     if (!state.map) return;
+    invalidateMapSize();
     var bounds = buildBounds(allVisibleItems());
     if (bounds) {
       state.map.fitBounds(bounds, { padding: [48, 48], maxZoom: 12 });
@@ -606,6 +608,36 @@
     }
     var center = (state.payload && state.payload.default_center) || { lat: 46.603354, lng: 1.888334, zoom: 6 };
     state.map.setView([Number(center.lat), Number(center.lng)], Number(center.zoom || 6));
+  }
+
+  function invalidateMapSize() {
+    if (!state.map || !mapEl) return;
+    try {
+      state.map.invalidateSize({ pan: false });
+    } catch (_error) {
+      state.map.invalidateSize();
+    }
+  }
+
+  function scheduleMapInvalidation(delay) {
+    if (invalidateSizeTimer) {
+      window.clearTimeout(invalidateSizeTimer);
+    }
+    invalidateSizeTimer = window.setTimeout(function () {
+      invalidateSizeTimer = null;
+      invalidateMapSize();
+    }, typeof delay === "number" ? delay : 90);
+  }
+
+  function runStartupInvalidations() {
+    invalidateMapSize();
+    if (typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(function () {
+        invalidateMapSize();
+      });
+    }
+    window.setTimeout(invalidateMapSize, 120);
+    window.setTimeout(invalidateMapSize, 420);
   }
 
   function scheduleFitToVisible() {
@@ -781,6 +813,7 @@
         : "calm"
     );
     activateDrawer(true);
+    scheduleMapInvalidation(120);
   }
 
   function clearDrawer() {
@@ -808,6 +841,7 @@
     clearQuickActions();
     setPressureClass(drawer.status, "calm");
     activateDrawer(false);
+    scheduleMapInvalidation(120);
   }
 
   function groupKey(item, zoom) {
@@ -1002,8 +1036,9 @@
     }).addTo(state.map);
 
     state.map.on("zoomend", renderLayers);
+    runStartupInvalidations();
     window.setTimeout(function () {
-      state.map.invalidateSize();
+      invalidateMapSize();
     }, 120);
   }
 
@@ -1062,7 +1097,7 @@
         initMap(payload.default_center || { lat: 46.603354, lng: 1.888334, zoom: 6 });
       }
       renderLayers();
-      fitMapToVisible();
+      window.setTimeout(fitMapToVisible, 80);
     } catch (_error) {
       if (!state.map) {
         initMap({ lat: 46.603354, lng: 1.888334, zoom: 6 });
@@ -1094,6 +1129,7 @@
   toggleInputs.forEach(function (input) {
     input.addEventListener("change", function () {
       renderLayers();
+      scheduleMapInvalidation();
       scheduleFitToVisible();
     });
   });
@@ -1101,6 +1137,7 @@
   filterInputs.forEach(function (input) {
     input.addEventListener("change", function () {
       renderLayers();
+      scheduleMapInvalidation();
       scheduleFitToVisible();
     });
   });
@@ -1109,6 +1146,7 @@
     if (input) {
       input.addEventListener("change", function () {
         renderLayers();
+        scheduleMapInvalidation();
         scheduleFitToVisible();
       });
     }
@@ -1117,6 +1155,19 @@
   if (fitViewButton) fitViewButton.addEventListener("click", fitMapToVisible);
   if (resetFiltersButton) resetFiltersButton.addEventListener("click", resetFilters);
   if (drawer.clear) drawer.clear.addEventListener("click", clearDrawer);
+
+  window.addEventListener("resize", function () {
+    scheduleMapInvalidation(140);
+  });
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      scheduleMapInvalidation(0);
+      scheduleMapInvalidation(180);
+    });
+  } else {
+    scheduleMapInvalidation(0);
+  }
 
   loadPayload();
 })();

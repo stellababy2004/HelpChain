@@ -1,19 +1,24 @@
 body.hc-admin-command-map-page .hc-command-map-page {
+  --hc-command-surface-height: calc(100vh - 6.15rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
   max-width: none;
+  min-height: 0;
+  overflow: visible;
+  padding-block: 0.25rem 0.45rem;
   padding-inline: clamp(0.45rem, 1vw, 0.9rem);
 }
 
 body.hc-admin-command-map-page .hc-admin-breadcrumb {
-  margin-bottom: 0.46rem;
+  position: relative;
+  z-index: 4;
+  flex: 0 0 auto;
+  margin: 0;
 }
 
 body.hc-admin-command-map-page .hc-command-map-hero {
-  margin-bottom: 0.65rem;
-  padding: 0.78rem 0.95rem;
-  border: 1px solid rgba(15, 39, 64, 0.08);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.94)),
-    radial-gradient(circle at top right, rgba(72, 98, 125, 0.12), transparent 58%);
+  display: none;
 }
 
 body.hc-admin-command-map-page .hc-command-map-hero__row {
@@ -28,11 +33,13 @@ body.hc-admin-command-map-page .hc-command-map-hero__actions {
 }
 
 body.hc-admin-command-map-page .hc-command-map-layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(228px, 19%) minmax(0, 1fr) minmax(286px, 23%);
   gap: 0.55rem;
   align-items: stretch;
-  min-height: calc(100vh - 8.2rem);
+  min-height: var(--hc-command-surface-height);
 }
 
 body.hc-admin-command-map-page .hc-command-map-sidebar,
@@ -47,7 +54,9 @@ body.hc-admin-command-map-page .hc-command-map-drawer {
   position: sticky;
   top: 4.65rem;
   align-self: start;
-  max-height: calc(100vh - 5.15rem);
+  height: var(--hc-command-surface-height);
+  max-height: var(--hc-command-surface-height);
+  min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0.68rem;
@@ -215,8 +224,10 @@ body.hc-admin-command-map-page .hc-command-map-stageCard {
   display: flex;
   flex-direction: column;
   align-self: start;
-  min-height: calc(100vh - 5.15rem);
-  max-height: calc(100vh - 5.15rem);
+  height: var(--hc-command-surface-height);
+  min-height: var(--hc-command-surface-height);
+  max-height: var(--hc-command-surface-height);
+  min-width: 0;
   overflow: hidden;
   padding: 0.52rem;
   background:
@@ -322,7 +333,7 @@ body.hc-admin-command-map-page .hc-command-map-shell {
   position: relative;
   flex: 1 1 auto;
   overflow: hidden;
-  min-height: clamp(42rem, calc(100vh - 8.3rem), 68rem);
+  min-height: 0;
   border-radius: 16px;
   border: 1px solid rgba(72, 98, 125, 0.22);
   background:
@@ -342,11 +353,13 @@ body.hc-admin-command-map-page .hc-command-map-shell::before {
 }
 
 body.hc-admin-command-map-page .hc-command-map-canvas {
+  width: 100%;
   height: 100%;
-  min-height: clamp(42rem, calc(100vh - 8.3rem), 68rem);
+  min-height: 0;
 }
 
 body.hc-admin-command-map-page .hc-command-map-canvas .leaflet-container {
+  width: 100%;
   height: 100%;
 }
 
@@ -991,6 +1004,7 @@ body.hc-admin-command-map-page .hc-command-popup__action {
     grid-column: 1 / -1;
     top: auto;
     position: relative;
+    height: auto;
     max-height: none;
     overflow: visible;
   }
@@ -998,6 +1012,7 @@ body.hc-admin-command-map-page .hc-command-popup__action {
   body.hc-admin-command-map-page .hc-command-map-stageCard {
     position: relative;
     top: auto;
+    height: auto;
     min-height: auto;
     max-height: none;
   }
@@ -1019,6 +1034,7 @@ body.hc-admin-command-map-page .hc-command-popup__action {
   body.hc-admin-command-map-page .hc-command-map-stageCard {
     position: relative;
     top: auto;
+    height: auto;
     max-height: none;
   }
 
