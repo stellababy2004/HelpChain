@@ -372,9 +372,11 @@ def build_operational_report(
         .all()
     )
 
+    status_expr = func.coalesce(Request.status, "unknown").label("status_label")
+
     by_status_rows = (
-        base.with_entities(func.coalesce(Request.status, "unknown"), func.count(Request.id))
-        .group_by(func.coalesce(Request.status, "unknown"))
+        base.with_entities(status_expr, func.count(Request.id))
+        .group_by(status_expr)
         .order_by(func.count(Request.id).desc())
         .all()
     )
