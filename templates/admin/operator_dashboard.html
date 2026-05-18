@@ -27,59 +27,62 @@
       </div>
     </div>
     <div class="hc-ops-summary mb-3">
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', risk='critical') }}" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" role="button" aria-pressed="false">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link {{ 'is-critical' if urgent_count else 'is-clear' }}" href="{{ url_for('ops.ops_cases_list', risk='critical') }}" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Situations critiques</div>
-        <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}" data-ops-kpi-count="risk:critical"> {{ urgent_count or 0 }}</div>
         <div class="hc-ops-summary__context">
           {% if urgent_count or 0 %}
             Priorité immédiate
           {% else %}
-            Aucune priorité critique
+            À traiter en premier
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', owner='none') }}" data-hc-filter-card data-filter-key="owner" data-filter-value="none" role="button" aria-pressed="false">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link {{ 'is-warning' if unassigned_count else 'is-clear' }}" href="{{ url_for('ops.ops_cases_list', owner='none') }}" data-hc-filter-card data-filter-key="owner" data-filter-value="none" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Demandes non assignées</div>
-        <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}"> {{ unassigned_count or 0 }}</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}" data-ops-kpi-count="owner:none"> {{ unassigned_count or 0 }}</div>
         <div class="hc-ops-summary__context">
           {% if unassigned_count or 0 %}
             À affecter
           {% else %}
-            File correctement attribuée
+            Affectation attendue
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" role="button" aria-pressed="false">
-        <div class="hc-ops-summary__label">Sans activité</div>
-        <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
+      <a class="hc-ops-summary__item hc-ops-summary__item--link {{ 'is-warning' if followup_count else 'is-clear' }}" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" role="button" aria-pressed="false">
+        <div class="hc-ops-summary__label">Sans activité 72h</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}" data-ops-kpi-count="stale:1"> {{ followup_count or 0 }}</div>
         <div class="hc-ops-summary__context">
           {% if followup_count or 0 %}
-            Sans activité 72h
+            Sans activité 72h 72h
           {% else %}
-            Aucun dépassement 72h
+            Relance nécessaire
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_notifications_list', status='failed') }}" data-hc-filter-card data-filter-key="notification" data-filter-value="failed" role="button" aria-pressed="false">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link {{ 'is-critical' if failed_notif_count else 'is-clear' }}" href="{{ url_for('ops.ops_notifications_list', status='failed') }}" data-hc-filter-card data-filter-key="notification" data-filter-value="failed" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Notifications en échec</div>
-        <div class="hc-ops-summary__value {{ 'is-alert' if failed_notif_count }}"> {{ failed_notif_count or 0 }}</div>
+        <div class="hc-ops-summary__value {{ 'is-alert' if failed_notif_count }}" data-ops-kpi-count="notification:failed"> {{ failed_notif_count or 0 }}</div>
         <div class="hc-ops-summary__context">
           {% if failed_notif_count or 0 %}
             Canal à vérifier
           {% else %}
-            Canaux opérationnels
+            Canal à vérifier
           {% endif %}
         </div>
       </a>
       <button type="button" class="hc-ops-summary__item hc-ops-summary__item--link" data-hc-filter-card data-filter-key="updated" data-filter-value="today" aria-pressed="false">
         <div class="hc-ops-summary__label">Demandes mises à jour aujourd’hui</div>
-        <div class="hc-ops-summary__value"> {{ updated_today_count or 0 }}</div>
+        <div class="hc-ops-summary__value" data-ops-kpi-count="updated:today"> {{ updated_today_count or 0 }}</div>
         <div class="hc-ops-summary__context">Activité du jour</div>
       </button>
     </div>
     <div class="hc-ops-actions">
-      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_workspace') }}" data-hc-filter-clear>RÃ©initialiser les filtres</a>
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_workspace') }}" data-hc-filter-clear>Réinitialiser les filtres</a>
     </div>
+
+    <div class="hc-ops-active-filter" data-hc-active-filter hidden></div>
+    <div class="hc-ops-visible-count" data-hc-visible-count hidden></div>
 
 
   <div class="hc-card hc-admin-table-shell hc-ops-table-shell">
@@ -176,7 +179,7 @@
               </td>
             </tr>
           {% else %}
-            <tr id="hcOpsWorkspaceServerEmpty">
+            <tr id="hcOpsWorkspaceServerEmpty" data-hc-filter-empty hidden>
               <td colspan="8" class="py-4">
                 <div class="hc-empty-state">
                   <div class="hc-empty-state__title">Aucune situation urgente</div>
@@ -185,6 +188,15 @@
               </td>
             </tr>
           {% endfor %}
+
+          <tr id="hcOpsWorkspaceClientEmpty" data-hc-filter-empty hidden>
+            <td colspan="8" class="py-4">
+              <div class="hc-empty-state">
+                <div class="hc-empty-state__title">Aucune situation détectée</div>
+                <div class="hc-empty-state__text">Aucune demande ne correspond au filtre opérationnel actif.</div>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

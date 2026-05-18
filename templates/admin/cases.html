@@ -1,4 +1,4 @@
-﻿{% extends "layouts/admin_workspace.html" %}
+{% extends "layouts/admin_workspace.html" %}
 {% block title %}Admin - Cas | HelpChain{% endblock %}
 {% block admin_body_class %} hc-admin-requests-page{% if request.path.startswith('/ops') %} hc-ops-console-page{% endif %}{% endblock %}
 {% block admin_content %}
@@ -57,22 +57,22 @@
     <div class="hc-risk-overview mb-3">
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale_72h='1' if stale_72h else None, city=city or None) }}" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Situations critiques</span>
-        <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
+        <strong class="hc-risk-overview__value" data-ops-kpi-count="risk:critical">{{ critical_count or 0 }}</strong>
         <span class="hc-risk-overview__context">À traiter en premier</span>
       </a>
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='attention', stale_72h='1' if stale_72h else None, city=city or None) }}" data-hc-filter-card data-filter-key="risk" data-filter-value="attention" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Situations a verifier</span>
-        <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
+        <strong class="hc-risk-overview__value" data-ops-kpi-count="risk:attention">{{ attention_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Vigilance renforcée</span>
       </a>
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale_72h='1' if stale_72h else None, city=city or None) }}" data-hc-filter-card data-filter-key="owner" data-filter-value="none" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Cas sans responsable</span>
-        <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
+        <strong class="hc-risk-overview__value" data-ops-kpi-count="owner:none">{{ no_owner_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Affectation attendue</span>
       </a>
       <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale_72h='1', city=city or None) }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
-        <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
+        <strong class="hc-risk-overview__value" data-ops-kpi-count="stale:1">{{ stale_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Relance nécessaire</span>
       </a>
     </div>
