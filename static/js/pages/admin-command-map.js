@@ -15,6 +15,7 @@
   var invalidateSizeTimer = null;
   var ribbonTimer = null;
   var ribbonIndex = 0;
+  var mobileQuery = window.matchMedia ? window.matchMedia("(max-width: 991.98px)") : null;
   var state = {
     payload: null,
     map: null,
@@ -73,6 +74,8 @@
   var pressureCountEl = document.getElementById("commandMapPressureCount");
   var fitViewButton = document.getElementById("commandMapFitView");
   var resetFiltersButton = document.getElementById("commandMapResetFilters");
+  var sidebarRoot = root.querySelector(".hc-command-map-sidebar");
+  var mapShell = root.querySelector(".hc-command-map-shell");
   var toggleInputs = root.querySelectorAll("[data-layer-toggle]");
   var filterInputs = root.querySelectorAll("[data-filter]");
   var staleCheckbox = document.getElementById("commandMapOnlyStale");
@@ -80,6 +83,10 @@
   var withoutAssignmentCheckbox = document.getElementById("commandMapWithoutAssignment");
   var liveRibbon = null;
   var liveRibbonMessage = null;
+  var mobileFilterButton = null;
+  var mobileFilterClose = null;
+  var mobileFilterBackdrop = null;
+  var mobileSheetHandle = null;
 
   function setText(el, value) {
     if (el) {
@@ -140,6 +147,10 @@
     var diffDays = Math.round(diffHours / 24);
     if (diffDays < 7) return "Il y a " + diffDays + " j";
     return dt.toLocaleDateString("fr-FR");
+  }
+
+  function isMobileMode() {
+    return Boolean(mobileQuery && mobileQuery.matches);
   }
 
   function isRecentActivity(value, hours) {
@@ -640,6 +651,107 @@
     window.setTimeout(invalidateMapSize, 420);
   }
 
+  function setMobileFilterOpen(open) {
+    if (!sidebarRoot) return;
+    var isOpen = Boolean(open);
+    root.classList.toggle("is-mobile-filter-open", isOpen);
+    sidebarRoot.classList.toggle("is-mobile-open", isOpen);
+    if (mobileFilterButton) {
+      mobileFilterButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+    if (mobileFilterBackdrop) {
+      mobileFilterBackdrop.hidden = !isOpen;
+    }
+    scheduleMapInvalidation(isOpen ? 180 : 120);
+  }
+
+  function setMobileSheetExpanded(expanded) {
+    if (!drawerRoot) return;
+    var isExpanded = Boolean(expanded);
+    drawerRoot.classList.toggle("is-mobile-sheet-expanded", isExpanded);
+    root.classList.toggle("is-mobile-sheet-expanded", isExpanded);
+    if (mobileSheetHandle) {
+      mobileSheetHandle.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+    }
+    scheduleMapInvalidation(isExpanded ? 180 : 120);
+  }
+
+  function ensureMobileControls() {
+    if (sidebarRoot && !sidebarRoot.id) {
+      sidebarRoot.id = "commandMapMobileFilters";
+    }
+
+    if (!mobileFilterButton && mapShell) {
+      mobileFilterButton = document.createElement("button");
+      mobileFilterButton.type = "button";
+      mobileFilterButton.className = "hc-command-map-mobileFilterButton";
+      mobileFilterButton.setAttribute("aria-controls", sidebarRoot ? sidebarRoot.id : "");
+      mobileFilterButton.setAttribute("aria-expanded", "false");
+      mobileFilterButton.textContent = "Filtres";
+      mobileFilterButton.addEventListener("click", function () {
+        setMobileFilterOpen(!root.classList.contains("is-mobile-filter-open"));
+      });
+      mapShell.appendChild(mobileFilterButton);
+    }
+
+    if (!mobileFilterBackdrop) {
+      mobileFilterBackdrop = document.createElement("button");
+      mobileFilterBackdrop.type = "button";
+      mobileFilterBackdrop.className = "hc-command-map-mobileFilterBackdrop";
+      mobileFilterBackdrop.hidden = true;
+      mobileFilterBackdrop.setAttribute("aria-label", "Fermer les filtres");
+      mobileFilterBackdrop.addEventListener("click", function () {
+        setMobileFilterOpen(false);
+      });
+      root.appendChild(mobileFilterBackdrop);
+    }
+
+    if (sidebarRoot && !mobileFilterClose) {
+      var panelHeader = document.createElement("div");
+      panelHeader.className = "hc-command-map-mobilePanelHeader";
+
+      var panelTitle = document.createElement("span");
+      panelTitle.textContent = "Filtres";
+      panelHeader.appendChild(panelTitle);
+
+      mobileFilterClose = document.createElement("button");
+      mobileFilterClose.type = "button";
+      mobileFilterClose.className = "hc-command-map-mobilePanelClose";
+      mobileFilterClose.setAttribute("aria-label", "Fermer les filtres");
+      mobileFilterClose.textContent = "Fermer";
+      mobileFilterClose.addEventListener("click", function () {
+        setMobileFilterOpen(false);
+      });
+      panelHeader.appendChild(mobileFilterClose);
+      sidebarRoot.insertBefore(panelHeader, sidebarRoot.firstChild);
+    }
+
+    if (drawerRoot && !mobileSheetHandle) {
+      mobileSheetHandle = document.createElement("button");
+      mobileSheetHandle.type = "button";
+      mobileSheetHandle.className = "hc-command-map-sheetHandle";
+      mobileSheetHandle.setAttribute("aria-label", "Agrandir ou réduire le détail opérationnel");
+      mobileSheetHandle.setAttribute("aria-expanded", "false");
+      mobileSheetHandle.addEventListener("click", function () {
+        setMobileSheetExpanded(!drawerRoot.classList.contains("is-mobile-sheet-expanded"));
+      });
+      drawerRoot.insertBefore(mobileSheetHandle, drawerRoot.firstChild);
+    }
+  }
+
+  function syncMobileMode() {
+    ensureMobileControls();
+    if (!isMobileMode()) {
+      setMobileFilterOpen(false);
+      setMobileSheetExpanded(false);
+      return;
+    }
+    if (drawerRoot) {
+      setMobileSheetExpanded(drawerRoot.classList.contains("is-active"));
+    }
+    scheduleMapInvalidation(160);
+  }
+
   function scheduleFitToVisible() {
     if (fitBoundsTimer) {
       window.clearTimeout(fitBoundsTimer);
@@ -764,6 +876,9 @@
   function activateDrawer(active) {
     if (!drawerRoot) return;
     drawerRoot.classList.toggle("is-active", Boolean(active));
+    if (isMobileMode()) {
+      setMobileSheetExpanded(Boolean(active));
+    }
   }
 
   function openDrawer(item) {
@@ -1159,13 +1274,32 @@
   window.addEventListener("resize", function () {
     scheduleMapInvalidation(140);
   });
+  window.addEventListener("orientationchange", function () {
+    scheduleMapInvalidation(220);
+  });
+
+  if (mobileQuery) {
+    if (typeof mobileQuery.addEventListener === "function") {
+      mobileQuery.addEventListener("change", syncMobileMode);
+    } else if (typeof mobileQuery.addListener === "function") {
+      mobileQuery.addListener(syncMobileMode);
+    }
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && root.classList.contains("is-mobile-filter-open")) {
+      setMobileFilterOpen(false);
+    }
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
+      syncMobileMode();
       scheduleMapInvalidation(0);
       scheduleMapInvalidation(180);
     });
   } else {
+    syncMobileMode();
     scheduleMapInvalidation(0);
   }
 
