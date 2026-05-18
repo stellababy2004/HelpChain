@@ -17976,3 +17976,47 @@ body.hc-page-admin .hc-revenue-actions{
   font-size: 0.95rem;
   line-height: 1.45;
 }
+
+.hc-alert-card--clickable {
+  color: inherit;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.hc-alert-card--clickable:hover {
+  box-shadow: 0 18px 42px rgba(15, 39, 66, 0.12);
+  transform: translateY(-2px);
+}
+
+.hc-admin-requests-page :is(.hc-request-summary-card, .hc-risk-overview__item, .hc-saved-views .btn).is-active {
+  border-color: rgba(37, 99, 235, 0.52);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.14);
+}
+
+.hc-admin-requests-page .hc-request-summary-card.is-active {
+  background: rgba(239, 246, 255, 0.96);
+}
+
+.hc-admin-requests-page .hc-risk-overview__item.is-active {
+  background: rgba(248, 250, 252, 0.98);
+}
+
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-risk-overview__item, .hc-request-summary-card, .hc-quickchip, .hc-tab)[data-hc-filter-card] {
+  cursor: pointer;
+}
+
+body.hc-page-admin button.hc-ops-summary__item {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+}
+
+body.hc-page-admin :is(.hc-ops-summary__item, .hc-risk-overview__item, .hc-request-summary-card, .hc-quickchip, .hc-tab).is-active {
+  border-color: rgba(37, 99, 235, 0.52);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.14);
+}
+
+/* Force-hide operational request rows during client-side filtering */
+.hc-filter-hidden {
+  display: none !important;
+  visibility: hidden !important;
+}

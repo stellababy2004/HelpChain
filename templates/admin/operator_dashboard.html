@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="hc-ops-summary mb-3">
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', risk='critical') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', risk='critical') }}" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Situations critiques</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if urgent_count }}"> {{ urgent_count or 0 }}</div>
         <div class="hc-ops-summary__context">
@@ -38,7 +38,7 @@
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', owner='none') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', owner='none') }}" data-hc-filter-card data-filter-key="owner" data-filter-value="none" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Demandes non assignées</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_count }}"> {{ unassigned_count or 0 }}</div>
         <div class="hc-ops-summary__context">
@@ -49,7 +49,7 @@
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_cases_list', stale_72h='1') }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Sans activité</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if followup_count }}"> {{ followup_count or 0 }}</div>
         <div class="hc-ops-summary__context">
@@ -60,7 +60,7 @@
           {% endif %}
         </div>
       </a>
-      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_notifications_list', status='failed') }}">
+      <a class="hc-ops-summary__item hc-ops-summary__item--link" href="{{ url_for('ops.ops_notifications_list', status='failed') }}" data-hc-filter-card data-filter-key="notification" data-filter-value="failed" role="button" aria-pressed="false">
         <div class="hc-ops-summary__label">Notifications en échec</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if failed_notif_count }}"> {{ failed_notif_count or 0 }}</div>
         <div class="hc-ops-summary__context">
@@ -71,11 +71,14 @@
           {% endif %}
         </div>
       </a>
-      <div class="hc-ops-summary__item">
+      <button type="button" class="hc-ops-summary__item hc-ops-summary__item--link" data-hc-filter-card data-filter-key="updated" data-filter-value="today" aria-pressed="false">
         <div class="hc-ops-summary__label">Demandes mises à jour aujourd’hui</div>
         <div class="hc-ops-summary__value"> {{ updated_today_count or 0 }}</div>
         <div class="hc-ops-summary__context">Activité du jour</div>
-      </div>
+      </button>
+    </div>
+    <div class="hc-ops-actions">
+      <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('ops.ops_workspace') }}" data-hc-filter-clear>RÃ©initialiser les filtres</a>
     </div>
 
 
@@ -105,7 +108,16 @@
           {% for r in queue_rows %}
             {% set activity_ref = (workspace_last_activity_by_id or {}).get(r.id) or r.updated_at or r.created_at %}
             {% set row_flags = workspace_row_flags.get(r.id, {}) %}
+            {% set ops_level = (ops_priority_levels.get(r.id) or 'normal') %}
             <tr
+              data-hc-filter-row
+              data-status="{{ r.status or '' }}"
+              data-risk="{{ 'critical' if row_flags.get('critical', 0) else ops_level }}"
+              data-owner="{{ 'none' if row_flags.get('owner_missing', 0) else 'assigned' }}"
+              data-stale="{{ row_flags.get('stale_72h', 0) }}"
+              data-updated-today="{{ row_flags.get('updated_today', 0) }}"
+              data-notification-failed="{{ row_flags.get('notification_failed', 0) }}"
+              data-sla=""
               data-critical="{{ row_flags.get('critical', 0) }}"
               data-owner-missing="{{ row_flags.get('owner_missing', 0) }}"
               data-stale-72h="{{ row_flags.get('stale_72h', 0) }}"
@@ -212,5 +224,6 @@
 
 {% block scripts %}
   {{ super() }}
+  <script src="{{ url_for('static', filename='js/pages/operational-filters.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/admin-autosync.js') }}" defer></script>
 {% endblock %}

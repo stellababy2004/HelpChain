@@ -5094,10 +5094,17 @@ def _render_operator_dashboard():
                 is_stale_72h = activity_ref <= stale_threshold
         except Exception:
             is_stale_72h = False
+        updated_ref = getattr(row, "updated_at", None) or getattr(row, "created_at", None)
+        updated_today = (
+            1
+            if getattr(updated_ref, "date", lambda: None)() == now_utc.date()
+            else 0
+        )
         workspace_row_flags[int(row.id)] = {
             "critical": 1 if ops_level == "critique" else 0,
             "owner_missing": 1 if getattr(row, "owner_id", None) is None else 0,
             "stale_72h": 1 if is_stale_72h else 0,
+            "updated_today": updated_today,
             "notification_failed": 0,
         }
 

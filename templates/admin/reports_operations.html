@@ -83,13 +83,14 @@
       <div class="row g-3">
         {% for alert in report['sla_alerts']['alerts'] %}
           <div class="col-lg-4">
-            <article class="hc-alert-card hc-alert-card--{{ alert.severity }}">
+            <a class="hc-alert-card hc-alert-card--{{ alert.severity }} hc-alert-card--clickable text-decoration-none d-block"
+               href="{{ url_for('admin.admin_requests', alert=alert.code) }}">
               <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
                 <div class="hc-alert-card__title">{{ alert.title }}</div>
                 <span class="hc-alert-card__count">{{ alert.count }}</span>
               </div>
               <div class="hc-alert-card__action">{{ alert.action }}</div>
-            </article>
+            </a>
           </div>
         {% endfor %}
       </div>
@@ -115,7 +116,7 @@
               <span class="badge rounded-pill text-bg-light border">{{ item.priority }}</span>
             </div>
             <p class="hc-muted mb-0">{{ item.description }}</p>
-          </article>
+          </a>
         </div>
       {% endfor %}
     </div>
@@ -150,7 +151,7 @@
             <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
               points="{{ report.timeline_charts.created }}" />
           </svg>
-        </article>
+        </a>
       </div>
 
       <div class="col-md-6">
@@ -177,7 +178,7 @@
             <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
               points="{{ report.timeline_charts.closed }}" />
           </svg>
-        </article>
+        </a>
       </div>
     </div>
   </section>
@@ -204,49 +205,49 @@
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Nouvelles demandes</div>
         <div class="hc-kpi__value">{{ report.requests.new }}</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Clôturées</div>
         <div class="hc-kpi__value">{{ report.requests.resolved }}</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Ouvertes</div>
         <div class="hc-kpi__value">{{ report.requests.open }}</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Non assignées</div>
         <div class="hc-kpi__value">{{ report.requests.unassigned }}</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Sans action récente</div>
         <div class="hc-kpi__value">{{ report.requests.stale }}</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Délai résolution moyen</div>
         <div class="hc-kpi__value">{{ report.sla.avg_resolution_hours }}h</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Taux d’assignation</div>
         <div class="hc-kpi__value">{{ report.sla.assignment_rate }}%</div>
-      </article>
+      </a>
     </div>
     <div class="col-6 col-xl-2">
       <article class="hc-card hc-card-pad h-100">
         <div class="hc-muted small">Résolues &lt; 24h</div>
         <div class="hc-kpi__value">{{ report.sla.resolved_under_24h_rate }}%</div>
-      </article>
+      </a>
     </div>
   </section>
 
@@ -310,7 +311,7 @@
         {% else %}
           <p class="hc-muted mb-0">Aucune demande sur la période sélectionnée.</p>
         {% endif %}
-      </article>
+      </a>
     </div>
 
     <div class="col-lg-6">
@@ -338,7 +339,7 @@
         {% else %}
           <p class="hc-muted mb-0">Aucun statut à afficher.</p>
         {% endif %}
-      </article>
+      </a>
     </div>
   </section>
 

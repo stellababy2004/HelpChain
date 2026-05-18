@@ -524,9 +524,10 @@
   const noMatch = document.getElementById("hcRequestsNoMatch");
   const csrf = bulkBar?.dataset.csrf || "";
   const quickState = new Set();
-  const quickChipsRoot = document.getElementById("hcQuickChips");
-  const riskShortcutLinks = Array.from(document.querySelectorAll("[data-risk-shortcut]"));
-  const riskCountEls = Array.from(document.querySelectorAll("[data-risk-count]"));
+  // Operational quick/risk filtering is centralized in pages/admin-requests-filters.js.
+  const quickChipsRoot = null;
+  const riskShortcutLinks = [];
+  const riskCountEls = [];
   let activeRiskShortcut =
     riskShortcutLinks.find((link) => link.classList.contains("is-active"))?.dataset.riskShortcut || "";
 

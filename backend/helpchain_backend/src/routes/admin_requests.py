@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import csv
 import secrets
@@ -626,11 +626,13 @@ def admin_requests():
     activity_sq, _activity_expr, _stale_threshold, stale_filter = (
         build_request_inactivity_components(utc_now())
     )
-    not_seen_72h_count = (
-        overview_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
-        .filter(request_dashboard_actionable_filter(), stale_filter)
-        .count()
-    )
+    stale_rows_query = overview_query.outerjoin(
+        activity_sq,
+        activity_sq.c.request_id == Request.id,
+    ).filter(request_dashboard_actionable_filter(), stale_filter)
+    not_seen_72h_count = stale_rows_query.count()
+    stale_72h_by_id = {row.id: True for row in stale_rows_query.with_entities(Request.id).all()}
+
     age_days_by_id = {}
     for r in requests:
         created_at = getattr(r, "created_at", None)
@@ -842,6 +844,7 @@ def admin_requests():
         attention_count=attention_count,
         no_owner_count=no_owner_count,
         not_seen_72h_count=not_seen_72h_count,
+        stale_72h_by_id=stale_72h_by_id,
         summary_cards=summary_cards,
         summary_counts=summary_counts,
     )
@@ -1327,6 +1330,7 @@ def build_requests_query(base_query, request_args, legacy: bool = False):
     queue = (request_args.get("queue") or "").strip().lower()
     sla_kind = _normalize_sla_kind(request_args.get("sla_kind"))
     sla_days = _normalize_sla_days(request_args.get("sla_days", 30))
+    alert = (request_args.get("alert") or "").strip().lower()
     now = datetime.now(UTC).replace(tzinfo=None)
 
     if show_deleted:

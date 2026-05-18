@@ -1,4 +1,4 @@
-﻿{% extends "layouts/admin_workspace.html" %}
+{% extends "layouts/admin_workspace.html" %}
 
 {% block title %}{{ _('Admin') }}  {{ _('Requests') }} | HelpChain{% endblock %}
 
@@ -66,17 +66,17 @@
 
     <div class="hc-tabs">
 
-      <button type="button" class="hc-tab" data-hc-tab="ALL" aria-current="true">{{ _('All') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="ALL" data-hc-filter-clear aria-current="true">{{ _('All') }}</button>
 
-      <button type="button" class="hc-tab" data-hc-tab="NEW">{{ _('New') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="NEW" data-hc-filter-card data-filter-key="status" data-filter-value="NEW" aria-pressed="false">{{ _('New') }}</button>
 
-      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED">{{ _('Assigned') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="ASSIGNED" data-hc-filter-card data-filter-key="owner" data-filter-value="assigned" aria-pressed="false">{{ _('Assigned') }}</button>
 
-      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS">{{ _('In progress') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="IN_PROGRESS" data-hc-filter-card data-filter-key="status" data-filter-value="IN_PROGRESS" aria-pressed="false">{{ _('In progress') }}</button>
 
-      <button type="button" class="hc-tab" data-hc-tab="COMPLETED">{{ _('Completed') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="COMPLETED" data-hc-filter-card data-filter-key="status" data-filter-value="COMPLETED" aria-pressed="false">{{ _('Completed') }}</button>
 
-      <button type="button" class="hc-tab" data-hc-tab="CLOSED">{{ _('Closed') }}</button>
+      <button type="button" class="hc-tab" data-hc-tab="CLOSED" data-hc-filter-card data-filter-key="status" data-filter-value="CLOSED" aria-pressed="false">{{ _('Closed') }}</button>
 
       <button type="button" class="hc-tab" id="hcToggleActionable">Actions prioritaires</button>
 
@@ -98,6 +98,9 @@
 
       <a class="hc-request-summary-card hc-request-summary-card--new"
          data-request-summary-kpi="NEW"
+         data-hc-filter-card
+         data-filter-key="status"
+         data-filter-value="NEW"
          href="{{ summary_cards.hrefs.new_orientations }}">
 
         <span class="hc-request-summary-card__label">{{ summary_cards.labels.new_orientations }}</span>
@@ -112,6 +115,9 @@
 
       <a class="hc-request-summary-card hc-request-summary-card--active"
          data-request-summary-kpi="IN_PROGRESS"
+         data-hc-filter-card
+         data-filter-key="status"
+         data-filter-value="IN_PROGRESS"
          href="{{ summary_cards.hrefs.in_progress }}">
 
         <span class="hc-request-summary-card__label">{{ summary_cards.labels.in_progress }}</span>
@@ -126,6 +132,9 @@
 
       <a class="hc-request-summary-card hc-request-summary-card--urgent"
          data-request-summary-kpi="URGENT"
+         data-hc-filter-card
+         data-filter-key="risk"
+         data-filter-value="critical"
          href="{{ summary_cards.hrefs.urgent }}">
 
         <span class="hc-request-summary-card__label">{{ summary_cards.labels.urgent }}</span>
@@ -140,6 +149,9 @@
 
       <a class="hc-request-summary-card hc-request-summary-card--completed"
          data-request-summary-kpi="COMPLETED"
+         data-hc-filter-card
+         data-filter-key="status"
+         data-filter-value="COMPLETED"
          href="{{ summary_cards.hrefs.completed }}">
 
         <span class="hc-request-summary-card__label">{{ summary_cards.labels.completed }}</span>
@@ -340,7 +352,15 @@
 
   <div class="hc-risk-overview mb-2 hc-requests-toolbar__overview">
 
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='critical', city=request.args.get('city') or None) }}">
+    <a
+      class="hc-risk-overview__item hc-risk-overview__item--link"
+      href="{{ url_for('admin.admin_requests', risk_level='critical', city=request.args.get('city') or None) }}"
+      data-hc-filter-card
+      data-filter-key="risk"
+      data-filter-value="critical"
+      role="button"
+      aria-pressed="false"
+    >
 
       <span class="hc-risk-overview__label">{{ _('Situations critiques') }}</span>
 
@@ -350,7 +370,15 @@
 
     </a>
 
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', risk='high', city=request.args.get('city') or None) }}">
+    <a
+      class="hc-risk-overview__item hc-risk-overview__item--link"
+      href="{{ url_for('admin.admin_requests', risk_level='attention', city=request.args.get('city') or None) }}"
+      data-hc-filter-card
+      data-filter-key="risk"
+      data-filter-value="attention"
+      role="button"
+      aria-pressed="false"
+    >
 
       <span class="hc-risk-overview__label">{{ _('Situations à vérifier') }}</span>
 
@@ -360,7 +388,15 @@
 
     </a>
 
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_requests', no_owner='1', city=request.args.get('city') or None) }}">
+    <a
+      class="hc-risk-overview__item hc-risk-overview__item--link"
+      href="{{ url_for('admin.admin_requests', no_owner='1', city=request.args.get('city') or None) }}"
+      data-hc-filter-card
+      data-filter-key="owner"
+      data-filter-value="none"
+      role="button"
+      aria-pressed="false"
+    >
 
       <span class="hc-risk-overview__label">{{ _('Cas sans responsable') }}</span>
 
@@ -370,7 +406,15 @@
 
     </a>
 
-    <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for('admin.admin_cases_list', stale='1', city=request.args.get('city') or None) }}">
+    <a
+      class="hc-risk-overview__item hc-risk-overview__item--link"
+      href="{{ url_for('admin.admin_requests', not_seen_72h='1', city=request.args.get('city') or None) }}"
+      data-hc-filter-card
+      data-filter-key="stale"
+      data-filter-value="1"
+      role="button"
+      aria-pressed="false"
+    >
 
       <span class="hc-risk-overview__label">{{ _('Sans activité depuis 72h') }}</span>
 
@@ -387,27 +431,27 @@
   <div class="hc-saved-views mb-2 d-flex flex-wrap gap-2 align-items-center">
     <span class="small text-muted fw-semibold">Vues rapides</span>
 
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests') }}">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests') }}" data-admin-request-clear data-hc-filter-clear>
       Tous
     </a>
 
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', no_owner='1') }}">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', no_owner='1') }}" data-hc-filter-card data-filter-key="owner" data-filter-value="none" data-admin-request-filter="filter" role="button" aria-pressed="false">
       Sans responsable
     </a>
 
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk='stale') }}">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" data-admin-request-filter="filter" role="button" aria-pressed="false">
       Sans activité
     </a>
 
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk_level='critical') }}">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', risk_level='critical') }}" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" data-admin-request-filter="filter" role="button" aria-pressed="false">
       Critique
     </a>
 
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', not_seen_72h='1') }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" data-admin-request-filter="filter" role="button" aria-pressed="false">
       Sans activité 72h
     </a>
 
-    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', queue='sla', sla_kind='owner_assignment_overdue', sla_days=sla_days or 30) }}">
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.admin_requests', queue='sla', sla_kind='owner_assignment_overdue', sla_days=sla_days or 30) }}" data-hc-filter-card data-filter-key="sla" data-filter-value="owner_assignment_overdue" data-admin-request-filter="filter" role="button" aria-pressed="false">
       SLA attribution
     </a>
   </div>
@@ -416,33 +460,49 @@
 
     <a
       class="btn btn-outline-danger btn-sm {% if risk_level == 'critical' %}is-active{% endif %}"
-      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='critical', city=request.args.get('city') or None) }}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, risk_level='critical', city=request.args.get('city') or None) }}"
       data-risk-shortcut="critical"
+      data-hc-filter-card
+      data-filter-key="risk"
+      data-filter-value="critical"
+      role="button"
       aria-pressed="{{ 'true' if risk_level == 'critical' else 'false' }}"
     >{{ _('Critique') }} (<span data-risk-count="critical">{{ critical_count or 0 }}</span>)</a>
 
     <a
       class="btn btn-outline-warning btn-sm {% if risk_level == 'attention' %}is-active{% endif %}"
-      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, risk_level='attention', city=request.args.get('city') or None) }}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, risk_level='attention', city=request.args.get('city') or None) }}"
       data-risk-shortcut="attention"
+      data-hc-filter-card
+      data-filter-key="risk"
+      data-filter-value="attention"
+      role="button"
       aria-pressed="{{ 'true' if risk_level == 'attention' else 'false' }}"
     >{{ _('Attention') }} (<span data-risk-count="attention">{{ attention_count or 0 }}</span>)</a>
 
     <a
       class="btn btn-outline-secondary btn-sm {% if no_owner %}is-active{% endif %}"
-      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, no_owner='1', city=request.args.get('city') or None) }}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, no_owner='1', city=request.args.get('city') or None) }}"
       data-risk-shortcut="no_owner"
+      data-hc-filter-card
+      data-filter-key="owner"
+      data-filter-value="none"
+      role="button"
       aria-pressed="{{ 'true' if no_owner else 'false' }}"
     >{{ _('Sans responsable') }} (<span data-risk-count="no_owner">{{ no_owner_count or 0 }}</span>)</a>
 
     <a
       class="btn btn-outline-secondary btn-sm {% if not_seen_72h %}is-active{% endif %}"
-      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, queue=queue or None, sla_kind=sla_kind or None, sla_days=sla_days or None, not_seen_72h='1', city=request.args.get('city') or None) }}"
+      href="{{ url_for('admin.admin_requests', q=q or None, status=status or None, deleted='1' if show_deleted else None, not_seen_72h='1', city=request.args.get('city') or None) }}"
       data-risk-shortcut="stale"
+      data-hc-filter-card
+      data-filter-key="stale"
+      data-filter-value="1"
+      role="button"
       aria-pressed="{{ 'true' if not_seen_72h else 'false' }}"
     >{{ _('Sans activité 72h') }} (<span data-risk-count="stale">{{ not_seen_72h_count or 0 }}</span>)</a>
 
-    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}">Rinitialiser les filtres</a>
+    <a class="btn btn-outline-secondary btn-sm ms-auto" href="{{ url_for('admin.admin_requests') }}" data-admin-request-clear data-hc-filter-clear>Rinitialiser les filtres</a>
 
   </div>
 
@@ -826,15 +886,21 @@
 
   <div class="hc-quickchips mt-2 hc-requests-toolbar__quickchips" id="hcQuickChips">
 
-    <button type="button" class="hc-quickchip" data-quick-filter="no_owner">Sans responsable</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="no_owner" data-hc-filter-card data-filter-key="owner" data-filter-value="none" data-admin-request-filter="filter" aria-pressed="false">Sans responsable</button>
 
-    <button type="button" class="hc-quickchip" data-quick-filter="stale">{{ _('Sans activité') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="stale_72h" data-hc-filter-card data-filter-key="stale" data-filter-value="1" data-admin-request-filter="filter" aria-pressed="false">{{ _('Sans activité 72h') }}</button>
 
-    <button type="button" class="hc-quickchip" data-quick-filter="urgent">{{ _('Urgent') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="critical" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" data-admin-request-filter="filter" aria-pressed="false">{{ _('Critique') }}</button>
 
-    <button type="button" class="hc-quickchip" data-quick-filter="can_help">{{ _('Has CAN_HELP') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="attention" data-hc-filter-card data-filter-key="risk" data-filter-value="attention" data-admin-request-filter="filter" aria-pressed="false">{{ _('Attention') }}</button>
 
-    <button type="button" class="hc-quickchip hc-quickchip--ghost" data-quick-filter="clear">{{ _('Clear quick filters') }}</button>
+    <button type="button" class="hc-quickchip" data-quick-filter="unassigned_48h" data-hc-filter-card data-filter-key="sla" data-filter-value="owner_assignment_overdue" data-admin-request-filter="filter" aria-pressed="false">{{ _('Non attribué 48h') }}</button>
+
+    <button type="button" class="hc-quickchip" data-quick-filter="sla_attribution" data-hc-filter-card data-filter-key="sla" data-filter-value="owner_assignment_overdue" data-admin-request-filter="filter" aria-pressed="false">SLA attribution</button>
+
+    <button type="button" class="hc-quickchip" data-quick-filter="inactive_cases" data-hc-filter-card data-filter-key="inactive" data-filter-value="1" data-admin-request-filter="filter" aria-pressed="false">{{ _('Cas inactifs') }}</button>
+
+    <button type="button" class="hc-quickchip hc-quickchip--ghost" data-quick-filter="clear" data-admin-request-clear data-hc-filter-clear>{{ _('Clear quick filters') }}</button>
 
   </div>
 
@@ -844,7 +910,7 @@
 
   <div class="hc-card hc-admin-table-shell hc-requests-table-shell">
 
-    <div class="hc-admin-empty hc-admin-empty--filters" id="hcRequestsNoMatch" hidden>
+    <div class="hc-admin-empty hc-admin-empty--filters" id="hcRequestsNoMatch" data-hc-filter-empty hidden>
       <strong>Aucune demande ne correspond aux filtres rapides.</strong>
       <span class="d-block small text-muted mt-1">Essayez un autre raccourci ou réinitialisez les filtres actifs.</span>
     </div>
@@ -979,8 +1045,12 @@
         {% set is_disabled = nu.get('disabled', False) %}
         {% set not_seen_hours = (not_seen_hours_by_id or {}).get(r.id, 0) %}
         {% set stale_72h = (stale_72h_by_id or {}).get(r.id, false) %}
+        {% set is_terminal_row = row_status_bucket in ['COMPLETED', 'CLOSED'] %}
+        {% set unassigned_48h = owner_missing and age_days >= 2 and not is_terminal_row %}
+        {% set sla_attr = 'owner_assignment_overdue' if unassigned_48h else '' %}
 
         <tr class="{% if highlight and highlight|int == r.id %}table-success{% endif %}"
+            data-hc-filter-row
 
             data-href="{{ safe_url_for('admin.admin_request_details', req_id=r.id) }}"
 
@@ -993,6 +1063,7 @@
             data-owner-id="{{ r.owner_id or '' }}"
             data-has-owner="{{ '0' if owner_missing else '1' }}"
             data-owner-missing="{{ '1' if owner_missing else '0' }}"
+            data-no-owner="{{ '1' if owner_missing else '0' }}"
 
             data-owner-state="{{ owner_state }}"
 
@@ -1002,17 +1073,26 @@
 
             data-priority-label="{{ row_priority }}"
             data-status="{{ row_status }}"
+            data-status-bucket="{{ row_status_bucket }}"
+            data-owner="{{ 'none' if owner_missing else 'assigned' }}"
 
             data-sig-can-help="{{ ch }}"
 
             data-sig-cant-help="{{ cc }}"
 
             data-risk-level="{{ (r.risk_level or 'standard')|lower }}"
+            data-risk="{{ (r.risk_level or 'standard')|lower }}"
+            data-critical="{{ '1' if (r.risk_level or 'standard')|lower == 'critical' else '0' }}"
+            data-attention="{{ '1' if (r.risk_level or 'standard')|lower == 'attention' else '0' }}"
             data-risk-score="{{ r.risk_score or 0 }}"
 
             data-last-activity-at="{{ activity_at.isoformat() if activity_at else '' }}"
             data-not-seen-hours="{{ not_seen_hours }}"
             data-stale-72h="{{ '1' if stale_72h else '0' }}"
+            data-stale="{{ '1' if stale_72h else '0' }}"
+            data-unassigned-48h="{{ '1' if unassigned_48h else '0' }}"
+            data-sla="{{ sla_attr }}"
+            data-inactive-case="{{ '1' if stale_72h and not is_terminal_row else '0' }}"
 
             data-priority="{{ row_priority }}"
 
@@ -1621,7 +1701,7 @@
 
 <script src="{{ url_for('static', filename='js/admin-requests-actionable-mark.js') }}"></script>
 
-<script src="{{ url_for('static', filename='js/admin-requests-filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages/admin-requests-filters.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/admin-copy-link.js') }}"></script>
 
@@ -1629,12 +1709,8 @@
 
 <script src="{{ url_for('static', filename='js/admin-ops-kpis.js') }}"></script>
 
-<script src="{{ url_for('static', filename='js/admin-requests-list-filters.js') }}"></script>
-
 <script src="{{ url_for('static', filename='js/admin-requests-inline-status.js') }}"></script>
 
 <script src="{{ url_for('static', filename='js/admin-autosync.js') }}" defer></script>
 
 {% endblock %}
-
-

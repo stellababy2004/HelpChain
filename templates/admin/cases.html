@@ -55,22 +55,22 @@
       </div>
     </div>
     <div class="hc-risk-overview mb-3">
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale_72h='1' if stale_72h else None, city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='critical', stale_72h='1' if stale_72h else None, city=city or None) }}" data-hc-filter-card data-filter-key="risk" data-filter-value="critical" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Situations critiques</span>
         <strong class="hc-risk-overview__value">{{ critical_count or 0 }}</strong>
         <span class="hc-risk-overview__context">À traiter en premier</span>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='attention', stale_72h='1' if stale_72h else None, city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk='attention', stale_72h='1' if stale_72h else None, city=city or None) }}" data-hc-filter-card data-filter-key="risk" data-filter-value="attention" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Situations a verifier</span>
         <strong class="hc-risk-overview__value">{{ attention_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Vigilance renforcée</span>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale_72h='1' if stale_72h else None, city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner='none', category=category or None, risk=risk or None, stale_72h='1' if stale_72h else None, city=city or None) }}" data-hc-filter-card data-filter-key="owner" data-filter-value="none" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Cas sans responsable</span>
         <strong class="hc-risk-overview__value">{{ no_owner_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Affectation attendue</span>
       </a>
-      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale_72h='1', city=city or None) }}">
+      <a class="hc-risk-overview__item hc-risk-overview__item--link" href="{{ url_for(cases_endpoint, status=status or None, priority=priority or None, owner=owner or None, category=category or None, risk=risk or None, stale_72h='1', city=city or None) }}" data-hc-filter-card data-filter-key="stale" data-filter-value="1" role="button" aria-pressed="false">
         <span class="hc-risk-overview__label">Cas sans action depuis 72h</span>
         <strong class="hc-risk-overview__value">{{ stale_count or 0 }}</strong>
         <span class="hc-risk-overview__context">Relance nécessaire</span>
@@ -133,7 +133,7 @@
           <span class="form-check-label">Sans action 72h</span>
         </label>
         <button class="btn btn-primary btn-sm" type="submit">Filtrer</button>
-        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}">Reinitialiser</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for(cases_endpoint, city=city or None) }}" data-hc-filter-clear>Reinitialiser</a>
       </div>
     </form>
     {% if active_filter_labels %}
@@ -185,7 +185,15 @@
             {% set status_key = (c.status or 'open')|replace('_', '-')|lower %}
             {% set status_label = status_display_labels.get((c.status or '')|lower, (c.status or '-')|replace('_', ' ')|title) %}
             {% set case_detail_href = url_for('admin.admin_case_detail', case_id=c.id) %}
-            <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'élevé'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}">
+            <tr id="request-{{ c.request_id }}" class="hc-case-row hc-case-row--{{ status_key }}{% if not c.owner_user and not c.owner_user_id %} hc-case-row--unassigned{% endif %}{% if ops_level in ['critique', 'critical', 'urgent'] %} hc-case-row--critical{% elif ops_level in ['eleve', 'high', 'élevé'] %} hc-case-row--warning{% endif %}{% if case_sla.state in ['overdue', 'bad'] %} hc-case-row--stale{% endif %}"
+                data-hc-filter-row
+                data-status="{{ c.status or 'open' }}"
+                data-risk="{% if ops_level in ['critique', 'critical', 'urgent'] %}critical{% elif ops_level in ['eleve', 'high', 'élevé'] %}attention{% else %}normal{% endif %}"
+                data-owner="{{ 'none' if not c.owner_user and not c.owner_user_id else 'assigned' }}"
+                data-stale="{{ '1' if case_sla.state in ['overdue', 'bad'] else '0' }}"
+                data-updated-today="0"
+                data-notification-failed="0"
+                data-sla="{{ case_sla.state }}">
               <td class="case-col">
                 <div class="hc-case-id">#{{ c.id }}</div>
                 <div class="small text-muted">Req #{{ c.request_id }}</div>
@@ -280,6 +288,7 @@
 
 {% block scripts %}
   {{ super() }}
+  <script src="{{ url_for('static', filename='js/pages/operational-filters.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/admin-cases.js') }}" defer></script>
   <script src="{{ url_for('static', filename='js/admin-autosync.js') }}" defer></script>
 {% endblock %}
