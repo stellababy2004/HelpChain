@@ -39,6 +39,7 @@
     timeline: document.getElementById("commandMapTimeline"),
     open: document.getElementById("commandMapDrawerOpen"),
     clear: document.getElementById("commandMapDrawerClear"),
+    actions: drawerRoot ? drawerRoot.querySelector(".hc-command-map-drawer__actions") : null,
     status: document.getElementById("commandMapDrawerStatus")
   };
 
@@ -134,6 +135,237 @@
     var diffDays = Math.round(diffHours / 24);
     if (diffDays < 7) return "Il y a " + diffDays + " j";
     return dt.toLocaleDateString("fr-FR");
+  }
+
+  function csrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute("content") || "" : "";
+  }
+
+  function entityType(item) {
+    var id = String((item && item.id) || "");
+    var actorType = normalize(item && item.actor_type);
+    var kind = normalize(item && item.kind);
+    if (actorType === "lead" || id.indexOf("lead-alert:") === 0) {
+      return "professional_lead";
+    }
+    if (kind === "pressure" || actorType === "territory" || id.indexOf("cluster:") === 0) {
+      return "territory_cluster";
+    }
+    if (id.indexOf("case:") === 0) {
+      return "case";
+    }
+    if (id.indexOf("request:") === 0) {
+      return "request";
+    }
+    if (kind === "situation" || kind === "alert") {
+      return "request_case";
+    }
+    return kind || "signal";
+  }
+
+  function baseAdminUrl(path) {
+    return "/admin" + path;
+  }
+
+  function zoneQueueUrl(item, mode) {
+    var params = new URLSearchParams();
+    if (item && item.city) {
+      params.set("q", String(item.city));
+    }
+    if (mode === "stale") {
+      params.set("not_seen_72h", "1");
+    }
+    if (mode === "unassigned") {
+      params.set("no_owner", "1");
+    }
+    var query = params.toString();
+    return baseAdminUrl("/requests") + (query ? "?" + query : "");
+  }
+
+  function actionButtonConfig(item) {
+    var type = entityType(item);
+    var id = item && item.entity_id;
+    var detailUrl = item && item.detail_url;
+    var actions = [
+      {
+        key: "open_detail",
+        label: type === "territory_cluster" ? "Ouvrir la file zone" : "Ouvrir le detail",
+        method: "GET",
+        href: type === "territory_cluster" ? zoneQueueUrl(item, "queue") : detailUrl,
+        enabled: Boolean(type === "territory_cluster" || detailUrl)
+      }
+    ];
+
+    if (type === "professional_lead") {
+      actions.push(
+        {
+          key: "mark_contacted",
+          label: "Marquer contacte",
+          method: "POST",
+          href: id ? baseAdminUrl("/professional-leads/" + encodeURIComponent(id) + "/contacted") : "",
+          enabled: Boolean(id)
+        },
+        {
+          key: "add_note",
+          label: "Ajouter une note",
+          method: "GET",
+          href: detailUrl ? detailUrl + "#notes" : "",
+          enabled: Boolean(detailUrl)
+        },
+        {
+          key: "assign_structure",
+          label: "Assigner a une structure",
+          method: "POST",
+          href: "",
+          enabled: false
+        }
+      );
+      return actions;
+    }
+
+    if (type === "request" || type === "case" || type === "request_case") {
+      actions.push(
+        {
+          key: "assign_owner",
+          label: "Assigner owner",
+          method: type === "request" ? "POST" : "GET",
+          href: type === "request" && id
+            ? baseAdminUrl("/requests/" + encodeURIComponent(id) + "/assign")
+            : detailUrl ? detailUrl + "#owner" : "",
+          enabled: Boolean((type === "request" && id) || detailUrl)
+        },
+        {
+          key: "mark_reviewed",
+          label: "Marquer revu",
+          method: "POST",
+          href: "",
+          enabled: false
+        },
+        {
+          key: "create_followup",
+          label: "Creer un suivi",
+          method: "POST",
+          href: "",
+          enabled: false
+        },
+        {
+          key: "escalate",
+          label: "Escalader",
+          method: "POST",
+          href: "",
+          enabled: false
+        }
+      );
+      return actions;
+    }
+
+    if (type === "territory_cluster") {
+      actions.push(
+        {
+          key: "view_stale",
+          label: "Voir situations stale",
+          method: "GET",
+          href: zoneQueueUrl(item, "stale"),
+          enabled: true
+        },
+        {
+          key: "view_unassigned",
+          label: "Voir non assignees",
+          method: "GET",
+          href: zoneQueueUrl(item, "unassigned"),
+          enabled: true
+        }
+      );
+      return actions;
+    }
+
+    return actions;
+  }
+
+  function renderActionButton(action, item) {
+    var element;
+    if (action.enabled && action.method === "POST") {
+      var form = document.createElement("form");
+      form.method = "post";
+      form.action = action.href;
+      form.className = "d-inline";
+      form.dataset.commandAction = action.key;
+      form.dataset.entityKind = entityType(item);
+      form.dataset.entityId = String((item && item.entity_id) || "");
+      form.dataset.actionUrl = action.href;
+
+      var csrf = csrfToken();
+      if (csrf) {
+        var csrfInput = document.createElement("input");
+        csrfInput.type = "hidden";
+        csrfInput.name = "csrf_token";
+        csrfInput.value = csrf;
+        form.appendChild(csrfInput);
+      }
+
+      var nextInput = document.createElement("input");
+      nextInput.type = "hidden";
+      nextInput.name = "next";
+      nextInput.value = window.location.pathname + window.location.search;
+      form.appendChild(nextInput);
+
+      var submit = document.createElement("button");
+      submit.type = "submit";
+      submit.className = "btn btn-outline-secondary btn-sm";
+      submit.textContent = action.label;
+      submit.dataset.commandAction = action.key;
+      submit.dataset.entityKind = entityType(item);
+      submit.dataset.entityId = String((item && item.entity_id) || "");
+      submit.dataset.actionUrl = action.href;
+      form.appendChild(submit);
+      return form;
+    }
+
+    if (action.enabled && action.href) {
+      element = document.createElement("a");
+      element.href = action.href;
+      element.className = action.key === "open_detail" ? "btn btn-primary btn-sm" : "btn btn-outline-secondary btn-sm";
+    } else {
+      element = document.createElement("button");
+      element.type = "button";
+      element.className = "btn btn-outline-secondary btn-sm disabled";
+      element.disabled = true;
+      element.title = "Action à connecter";
+      element.setAttribute("aria-disabled", "true");
+    }
+    element.textContent = action.label;
+    element.dataset.commandAction = action.key;
+    element.dataset.entityKind = entityType(item);
+    element.dataset.entityId = String((item && item.entity_id) || "");
+    element.dataset.actionUrl = action.href || "";
+    if (!action.enabled) {
+      element.title = "Action à connecter";
+    }
+    return element;
+  }
+
+  function renderQuickActions(item) {
+    if (!drawer.actions) return;
+    drawer.actions.querySelectorAll("[data-command-quick-action]").forEach(function (node) {
+      node.remove();
+    });
+    actionButtonConfig(item).forEach(function (action) {
+      if (action.key === "open_detail") {
+        return;
+      }
+      var wrapper = document.createElement("span");
+      wrapper.dataset.commandQuickAction = "1";
+      wrapper.appendChild(renderActionButton(action, item));
+      drawer.actions.insertBefore(wrapper, drawer.clear || null);
+    });
+  }
+
+  function clearQuickActions() {
+    if (!drawer.actions) return;
+    drawer.actions.querySelectorAll("[data-command-quick-action]").forEach(function (node) {
+      node.remove();
+    });
   }
 
   function showEmptyState(title, message) {
@@ -393,9 +625,16 @@
     setText(drawer.statusValue, titleize(item.status_key));
     setText(drawer.assigned, item.assigned_professional || item.assigned_label || "");
     if (drawer.open) {
-      drawer.open.href = item.detail_url || "#";
-      drawer.open.classList.toggle("disabled", !item.detail_url);
+      var primaryAction = actionButtonConfig(item)[0] || {};
+      drawer.open.href = primaryAction.href || "#";
+      drawer.open.classList.toggle("disabled", !primaryAction.enabled);
+      drawer.open.title = primaryAction.enabled ? "" : "Action à connecter";
+      drawer.open.dataset.commandAction = "open_detail";
+      drawer.open.dataset.entityKind = entityType(item);
+      drawer.open.dataset.entityId = String(item.entity_id || "");
+      drawer.open.dataset.actionUrl = primaryAction.href || "";
     }
+    renderQuickActions(item);
     if (drawer.timeline) {
       drawer.timeline.innerHTML = "";
       (Array.isArray(item.timeline_summary) ? item.timeline_summary : []).slice(0, 5).forEach(function (point) {
@@ -439,7 +678,12 @@
     if (drawer.open) {
       drawer.open.href = "#";
       drawer.open.classList.add("disabled");
+      drawer.open.dataset.commandAction = "open_detail";
+      drawer.open.dataset.entityKind = "";
+      drawer.open.dataset.entityId = "";
+      drawer.open.dataset.actionUrl = "";
     }
+    clearQuickActions();
     setPressureClass(drawer.status, "calm");
     activateDrawer(false);
   }
