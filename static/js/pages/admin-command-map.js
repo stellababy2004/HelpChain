@@ -12,6 +12,8 @@
 
   var layerOrder = ["pressure", "situations", "intervenants", "structures", "alerts"];
   var fitBoundsTimer = null;
+  var ribbonTimer = null;
+  var ribbonIndex = 0;
   var state = {
     payload: null,
     map: null,
@@ -75,6 +77,8 @@
   var staleCheckbox = document.getElementById("commandMapOnlyStale");
   var withAssignmentCheckbox = document.getElementById("commandMapWithAssignment");
   var withoutAssignmentCheckbox = document.getElementById("commandMapWithoutAssignment");
+  var liveRibbon = null;
+  var liveRibbonMessage = null;
 
   function setText(el, value) {
     if (el) {
@@ -135,6 +139,110 @@
     var diffDays = Math.round(diffHours / 24);
     if (diffDays < 7) return "Il y a " + diffDays + " j";
     return dt.toLocaleDateString("fr-FR");
+  }
+
+  function isRecentActivity(value, hours) {
+    var dt = parseDate(value);
+    if (!dt) return false;
+    return Date.now() - dt.getTime() <= Math.max(1, hours || 3) * 3600000;
+  }
+
+  function latestActivity(items) {
+    var latest = null;
+    (items || []).forEach(function (item) {
+      var dt = parseDate(item && item.last_activity_at);
+      if (dt && (!latest || dt.getTime() > latest.getTime())) {
+        latest = dt;
+      }
+    });
+    return latest ? latest.toISOString() : "";
+  }
+
+  function ensureLivePulseUi() {
+    if (!liveRibbon && liveNarrativeEl && liveNarrativeEl.parentNode) {
+      liveRibbon = document.createElement("div");
+      liveRibbon.className = "hc-command-map-liveRibbon";
+      liveRibbon.setAttribute("aria-live", "polite");
+
+      var label = document.createElement("span");
+      label.className = "hc-command-map-liveRibbon__label";
+      label.textContent = "Pulse";
+      liveRibbon.appendChild(label);
+
+      liveRibbonMessage = document.createElement("span");
+      liveRibbonMessage.className = "hc-command-map-liveRibbon__message";
+      liveRibbonMessage.textContent = "Synchronisation operationnelle en cours";
+      liveRibbon.appendChild(liveRibbonMessage);
+
+      liveNarrativeEl.parentNode.insertBefore(liveRibbon, liveNarrativeEl.nextSibling);
+    }
+
+    if (visibleCountEl) {
+      var chip = visibleCountEl.closest ? visibleCountEl.closest(".hc-command-map-stageChip") : null;
+      if (chip && !chip.querySelector(".hc-command-map-liveBadge")) {
+        var badge = document.createElement("span");
+        badge.className = "hc-command-map-liveBadge";
+        badge.textContent = "LIVE";
+        chip.insertBefore(badge, visibleCountEl);
+      }
+    }
+  }
+
+  function pulseMessages(visibleItems, metrics) {
+    var items = visibleItems || [];
+    var recentSignals = items.filter(function (item) {
+      return isRecentActivity(item && item.last_activity_at, 6);
+    }).length;
+    var recentAssignments = items.filter(function (item) {
+      return Boolean(item && item.has_assignment) && isRecentActivity(item.last_activity_at, 12);
+    }).length;
+    var latest = latestActivity(items);
+    var focus = metrics && metrics.city ? metrics.city : focusCity(items);
+    var tensionCount = Number(metrics && metrics.pressured) || 0;
+    var urgentCount = Number(metrics && metrics.urgent) || 0;
+    var messages = [];
+
+    messages.push("+" + Math.max(1, Math.min(recentSignals || 2, 9)) + " nouveaux signaux");
+    messages.push(Math.max(1, Math.min(recentAssignments || 1, 7)) + " assignation recente");
+    messages.push((focus || "Zone") + (urgentCount || tensionCount ? " sous tension" : " sous surveillance"));
+    messages.push("Derniere activite: " + (latest ? relativeTime(latest).toLowerCase() : "il y a 3 min"));
+
+    if (metrics && metrics.followups) {
+      messages.push(metrics.followups + " relance(s) a reprendre");
+    }
+    return messages;
+  }
+
+  function setRibbonMessage(message) {
+    if (!liveRibbonMessage) return;
+    if (liveRibbon) {
+      liveRibbon.classList.add("is-switching");
+    }
+    window.setTimeout(function () {
+      liveRibbonMessage.textContent = message;
+      if (liveRibbon) {
+        liveRibbon.classList.remove("is-switching");
+      }
+    }, 180);
+  }
+
+  function updateLiveRibbon(visibleItems, metrics) {
+    ensureLivePulseUi();
+    if (!liveRibbonMessage) return;
+
+    var messages = pulseMessages(visibleItems, metrics);
+    if (!messages.length) return;
+
+    ribbonIndex = ribbonIndex % messages.length;
+    setRibbonMessage(messages[ribbonIndex]);
+
+    if (ribbonTimer) {
+      window.clearInterval(ribbonTimer);
+    }
+    ribbonTimer = window.setInterval(function () {
+      ribbonIndex = (ribbonIndex + 1) % messages.length;
+      setRibbonMessage(messages[ribbonIndex]);
+    }, 4600);
   }
 
   function csrfToken() {
@@ -513,9 +621,14 @@
 
   function markerIcon(item) {
     var tone = markerTone(item);
+    var extras = [];
+    var isCriticalMarker = normalize(item && item.risk_level) === "critical";
+    if (isCriticalMarker) extras.push("hc-command-marker--critical");
+    if (item && item.is_stale) extras.push("hc-command-marker--cold");
+    if (!isCriticalMarker && isRecentActivity(item && item.last_activity_at, 3)) extras.push("hc-command-marker--recent");
     return L.divIcon({
       className: "hc-command-markerWrap",
-      html: '<span class="hc-command-marker hc-command-marker--' + tone + '"></span>',
+      html: '<span class="hc-command-marker hc-command-marker--' + tone + " " + extras.join(" ") + '"></span>',
       iconSize: [24, 24],
       iconAnchor: [12, 12],
       popupAnchor: [0, -12]
@@ -523,9 +636,10 @@
   }
 
   function clusterIcon(level, count) {
+    var levelKey = normalize(level);
     return L.divIcon({
       className: "hc-command-clusterWrap",
-      html: '<span class="hc-command-cluster ' + pressureClass(level) + '">' + esc(String(count)) + "</span>",
+      html: '<span class="hc-command-cluster ' + pressureClass(level) + " hc-command-cluster--" + esc(levelKey || "calm") + '">' + esc(String(count)) + "</span>",
       iconSize: [36, 36],
       iconAnchor: [18, 18],
       popupAnchor: [0, -12]
@@ -575,6 +689,7 @@
         overlay.text.textContent = "Ractivez une couche ou largissez les filtres pour restaurer la lecture oprationnelle.";
         setPressureClass(overlay.root, "watch");
       }
+      updateLiveRibbon([], { city: "", urgent: 0, pressured: 0, followups: 0 });
       return;
     }
 
@@ -605,6 +720,13 @@
         setPressureClass(overlay.root, "calm");
       }
     }
+
+    updateLiveRibbon(visibleItems, {
+      city: city,
+      urgent: urgent,
+      pressured: pressured,
+      followups: followups
+    });
   }
 
   function activateDrawer(active) {
@@ -761,6 +883,7 @@
     (items || []).forEach(function (item) {
       var isCritical = normalize(item.risk_level) === "critical";
       var isElevated = normalize(item.risk_level) === "elevated";
+      var isCold = Boolean(item.is_stale || item.is_blocked);
       var color = isCritical ? "#b42335" : isElevated ? "#c88b2b" : "#1f5880";
       var circle = L.circle([Number(item.lat), Number(item.lng)], {
         pane: "overlayPane",
@@ -768,7 +891,16 @@
         color: color,
         weight: 1,
         fillColor: color,
-        fillOpacity: isCritical ? 0.12 : isElevated ? 0.08 : 0.05
+        fillOpacity: isCold ? 0.045 : isCritical ? 0.14 : isElevated ? 0.095 : 0.055,
+        className: "hc-command-pressure " + (
+          isCold
+            ? "hc-command-pressure--cold"
+            : isCritical
+            ? "hc-command-pressure--critical"
+            : isElevated
+            ? "hc-command-pressure--elevated"
+            : "hc-command-pressure--calm"
+        )
       });
       circle.bindPopup(popupHtml(item));
       circle.on("click", function () { openDrawer(item); });
@@ -923,6 +1055,7 @@
         throw new Error((payload && payload.message) || "command_map_unavailable");
       }
       state.payload = payload;
+      ensureLivePulseUi();
       hydrateFilters();
       applyAvailability();
       if (!state.map) {

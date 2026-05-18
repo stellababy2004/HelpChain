@@ -255,6 +255,69 @@ body.hc-admin-command-map-page .hc-command-map-stageChip strong {
   color: #0f2740;
 }
 
+body.hc-admin-command-map-page .hc-command-map-liveBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-right: 0.1rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #0f5132;
+}
+
+body.hc-admin-command-map-page .hc-command-map-liveBadge::before {
+  content: "";
+  width: 0.44rem;
+  height: 0.44rem;
+  border-radius: 999px;
+  background: #2f9e62;
+  box-shadow: 0 0 0 0 rgba(47, 158, 98, 0.24);
+}
+
+body.hc-admin-command-map-page .hc-command-map-liveRibbon {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.46rem;
+  align-items: center;
+  width: min(100%, 34rem);
+  margin-top: 0.32rem;
+  padding: 0.38rem 0.52rem;
+  border: 1px solid rgba(31, 88, 128, 0.14);
+  border-radius: 10px;
+  background:
+    linear-gradient(90deg, rgba(15, 47, 75, 0.05), rgba(255, 255, 255, 0.76)),
+    rgba(255, 255, 255, 0.68);
+  color: #16324f;
+  box-shadow: inset 2px 0 0 rgba(31, 88, 128, 0.24);
+}
+
+body.hc-admin-command-map-page .hc-command-map-liveRibbon__label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(15, 39, 64, 0.56);
+}
+
+body.hc-admin-command-map-page .hc-command-map-liveRibbon__message {
+  min-width: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.94;
+  transition: opacity 180ms ease;
+}
+
+body.hc-admin-command-map-page .hc-command-map-liveRibbon.is-switching .hc-command-map-liveRibbon__message {
+  opacity: 0.18;
+}
+
 body.hc-admin-command-map-page .hc-command-map-shell {
   position: relative;
   flex: 1 1 auto;
@@ -690,10 +753,37 @@ body.hc-admin-command-map-page .hc-command-marker--sla_risk::before,
 body.hc-admin-command-map-page .hc-command-marker--saturation::before {
   content: "";
   position: absolute;
-  inset: -4px;
+  inset: -5px;
   border-radius: 999px;
   border: 1px solid rgba(217, 45, 32, 0.24);
-  opacity: 0.9;
+  opacity: 0.78;
+}
+
+body.hc-admin-command-map-page .hc-command-marker--critical {
+  box-shadow:
+    0 12px 24px rgba(15, 39, 64, 0.18),
+    0 0 0 5px rgba(180, 35, 53, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-marker--recent {
+  filter: saturate(1.12) contrast(1.04);
+  box-shadow:
+    0 12px 24px rgba(15, 39, 64, 0.18),
+    0 0 0 4px rgba(47, 158, 98, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-marker--recent::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 999px;
+  border: 1px solid rgba(47, 158, 98, 0.2);
+  opacity: 0.42;
+}
+
+body.hc-admin-command-map-page .hc-command-marker--cold {
+  filter: saturate(0.62) contrast(0.96);
+  opacity: 0.74;
 }
 
 body.hc-admin-command-map-page .hc-command-marker--stale,
@@ -737,28 +827,116 @@ body.hc-admin-command-map-page .hc-command-cluster {
   backdrop-filter: blur(8px);
 }
 
+body.hc-admin-command-map-page .hc-command-cluster.hc-command-cluster--critical {
+  box-shadow:
+    0 16px 34px rgba(15, 39, 64, 0.18),
+    0 0 0 6px rgba(180, 35, 53, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-cluster.hc-command-cluster--elevated {
+  box-shadow:
+    0 16px 34px rgba(15, 39, 64, 0.18),
+    0 0 0 5px rgba(200, 139, 43, 0.08);
+}
+
+body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure {
+  transition: opacity 220ms ease, filter 220ms ease, stroke-width 220ms ease;
+}
+
+body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--critical {
+  filter: drop-shadow(0 0 7px rgba(180, 35, 53, 0.22));
+}
+
+body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--elevated {
+  filter: drop-shadow(0 0 6px rgba(200, 139, 43, 0.16));
+}
+
+body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--cold {
+  filter: saturate(0.58);
+  opacity: 0.72;
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  body.hc-admin-command-map-page .hc-command-map-liveBadge::before {
+    animation: hcCommandHeartbeat 2.8s ease-out infinite;
+  }
+
   body.hc-admin-command-map-page .hc-command-marker--urgence::before,
   body.hc-admin-command-map-page .hc-command-marker--sla_risk::before,
   body.hc-admin-command-map-page .hc-command-marker--saturation::before {
-    animation: hcCommandPulse 2.2s ease-out infinite;
+    animation: hcCommandPulse 3.2s ease-out infinite;
+  }
+
+  body.hc-admin-command-map-page .hc-command-marker--recent::before {
+    animation: hcCommandRecentPulse 4.6s ease-out infinite;
+  }
+
+  body.hc-admin-command-map-page .hc-command-cluster--critical,
+  body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--critical {
+    animation: hcCommandTerritoryBreathe 5.8s ease-in-out infinite;
+  }
+
+  body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--elevated {
+    animation: hcCommandTerritoryBreathe 7.2s ease-in-out infinite;
+  }
+}
+
+@keyframes hcCommandHeartbeat {
+  0% {
+    box-shadow: 0 0 0 0 rgba(47, 158, 98, 0.24);
+  }
+
+  68% {
+    box-shadow: 0 0 0 7px rgba(47, 158, 98, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(47, 158, 98, 0);
   }
 }
 
 @keyframes hcCommandPulse {
   0% {
     transform: scale(0.96);
-    opacity: 0.8;
+    opacity: 0.64;
   }
 
   70% {
-    transform: scale(1.28);
+    transform: scale(1.42);
     opacity: 0;
   }
 
   100% {
-    transform: scale(1.28);
+    transform: scale(1.42);
     opacity: 0;
+  }
+}
+
+@keyframes hcCommandRecentPulse {
+  0% {
+    opacity: 0.42;
+    transform: scale(0.98);
+  }
+
+  62% {
+    opacity: 0;
+    transform: scale(1.32);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.32);
+  }
+}
+
+@keyframes hcCommandTerritoryBreathe {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+
+  50% {
+    opacity: 1;
   }
 }
 
