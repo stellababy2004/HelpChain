@@ -1,64 +1,68 @@
-# HelpChain
+﻿# HelpChain
 
-HelpChain is a social-impact platform that connects people in need with verified volunteers and professionals.
+HelpChain is an operational coordination platform for social-sector organisations, local structures and professional networks.
 
-The project focuses on:
-- Simple access (no mandatory accounts for requesters)
-- Human-centered UX
-- Secure and traceable request handling
-- Gradual scalability (MVP → production)
+It helps teams centralise incoming requests, qualify situations, assign responsibilities, coordinate trusted actors and keep a clear operational history.
 
----
+## Positioning
 
-## Current Features (MVP)
+HelpChain is designed as a coordination infrastructure, not a public marketplace.
 
-### Requesters (no login)
-- Submit a help request
-- Access a private requester profile via a secure magic link
-- Track request status updates
+The platform focuses on:
 
-### Volunteers
-- Volunteer authentication
-- Dashboard with available and assigned requests
-- Status-based workflow (open → in progress → done)
+- structured intake of social requests;
+- controlled orientation between authorised actors;
+- role-based access and visibility;
+- operational traceability;
+- territory-level monitoring;
+- progressive deployment for organisations.
 
-### Admin
+## Core Capabilities
+
+### Public and organisational intake
+
+- Submit requests through structured forms
+- Route information to the appropriate operational workflow
+- Keep requesters outside unnecessary account complexity
+- Preserve a clear record of status and follow-up
+
+### Operational workspace
+
+- Manage requests, cases and assignments
+- Track status changes and operational activity
+- Coordinate volunteers, professionals and partner structures
+- Monitor pending, active and closed situations
+
+### Admin and pilotage
+
 - Admin dashboard
-- Request lifecycle management
-- Volunteer assignment
-- Audit & status tracking
+- Case and request lifecycle management
+- Professional and volunteer assignment
+- Audit-oriented activity tracking
+- Operational maps and territorial views
+- KPI and reporting surfaces
 
----
+### Security and governance
+
+- Role-based access control
+- Scoped administrative access
+- Traceability of actions
+- Controlled data visibility
+- GDPR-oriented operating model
 
 ## Technical Stack
 
-- **Backend:** Flask, SQLAlchemy, Alembic
-- **Frontend:** Jinja templates, Bootstrap, custom CSS
-- **Database:** SQLite (dev), PostgreSQL-ready
-- **Auth:** Session-based (volunteer/admin), magic-link (requester)
-- **i18n:** FR / BG / EN
+- Backend: Flask, SQLAlchemy, Alembic
+- Frontend: Jinja templates, Bootstrap, custom CSS and JavaScript
+- Database: SQLite for local development, PostgreSQL-ready for production
+- Auth: session-based admin and user authentication
+- Deployment: production-ready Flask stack
+- Internationalisation: French-first, with multilingual support in progress
 
----
+## Development
 
-## Database Migrations
+Apply database migrations locally:
 
-This project uses Flask-Migrate (Alembic).
-
-To apply migrations locally:
-
-```bash
+`ash
 export FLASK_APP=backend.helpchain_backend.src.app
 flask db upgrade
-```
-
----
-
-## Development Notes
-
-- Requesters do not need to create an account (MVP decision).
-- Magic links are token-based and stored hashed in the database.
-- Expiry and revocation policies will be added in the next iteration.
-
-### Status
-
-🚧 Active development (MVP phase)
