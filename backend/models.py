@@ -1026,7 +1026,6 @@ class CaseReferral(db.Model):
     created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, index=True)
     updated_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now)
 
-    case = relationship("Case", lazy="joined")
     request = relationship("Request", lazy="joined")
     from_structure = relationship("Structure", foreign_keys=[from_structure_id], lazy="joined")
     to_structure = relationship("Structure", foreign_keys=[to_structure_id], lazy="joined")
