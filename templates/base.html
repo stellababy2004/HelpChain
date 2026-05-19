@@ -480,6 +480,7 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/public-v3.css') }}?v=20260519-v3-nav-surface">
     {% block head %}{% endblock %}
   <link rel="stylesheet"
 href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
@@ -542,7 +543,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
       else hc_languages_all
     ) %}
     {% if not disable_nav_chrome %}
-    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-nav-debug="public-switch-v2">
+    <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-public-nav data-hc-nav-debug="public-switch-v3">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
@@ -632,30 +633,27 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
                 <span class="hc-navlabel">{{ _('Accueil') }}</span>
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.comment_ca_marche') else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if ep.startswith('main.comment_ca_marche') %}aria-current="page"{% endif %}>
-                {{ _('Fonctionnement') }}
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.professionnels') else '' }}" href="{{ url_for('main.professionnels') }}" {% if ep.startswith('main.professionnels') %}aria-current="page"{% endif %}>
-                {{ _('Professionnels') }}
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.pour_les_structures') else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if ep.startswith('main.pour_les_structures') %}aria-current="page"{% endif %}>
-                {{ _('Collectivités') }}
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.offre') else '' }}" href="{{ url_for('main.offre') }}" {% if ep.startswith('main.offre') %}aria-current="page"{% endif %}>
-                {{ _('Offre') }}
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {{ 'active' if ep.startswith('main.deploiement') else '' }}" href="{{ url_for('main.deploiement') }}" {% if ep.startswith('main.deploiement') %}aria-current="page"{% endif %}>
-                {{ _('Déploiement') }}
-              </a>
+            {% set product_active = ep.startswith('main.comment_ca_marche') or ep.startswith('main.professionnels') or ep.startswith('main.pour_les_structures') or ep.startswith('main.offre') or ep.startswith('main.deploiement') %}
+            <li class="nav-item hc-nav-mega {{ 'is-active' if product_active else '' }}" data-hc-mega>
+              <button class="hc-nav-mega__trigger" type="button" data-hc-mega-trigger aria-expanded="false" aria-controls="hcPublicMegaProduct">
+                {{ _('Produit') }}
+              </button>
+              <div class="hc-nav-mega__panel" id="hcPublicMegaProduct" data-hc-mega-panel hidden>
+                <div class="hc-nav-mega__grid">
+                  <div class="hc-nav-mega__feature">
+                    <span class="hc-nav-mega__eyebrow">{{ _('Plateforme') }}</span>
+                    <strong>{{ _('Coordination opérationnelle, gouvernance et pilotage dans un même cadre.') }}</strong>
+                    <p>{{ _('Explorez les surfaces principales de HelpChain et les scénarios de déploiement.') }}</p>
+                  </div>
+                  <div class="hc-nav-mega__links">
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.comment_ca_marche') }}"><strong>{{ _('Fonctionnement') }}</strong><span>{{ _('De la demande au suivi traçable.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.pour_les_structures') }}"><strong>{{ _('Structures') }}</strong><span>{{ _('Coordination pour CCAS, collectivités et associations.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.professionnels') }}"><strong>{{ _('Professionnels') }}</strong><span>{{ _('Espace de suivi pour acteurs habilités.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.offre') }}"><strong>{{ _('Offre') }}</strong><span>{{ _('Cadres pilote, professionnel et institutionnel.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.deploiement') }}"><strong>{{ _('Déploiement') }}</strong><span>{{ _('Mise en place progressive et gouvernance.') }}</span></a>
+                  </div>
+                </div>
+              </div>
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if ep.startswith('main.pilotage_indicateurs') else '' }}" href="{{ url_for('main.pilotage_indicateurs') }}" {% if ep.startswith('main.pilotage_indicateurs') %}aria-current="page"{% endif %}>
@@ -1661,6 +1659,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
     {% endif %}
     <script src="{{ url_for('static', filename='js/hc-core.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/public-mobile-nav.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/public-nav.js') }}?v=20260519-v3-nav" defer></script>
     <script src="{{ url_for('static', filename='js/admin-top-nav.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/lead-capture.js') }}?v=5" defer></script>
     <script src="{{ url_for('static', filename='js/hc-server-indicator.js') }}" defer></script>

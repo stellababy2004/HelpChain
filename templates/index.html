@@ -585,12 +585,13 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/public-v3.css') }}?v=20260519-v3-nav-surface">
   </head>
 
   <body class="hc-page-home" data-theme="light">
     <a href="#main-content" class="skip-link">{{ _('Skip to main content') }}</a>
 
-    <nav class="navbar-light main-nav" role="navigation" aria-label="{{ _('Main navigation') }}">
+    <nav class="navbar-light main-nav hc-public-nav-root" role="navigation" aria-label="{{ _('Main navigation') }}" data-hc-public-nav>
       <div class="container">
         <a class="navbar-brand-light" href="/">{{ _('HelpChain') }}</a>
 
@@ -608,7 +609,28 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="nav-menu ms-auto">
-            <li><a class="nav-link-light" href="#how-it-works">{{ _('Fonctionnement') }}</a></li>
+            <li><a class="nav-link-light is-active" href="{{ url_for('main.index') }}">{{ _('Accueil') }}</a></li>
+            <li class="hc-nav-mega" data-hc-mega>
+              <button class="hc-nav-mega__trigger" type="button" data-hc-mega-trigger aria-expanded="false" aria-controls="hcHomeMegaProduct">
+                {{ _('Produit') }}
+              </button>
+              <div class="hc-nav-mega__panel" id="hcHomeMegaProduct" data-hc-mega-panel hidden>
+                <div class="hc-nav-mega__grid">
+                  <div class="hc-nav-mega__feature">
+                    <span class="hc-nav-mega__eyebrow">{{ _('Plateforme') }}</span>
+                    <strong>{{ _('Coordination opérationnelle, gouvernance et pilotage dans un même cadre.') }}</strong>
+                    <p>{{ _('Parcourez les surfaces conçues pour les structures, les professionnels et le déploiement territorial.') }}</p>
+                  </div>
+                  <div class="hc-nav-mega__links">
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.comment_ca_marche') }}"><strong>{{ _('Fonctionnement') }}</strong><span>{{ _('De la demande au suivi traçable.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.pour_les_structures') }}"><strong>{{ _('Structures') }}</strong><span>{{ _('Coordination pour CCAS, collectivités et associations.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.professionnels') }}"><strong>{{ _('Professionnels') }}</strong><span>{{ _('Espace de suivi pour acteurs habilités.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.offre') }}"><strong>{{ _('Offre') }}</strong><span>{{ _('Cadres pilote, professionnel et institutionnel.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.deploiement') }}"><strong>{{ _('Déploiement') }}</strong><span>{{ _('Mise en place progressive et gouvernance.') }}</span></a>
+                  </div>
+                </div>
+              </div>
+            </li>
             <li><a class="nav-link-light" href="#pilotage">{{ _('Pilotage') }}</a></li>
             <li><a class="nav-link-light" href="{{ url_for('main.securite') }}">{{ _('Sécurité') }}</a></li>
             <li><a class="nav-link-light" href="{{ safe_url_for('main.faq') }}">{{ _('FAQ') }}</a></li>
@@ -823,5 +845,6 @@
     </main>
 
     <script src="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/public-nav.js') }}?v=20260519-v3-nav" defer></script>
   </body>
 </html>
