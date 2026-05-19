@@ -123,6 +123,7 @@
 
   function buildPopupHtml(point) {
     var meta = getPriorityMeta(point.priority);
+    var sourceLabel = point.intelligence_source === "observed" ? "Signal observe" : "Estimation territoriale";
     return [
       '<div class="hc-audience-popup">',
       '<div class="hc-audience-popup__eyebrow">' + escapeHtml(meta.popupEyebrow) + "</div>",
@@ -131,8 +132,8 @@
       '<span class="hc-audience-popup__dept">Departement ' + escapeHtml(formatDepartment(point)) + "</span>",
       "</div>",
       '<div class="hc-audience-popup__stats">',
-      "<span><strong>Demandes detectees</strong><em>" + escapeHtml(point.needs) + "</em></span>",
-      "<span><strong>Structures cibles</strong><em>" + escapeHtml(point.structures) + "</em></span>",
+      "<span><strong>" + escapeHtml(sourceLabel) + "</strong><em>" + escapeHtml(point.needs) + "</em></span>",
+      "<span><strong>Structures probables</strong><em>" + escapeHtml(point.structures) + "</em></span>",
       "<span><strong>Priorite</strong><em>" + escapeHtml(point.priority) + "</em></span>",
       "</div>",
       '<div class="hc-audience-popup__recommendation"><strong>Recommandation</strong><p>' + escapeHtml(point.recommendation) + "</p></div>",
@@ -304,7 +305,7 @@
   function buildFounderReason(row) {
     var estimatedDemand = getEstimatedDemand(row);
     if (row.priority === "Haute" && estimatedDemand >= 8) {
-      return "Signaux recurrents et demande estimee elevee.";
+      return "Signaux recurrents et estimation territoriale elevee.";
     }
     if (row.priority === "Moyenne") {
       return "Interet qualifie avec marge pour une relance structuree.";
@@ -730,7 +731,7 @@
     }
     return {
       level: "calm",
-      title: "Capacite disponible",
+      title: "Lecture territoriale stable",
       note: "Lecture territoriale stable sur les signaux actuellement cartographies."
     };
   }
@@ -798,10 +799,10 @@
     "audience-map-summary",
     [
       "<div class=\"audience-map-summary__eyebrow\">Ile-de-France</div>",
-      "<div class=\"audience-map-summary__title\">Territoires detectes: " + LOCATIONS.length + "</div>",
+      "<div class=\"audience-map-summary__title\">Territoires suivis: " + LOCATIONS.length + "</div>",
       "<div class=\"audience-map-summary__stats\">",
-      "<span><strong>" + totalNeeds + "</strong><em>Demandes estimees</em></span>",
-      "<span><strong>" + totalStructures + "</strong><em>Structures cibles</em></span>",
+      "<span><strong>" + totalNeeds + "</strong><em>Signaux / estimation</em></span>",
+      "<span><strong>" + totalStructures + "</strong><em>Structures probables</em></span>",
       "</div>",
       '<div class="audience-map-summary__status ' + summaryNarrative.level + '">',
       '<div class="audience-map-summary__status-label">Etat territorial</div>',
@@ -815,7 +816,7 @@
     "bottomleft",
     "audience-map-legend",
     [
-      '<div class="audience-map-legend__title">Priorite</div>',
+      '<div class="audience-map-legend__title">Analyse territoriale</div>',
       '<div class="audience-map-legend__item"><span class="audience-map-legend__dot audience-map-legend__dot--high"></span>Haute</div>',
       '<div class="audience-map-legend__item"><span class="audience-map-legend__dot audience-map-legend__dot--medium"></span>Moyenne</div>',
       '<div class="audience-map-legend__item"><span class="audience-map-legend__dot audience-map-legend__dot--watch"></span>Observation</div>',

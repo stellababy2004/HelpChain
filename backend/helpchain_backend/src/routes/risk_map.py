@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, render_template, request
-from flask_login import current_user
+from flask import Blueprint, jsonify, request
 from sqlalchemy import func, inspect
 
 from backend.extensions import db
 from backend.helpchain_backend.src.models import Case
 from backend.helpchain_backend.src.services.risk_prediction import predict_risk
 from backend.helpchain_backend.src.services.early_warning import detect_ews
-from .admin import admin_required, admin_required_404
 
 
 risk_map_bp = Blueprint("risk_map_api", __name__)
@@ -246,11 +244,5 @@ def cases_ews_api():
     return jsonify({"alerts": alerts})
 
 
-@risk_map_bp.get("/admin/risk-map")
-@admin_required
-def admin_risk_map():
-    admin_required_404()
-    structure_id = request.args.get("structure_id")
-    if not structure_id:
-        structure_id = getattr(current_user, "structure_id", None)
-    return render_template("admin/risk_map.html", structure_id=structure_id or "")
+# Unified Maps V1.2: /admin/risk-map is owned by admin.admin_risk_map.
+# This legacy blueprint keeps only the case map data APIs below /api/cases/*.

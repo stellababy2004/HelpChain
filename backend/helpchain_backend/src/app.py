@@ -1018,12 +1018,10 @@ def create_app(config_object=None) -> Flask:
     except Exception as e:
         app.logger.info("ops_api blueprint not loaded: %s", e)
 
-    try:
-        from backend.admin.risk_api import risk_api
-
-        app.register_blueprint(risk_api)
-    except Exception as e:
-        app.logger.info("risk_api blueprint not loaded: %s", e)
+    # Unified Maps V1.2: backend.admin.risk_api exposes legacy duplicates for
+    # /admin/risk-map and /admin/api/risk-map. The canonical admin/admin_map
+    # routes above own those paths; keep this blueprint out of registration.
+    # TODO: remove backend.admin.risk_api after confirming no external imports.
 
     # Legacy but real RBAC admin routes (roles/permissions/users management).
     # Templates already reference endpoints under the `admin_roles` namespace.

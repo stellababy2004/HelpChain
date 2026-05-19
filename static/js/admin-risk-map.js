@@ -68,6 +68,39 @@
     return "/admin/requests?" + params.toString();
   }
 
+  function scopedEndpoint(url, city) {
+    var selectedCity = String(city || "").trim();
+    if (!url || !selectedCity) {
+      return url;
+    }
+    var scopedUrl = new URL(url, window.location.origin);
+    scopedUrl.searchParams.set("city", selectedCity);
+    return scopedUrl.toString();
+  }
+
+  function normalizeCity(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
+  function sameCity(item, city) {
+    var selectedCity = normalizeCity(city);
+    if (!selectedCity) {
+      return true;
+    }
+    return normalizeCity(item && item.city) === selectedCity;
+  }
+
+  function isAvailableProfessional(item) {
+    var availability = String(item && item.availability || "").trim().toLowerCase();
+    return ["unavailable", "indisponible", "capped", "full", "sature"].indexOf(availability) === -1;
+  }
+
   function storeCityContext(city) {
     var selectedCity = city || currentCity();
     var currentUrl = new URL(window.location.href);
@@ -531,14 +564,14 @@
       if (!res.ok || !data || data.status !== "ok") {
         throw new Error("professionals_unavailable");
       }
-      var professionals = Array.isArray(data.professionals) ? data.professionals : [];
+      var professionals = (Array.isArray(data.professionals) ? data.professionals : [])
+        .filter(function (item) { return sameCity(item, currentCity()) && isAvailableProfessional(item); });
       if (professionalsLayer) {
         professionalsLayer.clearLayers();
       }
       var visibleMarkers = 0;
       var availableCount = professionals.filter(function (item) {
-        var availability = String(item && item.availability || "").toLowerCase();
-        return availability !== "indisponible";
+        return isAvailableProfessional(item);
       }).length;
       professionals.forEach(function (item) {
         var lat = Number(item && item.latitude);
@@ -664,7 +697,7 @@
     setState("loading", "Chargement de la cartographie territoriale de Boulogne-Billancourt...");
 
     try {
-      var res = await fetch(endpoint, {
+      var res = await fetch(scopedEndpoint(endpoint, currentCity()), {
         credentials: "same-origin",
         cache: "no-store",
       });

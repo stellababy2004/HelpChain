@@ -5162,7 +5162,7 @@ def ops_notifications_list():
 @admin_role_required("readonly", "ops", "superadmin")
 def admin_risk_map():
     admin_required_404()
-    zone_city = "Boulogne-Billancourt"
+    zone_city = (request.args.get("city") or "Boulogne-Billancourt").strip()
     active_case_count = 0
     critical_queue_count = 0
     try:
@@ -5173,7 +5173,7 @@ def admin_risk_map():
             func.lower(func.coalesce(Request.location_text, "")).like(city_like),
             func.lower(func.coalesce(Request.address_line, "")).like(city_like),
         )
-        active_statuses = ("new", "triaged", "assigned", "in_progress", "resolved")
+        active_statuses = ("new", "triaged", "assigned", "in_progress", "pending")
         base_query = (
             Case.query.join(Request, Case.request_id == Request.id)
             .join(scoped_ids_subq, Request.id == scoped_ids_subq.c.id)
@@ -8251,6 +8251,15 @@ def admin_api_professionals():
     return jsonify({"status": "ok", "professionals": professionals})
 
 
+@admin_bp.get("/api/professionals-map")
+@admin_required
+def admin_api_professionals_map_alias():
+    admin_required_404()
+    # Backward-compatible alias for the legacy risk_api endpoint. The canonical
+    # payload is /admin/api/professionals.
+    return redirect(url_for("admin.admin_api_professionals"), code=302)
+
+
 @admin_bp.route("/volunteers", methods=["GET"])
 @admin_required
 def admin_volunteers():
@@ -9934,6 +9943,7 @@ def _build_audience_map_context() -> dict:
                 "priority": point["priority"],
                 "recommendation": point["recommendation"],
                 "observed_signals": observed,
+                "intelligence_source": "observed" if observed else "territorial_estimation",
             }
         )
     context["map_locations"] = business_points

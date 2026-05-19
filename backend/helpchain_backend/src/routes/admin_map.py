@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from flask import Blueprint, current_app, jsonify, render_template
+from flask import Blueprint, current_app, jsonify, render_template, request
 from flask_login import current_user
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import joinedload
 
 from backend.extensions import db
@@ -22,6 +22,9 @@ from .admin import (
 
 
 admin_map_bp = Blueprint("admin_map_api", __name__, url_prefix="/admin")
+
+_ACTIVE_CASE_STATUSES = {"new", "open", "triaged", "assigned", "in_progress", "pending"}
+_ACTIVE_REQUEST_STATUSES = {"new", "open", "pending", "in_progress", "assigned", "contacted", "triaged"}
 
 
 def _safe_iso(dt) -> str | None:
@@ -60,6 +63,18 @@ def _scope_case_query(query):
         if current_structure is not None:
             return query.filter(Case.structure_id == int(current_structure))
         return query
+
+
+def _city_filter_expr(city: str | None):
+    value = (city or "").strip().lower()
+    if not value:
+        return None
+    like = f"%{value}%"
+    return or_(
+        func.lower(func.coalesce(Request.city, "")).like(like),
+        func.lower(func.coalesce(Request.location_text, "")).like(like),
+        func.lower(func.coalesce(Request.address_line, "")).like(like),
+    )
 
 
 def _serialize_risk_map_item(case: Case) -> dict[str, object]:
@@ -139,7 +154,7 @@ def _serialize_request_risk_map_item(req: Request) -> dict[str, object]:
     }
 
 
-def _load_request_only_risk_items(limit: int = 1000) -> list[dict[str, object]]:
+def _load_request_only_risk_items(limit: int = 1000, city: str | None = None) -> list[dict[str, object]]:
     query = (
         _scope_requests(
             Request.query.outerjoin(Case, Case.request_id == Request.id)
@@ -147,10 +162,14 @@ def _load_request_only_risk_items(limit: int = 1000) -> list[dict[str, object]]:
             .filter(Request.latitude.isnot(None), Request.longitude.isnot(None))
             .filter(Request.latitude.between(-90, 90))
             .filter(Request.longitude.between(-180, 180))
+            .filter(func.lower(func.coalesce(Request.status, "")).in_(tuple(_ACTIVE_REQUEST_STATUSES)))
             .order_by(Request.updated_at.desc(), Request.id.desc())
         )
         .options(joinedload(Request.structure))
     )
+    city_filter = _city_filter_expr(city)
+    if city_filter is not None:
+        query = query.filter(city_filter)
     return [
         item
         for item in (_serialize_request_risk_map_item(req) for req in query.limit(limit).all())
@@ -190,9 +209,11 @@ def _load_cases_with_geo():
 def admin_risk_map_api():
     admin_required_404()
     try:
+        selected_city = (request.args.get("city") or "").strip()
         query = (
             Case.query.options(joinedload(Case.request))
             .join(Request, Case.request_id == Request.id)
+            .filter(func.lower(func.coalesce(Case.status, "")).in_(tuple(_ACTIVE_CASE_STATUSES)))
             .filter(
                 or_(
                     (
@@ -211,11 +232,14 @@ def admin_risk_map_api():
             )
             .order_by(Case.risk_score.desc(), Case.updated_at.desc(), Case.id.desc())
         )
+        city_filter = _city_filter_expr(selected_city)
+        if city_filter is not None:
+            query = query.filter(city_filter)
         cases = _scope_case_query(query).limit(1000).all()
         case_items = [
             item for item in (_serialize_risk_map_item(case) for case in cases) if item
         ]
-        request_items = _load_request_only_risk_items(limit=1000)
+        request_items = _load_request_only_risk_items(limit=1000, city=selected_city)
         items = sorted(
             case_items + request_items,
             key=lambda item: (

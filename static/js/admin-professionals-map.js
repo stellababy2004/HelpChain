@@ -33,6 +33,11 @@
     icon.classList.toggle(state, Boolean(enabled));
   }
 
+  function isAvailableProfessional(item) {
+    var availability = String(item && item.availability || "").trim().toLowerCase();
+    return ["unavailable", "indisponible", "capped", "full", "sature"].indexOf(availability) === -1;
+  }
+
   function ensureCommandPanelStatus() {
     var panel = document.querySelector(".hc-map-command-panel--coverage");
     if (!panel) return null;
@@ -42,7 +47,7 @@
     wrapper.className = "hc-map-command-panel__status hc-pressure-calm";
     wrapper.innerHTML =
       '<div class="hc-map-command-panel__status-label">Etat territorial</div>' +
-      '<div class="hc-map-command-panel__status-value">Capacite disponible</div>' +
+      '<div class="hc-map-command-panel__status-value">Couverture visible</div>' +
       '<div class="hc-map-command-panel__status-note">Lecture initiale de la couverture en cours.</div>';
     panel.appendChild(wrapper);
     return wrapper;
@@ -55,10 +60,10 @@
     var queueNote = document.querySelector(".hc-risk-map-queue-note");
     var kpis = document.querySelectorAll(".hc-risk-map-kpi");
     var level = "calm";
-    var value = "Capacite disponible";
+    var value = "Couverture visible";
     var note = listCount > 0
       ? listCount + (listCount > 1 ? " intervenants visibles sur la carte." : " intervenant visible sur la carte.")
-      : "Aucune capacite cartographiee disponible pour le moment.";
+      : "Aucun intervenant cartographie disponible pour le moment.";
 
     if (listCount === 0) {
       level = "watch";
@@ -73,7 +78,7 @@
       note = "La ressource terrain se concentre majoritairement sur " + topCity + ".";
     } else if (dominantProfessionCount >= Math.max(3, Math.ceil(listCount * 0.5))) {
       level = "watch";
-      value = "Capacite specialisee";
+      value = "Couverture specialisee";
       note = "La couverture est surtout portee par le metier " + dominantProfession + ".";
     }
 
@@ -222,7 +227,7 @@
         return;
       }
 
-      var data = payload.professionals;
+      var data = payload.professionals.filter(isAvailableProfessional);
       updateKpis(data);
       layer.clearLayers();
       bounds.length = 0;
