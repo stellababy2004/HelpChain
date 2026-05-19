@@ -2727,3 +2727,68 @@ body.hc-admin-audience-page .audience-founder-row.is-active {
   display: none !important;
 }
 
+/* Unified Map Surface V1 alignment */
+body.hc-admin-audience-page .hc-map-page {
+  gap: 0.6rem;
+}
+
+body.hc-admin-audience-page .hc-map-stage {
+  border-color: rgba(177, 194, 216, 0.72);
+  border-radius: 22px;
+  box-shadow: 0 16px 34px rgba(15, 39, 64, 0.07);
+}
+
+body.hc-admin-audience-page .hc-map-surface {
+  border-color: rgba(146, 167, 193, 0.5);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(199, 211, 225, 0.88), rgba(185, 198, 214, 0.94)),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.12), transparent 32%);
+  box-shadow: 0 24px 48px rgba(15, 39, 64, 0.13);
+}
+
+body.hc-admin-audience-page #audienceMap.hc-map-leaflet,
+body.hc-admin-audience-page .hc-map-leaflet.audience-map-canvas {
+  height: clamp(36rem, 70vh, 52rem) !important;
+  min-height: clamp(36rem, 70vh, 52rem) !important;
+  max-height: none !important;
+  border-radius: 18px !important;
+}
+
+body.hc-admin-audience-page .audience-map-summary,
+body.hc-admin-audience-page .audience-map-legend {
+  border-color: rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(16, 25, 41, 0.78), rgba(19, 34, 54, 0.64)),
+    rgba(16, 25, 41, 0.72);
+  box-shadow: 0 18px 34px rgba(7, 12, 22, 0.22);
+}
+
+body.hc-admin-audience-page .audience-map-legend {
+  border-radius: 16px;
+}
+
+body.hc-admin-audience-page .audience-map-summary__title,
+body.hc-admin-audience-page .audience-map-summary__stats strong {
+  color: #ffffff;
+}
+
+body.hc-admin-audience-page .audience-map-summary__stats span {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+body.hc-admin-audience-page .audience-map-summary__stats em {
+  color: rgba(226, 235, 244, 0.78);
+}
+
+@media (max-width: 1180px) {
+  body.hc-admin-audience-page #audienceMap.hc-map-leaflet,
+  body.hc-admin-audience-page .hc-map-leaflet.audience-map-canvas {
+    height: clamp(30rem, 64vh, 42rem) !important;
+    min-height: clamp(30rem, 64vh, 42rem) !important;
+  }
+}
+

@@ -5,6 +5,7 @@
 
 {% block admin_workspace_css %}
   {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/hc-unified-maps.css') }}">
   <link
     rel="stylesheet"
     href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}"
@@ -13,7 +14,7 @@
 
 {% block admin_content %}
 <div
-  class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--risk-map"
+  class="hc-admin-wrap hc-admin-wrap--wide hc-map-page hc-map-page--risk hc-admin-wrap--risk-map"
   data-risk-map-root
   data-endpoint="{{ url_for('admin_map_api.admin_risk_map_api') }}"
   data-professionals-endpoint="{{ url_for('admin.admin_api_professionals') }}"
@@ -82,7 +83,7 @@
     </div>
   </div>
 
-  <div class="hc-card hc-risk-map-card">
+  <div class="hc-card hc-map-stage hc-risk-map-card">
     <div class="hc-card__header">
       <div class="hc-risk-map-header">
         <div class="hc-risk-map-header__main">
@@ -99,7 +100,7 @@
             </div>
           </div>
         </div>
-        <div class="hc-risk-map-legend" aria-label="Legende de la carte">
+        <div class="hc-map-legend hc-risk-map-legend" aria-label="Legende de la carte">
           <span class="hc-risk-map-legend__item"><span class="hc-risk-map-legend__dot hc-risk-map-legend__dot--critical"></span>Critique</span>
           <span class="hc-risk-map-legend__item"><span class="hc-risk-map-legend__dot hc-risk-map-legend__dot--attention"></span>Attention</span>
           <span class="hc-risk-map-legend__item"><span class="hc-risk-map-legend__dot hc-risk-map-legend__dot--standard"></span>Standard</span>
@@ -107,8 +108,8 @@
       </div>
     </div>
 
-    <div class="hc-risk-map-shell">
-      <div class="hc-map-command-panel hc-map-command-panel--risk" aria-label="Lecture instantanee">
+    <div class="hc-map-surface hc-risk-map-shell">
+      <div class="hc-map-overlay hc-map-overlay--dark hc-map-command-panel hc-map-command-panel--risk" aria-label="Lecture instantanee">
         <div class="hc-map-command-panel__eyebrow">Vue instantanee</div>
         <div class="hc-map-command-panel__title">Lecture territoriale</div>
         <div class="hc-map-command-panel__copy">Croisez criticite, couverture visible et relance recente avant ouverture de la file operateur.</div>
@@ -123,8 +124,8 @@
           </span>
         </div>
       </div>
-      <div id="riskMapCanvas" class="hc-risk-map-canvas" aria-label="Carte des risques territoriaux"></div>
-      <div class="hc-risk-map-maphint" id="riskMapMapHint" aria-live="polite">Intervenants disponibles sur la zone</div>
+      <div id="riskMapCanvas" class="hc-map-leaflet hc-risk-map-canvas" aria-label="Carte des risques territoriaux"></div>
+      <div class="hc-map-status-pill hc-risk-map-maphint" id="riskMapMapHint" aria-live="polite">Intervenants disponibles sur la zone</div>
       <div class="hc-risk-map-empty d-none" id="riskMapEmptyState" aria-live="polite">
         <div class="hc-risk-map-empty__card">
           <div class="hc-risk-map-empty__title">Aucune situation geolocalisee pour le moment</div>
@@ -138,7 +139,7 @@
       </div>
     </div>
 
-    <div class="hc-risk-map-actionstrip" aria-label="Actions sur la zone">
+    <div class="hc-map-action-bar hc-risk-map-actionstrip" aria-label="Actions sur la zone">
       <div class="hc-risk-map-actionstrip__content">
         <div class="hc-risk-map-actionstrip__title">Actions sur la zone</div>
         <div class="hc-risk-map-actionstrip__meta" id="riskMapActionMeta">{{ zone_city or 'Boulogne-Billancourt' }}</div>

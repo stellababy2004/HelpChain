@@ -4,6 +4,7 @@
 
 {% block admin_workspace_css %}
   {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/hc-unified-maps.css') }}">
   <link
     rel="stylesheet"
     href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}"
@@ -11,7 +12,7 @@
 {% endblock %}
 
 {% block admin_content %}
-<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-wrap--risk-map">
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-map-page hc-map-page--professionals hc-admin-wrap--risk-map">
   <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
     <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
     <span>/</span>
@@ -65,7 +66,7 @@
     </div>
   </div>
 
-  <div class="hc-card hc-risk-map-card">
+  <div class="hc-card hc-map-stage hc-risk-map-card">
     <div class="hc-card__header">
       <div class="hc-risk-map-header">
         <div class="hc-risk-map-header__main">
@@ -85,8 +86,8 @@
       </div>
     </div>
 
-    <div class="hc-risk-map-shell">
-      <div class="hc-map-command-panel hc-map-command-panel--coverage" aria-label="Lecture instantanee">
+    <div class="hc-map-surface hc-risk-map-shell">
+      <div class="hc-map-overlay hc-map-overlay--dark hc-map-command-panel hc-map-command-panel--coverage" aria-label="Lecture instantanee">
         <div class="hc-map-command-panel__eyebrow">Vue instantanee</div>
         <div class="hc-map-command-panel__title">Couverture disponible</div>
         <div class="hc-map-command-panel__copy">Reperez les zones visibles, la densite de couverture et la ressource dominante avant attribution.</div>
@@ -101,10 +102,10 @@
           </span>
         </div>
       </div>
-      <div id="professionalsMap" class="hc-risk-map-canvas" role="region" aria-label="Carte des intervenants"></div>
+      <div id="professionalsMap" class="hc-map-leaflet hc-risk-map-canvas" role="region" aria-label="Carte des intervenants"></div>
     </div>
 
-    <div class="hc-risk-map-actionstrip" aria-label="Actions sur la couverture">
+    <div class="hc-map-action-bar hc-risk-map-actionstrip" aria-label="Actions sur la couverture">
       <div class="hc-risk-map-actionstrip__content">
         <div class="hc-risk-map-actionstrip__title">Actions sur la zone</div>
         <div class="hc-risk-map-actionstrip__meta">Boulogne-Billancourt</div>

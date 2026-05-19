@@ -3,6 +3,7 @@
 {% block admin_body_class %} hc-admin-audience-page hc-density-compact{% endblock %}
 
 {% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/hc-unified-maps.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-audience-map.css') }}">
   <link
     rel="stylesheet"
@@ -12,7 +13,7 @@
 
 {% block admin_content %}
 <div
-  class="hc-admin-wrap hc-admin-shell hc-admin-shell--wide"
+  class="hc-admin-wrap hc-admin-shell hc-admin-shell--wide hc-map-page hc-map-page--audience"
   data-audience-map-root
   data-default-lat="48.8566"
   data-default-lng="2.3522"
@@ -84,14 +85,14 @@
 
   <div class="row g-3">
     <div class="col-12 col-xl-8">
-      <div class="hc-card h-100">
+      <div class="hc-card h-100 hc-map-stage">
         <div class="hc-card__section hc-card__section--header">
           <strong>Lecture opérationnelle territoriale Île-de-France</strong>
           <span class="hc-muted small">Carte opérationnelle interactive, basée sur des tuiles légères et structurée pour la coordination territoriale.</span>
         </div>
         <div class="p-3">
-          <div class="hc-audience-mapFrame audience-map-shell">
-            <div id="audienceMap" class="hc-audience-mapCanvas audience-map-canvas" aria-label="Carte territoriale audience Ile-de-France"></div>
+          <div class="hc-map-surface hc-audience-mapFrame audience-map-shell">
+            <div id="audienceMap" class="hc-map-leaflet hc-audience-mapCanvas audience-map-canvas" aria-label="Carte territoriale audience Ile-de-France"></div>
           </div>
 
           {% if not audience.analytics_available %}
