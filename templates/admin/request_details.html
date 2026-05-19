@@ -132,6 +132,9 @@
             <button type="submit" class="btn btn-outline-primary btn-sm">Open Case</button>
           </form>
         {% endif %}
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_request_refer', req_id=req.id) }}">
+          Orienter vers partenaire
+        </a>
       </div>
       <script>
         (function () {

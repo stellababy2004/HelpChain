@@ -13225,6 +13225,7 @@ def admin_pro_access_reject(pro_id: int):
 
 
 from . import admin_requests as _admin_requests  # noqa: F401
+from . import admin_referrals as _admin_referrals  # noqa: F401
 from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
 from . import admin_cases as _admin_cases  # noqa: F401
 from . import admin_notifications as _admin_notifications  # noqa: F401

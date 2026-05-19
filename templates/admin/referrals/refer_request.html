@@ -1,0 +1,83 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Orienter vers une structure partenaire | HelpChain{% endblock %}
+
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-referrals.css') }}">
+{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-referrals">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">Demande #{{ req.id }}</a>
+    <span>/</span>
+    <span>Orienter</span>
+  </nav>
+
+  <header class="hc-admin-pagehead">
+    <div>
+      <p class="hc-admin-kicker">Orientations partenaires</p>
+      <h1>Orienter vers une structure partenaire</h1>
+      <p class="hc-muted">Demande #{{ req.id }} · {{ req.title }}</p>
+    </div>
+  </header>
+
+  <section class="hc-card">
+    {% if connections %}
+      <form method="post" action="{{ url_for('admin.admin_request_refer_submit', req_id=req.id) }}" class="hc-referral-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div>
+          <label for="to_structure_id" class="form-label">Structure destinataire</label>
+          <select id="to_structure_id" name="to_structure_id" class="form-select" required>
+            {% for option in connections %}
+              <option value="{{ option.target_structure_id }}">{{ option.target_structure.name if option.target_structure else ("Structure #" ~ option.target_structure_id) }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label for="reason" class="form-label">Motif d’orientation</label>
+          <input id="reason" name="reason" class="form-control" maxlength="255" required>
+        </div>
+
+        <div>
+          <label for="message" class="form-label">Résumé partagé</label>
+          <textarea id="message" name="message" class="form-control" rows="5">{{ req.description or req.message or "" }}</textarea>
+        </div>
+
+        <fieldset class="hc-referral-fieldset">
+          <legend>Périmètre de partage</legend>
+          {% for key, value in default_scope.items() %}
+            <label class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="{{ key }}"
+                value="1"
+                {% if value %}checked{% endif %}
+                {% if key in ["share_documents", "share_internal_notes"] %}disabled{% endif %}
+              >
+              <span class="form-check-label">{{ key }}</span>
+            </label>
+          {% endfor %}
+        </fieldset>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="submit" class="btn btn-primary">Orienter vers partenaire</button>
+          <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">Annuler</a>
+        </div>
+      </form>
+    {% else %}
+      <p class="mb-3">Aucune structure partenaire active n’est configurée pour cette structure.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary" href="{{ url_for('admin.admin_referral_partner_new') }}">Configurer une structure partenaire</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_referral_partners') }}">Structures partenaires</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_request_details', req_id=req.id) }}">Retour à la demande</a>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

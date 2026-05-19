@@ -25,6 +25,7 @@
     {% set is_requests_active = current_path.startswith('/admin/requests') %}
     {% set is_cases_active = current_path.startswith('/ops/cases') or current_path.startswith('/admin/cases') %}
     {% set is_notifications_active = current_path.startswith('/ops/notifications') or current_path.startswith('/admin/notifications') %}
+    {% set is_referrals_active = current_path.startswith('/admin/referrals') or (current_path.startswith('/admin/requests') and current_path.endswith('/refer')) %}
     {% set is_leads_active = current_path.startswith('/admin/professional-leads') %}
     {% set is_revenue_active = current_path.startswith('/admin/revenue') %}
     {% set is_conversion_active = current_path.startswith('/admin/conversion-dashboard') %}
@@ -49,6 +50,7 @@
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_workspace_active else '' }}" href="{{ url_for('ops.ops_workspace') }}" {% if is_workspace_active %}aria-current="page"{% endif %}>Workspace</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_requests_active else '' }}" href="{{ url_for('admin.admin_requests') }}" {% if is_requests_active %}aria-current="page"{% endif %}>Demandes</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_cases_active else '' }}" href="{{ cases_href }}" {% if is_cases_active %}aria-current="page"{% endif %}>Cas</a>
+          <a class="hc-admin-shellnav__link {{ 'is-active' if is_referrals_active else '' }}" href="{{ url_for('admin.admin_referrals_index') }}" {% if is_referrals_active %}aria-current="page"{% endif %}>Orientations partenaires</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_notifications_active else '' }}" href="{{ notifications_href }}" {% if is_notifications_active %}aria-current="page"{% endif %}>Notifications</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_leads_active else '' }}" href="{{ url_for('admin.admin_professional_leads') }}" {% if is_leads_active %}aria-current="page"{% endif %}>Leads</a>
           <a class="hc-admin-shellnav__link {{ 'is-active' if is_revenue_active else '' }}" href="{{ url_for('admin.admin_revenue') }}" {% if is_revenue_active %}aria-current="page"{% endif %}>Revenue</a>

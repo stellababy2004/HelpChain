@@ -957,6 +957,105 @@ class IntegrationConnector(db.Model):
     )
 
 
+def default_referral_shared_scope() -> dict:
+    return {
+        "share_identity": False,
+        "share_contact": False,
+        "share_category": True,
+        "share_priority": True,
+        "share_summary": True,
+        "share_documents": False,
+        "share_internal_notes": False,
+        "share_risk_level": True,
+    }
+
+
+class OrganizationConnection(db.Model):
+    __tablename__ = "organization_connections"
+
+    id = Column(Integer, primary_key=True)
+    source_structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    target_structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="pending", server_default="pending", index=True)
+    connection_type = Column(String(32), nullable=False, default="referral", server_default="referral", index=True)
+    permissions_json = Column(db.JSON, nullable=True)
+    created_by_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, index=True)
+    accepted_at = Column(DateTime(timezone=True), nullable=True)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+
+    source_structure = relationship("Structure", foreign_keys=[source_structure_id], lazy="joined")
+    target_structure = relationship("Structure", foreign_keys=[target_structure_id], lazy="joined")
+    created_by_admin = relationship("AdminUser", foreign_keys=[created_by_admin_id], lazy="joined")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "source_structure_id",
+            "target_structure_id",
+            "connection_type",
+            name="uq_org_connections_source_target_type",
+        ),
+        Index("ix_org_connections_source_status", "source_structure_id", "status"),
+        Index("ix_org_connections_target_status", "target_structure_id", "status"),
+    )
+
+
+class CaseReferral(db.Model):
+    __tablename__ = "case_referrals"
+
+    id = Column(Integer, primary_key=True)
+    case_id = Column(Integer, ForeignKey("cases.id"), nullable=True, index=True)
+    request_id = Column(Integer, ForeignKey("requests.id"), nullable=True, index=True)
+    from_structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    to_structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    created_by_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=False, index=True)
+    status = Column(String(32), nullable=False, default="sent", server_default="sent", index=True)
+    reason = Column(String(255), nullable=True)
+    message = Column(Text, nullable=True)
+    shared_scope_json = Column(db.JSON, nullable=False, default=default_referral_shared_scope)
+    accepted_by_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    accepted_at = Column(DateTime(timezone=True), nullable=True)
+    refused_at = Column(DateTime(timezone=True), nullable=True)
+    refusal_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, onupdate=utc_now)
+
+    case = relationship("Case", lazy="joined")
+    request = relationship("Request", lazy="joined")
+    from_structure = relationship("Structure", foreign_keys=[from_structure_id], lazy="joined")
+    to_structure = relationship("Structure", foreign_keys=[to_structure_id], lazy="joined")
+    created_by_admin = relationship("AdminUser", foreign_keys=[created_by_admin_id], lazy="joined")
+    accepted_by_admin = relationship("AdminUser", foreign_keys=[accepted_by_admin_id], lazy="joined")
+    activities = relationship(
+        "ReferralActivity",
+        back_populates="referral",
+        cascade="all, delete-orphan",
+        order_by="ReferralActivity.created_at.desc()",
+        lazy="select",
+    )
+
+    __table_args__ = (
+        Index("ix_case_referrals_from_status_created", "from_structure_id", "status", "created_at"),
+        Index("ix_case_referrals_to_status_created", "to_structure_id", "status", "created_at"),
+    )
+
+
+class ReferralActivity(db.Model):
+    __tablename__ = "referral_activities"
+
+    id = Column(Integer, primary_key=True)
+    referral_id = Column(Integer, ForeignKey("case_referrals.id"), nullable=False, index=True)
+    actor_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    actor_structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True, index=True)
+    action = Column(String(32), nullable=False, index=True)
+    metadata_json = Column(db.JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=utc_now, index=True)
+
+    referral = relationship("CaseReferral", back_populates="activities", lazy="joined")
+    actor_admin = relationship("AdminUser", foreign_keys=[actor_admin_id], lazy="joined")
+    actor_structure = relationship("Structure", foreign_keys=[actor_structure_id], lazy="joined")
+
+
 def get_default_structure():
     """Sprint-1 helper: cached lookup of the bootstrap tenant."""
     cached = getattr(g, "_hc_default_structure", None)

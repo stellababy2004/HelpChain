@@ -1,0 +1,58 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Ajouter un partenaire | HelpChain{% endblock %}
+
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-referrals.css') }}">
+{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-referrals">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_referral_partners') }}">Partenaires</a>
+    <span>/</span>
+    <span>Ajouter un partenaire</span>
+  </nav>
+
+  <header class="hc-admin-pagehead">
+    <div>
+      <p class="hc-admin-kicker">Demande de connexion partenaire</p>
+      <h1>Ajouter un partenaire</h1>
+      <p class="hc-muted">Créer une demande de connexion avec une structure existante.</p>
+    </div>
+  </header>
+
+  <section class="hc-card">
+    <form method="post" action="{{ url_for('admin.admin_referral_partner_create') }}" class="hc-referral-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <label for="target_structure_id" class="form-label">Structures partenaires</label>
+        <select id="target_structure_id" name="target_structure_id" class="form-select" required>
+          <option value="">Sélectionner une structure</option>
+          {% for structure in structures %}
+            <option value="{{ structure.id }}">{{ structure.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <fieldset class="hc-referral-fieldset">
+        <legend>Autoriser l’orientation</legend>
+        {% for key, value in default_permissions.items() %}
+          <label class="form-check">
+            <input class="form-check-input" type="checkbox" checked disabled>
+            <span class="form-check-label">{{ key }}: {{ "oui" if value else "non" }}</span>
+          </label>
+        {% endfor %}
+      </fieldset>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="submit" class="btn btn-primary">Ajouter un partenaire</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('admin.admin_referral_partners') }}">Annuler</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Orientations partenaires | HelpChain{% endblock %}
+
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-referrals.css') }}">
+{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-referrals">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <span>Orientations partenaires</span>
+  </nav>
+
+  <header class="hc-admin-pagehead">
+    <div>
+      <p class="hc-admin-kicker">Coordination inter-structures</p>
+      <h1>Orientations partenaires</h1>
+      <p class="hc-muted">Suivi des orientations reçues et envoyées entre structures partenaires.</p>
+    </div>
+  </header>
+
+  <section class="hc-referral-tabs" aria-label="Filtres orientations">
+    <a class="btn btn-sm {{ 'btn-primary' if active_tab == 'all' else 'btn-outline-secondary' }}" href="{{ url_for('admin.admin_referrals_index') }}">Vue globale</a>
+    <a class="btn btn-sm {{ 'btn-primary' if active_tab == 'received' else 'btn-outline-secondary' }}" href="{{ url_for('admin.admin_referrals_received') }}">Reçues <span class="badge text-bg-light">{{ received_count }}</span></a>
+    <a class="btn btn-sm {{ 'btn-primary' if active_tab == 'sent' else 'btn-outline-secondary' }}" href="{{ url_for('admin.admin_referrals_sent') }}">Envoyées <span class="badge text-bg-light">{{ sent_count }}</span></a>
+    <a class="btn btn-sm {{ 'btn-primary' if active_tab == 'partners' else 'btn-outline-secondary' }}" href="{{ url_for('admin.admin_referral_partners') }}">Partenaires</a>
+  </section>
+
+  <section class="hc-card hc-referral-list">
+    <div class="table-responsive">
+      <table class="table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Orientation</th>
+            <th>Structure destinataire</th>
+            <th>Origine</th>
+            <th>Statut</th>
+            <th>Créée le</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for referral in referrals %}
+            <tr>
+              <td>
+                <strong>#{{ referral.id }}</strong>
+                <div class="text-muted small">{{ referral.reason or "Motif non renseigné" }}</div>
+              </td>
+              <td>{{ referral.to_structure.name if referral.to_structure else ("#" ~ referral.to_structure_id) }}</td>
+              <td>{{ referral.from_structure.name if referral.from_structure else ("#" ~ referral.from_structure_id) }}</td>
+              <td><span class="badge text-bg-secondary">{{ referral.status }}</span></td>
+              <td>{{ referral.created_at|format_datetime_fr }}</td>
+              <td class="text-end">
+                <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_referral_detail', referral_id=referral.id) }}">Voir</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">Aucune orientation partenaire.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

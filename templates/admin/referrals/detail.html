@@ -1,0 +1,97 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Orientation partenaire #{{ referral.id }} | HelpChain{% endblock %}
+
+{% block admin_workspace_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-referrals.css') }}">
+{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-referrals">
+  <nav class="hc-admin-breadcrumb" aria-label="Fil d'Ariane">
+    <a href="{{ url_for('admin.admin_home') }}">Accueil</a>
+    <span>/</span>
+    <a href="{{ url_for('admin.admin_referrals_index') }}">Orientations partenaires</a>
+    <span>/</span>
+    <span>#{{ referral.id }}</span>
+  </nav>
+
+  <header class="hc-admin-pagehead">
+    <div>
+      <p class="hc-admin-kicker">Traçabilité</p>
+      <h1>Orientation partenaire #{{ referral.id }}</h1>
+      <p class="hc-muted">{{ referral.from_structure.name if referral.from_structure else ("Structure #" ~ referral.from_structure_id) }} vers {{ referral.to_structure.name if referral.to_structure else ("structure #" ~ referral.to_structure_id) }}</p>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_referrals_index') }}">Retour</a>
+  </header>
+
+  <div class="hc-referral-detail-grid">
+    <section class="hc-card">
+      <h2>Résumé partagé</h2>
+      <dl class="hc-referral-definition">
+        <dt>Statut</dt>
+        <dd><span class="badge text-bg-secondary">{{ referral.status }}</span></dd>
+        <dt>Structure destinataire</dt>
+        <dd>{{ referral.to_structure.name if referral.to_structure else ("#" ~ referral.to_structure_id) }}</dd>
+        <dt>Motif d’orientation</dt>
+        <dd>{{ referral.reason or "—" }}</dd>
+        <dt>Résumé partagé</dt>
+        <dd>{{ referral.message or "—" }}</dd>
+        {% if referral.request_id %}
+          <dt>Demande source</dt>
+          <dd><a href="{{ url_for('admin.admin_request_details', req_id=referral.request_id) }}">#{{ referral.request_id }}</a></dd>
+        {% endif %}
+      </dl>
+    </section>
+
+    <section class="hc-card">
+      <h2>Périmètre de partage</h2>
+      <ul class="hc-referral-scope">
+        {% for key, value in (referral.shared_scope_json or {}).items() %}
+          <li>
+            <span>{{ key }}</span>
+            <strong>{{ "Oui" if value else "Non" }}</strong>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="hc-card">
+      <h2>Actions</h2>
+      {% if can_accept_or_refuse and referral.status in ["sent", "received"] %}
+        <form method="post" action="{{ url_for('admin.admin_referral_accept', referral_id=referral.id) }}" class="hc-referral-action">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-primary btn-sm">Accepter</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.admin_referral_refuse', referral_id=referral.id) }}" class="hc-referral-action">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="refusal_reason" class="form-label">Motif de refus</label>
+          <textarea id="refusal_reason" name="refusal_reason" class="form-control" rows="3"></textarea>
+          <button type="submit" class="btn btn-outline-danger btn-sm mt-2">Refuser</button>
+        </form>
+      {% elif can_cancel %}
+        <form method="post" action="{{ url_for('admin.admin_referral_cancel', referral_id=referral.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-outline-danger btn-sm">Annuler</button>
+        </form>
+      {% else %}
+        <p class="text-muted mb-0">Aucune action disponible pour votre structure.</p>
+      {% endif %}
+    </section>
+
+    <section class="hc-card hc-referral-trace">
+      <h2>Traçabilité</h2>
+      <ol>
+        {% for activity in referral.activities %}
+          <li>
+            <strong>{{ activity.action }}</strong>
+            <span>{{ activity.created_at|format_datetime_fr }}</span>
+          </li>
+        {% else %}
+          <li>Aucune activité enregistrée.</li>
+        {% endfor %}
+      </ol>
+    </section>
+  </div>
+</div>
+{% endblock %}
