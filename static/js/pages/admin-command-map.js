@@ -26,7 +26,8 @@
       alerts: null,
       pressure: null
     },
-    selectedItem: null
+    selectedItem: null,
+    focusMode: false
   };
 
   var drawerRoot = document.getElementById("commandMapDrawer");
@@ -44,7 +45,8 @@
     open: document.getElementById("commandMapDrawerOpen"),
     clear: document.getElementById("commandMapDrawerClear"),
     actions: drawerRoot ? drawerRoot.querySelector(".hc-command-map-drawer__actions") : null,
-    status: document.getElementById("commandMapDrawerStatus")
+    status: document.getElementById("commandMapDrawerStatus"),
+    whyList: document.getElementById("commandMapWhyList")
   };
 
   var overlay = {
@@ -68,6 +70,7 @@
   var liveNarrativeEl = document.getElementById("commandMapLiveNarrative");
   var visibleCountEl = document.getElementById("commandMapVisibleCount");
   var focusCityEl = document.getElementById("commandMapFocusCity");
+  var focusToggleButton = document.getElementById("commandMapFocusToggle");
   var urgentCountEl = document.getElementById("commandMapUrgentCount");
   var staleCountEl = document.getElementById("commandMapStaleCount");
   var followupCountEl = document.getElementById("commandMapFollowupCount");
@@ -492,7 +495,7 @@
     if (emptyState.root) {
       emptyState.root.hidden = false;
     }
-    setText(emptyState.title, title || "Donnes de carte indisponibles");
+    setText(emptyState.title, title || "Aucun signal visible avec les filtres actuels.");
     setText(emptyState.text, message || "");
   }
 
@@ -565,13 +568,33 @@
     return true;
   }
 
+  function isOperationalAlert(item) {
+    var kind = normalize(item && item.kind);
+    var marker = normalize(item && item.marker_type);
+    return kind === "alert" || kind === "alerts" || marker.indexOf("alert") !== -1 || marker.indexOf("relance") !== -1;
+  }
+
+  function isPriorityItem(item, layerName) {
+    if (!item) return false;
+    var risk = normalize(item.risk_level || item.priority_key);
+    var status = normalize(item.status_key);
+    var marker = normalize(item.marker_type);
+    if (risk === "critical" || risk === "urgent" || risk === "elevated") return true;
+    if (item.is_stale || item.is_blocked) return true;
+    if (item.has_assignment === false || item.is_unassigned || status.indexOf("unassigned") !== -1) return true;
+    if (layerName === "pressure" && (risk === "watch" || risk === "elevated" || risk === "critical")) return true;
+    if (layerName === "alerts" || isOperationalAlert(item)) return true;
+    if (marker.indexOf("overdue") !== -1 || marker.indexOf("stale") !== -1) return true;
+    return false;
+  }
+
   function visibleLayerItems(layerName) {
     if (!state.payload || !state.payload.layers) return [];
     var toggles = currentLayerState();
     if (!toggles[layerName]) return [];
     var filters = currentFilters();
     return (state.payload.layers[layerName] || []).filter(function (item) {
-      return applyItemFilters(item, filters);
+      return applyItemFilters(item, filters) && (!state.focusMode || isPriorityItem(item, layerName));
     });
   }
 
@@ -767,15 +790,18 @@
     var tone = markerTone(item);
     var extras = [];
     var isCriticalMarker = normalize(item && item.risk_level) === "critical";
+    var isPriorityMarker = isPriorityItem(item, "");
     if (isCriticalMarker) extras.push("hc-command-marker--critical");
+    if (isPriorityMarker) extras.push("hc-command-marker--priority");
+    if (state.focusMode && isPriorityMarker) extras.push("hc-command-marker--focus");
     if (item && item.is_stale) extras.push("hc-command-marker--cold");
     if (!isCriticalMarker && isRecentActivity(item && item.last_activity_at, 3)) extras.push("hc-command-marker--recent");
     return L.divIcon({
       className: "hc-command-markerWrap",
       html: '<span class="hc-command-marker hc-command-marker--' + tone + " " + extras.join(" ") + '"></span>',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
-      popupAnchor: [0, -12]
+      iconSize: state.focusMode && isPriorityMarker ? [28, 28] : [24, 24],
+      iconAnchor: state.focusMode && isPriorityMarker ? [14, 14] : [12, 12],
+      popupAnchor: [0, state.focusMode && isPriorityMarker ? -14 : -12]
     });
   }
 
@@ -824,13 +850,13 @@
 
     if (!visibleItems.length) {
       showEmptyState(
-        "Aucun signal oprationnel visible",
-        "Aucun signal oprationnel visible avec les filtres actuels."
+        "Aucun signal visible avec les filtres actuels.",
+        "Essayez :\n- afficher les situations critiques\n- activer les alertes operationnelles\n- retirer certains filtres territoriaux"
       );
-      setText(liveNarrativeEl, "Aucun signal ne correspond aux filtres actifs.");
+      setText(liveNarrativeEl, state.focusMode ? "Focus priorites actif: aucun signal prioritaire visible." : "Aucun signal ne correspond aux filtres actifs.");
       if (overlay.title) {
-        overlay.title.textContent = "Aucune couche visible";
-        overlay.text.textContent = "Ractivez une couche ou largissez les filtres pour restaurer la lecture oprationnelle.";
+        overlay.title.textContent = "Lecture a elargir";
+        overlay.text.textContent = "Retirez certains filtres ou reactivez les couches prioritaires.";
         setPressureClass(overlay.root, "watch");
       }
       updateLiveRibbon([], { city: "", urgent: 0, pressured: 0, followups: 0 });
@@ -873,6 +899,49 @@
     });
   }
 
+  function drawerWhyMessages(item) {
+    if (!item) {
+      return ["Aucune tension operationnelle particuliere detectee."];
+    }
+    var messages = [];
+    var risk = normalize(item.risk_level || item.priority_key);
+    var status = normalize(item.status_key);
+    var marker = normalize(item.marker_type);
+    if (risk === "critical" || risk === "urgent") {
+      messages.push("Intervention prioritaire signalee");
+    } else if (risk === "elevated" || risk === "watch") {
+      messages.push("Pression territoriale detectee");
+    }
+    if (item.is_stale || item.is_blocked || marker.indexOf("stale") !== -1) {
+      messages.push("Situation sans suivi recent");
+    }
+    if (item.has_assignment === false || item.is_unassigned || status.indexOf("unassigned") !== -1) {
+      messages.push("Demande non assignee");
+    }
+    if (isRecentActivity(item.last_activity_at, 6)) {
+      messages.push("Activite recente elevee");
+    }
+    if (isOperationalAlert(item) || marker.indexOf("overdue") !== -1) {
+      messages.push("Alerte operationnelle a qualifier");
+    }
+    (Array.isArray(item.timeline_summary) ? item.timeline_summary : []).slice(0, 2).forEach(function (point) {
+      if (messages.length < 4 && point) {
+        messages.push(point);
+      }
+    });
+    return messages.length ? messages.slice(0, 4) : ["Aucune tension operationnelle particuliere detectee."];
+  }
+
+  function renderDrawerWhy(item) {
+    if (!drawer.whyList) return;
+    drawer.whyList.innerHTML = "";
+    drawerWhyMessages(item).forEach(function (message) {
+      var li = document.createElement("li");
+      li.textContent = message;
+      drawer.whyList.appendChild(li);
+    });
+  }
+
   function activateDrawer(active) {
     if (!drawerRoot) return;
     drawerRoot.classList.toggle("is-active", Boolean(active));
@@ -904,6 +973,7 @@
       drawer.open.dataset.actionUrl = primaryAction.href || "";
     }
     renderQuickActions(item);
+    renderDrawerWhy(item);
     if (drawer.timeline) {
       drawer.timeline.innerHTML = "";
       (Array.isArray(item.timeline_summary) ? item.timeline_summary : []).slice(0, 5).forEach(function (point) {
@@ -945,6 +1015,7 @@
     if (drawer.timeline) {
       drawer.timeline.innerHTML = "<li>Aucun signal slectionn pour le moment.</li>";
     }
+    renderDrawerWhy(null);
     if (drawer.open) {
       drawer.open.href = "#";
       drawer.open.classList.add("disabled");
@@ -1117,6 +1188,19 @@
     updateNarrative();
   }
 
+  function setFocusMode(enabled) {
+    state.focusMode = Boolean(enabled);
+    root.classList.toggle("is-focus-mode", state.focusMode);
+    if (focusToggleButton) {
+      focusToggleButton.classList.toggle("is-active", state.focusMode);
+      focusToggleButton.setAttribute("aria-pressed", state.focusMode ? "true" : "false");
+      focusToggleButton.title = state.focusMode ? "Afficher toutes les couches visibles" : "Afficher uniquement les priorites operationnelles";
+    }
+    renderLayers();
+    scheduleMapInvalidation(120);
+    scheduleFitToVisible();
+  }
+
   function resetFilters() {
     filterInputs.forEach(function (input) {
       Array.prototype.slice.call(input.options || []).forEach(function (option) {
@@ -1269,6 +1353,11 @@
 
   if (fitViewButton) fitViewButton.addEventListener("click", fitMapToVisible);
   if (resetFiltersButton) resetFiltersButton.addEventListener("click", resetFilters);
+  if (focusToggleButton) {
+    focusToggleButton.addEventListener("click", function () {
+      setFocusMode(!state.focusMode);
+    });
+  }
   if (drawer.clear) drawer.clear.addEventListener("click", clearDrawer);
 
   window.addEventListener("resize", function () {

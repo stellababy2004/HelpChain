@@ -266,6 +266,38 @@ body.hc-admin-command-map-page .hc-command-map-stageChip strong {
   color: #0f2740;
 }
 
+body.hc-admin-command-map-page .hc-command-map-focusToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.38rem 0.58rem;
+  border: 1px solid rgba(72, 98, 125, 0.22);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #16324f;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.15;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusToggle:hover {
+  border-color: rgba(31, 88, 128, 0.32);
+  background: #ffffff;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusToggle.is-active {
+  border-color: rgba(180, 35, 53, 0.32);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 242, 244, 0.94));
+  color: #8f1f2e;
+  box-shadow: inset 0 0 0 1px rgba(180, 35, 53, 0.08), 0 10px 20px rgba(15, 39, 64, 0.08);
+}
+
 body.hc-admin-command-map-page .hc-command-map-liveBadge {
   position: relative;
   display: inline-flex;
@@ -369,6 +401,10 @@ body.hc-admin-command-map-page .leaflet-container {
 
 body.hc-admin-command-map-page .leaflet-tile {
   filter: saturate(0.92) contrast(1.03);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .leaflet-tile {
+  filter: saturate(0.78) contrast(1.04) brightness(0.96);
 }
 
 body.hc-admin-command-map-page .leaflet-left .leaflet-control-zoom {
@@ -546,6 +582,7 @@ body.hc-admin-command-map-page .hc-command-map-emptyState__text {
   margin-top: 0.32rem;
   line-height: 1.45;
   color: rgba(239, 247, 255, 0.88);
+  white-space: pre-line;
 }
 
 body.hc-admin-command-map-page .hc-command-map-overlay__eyebrow {
@@ -626,6 +663,33 @@ body.hc-admin-command-map-page .hc-command-map-drawer__statusNote {
   font-size: 0.82rem;
   line-height: 1.35;
   color: rgba(15, 39, 64, 0.72);
+}
+
+body.hc-admin-command-map-page .hc-command-map-why {
+  margin: -0.12rem 0 0.66rem;
+  padding: 0.56rem 0.62rem;
+  border: 1px solid rgba(15, 39, 64, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+body.hc-admin-command-map-page .hc-command-map-why__title {
+  margin-bottom: 0.34rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(15, 39, 64, 0.58);
+}
+
+body.hc-admin-command-map-page .hc-command-map-why__list {
+  display: grid;
+  gap: 0.24rem;
+  margin: 0;
+  padding-left: 1rem;
+  color: rgba(15, 39, 64, 0.76);
+  font-size: 0.8rem;
+  line-height: 1.3;
 }
 
 body.hc-admin-command-map-page .hc-command-map-detailList {
@@ -785,6 +849,22 @@ body.hc-admin-command-map-page .hc-command-marker--critical {
     0 0 0 5px rgba(180, 35, 53, 0.08);
 }
 
+body.hc-admin-command-map-page .hc-command-marker--priority {
+  box-shadow:
+    0 14px 28px rgba(15, 39, 64, 0.22),
+    0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+body.hc-admin-command-map-page .hc-command-marker--focus {
+  width: 26px;
+  height: 26px;
+  border-width: 3px;
+  filter: saturate(1.14) contrast(1.05);
+  box-shadow:
+    0 16px 30px rgba(15, 39, 64, 0.26),
+    0 0 0 5px rgba(255, 255, 255, 0.28);
+}
+
 body.hc-admin-command-map-page .hc-command-marker--recent {
   filter: saturate(1.12) contrast(1.04);
   box-shadow:
@@ -869,6 +949,11 @@ body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--critica
 
 body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--elevated {
   filter: drop-shadow(0 0 6px rgba(200, 139, 43, 0.16));
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .leaflet-interactive.hc-command-pressure--critical,
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .leaflet-interactive.hc-command-pressure--elevated {
+  filter: drop-shadow(0 0 12px rgba(180, 35, 53, 0.22)) saturate(1.12);
 }
 
 body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--cold {
@@ -1134,6 +1219,13 @@ body.hc-admin-command-map-page .hc-command-popup__action {
     font-size: 0.86rem;
   }
 
+  body.hc-admin-command-map-page .hc-command-map-focusToggle {
+    width: 100%;
+    min-height: 2.28rem;
+    padding: 0.4rem 0.52rem;
+    font-size: 0.84rem;
+  }
+
   body.hc-admin-command-map-page .hc-command-map-liveBadge {
     font-size: 0.58rem;
   }
@@ -1328,6 +1420,15 @@ body.hc-admin-command-map-page .hc-command-popup__action {
   body.hc-admin-command-map-page .hc-command-map-drawer__status {
     margin-bottom: 0.58rem;
     padding: 0.58rem;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-why {
+    margin-bottom: 0.62rem;
+    padding: 0.58rem;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-why__list {
+    font-size: 0.84rem;
   }
 
   body.hc-admin-command-map-page .hc-command-map-detailList {

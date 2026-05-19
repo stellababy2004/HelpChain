@@ -167,6 +167,9 @@
           <div class="hc-command-map-stageStats">
             <span class="hc-command-map-stageChip"><strong id="commandMapVisibleCount">0</strong><span>signaux visibles</span></span>
             <span class="hc-command-map-stageChip"><strong id="commandMapFocusCity">—</strong><span>territoire dominant</span></span>
+            <button type="button" class="hc-command-map-focusToggle" id="commandMapFocusToggle" aria-pressed="false">
+              Focus priorités
+            </button>
           </div>
         </div>
 
@@ -190,19 +193,19 @@
             <div class="hc-command-map-legend__panel" id="commandMapLegendPanel">
               <div class="hc-command-map-legend__item">
                 <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--urgent"></span>
-                <span>Rouge : situation urgente</span>
+                <span>Rouge : intervention prioritaire</span>
               </div>
               <div class="hc-command-map-legend__item">
                 <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--intervenant"></span>
-                <span>Bleu : intervenant</span>
+                <span>Bleu : couverture intervenant</span>
               </div>
               <div class="hc-command-map-legend__item">
                 <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--pressure"></span>
-                <span>Orange : pression territoriale</span>
+                <span>Orange : territoire sous tension</span>
               </div>
               <div class="hc-command-map-legend__item">
                 <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--alert"></span>
-                <span>Gris : alerte opérationnelle</span>
+                <span>Gris : signal à qualifier</span>
               </div>
             </div>
           </div>
@@ -222,6 +225,13 @@
         <div class="hc-command-map-drawer__statusValue" id="commandMapDrawerRisk">En attente</div>
         <div class="hc-command-map-drawer__statusNote" id="commandMapDrawerNextAction">Aucune action sélectionnée.</div>
       </div>
+
+      <section class="hc-command-map-why" aria-labelledby="commandMapWhyTitle">
+        <div class="hc-command-map-why__title" id="commandMapWhyTitle">Pourquoi cette zone</div>
+        <ul class="hc-command-map-why__list" id="commandMapWhyList">
+          <li>Aucune tension opérationnelle particulière détectée.</li>
+        </ul>
+      </section>
 
       <dl class="hc-command-map-detailList">
         <div>
