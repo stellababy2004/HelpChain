@@ -337,6 +337,8 @@ def test_structure_b_can_accept_and_local_request_is_minimal(client, app):
     assert response.status_code == 303
     db.session.refresh(referral)
     assert referral.status == "accepted"
+    assert referral.operational_status == "accepted"
+    assert referral.accepted_at is not None
     local_request = Request.query.filter_by(
         structure_id=ctx["b"].id,
         source_channel="partner_referral",
@@ -346,6 +348,115 @@ def test_structure_b_can_accept_and_local_request_is_minimal(client, app):
     assert local_request.email is None
     assert local_request.phone is None
     assert "orientation partenaire" in (local_request.message or "").lower()
+
+
+def test_receiving_structure_can_mark_in_progress_and_completed(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    b_client = app.test_client()
+    _login(b_client, app, ctx["admin_b"])
+    b_client.post(f"/admin/referrals/{referral.id}/accept")
+
+    response = b_client.post(
+        f"/admin/referrals/{referral.id}/mark-in-progress",
+        data={"public_status_note": "Le dossier est actuellement traité par la structure partenaire."},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    db.session.refresh(referral)
+    assert referral.operational_status == "in_progress"
+    assert referral.in_progress_at is not None
+    assert referral.last_public_update_at is not None
+    assert "structure partenaire" in referral.public_status_note
+
+    response = b_client.post(
+        f"/admin/referrals/{referral.id}/mark-completed",
+        data={"public_status_note": "Traitement opérationnel clôturé."},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    db.session.refresh(referral)
+    assert referral.operational_status == "completed"
+    assert referral.status == "completed"
+    assert referral.completed_at is not None
+
+
+def test_source_structure_cannot_update_operational_status(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    b_client = app.test_client()
+    _login(b_client, app, ctx["admin_b"])
+    b_client.post(f"/admin/referrals/{referral.id}/accept")
+
+    _login(client, app, ctx["admin_a"])
+    response = client.post(
+        f"/admin/referrals/{referral.id}/mark-in-progress",
+        data={"public_status_note": "Tentative source"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 403
+    db.session.refresh(referral)
+    assert referral.operational_status == "accepted"
+
+
+def test_operational_transition_creates_audit_activity(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    b_client = app.test_client()
+    _login(b_client, app, ctx["admin_b"])
+    b_client.post(f"/admin/referrals/{referral.id}/accept")
+    b_client.post(f"/admin/referrals/{referral.id}/mark-in-progress")
+    b_client.post(f"/admin/referrals/{referral.id}/mark-completed")
+
+    actions = {
+        row.action
+        for row in ReferralActivity.query.filter_by(referral_id=referral.id).all()
+    }
+    assert {"accepted", "in_progress", "completed"}.issubset(actions)
+
+
+def test_public_status_visible_without_private_request_fields(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    b_client = app.test_client()
+    _login(b_client, app, ctx["admin_b"])
+    b_client.post(f"/admin/referrals/{referral.id}/accept")
+    b_client.post(
+        f"/admin/referrals/{referral.id}/mark-in-progress",
+        data={"public_status_note": "Le dossier est actuellement traité par la structure partenaire."},
+    )
+
+    _login(client, app, ctx["admin_a"])
+    response = client.get(f"/admin/referrals/{referral.id}")
+
+    assert response.status_code == 200
+    assert "Prise en charge".encode("utf-8") in response.data
+    assert "Le dossier est actuellement".encode("utf-8") in response.data
+    assert "private@example.test".encode("utf-8") not in response.data
+    assert "0102030405".encode("utf-8") not in response.data
+    assert "Identité privée".encode("utf-8") not in response.data
+
+
+def test_receiving_structure_can_add_public_note(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    b_client = app.test_client()
+    _login(b_client, app, ctx["admin_b"])
+    b_client.post(f"/admin/referrals/{referral.id}/accept")
+
+    response = b_client.post(
+        f"/admin/referrals/{referral.id}/public-note",
+        data={"public_status_note": "Premier retour public de coordination."},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    db.session.refresh(referral)
+    assert referral.public_status_note == "Premier retour public de coordination."
+    assert referral.last_public_update_at is not None
 
 
 def test_structure_b_can_refuse(client, app):

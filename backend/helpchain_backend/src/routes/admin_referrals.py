@@ -34,6 +34,16 @@ from .admin import (
 
 
 REFERRAL_ACTIVE_STATUSES = ("sent", "received")
+REFERRAL_OPERATIONAL_STATUSES = (
+    "sent",
+    "received",
+    "accepted",
+    "in_progress",
+    "completed",
+    "refused",
+    "cancelled",
+    "suspended",
+)
 SHARED_SCOPE_KEYS = tuple(default_referral_shared_scope().keys())
 PARTNER_STATUSES = ("pending", "active", "suspended", "revoked")
 DEFAULT_CONNECTION_PERMISSIONS = {
@@ -94,6 +104,11 @@ def _can_accept_or_refuse(referral: CaseReferral) -> bool:
     return bool(structure_id and structure_id == referral.to_structure_id)
 
 
+def _can_update_operational_status(referral: CaseReferral) -> bool:
+    structure_id = _admin_structure_id()
+    return bool(structure_id and structure_id == referral.to_structure_id)
+
+
 def _can_cancel(referral: CaseReferral) -> bool:
     structure_id = _admin_structure_id()
     return bool(
@@ -101,6 +116,128 @@ def _can_cancel(referral: CaseReferral) -> bool:
         and structure_id == referral.from_structure_id
         and referral.status in REFERRAL_ACTIVE_STATUSES
     )
+
+
+def _effective_operational_status(referral: CaseReferral) -> str:
+    value = (getattr(referral, "operational_status", None) or "").strip().lower()
+    if value in REFERRAL_OPERATIONAL_STATUSES:
+        return value
+    value = (getattr(referral, "status", None) or "").strip().lower()
+    if value in REFERRAL_OPERATIONAL_STATUSES:
+        return value
+    return "sent"
+
+
+def _operational_status_label(status: str | None) -> str:
+    return {
+        "sent": "Envoyée",
+        "received": "Reçue",
+        "accepted": "Acceptée",
+        "in_progress": "Prise en charge",
+        "completed": "Clôturée",
+        "refused": "Refusée",
+        "cancelled": "Annulée",
+        "suspended": "Suspendue",
+    }.get((status or "").strip().lower(), status or "—")
+
+
+def _operational_status_note(referral: CaseReferral) -> str:
+    if referral.public_status_note:
+        return referral.public_status_note
+    status = _effective_operational_status(referral)
+    return {
+        "sent": "L’orientation a été transmise à la structure partenaire.",
+        "received": "La structure partenaire a consulté l’orientation.",
+        "accepted": "La structure partenaire a accepté l’orientation.",
+        "in_progress": "Le dossier est actuellement traité par la structure partenaire.",
+        "completed": "La structure partenaire a clôturé le traitement opérationnel.",
+        "refused": "La structure partenaire a refusé l’orientation.",
+        "cancelled": "La structure source a annulé l’orientation.",
+        "suspended": "Le suivi opérationnel de cette orientation est suspendu.",
+    }.get(status, "Suivi opérationnel en cours.")
+
+
+def _operational_last_update(referral: CaseReferral):
+    return (
+        getattr(referral, "last_public_update_at", None)
+        or getattr(referral, "completed_at", None)
+        or getattr(referral, "in_progress_at", None)
+        or getattr(referral, "accepted_at", None)
+        or getattr(referral, "refused_at", None)
+        or getattr(referral, "updated_at", None)
+        or getattr(referral, "created_at", None)
+    )
+
+
+def _operational_timeline(referral: CaseReferral) -> list[dict]:
+    status = _effective_operational_status(referral)
+    rank = {
+        "sent": 1,
+        "received": 1,
+        "accepted": 2,
+        "in_progress": 3,
+        "completed": 4,
+    }.get(status, 0)
+    return [
+        {
+            "key": "sent",
+            "label": "Envoyée",
+            "at": getattr(referral, "created_at", None),
+            "done": rank >= 1,
+        },
+        {
+            "key": "accepted",
+            "label": "Acceptée",
+            "at": getattr(referral, "accepted_at", None),
+            "done": rank >= 2,
+        },
+        {
+            "key": "in_progress",
+            "label": "Prise en charge",
+            "at": getattr(referral, "in_progress_at", None),
+            "done": rank >= 3,
+        },
+        {
+            "key": "completed",
+            "label": "Clôturée",
+            "at": getattr(referral, "completed_at", None),
+            "done": rank >= 4,
+        },
+    ]
+
+
+def _set_referral_operational_status(
+    referral: CaseReferral,
+    status: str,
+    *,
+    note: str | None = None,
+) -> None:
+    now = utc_now()
+    referral.status = status
+    referral.operational_status = status
+    referral.updated_at = now
+    if status == "received":
+        referral.last_public_update_at = now
+    elif status == "accepted":
+        referral.accepted_at = referral.accepted_at or now
+        referral.last_public_update_at = now
+    elif status == "in_progress":
+        referral.in_progress_at = referral.in_progress_at or now
+        referral.last_public_update_at = now
+    elif status == "completed":
+        referral.completed_at = referral.completed_at or now
+        referral.last_public_update_at = now
+    elif status == "refused":
+        referral.refused_at = referral.refused_at or now
+        referral.last_public_update_at = now
+    elif status == "cancelled":
+        referral.last_public_update_at = now
+    elif status == "suspended":
+        referral.suspended_at = referral.suspended_at or now
+        referral.last_public_update_at = now
+    if note is not None:
+        referral.public_status_note = note
+        referral.last_public_update_at = now
 
 
 def _can_view_connection(connection: OrganizationConnection) -> bool:
@@ -699,14 +836,20 @@ def admin_referral_detail(referral_id: int):
     referral = CaseReferral.query.options(joinedload(CaseReferral.activities)).get_or_404(referral_id)
     _require_referral_access(referral)
     if _can_accept_or_refuse(referral) and referral.status == "sent":
-        referral.status = "received"
+        _set_referral_operational_status(referral, "received")
         _log_referral_activity(referral, "viewed")
         db.session.commit()
     return render_template(
         "admin/referrals/detail.html",
         referral=referral,
         can_accept_or_refuse=_can_accept_or_refuse(referral),
+        can_update_operational_status=_can_update_operational_status(referral),
         can_cancel=_can_cancel(referral),
+        operational_status=_effective_operational_status(referral),
+        operational_status_label=_operational_status_label,
+        operational_status_note=_operational_status_note(referral),
+        operational_last_update=_operational_last_update(referral),
+        operational_timeline=_operational_timeline(referral),
     )
 
 
@@ -723,10 +866,8 @@ def admin_referral_accept(referral_id: int):
     if referral.status not in REFERRAL_ACTIVE_STATUSES:
         flash("Orientation déjà traitée.", "info")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id))
-    referral.status = "accepted"
     referral.accepted_by_admin_id = getattr(current_user, "id", None)
-    referral.accepted_at = utc_now()
-    referral.updated_at = utc_now()
+    _set_referral_operational_status(referral, "accepted")
     local_request = None
     try:
         local_request = _create_local_request_from_referral(referral)
@@ -734,10 +875,8 @@ def admin_referral_accept(referral_id: int):
         current_app.logger.exception("referral_accept_local_request_failed referral_id=%s", referral.id)
         db.session.rollback()
         referral = CaseReferral.query.get_or_404(referral_id)
-        referral.status = "accepted"
         referral.accepted_by_admin_id = getattr(current_user, "id", None)
-        referral.accepted_at = utc_now()
-        referral.updated_at = utc_now()
+        _set_referral_operational_status(referral, "accepted")
     _log_referral_activity(
         referral,
         "accepted",
@@ -767,10 +906,8 @@ def admin_referral_refuse(referral_id: int):
     if referral.status not in REFERRAL_ACTIVE_STATUSES:
         flash("Orientation déjà traitée.", "info")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id))
-    referral.status = "refused"
-    referral.refused_at = utc_now()
     referral.refusal_reason = (request.form.get("refusal_reason") or "").strip() or None
-    referral.updated_at = utc_now()
+    _set_referral_operational_status(referral, "refused", note=referral.refusal_reason)
     _log_referral_activity(referral, "refused", {"reason": referral.refusal_reason})
     db.session.commit()
     audit_admin_action(
@@ -793,8 +930,7 @@ def admin_referral_cancel(referral_id: int):
     _require_referral_access(referral)
     if not _can_cancel(referral):
         abort(403)
-    referral.status = "cancelled"
-    referral.updated_at = utc_now()
+    _set_referral_operational_status(referral, "cancelled")
     _log_referral_activity(referral, "cancelled")
     db.session.commit()
     audit_admin_action(
@@ -804,6 +940,97 @@ def admin_referral_cancel(referral_id: int):
         payload={},
     )
     flash("Orientation annulée.", "info")
+    return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+
+
+@admin_bp.post("/referrals/<int:referral_id>/mark-in-progress")
+@login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
+def admin_referral_mark_in_progress(referral_id: int):
+    admin_required_404()
+    referral = CaseReferral.query.get_or_404(referral_id)
+    _require_referral_access(referral)
+    if not _can_update_operational_status(referral):
+        abort(403)
+    if _effective_operational_status(referral) not in {"accepted", "in_progress"}:
+        flash("Cette orientation doit être acceptée avant la prise en charge.", "warning")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+
+    note = (request.form.get("public_status_note") or "").strip() or None
+    _set_referral_operational_status(referral, "in_progress", note=note)
+    _log_referral_activity(referral, "in_progress", {"public": True})
+    db.session.commit()
+    audit_admin_action(
+        action="referral.mark_in_progress",
+        target_type="CaseReferral",
+        target_id=referral.id,
+        payload={"public": True},
+    )
+    flash("Orientation marquée comme prise en charge.", "success")
+    return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+
+
+@admin_bp.post("/referrals/<int:referral_id>/mark-completed")
+@login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
+def admin_referral_mark_completed(referral_id: int):
+    admin_required_404()
+    referral = CaseReferral.query.get_or_404(referral_id)
+    _require_referral_access(referral)
+    if not _can_update_operational_status(referral):
+        abort(403)
+    if _effective_operational_status(referral) not in {"accepted", "in_progress", "completed"}:
+        flash("Cette orientation doit être acceptée avant clôture.", "warning")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+
+    note = (request.form.get("public_status_note") or "").strip() or None
+    _set_referral_operational_status(referral, "completed", note=note)
+    _log_referral_activity(referral, "completed", {"public": True})
+    db.session.commit()
+    audit_admin_action(
+        action="referral.mark_completed",
+        target_type="CaseReferral",
+        target_id=referral.id,
+        payload={"public": True},
+    )
+    flash("Orientation clôturée.", "success")
+    return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+
+
+@admin_bp.post("/referrals/<int:referral_id>/public-note")
+@login_required
+@admin_required
+@admin_role_required("ops", "admin", "superadmin")
+def admin_referral_public_note(referral_id: int):
+    admin_required_404()
+    referral = CaseReferral.query.get_or_404(referral_id)
+    _require_referral_access(referral)
+    if not _can_update_operational_status(referral):
+        abort(403)
+    note = (request.form.get("public_status_note") or "").strip()
+    if not note:
+        flash("Note publique vide.", "warning")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+    if len(note) > 1200:
+        flash("Note publique trop longue.", "warning")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+
+    _set_referral_operational_status(
+        referral,
+        _effective_operational_status(referral),
+        note=note,
+    )
+    _log_referral_activity(referral, "public_note", {"public": True})
+    db.session.commit()
+    audit_admin_action(
+        action="referral.public_note",
+        target_type="CaseReferral",
+        target_id=referral.id,
+        payload={"public": True},
+    )
+    flash("Mise à jour publique enregistrée.", "success")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
 
@@ -883,6 +1110,7 @@ def admin_request_refer_submit(req_id: int):
         to_structure_id=target_structure_id,
         created_by_admin_id=getattr(current_user, "id", None),
         status="sent",
+        operational_status="sent",
         reason=reason[:255],
         message=message or None,
         shared_scope_json=_parse_shared_scope(),
