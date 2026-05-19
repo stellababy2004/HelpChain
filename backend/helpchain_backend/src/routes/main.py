@@ -5027,7 +5027,14 @@ def contact():
                     bool(current_app.config.get("MAIL_PASSWORD")),
                     current_app.config.get("MAIL_DEFAULT_SENDER"),
                 )
-                mail.send(msg)
+                try:
+                    mail.send(msg)
+                except Exception:
+                    current_app.logger.exception(
+                        "Demo SMTP send failed; continuing without blocking /demo success response"
+                    )
+                    return False
+                return True
 
             def enqueue_email_notification(
                 *,
