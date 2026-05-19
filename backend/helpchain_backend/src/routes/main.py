@@ -5054,7 +5054,7 @@ def contact():
                     context=context,
                     purpose=purpose or "demo_request_internal",
                     structure_id=structure_id,
-                    force_sync=True,
+                    force_sync=False,
                 )
                 return None, bool(delivered)
 
@@ -5077,7 +5077,7 @@ def contact():
                     context=context,
                     purpose=purpose or "contact_exchange",
                     structure_id=structure_id,
-                    force_sync=True,
+                    force_sync=False,
                 )
                 return None, bool(delivered)
 
