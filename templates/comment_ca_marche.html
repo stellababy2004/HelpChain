@@ -41,6 +41,44 @@
     <p class="mb-0">{{ _("Cette étape clarifie qui prend le relais, avec quelle responsabilité et quel niveau de visibilité.") }}</p>
   </div></section>
 
+  <section class="hc-interstructure-feature">
+    <div class="hc-interstructure-feature__content">
+      <p class="hc-interstructure-feature__eyebrow">{{ _("Coordination inter-structures") }}</p>
+      <h2>{{ _("Coordination partenaire sécurisée") }}</h2>
+      <p>
+        {{ _("Lorsqu’une situation nécessite l’intervention d’une autre structure, HelpChain permet d’orienter une demande vers un partenaire autorisé, sans exposer l’intégralité du dossier interne.") }}
+      </p>
+      <ul>
+        <li>{{ _("Validation bilatérale des structures partenaires") }}</li>
+        <li>{{ _("Partage contrôlé des informations utiles") }}</li>
+        <li>{{ _("Suivi opérationnel partagé") }}</li>
+        <li>{{ _("Historique et traçabilité des échanges") }}</li>
+        <li>{{ _("Cloisonnement des données internes") }}</li>
+      </ul>
+      <p class="hc-interstructure-feature__governance">
+        {{ _("Chaque orientation reste cloisonnée, tracée et gouvernée selon les droits définis par la structure.") }}
+      </p>
+      <div class="hc-mini-workflow" aria-label="{{ _('Parcours d’orientation partenaire') }}">
+        <span>{{ _("CCAS") }}</span>
+        <span>{{ _("Structure partenaire") }}</span>
+        <span>{{ _("Prise en charge") }}</span>
+        <span>{{ _("Suivi partagé") }}</span>
+        <span>{{ _("Clôture") }}</span>
+      </div>
+    </div>
+    <figure class="hc-interstructure-feature__visual">
+      <img
+        src="{{ url_for('static', filename='img/product/orientations-partenaires-active.png') }}"
+        alt="{{ _('Vue HelpChain affichant une relation partenaire active entre deux structures autorisées.') }}"
+        loading="lazy"
+        width="1900"
+        height="640"
+      >
+      <figcaption>{{ _("Connexion partenaire active entre structures autorisées.") }}</figcaption>
+      <p>{{ _("Validation bilatérale • partage contrôlé • suivi opérationnel") }}</p>
+    </figure>
+  </section>
+
   <section class="card mb-3"><div class="card-body">
     <h2 class="h5 mb-3">{{ _("4. Coordonner et suivre") }}</h2>
     <p class="mb-2">{{ _("Les actions engagées sont suivies dans un espace commun de coordination afin de conserver une lecture partagée de l’avancement.") }}</p>
