@@ -1,13 +1,13 @@
 body.hc-admin-command-map-page .hc-command-map-page {
-  --hc-command-surface-height: calc(100vh - 6.15rem);
+  --hc-command-surface-height: calc(100vh - 5.7rem);
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.45rem;
   max-width: none;
   min-height: 0;
   overflow: visible;
-  padding-block: 0.25rem 0.45rem;
-  padding-inline: clamp(0.45rem, 1vw, 0.9rem);
+  padding-block: 0.18rem 0.35rem;
+  padding-inline: clamp(0.36rem, 0.86vw, 0.78rem);
 }
 
 body.hc-admin-command-map-page .hc-admin-breadcrumb {
@@ -36,8 +36,8 @@ body.hc-admin-command-map-page .hc-command-map-layout {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(228px, 19%) minmax(0, 1fr) minmax(286px, 23%);
-  gap: 0.55rem;
+  grid-template-columns: minmax(216px, 18%) minmax(0, 1fr) minmax(270px, 21.5%);
+  gap: 0.45rem;
   align-items: stretch;
   min-height: var(--hc-command-surface-height);
 }
@@ -45,8 +45,8 @@ body.hc-admin-command-map-page .hc-command-map-layout {
 body.hc-admin-command-map-page .hc-command-map-sidebar,
 body.hc-admin-command-map-page .hc-command-map-drawer,
 body.hc-admin-command-map-page .hc-command-map-stageCard {
-  border: 1px solid rgba(15, 39, 64, 0.1);
-  box-shadow: 0 12px 28px rgba(15, 39, 64, 0.07);
+  border: 1px solid rgba(15, 39, 64, 0.075);
+  box-shadow: 0 8px 18px rgba(15, 39, 64, 0.045);
 }
 
 body.hc-admin-command-map-page .hc-command-map-sidebar,
@@ -59,14 +59,14 @@ body.hc-admin-command-map-page .hc-command-map-drawer {
   min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.68rem;
+  padding: 0.58rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.96)),
     radial-gradient(circle at top right, rgba(72, 98, 125, 0.08), transparent 62%);
 }
 
 body.hc-admin-command-map-page .hc-command-map-sidebar {
-  box-shadow: 0 12px 28px rgba(15, 39, 64, 0.05);
+  box-shadow: 0 8px 18px rgba(15, 39, 64, 0.035);
 }
 
 body.hc-admin-command-map-page .hc-command-map-sidebar .hc-section-title,
@@ -180,12 +180,12 @@ body.hc-admin-command-map-page .hc-command-map-kpis {
 body.hc-admin-command-map-page .hc-command-map-kpi {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.18rem 0.5rem;
+  gap: 0.14rem 0.42rem;
   align-items: baseline;
-  padding: 0.52rem 0.58rem;
+  padding: 0.42rem 0.48rem;
   border-radius: 10px;
-  border: 1px solid rgba(15, 39, 64, 0.12);
-  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(15, 39, 64, 0.075);
+  background: rgba(255, 255, 255, 0.68);
 }
 
 body.hc-admin-command-map-page .hc-command-map-kpi__label {
@@ -201,16 +201,17 @@ body.hc-admin-command-map-page .hc-command-map-kpi__value {
   display: block;
   grid-column: 2;
   grid-row: 1 / span 2;
-  font-size: 1.18rem;
+  font-size: 1.04rem;
   line-height: 1;
+  font-weight: 700;
   color: #0f2740;
 }
 
 body.hc-admin-command-map-page .hc-command-map-kpi__meta {
   display: block;
   margin-top: 0;
-  font-size: 0.74rem;
-  color: rgba(15, 39, 64, 0.62);
+  font-size: 0.72rem;
+  color: rgba(15, 39, 64, 0.56);
   line-height: 1.25;
 }
 
@@ -229,7 +230,7 @@ body.hc-admin-command-map-page .hc-command-map-stageCard {
   max-height: var(--hc-command-surface-height);
   min-width: 0;
   overflow: hidden;
-  padding: 0.52rem;
+  padding: 0.42rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 247, 251, 0.96)),
     radial-gradient(circle at top right, rgba(72, 98, 125, 0.08), transparent 60%);
@@ -240,21 +241,21 @@ body.hc-admin-command-map-page .hc-command-map-stageCard__header {
   flex: 0 0 auto;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.6rem;
-  margin-bottom: 0.45rem;
+  gap: 0.5rem;
+  margin-bottom: 0.34rem;
 }
 
 body.hc-admin-command-map-page .hc-command-map-stageStats {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.28rem;
 }
 
 body.hc-admin-command-map-page .hc-command-map-stageChip {
   display: inline-flex;
   align-items: center;
-  gap: 0.36rem;
-  padding: 0.38rem 0.5rem;
+  gap: 0.32rem;
+  padding: 0.32rem 0.46rem;
   border-radius: 10px;
   border: 1px solid rgba(72, 98, 125, 0.2);
   background: rgba(255, 255, 255, 0.86);
@@ -266,12 +267,16 @@ body.hc-admin-command-map-page .hc-command-map-stageChip strong {
   color: #0f2740;
 }
 
+body.hc-admin-command-map-page .hc-command-map-liveStatusChip {
+  padding-inline: 0.44rem;
+}
+
 body.hc-admin-command-map-page .hc-command-map-focusToggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.38rem 0.58rem;
+  min-height: 0;
+  padding: 0.32rem 0.52rem;
   border: 1px solid rgba(72, 98, 125, 0.22);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.86);
@@ -292,10 +297,10 @@ body.hc-admin-command-map-page .hc-command-map-focusToggle:hover {
 }
 
 body.hc-admin-command-map-page .hc-command-map-focusToggle.is-active {
-  border-color: rgba(180, 35, 53, 0.32);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 242, 244, 0.94));
-  color: #8f1f2e;
-  box-shadow: inset 0 0 0 1px rgba(180, 35, 53, 0.08), 0 10px 20px rgba(15, 39, 64, 0.08);
+  border-color: rgba(31, 88, 128, 0.78);
+  background: #1f5880;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 14px rgba(15, 39, 64, 0.08);
 }
 
 body.hc-admin-command-map-page .hc-command-map-liveBadge {
@@ -366,8 +371,8 @@ body.hc-admin-command-map-page .hc-command-map-shell {
   flex: 1 1 auto;
   overflow: hidden;
   min-height: 0;
-  border-radius: 16px;
-  border: 1px solid rgba(72, 98, 125, 0.22);
+  border-radius: 12px;
+  border: 1px solid rgba(72, 98, 125, 0.16);
   background:
     radial-gradient(circle at top left, rgba(49, 94, 134, 0.14), transparent 36%),
     linear-gradient(180deg, rgba(19, 47, 74, 0.14), rgba(255, 255, 255, 0.9));
@@ -444,15 +449,15 @@ body.hc-admin-command-map-page .leaflet-control-attribution {
 
 body.hc-admin-command-map-page .hc-command-map-overlay {
   position: absolute;
-  left: 74px;
-  top: 14px;
+  left: 66px;
+  top: 12px;
   z-index: 430;
-  max-width: min(228px, calc(100% - 164px));
-  padding: 0.66rem 0.78rem;
-  border-radius: 16px;
+  max-width: min(208px, calc(100% - 150px));
+  padding: 0.54rem 0.66rem;
+  border-radius: 12px;
   border: 1px solid rgba(216, 235, 255, 0.28);
   background: rgba(14, 42, 67, 0.84);
-  box-shadow: 0 10px 20px rgba(15, 47, 75, 0.12);
+  box-shadow: 0 8px 16px rgba(15, 47, 75, 0.1);
   color: #f8fbff;
   backdrop-filter: blur(8px);
   pointer-events: none;
@@ -465,7 +470,7 @@ body.hc-admin-command-map-page .hc-command-map-overlay.hc-pressure-critical {
   overflow: visible;
   border-color: rgba(216, 235, 255, 0.32) !important;
   background: linear-gradient(135deg, rgba(13, 39, 63, 0.88), rgba(20, 60, 90, 0.82)) !important;
-  box-shadow: 0 12px 22px rgba(15, 39, 64, 0.14) !important;
+  box-shadow: 0 8px 18px rgba(15, 39, 64, 0.12) !important;
   color: #f8fbff !important;
 }
 
@@ -498,23 +503,35 @@ body.hc-admin-command-map-page .hc-command-map-legend {
   left: 16px;
   bottom: 16px;
   z-index: 640;
-  width: min(260px, calc(100% - 32px));
+  width: auto;
+  max-width: min(240px, calc(100% - 32px));
   border: 1px solid rgba(216, 235, 255, 0.22);
-  border-radius: 18px;
-  background: rgba(14, 42, 67, 0.9);
-  box-shadow: 0 12px 24px rgba(15, 39, 64, 0.12);
+  border-radius: 999px;
+  background: rgba(14, 42, 67, 0.88);
+  box-shadow: 0 8px 18px rgba(15, 39, 64, 0.1);
   color: #f8fbff;
   backdrop-filter: blur(8px);
+  transition:
+    border-radius 180ms ease,
+    box-shadow 180ms ease,
+    width 180ms ease,
+    background 180ms ease;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend.is-open {
+  width: min(240px, calc(100% - 32px));
+  border-radius: 14px;
+  background: rgba(14, 42, 67, 0.9);
 }
 
 body.hc-admin-command-map-page .hc-command-map-legend__toggle {
   width: 100%;
   border: 0;
-  border-radius: 18px;
-  padding: 0.72rem 0.88rem;
+  border-radius: inherit;
+  padding: 0.48rem 0.68rem;
   background: transparent;
   color: #ffffff;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -526,6 +543,7 @@ body.hc-admin-command-map-page .hc-command-map-legend__toggle::after {
   float: right;
   font-size: 1rem;
   line-height: 1;
+  margin-left: 0.5rem;
 }
 
 body.hc-admin-command-map-page .hc-command-map-legend:not(.is-open) .hc-command-map-legend__toggle::after {
@@ -533,7 +551,24 @@ body.hc-admin-command-map-page .hc-command-map-legend:not(.is-open) .hc-command-
 }
 
 body.hc-admin-command-map-page .hc-command-map-legend__panel {
-  padding: 0 0.88rem 0.82rem;
+  max-height: 12rem;
+  overflow: hidden;
+  padding: 0 0.76rem 0.68rem;
+  opacity: 1;
+  transition:
+    max-height 190ms ease,
+    padding 190ms ease,
+    opacity 160ms ease;
+}
+
+body.hc-admin-command-map-page .hc-command-map-legend__panel[hidden],
+body.hc-admin-command-map-page .hc-command-map-legend:not(.is-open) .hc-command-map-legend__panel {
+  display: block;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 body.hc-admin-command-map-page .hc-command-map-legend__item {
@@ -631,17 +666,17 @@ body.hc-admin-command-map-page .hc-command-map-drawer {
 }
 
 body.hc-admin-command-map-page .hc-command-map-drawer.is-active {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 34px rgba(15, 39, 64, 0.12);
-  border-color: rgba(31, 88, 128, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(15, 39, 64, 0.075);
+  border-color: rgba(31, 88, 128, 0.14);
 }
 
 body.hc-admin-command-map-page .hc-command-map-drawer__status {
-  margin-bottom: 0.62rem;
-  padding: 0.58rem 0.62rem;
+  margin-bottom: 0.5rem;
+  padding: 0.48rem 0.54rem;
   border-radius: 10px;
-  border: 1px solid rgba(15, 39, 64, 0.12);
-  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 39, 64, 0.08);
+  background: rgba(255, 255, 255, 0.68);
 }
 
 body.hc-admin-command-map-page .hc-command-map-drawer__statusLabel {
@@ -654,29 +689,29 @@ body.hc-admin-command-map-page .hc-command-map-drawer__statusLabel {
 body.hc-admin-command-map-page .hc-command-map-drawer__statusValue {
   margin-top: 0.14rem;
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 650;
   color: #0f2740;
 }
 
 body.hc-admin-command-map-page .hc-command-map-drawer__statusNote {
-  margin-top: 0.22rem;
-  font-size: 0.82rem;
-  line-height: 1.35;
-  color: rgba(15, 39, 64, 0.72);
+  margin-top: 0.18rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: rgba(15, 39, 64, 0.66);
 }
 
 body.hc-admin-command-map-page .hc-command-map-why {
-  margin: -0.12rem 0 0.66rem;
-  padding: 0.56rem 0.62rem;
-  border: 1px solid rgba(15, 39, 64, 0.08);
+  margin: -0.06rem 0 0.52rem;
+  padding: 0.46rem 0.54rem;
+  border: 1px solid rgba(15, 39, 64, 0.055);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.42);
 }
 
 body.hc-admin-command-map-page .hc-command-map-why__title {
-  margin-bottom: 0.34rem;
-  font-size: 0.66rem;
-  font-weight: 800;
+  margin-bottom: 0.26rem;
+  font-size: 0.64rem;
+  font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: rgba(15, 39, 64, 0.58);
@@ -684,22 +719,22 @@ body.hc-admin-command-map-page .hc-command-map-why__title {
 
 body.hc-admin-command-map-page .hc-command-map-why__list {
   display: grid;
-  gap: 0.24rem;
+  gap: 0.16rem;
   margin: 0;
   padding-left: 1rem;
-  color: rgba(15, 39, 64, 0.76);
-  font-size: 0.8rem;
-  line-height: 1.3;
+  color: rgba(15, 39, 64, 0.68);
+  font-size: 0.76rem;
+  line-height: 1.26;
 }
 
 body.hc-admin-command-map-page .hc-command-map-detailList {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  margin: 0 0 0.68rem;
-  border: 1px solid rgba(15, 39, 64, 0.09);
+  margin: 0 0 0.56rem;
+  border: 1px solid rgba(15, 39, 64, 0.065);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.58);
   overflow: hidden;
 }
 
@@ -708,9 +743,9 @@ body.hc-admin-command-map-page .hc-command-map-detailList > div {
   grid-template-columns: minmax(86px, 0.42fr) minmax(0, 0.58fr);
   gap: 0.42rem;
   align-items: baseline;
-  min-height: 2.05rem;
-  padding: 0.34rem 0.48rem;
-  border-bottom: 1px solid rgba(15, 39, 64, 0.08);
+  min-height: 1.86rem;
+  padding: 0.28rem 0.42rem;
+  border-bottom: 1px solid rgba(15, 39, 64, 0.055);
 }
 
 body.hc-admin-command-map-page .hc-command-map-detailList > div:last-child {
@@ -730,7 +765,7 @@ body.hc-admin-command-map-page .hc-command-map-detailList dd {
   min-width: 0;
   color: #16324f;
   font-size: 0.82rem;
-  font-weight: 650;
+  font-weight: 580;
   line-height: 1.25;
   text-align: right;
   overflow-wrap: anywhere;
@@ -1205,25 +1240,28 @@ body.hc-admin-command-map-page .hc-command-popup__action {
   }
 
   body.hc-admin-command-map-page .hc-command-map-stageStats {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
     width: 100%;
     gap: 0.28rem;
+    scrollbar-width: none;
   }
 
   body.hc-admin-command-map-page .hc-command-map-stageChip {
+    flex: 0 0 auto;
     min-width: 0;
-    min-height: 2.1rem;
-    padding: 0.34rem 0.48rem;
+    min-height: 2rem;
+    padding: 0.32rem 0.46rem;
     border-radius: 10px;
-    font-size: 0.86rem;
+    font-size: 0.82rem;
   }
 
   body.hc-admin-command-map-page .hc-command-map-focusToggle {
-    width: 100%;
-    min-height: 2.28rem;
-    padding: 0.4rem 0.52rem;
-    font-size: 0.84rem;
+    width: auto;
+    min-height: 2rem;
+    padding: 0.32rem 0.5rem;
+    font-size: 0.82rem;
   }
 
   body.hc-admin-command-map-page .hc-command-map-liveBadge {
@@ -1253,7 +1291,7 @@ body.hc-admin-command-map-page .hc-command-popup__action {
 
   body.hc-admin-command-map-page .hc-command-map-shell,
   body.hc-admin-command-map-page .hc-command-map-canvas {
-    min-height: 62dvh;
+    min-height: 66dvh;
   }
 
   body.hc-admin-command-map-page .hc-command-map-mobileFilterButton {
@@ -1476,7 +1514,7 @@ body.hc-admin-command-map-page .hc-command-popup__action {
   }
 
   body.hc-admin-command-map-page .hc-command-map-legend {
-    bottom: 7.2rem;
+    bottom: 8.25rem;
   }
 }
 
@@ -1490,8 +1528,13 @@ body.hc-admin-command-map-page .hc-command-popup__action {
 
   body.hc-admin-command-map-page .hc-command-map-legend {
     left: 12px;
+    right: auto;
+    bottom: 8.25rem;
+    width: auto;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-legend.is-open {
     right: 12px;
-    bottom: 8.5rem;
     width: auto;
   }
 

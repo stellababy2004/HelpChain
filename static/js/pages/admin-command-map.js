@@ -194,11 +194,16 @@
 
     if (visibleCountEl) {
       var chip = visibleCountEl.closest ? visibleCountEl.closest(".hc-command-map-stageChip") : null;
-      if (chip && !chip.querySelector(".hc-command-map-liveBadge")) {
+      var chipRow = chip && chip.parentNode;
+      if (chipRow && !chipRow.querySelector(".hc-command-map-liveStatusChip")) {
+        var liveChip = document.createElement("span");
+        liveChip.className = "hc-command-map-stageChip hc-command-map-liveStatusChip";
+
         var badge = document.createElement("span");
         badge.className = "hc-command-map-liveBadge";
         badge.textContent = "LIVE";
-        chip.insertBefore(badge, visibleCountEl);
+        liveChip.appendChild(badge);
+        chipRow.insertBefore(liveChip, chip);
       }
     }
   }
@@ -925,11 +930,11 @@
       messages.push("Alerte operationnelle a qualifier");
     }
     (Array.isArray(item.timeline_summary) ? item.timeline_summary : []).slice(0, 2).forEach(function (point) {
-      if (messages.length < 4 && point) {
+      if (messages.length < 3 && point) {
         messages.push(point);
       }
     });
-    return messages.length ? messages.slice(0, 4) : ["Aucune tension operationnelle particuliere detectee."];
+    return messages.length ? messages.slice(0, 3) : ["Aucune tension operationnelle particuliere detectee."];
   }
 
   function renderDrawerWhy(item) {
@@ -1194,6 +1199,7 @@
     if (focusToggleButton) {
       focusToggleButton.classList.toggle("is-active", state.focusMode);
       focusToggleButton.setAttribute("aria-pressed", state.focusMode ? "true" : "false");
+      focusToggleButton.textContent = state.focusMode ? "Focus actif" : "Focus priorités";
       focusToggleButton.title = state.focusMode ? "Afficher toutes les couches visibles" : "Afficher uniquement les priorites operationnelles";
     }
     renderLayers();
@@ -1314,14 +1320,26 @@
     }
   }
 
+  function setLegendOpen(open) {
+    var isOpen = Boolean(open);
+    if (legend.root) {
+      legend.root.classList.toggle("is-open", isOpen);
+    }
+    root.classList.toggle("is-legend-open", isOpen);
+    if (legend.toggle) {
+      legend.toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+    if (legend.panel) {
+      legend.panel.hidden = !isOpen;
+    }
+  }
+
+  setLegendOpen(legend.root && legend.root.classList.contains("is-open"));
+
   if (legend.toggle) {
     legend.toggle.addEventListener("click", function () {
       var isOpen = !legend.root.classList.contains("is-open");
-      legend.root.classList.toggle("is-open", isOpen);
-      legend.toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
-      if (legend.panel) {
-        legend.panel.hidden = !isOpen;
-      }
+      setLegendOpen(isOpen);
     });
   }
 

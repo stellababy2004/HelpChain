@@ -167,7 +167,7 @@
           <div class="hc-command-map-stageStats">
             <span class="hc-command-map-stageChip"><strong id="commandMapVisibleCount">0</strong><span>signaux visibles</span></span>
             <span class="hc-command-map-stageChip"><strong id="commandMapFocusCity">—</strong><span>territoire dominant</span></span>
-            <button type="button" class="hc-command-map-focusToggle" id="commandMapFocusToggle" aria-pressed="false">
+            <button type="button" class="hc-command-map-stageChip hc-command-map-focusToggle" id="commandMapFocusToggle" aria-pressed="false">
               Focus priorités
             </button>
           </div>
@@ -186,11 +186,11 @@
             <div class="hc-command-map-overlay__title" id="commandMapOverlayTitle">Vue consolidée en préparation</div>
             <div class="hc-command-map-overlay__text" id="commandMapOverlayText">Les couches actives s’agrègent autour des situations, de la couverture et des alertes territoriales.</div>
           </div>
-          <div class="hc-command-map-legend is-open" id="commandMapLegend">
-            <button type="button" class="hc-command-map-legend__toggle" id="commandMapLegendToggle" aria-expanded="true" aria-controls="commandMapLegendPanel">
-              Légende opérationnelle
+          <div class="hc-command-map-legend" id="commandMapLegend">
+            <button type="button" class="hc-command-map-legend__toggle" id="commandMapLegendToggle" aria-expanded="false" aria-controls="commandMapLegendPanel">
+              Légende
             </button>
-            <div class="hc-command-map-legend__panel" id="commandMapLegendPanel">
+            <div class="hc-command-map-legend__panel" id="commandMapLegendPanel" hidden>
               <div class="hc-command-map-legend__item">
                 <span class="hc-command-map-legend__swatch hc-command-map-legend__swatch--urgent"></span>
                 <span>Rouge : intervention prioritaire</span>
