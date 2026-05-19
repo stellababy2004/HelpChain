@@ -6,6 +6,13 @@
 
   var endpoint = root.dataset.endpoint || "";
   var professionalsEndpoint = root.dataset.professionalsEndpoint || "";
+  var liveManager = window.HCMapsLive && window.HCMapsLive.create
+    ? window.HCMapsLive.create(root, {
+        loadingText: "Analyse des situations critiques...",
+        refreshText: "Lecture territoriale...",
+        stableText: "Diagnostic live"
+      })
+    : null;
   var defaultLat = Number(root.dataset.defaultLat || 48.8397);
   var defaultLng = Number(root.dataset.defaultLng || 2.2399);
   var defaultZoom = Number(root.dataset.defaultZoom || 13);
@@ -549,10 +556,12 @@
   }
 
   async function loadProfessionalsKpi() {
+    if (liveManager) liveManager.refresh("Synchronisation des intervenants...");
     if (!professionalsEndpoint) {
       setText(professionalsCountEl, 0);
       setMapHint("", false);
       updateEmptyCapacity(0);
+      if (liveManager) liveManager.stable("Couverture indisponible", 180);
       return;
     }
     try {
@@ -623,6 +632,7 @@
       updateEmptyCapacity(visibleMarkers);
       updateRiskKpis(currentRiskItems);
       syncEmptyStateVisibility();
+      if (liveManager) liveManager.stable("Couverture synchronisee", 180);
     } catch (_) {
       lastVisibleProfessionalsCount = 0;
       lastProfessionalsCount = 0;
@@ -636,6 +646,7 @@
       updateEmptyCapacity(0);
       updateRiskKpis(currentRiskItems);
       syncEmptyStateVisibility();
+      if (liveManager) liveManager.stable("Couverture indisponible", 180);
     }
   }
 
@@ -692,6 +703,7 @@
     if (!ensureMap() || !endpoint) {
       return;
     }
+    if (liveManager) liveManager.refresh("Analyse des situations critiques...");
     map.setView([48.8397, 2.2399], 13);
     setEmptyVisible(false);
     setState("loading", "Chargement de la cartographie territoriale de Boulogne-Billancourt...");
@@ -706,6 +718,7 @@
         throw new Error((data && data.message) || "risk_map_data_unavailable");
       }
       renderItems(data.items || []);
+      if (liveManager) liveManager.stable("Diagnostic live", 220);
     } catch (_) {
       if (markersLayer) {
         markersLayer.clearLayers();
@@ -715,6 +728,7 @@
       }
       updateRiskKpis([]);
       syncEmptyStateVisibility();
+      if (liveManager) liveManager.stable("Lecture indisponible", 220);
     }
   }
 
@@ -728,6 +742,7 @@
   function bindEvents() {
     if (zoneSelect) {
       zoneSelect.addEventListener("change", function () {
+        if (liveManager) liveManager.refresh("Synchronisation territoriale...");
         var selectedCity = currentCity();
         setText(zoneLabelEl, selectedCity);
         setText(actionMetaEl, selectedCity);
@@ -749,10 +764,12 @@
   }
 
   async function boot() {
+    if (liveManager) liveManager.loading("Lecture territoriale...");
     syncActionUrls(currentCity());
     storeCityContext(currentCity());
     updateQueueNote(false);
     await Promise.all([loadRiskMap(), loadProfessionalsKpi()]);
+    if (liveManager) liveManager.stable("Diagnostic live", 240);
     startRefresh();
     bindEvents();
   }

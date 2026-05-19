@@ -13,6 +13,13 @@
   if (!mapEl) {
     return;
   }
+  var liveManager = window.HCMapsLive && window.HCMapsLive.create
+    ? window.HCMapsLive.create(root, {
+        loadingText: "Lecture d'intelligence territoriale...",
+        refreshText: "Actualisation des signaux territoriaux...",
+        stableText: "Intelligence live"
+      })
+    : null;
 
   var LOCATIONS = [];
 
@@ -911,12 +918,14 @@
     if (!marker || !point) {
       return;
     }
+    if (liveManager) liveManager.refresh("Lecture du territoire...");
     map.flyTo([point.lat, point.lng], getPriorityMeta(point.priority).zoom, {
       duration: 0.6,
     });
     marker.openPopup();
     updateSidebar(point);
     setActiveMarker(slug);
+    if (liveManager) liveManager.stable("Territoire synchronise", 220);
   }
 
   function scoreClass(score) {
@@ -1284,6 +1293,7 @@
       });
   }
 
+  if (liveManager) liveManager.loading("Actualisation des signaux territoriaux...");
   runSafeRender("Estimated Opportunity", renderEstimatedOpportunity);
   runSafeRender("Signal Radar", renderRevenueRadar);
   runSafeRender("Department Scores", renderDepartmentScores);
@@ -1307,6 +1317,7 @@
   window.setTimeout(function () {
     map.invalidateSize();
     focusCity("paris");
+    if (liveManager) liveManager.stable("Intelligence live", 260);
   }, 0);
 })();
 

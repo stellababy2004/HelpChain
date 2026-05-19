@@ -291,3 +291,227 @@ body.hc-admin-professionals-map-page .hc-map-page .hc-map-command-panel {
     min-height: clamp(30rem, 64vh, 42rem);
   }
 }
+
+/* Operational Cohesion Layer V2
+   Shared spatial rhythm and HUD language for all territorial map layers. */
+.hc-map-page {
+  --hc-map-page-gap: 0.58rem;
+  --hc-map-radius: 16px;
+  --hc-map-radius-lg: 22px;
+  --hc-map-border: rgba(121, 145, 171, 0.48);
+  --hc-map-panel-border: rgba(255, 255, 255, 0.15);
+  --hc-map-shadow: 0 16px 34px rgba(13, 31, 51, 0.08);
+  --hc-map-surface-shadow: 0 28px 58px rgba(12, 28, 48, 0.16);
+  --hc-map-operational-hud: rgba(15, 25, 41, 0.76);
+  --hc-map-operational-hud-strong: rgba(13, 24, 39, 0.9);
+  --hc-map-operational-line: rgba(96, 118, 144, 0.28);
+  --hc-map-transition-fast: 160ms ease;
+  --hc-map-transition-med: 220ms ease;
+}
+
+.hc-map-page :where(.hc-card, .hc-map-stage, .hc-risk-map-toolbar-card, .hc-admin-headerCard, .hc-admin-table-shell) {
+  transition:
+    border-color var(--hc-map-transition-fast),
+    box-shadow var(--hc-map-transition-fast),
+    background-color var(--hc-map-transition-fast),
+    opacity var(--hc-map-transition-fast);
+}
+
+.hc-map-page :where(.hc-admin-breadcrumb) {
+  margin-bottom: 0.18rem;
+}
+
+.hc-map-page :where(.hc-admin-headerCard, .hc-risk-map-toolbar-card) {
+  margin-bottom: 0.58rem !important;
+}
+
+.hc-map-page :where(.hc-section-intro, .hc-admin-headerTop, .hc-risk-map-header__main) {
+  gap: 0.65rem;
+}
+
+.hc-map-page :where(.hc-section-subtitle, .hc-muted, .hc-risk-map-kpi__hint, .hc-kpi__context) {
+  color: rgba(15, 39, 64, 0.64);
+}
+
+.hc-map-page :where(.hc-admin-kicker, .hc-command-panel__kicker, .hc-risk-map-contextbar__label, .hc-risk-map-actionstrip__title) {
+  font-size: 0.68rem;
+  font-weight: 790;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.hc-map-stage,
+.hc-map-page :where(.hc-risk-map-card) {
+  position: relative;
+  border-color: rgba(154, 174, 198, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(241, 246, 252, 0.9)),
+    radial-gradient(circle at top right, rgba(55, 95, 132, 0.08), transparent 34%);
+  box-shadow: var(--hc-map-shadow);
+}
+
+.hc-map-stage::before,
+.hc-map-page :where(.hc-risk-map-card)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(15, 39, 64, 0.05), transparent 16%, transparent 84%, rgba(15, 39, 64, 0.04)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 18%);
+  opacity: 0.74;
+}
+
+.hc-map-stage > *,
+.hc-map-page :where(.hc-risk-map-card) > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hc-map-surface,
+.hc-map-page :where(.hc-risk-map-shell, .hc-audience-mapFrame, .audience-map-shell) {
+  border-color: var(--hc-map-border);
+  border-radius: var(--hc-map-radius-lg);
+  background:
+    radial-gradient(circle at 18% 8%, rgba(255, 255, 255, 0.22), transparent 31%),
+    linear-gradient(180deg, rgba(155, 174, 196, 0.34), rgba(70, 90, 113, 0.2)),
+    #cfd9e5;
+  box-shadow: var(--hc-map-surface-shadow);
+  transition:
+    box-shadow var(--hc-map-transition-med),
+    border-color var(--hc-map-transition-med),
+    filter var(--hc-map-transition-med);
+}
+
+.hc-map-surface::before,
+.hc-map-page :where(.hc-risk-map-shell, .hc-audience-mapFrame, .audience-map-shell)::before {
+  background:
+    linear-gradient(180deg, rgba(8, 17, 30, 0.08), transparent 24%, transparent 70%, rgba(8, 17, 30, 0.1)),
+    radial-gradient(circle at bottom right, rgba(27, 46, 67, 0.16), transparent 35%);
+}
+
+.hc-map-leaflet,
+.hc-map-page :where(.hc-risk-map-canvas, .hc-audience-mapCanvas, .audience-map-canvas) {
+  min-height: clamp(37rem, 73vh, 54rem);
+  border-radius: calc(var(--hc-map-radius-lg) - 3px);
+  transition:
+    opacity var(--hc-map-transition-med),
+    filter var(--hc-map-transition-med);
+}
+
+.hc-map-page :where(.leaflet-tile-pane, .leaflet-tile) {
+  filter: saturate(0.84) brightness(0.94) contrast(1.07);
+}
+
+.hc-map-page :where(.leaflet-marker-icon, .leaflet-interactive) {
+  transition:
+    opacity var(--hc-map-transition-fast),
+    transform var(--hc-map-transition-fast),
+    filter var(--hc-map-transition-fast);
+}
+
+.hc-map-page.is-map-transitioning :where(.leaflet-marker-icon, .leaflet-interactive) {
+  opacity: 0.84;
+  filter: saturate(0.94);
+}
+
+.hc-map-overlay,
+.hc-map-overlay--dark,
+.hc-map-page :where(.hc-map-command-panel, .audience-map-summary, .hc-risk-map-maphint, .hc-risk-map-legend, .audience-map-legend) {
+  border-color: var(--hc-map-panel-border);
+  background:
+    linear-gradient(180deg, var(--hc-map-operational-hud-strong), rgba(18, 34, 54, 0.68)),
+    var(--hc-map-operational-hud);
+  box-shadow: 0 20px 38px rgba(7, 12, 22, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.hc-map-page :where(.hc-map-command-panel, .audience-map-summary) {
+  max-width: min(350px, calc(100% - 5.5rem));
+}
+
+.hc-map-page :where(.hc-map-command-panel__metrics, .audience-map-summary__stats) {
+  gap: 0.58rem;
+}
+
+.hc-map-page :where(.hc-map-command-panel__metric, .audience-map-summary__stats span, .audience-map-summary__status) {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.hc-map-status-pill,
+.hc-map-page :where(.hc-risk-map-maphint, .hc-risk-map-legend__item, .audience-data-tag, .audience-inline-tag) {
+  min-height: 1.8rem;
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(15, 25, 41, 0.68);
+  box-shadow: 0 14px 26px rgba(8, 14, 24, 0.16);
+}
+
+.hc-map-legend,
+.hc-map-page :where(.hc-risk-map-legend, .audience-map-legend) {
+  border-radius: 16px;
+}
+
+.hc-map-action-bar,
+.hc-map-page :where(.hc-risk-map-actionstrip) {
+  margin-top: 0.56rem;
+  border-color: rgba(177, 194, 216, 0.72);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(244, 248, 252, 0.78));
+  box-shadow: 0 14px 28px rgba(15, 39, 64, 0.07);
+}
+
+.hc-map-page :where(.hc-risk-map-kpi, .hc-kpi, .hc-command-map-kpi) {
+  border-color: rgba(177, 194, 216, 0.68);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.91), rgba(246, 249, 252, 0.82));
+  box-shadow: 0 10px 22px rgba(15, 39, 64, 0.045);
+}
+
+.hc-map-page :where(.hc-risk-map-kpi__label, .hc-kpi__label, .hc-command-map-kpi__label) {
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(15, 39, 64, 0.66);
+}
+
+body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-canvas,
+body.hc-admin-professionals-map-page .hc-map-page .hc-risk-map-canvas {
+  height: clamp(38rem, 74vh, 55rem);
+  min-height: clamp(38rem, 74vh, 55rem);
+}
+
+body.hc-admin-professionals-map-page .hc-map-page .hc-risk-map-card,
+body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-card {
+  padding: 0.5rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-stageChip,
+.hc-map-page :where(.hc-risk-map-contextbar, .hc-risk-map-queue-note) {
+  border-color: rgba(177, 194, 216, 0.68);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(244, 248, 252, 0.8));
+  box-shadow: 0 10px 22px rgba(15, 39, 64, 0.045);
+}
+
+@media (max-width: 991.98px) {
+  .hc-map-page {
+    --hc-map-page-gap: 0.48rem;
+  }
+
+  .hc-map-leaflet,
+  .hc-map-page :where(.hc-risk-map-canvas, .hc-audience-mapCanvas, .audience-map-canvas) {
+    min-height: clamp(30rem, 65vh, 42rem);
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-canvas,
+  body.hc-admin-professionals-map-page .hc-map-page .hc-risk-map-canvas {
+    height: clamp(30rem, 65vh, 42rem);
+    min-height: clamp(30rem, 65vh, 42rem);
+  }
+}

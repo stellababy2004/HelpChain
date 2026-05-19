@@ -1,4 +1,13 @@
 (function () {
+  var root = document.querySelector(".hc-map-page--professionals");
+  var liveManager = root && window.HCMapsLive && window.HCMapsLive.create
+    ? window.HCMapsLive.create(root, {
+        loadingText: "Analyse de couverture...",
+        refreshText: "Synchronisation des intervenants...",
+        stableText: "Couverture live"
+      })
+    : null;
+
   function esc(value) {
     return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
@@ -200,6 +209,7 @@
   async function initProfessionalsMap() {
     var mapEl = document.getElementById("professionalsMap");
     if (!mapEl || typeof L === "undefined") return;
+    if (liveManager) liveManager.loading("Analyse de couverture...");
 
     var fallbackCenter = [48.8566, 2.3522];
     var map = L.map("professionalsMap", { attributionControl: false, zoomControl: true }).setView(fallbackCenter, 11);
@@ -220,10 +230,14 @@
         credentials: "same-origin",
         cache: "no-store",
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        if (liveManager) liveManager.stable("Couverture indisponible", 220);
+        return;
+      }
 
       var payload = await res.json();
       if (!payload || payload.status !== "ok" || !Array.isArray(payload.professionals)) {
+        if (liveManager) liveManager.stable("Couverture indisponible", 220);
         return;
       }
 
@@ -252,8 +266,10 @@
       if (bounds.length > 0) {
         map.fitBounds(bounds, { padding: [24, 24], maxZoom: 12 });
       }
+      if (liveManager) liveManager.stable("Couverture live", 240);
     } catch (_) {
       // Keep page stable even if endpoint fails.
+      if (liveManager) liveManager.stable("Couverture indisponible", 220);
     }
   }
 

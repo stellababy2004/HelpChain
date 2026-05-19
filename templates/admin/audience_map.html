@@ -4,6 +4,7 @@
 
 {% block admin_workspace_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/hc-unified-maps.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/maps-live-states.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-audience-map.css') }}">
   <link
     rel="stylesheet"
@@ -228,7 +229,7 @@
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="hc-card h-100">
+      <div class="hc-card h-100 hc-audience-intelligence-panel">
         <div class="hc-card__section hc-card__section--header">
           <strong>Signaux territoriaux</strong>
           <span class="hc-muted small">Villes, departements et regions detectes.</span>
@@ -332,6 +333,7 @@
   <script
     src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"
   ></script>
+  <script src="{{ url_for('static', filename='js/shared/maps-live-state-manager.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/admin-audience-map.js') }}"></script>
 
 

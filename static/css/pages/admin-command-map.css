@@ -271,14 +271,34 @@ body.hc-admin-command-map-page .hc-command-map-liveStatusChip {
   padding-inline: 0.44rem;
 }
 
+body.hc-admin-command-map-page .hc-command-map-focusStateChip {
+  border-color: rgba(31, 88, 128, 0.28);
+  background: rgba(31, 88, 128, 0.1);
+  color: #16324f;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusStateChip[hidden] {
+  display: none;
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-focusStateChip {
+  border-color: rgba(13, 48, 77, 0.62);
+  background: rgba(13, 48, 77, 0.92);
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(31, 88, 128, 0.16);
+}
+
 body.hc-admin-command-map-page .hc-command-map-focusToggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 0;
-  padding: 0.32rem 0.52rem;
-  border: 1px solid rgba(72, 98, 125, 0.22);
-  border-radius: 10px;
+  gap: 0.34rem;
+  min-height: 2.18rem;
+  padding: 0.42rem 0.68rem;
+  border: 1px solid rgba(72, 98, 125, 0.32);
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.86);
   color: #16324f;
   font-size: 0.78rem;
@@ -291,16 +311,33 @@ body.hc-admin-command-map-page .hc-command-map-focusToggle {
     color 160ms ease;
 }
 
+body.hc-admin-command-map-page .hc-command-map-focusToggle::before {
+  content: "";
+  width: 0.46rem;
+  height: 0.46rem;
+  border-radius: 999px;
+  background: rgba(72, 98, 125, 0.42);
+}
+
 body.hc-admin-command-map-page .hc-command-map-focusToggle:hover {
   border-color: rgba(31, 88, 128, 0.32);
   background: #ffffff;
 }
 
 body.hc-admin-command-map-page .hc-command-map-focusToggle.is-active {
-  border-color: rgba(31, 88, 128, 0.78);
-  background: #1f5880;
+  border-color: rgba(3, 26, 45, 0.98);
+  background: #08263f;
   color: #ffffff;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 14px rgba(15, 39, 64, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 0 3px rgba(47, 158, 98, 0.18),
+    0 10px 24px rgba(8, 38, 64, 0.28);
+  transform: translateY(1px);
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusToggle.is-active::before {
+  background: #35c46f;
+  box-shadow: 0 0 0 4px rgba(53, 196, 111, 0.16);
 }
 
 body.hc-admin-command-map-page .hc-command-map-liveBadge {
@@ -366,6 +403,76 @@ body.hc-admin-command-map-page .hc-command-map-liveRibbon.is-switching .hc-comma
   opacity: 0.18;
 }
 
+body.hc-admin-command-map-page .hc-command-map-focusBanner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  padding: 0.78rem 0.9rem;
+  border: 1px solid rgba(3, 26, 45, 0.98);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(3, 26, 45, 0.99), rgba(11, 48, 78, 0.98)),
+    #08263f;
+  color: #ffffff;
+  box-shadow:
+    0 14px 28px rgba(8, 38, 64, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner[hidden] {
+  display: none;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner__copy {
+  display: grid;
+  position: relative;
+  gap: 0.14rem;
+  min-width: 0;
+  padding-left: 1.05rem;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner__copy::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.26rem;
+  width: 0.56rem;
+  height: 0.56rem;
+  border-radius: 999px;
+  background: #35c46f;
+  box-shadow: 0 0 0 5px rgba(53, 196, 111, 0.13);
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner__copy strong {
+  font-size: 1.04rem;
+  line-height: 1.15;
+  letter-spacing: 0.06em;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner__copy span {
+  font-size: 0.8rem;
+  line-height: 1.25;
+  color: rgba(239, 247, 255, 0.88);
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner__exit {
+  min-height: 2.18rem;
+  padding: 0.42rem 0.72rem;
+  border: 1px solid rgba(239, 247, 255, 0.48);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+body.hc-admin-command-map-page .hc-command-map-focusBanner__exit:hover,
+body.hc-admin-command-map-page .hc-command-map-focusBanner__exit:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 body.hc-admin-command-map-page .hc-command-map-shell {
   position: relative;
   flex: 1 1 auto;
@@ -395,6 +502,30 @@ body.hc-admin-command-map-page .hc-command-map-canvas {
   min-height: 0;
 }
 
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-sidebar {
+  opacity: 0.65;
+  filter: saturate(0.78);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-drawer.is-focus-muted {
+  opacity: 0.62;
+  filter: saturate(0.74);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-stageCard {
+  border-color: rgba(8, 38, 64, 0.34);
+  box-shadow:
+    0 10px 22px rgba(8, 38, 64, 0.1),
+    0 0 0 1px rgba(8, 38, 64, 0.08);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-shell {
+  border: 2px solid #08263f;
+  box-shadow:
+    0 0 0 4px rgba(31, 88, 128, 0.14),
+    0 20px 44px rgba(8, 38, 64, 0.18);
+}
+
 body.hc-admin-command-map-page .hc-command-map-canvas .leaflet-container {
   width: 100%;
   height: 100%;
@@ -409,7 +540,18 @@ body.hc-admin-command-map-page .leaflet-tile {
 }
 
 body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .leaflet-tile {
-  filter: saturate(0.78) contrast(1.04) brightness(0.96);
+  filter: saturate(0.62) contrast(1) brightness(0.82);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.02) 38%, rgba(8, 38, 64, 0.22) 100%),
+    linear-gradient(180deg, rgba(8, 38, 64, 0.08), rgba(8, 38, 64, 0.14));
 }
 
 body.hc-admin-command-map-page .leaflet-left .leaflet-control-zoom {
@@ -496,6 +638,27 @@ body.hc-admin-command-map-page .hc-command-map-emptyState {
   color: #f8fbff;
   text-align: left;
   backdrop-filter: blur(8px);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-emptyState {
+  border-color: rgba(216, 235, 255, 0.38);
+  background:
+    linear-gradient(135deg, rgba(13, 48, 77, 0.96), rgba(20, 70, 104, 0.9)),
+    rgba(13, 48, 77, 0.94);
+  box-shadow:
+    0 24px 54px rgba(8, 38, 64, 0.28),
+    0 0 0 7px rgba(31, 88, 128, 0.14);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-map-emptyState::before {
+  content: "";
+  display: block;
+  width: 2.7rem;
+  height: 0.26rem;
+  margin-bottom: 0.58rem;
+  border-radius: 999px;
+  background: #35c46f;
+  box-shadow: 0 0 0 5px rgba(53, 196, 111, 0.12);
 }
 
 body.hc-admin-command-map-page .hc-command-map-legend {
@@ -691,6 +854,32 @@ body.hc-admin-command-map-page .hc-command-map-drawer__statusValue {
   font-size: 0.9rem;
   font-weight: 650;
   color: #0f2740;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawerFocusChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  margin-bottom: 0.42rem;
+  padding: 0.22rem 0.44rem;
+  border: 1px solid rgba(180, 35, 53, 0.22);
+  border-radius: 999px;
+  background: rgba(180, 35, 53, 0.08);
+  color: #8f1f2d;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawerFocusChip::before {
+  content: "";
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: #b42335;
+}
+
+body.hc-admin-command-map-page .hc-command-map-drawerFocusChip[hidden] {
+  display: none;
 }
 
 body.hc-admin-command-map-page .hc-command-map-drawer__statusNote {
@@ -891,13 +1080,28 @@ body.hc-admin-command-map-page .hc-command-marker--priority {
 }
 
 body.hc-admin-command-map-page .hc-command-marker--focus {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-width: 3px;
   filter: saturate(1.14) contrast(1.05);
   box-shadow:
     0 16px 30px rgba(15, 39, 64, 0.26),
     0 0 0 5px rgba(255, 255, 255, 0.28);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-marker {
+  opacity: 0.18;
+  filter: saturate(0.32) contrast(0.84);
+}
+
+body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-marker--focus {
+  opacity: 1;
+  filter: saturate(1.28) contrast(1.12) brightness(1.04);
+  box-shadow:
+    0 20px 38px rgba(8, 38, 64, 0.34),
+    0 0 0 5px rgba(255, 255, 255, 0.42),
+    0 0 0 11px rgba(180, 35, 53, 0.18);
+  transform: scale(1.08);
 }
 
 body.hc-admin-command-map-page .hc-command-marker--recent {
@@ -1007,6 +1211,15 @@ body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--cold {
     animation: hcCommandPulse 3.2s ease-out infinite;
   }
 
+  body.hc-admin-command-map-page .hc-command-map-page.is-focus-mode .hc-command-marker--focus::before {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: 999px;
+    border: 2px solid rgba(180, 35, 53, 0.28);
+    animation: hcCommandFocusPulse 2.6s ease-out infinite;
+  }
+
   body.hc-admin-command-map-page .hc-command-marker--recent::before {
     animation: hcCommandRecentPulse 4.6s ease-out infinite;
   }
@@ -1066,6 +1279,23 @@ body.hc-admin-command-map-page .leaflet-interactive.hc-command-pressure--cold {
   100% {
     opacity: 0;
     transform: scale(1.32);
+  }
+}
+
+@keyframes hcCommandFocusPulse {
+  0% {
+    opacity: 0.66;
+    transform: scale(0.92);
+  }
+
+  72% {
+    opacity: 0;
+    transform: scale(1.44);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.44);
   }
 }
 
@@ -1287,6 +1517,16 @@ body.hc-admin-command-map-page .hc-command-popup__action {
 
   body.hc-admin-command-map-page .hc-command-map-liveRibbon__message {
     font-size: 0.78rem;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-focusBanner {
+    grid-template-columns: 1fr;
+    gap: 0.46rem;
+    padding: 0.58rem;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-focusBanner__exit {
+    justify-self: start;
   }
 
   body.hc-admin-command-map-page .hc-command-map-shell,
