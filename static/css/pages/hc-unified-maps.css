@@ -247,6 +247,52 @@ body.hc-admin-professionals-map-page .hc-map-page .hc-map-command-panel {
   max-width: min(330px, calc(100% - 5.5rem));
 }
 
+body.hc-admin-professionals-map-page .hc-map-countMarkerWrap {
+  background: transparent;
+  border: 0;
+}
+
+body.hc-admin-professionals-map-page .hc-map-countMarker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  background: linear-gradient(180deg, rgba(14, 116, 144, 0.96), rgba(8, 47, 73, 0.96));
+  box-shadow: 0 10px 20px rgba(15, 39, 64, 0.24);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+body.hc-admin-professionals-map-page .hc-map-countMarker--attention {
+  background: linear-gradient(180deg, rgba(180, 83, 9, 0.96), rgba(124, 45, 18, 0.96));
+}
+
+body.hc-admin-professionals-map-page .hc-map-countMarker__count {
+  display: block;
+  transform: translateY(-0.5px);
+}
+
+body.hc-admin-professionals-map-page .hc-risk-map-popup__list {
+  margin: 0.45rem 0 0;
+  padding-left: 1rem;
+}
+
+body.hc-admin-professionals-map-page .hc-risk-map-popup__item + .hc-risk-map-popup__item {
+  margin-top: 0.28rem;
+}
+
+body.hc-admin-professionals-map-page .hc-risk-map-popup__item span {
+  display: block;
+  color: rgba(15, 39, 64, 0.74);
+  font-size: 0.78rem;
+}
+
 @media (max-width: 991.98px) {
   .hc-map-page {
     --hc-map-page-gap: 0.5rem;

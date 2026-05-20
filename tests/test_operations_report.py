@@ -156,8 +156,13 @@ def test_operations_report_payload_shape(app, db_schema):
             "items",
             "timeline_charts",
             "executive_summary",
+            "executive_snapshot",
+            "priority_actions",
             "operational_severity",
             "recommendations",
+            "territorial_pressure",
+            "automatic_analysis",
+            "operational_conclusion",
             "trends",
             "definition",
         }
@@ -165,6 +170,11 @@ def test_operations_report_payload_shape(app, db_schema):
         assert "by_status" in report["breakdowns"]
         assert "avg_assignment_hours" in report["sla"]
         assert "avg_resolution_hours" in report["sla"]
+        assert len(report["executive_snapshot"]) == 6
+        assert isinstance(report["priority_actions"], list)
+        assert isinstance(report["territorial_pressure"]["zones"], list)
+        assert isinstance(report["automatic_analysis"], list)
+        assert "primary_recommendation" in report["operational_conclusion"]
 
 def test_report_ignores_negative_or_invalid_resolution_durations(app, db_session):
     from datetime import UTC, datetime, timedelta
@@ -190,3 +200,62 @@ def test_report_ignores_negative_or_invalid_resolution_durations(app, db_session
         report = build_operational_report(days=30)
 
     assert report["sla"]["avg_resolution_hours"] >= 0
+
+
+def test_operations_report_priority_actions_and_territorial_pressure(app, db_schema):
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=UTC)
+
+    with app.app_context():
+        structure = _make_structure("Gamma")
+
+        for index in range(4):
+            _make_request(
+                structure_id=structure.id,
+                title=f"pressure-{index}",
+                status="open",
+                created_at=now - timedelta(days=4, hours=index),
+                category="coordination",
+            )
+
+        report = build_operational_report(structure_id=structure.id, days=7, now=now)
+
+        assert report["priority_actions"]
+        assert report["priority_actions"][0]["severity"] in {"critical", "high", "moderate", "stable"}
+        assert report["territorial_pressure"]["zones"]
+        assert report["territorial_pressure"]["zones"][0]["city"] == "Paris"
+
+
+def test_operations_report_xlsx_workbook_structure(app, db_schema):
+    from io import BytesIO
+
+    from openpyxl import load_workbook
+
+    from backend.helpchain_backend.src.routes.admin import _build_operational_report_xlsx_response
+
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=UTC)
+
+    with app.app_context():
+        structure = _make_structure("Workbook Structure")
+        _make_request(
+            structure_id=structure.id,
+            title="DEMO OPS 12",
+            status="in_progress",
+            created_at=now - timedelta(days=2),
+            category="housing",
+        )
+
+        report = build_operational_report(structure_id=structure.id, days=7, now=now)
+        response = _build_operational_report_xlsx_response(report)
+        workbook = load_workbook(BytesIO(response.get_data()))
+
+    assert workbook.sheetnames == [
+        "Synthèse exécutive",
+        "Indicateurs opérationnels",
+        "Tensions territoriales",
+        "Actions prioritaires",
+        "Situations opérationnelles",
+        "Analyse automatique",
+        "Définitions",
+    ]
+    assert workbook["Synthèse exécutive"]["A1"].value == "HelpChain - Rapport opérationnel"
+    assert workbook["Situations opérationnelles"]["B5"].value == "Situation #1"

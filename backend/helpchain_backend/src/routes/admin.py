@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 import csv
+import html
 import inspect
 import json
 import math
@@ -8202,7 +8203,38 @@ def admin_professionals_map():
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
-    return render_template("admin/professionals_map.html")
+    scope_structure = None
+    scope_structure_id_raw = (request.args.get("structure_id") or "").strip()
+    if scope_structure_id_raw:
+        try:
+            scope_structure_id = int(scope_structure_id_raw)
+        except Exception:
+            abort(404)
+        scope_structure = db.session.get(Structure, scope_structure_id)
+        if not scope_structure:
+            abort(404)
+        if not _is_global_admin() and int(_current_structure_id() or 0) != scope_structure.id:
+            abort(403)
+
+    map_api_url = url_for("admin.admin_api_professionals")
+    list_url = url_for("admin.admin_intervenants")
+    add_url = url_for("admin.admin_intervenants_new")
+    if scope_structure is not None:
+        map_api_url = url_for(
+            "admin.admin_api_professionals",
+            structure_id=scope_structure.id,
+            include_inactive=1,
+        )
+        list_url = url_for("admin.admin_structure_intervenants", structure_id=scope_structure.id)
+        add_url = url_for("admin.admin_intervenants_new", structure_id=scope_structure.id)
+
+    return render_template(
+        "admin/professionals_map.html",
+        scope_structure=scope_structure,
+        map_api_url=map_api_url,
+        map_list_url=list_url,
+        map_add_url=add_url,
+    )
 
 
 @admin_bp.get("/api/professionals")
@@ -8212,6 +8244,24 @@ def admin_api_professionals():
     if not current_user.is_admin:
         return jsonify({"status": "error", "message": "forbidden"}), 403
 
+    scope_structure = None
+    scope_structure_id_raw = (request.args.get("structure_id") or "").strip()
+    include_inactive = (request.args.get("include_inactive") or "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if scope_structure_id_raw:
+        try:
+            scope_structure_id = int(scope_structure_id_raw)
+        except Exception:
+            return jsonify({"status": "error", "message": "invalid_structure"}), 404
+        scope_structure = db.session.get(Structure, scope_structure_id)
+        if not scope_structure:
+            return jsonify({"status": "error", "message": "structure_not_found"}), 404
+        if not _is_global_admin() and int(_current_structure_id() or 0) != scope_structure.id:
+            return jsonify({"status": "error", "message": "forbidden"}), 403
+
     workload_sq = _assignment_workload_subquery()
     query = (
         db.session.query(
@@ -8219,9 +8269,12 @@ def admin_api_professionals():
             func.coalesce(workload_sq.c.workload, 0).label("workload"),
         )
         .outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
-        .filter(Intervenant.is_active.is_(True))
     )
-    if not _is_global_admin():
+    if not include_inactive:
+        query = query.filter(Intervenant.is_active.is_(True))
+    if scope_structure is not None:
+        query = query.filter(Intervenant.structure_id == scope_structure.id)
+    elif not _is_global_admin():
         query = query.filter(Intervenant.structure_id == _current_structure_id())
 
     rows = query.order_by(Intervenant.name.asc(), Intervenant.id.asc()).all()
@@ -8239,16 +8292,33 @@ def admin_api_professionals():
                 "latitude": lat,
                 "longitude": lng,
                 "availability": _intervenant_availability(intervenant),
+                "availability_label": _intervenant_availability_label(
+                    _intervenant_availability(intervenant)
+                ),
                 "workload": int(workload or 0),
                 "has_exact_coordinates": has_exact_coordinates,
+                "is_active": bool(getattr(intervenant, "is_active", False)),
             }
         )
 
     current_app.logger.info(
-        "admin_api_professionals returning count=%s",
+        "admin_api_professionals returning count=%s structure=%s include_inactive=%s",
         len(professionals),
+        getattr(scope_structure, "id", None),
+        include_inactive,
     )
-    return jsonify({"status": "ok", "professionals": professionals})
+    return jsonify(
+        {
+            "status": "ok",
+            "professionals": professionals,
+            "meta": {
+                "structure_id": getattr(scope_structure, "id", None),
+                "structure_name": getattr(scope_structure, "name", None),
+                "include_inactive": include_inactive,
+                "total": len(professionals),
+            },
+        }
+    )
 
 
 @admin_bp.get("/api/professionals-map")
@@ -13245,6 +13315,982 @@ build_requests_query = _admin_requests.build_requests_query
 get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
 
 
+def _build_operational_report_pdf_response(report: dict):
+    from io import BytesIO
+
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+    from reportlab.lib.units import mm
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+    def _pdf_esc(value):
+        return html.escape(str(value or ""))
+
+    def _pdf_text(value):
+        return _pdf_esc(value).replace("\n", "<br/>")
+
+    def _pdf_metric_table(metric, body_style):
+        card = Table(
+            [[
+                Paragraph(
+                    (
+                        f"<font size='7' color='#5b7089'><b>{_pdf_esc(metric.get('severity_label'))}</b></font><br/>"
+                        f"<font size='18' color='#10243d'><b>{_pdf_esc(metric.get('value'))}</b></font><br/>"
+                        f"<font size='9' color='#243a55'><b>{_pdf_esc(metric.get('label'))}</b></font><br/>"
+                        f"<font size='7' color='#60748d'>{_pdf_esc(metric.get('delta_text'))}</font>"
+                    ),
+                    body_style,
+                )
+            ]],
+            colWidths=[58 * mm],
+        )
+        card.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+            ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#d6e0ec")),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ]))
+        return card
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=14 * mm,
+        leftMargin=14 * mm,
+        topMargin=14 * mm,
+        bottomMargin=14 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="OpsSection",
+        parent=styles["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=13,
+        leading=16,
+        textColor=colors.HexColor("#10243d"),
+        spaceAfter=6,
+    ))
+    styles.add(ParagraphStyle(
+        name="OpsKicker",
+        parent=styles["BodyText"],
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=10,
+        textColor=colors.HexColor("#60748d"),
+        spaceAfter=3,
+    ))
+    styles.add(ParagraphStyle(
+        name="OpsBody",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=9,
+        leading=13,
+        textColor=colors.HexColor("#243a55"),
+    ))
+    styles.add(ParagraphStyle(
+        name="OpsMeta",
+        parent=styles["BodyText"],
+        fontName="Helvetica",
+        fontSize=8,
+        leading=11,
+        textColor=colors.HexColor("#60748d"),
+    ))
+
+    story = []
+    scope_name = report["scope"]["structure_name"] or "Toutes les structures visibles"
+
+    hero_table = Table(
+        [[
+            Paragraph(
+                "HELPCHAIN<br/><font size='8' color='#60748d'>Rapport operationnel</font>",
+                ParagraphStyle(
+                    "OpsBrand",
+                    parent=styles["BodyText"],
+                    fontName="Helvetica-Bold",
+                    fontSize=11,
+                    leading=12,
+                    textColor=colors.HexColor("#10243d"),
+                ),
+            ),
+            Paragraph(
+                (
+                    "<font size='9' color='#60748d'><b>Usage interne</b></font><br/>"
+                    "<font size='17' color='#10243d'><b>Rapport operationnel</b></font><br/>"
+                    f"<font size='9' color='#243a55'>{_pdf_esc(scope_name)}</font><br/>"
+                    f"<font size='8' color='#60748d'>Periode: {report['period']['days']} jours | "
+                    f"Genere le: {_pdf_esc(report['generated_at'][:16].replace('T', ' '))} | "
+                    "Confidentialite: Interne</font>"
+                ),
+                styles["OpsBody"],
+            ),
+        ]],
+        colWidths=[34 * mm, 148 * mm],
+    )
+    hero_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f7faff")),
+        ("BOX", (0, 0), (-1, -1), 0.75, colors.HexColor("#d6e0ec")),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(hero_table)
+    story.append(Spacer(1, 8 * mm))
+
+    story.append(Paragraph("EXECUTIVE SNAPSHOT", styles["OpsKicker"]))
+    story.append(Paragraph("Synthese executive", styles["OpsSection"]))
+    story.append(Paragraph(_pdf_text(report["executive_summary"]), styles["OpsBody"]))
+    story.append(Paragraph(
+        f"Niveau: {_pdf_esc(report['operational_severity']['label'])} - {_pdf_esc(report['operational_severity']['message'])}",
+        styles["OpsMeta"],
+    ))
+    story.append(Spacer(1, 5 * mm))
+
+    snapshot_cards = [_pdf_metric_table(metric, styles["OpsBody"]) for metric in report.get("executive_snapshot", [])[:6]]
+    while len(snapshot_cards) < 6:
+        snapshot_cards.append(Table([[""]], colWidths=[58 * mm]))
+    snapshot_grid = Table(
+        [snapshot_cards[:3], snapshot_cards[3:6]],
+        colWidths=[58 * mm, 58 * mm, 58 * mm],
+        hAlign="LEFT",
+    )
+    snapshot_grid.setStyle(TableStyle([
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(snapshot_grid)
+    story.append(Spacer(1, 5 * mm))
+
+    story.append(Paragraph("DECISIONS PRIORITAIRES", styles["OpsKicker"]))
+    story.append(Paragraph("Actions prioritaires", styles["OpsSection"]))
+    for item in report.get("priority_actions", []):
+        story.append(Paragraph(
+            f"<b>{_pdf_esc(item['title'])}</b> - {_pdf_esc(item['severity_label'])}",
+            styles["OpsBody"],
+        ))
+        story.append(Paragraph(
+            _pdf_text(f"{item['reason']} Impact: {item['impact']} Horizon: {item['horizon']}"),
+            styles["OpsMeta"],
+        ))
+        story.append(Spacer(1, 2 * mm))
+
+    story.append(Spacer(1, 4 * mm))
+    story.append(Paragraph("PRESSION TERRITORIALE", styles["OpsKicker"]))
+    story.append(Paragraph("Zones sous tension", styles["OpsSection"]))
+    story.append(Paragraph(_pdf_text(report["territorial_pressure"]["summary"]), styles["OpsBody"]))
+
+    zones_rows = [["Zone", "Couverture", "Ouvertes", "Actifs", "Disponibles", "Densite"]]
+    for zone in report.get("territorial_pressure", {}).get("zones", [])[:5]:
+        zones_rows.append([
+            zone["city"],
+            zone["coverage_label"],
+            str(zone["open_requests"]),
+            str(zone["active_intervenants"]),
+            str(zone["available_intervenants"]),
+            str(zone["density"]),
+        ])
+    if len(zones_rows) > 1:
+        zones_table = Table(zones_rows, colWidths=[42 * mm, 38 * mm, 24 * mm, 24 * mm, 28 * mm, 24 * mm])
+        zones_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f6f8fb")]),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.append(Spacer(1, 2 * mm))
+        story.append(zones_table)
+
+    story.append(Spacer(1, 5 * mm))
+    story.append(Paragraph("ANALYSE AUTOMATIQUE", styles["OpsKicker"]))
+    story.append(Paragraph("Analyse automatique", styles["OpsSection"]))
+    for item in report.get("automatic_analysis", []):
+        story.append(Paragraph(
+            f"<b>{_pdf_esc(item['title'])}</b> - {_pdf_esc(item['risk'])}",
+            styles["OpsBody"],
+        ))
+        story.append(Paragraph(
+            _pdf_text(f"{item['text']} Horizon: {item['horizon']}."),
+            styles["OpsMeta"],
+        ))
+        story.append(Spacer(1, 2 * mm))
+
+    story.append(Spacer(1, 4 * mm))
+    story.append(Paragraph("RECOMMANDATIONS", styles["OpsKicker"]))
+    story.append(Paragraph("Recommandations de direction operationnelle", styles["OpsSection"]))
+    for item in report["recommendations"]:
+        story.append(Paragraph(
+            f"<b>{_pdf_esc(item['title'])}</b> - {_pdf_esc(item['priority'])}",
+            styles["OpsBody"],
+        ))
+        story.append(Paragraph(
+            _pdf_text(
+                f"{item['description']} Impact potentiel: {item['impact']} "
+                f"Niveau de risque: {item['risk']} Horizon: {item['horizon']}"
+            ),
+            styles["OpsMeta"],
+        ))
+        story.append(Spacer(1, 2 * mm))
+
+    story.append(Spacer(1, 4 * mm))
+    story.append(Paragraph("CONCLUSION OPERATIONNELLE", styles["OpsKicker"]))
+    story.append(Paragraph("Conclusion operationnelle", styles["OpsSection"]))
+    conclusion = report.get("operational_conclusion", {})
+    story.append(Paragraph(_pdf_text(conclusion.get("summary", "")), styles["OpsBody"]))
+    story.append(Paragraph(
+        _pdf_text(
+            f"Stabilite: {conclusion.get('stability', 'Stable')} | "
+            f"Risques: {', '.join(conclusion.get('main_risks', []))} | "
+            f"Recommendation principale: {conclusion.get('primary_recommendation', '')}"
+        ),
+        styles["OpsMeta"],
+    ))
+
+    story.append(Spacer(1, 5 * mm))
+    story.append(Paragraph("Situations incluses dans le rapport", styles["OpsSection"]))
+
+    rows = [["ID", "Titre", "Ville", "Statut", "Priorite", "Creee le"]]
+    for item in report["items"][:80]:
+        rows.append([
+            f"#{item['id']}",
+            item["title"][:42],
+            item["city"] or "-",
+            item["status"] or "-",
+            item["priority"] or "-",
+            item["created_at"][:10] if item["created_at"] else "-",
+        ])
+
+    items_table = Table(rows, colWidths=[15 * mm, 62 * mm, 28 * mm, 28 * mm, 25 * mm, 28 * mm])
+    items_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f6f8fb")]),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+    ]))
+    story.append(items_table)
+
+    def _add_footer(canvas, doc):
+        canvas.saveState()
+        canvas.setFillColor(colors.Color(0.92, 0.95, 0.98, alpha=1))
+        canvas.saveState()
+        canvas.translate(105 * mm, 155 * mm)
+        canvas.rotate(32)
+        canvas.setFont("Helvetica-Bold", 28)
+        canvas.drawCentredString(0, 0, "HELPCHAIN")
+        canvas.restoreState()
+
+        canvas.setStrokeColor(colors.HexColor("#d8e2ee"))
+        canvas.line(14 * mm, 286 * mm, 196 * mm, 286 * mm)
+        canvas.line(14 * mm, 12 * mm, 196 * mm, 12 * mm)
+
+        canvas.setFillColor(colors.HexColor("#60748d"))
+        canvas.setFont("Helvetica", 8)
+        canvas.drawString(14 * mm, 290 * mm, scope_name)
+        canvas.drawString(14 * mm, 8.5 * mm, "HelpChain - Rapport operationnel - Usage interne")
+        canvas.drawRightString(
+            196 * mm,
+            8.5 * mm,
+            f"Page {canvas.getPageNumber()} | Genere le {report['generated_at'][:16].replace('T', ' ')}",
+        )
+        canvas.restoreState()
+
+    doc.build(story, onFirstPage=_add_footer, onLaterPages=_add_footer)
+
+    pdf_data = buffer.getvalue()
+    buffer.close()
+
+    filename = f"helpchain-rapport-operationnel-{report['period']['days']}j.pdf"
+
+    return Response(
+        pdf_data,
+        mimetype="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename=\"{filename}\"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+OPS_REPORT_FR_MONTHS = {
+    1: "janvier",
+    2: "fevrier",
+    3: "mars",
+    4: "avril",
+    5: "mai",
+    6: "juin",
+    7: "juillet",
+    8: "aout",
+    9: "septembre",
+    10: "octobre",
+    11: "novembre",
+    12: "decembre",
+}
+
+OPS_REPORT_STATUS_LABELS = {
+    "new": "Nouvelle",
+    "pending": "En attente",
+    "in_progress": "En cours",
+    "open": "En cours",
+    "closed": "Cloturee",
+    "completed": "Cloturee",
+    "done": "Cloturee",
+    "resolved": "Cloturee",
+    "cancelled": "Annulee",
+    "canceled": "Annulee",
+}
+
+OPS_REPORT_PRIORITY_LABELS = {
+    "normal": "Normale",
+    "medium": "Normale",
+    "low": "Normale",
+    "high": "Elevee",
+    "elevee": "Elevee",
+    "élevée": "Elevee",
+    "critical": "Critique",
+    "critique": "Critique",
+    "urgent": "Critique",
+}
+
+OPS_REPORT_CATEGORY_LABELS = {
+    "housing": "Logement",
+    "health": "Sante",
+    "admin": "Administratif",
+    "orientation": "Orientation",
+    "legal": "Juridique",
+    "food": "Aide alimentaire",
+}
+
+OPS_REPORT_DEFINITIONS = {
+    "Perimetre": "Demandes visibles dans le perimetre de pilotage selectionne.",
+    "Ouvert": "Situation encore active ou necessitant un suivi.",
+    "Cloture": "Situation traitee ou cloturee sur la periode.",
+    "Sans action recente": "Situation ouverte sans activite enregistree depuis plus de 72 heures.",
+    "Non assignee": "Situation sans responsable operationnel identifie.",
+    "Delai moyen d'assignation": "Temps moyen entre la creation d'une demande et son attribution.",
+    "Delai moyen de resolution": "Temps moyen entre la creation et la cloture d'une demande.",
+}
+
+
+def _ops_report_parse_datetime(value):
+    if isinstance(value, datetime):
+        return value
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        return datetime.fromisoformat(raw)
+    except Exception:
+        return None
+
+
+def _ops_report_format_datetime(value) -> str:
+    dt_value = _ops_report_parse_datetime(value)
+    if dt_value is None:
+        return _ops_report_clean_text(str(value or ""))
+    month_name = OPS_REPORT_FR_MONTHS.get(dt_value.month, "")
+    return _ops_report_clean_text(
+        f"{dt_value.day:02d} {month_name} {dt_value.year} a {dt_value.hour:02d}:{dt_value.minute:02d}"
+    )
+
+
+def _ops_report_labelize(value, mapping: dict[str, str]) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return "-"
+    normalized = raw.lower()
+    if normalized in mapping:
+        return _ops_report_clean_text(mapping[normalized])
+    normalized = normalized.replace("-", "_")
+    if normalized in mapping:
+        return _ops_report_clean_text(mapping[normalized])
+    return _ops_report_clean_text(raw.replace("_", " ").strip().title())
+
+
+def _ops_report_clean_text(value: str) -> str:
+    return (
+        str(value or "")
+        .replace(" a ", " à ")
+        .replace("Elevee", "Élevée")
+        .replace("elevee", "élevée")
+        .replace("Cloturee", "Clôturée")
+        .replace("cloturee", "clôturée")
+        .replace("Annulee", "Annulée")
+        .replace("annulee", "annulée")
+        .replace("Sante", "Santé")
+        .replace("sante", "santé")
+        .replace("MaÃ®trisÃ©", "Maîtrisé")
+        .replace("DÃ©passÃ©", "Dépassé")
+    )
+
+
+def _ops_report_format_number(value) -> str:
+    if isinstance(value, float):
+        return f"{value:.1f}".replace(".", ",")
+    return str(value)
+
+
+def _ops_report_indicator_rows(report: dict) -> list[list[str]]:
+    requests_data = report.get("requests", {})
+    sla_data = report.get("sla", {})
+    snapshot_map = {
+        item.get("key"): item
+        for item in report.get("executive_snapshot", [])
+        if isinstance(item, dict)
+    }
+
+    def _lecture(key: str, fallback: str) -> str:
+        row = snapshot_map.get(key) or {}
+        return str(row.get("delta_text") or fallback)
+
+    rows = [
+        ["Situations ouvertes", _ops_report_format_number(requests_data.get("open", 0)), _lecture("open_requests", "Volume de suivi en cours.")],
+        ["Non assignees", _ops_report_format_number(requests_data.get("unassigned", 0)), _lecture("unassigned_requests", "Situations sans referent operationnel.")],
+        ["SLA depasses", _ops_report_format_number(sla_data.get("breach_count", 0)), _lecture("sla_breaches", "Jalons de suivi a surveiller.")],
+        ["Temps moyen de resolution", f"{_ops_report_format_number(sla_data.get('avg_resolution_hours', 0.0))} h", _lecture("avg_resolution_hours", "Delai moyen observe sur les clotures.")],
+        ["Situations critiques", _ops_report_format_number(requests_data.get("critical", 0)), _lecture("critical_requests", "Cas prioritaires ouverts.")],
+        ["Charge operationnelle", _ops_report_format_number((snapshot_map.get("operational_load") or {}).get("raw_value", 0)), _lecture("operational_load", "Situations ouvertes par intervenant actif.")],
+    ]
+    return [
+        [
+            _ops_report_clean_text(value) if isinstance(value, str) else value
+            for value in row
+        ]
+        for row in rows
+    ]
+
+
+def _ops_report_human_title(title: str | None, item_id: int | None = None) -> str:
+    raw = str(title or "").strip()
+    if not raw:
+        return f"Situation #{item_id}" if item_id else "Situation"
+    if re.match(r"^DEMO\s+OPS\s+\d+$", raw, flags=re.IGNORECASE):
+        return f"Situation #{item_id}" if item_id else "Situation"
+    return raw
+
+
+def _ops_report_sla_level(item: dict) -> str:
+    updated_at = _ops_report_parse_datetime(item.get("updated_at"))
+    created_at = _ops_report_parse_datetime(item.get("created_at"))
+    reference = updated_at or created_at
+    if reference is None:
+        return "A surveiller"
+    now_naive = datetime.now(UTC).replace(tzinfo=None)
+    ref_naive = reference.astimezone(UTC).replace(tzinfo=None) if getattr(reference, "tzinfo", None) else reference
+    age_hours = (now_naive - ref_naive).total_seconds() / 3600.0
+    if age_hours >= 72:
+        return "Dépassé"
+    if age_hours >= 48:
+        return "Vigilance"
+    return "Maîtrisé"
+
+
+def _build_operational_report_xlsx_bytes(report: dict):
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+        from openpyxl.utils import get_column_letter
+    except Exception:
+        return None, None
+
+    wb = Workbook()
+    wb.properties.title = "HelpChain - Rapport opérationnel"
+    wb.properties.subject = "Rapport opérationnel institutionnel"
+    wb.properties.creator = "HelpChain"
+    wb.properties.company = "HelpChain"
+    wb.properties.description = "Classeur de pilotage opérationnel territorial"
+
+    title_fill = PatternFill("solid", fgColor="0F2742")
+    section_fill = PatternFill("solid", fgColor="EAF1F8")
+    header_fill = PatternFill("solid", fgColor="D9E4F0")
+    calm_fill = PatternFill("solid", fgColor="EEF6FF")
+    watch_fill = PatternFill("solid", fgColor="FFF8E8")
+    elevated_fill = PatternFill("solid", fgColor="FFF0E6")
+    critical_fill = PatternFill("solid", fgColor="FDECEC")
+    white_font = Font(color="FFFFFF", bold=True, size=12)
+    title_font = Font(color="10243D", bold=True, size=16)
+    section_font = Font(color="10243D", bold=True, size=11)
+    header_font = Font(color="243A55", bold=True)
+    strong_font = Font(color="10243D", bold=True)
+    body_font = Font(color="243A55", size=10)
+    meta_font = Font(color="60748D", size=9)
+    thin_side = Side(style="thin", color="D6E0EC")
+    border = Border(left=thin_side, right=thin_side, top=thin_side, bottom=thin_side)
+
+    def _severity_fill(level: str):
+        normalized = str(level or "").lower()
+        if normalized in {"critical", "critique", "dépassé", "depasse"}:
+            return critical_fill
+        if normalized in {"high", "élevée", "elevee", "sous pression"}:
+            return elevated_fill
+        if normalized in {"moderate", "vigilance", "watch"}:
+            return watch_fill
+        return calm_fill
+
+    def _style_title(ws, title: str, subtitle: str = ""):
+        ws.merge_cells("A1:G1")
+        ws["A1"] = title
+        ws["A1"].fill = title_fill
+        ws["A1"].font = white_font
+        ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+        if subtitle:
+            ws.merge_cells("A2:G2")
+            ws["A2"] = subtitle
+            ws["A2"].font = meta_font
+            ws["A2"].alignment = Alignment(horizontal="left", vertical="center")
+
+    def _style_section_row(ws, row_idx: int, label: str, end_col: int = 7):
+        ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=end_col)
+        cell = ws.cell(row=row_idx, column=1)
+        cell.value = label
+        cell.fill = section_fill
+        cell.font = section_font
+        cell.border = border
+        cell.alignment = Alignment(horizontal="left", vertical="center")
+
+    def _style_header_row(ws, row_idx: int, headers: list[str]):
+        for col_idx, label in enumerate(headers, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = label
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.border = border
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    def _auto_size(ws, max_width: int = 42):
+        for col_idx, column_cells in enumerate(ws.columns, start=1):
+            max_len = 0
+            for cell in column_cells:
+                value = "" if cell.value is None else str(cell.value)
+                max_len = max(max_len, len(value))
+            ws.column_dimensions[get_column_letter(col_idx)].width = min(max(12, max_len + 2), max_width)
+
+    scope_name = report["scope"]["structure_name"] or "Toutes les structures visibles"
+    generated_label = _ops_report_format_datetime(report["generated_at"])
+
+    ws = wb.active
+    ws.title = "Synthèse exécutive"
+    _style_title(ws, "HelpChain - Rapport opérationnel", "Synthèse institutionnelle de pilotage")
+    ws["A4"] = "Période"
+    ws["B4"] = f"{report['period']['days']} jours"
+    ws["D4"] = "Périmètre"
+    ws["E4"] = scope_name
+    ws["A5"] = "Généré le"
+    ws["B5"] = generated_label
+    ws["D5"] = "Confidentialité"
+    ws["E5"] = "Usage interne"
+    ws["A6"] = "Statut opérationnel"
+    ws["B6"] = report["operational_conclusion"]["stability"]
+    for ref in ("A4", "A5", "A6", "D4", "D5"):
+        ws[ref].font = header_font
+    for ref in ("B4", "B5", "B6", "E4", "E5"):
+        ws[ref].font = body_font
+
+    _style_section_row(ws, 8, "Executive snapshot")
+    snapshot_headers = ["Indicateur", "Valeur", "Évolution", "Sévérité", "Lecture"]
+    _style_header_row(ws, 9, snapshot_headers)
+    row_idx = 10
+    zones_count = len(report.get("territorial_pressure", {}).get("zones", []) or [])
+    for item in report.get("executive_snapshot", []):
+        values = [
+            item.get("label", ""),
+            item.get("value", ""),
+            item.get("delta_text", ""),
+            item.get("severity_label", ""),
+            item.get("summary", ""),
+        ]
+        for col_idx, value in enumerate(values, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if col_idx == 4:
+                cell.fill = _severity_fill(str(item.get("severity") or "stable"))
+        row_idx += 1
+    ws.cell(row=row_idx, column=1, value="Zones sous tension")
+    ws.cell(row=row_idx, column=2, value=str(zones_count))
+    ws.cell(row=row_idx, column=3, value="Lecture territoriale")
+    ws.cell(row=row_idx, column=4, value="Vigilance" if zones_count else "Stable")
+    ws.cell(row=row_idx, column=5, value=report.get("territorial_pressure", {}).get("summary", ""))
+    for col_idx in range(1, 6):
+        cell = ws.cell(row=row_idx, column=col_idx)
+        cell.border = border
+        cell.font = body_font
+        cell.alignment = Alignment(vertical="top", wrap_text=True)
+        if col_idx == 4:
+            cell.fill = _severity_fill("moderate" if zones_count else "stable")
+
+    row_idx += 2
+    _style_section_row(ws, row_idx, "Synthèse exécutive")
+    row_idx += 1
+    ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx + 2, end_column=7)
+    ws.cell(row=row_idx, column=1, value=report.get("executive_summary", ""))
+    ws.cell(row=row_idx, column=1).font = body_font
+    ws.cell(row=row_idx, column=1).alignment = Alignment(wrap_text=True, vertical="top")
+    ws.cell(row=row_idx, column=1).border = border
+
+    row_idx += 4
+    _style_section_row(ws, row_idx, "Top 3 actions prioritaires")
+    row_idx += 1
+    _style_header_row(ws, row_idx, ["Priorité", "Action", "Impact", "Horizon"])
+    row_idx += 1
+    for item in report.get("priority_actions", [])[:3]:
+        values = [
+            _ops_report_labelize(item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS),
+            item.get("title", ""),
+            item.get("impact", ""),
+            item.get("horizon", ""),
+        ]
+        for col_idx, value in enumerate(values, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if col_idx == 1:
+                cell.fill = _severity_fill(str(item.get("severity") or item.get("severity_label") or "stable"))
+        row_idx += 1
+    ws.freeze_panes = "A9"
+    ws.auto_filter.ref = f"A9:E{max(10, row_idx - 1)}"
+    _auto_size(ws)
+
+    ws = wb.create_sheet("Indicateurs opérationnels")
+    _style_title(ws, "Indicateurs opérationnels", scope_name)
+    _style_header_row(ws, 4, ["Indicateur", "Valeur", "Évolution", "Lecture opérationnelle"])
+    row_idx = 5
+    for item in _ops_report_indicator_rows(report):
+        for col_idx, value in enumerate(item, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+        row_idx += 1
+    extra_rows = [
+        ["Taux d’assignation", f"{_ops_report_format_number(report.get('sla', {}).get('assignment_rate', 0.0))} %", "", "Part des situations ouvertes déjà attribuées."],
+        ["Résolues <24h", f"{_ops_report_format_number(report.get('sla', {}).get('resolved_under_24h_rate', 0.0))} %", "", "Part des situations clôturées rapidement sur la période."],
+        ["Délai moyen d’assignation", f"{_ops_report_format_number(report.get('sla', {}).get('avg_assignment_hours', 0.0))} h", "", "Temps moyen entre la création et l’attribution."],
+    ]
+    for item in extra_rows:
+        for col_idx, value in enumerate(item, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+        row_idx += 1
+    ws.freeze_panes = "A4"
+    ws.auto_filter.ref = f"A4:D{row_idx - 1}"
+    _auto_size(ws)
+
+    ws = wb.create_sheet("Tensions territoriales")
+    _style_title(ws, "Tensions territoriales", "Lecture territoriale consolidée")
+    territorial_headers = ["Zone", "Couverture", "Ouvertes", "Intervenants actifs", "Disponibles", "Niveau tension", "Score pression", "Lecture"]
+    _style_header_row(ws, 4, territorial_headers)
+    row_idx = 5
+    for zone in report.get("territorial_pressure", {}).get("zones", []):
+        pressure_score = int(zone.get("heat", 0) or 0) * 20
+        values = [
+            zone.get("city", ""),
+            zone.get("coverage_label", ""),
+            zone.get("open_requests", 0),
+            zone.get("active_intervenants", 0),
+            zone.get("available_intervenants", 0),
+            zone.get("severity_label", ""),
+            pressure_score,
+            zone.get("alert", ""),
+        ]
+        for col_idx, value in enumerate(values, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if col_idx in {2, 6, 7}:
+                cell.fill = _severity_fill(str(zone.get("severity") or "stable"))
+        row_idx += 1
+    ws.freeze_panes = "A4"
+    ws.auto_filter.ref = f"A4:H{max(4, row_idx - 1)}"
+    _auto_size(ws)
+
+    ws = wb.create_sheet("Actions prioritaires")
+    _style_title(ws, "Actions prioritaires", "Pilotage et arbitrages recommandés")
+    _style_header_row(ws, 4, ["Priorité", "Action", "Impact", "Horizon", "Responsable recommandé"])
+    row_idx = 5
+    for item in report.get("priority_actions", []):
+        horizon = item.get("horizon", "")
+        if str(horizon).lower() == "immediat":
+            owner_hint = "Direction opérationnelle"
+        elif str(horizon).lower() == "72h":
+            owner_hint = "Coordination territoriale"
+        else:
+            owner_hint = "Pilotage structure"
+        values = [
+            _ops_report_labelize(item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS),
+            item.get("title", ""),
+            item.get("impact", ""),
+            horizon,
+            owner_hint,
+        ]
+        for col_idx, value in enumerate(values, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if col_idx == 1:
+                cell.fill = _severity_fill(str(item.get("severity") or item.get("severity_label") or "stable"))
+        row_idx += 1
+    ws.freeze_panes = "A4"
+    ws.auto_filter.ref = f"A4:E{max(4, row_idx - 1)}"
+    _auto_size(ws)
+
+    ws = wb.create_sheet("Situations opérationnelles")
+    _style_title(ws, "Situations opérationnelles", "Liste de travail institutionnelle")
+    situation_headers = ["ID", "Titre métier", "Ville", "Statut lisible", "Priorité lisible", "Créée le", "Dernière activité", "Référent", "Niveau SLA"]
+    _style_header_row(ws, 4, situation_headers)
+    row_idx = 5
+    for item in report.get("items", []):
+        values = [
+            item.get("id"),
+            _ops_report_human_title(item.get("title"), item.get("id")),
+            item.get("city") or "-",
+            _ops_report_labelize(item.get("status"), OPS_REPORT_STATUS_LABELS),
+            _ops_report_labelize(item.get("priority"), OPS_REPORT_PRIORITY_LABELS),
+            _ops_report_format_datetime(item.get("created_at")) if item.get("created_at") else "-",
+            _ops_report_format_datetime(item.get("updated_at")) if item.get("updated_at") else "-",
+            "Attribué" if item.get("owner_id") else "Non assigné",
+            _ops_report_sla_level(item),
+        ]
+        for col_idx, value in enumerate(values, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if col_idx == 9:
+                cell.fill = _severity_fill(str(value))
+        row_idx += 1
+    ws.freeze_panes = "A4"
+    ws.auto_filter.ref = f"A4:I{max(4, row_idx - 1)}"
+    _auto_size(ws, max_width=34)
+
+    ws = wb.create_sheet("Analyse automatique")
+    _style_title(ws, "Analyse automatique", "Assistant d’aide au pilotage")
+    _style_header_row(ws, 4, ["Constat", "Niveau", "Risque", "Horizon", "Analyse"])
+    row_idx = 5
+    for item in report.get("automatic_analysis", []):
+        values = [
+            item.get("title", ""),
+            _ops_report_labelize(item.get("severity"), OPS_REPORT_PRIORITY_LABELS) if item.get("severity") else "Stable",
+            item.get("risk", ""),
+            item.get("horizon", ""),
+            item.get("text", ""),
+        ]
+        for col_idx, value in enumerate(values, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.value = value
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+            if col_idx == 2:
+                cell.fill = _severity_fill(str(item.get("severity") or "stable"))
+        row_idx += 1
+    ws.freeze_panes = "A4"
+    ws.auto_filter.ref = f"A4:E{max(4, row_idx - 1)}"
+    _auto_size(ws)
+
+    ws = wb.create_sheet("Définitions")
+    _style_title(ws, "Définitions", "Glossaire institutionnel")
+    _style_header_row(ws, 4, ["Indicateur", "Définition"])
+    row_idx = 5
+    for label, definition in OPS_REPORT_DEFINITIONS.items():
+        ws.cell(row=row_idx, column=1, value=label)
+        ws.cell(row=row_idx, column=2, value=definition)
+        for col_idx in (1, 2):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+        row_idx += 1
+    extra_defs = [
+        ("Couverture territoriale", "Niveau de présence opérationnelle visible sur une zone donnée."),
+        ("Charge opérationnelle", "Volume de situations ouvertes rapporté aux moyens mobilisables."),
+        ("SLA dépassé", "Situation dont le jalon de suivi attendu n’est plus respecté."),
+    ]
+    for label, definition in extra_defs:
+        ws.cell(row=row_idx, column=1, value=label)
+        ws.cell(row=row_idx, column=2, value=definition)
+        for col_idx in (1, 2):
+            cell = ws.cell(row=row_idx, column=col_idx)
+            cell.border = border
+            cell.font = body_font
+            cell.alignment = Alignment(vertical="top", wrap_text=True)
+        row_idx += 1
+    ws.freeze_panes = "A4"
+    ws.auto_filter.ref = f"A4:B{max(4, row_idx - 1)}"
+    _auto_size(ws, max_width=60)
+
+    for ws in wb.worksheets:
+        ws.sheet_view.showGridLines = True
+        ws["A1"].font = white_font
+        ws["A1"].alignment = Alignment(horizontal="left", vertical="center")
+        ws.row_dimensions[1].height = 24
+
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+
+    filename = f"helpchain-rapport-operationnel-{report['period']['days']}j.xlsx"
+    return bio.getvalue(), filename
+
+
+def _build_operational_report_xlsx_response(report: dict):
+    payload, filename = _build_operational_report_xlsx_bytes(report)
+    if payload is None or filename is None:
+        return Response("openpyxl is not installed", status=500)
+    return Response(
+        payload,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+def _build_operational_report_csv_response(report: dict):
+    output = StringIO()
+    writer = csv.writer(output, delimiter=";")
+
+    writer.writerow(["Rapport opérationnel HelpChain"])
+    writer.writerow(["Périmètre", report["scope"]["structure_name"] or "Toutes les structures visibles"])
+    writer.writerow(["Période", f'{report["period"]["days"]} jours'])
+    writer.writerow(["Généré le", _ops_report_format_datetime(report["generated_at"])])
+    writer.writerow(["Confidentialité", "Usage interne"])
+    writer.writerow([])
+
+    writer.writerow(["Synthèse exécutive"])
+    writer.writerow(["Niveau opérationnel", report["operational_conclusion"]["stability"]])
+    writer.writerow(["Lecture exécutive courte", report["executive_summary"]])
+    writer.writerow([])
+
+    writer.writerow(["Indicateurs clés"])
+    writer.writerow(["Indicateur", "Valeur", "Lecture"])
+    for row in _ops_report_indicator_rows(report):
+        writer.writerow(row)
+    writer.writerow([])
+
+    writer.writerow(["Répartition par catégorie"])
+    writer.writerow(["Catégorie", "Volume"])
+    for row in report["breakdowns"]["by_category"]:
+        writer.writerow([
+            _ops_report_labelize(row["category"], OPS_REPORT_CATEGORY_LABELS),
+            row["count"],
+        ])
+    writer.writerow([])
+
+    writer.writerow(["Répartition par statut"])
+    writer.writerow(["Statut", "Volume"])
+    for row in report["breakdowns"]["by_status"]:
+        writer.writerow([
+            _ops_report_labelize(row["status"], OPS_REPORT_STATUS_LABELS),
+            row["count"],
+        ])
+    writer.writerow([])
+
+    writer.writerow(["Définitions des indicateurs"])
+    writer.writerow(["Indicateur", "Définition"])
+    for label, definition in OPS_REPORT_DEFINITIONS.items():
+        writer.writerow([label, definition])
+    writer.writerow([])
+
+    if report.get("priority_actions"):
+        writer.writerow(["Actions prioritaires"])
+        writer.writerow(["Priorité", "Action", "Impact", "Horizon"])
+        for item in report["priority_actions"]:
+            writer.writerow([
+                _ops_report_labelize(item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS),
+                item.get("title", ""),
+                item.get("impact", ""),
+                item.get("horizon", ""),
+            ])
+
+    csv_body = output.getvalue()
+    csv_body = (
+        csv_body
+        .replace(" a ", " à ")
+        .replace("Confidentialite", "Confidentialité")
+        .replace("Synthese", "Synthèse")
+        .replace("executive", "exécutive")
+        .replace("operationnel", "opérationnel")
+        .replace("operationnelle", "opérationnelle")
+        .replace("operationnelles", "opérationnelles")
+        .replace("operationnellement", "opérationnellement")
+        .replace("clés", "clés")
+        .replace("cloturees", "clôturées")
+        .replace("Cloturee", "Clôturée")
+        .replace("Cloturé", "Clôturé")
+        .replace("Cloture", "Clôturé")
+        .replace("Sante", "Santé")
+        .replace("Repartition", "Répartition")
+        .replace("Categorie", "Catégorie")
+        .replace("Perimetre", "Périmètre")
+        .replace("perimetre", "périmètre")
+        .replace("Delai", "Délai")
+        .replace("periode", "période")
+        .replace("recente", "récente")
+        .replace("activite", "activité")
+        .replace("evolution", "évolution")
+        .replace("assignation", "assignation")
+        .replace("Elevee", "Élevée")
+        .replace("assignee", "assignée")
+        .replace("creation", "création")
+        .replace("resolution", "résolution")
+        .replace("traitee", "traitée")
+        .replace("cloture", "clôture")
+        .replace("selectionne", "sélectionné")
+        .replace("necessitant", "nécessitant")
+        .replace("enregistree", "enregistrée")
+        .replace("identifie", "identifié")
+    )
+    csv_data = "\ufeff" + csv_body
+    filename = f"helpchain-rapport-operationnel-{report['period']['days']}j.csv"
+
+    return Response(
+        csv_data,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
 
 
 # --- Operational reports ---
@@ -13265,6 +14311,29 @@ def admin_operations_report_csv():
         structure_id=structure_id,
         days=days,
     )
+
+    return _build_operational_report_csv_response(report)
+
+
+@admin_bp.get("/reports/operations/export.xlsx")
+@admin_required
+@admin_role_required("readonly", "ops", "admin", "superadmin")
+def admin_operations_report_xlsx():
+    admin_required_404()
+
+    days = request.args.get("days", default=7, type=int) or 7
+    days = max(1, min(days, 366))
+
+    structure_id = None
+    if not _is_global_admin():
+        structure_id = _current_structure_id()
+
+    report = build_operational_report(
+        structure_id=structure_id,
+        days=days,
+    )
+
+    return _build_operational_report_xlsx_response(report)
 
     output = StringIO()
     writer = csv.writer(output, delimiter=";")
@@ -13315,7 +14384,6 @@ def admin_operations_report_csv():
             "Cache-Control": "no-store",
         },
     )
-
 @admin_bp.get("/reports/operations/export.pdf")
 @admin_required
 @admin_role_required("readonly", "ops", "admin", "superadmin")
@@ -13326,7 +14394,7 @@ def admin_operations_report_pdf():
 
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
     from reportlab.platypus import (
         Paragraph,
@@ -13347,6 +14415,8 @@ def admin_operations_report_pdf():
         structure_id=structure_id,
         days=days,
     )
+
+    return _build_operational_report_pdf_response(report)
 
     buffer = BytesIO()
     doc = SimpleDocTemplate(

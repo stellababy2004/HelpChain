@@ -40,7 +40,7 @@
         >
           Ajouter
         </a>
-        <a href="{{ url_for('admin.admin_professionals_map') }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{% if scoped_structure %}{{ url_for('admin.admin_professionals_map', structure_id=structure.id) }}{% else %}{{ url_for('admin.admin_professionals_map') }}{% endif %}" class="btn btn-outline-secondary btn-sm">
           Carte
         </a>
       </div>
