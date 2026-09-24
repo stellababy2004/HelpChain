@@ -60,7 +60,18 @@
                 {% if value %}checked{% endif %}
                 {% if key in ["share_documents", "share_internal_notes"] %}disabled{% endif %}
               >
-              <span class="form-check-label">{{ key }}</span>
+              <span class="form-check-label">
+                {{ {
+                  "share_identity": "Identité strictement nécessaire",
+                  "share_contact": "Coordonnées de contact",
+                  "share_category": "Catégorie d’orientation",
+                  "share_priority": "Niveau de priorité",
+                  "share_summary": "Résumé partagé",
+                  "share_documents": "Documents partagés",
+                  "share_internal_notes": "Notes internes",
+                  "share_risk_level": "Niveau de vigilance"
+                }.get(key, key) }}
+              </span>
             </label>
           {% endfor %}
         </fieldset>
