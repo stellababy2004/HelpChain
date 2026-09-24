@@ -1156,6 +1156,54 @@ def admin_referrals_received():
 def admin_referrals_sent():
     admin_required_404()
     referrals = _scope_for_direction("sent").order_by(CaseReferral.created_at.desc()).all()
+
+    active_connections = (
+        _connection_query()
+        .filter(OrganizationConnection.status == "active")
+        .order_by(
+            OrganizationConnection.accepted_at.desc(),
+            OrganizationConnection.created_at.desc(),
+        )
+        .all()
+    )
+
+    partner_referrals_map = {}
+    for connection in active_connections:
+        partner_referrals_map[connection.id] = [
+            referral
+            for referral in referrals
+            if {
+                referral.from_structure_id,
+                referral.to_structure_id,
+            }
+            == {
+                connection.source_structure_id,
+                connection.target_structure_id,
+            }
+        ]
+
+    active_partner_snapshots = {
+        connection.id: _connection_partner_snapshot(
+            connection,
+            partner_referrals_map.get(connection.id, []),
+        )
+        for connection in active_connections
+    }
+
+    network_last_activity = max(
+        [
+            snapshot.get("last_activity_at")
+            for snapshot in active_partner_snapshots.values()
+            if snapshot.get("last_activity_at") is not None
+        ],
+        default=None,
+    )
+
+    network_completed_count = sum(
+        int(snapshot.get("completed_count") or 0)
+        for snapshot in active_partner_snapshots.values()
+    )
+
     return render_template(
         "admin/referrals/index.html",
         referrals=referrals,
@@ -1166,18 +1214,18 @@ def admin_referrals_sent():
         actionable_partner_requests=[],
         awaiting_counterpart_partner_requests=[],
         actionable_referrals=[],
-        active_partner_connections=[],
+        active_partner_connections=active_connections,
         pending_partner_count=0,
-        active_partner_count=0,
+        active_partner_count=len(active_connections),
         workspace_state="active" if referrals else "empty",
         has_action_required=False,
         can_accept_or_refuse_connection=_can_accept_or_refuse_connection,
         permissions_summary=_connection_permissions_summary,
         status_label=_connection_status_label,
         connection_status_note=_connection_status_note,
-        active_partner_snapshots={},
-        network_last_activity=None,
-        network_completed_count=0,
+        active_partner_snapshots=active_partner_snapshots,
+        network_last_activity=network_last_activity,
+        network_completed_count=network_completed_count,
         referral_signal=_referral_signal,
         connection_signal=_connection_signal,
     )
