@@ -445,6 +445,8 @@
                         Désaffectation
                       {% elif ev.action == "note" %}
                         Note interne ajoutée
+                      {% elif ev.action == "partner_referral_sent" %}
+                        Orientation partenaire envoyée
                       {% else %}
                         {{ ev.action }}
                       {% endif %}
@@ -471,7 +473,13 @@
                   {% if ev.action != "note" and (ev.old_value or ev.new_value) %}
                     <div class="small text-muted mt-2">
                       {% if ev.old_value %}<span class="me-2">De <code>{{ ev.old_value }}</code></span>{% endif %}
-                      {% if ev.new_value %}<span>Vers <code>{{ ev.new_value }}</code></span>{% endif %}
+                      {% if ev.new_value %}
+                        {% if ev.action == "partner_referral_sent" and ev.new_value.startswith("case_referral:") %}
+                          <span>Orientation partenaire #{{ ev.new_value.split(":", 1)[1] }}</span>
+                        {% else %}
+                          <span>Vers <code>{{ ev.new_value }}</code></span>
+                        {% endif %}
+                      {% endif %}
                     </div>
                   {% endif %}
                 </div>
