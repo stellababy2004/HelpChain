@@ -128,7 +128,7 @@ def _resolve_admin_source_structure_id_from_request() -> tuple[int | None, str |
 
 
 def _can_view_referral(referral: CaseReferral) -> bool:
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return True
     structure_id = _admin_structure_id()
     return bool(
@@ -303,7 +303,7 @@ def _set_referral_operational_status(
 
 
 def _can_view_connection(connection: OrganizationConnection) -> bool:
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return True
     structure_id = _admin_structure_id()
     return bool(
@@ -349,7 +349,7 @@ def _connection_query():
         joinedload(OrganizationConnection.source_structure),
         joinedload(OrganizationConnection.target_structure),
     ).filter(OrganizationConnection.connection_type == "referral")
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return query
     structure_id = _admin_structure_id()
     if not structure_id:
@@ -833,7 +833,7 @@ def _referral_query():
         joinedload(CaseReferral.to_structure),
         joinedload(CaseReferral.request),
     )
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return query
     structure_id = _admin_structure_id()
     if not structure_id:
@@ -872,14 +872,8 @@ def _parse_shared_scope() -> dict:
 def _shared_summary(source_request: Request | None, referral: CaseReferral) -> str:
     if referral.message:
         return referral.message.strip()
-    if source_request is None:
-        return "Orientation partenaire sans résumé source disponible."
-    return (
-        getattr(source_request, "description", None)
-        or getattr(source_request, "message", None)
-        or getattr(source_request, "title", None)
-        or "Orientation partenaire sans résumé détaillé."
-    )
+    # An empty shared summary must not silently expose the live source record.
+    return referral.reason or "Orientation partenaire sans résumé détaillé."
 
 
 def _safe_referral_username(referral_id: int) -> str:
@@ -1603,23 +1597,23 @@ def admin_referral_accept(referral_id: int):
     if referral.status not in REFERRAL_ACTIVE_STATUSES:
         flash("Orientation déjà traitée.", "info")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id))
-    referral.accepted_by_admin_id = getattr(current_user, "id", None)
-    _set_referral_operational_status(referral, "accepted")
-    local_request = None
     try:
-        local_request = _create_local_request_from_referral(referral)
-    except Exception:
-        current_app.logger.exception("referral_accept_local_request_failed referral_id=%s", referral.id)
-        db.session.rollback()
-        referral = CaseReferral.query.get_or_404(referral_id)
         referral.accepted_by_admin_id = getattr(current_user, "id", None)
         _set_referral_operational_status(referral, "accepted")
-    _log_referral_activity(
-        referral,
-        "accepted",
-        {"local_request_id": getattr(local_request, "id", None)},
-    )
-    db.session.commit()
+        local_request = _create_local_request_from_referral(referral)
+        if local_request is None:
+            raise RuntimeError("Referral acceptance requires a local request")
+        _log_referral_activity(
+            referral,
+            "accepted",
+            {"local_request_id": local_request.id},
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("referral_accept_local_request_failed referral_id=%s", referral_id)
+        flash("Impossible d’accepter l’orientation. Veuillez réessayer.", "danger")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral_id), code=303)
     audit_admin_action(
         action="referral.accept",
         target_type="CaseReferral",
@@ -1756,6 +1750,9 @@ def admin_referral_public_note(referral_id: int):
     _require_referral_access(referral)
     if not _can_update_operational_status(referral):
         abort(403)
+    if _effective_operational_status(referral) in {"refused", "cancelled", "completed"}:
+        flash("Orientation déjà traitée.", "info")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
     note = (request.form.get("public_status_note") or "").strip()
     if not note:
         flash("Note publique vide.", "warning")
@@ -1849,6 +1846,7 @@ def admin_request_refer_submit(req_id: int):
         flash("Motif d’orientation requis.", "warning")
         return redirect(url_for("admin.admin_request_refer", req_id=source_request.id))
 
+    shared_scope = _parse_shared_scope()
     linked_case = Case.query.filter(Case.request_id == source_request.id).first() if _table_exists("cases") else None
     referral = CaseReferral(
         case_id=getattr(linked_case, "id", None),
@@ -1859,8 +1857,8 @@ def admin_request_refer_submit(req_id: int):
         status="sent",
         operational_status="sent",
         reason=reason[:255],
-        message=message or None,
-        shared_scope_json=_parse_shared_scope(),
+        message=(message or None) if shared_scope.get("share_summary") else None,
+        shared_scope_json=shared_scope,
         created_at=utc_now(),
         updated_at=utc_now(),
     )
