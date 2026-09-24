@@ -1677,6 +1677,8 @@ def admin_referral_mark_completed(referral_id: int):
 
     note = (request.form.get("public_status_note") or "").strip() or None
     _set_referral_operational_status(referral, "completed", note=note)
+    if note is None:
+        referral.public_status_note = None
     _log_referral_activity(referral, "completed", {"public": True})
     db.session.commit()
     audit_admin_action(
