@@ -1808,11 +1808,22 @@ def admin_request_refer(req_id: int):
     if not source_structure_id:
         abort(403)
     connections = _active_partner_connections(int(source_structure_id))
+    previous_referrals = (
+        CaseReferral.query.filter(
+            CaseReferral.request_id == source_request.id,
+            CaseReferral.from_structure_id == int(source_structure_id),
+        )
+        .order_by(CaseReferral.created_at.desc())
+        .all()
+    )
     return render_template(
         "admin/referrals/refer_request.html",
         req=source_request,
         connections=connections,
         default_scope=default_referral_shared_scope(),
+        previous_referrals=previous_referrals,
+        operational_status_label=_operational_status_label,
+        effective_operational_status=_effective_operational_status,
     )
 
 

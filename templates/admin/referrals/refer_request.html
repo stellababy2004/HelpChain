@@ -25,6 +25,24 @@
   </header>
 
   <section class="hc-card">
+    {% if previous_referrals %}
+      <div class="alert alert-info mb-4" role="status">
+        <strong>Orientation précédente</strong>
+        <p class="mb-2">
+          Cette demande a déjà fait l’objet de {{ previous_referrals|length }}
+          orientation{% if previous_referrals|length > 1 %}s{% endif %} partenaire{% if previous_referrals|length > 1 %}s{% endif %}.
+        </p>
+        {% set latest_referral = previous_referrals[0] %}
+        <p class="mb-0">
+          Dernière orientation :
+          #{{ latest_referral.id }}
+          vers {{ latest_referral.to_structure.name if latest_referral.to_structure else ("Structure #" ~ latest_referral.to_structure_id) }}
+          — {{ operational_status_label(effective_operational_status(latest_referral)) }}.
+          Une nouvelle orientation reste possible si la situation le nécessite.
+        </p>
+      </div>
+    {% endif %}
+
     {% if connections %}
       <form method="post" action="{{ url_for('admin.admin_request_refer_submit', req_id=req.id) }}" class="hc-referral-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
