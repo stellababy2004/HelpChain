@@ -101,9 +101,13 @@
         {% if local_request %}
           <dt>{{ _("Demande locale") }}</dt>
           <dd>
-            <a href="{{ url_for('admin.admin_request_details', req_id=local_request.id) }}">
+            {% if current_user.structure_id == local_request.structure_id %}
+              <a href="{{ url_for('admin.admin_request_details', req_id=local_request.id) }}">
+                #{{ local_request.id }}
+              </a>
+            {% else %}
               #{{ local_request.id }}
-            </a>
+            {% endif %}
           </dd>
         {% endif %}
       </dl>
