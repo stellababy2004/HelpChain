@@ -98,6 +98,14 @@
             {% endif %}
           </dd>
         {% endif %}
+        {% if local_request %}
+          <dt>{{ _("Demande locale") }}</dt>
+          <dd>
+            <a href="{{ url_for('admin.admin_request_details', req_id=local_request.id) }}">
+              #{{ local_request.id }}
+            </a>
+          </dd>
+        {% endif %}
       </dl>
     </section>
 

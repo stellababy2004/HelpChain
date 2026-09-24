@@ -1558,9 +1558,24 @@ def admin_referral_detail(referral_id: int):
         partner_connection,
         [referral],
     ) if partner_connection else None
+
+    local_request = None
+    for activity in referral.activities:
+        if activity.action != "accepted":
+            continue
+        metadata = getattr(activity, "metadata_json", None) or {}
+        local_request_id = metadata.get("local_request_id")
+        if not local_request_id:
+            continue
+        candidate = db.session.get(Request, int(local_request_id))
+        if candidate and candidate.structure_id == referral.to_structure_id:
+            local_request = candidate
+            break
+
     return render_template(
         "admin/referrals/detail.html",
         referral=referral,
+        local_request=local_request,
         can_accept_or_refuse=_can_accept_or_refuse(referral),
         can_update_operational_status=_can_update_operational_status(referral),
         can_cancel=_can_cancel(referral),
