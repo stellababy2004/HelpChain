@@ -97,6 +97,59 @@
       flex: 0 0 auto;
     }
 
+    /* Desktop navigation: override legacy wrapping and !important spacing. */
+    @media (min-width: 992px) {
+      body.hc-page-home .hc-home-premium__nav-inner {
+        column-gap: 12px !important;
+      }
+
+      body.hc-page-home .hc-home-premium__menu {
+        flex-wrap: nowrap;
+        gap: 4px !important;
+        overflow: visible;
+      }
+
+      body.hc-page-home .hc-home-premium__menu a {
+        flex: 0 0 auto;
+        padding-inline: 6px !important;
+      }
+
+      body.hc-page-home .hc-home-premium__nav-actions a.btn {
+        padding-inline: 12px !important;
+      }
+    }
+
+    @media (min-width: 992px) and (max-width: 1199.98px) {
+      body.hc-page-home .hc-home-premium__nav {
+        padding-inline: 6px;
+      }
+
+      body.hc-page-home .hc-home-premium__brand {
+        gap: 4px !important;
+      }
+
+      body.hc-page-home .hc-home-premium__nav-inner {
+        column-gap: 4px !important;
+      }
+
+      body.hc-page-home .hc-home-premium__menu {
+        gap: 2px !important;
+      }
+
+      body.hc-page-home .hc-home-premium__menu a {
+        flex: 1 0 auto;
+        padding-inline: 0 !important;
+      }
+
+      body.hc-page-home .hc-home-premium__nav-actions {
+        padding-left: 0 !important;
+      }
+
+      body.hc-page-home .hc-home-premium__nav-actions a.btn {
+        padding-inline: 6px !important;
+      }
+    }
+
     body.hc-page-home .hc-home-premium__hero {
       padding-top: 22px !important;
       padding-bottom: 18px !important;
@@ -198,27 +251,7 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: flex-start;
-      margin-top: 0;
-      padding: 5px 0 3px;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-      box-shadow: none;
-      overflow: visible;
-    }
 
-    body.hc-page-home .hc-home-premium__hero-actions {
-      margin: 0;
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 6px;
-      align-items: center;
-      justify-self: start;
-      padding-top: 0;
       flex: 0 0 auto;
       width: auto;
     }
@@ -2223,6 +2256,10 @@
           <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo" data-hc-event="home_primary_cta">{{ _('Demander un pilote') }}</a>
           <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}" data-hc-event="home_secondary_cta">{{ _('Voir le fonctionnement') }}</a>
         </div>
+        <p class="hc-home-premium__hero-public-cta">
+          <span>{{ _('Besoin d’aide ?') }}</span>
+          <a class="hc-home-premium__hero-public-link" href="{{ url_for('main.orienter') }}">{{ _('Orienter une demande') }} <span aria-hidden="true">→</span></a>
+        </p>
         <div class="hc-home-premium__hero-supportInline">
           <p class="hc-home-premium__hero-supportMeta">{{ _('CCAS · réseaux immobiliers · associations · structures multi-sites') }}</p>
           <p class="hc-home-premium__hero-demo-note">{{ _('Déploiement pilote cadré : périmètre clair, rôles définis et continuité visible dès les premiers flux.') }}</p>
