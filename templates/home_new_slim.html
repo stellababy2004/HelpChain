@@ -2261,7 +2261,7 @@
           <a class="hc-home-premium__hero-public-link" href="{{ url_for('main.orienter') }}">{{ _('Orienter une demande') }} <span aria-hidden="true">→</span></a>
         </p>
         <div class="hc-home-premium__hero-supportInline">
-          <p class="hc-home-premium__hero-supportMeta">{{ _('CCAS · réseaux immobiliers · associations · structures multi-sites') }}</p>
+          <p class="hc-home-premium__hero-supportMeta">{{ _('CCAS · associations · établissements scolaires · structures multi-sites') }}</p>
           <p class="hc-home-premium__hero-demo-note">{{ _('Déploiement pilote cadré : périmètre clair, rôles définis et continuité visible dès les premiers flux.') }}</p>
         </div>
       </div>
@@ -2275,7 +2275,7 @@
         </div>
         <img
           class="hc-home-premium__shot-img hc-home-premium__shot-img--hero"
-          src="{{ url_for('static', filename='img/helpchain-hero-final.png') }}?v=20260523-hero-ops"
+          src="{{ url_for('static', filename='img/platform/helpchain-platform-08.png') }}?v=20260523-hero-ops"
           alt="{{ _('Interface de pilotage HelpChain') }}"
           width="1481"
           height="1062"
@@ -2284,23 +2284,61 @@
           fetchpriority="high"
         >
       </div>
-      <div class="hc-home-premium__preview-proof" aria-label="{{ _('Operational proof points') }}">
-        <div class="hc-home-premium__preview-proofItem">
-          <span class="hc-home-premium__preview-proofLabel">{{ _('Réception') }}</span>
-          <span class="hc-home-premium__preview-proofText">{{ _('Entrées centralisées dans un même cadre opérationnel.') }}</span>
-        </div>
-        <div class="hc-home-premium__preview-proofItem">
-          <span class="hc-home-premium__preview-proofLabel">{{ _('Orientation') }}</span>
-          <span class="hc-home-premium__preview-proofText">{{ _('Attribution visible vers le bon acteur, sans rupture de relais.') }}</span>
-        </div>
-        <div class="hc-home-premium__preview-proofItem">
-          <span class="hc-home-premium__preview-proofLabel">{{ _('Suivi') }}</span>
-          <span class="hc-home-premium__preview-proofText">{{ _('Historique, relances et continuité de traitement restent lisibles dans le temps.') }}</span>
-        </div>
-      </div>
+
     </aside>
   </div>
 </section>
+
+<section class="hc-home-premium__platform-showcase"
+         aria-labelledby="hc-platform-showcase-title">
+  <div class="hc-home-premium__platform-showcaseHead">
+    <p class="hc-home-premium__section-kicker">
+      {{ _('UN ESPACE DE PILOTAGE UNIQUE') }}
+    </p>
+
+    <h2 id="hc-platform-showcase-title">
+      {{ _('Une vision opérationnelle commune, du signal initial jusqu’au suivi.') }}
+    </h2>
+
+    <p>
+      {{ _('Priorités, responsabilités, demandes, situations à traiter et capacité du réseau restent lisibles dans un même environnement de travail.') }}
+    </p>
+  </div>
+
+  <div class="hc-home-premium__platform-showcaseVisual">
+    <div class="hc-home-premium__platform-browser">
+      <div class="hc-home-premium__platform-browserBar">
+        <span></span><span></span><span></span>
+        <strong>{{ _('HelpChain · Workspace opérationnel') }}</strong>
+      </div>
+
+      <img
+        src="{{ url_for('static', filename='img/platform/helpchain-platform-08.png') }}"
+        alt="{{ _('Vue d’ensemble du workspace opérationnel HelpChain') }}"
+        loading="lazy"
+      >
+    </div>
+  </div>
+
+  <div class="hc-home-premium__platform-outcomes"
+       aria-label="{{ _('Principaux bénéfices opérationnels') }}">
+    <article>
+      <strong>{{ _('Centraliser') }}</strong>
+      <span>{{ _('Une lecture commune des demandes et situations actives.') }}</span>
+    </article>
+
+    <article>
+      <strong>{{ _('Coordonner') }}</strong>
+      <span>{{ _('Des responsabilités et relais visibles entre acteurs.') }}</span>
+    </article>
+
+    <article>
+      <strong>{{ _('Superviser') }}</strong>
+      <span>{{ _('Des priorités et signaux exploitables pour le pilotage.') }}</span>
+    </article>
+  </div>
+</section>
+
   <section class="hc-home-premium__section hc-home-premium__section--product" id="product" aria-labelledby="hc-home-product-title">
     <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
       <p>{{ _('SÉQUENCE OPÉRATIONNELLE') }}</p>
@@ -2339,7 +2377,7 @@
           </div>
           <img
             class="hc-home-premium__shot-img hc-home-premium__shot-img--module-demandes"
-            src="{{ url_for('static', filename='img/helpchain-module-demandes-dashboard.png') }}?v=20260603-demandes-readable"
+            src="{{ url_for('static', filename='img/platform/helpchain-platform-02.png') }}?v=20260603-demandes-readable"
             alt="{{ _('Liste des demandes HelpChain avec statuts, responsables et priorités') }}"
             width="1480"
             height="1063"
@@ -2369,7 +2407,7 @@
           </div>
           <img
             class="hc-home-premium__shot-img"
-            src="{{ url_for('static', filename='img/product/case.png') }}"
+            src="{{ url_for('static', filename='img/platform/helpchain-platform-03.png') }}"
             alt="{{ _('Vue dossier HelpChain avec responsable, priorité et actions récentes') }}"
             width="1874"
             height="868"
@@ -2413,7 +2451,7 @@
           </div>
           <img
             class="hc-home-premium__shot-img hc-home-premium__shot-img--module-securite"
-            src="{{ url_for('static', filename='img/helpchain-module-securite-dashboard.png') }}"
+            src="{{ url_for('static', filename='img/platform/helpchain-platform-04.png') }}"
             alt="{{ _('Interface HelpChain de sécurité, gouvernance et supervision administrative') }}"
             width="1536"
             height="1024"
@@ -2435,7 +2473,7 @@
           </div>
           <img
             class="hc-home-premium__shot-img"
-            src="{{ url_for('static', filename='img/product/coordination-inter-structures.png') }}"
+            src="{{ url_for('static', filename='img/platform/helpchain-platform-06.png') }}"
             alt="{{ _('Vue HelpChain d’une demande avec orientation vers partenaire dans un cadre inter-structures maîtrisé') }}"
             width="1718"
             height="916"
@@ -2539,7 +2577,52 @@
     </div>
   </section>
 
-  <section class="hc-home-premium__section hc-home-premium__section--case-study-teaser" aria-labelledby="hc-home-case-study-title">
+
+
+<section class="hc-home-premium__audiences"
+         aria-labelledby="hc-home-audiences-title">
+  <div class="hc-home-premium__audiencesHead">
+    <p class="hc-home-premium__section-kicker">
+      {{ _('POUR QUI ?') }}
+    </p>
+
+    <h2 id="hc-home-audiences-title">
+      {{ _('Une même continuité opérationnelle pour des organisations aux réalités différentes.') }}
+    </h2>
+
+    <p>
+      {{ _('HelpChain s’adapte aux structures qui doivent coordonner des demandes, des équipes, des partenaires et des relais sans multiplier les outils parallèles.') }}
+    </p>
+  </div>
+
+  <div class="hc-home-premium__audienceGrid">
+    <article>
+      <span>01</span>
+      <h3>{{ _('Collectivités & CCAS') }}</h3>
+      <p>{{ _('Orienter les demandes, répartir les responsabilités et suivre les relais territoriaux.') }}</p>
+    </article>
+
+    <article>
+      <span>02</span>
+      <h3>{{ _('Associations') }}</h3>
+      <p>{{ _('Coordonner besoins, équipes, bénévoles et partenaires autour d’actions concrètes.') }}</p>
+    </article>
+
+    <article>
+      <span>03</span>
+      <h3>{{ _('Établissements scolaires') }}</h3>
+      <p>{{ _('Structurer les besoins, initiatives, contributions et relais avec la communauté éducative.') }}</p>
+    </article>
+
+    <article>
+      <span>04</span>
+      <h3>{{ _('Réseaux & structures multi-sites') }}</h3>
+      <p>{{ _('Conserver une lecture commune des priorités et responsabilités entre plusieurs entités.') }}</p>
+    </article>
+  </div>
+</section>
+
+<section class="hc-home-premium__section hc-home-premium__section--case-study-teaser" aria-labelledby="hc-home-case-study-title">
     <div class="hc-case-study hc-case-study--teaser">
       <p class="hc-case-study__eyebrow">DÉMARRAGE PILOTE</p>
       <h2 id="hc-home-case-study-title" class="hc-case-study__title">Comment une structure démarre en 14 jours</h2>
@@ -2685,5 +2768,3 @@
 </main>
 <script src="{{ url_for('static', filename='js/home-mobile-nav.js') }}?v=20260729-1"></script>
 {% endblock %}
-
-

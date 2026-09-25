@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    HELPCHAIN HOMEPAGE HERO — CANONICAL LAYOUT
    Single source of truth for desktop, tablet and mobile.
    ========================================================= */
@@ -16,7 +16,7 @@ html body.hc-page-home .hc-home-premium__hero {
 html body.hc-page-home .hc-home-premium__hero-grid {
   position: relative !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 0.92fr) minmax(520px, 1.08fr) !important;
+  grid-template-columns: minmax(0, 0.95fr) minmax(560px, 1.05fr) !important;
   align-items: start !important;
   overflow: visible !important;
   width: min(100%, 1240px) !important;
@@ -44,10 +44,10 @@ html body.hc-page-home .hc-home-premium__hero-copy {
 
 html body.hc-page-home .hc-home-premium__hero-copy h1 {
   width: auto !important;
-  max-width: 13ch !important;
+  max-width: 17ch !important;
   margin: 0 !important;
   padding: 0 !important;
-  font-size: clamp(3rem, 5vw, 4.65rem) !important;
+  font-size: clamp(2.45rem, 3.35vw, 3.45rem) !important;
   line-height: 1.01 !important;
   letter-spacing: -0.055em !important;
   font-weight: 780 !important;
@@ -345,5 +345,958 @@ html body.hc-page-home .hc-home-premium__hero-public-link:focus-visible {
   html body.hc-page-home .hc-home-premium__hero-copy > .hc-home-premium__lead {
     font-size: 0.95rem !important;
     line-height: 1.52 !important;
+  }
+}
+
+
+/* =========================================================
+   HELPCHAIN HOMEPAGE - PRODUCT-LED PREMIUM PASS
+   ========================================================= */
+
+html body.hc-page-home .hc-home-premium__hero {
+  padding-bottom: 34px !important;
+}
+
+html body.hc-page-home .hc-home-premium__hero-grid {
+  grid-template-columns: minmax(0, 0.88fr) minmax(580px, 1.12fr) !important;
+  width: min(100%, 1320px) !important;
+  max-width: 1320px !important;
+  gap: clamp(38px, 4.5vw, 68px) !important;
+}
+
+html body.hc-page-home .hc-home-premium__hero-copy {
+  max-width: 570px !important;
+}
+
+html body.hc-page-home .hc-home-premium__hero-copy h1 {
+  max-width: 17ch !important;
+  font-size: clamp(2.4rem, 3.1vw, 3.35rem) !important;
+  line-height: 1.035 !important;
+}
+
+html body.hc-page-home .hc-home-premium__preview {
+  padding: 12px !important;
+}
+
+html body.hc-page-home .hc-home-premium__shot-card--hero {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcase {
+  width: min(calc(100% - 40px), 1380px);
+  margin: 28px auto 88px;
+  padding: clamp(34px, 4vw, 58px);
+  border: 1px solid rgba(17, 38, 56, 0.10);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 80% 0%, rgba(52, 137, 235, 0.12), transparent 35%),
+    linear-gradient(145deg, #f7fbff 0%, #ffffff 52%, #f5f8fb 100%);
+  box-shadow: 0 30px 80px rgba(24, 48, 71, 0.08);
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcaseHead {
+  max-width: 850px;
+  margin: 0 auto 30px;
+  text-align: center;
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcaseHead h2 {
+  margin: 8px auto 14px;
+  max-width: 19ch;
+  font-size: clamp(2rem, 3.2vw, 3.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcaseHead > p:last-child {
+  max-width: 68ch;
+  margin: 0 auto;
+  font-size: 1.04rem;
+  line-height: 1.65;
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcaseVisual {
+  width: 100%;
+}
+
+html body.hc-page-home .hc-home-premium__platform-browser {
+  overflow: hidden;
+  border: 1px solid rgba(19, 42, 63, 0.13);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(21, 44, 66, 0.16);
+}
+
+html body.hc-page-home .hc-home-premium__platform-browserBar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-bottom: 1px solid rgba(19, 42, 63, 0.09);
+  background: #f8fafc;
+}
+
+html body.hc-page-home .hc-home-premium__platform-browserBar span {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: rgba(35, 62, 84, 0.20);
+}
+
+html body.hc-page-home .hc-home-premium__platform-browserBar strong {
+  margin-left: 7px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #526273;
+}
+
+html body.hc-page-home .hc-home-premium__platform-browser img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes article {
+  padding: 18px 20px;
+  border: 1px solid rgba(19, 42, 63, 0.09);
+  border-radius: 17px;
+  background: rgba(255,255,255,0.82);
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes strong,
+html body.hc-page-home .hc-home-premium__platform-outcomes span {
+  display: block;
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes strong {
+  margin-bottom: 5px;
+  font-size: 0.96rem;
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes span {
+  color: #617080;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+html body.hc-page-home .hc-home-premium__audiences {
+  width: min(calc(100% - 40px), 1240px);
+  margin: 84px auto;
+}
+
+html body.hc-page-home .hc-home-premium__audiencesHead {
+  max-width: 780px;
+  margin-bottom: 28px;
+}
+
+html body.hc-page-home .hc-home-premium__audiencesHead h2 {
+  margin: 8px 0 13px;
+  max-width: 22ch;
+  font-size: clamp(1.9rem, 2.8vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+html body.hc-page-home .hc-home-premium__audiencesHead > p:last-child {
+  max-width: 67ch;
+  line-height: 1.65;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid article {
+  min-height: 210px;
+  padding: 24px;
+  border: 1px solid rgba(19, 42, 63, 0.10);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(25, 48, 70, 0.055);
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid article > span {
+  display: inline-block;
+  margin-bottom: 30px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #657789;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid h3 {
+  margin: 0 0 9px;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid p {
+  margin: 0;
+  color: #617080;
+  font-size: 0.91rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  html body.hc-page-home .hc-home-premium__audienceGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  html body.hc-page-home .hc-home-premium__hero-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-copy {
+    max-width: 760px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  html body.hc-page-home .hc-home-premium__platform-showcase,
+  html body.hc-page-home .hc-home-premium__audiences {
+    width: calc(100% - 24px);
+    margin-top: 34px;
+    margin-bottom: 54px;
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-showcase {
+    padding: 22px 14px;
+    border-radius: 22px;
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-showcaseHead {
+    text-align: left;
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-showcaseHead h2 {
+    margin-left: 0;
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-outcomes,
+  html body.hc-page-home .hc-home-premium__audienceGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html body.hc-page-home .hc-home-premium__audienceGrid article {
+    min-height: 0;
+  }
+}
+
+/* HELPCHAIN HOMEPAGE - CONSOLIDATED PRODUCT STORY */
+
+/* ---------------------------------------------------------
+   1. Overall rhythm: shorter, more product-led homepage
+   --------------------------------------------------------- */
+
+html body.hc-page-home .hc-home-premium__section {
+  padding-top: clamp(48px, 5vw, 76px) !important;
+  padding-bottom: clamp(48px, 5vw, 76px) !important;
+}
+
+html body.hc-page-home .hc-home-premium__section--product {
+  width: min(calc(100% - 40px), 1320px);
+  margin-inline: auto;
+}
+
+/* The small sequence intro should behave as a bridge,
+   not consume another full screen. */
+html body.hc-page-home #product {
+  padding-top: 42px !important;
+  padding-bottom: 18px !important;
+}
+
+html body.hc-page-home #product .hc-home-premium__section-head--product {
+  max-width: 850px;
+}
+
+html body.hc-page-home #product .hc-home-premium__section-head--product h2 {
+  max-width: 24ch;
+  font-size: clamp(1.75rem, 2.45vw, 2.55rem);
+  line-height: 1.08;
+}
+
+html body.hc-page-home #product .hc-home-premium__trust-strip {
+  margin-top: 18px;
+}
+
+
+/* ---------------------------------------------------------
+   2. Platform showcase: make the actual software the hero
+   --------------------------------------------------------- */
+
+html body.hc-page-home .hc-home-premium__platform-showcase {
+  width: min(calc(100% - 40px), 1440px);
+  margin: 36px auto 56px;
+  padding: clamp(30px, 3.5vw, 50px);
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcaseHead {
+  margin-bottom: 26px;
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcaseHead h2 {
+  max-width: 23ch;
+}
+
+html body.hc-page-home .hc-home-premium__platform-browser {
+  border-radius: 26px;
+}
+
+html body.hc-page-home .hc-home-premium__platform-browser img {
+  width: 100%;
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes {
+  margin-top: 16px;
+}
+
+html body.hc-page-home .hc-home-premium__platform-outcomes article {
+  min-height: 92px;
+  padding: 16px 18px;
+}
+
+
+/* ---------------------------------------------------------
+   3. Main product stories: screenshots larger, text tighter
+   --------------------------------------------------------- */
+
+html body.hc-page-home .hc-home-premium__section--product
+.hc-home-premium__product-row,
+html body.hc-page-home .hc-home-premium__section--product
+.hc-home-premium__product-row--reverse {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  gap: clamp(32px, 4vw, 58px) !important;
+}
+
+html body.hc-page-home .hc-home-premium__section--product
+.hc-home-premium__product-copy {
+  max-width: 500px;
+}
+
+html body.hc-page-home .hc-home-premium__product-copy h2 {
+  max-width: 16ch !important;
+  font-size: clamp(1.9rem, 2.45vw, 2.75rem) !important;
+  line-height: 1.07 !important;
+}
+
+html body.hc-page-home .hc-home-premium__product-copy
+> p:not(.hc-home-premium__section-kicker) {
+  max-width: 52ch;
+  font-size: 0.98rem;
+  line-height: 1.58;
+}
+
+html body.hc-page-home .hc-home-premium__workflow-points {
+  gap: 8px;
+  margin-top: 15px;
+}
+
+html body.hc-page-home .hc-home-premium__workflow-points li {
+  padding: 11px 14px !important;
+  border-radius: 16px !important;
+  font-size: 0.91rem !important;
+  line-height: 1.42 !important;
+}
+
+html body.hc-page-home .hc-home-premium__workflow-note {
+  margin-top: 12px;
+  padding: 11px 14px;
+  border-radius: 16px;
+  font-size: 0.88rem;
+}
+
+html body.hc-page-home .hc-home-premium__product-visual {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+html body.hc-page-home .hc-home-premium__product-visual
+.hc-home-premium__shot-card {
+  width: 100% !important;
+  max-width: none !important;
+  border-radius: 24px !important;
+}
+
+html body.hc-page-home .hc-home-premium__product-visual
+.hc-home-premium__shot-img {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  transform: none !important;
+  object-fit: contain !important;
+}
+
+
+/* ---------------------------------------------------------
+   4. Remove duplicated narrative layers from the homepage.
+   Their ideas already exist in product + security sections.
+   No backend / route / feature is removed.
+   --------------------------------------------------------- */
+
+html body.hc-page-home .hc-home-premium__section--governance,
+html body.hc-page-home .hc-home-premium__section--revenue,
+html body.hc-page-home .hc-home-premium__section--relay {
+  display: none !important;
+}
+
+
+/* ---------------------------------------------------------
+   5. Audiences: compact decision block
+   --------------------------------------------------------- */
+
+html body.hc-page-home .hc-home-premium__audiences {
+  width: min(calc(100% - 40px), 1240px);
+  margin: 54px auto 66px;
+}
+
+html body.hc-page-home .hc-home-premium__audiencesHead {
+  max-width: 850px;
+  margin-bottom: 22px;
+}
+
+html body.hc-page-home .hc-home-premium__audiencesHead h2 {
+  max-width: 27ch;
+  font-size: clamp(1.85rem, 2.6vw, 2.65rem);
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid {
+  gap: 12px;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid article {
+  min-height: 168px;
+  padding: 20px;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid article > span {
+  margin-bottom: 18px;
+}
+
+html body.hc-page-home .hc-home-premium__audienceGrid p {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------------
+   6. Pilot: keep the strong conversion story, less height
+   --------------------------------------------------------- */
+
+html body.hc-page-home
+.hc-home-premium__section--case-study-teaser {
+  padding-top: 54px !important;
+  padding-bottom: 54px !important;
+}
+
+html body.hc-page-home
+.hc-case-study--teaser {
+  max-width: 1240px;
+  margin-inline: auto;
+}
+
+html body.hc-page-home
+.hc-case-study__timeline--compact {
+  gap: 12px;
+}
+
+html body.hc-page-home
+.hc-case-study__card {
+  min-height: 0;
+  padding: 18px;
+}
+
+
+/* ---------------------------------------------------------
+   7. Security: one security/governance story only
+   --------------------------------------------------------- */
+
+html body.hc-page-home
+.hc-home-premium__security-governance {
+  padding-top: 58px !important;
+  padding-bottom: 58px !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-shell {
+  max-width: 1240px;
+  margin-inline: auto;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-copyMain {
+  max-width: 720px;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-copyMain h2 {
+  max-width: 22ch;
+  font-size: clamp(1.9rem, 2.7vw, 2.8rem);
+  line-height: 1.08;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-lead {
+  max-width: 62ch;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-card {
+  min-height: 0 !important;
+}
+
+
+/* ---------------------------------------------------------
+   8. Final CTA: stop the headline breaking into 5 lines
+   --------------------------------------------------------- */
+
+html body.hc-page-home
+.hc-home-premium__section--cta {
+  padding-top: 52px !important;
+  padding-bottom: 64px !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__section--cta
+.hc-home-premium__cta-card {
+  width: min(100%, 1240px);
+  margin-inline: auto;
+  grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.7fr) !important;
+  gap: 38px !important;
+  padding: clamp(30px, 3.2vw, 44px) !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__cta-copy {
+  max-width: 760px;
+}
+
+html body.hc-page-home
+.hc-home-premium__cta-copy h2 {
+  max-width: 18ch !important;
+  font-size: clamp(2rem, 3vw, 3rem) !important;
+  line-height: 1.04 !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__cta-title-line {
+  display: inline !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__cta-title-line + .hc-home-premium__cta-title-line {
+  margin-left: 0.18em;
+}
+
+html body.hc-page-home
+.hc-home-premium__cta-copy p:last-child {
+  max-width: 62ch;
+  line-height: 1.58;
+}
+
+
+/* ---------------------------------------------------------
+   9. Responsive consolidation
+   --------------------------------------------------------- */
+
+@media (max-width: 991.98px) {
+  html body.hc-page-home
+  .hc-home-premium__section--cta
+  .hc-home-premium__cta-card {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-copy h2 {
+    max-width: 22ch !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--product
+  .hc-home-premium__product-row,
+  html body.hc-page-home
+  .hc-home-premium__section--product
+  .hc-home-premium__product-row--reverse {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  html body.hc-page-home .hc-home-premium__section {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-showcase,
+  html body.hc-page-home .hc-home-premium__audiences,
+  html body.hc-page-home .hc-home-premium__section--product {
+    width: calc(100% - 24px);
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-showcase {
+    margin-bottom: 36px;
+  }
+
+  html body.hc-page-home .hc-home-premium__platform-outcomes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html body.hc-page-home .hc-home-premium__audienceGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-copy h2 {
+    max-width: 100% !important;
+    font-size: clamp(1.85rem, 8vw, 2.35rem) !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-title-line {
+    display: block !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-title-line +
+  .hc-home-premium__cta-title-line {
+    margin-left: 0;
+  }
+}
+
+/* HELPCHAIN HOMEPAGE - FINAL VISUAL POLISH */
+
+/* ---------------------------------------------------------
+   1. Tighter desktop rhythm between product stories
+   --------------------------------------------------------- */
+
+@media (min-width: 992px) {
+  html body.hc-page-home
+  .hc-home-premium__section--product {
+    padding-top: 54px !important;
+    padding-bottom: 54px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--product + .hc-home-premium__section--product {
+    padding-top: 42px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__product-row {
+    min-height: 0 !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__product-copy {
+    align-self: center;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   2. Sequence block = compact product navigation bridge
+   --------------------------------------------------------- */
+
+html body.hc-page-home #product {
+  padding-top: 28px !important;
+  padding-bottom: 10px !important;
+}
+
+html body.hc-page-home
+#product .hc-home-premium__section-head--product {
+  margin-bottom: 16px !important;
+}
+
+html body.hc-page-home
+#product .hc-home-premium__section-head--product > p:first-child {
+  margin-bottom: 7px !important;
+}
+
+html body.hc-page-home
+#product .hc-home-premium__section-head--product h2 {
+  margin-bottom: 9px !important;
+  max-width: 28ch !important;
+  font-size: clamp(1.65rem, 2.15vw, 2.25rem) !important;
+  line-height: 1.1 !important;
+}
+
+html body.hc-page-home
+#product .hc-home-premium__section-head--product > p:last-child {
+  margin-bottom: 0 !important;
+  max-width: 62ch;
+}
+
+html body.hc-page-home
+#product .hc-home-premium__trust-strip {
+  margin-top: 14px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+
+/* ---------------------------------------------------------
+   3. Product screenshots: cleaner visual hierarchy
+   --------------------------------------------------------- */
+
+html body.hc-page-home
+.hc-home-premium__product-visual
+.hc-home-premium__shot-card {
+  box-shadow: 0 22px 58px rgba(22, 46, 68, 0.11) !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__product-visual
+.hc-home-premium__shot-bar {
+  min-height: 40px !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__product-copy
+.hc-home-premium__section-kicker {
+  margin-bottom: 10px !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__product-copy h2 {
+  margin-bottom: 14px !important;
+}
+
+
+/* ---------------------------------------------------------
+   4. Audiences + pilot: reduce dead vertical space
+   --------------------------------------------------------- */
+
+html body.hc-page-home
+.hc-home-premium__audiences {
+  margin-top: 46px !important;
+  margin-bottom: 52px !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__section--case-study-teaser {
+  padding-top: 46px !important;
+  padding-bottom: 46px !important;
+}
+
+html body.hc-page-home
+.hc-case-study--teaser .hc-case-study__title {
+  max-width: 22ch;
+}
+
+html body.hc-page-home
+.hc-case-study--teaser .hc-case-study__intro {
+  max-width: 68ch;
+}
+
+
+/* ---------------------------------------------------------
+   5. Security: compact but still credible
+   --------------------------------------------------------- */
+
+html body.hc-page-home
+.hc-home-premium__security-governance {
+  padding-top: 50px !important;
+  padding-bottom: 50px !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-hero {
+  gap: clamp(26px, 3vw, 42px) !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-copyMain h2 {
+  max-width: 25ch !important;
+}
+
+html body.hc-page-home
+.hc-home-premium__security-chips {
+  margin-top: 18px !important;
+}
+
+
+/* ---------------------------------------------------------
+   6. Final CTA: desktop headline 2-3 lines, not 4-5
+   --------------------------------------------------------- */
+
+@media (min-width: 992px) {
+  html body.hc-page-home
+  .hc-home-premium__section--cta
+  .hc-home-premium__cta-card {
+    grid-template-columns:
+      minmax(0, 1.55fr)
+      minmax(300px, 0.45fr) !important;
+
+    gap: clamp(34px, 4vw, 58px) !important;
+    align-items: center !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-copy {
+    width: 100% !important;
+    max-width: 820px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-copy h2 {
+    width: 100% !important;
+    max-width: 760px !important;
+    font-size: clamp(2rem, 2.65vw, 2.85rem) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -0.045em !important;
+    text-wrap: balance !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-title-line {
+    display: inline !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-actions {
+    width: 100% !important;
+    max-width: 360px !important;
+    justify-self: end !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-buttons {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-buttons .btn {
+    width: 100% !important;
+    min-height: 46px !important;
+    justify-content: center !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-note {
+    margin-top: 12px !important;
+    line-height: 1.45 !important;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   7. Tablet
+   --------------------------------------------------------- */
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  html body.hc-page-home #product {
+    padding-top: 24px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--product {
+    padding-top: 44px !important;
+    padding-bottom: 44px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-copy h2 {
+    max-width: 20ch !important;
+    font-size: clamp(2rem, 5vw, 2.65rem) !important;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   8. Mobile: preserve breathing room and readability
+   --------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+  html body.hc-page-home #product {
+    padding-top: 20px !important;
+    padding-bottom: 8px !important;
+  }
+
+  html body.hc-page-home
+  #product .hc-home-premium__section-head--product h2 {
+    max-width: 100% !important;
+    font-size: clamp(1.55rem, 7vw, 2rem) !important;
+  }
+
+  html body.hc-page-home
+  #product .hc-home-premium__trust-strip {
+    margin-top: 12px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--product {
+    padding-top: 34px !important;
+    padding-bottom: 34px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__product-copy h2 {
+    max-width: 100% !important;
+    font-size: clamp(1.7rem, 7.4vw, 2.15rem) !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__audiences {
+    margin-top: 32px !important;
+    margin-bottom: 42px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--case-study-teaser,
+  html body.hc-page-home
+  .hc-home-premium__security-governance {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--cta {
+    padding-top: 38px !important;
+    padding-bottom: 48px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__section--cta
+  .hc-home-premium__cta-card {
+    padding: 24px 20px !important;
+    gap: 24px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-copy h2 {
+    max-width: 100% !important;
+    font-size: clamp(1.8rem, 8vw, 2.3rem) !important;
+    line-height: 1.08 !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-buttons {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  html body.hc-page-home
+  .hc-home-premium__cta-buttons .btn {
+    width: 100% !important;
+    justify-content: center !important;
   }
 }
