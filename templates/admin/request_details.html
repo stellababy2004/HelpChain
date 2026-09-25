@@ -789,7 +789,7 @@
         <div class="row text-center">
           <div class="col-6 col-md-2 mb-2">
             <div class="text-muted small">Appariés</div>
-            <div class="fs-5 fw-semibold">{{ matched_count }}</div>
+            <div class="fs-5 fw-semibold">{{ (matched_volunteers or [])|length }}</div>
           </div>
           <div class="col-6 col-md-2 mb-2">
             <div class="text-muted small">Notifiés</div>
