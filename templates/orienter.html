@@ -30,19 +30,19 @@
     <div class="hc-container">
       <div class="hc-orienter__grid" role="list">
         {% set domains = domains or [
-          {"key":"alimentation","title":_("Accès alimentaire"),"desc":_("Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles.")},
-          {"key":"administratif","title":_("Accompagnement administratif"),"desc":_("Appui dans les démarches administratives, accès aux droits et médiation institutionnelle.")},
-          {"key":"psychosocial","title":_("Soutien psychosocial"),"desc":_("Orientation et coordination pour les situations nécessitant un accompagnement individuel.")},
-          {"key":"soins","title":_("Accès aux soins"),"desc":_("Mise en relation et suivi pour les situations liées à l’accès aux services de santé.")},
-          {"key":"numerique","title":_("Inclusion numérique"),"desc":_("Accompagnement vers l’accès aux outils et services numériques.")},
-          {"key":"urgence","title":_("Urgences & situations critiques"),"desc":_("Coordination prioritaire des situations nécessitant une prise en charge rapide.")}
+          {"key":"food","title":_("Accès alimentaire"),"desc":_("Soutien et coordination des situations liées à l’accès aux ressources alimentaires essentielles.")},
+          {"key":"admin_help","title":_("Accompagnement administratif"),"desc":_("Appui dans les démarches administratives, accès aux droits et médiation institutionnelle.")},
+          {"key":"isolation","title":_("Soutien psychosocial"),"desc":_("Orientation et coordination pour les situations nécessitant un accompagnement individuel.")},
+          {"key":"health","title":_("Accès aux soins"),"desc":_("Mise en relation et suivi pour les situations liées à l’accès aux services de santé.")},
+          {"key":"admin_help","title":_("Inclusion numérique"),"desc":_("Accompagnement vers l’accès aux outils et services numériques.")},
+          {"key":"emergency","title":_("Urgences & situations critiques"),"desc":_("Coordination prioritaire des situations nécessitant une prise en charge rapide.")}
         ] %}
 
         {% for d in domains %}
           <a
             class="hc-orienter-card"
             role="listitem"
-            href="{{ url_for('main.submit_request', domain=d.key) }}"
+            href="{{ url_for('main.submit_request', category=d.key) }}"
             data-hc-event="orienter_domain_click"
             data-hc-domain="{{ d.key }}"
           >
