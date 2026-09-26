@@ -391,6 +391,95 @@ def test_structure_service_create_accepts_valid_category(client, session):
     assert service is not None
     assert service.category == "social_support"
     assert service.capacity == 5
+    assert service.code == "accueil-social"
+
+
+@pytest.mark.parametrize("code, category", [
+    ("food", "food_assistance"),
+    ("housing", "housing"),
+    ("health", "health"),
+    ("admin", "administrative_support"),
+    ("orientation", "orientation"),
+])
+def test_structure_service_create_accepts_explicit_public_intake_code(
+    client, session, code, category
+):
+    from backend.models import StructureService
+
+    admin = _make_admin(
+        session, username="public_service_creator",
+        email="public_service_creator@test.local", role="superadmin",
+    )
+    st = _make_structure(session, name="Public Services", slug="public-services")
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={
+            "name": "Service avec nom libre", "category": category,
+            "public_intake_service_code": f" {code.upper()} ",
+        },
+    )
+
+    assert response.status_code == 303
+    service = StructureService.query.filter_by(structure_id=st.id).one()
+    assert service.code == code
+    assert service.is_active
+
+
+@pytest.mark.parametrize("code", ["unknown", "emergency", "admin_help"])
+def test_structure_service_create_rejects_unknown_public_intake_code(client, session, code):
+    from backend.models import StructureService
+
+    admin = _make_admin(
+        session, username="invalid_public_service",
+        email="invalid_public_service@test.local", role="superadmin",
+    )
+    st = _make_structure(session, name="Invalid Public Code", slug="invalid-public-code")
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={
+            "name": "Service", "category": "social_support",
+            "public_intake_service_code": code,
+        },
+    )
+
+    assert response.status_code == 400
+    assert StructureService.query.filter_by(structure_id=st.id).count() == 0
+
+
+@pytest.mark.parametrize("existing_code", ["food", "FOOD"])
+def test_structure_service_create_rejects_duplicate_public_code_without_suffix(
+    client, session, existing_code
+):
+    from backend.models import StructureService
+
+    admin = _make_admin(
+        session, username="duplicate_public_service",
+        email="duplicate_public_service@test.local", role="superadmin",
+    )
+    st = _make_structure(session, name="Duplicate Public Code", slug="duplicate-public-code")
+    session.add(StructureService(
+        structure_id=st.id, code=existing_code, name="Existing food service",
+        is_active=False,
+    ))
+    session.commit()
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={
+            "name": "Another food service", "category": "food_assistance",
+            "public_intake_service_code": "food",
+        },
+    )
+
+    assert response.status_code == 400
+    service = StructureService.query.filter_by(structure_id=st.id).one()
+    assert service.code == existing_code
+    assert not service.is_active
 
 
 @pytest.mark.parametrize(

@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.extensions import db
 from backend.models import StructureContact, StructureCoverageArea, StructureService
+from ..services.public_intake_routing import PUBLIC_INTAKE_SERVICE_CODES
 from ..models import AdminUser, Intervenant, OrganizationAccessRequest, Request, Structure, utc_now
 from ..services.organization_onboarding import (
     AccessRequestAlreadyApproved,
@@ -970,6 +971,18 @@ def admin_structure_service_create(structure_id: int):
     availability = (request.form.get("availability") or "").strip().lower()
     risk_level = (request.form.get("risk_level") or "").strip().lower()
     errors = {}
+    # Explicit opt-in: internal services keep their existing name-derived codes.
+    public_intake_code = (
+        request.form.get("public_intake_service_code") or ""
+    ).strip().lower()
+    if public_intake_code:
+        if public_intake_code not in PUBLIC_INTAKE_SERVICE_CODES:
+            errors["public_intake_service_code"] = "Code de service public invalide."
+        elif StructureService.query.filter(
+            StructureService.structure_id == structure.id,
+            func.lower(StructureService.code) == public_intake_code,
+        ).first():
+            errors["public_intake_service_code"] = "Ce code de service public existe déjà."
     if not name:
         errors["name"] = "Le nom du service est requis."
     if not category or category not in SERVICE_CATEGORIES:
@@ -1035,10 +1048,10 @@ def admin_structure_service_create(structure_id: int):
             400,
         )
 
-    code_base = _slug_code(name)
+    code_base = public_intake_code or _slug_code(name)
     code = code_base
     suffix = 2
-    while StructureService.query.filter(
+    while not public_intake_code and StructureService.query.filter(
         StructureService.structure_id == structure.id,
         StructureService.code == code,
     ).first():
