@@ -773,7 +773,7 @@ msgstr "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
 
 #: backend/helpchain_backend/src/routes/main.py:1253 backend/helpchain_backend/src/routes/main.py:2582
 msgid "Minimal data, GDPR compliant"
-msgstr ""
+msgstr "Données minimales, conformes au RGPD"
 
 #: backend/helpchain_backend/src/routes/main.py:1255 backend/helpchain_backend/src/routes/main.py:2584
 msgid "Si vous n’êtes pas à l’origine de cette demande, ignorez cet e-mail."
