@@ -3745,7 +3745,7 @@ def submit_request():
             current_app.logger.warning(
                 "VALIDATION FAIL: submit_request errors=%s", errors
             )
-            flash(_("Please correct the errors below."), "warning")
+            flash(_("Veuillez corriger les erreurs indiquées ci-dessous."), "warning")
             if "description" in errors and "suspicious" in str(
                 errors["description"]
             ).lower():
