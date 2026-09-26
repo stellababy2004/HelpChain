@@ -27,18 +27,21 @@
   <section class="hc-card">
     {% if previous_referrals %}
       <div class="alert alert-info mb-4" role="status">
-        <strong>Orientation précédente</strong>
+        <strong>{{ _('Orientation précédente') }}</strong>
         <p class="mb-2">
-          Cette demande a déjà fait l’objet de {{ previous_referrals|length }}
-          orientation{% if previous_referrals|length > 1 %}s{% endif %} partenaire{% if previous_referrals|length > 1 %}s{% endif %}.
+          {% if previous_referrals|length > 1 %}
+            {{ _('Cette demande a déjà fait l’objet de %(count)s orientations partenaires.', count=previous_referrals|length) }}
+          {% else %}
+            {{ _('Cette demande a déjà fait l’objet de %(count)s orientation partenaire.', count=previous_referrals|length) }}
+          {% endif %}
         </p>
         {% set latest_referral = previous_referrals[0] %}
         <p class="mb-0">
-          Dernière orientation :
+          {{ _('Dernière orientation :') }}
           #{{ latest_referral.id }}
-          vers {{ latest_referral.to_structure.name if latest_referral.to_structure else ("Structure #" ~ latest_referral.to_structure_id) }}
+          {{ _('vers') }} {{ latest_referral.to_structure.name if latest_referral.to_structure else (_('Structure #') ~ latest_referral.to_structure_id) }}
           — {{ operational_status_label(effective_operational_status(latest_referral)) }}.
-          Une nouvelle orientation reste possible si la situation le nécessite.
+          {{ _('Une nouvelle orientation reste possible si la situation le nécessite.') }}
         </p>
       </div>
     {% endif %}
@@ -79,16 +82,16 @@
                 {% if key in ["share_documents", "share_internal_notes"] %}disabled{% endif %}
               >
               <span class="form-check-label">
-                {{ {
-                  "share_identity": "Identité strictement nécessaire",
-                  "share_contact": "Coordonnées de contact",
-                  "share_category": "Catégorie d’orientation",
-                  "share_priority": "Niveau de priorité",
-                  "share_summary": "Résumé partagé",
-                  "share_documents": "Documents partagés",
-                  "share_internal_notes": "Notes internes",
-                  "share_risk_level": "Niveau de vigilance"
-                }.get(key, key) }}
+                {% if key == "share_identity" %}{{ _('Identité strictement nécessaire') }}
+                {% elif key == "share_contact" %}{{ _('Coordonnées de contact') }}
+                {% elif key == "share_category" %}{{ _('Catégorie d’orientation') }}
+                {% elif key == "share_priority" %}{{ _('Niveau de priorité') }}
+                {% elif key == "share_summary" %}{{ _('Résumé partagé') }}
+                {% elif key == "share_documents" %}{{ _('Documents partagés') }}
+                {% elif key == "share_internal_notes" %}{{ _('Notes internes') }}
+                {% elif key == "share_risk_level" %}{{ _('Niveau de vigilance') }}
+                {% else %}{{ key }}
+                {% endif %}
               </span>
             </label>
           {% endfor %}

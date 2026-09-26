@@ -446,7 +446,7 @@
                       {% elif ev.action == "note" %}
                         Note interne ajoutée
                       {% elif ev.action == "partner_referral_sent" %}
-                        Orientation partenaire envoyée
+                        {{ _('Orientation partenaire envoyée') }}
                       {% else %}
                         {{ ev.action }}
                       {% endif %}
@@ -475,9 +475,9 @@
                       {% if ev.old_value %}<span class="me-2">De <code>{{ ev.old_value }}</code></span>{% endif %}
                       {% if ev.new_value %}
                         {% if ev.action == "partner_referral_sent" and ev.new_value.startswith("case_referral:") %}
-                          <span>Orientation partenaire #{{ ev.new_value.split(":", 1)[1] }}</span>
+                          <span>{{ _('Orientation partenaire #') }}{{ ev.new_value.split(":", 1)[1] }}</span>
                         {% else %}
-                          <span>Vers <code>{{ ev.new_value }}</code></span>
+                          <span>{{ _('Vers') }} <code>{{ ev.new_value }}</code></span>
                         {% endif %}
                       {% endif %}
                     </div>

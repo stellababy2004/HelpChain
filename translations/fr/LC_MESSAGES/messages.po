@@ -10507,3 +10507,127 @@ msgstr "Stabilit?"
 
 msgid "jours"
 msgstr "jours"
+
+# New translated template keys
+
+msgid "CCAS · associations · établissements scolaires · structures multi-sites"
+msgstr "CCAS · associations · établissements scolaires · structures multi-sites"
+
+msgid "Centraliser"
+msgstr "Centraliser"
+
+msgid "Collectivités & CCAS"
+msgstr "Collectivités & CCAS"
+
+msgid "Conserver une lecture commune des priorités et responsabilités entre plusieurs entités."
+msgstr "Conserver une lecture commune des priorités et responsabilités entre plusieurs entités."
+
+msgid "Coordonner"
+msgstr "Coordonner"
+
+msgid "Coordonner besoins, équipes, bénévoles et partenaires autour d’actions concrètes."
+msgstr "Coordonner besoins, équipes, bénévoles et partenaires autour d’actions concrètes."
+
+msgid "Demande locale"
+msgstr "Demande locale"
+
+msgid "Des priorités et signaux exploitables pour le pilotage."
+msgstr "Des priorités et signaux exploitables pour le pilotage."
+
+msgid "Des responsabilités et relais visibles entre acteurs."
+msgstr "Des responsabilités et relais visibles entre acteurs."
+
+msgid "HelpChain s’adapte aux structures qui doivent coordonner des demandes, des équipes, des partenaires et des relais sans multiplier les outils parallèles."
+msgstr "HelpChain s’adapte aux structures qui doivent coordonner des demandes, des équipes, des partenaires et des relais sans multiplier les outils parallèles."
+
+msgid "HelpChain · Workspace opérationnel"
+msgstr "HelpChain · Workspace opérationnel"
+
+msgid "Orienter les demandes, répartir les responsabilités et suivre les relais territoriaux."
+msgstr "Orienter les demandes, répartir les responsabilités et suivre les relais territoriaux."
+
+msgid "POUR QUI ?"
+msgstr "POUR QUI ?"
+
+msgid "Principaux bénéfices opérationnels"
+msgstr "Principaux bénéfices opérationnels"
+
+msgid "Priorités, responsabilités, demandes, situations à traiter et capacité du réseau restent lisibles dans un même environnement de travail."
+msgstr "Priorités, responsabilités, demandes, situations à traiter et capacité du réseau restent lisibles dans un même environnement de travail."
+
+msgid "Réseaux & structures multi-sites"
+msgstr "Réseaux & structures multi-sites"
+
+msgid "Structurer les besoins, initiatives, contributions et relais avec la communauté éducative."
+msgstr "Structurer les besoins, initiatives, contributions et relais avec la communauté éducative."
+
+msgid "Superviser"
+msgstr "Superviser"
+
+msgid "UN ESPACE DE PILOTAGE UNIQUE"
+msgstr "UN ESPACE DE PILOTAGE UNIQUE"
+
+msgid "Une lecture commune des demandes et situations actives."
+msgstr "Une lecture commune des demandes et situations actives."
+
+msgid "Une même continuité opérationnelle pour des organisations aux réalités différentes."
+msgstr "Une même continuité opérationnelle pour des organisations aux réalités différentes."
+
+msgid "Une vision opérationnelle commune, du signal initial jusqu’au suivi."
+msgstr "Une vision opérationnelle commune, du signal initial jusqu’au suivi."
+
+msgid "Vue d’ensemble du workspace opérationnel HelpChain"
+msgstr "Vue d’ensemble du workspace opérationnel HelpChain"
+
+msgid "Établissements scolaires"
+msgstr "Établissements scolaires"
+
+msgid "Catégorie d’orientation"
+msgstr "Catégorie d’orientation"
+
+#, python-format
+msgid "Cette demande a déjà fait l’objet de %(count)s orientation partenaire."
+msgstr "Cette demande a déjà fait l’objet de %(count)s orientation partenaire."
+
+#, python-format
+msgid "Cette demande a déjà fait l’objet de %(count)s orientations partenaires."
+msgstr "Cette demande a déjà fait l’objet de %(count)s orientations partenaires."
+
+msgid "Coordonnées de contact"
+msgstr "Coordonnées de contact"
+
+msgid "Dernière orientation :"
+msgstr "Dernière orientation :"
+
+msgid "Documents partagés"
+msgstr "Documents partagés"
+
+msgid "Identité strictement nécessaire"
+msgstr "Identité strictement nécessaire"
+
+msgid "Niveau de priorité"
+msgstr "Niveau de priorité"
+
+msgid "Niveau de vigilance"
+msgstr "Niveau de vigilance"
+
+msgid "Notes internes"
+msgstr "Notes internes"
+
+msgid "Orientation partenaire #"
+msgstr "Orientation partenaire #"
+
+msgid "Orientation partenaire envoyée"
+msgstr "Orientation partenaire envoyée"
+
+msgid "Orientation précédente"
+msgstr "Orientation précédente"
+
+msgid "Structure #"
+msgstr "Structure #"
+
+msgid "Une nouvelle orientation reste possible si la situation le nécessite."
+msgstr "Une nouvelle orientation reste possible si la situation le nécessite."
+
+msgid "Vers"
+msgstr "Vers"
