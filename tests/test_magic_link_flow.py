@@ -239,6 +239,44 @@ def test_invalid_magic_link_token_fails_safely(client):
     assert ("Submit a request" in response.get_data(as_text=True)) or ("Demander" in response.get_data(as_text=True)) or ("demande" in response.get_data(as_text=True).lower()) or ("HelpChain" in response.get_data(as_text=True))
 
 
+
+def test_submit_request_missing_privacy_consent_shows_visible_error(client, monkeypatch):
+    # Reproduce production behaviour: privacy consent validation is skipped
+    # when the Flask app is running with TESTING=True.
+    monkeypatch.setitem(client.application.config, "TESTING", False)
+
+    payload = {
+        "name": "Pilot User",
+        "email": "pilot@example.org",
+        "phone": "",
+        "category": "orientation",
+        "urgency": "normal",
+        "title": "School event volunteer coordination",
+        "description": (
+            "The school is preparing an event and needs volunteers "
+            "to help with organisation."
+        ),
+        "postcode": "92100",
+        "city": "Boulogne-Billancourt",
+        "country": "France",
+    }
+
+    response = client.post(
+        "/submit_request",
+        data=payload,
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 400
+
+    body = response.get_data(as_text=True)
+    assert "Veuillez corriger les erreurs indiqu\u00e9es ci-dessous." in body
+    assert (
+        "Veuillez accepter la Politique de confidentialit\u00e9 (RGPD) pour continuer."
+        in body
+    )
+
+
 def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch):
     _reset_magic_link_rate_limits()
     _ensure_public_intake_route(session)

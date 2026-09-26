@@ -295,6 +295,12 @@
               <label class="form-check-label" for="privacyConsent">
                 {{ _("Je confirme avoir pris connaissance de la Politique de confidentialité (RGPD).") }}
               </label>
+
+              {% if form_errors and form_errors.get('privacy_consent') %}
+                <div class="text-danger mt-2" role="alert">
+                  {{ form_errors.get('privacy_consent') }}
+                </div>
+              {% endif %}
             </div>
           </div>
 
