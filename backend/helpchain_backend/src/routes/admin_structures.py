@@ -225,7 +225,18 @@ def _bool_or_none(value: str | None, *, field_label: str) -> bool | None:
 
 
 def _service_select_options() -> dict[str, object]:
+    public_service_labels = {
+        "food": "Aide alimentaire",
+        "housing": "Logement / hébergement",
+        "health": "Santé / accès aux soins",
+        "admin": "Aide administrative",
+        "orientation": "Orientation vers un service",
+    }
     return {
+        "public_intake_service_options": [
+            (code, public_service_labels[code])
+            for code in sorted(PUBLIC_INTAKE_SERVICE_CODES)
+        ],
         "service_categories": SERVICE_CATEGORIES,
         "service_statuses": STATUS_LABELS,
         "service_priorities": PRIORITY_LABELS,
@@ -672,12 +683,34 @@ def admin_structure_create():
 def admin_structure_detail(structure_id: int):
     structure = _structure_or_403(structure_id)
     intelligence = build_enterprise_structure_dashboard(structure)
+    has_active_coverage = bool(intelligence["coverage"]["configured"])
+    has_routable_service = any(
+        service["is_active"] and service["code"].lower() in PUBLIC_INTAKE_SERVICE_CODES
+        for service in intelligence["services"]
+    )
+    public_intake_ready = (
+        (structure.status or "").lower() == "active"
+        and has_active_coverage
+        and has_routable_service
+    )
+    public_intake_guidance = []
+    if not public_intake_ready:
+        if (structure.status or "").lower() != "active":
+            public_intake_guidance.append("Activer la structure dans le workspace.")
+        if not has_active_coverage:
+            public_intake_guidance.append("Ajouter au moins une zone de couverture active.")
+        if not has_routable_service:
+            public_intake_guidance.append(
+                "Ajouter au moins un service actif pour les demandes publiques."
+            )
 
     return (
         render_template(
             "admin/structure_enterprise_dashboard.html",
             structure=structure,
             enterprise=intelligence,
+            public_intake_ready=public_intake_ready,
+            public_intake_guidance=public_intake_guidance,
             dashboard_mode=_structure_dashboard_mode(),
             **_workspace_select_options(),
         ),

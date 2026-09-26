@@ -32,6 +32,16 @@
           </select>
           {% if form_errors and form_errors.get('category') %}<div class="invalid-feedback">{{ form_errors.get('category') }}</div>{% endif %}
         </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="public_intake_service_code">Service pour les demandes publiques</label>
+          <select class="form-select {% if form_errors and form_errors.get('public_intake_service_code') %}is-invalid{% endif %}" id="public_intake_service_code" name="public_intake_service_code" {% if form_errors and form_errors.get('public_intake_service_code') %}aria-invalid="true" aria-describedby="public_intake_service_code_error"{% endif %}>
+            <option value="">Non utilisé pour le routage public</option>
+            {% for code, label in public_intake_service_options %}
+              <option value="{{ code }}" {% if form_data and form_data.get('public_intake_service_code', '')|trim|lower == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          {% if form_errors and form_errors.get('public_intake_service_code') %}<div class="invalid-feedback" id="public_intake_service_code_error">{{ form_errors.get('public_intake_service_code') }}</div>{% endif %}
+        </div>
         <div class="col-12">
           <label class="form-label" for="description">Description</label>
           <textarea class="form-control" id="description" name="description" rows="3">{{ form_data.get('description') if form_data else '' }}</textarea>
