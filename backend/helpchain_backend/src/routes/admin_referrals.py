@@ -128,7 +128,7 @@ def _resolve_admin_source_structure_id_from_request() -> tuple[int | None, str |
 
 
 def _can_view_referral(referral: CaseReferral) -> bool:
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return True
     structure_id = _admin_structure_id()
     return bool(
@@ -303,7 +303,7 @@ def _set_referral_operational_status(
 
 
 def _can_view_connection(connection: OrganizationConnection) -> bool:
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return True
     structure_id = _admin_structure_id()
     return bool(
@@ -349,7 +349,7 @@ def _connection_query():
         joinedload(OrganizationConnection.source_structure),
         joinedload(OrganizationConnection.target_structure),
     ).filter(OrganizationConnection.connection_type == "referral")
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return query
     structure_id = _admin_structure_id()
     if not structure_id:
@@ -833,7 +833,7 @@ def _referral_query():
         joinedload(CaseReferral.to_structure),
         joinedload(CaseReferral.request),
     )
-    if _referral_is_superadmin():
+    if _global_superadmin_without_structure():
         return query
     structure_id = _admin_structure_id()
     if not structure_id:
@@ -872,14 +872,8 @@ def _parse_shared_scope() -> dict:
 def _shared_summary(source_request: Request | None, referral: CaseReferral) -> str:
     if referral.message:
         return referral.message.strip()
-    if source_request is None:
-        return "Orientation partenaire sans résumé source disponible."
-    return (
-        getattr(source_request, "description", None)
-        or getattr(source_request, "message", None)
-        or getattr(source_request, "title", None)
-        or "Orientation partenaire sans résumé détaillé."
-    )
+    # An empty shared summary must not silently expose the live source record.
+    return referral.reason or "Orientation partenaire sans résumé détaillé."
 
 
 def _safe_referral_username(referral_id: int) -> str:
@@ -1122,6 +1116,53 @@ def admin_referrals_index():
 def admin_referrals_received():
     admin_required_404()
     referrals = _scope_for_direction("received").order_by(CaseReferral.created_at.desc()).all()
+
+    active_connections = (
+        _connection_query()
+        .filter(OrganizationConnection.status == "active")
+        .order_by(
+            OrganizationConnection.accepted_at.desc(),
+            OrganizationConnection.created_at.desc(),
+        )
+        .all()
+    )
+
+    partner_referrals_map = {}
+    for connection in active_connections:
+        partner_referrals_map[connection.id] = [
+            referral
+            for referral in referrals
+            if {
+                referral.from_structure_id,
+                referral.to_structure_id,
+            }
+            == {
+                connection.source_structure_id,
+                connection.target_structure_id,
+            }
+        ]
+
+    active_partner_snapshots = {
+        connection.id: _connection_partner_snapshot(
+            connection,
+            partner_referrals_map.get(connection.id, []),
+        )
+        for connection in active_connections
+    }
+
+    network_last_activity = max(
+        [
+            snapshot.get("last_activity_at")
+            for snapshot in active_partner_snapshots.values()
+            if snapshot.get("last_activity_at") is not None
+        ],
+        default=None,
+    )
+
+    network_completed_count = sum(
+        int(snapshot.get("completed_count") or 0)
+        for snapshot in active_partner_snapshots.values()
+    )
     return render_template(
         "admin/referrals/index.html",
         referrals=referrals,
@@ -1132,18 +1173,18 @@ def admin_referrals_received():
         actionable_partner_requests=[],
         awaiting_counterpart_partner_requests=[],
         actionable_referrals=[],
-        active_partner_connections=[],
+        active_partner_connections=active_connections,
         pending_partner_count=0,
-        active_partner_count=0,
+        active_partner_count=len(active_connections),
         workspace_state="active" if referrals else "empty",
         has_action_required=False,
         can_accept_or_refuse_connection=_can_accept_or_refuse_connection,
         permissions_summary=_connection_permissions_summary,
         status_label=_connection_status_label,
         connection_status_note=_connection_status_note,
-        active_partner_snapshots={},
-        network_last_activity=None,
-        network_completed_count=0,
+        active_partner_snapshots=active_partner_snapshots,
+        network_last_activity=network_last_activity,
+        network_completed_count=network_completed_count,
         referral_signal=_referral_signal,
         connection_signal=_connection_signal,
     )
@@ -1156,6 +1197,54 @@ def admin_referrals_received():
 def admin_referrals_sent():
     admin_required_404()
     referrals = _scope_for_direction("sent").order_by(CaseReferral.created_at.desc()).all()
+
+    active_connections = (
+        _connection_query()
+        .filter(OrganizationConnection.status == "active")
+        .order_by(
+            OrganizationConnection.accepted_at.desc(),
+            OrganizationConnection.created_at.desc(),
+        )
+        .all()
+    )
+
+    partner_referrals_map = {}
+    for connection in active_connections:
+        partner_referrals_map[connection.id] = [
+            referral
+            for referral in referrals
+            if {
+                referral.from_structure_id,
+                referral.to_structure_id,
+            }
+            == {
+                connection.source_structure_id,
+                connection.target_structure_id,
+            }
+        ]
+
+    active_partner_snapshots = {
+        connection.id: _connection_partner_snapshot(
+            connection,
+            partner_referrals_map.get(connection.id, []),
+        )
+        for connection in active_connections
+    }
+
+    network_last_activity = max(
+        [
+            snapshot.get("last_activity_at")
+            for snapshot in active_partner_snapshots.values()
+            if snapshot.get("last_activity_at") is not None
+        ],
+        default=None,
+    )
+
+    network_completed_count = sum(
+        int(snapshot.get("completed_count") or 0)
+        for snapshot in active_partner_snapshots.values()
+    )
+
     return render_template(
         "admin/referrals/index.html",
         referrals=referrals,
@@ -1166,18 +1255,18 @@ def admin_referrals_sent():
         actionable_partner_requests=[],
         awaiting_counterpart_partner_requests=[],
         actionable_referrals=[],
-        active_partner_connections=[],
+        active_partner_connections=active_connections,
         pending_partner_count=0,
-        active_partner_count=0,
+        active_partner_count=len(active_connections),
         workspace_state="active" if referrals else "empty",
         has_action_required=False,
         can_accept_or_refuse_connection=_can_accept_or_refuse_connection,
         permissions_summary=_connection_permissions_summary,
         status_label=_connection_status_label,
         connection_status_note=_connection_status_note,
-        active_partner_snapshots={},
-        network_last_activity=None,
-        network_completed_count=0,
+        active_partner_snapshots=active_partner_snapshots,
+        network_last_activity=network_last_activity,
+        network_completed_count=network_completed_count,
         referral_signal=_referral_signal,
         connection_signal=_connection_signal,
     )
@@ -1469,9 +1558,24 @@ def admin_referral_detail(referral_id: int):
         partner_connection,
         [referral],
     ) if partner_connection else None
+
+    local_request = None
+    for activity in referral.activities:
+        if activity.action != "accepted":
+            continue
+        metadata = getattr(activity, "metadata_json", None) or {}
+        local_request_id = metadata.get("local_request_id")
+        if not local_request_id:
+            continue
+        candidate = db.session.get(Request, int(local_request_id))
+        if candidate and candidate.structure_id == referral.to_structure_id:
+            local_request = candidate
+            break
+
     return render_template(
         "admin/referrals/detail.html",
         referral=referral,
+        local_request=local_request,
         can_accept_or_refuse=_can_accept_or_refuse(referral),
         can_update_operational_status=_can_update_operational_status(referral),
         can_cancel=_can_cancel(referral),
@@ -1508,23 +1612,23 @@ def admin_referral_accept(referral_id: int):
     if referral.status not in REFERRAL_ACTIVE_STATUSES:
         flash("Orientation déjà traitée.", "info")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id))
-    referral.accepted_by_admin_id = getattr(current_user, "id", None)
-    _set_referral_operational_status(referral, "accepted")
-    local_request = None
     try:
-        local_request = _create_local_request_from_referral(referral)
-    except Exception:
-        current_app.logger.exception("referral_accept_local_request_failed referral_id=%s", referral.id)
-        db.session.rollback()
-        referral = CaseReferral.query.get_or_404(referral_id)
         referral.accepted_by_admin_id = getattr(current_user, "id", None)
         _set_referral_operational_status(referral, "accepted")
-    _log_referral_activity(
-        referral,
-        "accepted",
-        {"local_request_id": getattr(local_request, "id", None)},
-    )
-    db.session.commit()
+        local_request = _create_local_request_from_referral(referral)
+        if local_request is None:
+            raise RuntimeError("Referral acceptance requires a local request")
+        _log_referral_activity(
+            referral,
+            "accepted",
+            {"local_request_id": local_request.id},
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("referral_accept_local_request_failed referral_id=%s", referral_id)
+        flash("Impossible d’accepter l’orientation. Veuillez réessayer.", "danger")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral_id), code=303)
     audit_admin_action(
         action="referral.accept",
         target_type="CaseReferral",
@@ -1595,7 +1699,11 @@ def admin_referral_mark_in_progress(referral_id: int):
     _require_referral_access(referral)
     if not _can_update_operational_status(referral):
         abort(403)
-    if _effective_operational_status(referral) not in {"accepted", "in_progress"}:
+    current_status = _effective_operational_status(referral)
+    if current_status == "in_progress":
+        flash("Orientation déjà prise en charge.", "info")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+    if current_status != "accepted":
         flash("Cette orientation doit être acceptée avant la prise en charge.", "warning")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
@@ -1623,12 +1731,18 @@ def admin_referral_mark_completed(referral_id: int):
     _require_referral_access(referral)
     if not _can_update_operational_status(referral):
         abort(403)
-    if _effective_operational_status(referral) not in {"accepted", "in_progress", "completed"}:
+    current_status = _effective_operational_status(referral)
+    if current_status == "completed":
+        flash("Orientation déjà clôturée.", "info")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+    if current_status not in {"accepted", "in_progress"}:
         flash("Cette orientation doit être acceptée avant clôture.", "warning")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
     note = (request.form.get("public_status_note") or "").strip() or None
     _set_referral_operational_status(referral, "completed", note=note)
+    if note is None:
+        referral.public_status_note = None
     _log_referral_activity(referral, "completed", {"public": True})
     db.session.commit()
     audit_admin_action(
@@ -1651,6 +1765,9 @@ def admin_referral_public_note(referral_id: int):
     _require_referral_access(referral)
     if not _can_update_operational_status(referral):
         abort(403)
+    if _effective_operational_status(referral) in {"refused", "cancelled", "completed"}:
+        flash("Orientation déjà traitée.", "info")
+        return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
     note = (request.form.get("public_status_note") or "").strip()
     if not note:
         flash("Note publique vide.", "warning")
@@ -1691,11 +1808,22 @@ def admin_request_refer(req_id: int):
     if not source_structure_id:
         abort(403)
     connections = _active_partner_connections(int(source_structure_id))
+    previous_referrals = (
+        CaseReferral.query.filter(
+            CaseReferral.request_id == source_request.id,
+            CaseReferral.from_structure_id == int(source_structure_id),
+        )
+        .order_by(CaseReferral.created_at.desc())
+        .all()
+    )
     return render_template(
         "admin/referrals/refer_request.html",
         req=source_request,
         connections=connections,
         default_scope=default_referral_shared_scope(),
+        previous_referrals=previous_referrals,
+        operational_status_label=_operational_status_label,
+        effective_operational_status=_effective_operational_status,
     )
 
 
@@ -1744,6 +1872,7 @@ def admin_request_refer_submit(req_id: int):
         flash("Motif d’orientation requis.", "warning")
         return redirect(url_for("admin.admin_request_refer", req_id=source_request.id))
 
+    shared_scope = _parse_shared_scope()
     linked_case = Case.query.filter(Case.request_id == source_request.id).first() if _table_exists("cases") else None
     referral = CaseReferral(
         case_id=getattr(linked_case, "id", None),
@@ -1754,8 +1883,8 @@ def admin_request_refer_submit(req_id: int):
         status="sent",
         operational_status="sent",
         reason=reason[:255],
-        message=message or None,
-        shared_scope_json=_parse_shared_scope(),
+        message=(message or None) if shared_scope.get("share_summary") else None,
+        shared_scope_json=shared_scope,
         created_at=utc_now(),
         updated_at=utc_now(),
     )

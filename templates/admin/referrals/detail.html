@@ -87,7 +87,7 @@
         <dt>{{ _("Motif d'orientation") }}</dt>
         <dd>{{ referral.reason or _("—") }}</dd>
         <dt>{{ _("Résumé partagé") }}</dt>
-        <dd>{{ referral.message or _("—") }}</dd>
+        <dd>{{ (referral.message or _("—")) if (referral.shared_scope_json or {}).get("share_summary", false) else _("—") }}</dd>
         {% if referral.request_id %}
           <dt>{{ _("Demande source") }}</dt>
           <dd>
@@ -95,6 +95,18 @@
               <a href="{{ url_for('admin.admin_request_details', req_id=referral.request_id) }}">#{{ referral.request_id }}</a>
             {% else %}
               #{{ referral.request_id }}
+            {% endif %}
+          </dd>
+        {% endif %}
+        {% if local_request %}
+          <dt>{{ _("Demande locale") }}</dt>
+          <dd>
+            {% if current_user.structure_id == local_request.structure_id %}
+              <a href="{{ url_for('admin.admin_request_details', req_id=local_request.id) }}">
+                #{{ local_request.id }}
+              </a>
+            {% else %}
+              #{{ local_request.id }}
             {% endif %}
           </dd>
         {% endif %}

@@ -6,17 +6,16 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from pathlib import Path
 
 import polib
 
 
 HUNK_RE = re.compile(r"^@@ -\d+(?:,\d+)? \+(?P<start>\d+)(?:,\d+)? @@")
-I18N_CALL_RE = re.compile(r"""\b_\s*\(\s*(?P<q>["'])(?P<msgid>[^"']+)(?P=q)\s*\)""")
-VISIBLE_NODE_RE = re.compile(r">([^<>]+)<")
-JINJA_RE = re.compile(r"{{.*?}}|{%-?.*?-%}|{%.*?%}")
+I18N_CALL_RE = re.compile(r"""\b_\s*\(\s*(?P<q>["'])(?P<msgid>[^"']+)(?P=q)(?=\s*[,)])""")
+JINJA_RE = re.compile(r"{{.*?}}|{%.*?%}|{#.*?#}", re.DOTALL)
 PUNCT_ONLY_RE = re.compile(r"^[\W_]+$", re.UNICODE)
-HTML_TAG_LINE_RE = re.compile(r"^\s*</?[a-zA-Z][^>]*>\s*$")
 
 
 @dataclass(frozen=True)
@@ -54,7 +53,7 @@ def resolve_base_ref(preferred: str) -> str:
 
 
 def changed_files(base_ref: str) -> list[str]:
-    cp = _run_git(["diff", "--name-only", f"{base_ref}...HEAD"])
+    cp = _run_git(["diff", "--name-only", base_ref])
     if cp.returncode != 0:
         return []
     out = []
@@ -74,7 +73,7 @@ def added_lines_for_file(base_ref: str, file_path: str) -> list[AddedLine]:
     if _is_archived_path(file_path):
         return []
 
-    cp = _run_git(["diff", "--unified=0", "--no-color", f"{base_ref}...HEAD", "--", file_path])
+    cp = _run_git(["diff", "--unified=0", "--no-color", base_ref, "--", file_path])
     if cp.returncode != 0:
         return []
 
@@ -117,7 +116,55 @@ def _is_visible_chunk(s: str) -> bool:
         return False
     if PUNCT_ONLY_RE.fullmatch(txt):
         return False
+    # Pure numeric markers such as 01, 02, 03 are not translatable copy.
+    if re.fullmatch(r"\d+(?:[.,]\d+)?", txt):
+        return False
     return True
+
+
+def _mask_jinja(source: str) -> str:
+    """Hide template syntax/translated blocks without changing HTML positions."""
+    def blank(text: str) -> str:
+        return re.sub(r"[^\n]", " ", text)
+
+    parts: list[str] = []
+    cursor = 0
+    in_trans_block = False
+    for match in JINJA_RE.finditer(source):
+        preceding = source[cursor:match.start()]
+        parts.append(blank(preceding) if in_trans_block else preceding)
+        token = match.group()
+        parts.append(blank(token))
+        if re.match(r"{%[-+]?\s*trans\b", token):
+            in_trans_block = True
+        elif re.match(r"{%[-+]?\s*endtrans\b", token):
+            in_trans_block = False
+        cursor = match.end()
+    tail = source[cursor:]
+    parts.append(blank(tail) if in_trans_block else tail)
+    return "".join(parts)
+
+
+class _VisibleTextParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.hidden_tag: str | None = None
+        self.chunks: list[tuple[int, str]] = []
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        if tag in {"style", "script"}:
+            self.hidden_tag = tag
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == self.hidden_tag:
+            self.hidden_tag = None
+
+    def handle_data(self, data: str) -> None:
+        if self.hidden_tag:
+            return
+        start_line, _ = self.getpos()
+        for offset, text in enumerate(data.splitlines()):
+            self.chunks.append((start_line + offset, " ".join(text.split()).strip()))
 
 
 REPORT_OPERATIONS_ALLOWED_LABELS = {
@@ -141,57 +188,19 @@ def _is_allowed_report_operations_label(file_path: str, txt: str) -> bool:
     )
 
 
-def detect_hardcoded_in_template_lines(lines: list[AddedLine]) -> list[tuple[str, int, str]]:
+def detect_hardcoded_in_template_lines(lines: list[AddedLine], source: str) -> list[tuple[str, int, str]]:
+    # Parse the complete file: opening tags/trans blocks may be outside diff hunks.
+    parser = _VisibleTextParser()
+    parser.feed(_mask_jinja(source))
+    parser.close()
+    added = {row.line_no: row for row in lines}
     offenders: list[tuple[str, int, str]] = []
-    in_trans_block = False
-
-    for row in lines:
-        line = row.text
-        lowered = line.lower()
-
-        if "{% trans %}" in line:
-            in_trans_block = True
-        if "{% endtrans %}" in line:
-            in_trans_block = False
+    for line_no, txt in parser.chunks:
+        row = added.get(line_no)
+        if row is None:
             continue
-        if in_trans_block:
-            continue
-
-        if "<script" in lowered or "</script>" in lowered:
-            continue
-        if "<style" in lowered or "</style>" in lowered:
-            continue
-
-        if "_(" in line:
-            continue
-
-        # Case 1: explicit visible text node on the same line
-        for seg in VISIBLE_NODE_RE.findall(line):
-            cleaned = JINJA_RE.sub(" ", seg)
-            cleaned_txt = " ".join(cleaned.split()).strip()
-
-            if (
-                row.file.replace("\\", "/").endswith("templates/admin/reports_operations.html")
-                and row.line_no in {46, 52}
-            ):
-                continue
-            if cleaned_txt in {"Sant? op?rationnelle", "D?cision recommand?e"}:
-                continue
-            if _is_visible_chunk(cleaned) and not _is_allowed_report_operations_label(row.file, cleaned_txt):
-                offenders.append((row.file, row.line_no, cleaned_txt))
-
-        # Case 2: standalone text line (common in multiline tags)
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if "{{" in stripped or "{%" in stripped:
-            continue
-        if HTML_TAG_LINE_RE.match(stripped):
-            continue
-        if "<" in stripped or ">" in stripped:
-            continue
-        if _is_visible_chunk(stripped) and not _is_allowed_report_operations_label(row.file, stripped):
-            offenders.append((row.file, row.line_no, stripped))
+        if _is_visible_chunk(txt) and not _is_allowed_report_operations_label(row.file, txt):
+            offenders.append((row.file, row.line_no, txt))
 
     # de-duplicate stable order
     seen: set[tuple[str, int, str]] = set()
@@ -207,11 +216,17 @@ def detect_hardcoded_in_template_lines(lines: list[AddedLine]) -> list[tuple[str
 def main() -> int:
     args = parse_args()
     base_ref = resolve_base_ref(args.base_ref)
-    files = changed_files(base_ref)
+    # Include staged and unstaged fixes locally, retaining the PR merge base.
+    merge_base = _run_git(["merge-base", base_ref, "HEAD"])
+    if merge_base.returncode != 0:
+        print(f"ERROR: Cannot resolve merge base for {base_ref}.", file=sys.stderr)
+        return 1
+    diff_base = merge_base.stdout.strip()
+    files = changed_files(diff_base)
 
     added_by_file: dict[str, list[AddedLine]] = {}
     for fp in files:
-        rows = added_lines_for_file(base_ref, fp)
+        rows = added_lines_for_file(diff_base, fp)
         if rows:
             added_by_file[fp] = rows
 
@@ -239,7 +254,8 @@ def main() -> int:
             continue
         if not any(fp.endswith(ext) for ext in (".html", ".jinja", ".jinja2")):
             continue
-        hardcoded.extend(detect_hardcoded_in_template_lines(rows))
+        source = Path(fp).read_text(encoding="utf-8")
+        hardcoded.extend(detect_hardcoded_in_template_lines(rows, source))
 
     failed = False
     print("i18n CI guard")

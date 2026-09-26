@@ -76,6 +76,7 @@ from ..notifications.inapp import (
 from ..security_logging import log_security_event
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
 from ..services.matching_v1 import get_matched_requests_v1
+from ..services.public_intake_routing import resolve_public_intake_destination
 from ..services.matching_v1 import mark_seen as match_mark_seen
 from ..services.geocoding import request_address_display_text
 from ..services.prospect_auto_capture import (
@@ -3949,6 +3950,29 @@ def submit_request_confirm():
         if _magic_link_rate_limited(purpose="request", email=email, ip=ip):
             suppress_magic_send = True
 
+        matched_structure, matched_service = resolve_public_intake_destination(
+            category=draft.get("category"),
+            postcode=draft.get("postcode"),
+            city=draft.get("city"),
+        )
+
+        if matched_structure is None or matched_service is None:
+            current_app.logger.info(
+                "[PUBLIC INTAKE ROUTING] no destination category=%r postcode=%r city=%r",
+                draft.get("category"),
+                draft.get("postcode"),
+                draft.get("city"),
+            )
+            flash(
+                _(
+                    "Aucune structure partenaire adaptée n'est actuellement disponible "
+                    "pour cette demande dans votre secteur. "
+                    "Merci de contacter votre structure locale."
+                ),
+                "warning",
+            )
+            return redirect(url_for("main.submit_request"))
+
         req = Request(
             title=draft.get("title"),
             description=draft.get("description"),
@@ -3963,7 +3987,8 @@ def submit_request_confirm():
             status="pending",
             priority=draft.get("priority"),
             category=draft.get("category"),
-            structure_id=current_structure().id,
+            structure_id=matched_structure.id,
+            service_id=matched_service.id,
         )
         db.session.add(req)
         db.session.commit()
@@ -3987,7 +4012,7 @@ def submit_request_confirm():
         magic_url = None
         recent_request_token = None
         if not suppress_magic_send:
-            recent_request_token, _ = _recent_active_magic_link(
+            recent_request_token, recent_request_token_meta = _recent_active_magic_link(
                 purpose="request",
                 email=(getattr(req, "email", "") or "").strip().lower(),
                 request_id=req.id,

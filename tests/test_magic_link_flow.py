@@ -8,7 +8,13 @@ import pytest
 
 from backend.helpchain_backend.src.models.magic_link_token import MagicLinkToken
 from backend.helpchain_backend.src.routes import main as main_routes
-from backend.models import Request, SecurityEvent, Structure
+from backend.models import (
+    Request,
+    SecurityEvent,
+    Structure,
+    StructureCoverageArea,
+    StructureService,
+)
 
 
 def _sha256_hex(value: str) -> str:
@@ -19,6 +25,52 @@ def _default_structure(session) -> Structure:
     structure = session.query(Structure).filter_by(slug="default").first()
     assert structure is not None
     return structure
+
+
+def _ensure_public_intake_route(session) -> None:
+    structure = _default_structure(session)
+    structure.status = "active"
+
+    coverage = (
+        session.query(StructureCoverageArea)
+        .filter_by(
+            structure_id=structure.id,
+            postal_code="92100",
+            is_active=True,
+        )
+        .first()
+    )
+    if coverage is None:
+        session.add(
+            StructureCoverageArea(
+                structure_id=structure.id,
+                area_type="city",
+                name="Boulogne-Billancourt",
+                postal_code="92100",
+                is_active=True,
+            )
+        )
+
+    service = (
+        session.query(StructureService)
+        .filter_by(
+            structure_id=structure.id,
+            code="admin",
+            is_active=True,
+        )
+        .first()
+    )
+    if service is None:
+        session.add(
+            StructureService(
+                structure_id=structure.id,
+                code="admin",
+                name="Accompagnement administratif",
+                is_active=True,
+            )
+        )
+
+    session.commit()
 
 
 def _create_request(session, suffix: str) -> Request:
@@ -73,11 +125,13 @@ def _submit_request_magic(
         "name": "Security Test Request",
         "email": email,
         "phone": "0600000000",
-        "category": "social",
+        "category": "admin_help",
         "urgency": "normal",
         "title": f"Security request {suffix}",
         "description": f"Security flow request {suffix}",
-        "location_text": "Paris",
+        "location_text": "Boulogne-Billancourt",
+        "postcode": "92100",
+        "city": "Boulogne-Billancourt",
         "privacy_consent": "1",
         "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
     }
@@ -187,16 +241,19 @@ def test_invalid_magic_link_token_fails_safely(client):
 
 def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch):
     _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
     monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
     payload = {
         "name": "Request Magic Link",
         "email": "request.magic@test.local",
         "phone": "0600000000",
-        "category": "social",
+        "category": "admin_help",
         "urgency": "normal",
         "title": "Request magic link submit",
         "description": "Submit request flow should create a hashed magic link token.",
-        "location_text": "Paris",
+        "location_text": "Boulogne-Billancourt",
+        "postcode": "92100",
+        "city": "Boulogne-Billancourt",
         "privacy_consent": "1",
         "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
     }
@@ -264,6 +321,7 @@ def test_submit_request_confirm_rate_limits_magic_link_by_email(
     client, session, monkeypatch
 ):
     _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
     monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
     email = "request.limit@test.local"
 
@@ -272,11 +330,13 @@ def test_submit_request_confirm_rate_limits_magic_link_by_email(
             "name": "Request Limit",
             "email": email,
             "phone": "0600000000",
-            "category": "social",
+            "category": "admin_help",
             "urgency": "normal",
             "title": f"Request limit {idx}",
             "description": "Rate limit test request flow.",
-            "location_text": "Paris",
+            "location_text": "Boulogne-Billancourt",
+            "postcode": "92100",
+            "city": "Boulogne-Billancourt",
             "privacy_consent": "1",
             "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
         }
@@ -508,6 +568,7 @@ def test_distributed_attack_across_ips_triggers_email_based_limits(
     client, session, monkeypatch
 ):
     _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
     monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
     email = "distributed.attack@test.local"
 

@@ -24,16 +24,7 @@
         </a>
       </div>
 
-      {# Flash messages #}
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          {% for category, msg in messages %}
-            <div class="alert alert-{{ 'danger' if category in ['error','danger'] else category }} mb-3" role="alert">
-              {{ msg }}
-            </div>
-          {% endfor %}
-        {% endif %}
-      {% endwith %}
+
 
       <div class="card shadow-sm hc-form-container">
         <div class="card-body p-0">

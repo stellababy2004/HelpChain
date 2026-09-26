@@ -4,7 +4,15 @@ import time
 from datetime import UTC, datetime, timedelta
 import os
 
-from backend.models import AdminUser, Request, Structure, db, utc_now
+from backend.models import (
+    AdminUser,
+    Request,
+    Structure,
+    StructureCoverageArea,
+    StructureService,
+    db,
+    utc_now,
+)
 import pytest
 
 pytestmark = pytest.mark.spine
@@ -20,7 +28,9 @@ def _submit_public_request(client, unique_suffix: str) -> str:
         "urgency": "normal",
         "title": title,
         "description": "Demande de test smoke pour verifier le flux complet.",
-        "location_text": "Paris",
+        "location_text": "Boulogne-Billancourt",
+        "postcode": "92100",
+        "city": "Boulogne-Billancourt",
         "privacy_consent": "1",
         "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
     }
@@ -32,6 +42,38 @@ def _submit_public_request(client, unique_suffix: str) -> str:
     assert confirm.status_code in (302, 303)
 
     return title
+
+
+@pytest.fixture(autouse=True)
+def public_intake_destination(app, session):
+    structure = Structure(
+        name="Smoke CCAS Boulogne-Billancourt",
+        slug="smoke-ccas-boulogne",
+        status="active",
+    )
+    session.add(structure)
+    session.flush()
+
+    session.add(
+        StructureCoverageArea(
+            structure_id=structure.id,
+            area_type="city",
+            name="Boulogne-Billancourt",
+            postal_code="92100",
+            is_active=True,
+        )
+    )
+    session.add(
+        StructureService(
+            structure_id=structure.id,
+            code="orientation",
+            name="Orientation",
+            is_active=True,
+        )
+    )
+    session.commit()
+
+    return structure
 
 
 @pytest.fixture
@@ -88,9 +130,17 @@ def test_public_create_persists_in_expected_structure(app, client, session):
     assert created.structure_id is not None
     assert created.deleted_at is None
 
-    default_structure = session.query(Structure).filter_by(slug="default").first()
-    assert default_structure is not None
-    assert created.structure_id == default_structure.id
+    matched_structure = session.query(Structure).filter_by(
+        slug="smoke-ccas-boulogne"
+    ).first()
+    assert matched_structure is not None
+    assert created.structure_id == matched_structure.id
+    assert created.service_id is not None
+
+    matched_service = session.get(StructureService, created.service_id)
+    assert matched_service is not None
+    assert matched_service.code == "orientation"
+    assert matched_service.structure_id == matched_structure.id
 
 
 def test_created_request_visible_in_admin_list_and_detail(admin_ops_client, client, session):
