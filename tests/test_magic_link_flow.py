@@ -794,3 +794,60 @@ def test_magic_link_risk_block_logs_expected_event(client, session, monkeypatch)
     assert "recent_suspicious" in ((risk_event.meta or {}).get("signals") or [])
     assert (risk_event.meta or {}).get("block_duration_sec") == 60 * 60
 
+
+def test_request_magic_link_resend_issues_token_and_sends_email(
+    client, session, monkeypatch
+):
+    """Resend must issue a request token, send one email, and stay in verification."""
+    _reset_magic_link_rate_limits()
+    req = _create_request(session, "resend")
+
+    sent_emails = []
+
+    def fake_send_notification_email(*args, **kwargs):
+        sent_emails.append((args, kwargs))
+        return True
+
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        fake_send_notification_email,
+    )
+
+    with client.session_transaction() as flask_session:
+        flask_session["requester_email"] = req.email
+        flask_session["last_request_id"] = req.id
+
+    response = client.post(
+        "/submit_request/resend",
+        follow_redirects=False,
+    )
+
+    assert response.status_code in (302, 303)
+    assert response.headers["Location"].endswith("/submit_request/check_email")
+
+    session.expire_all()
+
+    tokens = (
+        session.query(MagicLinkToken)
+        .filter_by(
+            purpose="request",
+            email=req.email,
+            request_id=req.id,
+        )
+        .order_by(MagicLinkToken.id.asc())
+        .all()
+    )
+
+    assert len(tokens) == 1
+    assert tokens[0].token_hash
+    assert tokens[0].used_at is None
+    assert tokens[0].invalidated_at is None
+
+    assert len(sent_emails) == 1
+
+    args, kwargs = sent_emails[0]
+    assert args[0] == req.email
+    assert args[2] == "emails/magic_link.html"
+    assert args[3]["request_id"] == req.id
+    assert "/auth/magic/" in args[3]["magic_link_url"]
+    assert kwargs["purpose"] == "request_magic_link"
