@@ -6026,7 +6026,172 @@ def forgot_password():
 
 @main_bp.post("/submit_request/resend")
 def submit_request_resend():
-    return redirect(url_for("main.submit_request"), code=302)
+    email = (session.get("requester_email") or "").strip().lower()
+    request_id = session.get("last_request_id")
+
+    if not email or not request_id:
+        return redirect(url_for("main.submit_request"), code=302)
+
+    req = scoped_requests_query().filter(Request.id == request_id).first()
+    if req is None or (getattr(req, "email", "") or "").strip().lower() != email:
+        return redirect(url_for("main.submit_request"), code=302)
+
+    ip = _client_ip()
+    email_hash = _sha256_hex(email)
+
+    risk = _compute_magic_link_risk(ip, email)
+    _detect_suspicious_activity(ip, email)
+
+    log_security_event(
+        "magic_link_attempt",
+        actor_type="anonymous",
+        ip=ip,
+        email_hash=email_hash,
+        meta={"purpose": "request", "flow": "resend", "request_id": req.id},
+    )
+
+    suppress_magic_send = False
+
+    block_duration_sec = _magic_link_block_duration_for_score(risk["score"])
+    if block_duration_sec > 0:
+        _rate_limit_block(f"block:ip:{ip}", block_duration_sec)
+        suppress_magic_send = True
+        log_security_event(
+            "magic_link_risk_blocked",
+            actor_type="anonymous",
+            ip=ip,
+            email_hash=email_hash,
+            meta={
+                "purpose": "request",
+                "flow": "resend",
+                "request_id": req.id,
+                "risk_score": risk["score"],
+                "signals": risk["signals"],
+                "block_duration_sec": block_duration_sec,
+                "trust_tier": risk["trust_tier"],
+            },
+        )
+
+    if _magic_link_rate_limited(purpose="request", email=email, ip=ip):
+        suppress_magic_send = True
+
+    recent_token, cooldown_retry_after = _recent_active_magic_link(
+        purpose="request",
+        email=email,
+        request_id=req.id,
+        cooldown_seconds=120,
+    )
+    if recent_token is not None:
+        suppress_magic_send = True
+        log_security_event(
+            "magic_link_reuse_blocked",
+            actor_type="anonymous",
+            ip=ip,
+            email_hash=email_hash,
+            meta={
+                "purpose": "request",
+                "flow": "resend",
+                "request_id": req.id,
+                "token_id": recent_token.id,
+                "retry_after": cooldown_retry_after,
+                "email_hash_prefix": _magic_link_email_fingerprint(email),
+            },
+        )
+
+    if not suppress_magic_send:
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = _sha256_hex(raw_token)
+        expires_at = utc_now() + timedelta(minutes=15)
+
+        try:
+            _invalidate_existing_magic_links(
+                purpose="request",
+                email=email,
+                request_id=req.id,
+                exclude_token_hash=token_hash,
+                reason="superseded",
+            )
+
+            ml = MagicLinkToken(
+                token_hash=token_hash,
+                purpose="request",
+                email=email,
+                request_id=req.id,
+                expires_at=expires_at,
+            )
+            db.session.add(ml)
+
+            req.requester_token_hash = token_hash
+            req.requester_token_created_at = utc_now()
+            db.session.commit()
+
+            log_security_event(
+                "magic_link_issued",
+                actor_type="anonymous",
+                meta={
+                    "purpose": "request",
+                    "flow": "resend",
+                    "token_id": ml.id,
+                    "request_id": req.id,
+                    "expires_at": expires_at.isoformat(),
+                },
+            )
+
+            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+            path = url_for(
+                "main.magic_link_consume",
+                token=raw_token,
+                _external=False,
+            )
+            magic_url = (
+                f"{base}{path}"
+                if base
+                else url_for(
+                    "main.magic_link_consume",
+                    token=raw_token,
+                    _external=True,
+                )
+            )
+
+            try:
+                from backend.mail_service import send_notification_email
+
+                send_notification_email(
+                    email,
+                    "Confirmez votre demande HelpChain (15 min)",
+                    "emails/magic_link.html",
+                    {
+                        "magic_link_url": magic_url,
+                        "ttl_minutes": 15,
+                        "request_id": req.id,
+                        "intro_text": _(
+                            "Sans mot de passe. Recevez un lien s?curis? par e-mail."
+                        ),
+                        "button_text": _("Ouvrir mon lien de connexion"),
+                        "fallback_text": _(
+                            "Si le bouton ne fonctionne pas, copiez-collez ce lien :"
+                        ),
+                        "privacy_line": _("Minimal data, GDPR compliant"),
+                        "ignore_line": _(
+                            "Si vous n??tes pas ? l?origine de cette demande, ignorez cet e-mail."
+                        ),
+                    },
+                    purpose="request_magic_link",
+                )
+            except Exception as exc:
+                current_app.logger.warning(
+                    "[EMAIL] request magic link resend failed: %s",
+                    exc,
+                )
+
+        except Exception as exc:
+            db.session.rollback()
+            current_app.logger.warning(
+                "[MAGIC LINK] request resend issuance failed: %s",
+                exc,
+            )
+
+    return redirect(url_for("main.submit_request_check_email"), code=303)
 
 
 @main_bp.get("/r/<int:req_id>")
