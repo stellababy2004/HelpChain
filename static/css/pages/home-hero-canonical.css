@@ -1300,3 +1300,148 @@ html body.hc-page-home
     justify-content: center !important;
   }
 }
+
+/* HELPCHAIN MOBILE HERO HOTFIX ? 2026-09-26
+   Keep this after the product-led desktop pass so mobile wins the cascade. */
+@media (max-width: 767.98px) {
+  html body.hc-page-home {
+    overflow-x: hidden !important;
+  }
+
+  html body.hc-page-home .hc-home-premium,
+  html body.hc-page-home .hc-home-premium__hero {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: clip !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero {
+    min-height: 0 !important;
+    padding: 16px 12px 28px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 auto !important;
+    padding: 18px !important;
+    gap: 20px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-copy {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-copy h1 {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(2rem, 9vw, 2.45rem) !important;
+    line-height: 1.04 !important;
+    letter-spacing: -0.045em !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+    hyphens: none !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-copy .hc-home-premium__eyebrow {
+    max-width: 100% !important;
+    font-size: 0.68rem !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.07em !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-copy > .hc-home-premium__lead {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-actions {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 10px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-actions .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__preview {
+    position: relative !important;
+    inset: auto !important;
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__shot-card--hero {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-support,
+  html body.hc-page-home .hc-home-premium__hero-supportInline,
+  html body.hc-page-home .hc-home-premium__hero-supportMeta,
+  html body.hc-page-home .hc-home-premium__hero-demo-note,
+  html body.hc-page-home .hc-home-premium__hero-public-cta {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}
+
+@media (max-width: 430px) {
+  html body.hc-page-home .hc-home-premium__hero-grid {
+    padding: 16px !important;
+    gap: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-copy h1 {
+    font-size: clamp(1.9rem, 9vw, 2.2rem) !important;
+  }
+}
