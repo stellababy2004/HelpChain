@@ -1445,3 +1445,76 @@ html body.hc-page-home
     font-size: clamp(1.9rem, 9vw, 2.2rem) !important;
   }
 }
+
+/* HELPCHAIN MOBILE POLISH - 2026-09-26
+   Compact navigation and section rhythm only.
+   Keep after the mobile hero stabilization rules. */
+@media (max-width: 767.98px) {
+  html body.hc-page-home .hc-home-premium__section {
+    padding-top: 28px !important;
+    padding-bottom: 28px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-sheet {
+    top: max(72px, calc(env(safe-area-inset-top) + 64px)) !important;
+    bottom: auto !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 96px - env(safe-area-inset-top)) !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-panelHead {
+    margin-bottom: 6px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-list {
+    gap: 3px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-list a {
+    min-height: 38px !important;
+    padding: 7px 10px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    font-size: 0.92rem !important;
+    line-height: 1.2 !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-list a:hover,
+  html body.hc-page-home .hc-home-premium__mobile-list a:focus-visible {
+    background: rgba(238, 244, 255, 0.92) !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-sheet .btn {
+    min-height: 42px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-bar,
+  html body.hc-page-home .hc-home-premium__product-visual .hc-home-premium__shot-bar {
+    min-height: 42px !important;
+    padding: 8px 12px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-bar strong,
+  html body.hc-page-home .hc-home-premium__product-visual .hc-home-premium__shot-bar strong {
+    font-size: 0.92rem !important;
+  }
+}
+
+@media (max-width: 430px) {
+  html body.hc-page-home .hc-home-premium__section {
+    padding-top: 26px !important;
+    padding-bottom: 26px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__mobile-sheet {
+    left: 10px !important;
+    right: 10px !important;
+  }
+}
