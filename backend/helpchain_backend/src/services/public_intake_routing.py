@@ -48,14 +48,20 @@ def resolve_public_intake_destination(
     if not postcode_value and not city_value:
         return None, None
 
-    coverage_query = (
-        StructureCoverageArea.query
+    service_query = (
+        StructureService.query
         .join(
             Structure,
+            Structure.id == StructureService.structure_id,
+        )
+        .join(
+            StructureCoverageArea,
             Structure.id == StructureCoverageArea.structure_id,
         )
         .filter(StructureCoverageArea.is_active.is_(True))
         .filter(func.lower(Structure.status) == "active")
+        .filter(StructureService.is_active.is_(True))
+        .filter(func.lower(StructureService.code) == service_code)
     )
 
     location_filters = []
@@ -75,22 +81,12 @@ def resolve_public_intake_destination(
 
     from sqlalchemy import or_
 
-    coverage = (
-        coverage_query
-        .filter(or_(*location_filters))
-        .order_by(StructureCoverageArea.id.asc())
-        .first()
-    )
-
-    if coverage is None:
-        return None, None
-
+    # Preserve stable coverage/service ID ordering among eligible destinations.
+    # More advanced capacity/SLA routing may be added later.
     service = (
-        StructureService.query
-        .filter(StructureService.structure_id == coverage.structure_id)
-        .filter(StructureService.is_active.is_(True))
-        .filter(func.lower(StructureService.code) == service_code)
-        .order_by(StructureService.id.asc())
+        service_query
+        .filter(or_(*location_filters))
+        .order_by(StructureCoverageArea.id.asc(), StructureService.id.asc())
         .first()
     )
 
