@@ -14074,3 +14074,17 @@ body.hc-page-home .hc-home-premium__nav-actions .btn-primary:hover {
     height: 22px !important;
   }
 }
+
+/* HelpChain public intake: RGPD consent checkbox */
+#privacyConsent.form-check-input {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+  position: static;
+  float: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.2rem 0.55rem 0 0;
+  appearance: auto;
+  -webkit-appearance: checkbox;
+}
