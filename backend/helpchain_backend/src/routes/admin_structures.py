@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 
 from backend.extensions import db
 from backend.models import StructureContact, StructureCoverageArea, StructureService
+from ..services.public_intake_routing import PUBLIC_INTAKE_SERVICE_CODES
 from ..models import AdminUser, Intervenant, OrganizationAccessRequest, Request, Structure, utc_now
 from ..services.organization_onboarding import (
     AccessRequestAlreadyApproved,
@@ -224,7 +225,18 @@ def _bool_or_none(value: str | None, *, field_label: str) -> bool | None:
 
 
 def _service_select_options() -> dict[str, object]:
+    public_service_labels = {
+        "food": "Aide alimentaire",
+        "housing": "Logement / hébergement",
+        "health": "Santé / accès aux soins",
+        "admin": "Aide administrative",
+        "orientation": "Orientation vers un service",
+    }
     return {
+        "public_intake_service_options": [
+            (code, public_service_labels[code])
+            for code in sorted(PUBLIC_INTAKE_SERVICE_CODES)
+        ],
         "service_categories": SERVICE_CATEGORIES,
         "service_statuses": STATUS_LABELS,
         "service_priorities": PRIORITY_LABELS,
@@ -671,12 +683,34 @@ def admin_structure_create():
 def admin_structure_detail(structure_id: int):
     structure = _structure_or_403(structure_id)
     intelligence = build_enterprise_structure_dashboard(structure)
+    has_active_coverage = bool(intelligence["coverage"]["configured"])
+    has_routable_service = any(
+        service["is_active"] and service["code"].lower() in PUBLIC_INTAKE_SERVICE_CODES
+        for service in intelligence["services"]
+    )
+    public_intake_ready = (
+        (structure.status or "").lower() == "active"
+        and has_active_coverage
+        and has_routable_service
+    )
+    public_intake_guidance = []
+    if not public_intake_ready:
+        if (structure.status or "").lower() != "active":
+            public_intake_guidance.append("Activer la structure dans le workspace.")
+        if not has_active_coverage:
+            public_intake_guidance.append("Ajouter au moins une zone de couverture active.")
+        if not has_routable_service:
+            public_intake_guidance.append(
+                "Ajouter au moins un service actif pour les demandes publiques."
+            )
 
     return (
         render_template(
             "admin/structure_enterprise_dashboard.html",
             structure=structure,
             enterprise=intelligence,
+            public_intake_ready=public_intake_ready,
+            public_intake_guidance=public_intake_guidance,
             dashboard_mode=_structure_dashboard_mode(),
             **_workspace_select_options(),
         ),
@@ -970,6 +1004,18 @@ def admin_structure_service_create(structure_id: int):
     availability = (request.form.get("availability") or "").strip().lower()
     risk_level = (request.form.get("risk_level") or "").strip().lower()
     errors = {}
+    # Explicit opt-in: internal services keep their existing name-derived codes.
+    public_intake_code = (
+        request.form.get("public_intake_service_code") or ""
+    ).strip().lower()
+    if public_intake_code:
+        if public_intake_code not in PUBLIC_INTAKE_SERVICE_CODES:
+            errors["public_intake_service_code"] = "Code de service public invalide."
+        elif StructureService.query.filter(
+            StructureService.structure_id == structure.id,
+            func.lower(StructureService.code) == public_intake_code,
+        ).first():
+            errors["public_intake_service_code"] = "Ce code de service public existe déjà."
     if not name:
         errors["name"] = "Le nom du service est requis."
     if not category or category not in SERVICE_CATEGORIES:
@@ -1035,10 +1081,10 @@ def admin_structure_service_create(structure_id: int):
             400,
         )
 
-    code_base = _slug_code(name)
+    code_base = public_intake_code or _slug_code(name)
     code = code_base
     suffix = 2
-    while StructureService.query.filter(
+    while not public_intake_code and StructureService.query.filter(
         StructureService.structure_id == structure.id,
         StructureService.code == code,
     ).first():

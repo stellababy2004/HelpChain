@@ -47,6 +47,18 @@
     </div>
   </div>
 
+  <div class="card shadow-sm p-3 mb-4" id="public-intake-readiness">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <strong>{{ _("Réception des demandes publiques") }}</strong>
+      <span class="badge {{ 'text-bg-success' if public_intake_ready else 'text-bg-secondary' }}">{{ _("Prête") if public_intake_ready else _("Non configurée") }}</span>
+    </div>
+    {% if public_intake_guidance %}
+      <ul class="small text-muted mb-0 mt-2">
+        {% for guidance in public_intake_guidance %}<li>{{ guidance }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+
   <div class="row g-3 mb-4">
     {% for item in enterprise.executive_kpis %}
       {{ metric_card(item) }}

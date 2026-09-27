@@ -7,15 +7,47 @@ from backend.models import (
     StructureCoverageArea,
     StructureService,
 )
+from ..constants.categories import normalize_request_category
 
 
-REQUEST_CATEGORY_TO_SERVICE_CODE = {
+# None explicitly marks public categories without an equivalent service capability.
+# Do not substitute broad orientation/health services for protection or crisis care.
+REQUEST_CATEGORY_TO_SERVICE_CODE: dict[str, str | None] = {
     "food": "food",
     "housing": "housing",
     "health": "health",
     "admin_help": "admin",
     "orientation": "orientation",
+    "emergency": None,
+    "isolation": None,
+    "violence": None,
 }
+
+PUBLIC_INTAKE_SERVICE_CODES = frozenset(
+    code for code in REQUEST_CATEGORY_TO_SERVICE_CODE.values() if code is not None
+)
+
+
+def _eligible_public_intake_services():
+    return (
+        StructureService.query
+        .join(Structure, Structure.id == StructureService.structure_id)
+        .join(StructureCoverageArea, Structure.id == StructureCoverageArea.structure_id)
+        .filter(func.lower(Structure.status) == "active")
+        .filter(StructureCoverageArea.is_active.is_(True))
+        .filter(StructureService.is_active.is_(True))
+        .filter(func.lower(StructureService.code).in_(PUBLIC_INTAKE_SERVICE_CODES))
+    )
+
+
+def is_public_intake_routing_ready(structure_id: int) -> bool:
+    """Check configured routing eligibility, not coverage for a specific location."""
+    return (
+        _eligible_public_intake_services()
+        .filter(StructureService.structure_id == structure_id)
+        .first()
+        is not None
+    )
 
 
 def resolve_public_intake_destination(
@@ -37,7 +69,7 @@ def resolve_public_intake_destination(
     Returns (structure, service) or (None, None).
     """
 
-    category_value = (category or "").strip().lower()
+    category_value = normalize_request_category(category)
     service_code = REQUEST_CATEGORY_TO_SERVICE_CODE.get(category_value)
     if not service_code:
         return None, None
@@ -48,14 +80,9 @@ def resolve_public_intake_destination(
     if not postcode_value and not city_value:
         return None, None
 
-    coverage_query = (
-        StructureCoverageArea.query
-        .join(
-            Structure,
-            Structure.id == StructureCoverageArea.structure_id,
-        )
-        .filter(StructureCoverageArea.is_active.is_(True))
-        .filter(func.lower(Structure.status) == "active")
+    service_query = (
+        _eligible_public_intake_services()
+        .filter(func.lower(StructureService.code) == service_code)
     )
 
     location_filters = []
@@ -75,22 +102,12 @@ def resolve_public_intake_destination(
 
     from sqlalchemy import or_
 
-    coverage = (
-        coverage_query
-        .filter(or_(*location_filters))
-        .order_by(StructureCoverageArea.id.asc())
-        .first()
-    )
-
-    if coverage is None:
-        return None, None
-
+    # Preserve stable coverage/service ID ordering among eligible destinations.
+    # More advanced capacity/SLA routing may be added later.
     service = (
-        StructureService.query
-        .filter(StructureService.structure_id == coverage.structure_id)
-        .filter(StructureService.is_active.is_(True))
-        .filter(func.lower(StructureService.code) == service_code)
-        .order_by(StructureService.id.asc())
+        service_query
+        .filter(or_(*location_filters))
+        .order_by(StructureCoverageArea.id.asc(), StructureService.id.asc())
         .first()
     )
 

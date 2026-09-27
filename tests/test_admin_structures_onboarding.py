@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import re
 
 from sqlalchemy import event
+from bs4 import BeautifulSoup
 
 pytestmark = pytest.mark.shared_platform
 
@@ -214,6 +215,49 @@ def test_structure_detail_loads(client, session):
     assert resp.status_code == 200
 
 
+@pytest.mark.parametrize("configuration", ["empty", "coverage_only", "ready"])
+def test_structure_page_shows_public_intake_readiness(client, session, configuration):
+    from backend.models import StructureCoverageArea, StructureService
+
+    st = _make_structure(session, name="Public Intake UI", slug="public-intake-ui")
+    admin = _make_admin(
+        session, username="public_intake_ui", email="public_intake_ui@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, admin)
+    if configuration != "empty":
+        st.status = "active"
+        session.add(StructureCoverageArea(
+            structure_id=st.id, area_type="city", name="Paris",
+            postal_code="75001", is_active=True,
+        ))
+    if configuration == "ready":
+        session.add(StructureService(
+            structure_id=st.id, name="Aide alimentaire", code="food", is_active=True,
+        ))
+    session.commit()
+
+    response = client.get(f"/admin/structures/{st.id}")
+
+    assert response.status_code == 200
+    panel = BeautifulSoup(response.data, "html.parser").select_one("#public-intake-readiness")
+    assert panel is not None
+    assert "Réception des demandes publiques" in panel.get_text()
+    if configuration == "ready":
+        assert panel.select_one(".badge").get_text(strip=True) == "Prête"
+        assert not panel.select("li")
+    else:
+        assert panel.select_one(".badge").get_text(strip=True) == "Non configurée"
+        guidance = [item.get_text(strip=True) for item in panel.select("li")]
+        expected = ["Ajouter au moins un service actif pour les demandes publiques."]
+        if configuration == "empty":
+            expected = [
+                "Activer la structure dans le workspace.",
+                "Ajouter au moins une zone de couverture active.",
+            ] + expected
+        assert guidance == expected
+
+
 def test_structure_operational_intelligence_endpoint(client, session):
     st = _make_structure(session, name="Operational Detail", slug="operational-detail")
     admin = _make_admin(
@@ -360,6 +404,70 @@ def test_structure_detail_query_count_is_materially_reduced(client, session, app
     assert counts["select"] <= 30
 
 
+def test_structure_service_form_offers_public_intake_codes(client, session):
+    from backend.models import StructureService
+    from backend.helpchain_backend.src.services.public_intake_routing import (
+        PUBLIC_INTAKE_SERVICE_CODES,
+    )
+
+    admin = _make_admin(
+        session, username="public_service_form", email="public_service_form@test.local",
+        role="superadmin",
+    )
+    st = _make_structure(session, name="Service Form", slug="service-form")
+    _login_admin(client, admin)
+    response = client.get(f"/admin/structures/{st.id}/services/new")
+
+    assert response.status_code == 200
+    page = BeautifulSoup(response.data, "html.parser")
+    select = page.select_one('select[name="public_intake_service_code"]')
+    assert select is not None
+    assert not select.has_attr("required")
+    assert page.select_one('label[for="public_intake_service_code"]').get_text() == (
+        "Service pour les demandes publiques"
+    )
+    options = {option["value"]: option.get_text(strip=True) for option in select.select("option")}
+    assert set(options) == {""} | PUBLIC_INTAKE_SERVICE_CODES
+    assert options == {
+        "": "Non utilisé pour le routage public",
+        "food": "Aide alimentaire",
+        "housing": "Logement / hébergement",
+        "health": "Santé / accès aux soins",
+        "admin": "Aide administrative",
+        "orientation": "Orientation vers un service",
+    }
+    assert select.select_one("option")["value"] == ""
+    assert not select.select("option[selected]")
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={"name": "Aide alimentaire", "category": "food_assistance",
+              "public_intake_service_code": "food"},
+    )
+    assert response.status_code == 303
+    assert StructureService.query.filter_by(structure_id=st.id).one().code == "food"
+
+
+def test_structure_service_form_preserves_public_selection_on_validation_error(client, session):
+    admin = _make_admin(
+        session, username="public_form_error", email="public_form_error@test.local",
+        role="superadmin",
+    )
+    st = _make_structure(session, name="Service Form Error", slug="service-form-error")
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={"name": "", "category": "food_assistance", "public_intake_service_code": "food"},
+    )
+
+    assert response.status_code == 400
+    page = BeautifulSoup(response.data, "html.parser")
+    selected = page.select_one('#public_intake_service_code option[selected]')
+    assert selected is not None
+    assert selected["value"] == "food"
+
+
 def test_structure_service_create_accepts_valid_category(client, session):
     admin = _make_admin(
         session,
@@ -374,6 +482,7 @@ def test_structure_service_create_accepts_valid_category(client, session):
         f"/admin/structures/{st.id}/services/new",
         data={
             "name": "Accueil social",
+            "public_intake_service_code": "",
             "category": "social_support",
             "availability": "available",
             "status": "active",
@@ -391,6 +500,105 @@ def test_structure_service_create_accepts_valid_category(client, session):
     assert service is not None
     assert service.category == "social_support"
     assert service.capacity == 5
+    assert service.code == "accueil-social"
+
+
+@pytest.mark.parametrize("code, category", [
+    ("food", "food_assistance"),
+    ("housing", "housing"),
+    ("health", "health"),
+    ("admin", "administrative_support"),
+    ("orientation", "orientation"),
+])
+def test_structure_service_create_accepts_explicit_public_intake_code(
+    client, session, code, category
+):
+    from backend.models import StructureService
+
+    admin = _make_admin(
+        session, username="public_service_creator",
+        email="public_service_creator@test.local", role="superadmin",
+    )
+    st = _make_structure(session, name="Public Services", slug="public-services")
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={
+            "name": "Service avec nom libre", "category": category,
+            "public_intake_service_code": f" {code.upper()} ",
+        },
+    )
+
+    assert response.status_code == 303
+    service = StructureService.query.filter_by(structure_id=st.id).one()
+    assert service.code == code
+    assert service.is_active
+
+
+@pytest.mark.parametrize("code", ["unknown", "emergency", "admin_help"])
+def test_structure_service_create_rejects_unknown_public_intake_code(client, session, code):
+    from backend.models import StructureService
+
+    admin = _make_admin(
+        session, username="invalid_public_service",
+        email="invalid_public_service@test.local", role="superadmin",
+    )
+    st = _make_structure(session, name="Invalid Public Code", slug="invalid-public-code")
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={
+            "name": "Service", "category": "social_support",
+            "public_intake_service_code": code,
+        },
+    )
+
+    assert response.status_code == 400
+    page = BeautifulSoup(response.data, "html.parser")
+    select = page.select_one("#public_intake_service_code")
+    assert "is-invalid" in select["class"]
+    assert select["aria-describedby"] == "public_intake_service_code_error"
+    error = page.select_one("#public_intake_service_code_error.invalid-feedback")
+    assert error.get_text(strip=True) == "Code de service public invalide."
+    assert StructureService.query.filter_by(structure_id=st.id).count() == 0
+
+
+@pytest.mark.parametrize("existing_code", ["food", "FOOD"])
+def test_structure_service_create_rejects_duplicate_public_code_without_suffix(
+    client, session, existing_code
+):
+    from backend.models import StructureService
+
+    admin = _make_admin(
+        session, username="duplicate_public_service",
+        email="duplicate_public_service@test.local", role="superadmin",
+    )
+    st = _make_structure(session, name="Duplicate Public Code", slug="duplicate-public-code")
+    session.add(StructureService(
+        structure_id=st.id, code=existing_code, name="Existing food service",
+        is_active=False,
+    ))
+    session.commit()
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/structures/{st.id}/services/new",
+        data={
+            "name": "Another food service", "category": "food_assistance",
+            "public_intake_service_code": "food",
+        },
+    )
+
+    assert response.status_code == 400
+    page = BeautifulSoup(response.data, "html.parser")
+    error = page.select_one("#public_intake_service_code_error.invalid-feedback")
+    assert error.get_text(strip=True) == "Ce code de service public existe déjà."
+    assert page.select_one('#public_intake_service_code option[selected]')["value"] == "food"
+    service = StructureService.query.filter_by(structure_id=st.id).one()
+    assert service.code == existing_code
+    assert not service.is_active
 
 
 @pytest.mark.parametrize(
