@@ -99,7 +99,7 @@ def check_dangerous_patterns() -> None:
 
             safe_public_request_nullable = (
                 file.name == "20260927_2200_allow_anonymous_public_requests.py"
-                and label == "alter_column"
+                and label in {"alter_column", "batch_alter_table"}
                 and '"requests"' in upgrade_body
                 and '"user_id"' in upgrade_body
                 and "nullable=True" in upgrade_body

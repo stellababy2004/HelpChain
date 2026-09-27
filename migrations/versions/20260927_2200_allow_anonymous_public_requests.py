@@ -15,18 +15,38 @@ depends_on = None
 
 
 def upgrade():
-    op.alter_column(
-        "requests",
-        "user_id",
-        existing_type=sa.Integer(),
-        nullable=True,
-    )
+    bind = op.get_bind()
+
+    if bind.dialect.name == "sqlite":
+        with op.batch_alter_table("requests") as batch_op:
+            batch_op.alter_column(
+                "user_id",
+                existing_type=sa.Integer(),
+                nullable=True,
+            )
+    else:
+        op.alter_column(
+            "requests",
+            "user_id",
+            existing_type=sa.Integer(),
+            nullable=True,
+        )
 
 
 def downgrade():
-    op.alter_column(
-        "requests",
-        "user_id",
-        existing_type=sa.Integer(),
-        nullable=False,
-    )
+    bind = op.get_bind()
+
+    if bind.dialect.name == "sqlite":
+        with op.batch_alter_table("requests") as batch_op:
+            batch_op.alter_column(
+                "user_id",
+                existing_type=sa.Integer(),
+                nullable=False,
+            )
+    else:
+        op.alter_column(
+            "requests",
+            "user_id",
+            existing_type=sa.Integer(),
+            nullable=False,
+        )
