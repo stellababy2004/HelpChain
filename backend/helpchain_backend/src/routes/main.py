@@ -6032,7 +6032,9 @@ def submit_request_resend():
     if not email or not request_id:
         return redirect(url_for("main.submit_request"), code=302)
 
-    req = scoped_requests_query().filter(Request.id == request_id).first()
+    # Public resends are bound to the submitted request in the signed session,
+    # not the ambient/default structure. Keep the email match below.
+    req = Request.query.filter(Request.id == request_id).first()
     if req is None or (getattr(req, "email", "") or "").strip().lower() != email:
         return redirect(url_for("main.submit_request"), code=302)
 
