@@ -1255,7 +1255,7 @@ class Request(db.Model):
     longitude = Column(Float, nullable=True)
     structure_id = Column(Integer, ForeignKey("structures.id"), nullable=True)
     service_id = Column(Integer, ForeignKey("structure_services.id"), nullable=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     user = relationship("User", back_populates="requests")
     structure = relationship("Structure")
