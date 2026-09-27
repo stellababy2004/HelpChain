@@ -10631,3 +10631,18 @@ msgstr "Une nouvelle orientation reste possible si la situation le nécessite."
 
 msgid "Vers"
 msgstr "Vers"
+
+msgid "Réception des demandes publiques"
+msgstr "Réception des demandes publiques"
+
+msgid "Prête"
+msgstr "Prête"
+
+msgid "Non configurée"
+msgstr "Non configurée"
+
+msgid "Service pour les demandes publiques"
+msgstr "Service pour les demandes publiques"
+
+msgid "Non utilisé pour le routage public"
+msgstr "Non utilisé pour le routage public"

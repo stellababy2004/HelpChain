@@ -49,8 +49,8 @@
 
   <div class="card shadow-sm p-3 mb-4" id="public-intake-readiness">
     <div class="d-flex flex-wrap align-items-center gap-2">
-      <strong>Réception des demandes publiques</strong>
-      <span class="badge {{ 'text-bg-success' if public_intake_ready else 'text-bg-secondary' }}">{{ 'Prête' if public_intake_ready else 'Non configurée' }}</span>
+      <strong>{{ _("Réception des demandes publiques") }}</strong>
+      <span class="badge {{ 'text-bg-success' if public_intake_ready else 'text-bg-secondary' }}">{{ _("Prête") if public_intake_ready else _("Non configurée") }}</span>
     </div>
     {% if public_intake_guidance %}
       <ul class="small text-muted mb-0 mt-2">
