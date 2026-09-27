@@ -14077,7 +14077,7 @@ body.hc-page-home .hc-home-premium__nav-actions .btn-primary:hover {
 
 /* HelpChain public intake: RGPD consent checkbox */
 #privacyConsent.form-check-input {
-  display: block;
+  display: block !important;
   visibility: visible;
   opacity: 1;
   position: static;
