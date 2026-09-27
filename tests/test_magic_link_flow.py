@@ -833,12 +833,21 @@ def test_magic_link_risk_block_logs_expected_event(client, session, monkeypatch)
     assert (risk_event.meta or {}).get("block_duration_sec") == 60 * 60
 
 
+@pytest.mark.parametrize("allow_default_fallback", [False, True])
 def test_request_magic_link_resend_issues_token_and_sends_email(
-    client, session, monkeypatch
+    client, session, monkeypatch, allow_default_fallback
 ):
     """Resend must issue a request token, send one email, and stay in verification."""
     _reset_magic_link_rate_limits()
     req = _create_request(session, "resend")
+    structure = Structure(name="Public intake", slug="resend-intake")
+    session.add(structure)
+    session.flush()
+    req.structure_id = structure.id
+    session.commit()
+    monkeypatch.setitem(
+        client.application.config, "ALLOW_DEFAULT_TENANT_FALLBACK", allow_default_fallback
+    )
 
     sent_emails = []
 
@@ -889,3 +898,167 @@ def test_request_magic_link_resend_issues_token_and_sends_email(
     assert args[3]["request_id"] == req.id
     assert "/auth/magic/" in args[3]["magic_link_url"]
     assert kwargs["purpose"] == "request_magic_link"
+
+
+@pytest.mark.parametrize("expired", [False, True])
+def test_request_magic_link_resend_rotates_submitted_token(
+    client, session, monkeypatch, expired
+):
+    from urllib.parse import urlsplit
+
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
+    monkeypatch.setitem(client.application.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
+    sent = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent.append(args),
+    )
+    email = f"resend.submitted.{expired}@test.local".lower()
+    preview, confirm = _submit_request_magic(client, email=email, suffix="resend")
+    assert preview.status_code == 200
+    assert confirm.headers["Location"].endswith("/submit_request/check_email")
+    assert client.get(confirm.headers["Location"]).status_code == 200
+    session.expire_all()
+    with client.session_transaction() as flask_session:
+        request_id = flask_session["last_request_id"]
+    req = session.get(Request, request_id)
+    assert req is not None
+    assert req.email == email
+    request_count = session.query(Request).count()
+    old = session.query(MagicLinkToken).filter_by(request_id=request_id).one()
+    old.created_at = datetime.now(UTC) - timedelta(minutes=16 if expired else 3)
+    old.expires_at = old.created_at + timedelta(minutes=15)
+    session.commit()
+    old_expiry = old.expires_at
+    old_path = urlsplit(sent[0][3]["magic_link_url"]).path
+
+    response = client.post("/submit_request/resend", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["Location"].endswith("/submit_request/check_email")
+    assert client.get(response.headers["Location"]).status_code == 200
+    session.expire_all()
+    tokens = (
+        session.query(MagicLinkToken)
+        .filter_by(request_id=request_id, purpose="request")
+        .order_by(MagicLinkToken.id.asc())
+        .all()
+    )
+    assert len(tokens) == 2
+    old, new = tokens
+    assert old.expires_at == old_expiry
+    if not expired:
+        assert old.invalidated_at is not None
+        assert old.invalidated_reason == "superseded"
+    assert new.token_hash != old.token_hash
+    assert new.email == email
+    assert new.used_at is None
+    assert new.invalidated_at is None
+    assert timedelta(minutes=14, seconds=55) < new.expires_at - new.created_at <= timedelta(minutes=15)
+    assert session.get(Request, request_id).requester_token_hash == new.token_hash
+    assert session.query(Request).count() == request_count
+    assert len(sent) == 2
+    assert sent[1][0] == email
+    assert sent[1][3]["request_id"] == request_id
+    new_path = urlsplit(sent[1][3]["magic_link_url"]).path
+    assert new_path != old_path
+
+    # The old link stays invalid, and only the new link authenticates the requester.
+    assert client.get(old_path, follow_redirects=False).status_code == 200
+    with client.session_transaction() as flask_session:
+        assert not flask_session.get("requester_authenticated")
+    accepted = client.get(new_path, follow_redirects=False)
+    assert accepted.status_code == 303
+    assert accepted.headers["Location"].endswith("/profile")
+    with client.session_transaction() as flask_session:
+        assert flask_session["requester_authenticated"] is True
+        assert flask_session["last_request_id"] == request_id
+    session.expire_all()
+    assert new.used_at is not None
+    assert old.used_at is None
+    assert old.invalidated_at is not None
+    assert old.invalidated_reason == ("expired" if expired else "superseded")
+    assert session.query(Request).count() == request_count
+
+
+@pytest.mark.parametrize("suppression", ["cooldown", "email_limit", "ip_limit", "risk"])
+def test_request_magic_link_resend_preserves_send_suppression(
+    client, session, monkeypatch, suppression
+):
+    _reset_magic_link_rate_limits()
+    monkeypatch.setitem(client.application.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
+    req = _create_request(session, "resend-suppression")
+    sent = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent.append(args),
+    )
+    now = datetime.now(UTC)
+    old = MagicLinkToken(
+        purpose="request", email=req.email, request_id=req.id,
+        token_hash=_sha256_hex("resend-suppression"),
+        created_at=now if suppression == "cooldown" else now - timedelta(minutes=3),
+        expires_at=now + timedelta(minutes=12),
+    )
+    session.add(old)
+    session.commit()
+    ip = "203.0.113.42"
+    if suppression in {"email_limit", "ip_limit"}:
+        key, limit = (
+            (f"ml:issue:email:{req.email}", 3)
+            if suppression == "email_limit" else (f"ml:issue:ip:{ip}", 10)
+        )
+        for _ in range(limit):
+            assert main_routes._rate_limit_check(key, limit=limit, window_sec=900)[0]
+    elif suppression == "risk":
+        _create_security_event(
+            session, event_type="magic_link_suspicious_activity", ip=ip, email=req.email
+        )
+    with client.session_transaction() as flask_session:
+        flask_session["requester_email"] = req.email
+        flask_session["last_request_id"] = req.id
+
+    response = client.post(
+        "/submit_request/resend", environ_overrides={"REMOTE_ADDR": ip}
+    )
+
+    assert response.status_code == 303
+    assert response.headers["Location"].endswith("/submit_request/check_email")
+    assert client.get(response.headers["Location"]).status_code == 200
+    assert not sent
+    session.expire_all()
+    assert session.query(MagicLinkToken).filter_by(request_id=req.id).count() == 1
+    assert old.invalidated_at is None
+    assert old.used_at is None
+
+
+@pytest.mark.parametrize("session_state", ["missing", "wrong_email", "wrong_id"])
+def test_request_magic_link_resend_requires_matching_session(
+    client, session, monkeypatch, session_state
+):
+    _reset_magic_link_rate_limits()
+    req = _create_request(session, "resend-session")
+    sent = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent.append(args),
+    )
+    if session_state != "missing":
+        with client.session_transaction() as flask_session:
+            flask_session["requester_email"] = (
+                "different@test.local" if session_state == "wrong_email" else req.email
+            )
+            flask_session["last_request_id"] = (
+                -1 if session_state == "wrong_id" else req.id
+            )
+
+    response = client.post(
+        "/submit_request/resend",
+        data={"requester_email": req.email, "last_request_id": req.id},
+    )
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/submit_request")
+    assert not sent
+    assert session.query(MagicLinkToken).filter_by(request_id=req.id).count() == 0
