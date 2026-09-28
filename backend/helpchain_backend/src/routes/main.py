@@ -3725,11 +3725,6 @@ def submit_request():
                 200,
             )
 
-        current_app.logger.warning(
-            "[SUBMIT DEBUG] form_keys=%s privacy_consent=%r",
-            sorted(request.form.keys()),
-            request.form.get("privacy_consent"),
-        )
 
         errors, cleaned = validate_submit_request_form(request.form)
 

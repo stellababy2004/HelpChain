@@ -190,6 +190,11 @@
     }
 
     form.addEventListener("submit", (e) => {
+      const privacyCheckbox = form.querySelector("#privacyConsent");
+      const privacyValue = form.querySelector("#privacyConsentValue");
+      if (privacyCheckbox && privacyValue) {
+        privacyValue.value = privacyCheckbox.checked ? "1" : "";
+      }
       if (locked) {
         e.preventDefault();
         return;
