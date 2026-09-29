@@ -3991,8 +3991,19 @@ def submit_request_confirm():
             structure_id=matched_structure.id,
             service_id=matched_service.id,
         )
-        db.session.add(req)
-        db.session.commit()
+        try:
+            db.session.add(req)
+            db.session.commit()
+        except Exception as exc:
+            db.session.rollback()
+            orig = getattr(exc, "orig", None)
+            current_app.logger.exception(
+                "REQUEST PERSIST FAILED type=%s db_type=%s db_error=%s",
+                type(exc).__name__,
+                type(orig).__name__ if orig is not None else None,
+                str(orig) if orig is not None else None,
+            )
+            raise
         current_app.logger.info(
             "[REQUEST GEO] request_id=%s status=%s normalized_address=%r lat=%r lng=%r",
             req.id,
