@@ -1666,6 +1666,12 @@ try:
             except Exception:
                 pass
 
+    @event.listens_for(Request, "before_insert")
+    def _ensure_request_updated_at(mapper, connection, target):
+        """Populate updated_at on insert without creating a placeholder user."""
+        if getattr(target, "updated_at", None) is None:
+            target.updated_at = utc_now()
+
 
 except Exception:
     pass
