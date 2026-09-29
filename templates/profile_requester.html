@@ -22,6 +22,7 @@
 
   {% if kpi %}
     <div class="d-flex flex-wrap gap-2 mb-3">
+      <span class="badge rounded-pill bg-light text-dark">pending: {{ kpi.pending }}</span>
       <span class="badge rounded-pill bg-light text-dark">open: {{ kpi.open }}</span>
       <span class="badge rounded-pill bg-light text-dark">in_progress: {{ kpi.in_progress }}</span>
       <span class="badge rounded-pill bg-light text-dark">done: {{ kpi.done }}</span>

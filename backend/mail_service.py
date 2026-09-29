@@ -581,9 +581,12 @@ def send_notification_email(
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(f"\n--- {utc_now().isoformat()} ---\n")
                     f.write(f"To: {recipient}\nSubject: {subject}\n\n")
-                    if text_content:
-                        f.write(text_content + "\n\n")
-                    f.write(html_content)
+                    if magic_url:
+                        f.write("[Magic-link email body redacted]")
+                    else:
+                        if text_content:
+                            f.write(text_content + "\n\n")
+                        f.write(html_content)
                     f.write("\n")
             except Exception as e:
                 print("EMAIL ERROR:", str(e))

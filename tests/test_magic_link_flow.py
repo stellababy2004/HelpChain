@@ -294,10 +294,17 @@ def test_submit_request_missing_privacy_consent_shows_visible_error(client, monk
     )
 
 
-def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch):
+def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch, caplog):
+    from urllib.parse import urlsplit
+
+    caplog.set_level("INFO")
     _reset_magic_link_rate_limits()
     _ensure_public_intake_route(session)
-    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
+    sent = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent.append(args),
+    )
     payload = {
         "name": "Request Magic Link",
         "email": "request.magic@test.local",
@@ -341,6 +348,13 @@ def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, m
     assert len(token_row.token_hash) == 64
     assert token_row.email == "request.magic@test.local"
     assert token_row.invalidated_at is None
+    assert len(sent) == 1
+    magic_url = sent[0][3]["magic_link_url"]
+    raw_token = urlsplit(magic_url).path.rsplit("/", 1)[-1]
+    assert raw_token and _sha256_hex(raw_token) == token_row.token_hash
+    assert raw_token not in caplog.text
+    assert magic_url not in caplog.text
+    assert f"[MAGIC LINK] request_id={req.id} generated=True" in caplog.text
 
 
 def test_become_volunteer_reuse_cooldown_blocks_duplicate_active_link(
@@ -919,10 +933,11 @@ def test_request_magic_link_resend_issues_token_and_sends_email(
 
 @pytest.mark.parametrize("expired", [False, True])
 def test_request_magic_link_resend_rotates_submitted_token(
-    client, session, monkeypatch, expired
+    client, session, monkeypatch, expired, caplog
 ):
     from urllib.parse import urlsplit
 
+    caplog.set_level("INFO")
     _reset_magic_link_rate_limits()
     _ensure_public_intake_route(session)
     monkeypatch.setitem(client.application.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
@@ -980,6 +995,11 @@ def test_request_magic_link_resend_rotates_submitted_token(
     assert sent[1][3]["request_id"] == request_id
     new_path = urlsplit(sent[1][3]["magic_link_url"]).path
     assert new_path != old_path
+    for message in sent:
+        magic_url = message[3]["magic_link_url"]
+        raw_token = urlsplit(magic_url).path.rsplit("/", 1)[-1]
+        assert raw_token not in caplog.text
+        assert magic_url not in caplog.text
 
     # The old link stays invalid, and only the new link authenticates the requester.
     assert client.get(old_path, follow_redirects=False).status_code == 200
@@ -1140,7 +1160,10 @@ def test_requester_profile_public_partner_intake_resend_and_consume(
     assert session.get(Request, request_id).service_id == service_id
 
 
-def test_requester_profile_verified_email_spans_structures_and_scopes_counts(client, session):
+@pytest.mark.parametrize(
+    "statuses", [("open", "done"), ("pending", "pending"), ("in_progress", "cancelled")]
+)
+def test_requester_profile_verified_email_spans_structures_and_scopes_counts(client, session, statuses):
     own = _create_request(session, "profile-own-default")
     partner = Structure(name="Second Partner", slug="profile-second")
     session.add(partner)
@@ -1148,13 +1171,13 @@ def test_requester_profile_verified_email_spans_structures_and_scopes_counts(cli
     other_own = _create_request(session, "profile-own-partner")
     stranger = _create_request(session, "profile-stranger-default")
     other_stranger = _create_request(session, "profile-stranger-partner")
-    own.status = "open"
+    own.status = statuses[0]
     other_own.email = own.email.upper()
     other_own.structure_id = partner.id
-    other_own.status = "done"
-    stranger.status = "open"
+    other_own.status = statuses[1]
+    stranger.status = statuses[0]
     other_stranger.structure_id = partner.id
-    other_stranger.status = "done"
+    other_stranger.status = statuses[1]
     session.commit()
 
     _consume_requester_link(client, session, other_own)
@@ -1163,7 +1186,8 @@ def test_requester_profile_verified_email_spans_structures_and_scopes_counts(cli
     html = response.get_data(as_text=True)
     assert own.title in html and other_own.title in html
     assert stranger.title not in html and other_stranger.title not in html
-    assert "open: 1" in html and "done: 1" in html
+    for status in ("pending", "open", "in_progress", "done", "cancelled"):
+        assert f">{status}: {statuses.count(status)}</span>" in html
 
     # Consuming another identity's link replaces, rather than combines, access.
     _consume_requester_link(client, session, stranger)
@@ -1320,3 +1344,48 @@ def test_requester_profile_legacy_link_establishes_verified_identity(client, ses
     assert req.title in response.get_data(as_text=True)
     with client.session_transaction() as flask_session:
         assert flask_session["requester_verified_email"] == req.email
+
+
+def test_request_magic_link_smtp_failure_redacts_email_diagnostic(client, monkeypatch, caplog):
+    from unittest.mock import mock_open
+
+    from backend import mail_service
+
+    caplog.set_level("INFO")
+    monkeypatch.setenv("MAIL_MOCK", "0")
+    for key, value in {
+        "MAIL_SERVER": "smtp.test.local",
+        "MAIL_PORT": 465,
+        "MAIL_USERNAME": "sender@test.local",
+        "MAIL_PASSWORD": "test-only-password",
+        "MAIL_DEFAULT_SENDER": "sender@test.local",
+        "MAIL_USE_SSL": True,
+    }.items():
+        monkeypatch.setitem(client.application.config, key, value)
+    monkeypatch.setattr(mail_service, "_send_via_resend", lambda **kwargs: False)
+    monkeypatch.setattr(
+        mail_service, "render_template", lambda template, **context: context["magic_link_url"]
+    )
+
+    def fail_smtp(*args, **kwargs):
+        raise OSError("SMTP unavailable")
+
+    monkeypatch.setattr(mail_service.smtplib, "SMTP_SSL", fail_smtp)
+    email_log = mock_open()
+    monkeypatch.setattr(mail_service, "open", email_log, raising=False)
+    raw_token = "diagnostic-secret-magic-token"
+    magic_url = f"https://helpchain.test/auth/magic/{raw_token}"
+    with client.application.app_context():
+        assert mail_service.send_notification_email(
+            "diagnostic@test.local",
+            "Confirm your request",
+            "emails/magic_link.html",
+            {"magic_link_url": magic_url},
+            purpose="request_magic_link",
+        ) is False
+
+    email_log.assert_called_once_with("sent_emails.txt", "a", encoding="utf-8")
+    diagnostic = "".join(call.args[0] for call in email_log().write.call_args_list)
+    assert "[Magic-link email body redacted]" in diagnostic
+    assert raw_token not in diagnostic + caplog.text
+    assert magic_url not in diagnostic + caplog.text

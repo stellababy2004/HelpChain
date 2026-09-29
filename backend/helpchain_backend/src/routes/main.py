@@ -1794,6 +1794,7 @@ def profile():
     )
     counts = {(s or "open"): c for s, c in rows}
     kpi = {
+        "pending": counts.get("pending", 0),
         "open": counts.get("open", 0),
         "in_progress": counts.get("in_progress", 0),
         "done": counts.get("done", 0),
@@ -4099,7 +4100,9 @@ def submit_request_confirm():
                 # If this fails, we still keep legacy token fields unset.
                 db.session.rollback()
 
-        current_app.logger.info("[MAGIC LINK] request_id=%s url=%s", req.id, magic_url)
+        current_app.logger.info(
+            "[MAGIC LINK] request_id=%s generated=%s", req.id, bool(magic_url)
+        )
 
         # Send magic link email (best effort)
         try:
