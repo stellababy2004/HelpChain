@@ -3974,6 +3974,10 @@ def submit_request_confirm():
             )
             return redirect(url_for("main.submit_request"))
 
+        # Preflight security/routing checks above are read-only but may have
+        # opened an ORM transaction. End it before starting Request persistence.
+        db.session.rollback()
+
         req = Request(
             title=draft.get("title"),
             description=draft.get("description"),
