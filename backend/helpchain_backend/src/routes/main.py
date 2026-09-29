@@ -1774,22 +1774,21 @@ def profile():
         if role in ("volunteer", "professional"):
             return redirect(url_for("main.dashboard"))
 
-    # Requester via session-stored email
-    requester_email = (session.get("requester_email") or "").strip().lower()
-    if not requester_email:
+    # Only a consumed magic link establishes this identity. Intake may overwrite
+    # requester_email/last_request_id, so neither can authorize profile access.
+    requester_email = (session.get("requester_verified_email") or "").strip().lower()
+    if not session.get("requester_authenticated") or not requester_email:
         return redirect(url_for("main.submit_request"))
 
+    requester_requests = Request.query.filter(func.lower(Request.email) == requester_email)
     my_requests = (
-        scoped_requests_query()
-        .filter(func.lower(Request.email) == requester_email)
+        requester_requests
         .order_by(desc(Request.created_at))
         .limit(20)
         .all()
     )
     rows = (
-        db.session.query(Request.status, func.count(Request.id))
-        .filter(Request.structure_id == _current_structure_id())
-        .filter(func.lower(Request.email) == requester_email)
+        requester_requests.with_entities(Request.status, func.count(Request.id))
         .group_by(Request.status)
         .all()
     )
@@ -1811,6 +1810,8 @@ def profile():
 @main_bp.get("/requester/logout")
 def requester_logout():
     session.pop("requester_email", None)
+    session.pop("requester_verified_email", None)
+    session.pop("requester_authenticated", None)
     flash(_("Your session has been cleared."), "info")
     return redirect(url_for("main.submit_request"))
 
@@ -1846,6 +1847,7 @@ def magic_link_consume(token: str):
                 (getattr(legacy_req, "email", "") or "").strip().lower()
             )
             session["requester_authenticated"] = True
+            session["requester_verified_email"] = session["requester_email"]
             if getattr(legacy_req, "id", None):
                 session["last_request_id"] = int(legacy_req.id)
             return redirect(url_for("main.profile"), code=303)
@@ -1959,6 +1961,7 @@ def magic_link_consume(token: str):
         # Requester passwordless session (minimal)
         session["requester_email"] = (ml.email or "").strip().lower()
         session["requester_authenticated"] = True
+        session["requester_verified_email"] = session["requester_email"]
         if ml.request_id:
             session["last_request_id"] = int(ml.request_id)
         return redirect(url_for("main.profile"), code=303)
@@ -4017,7 +4020,7 @@ def submit_request_confirm():
             getattr(req, "longitude", None),
         )
 
-        # Remember requester email in session for profile view
+        # Pending intake identity for check-email/resend, not profile authorization.
         try:
             if getattr(req, "email", None):
                 session["requester_email"] = (req.email or "").strip().lower()

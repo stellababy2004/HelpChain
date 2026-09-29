@@ -100,6 +100,23 @@ def _reset_magic_link_rate_limits() -> None:
         main_routes._REDIS_RL_URL = None
 
 
+def _consume_requester_link(client, session, req):
+    raw_token = f"profile-token-{req.id}"
+    session.add(
+        MagicLinkToken(
+            purpose="request",
+            email=req.email,
+            request_id=req.id,
+            token_hash=_sha256_hex(raw_token),
+            expires_at=datetime.now(UTC) + timedelta(minutes=15),
+        )
+    )
+    session.commit()
+    response = client.get(f"/auth/magic/{raw_token}")
+    assert response.status_code == 303
+    assert response.headers["Location"].endswith("/profile")
+
+
 def _post_volunteer_magic(client, email: str, remote_addr: str = "203.0.113.10"):
     payload = {
         "email": email,
@@ -1062,3 +1079,244 @@ def test_request_magic_link_resend_requires_matching_session(
     assert response.headers["Location"].endswith("/submit_request")
     assert not sent
     assert session.query(MagicLinkToken).filter_by(request_id=req.id).count() == 0
+
+
+@pytest.mark.parametrize("allow_fallback", [True, False])
+def test_requester_profile_public_partner_intake_resend_and_consume(
+    client, session, monkeypatch, allow_fallback
+):
+    from urllib.parse import urlsplit
+
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
+    default_id = _default_structure(session).id
+    partner = Structure(name="Profile Partner", slug="profile-partner", status="active")
+    session.add(partner)
+    session.flush()
+    coverage = session.query(StructureCoverageArea).filter_by(structure_id=default_id).one()
+    service = session.query(StructureService).filter_by(structure_id=default_id).one()
+    coverage.structure_id = partner.id
+    service.structure_id = partner.id
+    session.commit()
+    partner_id, service_id = partner.id, service.id
+    monkeypatch.setitem(
+        client.application.config, "ALLOW_DEFAULT_TENANT_FALLBACK", allow_fallback
+    )
+    sent = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent.append(args),
+    )
+
+    preview, confirm = _submit_request_magic(
+        client, email="partner.requester@test.local", suffix="partner-profile"
+    )
+    assert preview.status_code == 200
+    assert confirm.headers["Location"].endswith("/submit_request/check_email")
+    assert client.get(confirm.headers["Location"]).status_code == 200
+    with client.session_transaction() as flask_session:
+        request_id = flask_session["last_request_id"]
+        assert not flask_session.get("requester_verified_email")
+    req = session.get(Request, request_id)
+    assert req.structure_id == partner_id != default_id
+    assert req.service_id == service_id
+    assert client.get("/profile").status_code == 302
+
+    old = session.query(MagicLinkToken).filter_by(request_id=request_id).one()
+    old.created_at = datetime.now(UTC) - timedelta(minutes=3)
+    session.commit()
+    resend = client.post("/submit_request/resend")
+    assert resend.status_code == 303
+    assert len(sent) == 2
+    assert client.get("/profile").status_code == 302
+    response = client.get(urlsplit(sent[-1][3]["magic_link_url"]).path, follow_redirects=True)
+    assert response.status_code == 200
+    assert req.title in response.get_data(as_text=True)
+    with client.session_transaction() as flask_session:
+        assert flask_session["requester_verified_email"] == req.email
+        assert flask_session["requester_authenticated"] is True
+    session.expire_all()
+    assert session.get(Request, request_id).structure_id == partner_id
+    assert session.get(Request, request_id).service_id == service_id
+
+
+def test_requester_profile_verified_email_spans_structures_and_scopes_counts(client, session):
+    own = _create_request(session, "profile-own-default")
+    partner = Structure(name="Second Partner", slug="profile-second")
+    session.add(partner)
+    session.flush()
+    other_own = _create_request(session, "profile-own-partner")
+    stranger = _create_request(session, "profile-stranger-default")
+    other_stranger = _create_request(session, "profile-stranger-partner")
+    own.status = "open"
+    other_own.email = own.email.upper()
+    other_own.structure_id = partner.id
+    other_own.status = "done"
+    stranger.status = "open"
+    other_stranger.structure_id = partner.id
+    other_stranger.status = "done"
+    session.commit()
+
+    _consume_requester_link(client, session, other_own)
+    response = client.get("/profile")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert own.title in html and other_own.title in html
+    assert stranger.title not in html and other_stranger.title not in html
+    assert "open: 1" in html and "done: 1" in html
+
+    # Consuming another identity's link replaces, rather than combines, access.
+    _consume_requester_link(client, session, stranger)
+    html = client.get("/profile").get_data(as_text=True)
+    assert stranger.title in html
+    assert own.title not in html and other_own.title not in html
+
+
+@pytest.mark.parametrize("source", ["query", "form", "pending_session"])
+def test_requester_profile_ignores_unverified_identity_and_scope_inputs(client, session, source):
+    own = _create_request(session, "profile-input-own")
+    victim = _create_request(session, "profile-input-victim")
+    partner = Structure(name="Victim Partner", slug="profile-victim")
+    session.add(partner)
+    session.flush()
+    victim.structure_id = partner.id
+    session.commit()
+    _consume_requester_link(client, session, own)
+    inputs = {
+        "request_id": victim.id,
+        "last_request_id": victim.id,
+        "structure_id": partner.id,
+        "email": victim.email,
+        "requester_email": victim.email,
+    }
+    kwargs = {}
+    if source == "pending_session":
+        # Model mutable intake state, not forgery of Flask's signed cookie.
+        with client.session_transaction() as flask_session:
+            flask_session.update(inputs)
+    else:
+        inputs["requester_verified_email"] = victim.email
+        inputs["requester_authenticated"] = "true"
+        kwargs["query_string" if source == "query" else "data"] = inputs
+    response = client.get("/profile", **kwargs)
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert own.title in html
+    assert victim.title not in html
+    assert f'>{own.email}</span>' in html
+    assert f'>{victim.email}</span>' not in html
+
+
+@pytest.mark.parametrize("old_authenticated_flag", [False, True])
+def test_requester_profile_requires_verified_binding(client, session, old_authenticated_flag):
+    victim = _create_request(session, "profile-unverified")
+    with client.session_transaction() as flask_session:
+        flask_session["requester_email"] = victim.email
+        flask_session["last_request_id"] = victim.id
+        flask_session["requester_authenticated"] = old_authenticated_flag
+    response = client.get("/profile", query_string={"requester_verified_email": victim.email})
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/submit_request")
+    assert victim.title not in response.get_data(as_text=True)
+
+
+def test_requester_profile_new_submission_cannot_replace_verified_identity(client, session, monkeypatch):
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **kw: None)
+    own = _create_request(session, "profile-before-submit")
+    victim = _create_request(session, "profile-before-victim-submit")
+    _consume_requester_link(client, session, own)
+
+    preview, confirm = _submit_request_magic(client, email=victim.email, suffix="impersonation")
+    assert preview.status_code == 200
+    assert confirm.headers["Location"].endswith("/submit_request/check_email")
+    with client.session_transaction() as flask_session:
+        assert flask_session["requester_email"] == victim.email
+        assert flask_session["requester_verified_email"] == own.email
+    html = client.get("/profile").get_data(as_text=True)
+    assert own.title in html
+    assert victim.title not in html
+    assert "Security request impersonation" not in html
+
+
+def test_requester_profile_logout_revokes_verified_identity(client, session):
+    own = _create_request(session, "profile-logout")
+    _consume_requester_link(client, session, own)
+    assert own.title in client.get("/profile").get_data(as_text=True)
+    assert client.get("/requester/logout").status_code == 302
+    with client.session_transaction() as flask_session:
+        assert "requester_verified_email" not in flask_session
+        assert "requester_authenticated" not in flask_session
+    assert client.get("/profile").status_code == 302
+
+
+def test_requester_profile_does_not_broaden_institutional_request_helpers(client, session):
+    from werkzeug.exceptions import NotFound
+
+    own = _create_request(session, "profile-helper-default")
+    partner = Structure(name="Helper Partner", slug="profile-helper")
+    session.add(partner)
+    session.flush()
+    routed = _create_request(session, "profile-helper-partner")
+    routed.structure_id = partner.id
+    routed.email = own.email
+    session.commit()
+    _consume_requester_link(client, session, routed)
+    assert routed.title in client.get("/profile").get_data(as_text=True)
+    with client.application.test_request_context("/profile"):
+        assert {req.id for req in main_routes.scoped_requests_query().all()} == {own.id}
+        assert main_routes.get_scoped_request_or_404(own.id).id == own.id
+        with pytest.raises(NotFound):
+            main_routes.get_scoped_request_or_404(routed.id)
+
+
+@pytest.mark.parametrize("role", ["admin", "superadmin", "professional", "volunteer"])
+def test_requester_profile_preserves_institutional_role_redirects(client, monkeypatch, role):
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(
+        main_routes, "current_user", SimpleNamespace(is_authenticated=True, role_canon=role)
+    )
+    response = client.get("/profile")
+    assert response.status_code == 302
+    expected = "/admin/requests" if role in {"admin", "superadmin"} else "/dashboard"
+    assert response.headers["Location"].endswith(expected)
+
+
+@pytest.mark.parametrize("token_state", ["missing", "expired", "used", "invalidated", "wrong_purpose"])
+def test_requester_profile_rejected_link_cannot_establish_identity(client, session, token_state):
+    req = _create_request(session, "profile-rejected")
+    now = datetime.now(UTC)
+    raw_token = "profile-rejected-token"
+    if token_state != "missing":
+        session.add(
+            MagicLinkToken(
+                purpose="unknown" if token_state == "wrong_purpose" else "request",
+                email=req.email,
+                request_id=req.id,
+                token_hash=_sha256_hex(raw_token),
+                expires_at=now + timedelta(minutes=-1 if token_state == "expired" else 15),
+                used_at=now if token_state == "used" else None,
+                invalidated_at=now if token_state == "invalidated" else None,
+            )
+        )
+        session.commit()
+    assert client.get(f"/auth/magic/{raw_token}").status_code == 200
+    with client.session_transaction() as flask_session:
+        assert not flask_session.get("requester_verified_email")
+        assert not flask_session.get("requester_authenticated")
+    assert client.get("/profile").status_code == 302
+
+
+def test_requester_profile_legacy_link_establishes_verified_identity(client, session):
+    req = _create_request(session, "profile-legacy")
+    raw_token = "profile-legacy-token"
+    req.requester_token_hash = _sha256_hex(raw_token)
+    req.requester_token_created_at = datetime.now(UTC)
+    session.commit()
+    response = client.get(f"/auth/magic/{raw_token}", follow_redirects=True)
+    assert response.status_code == 200
+    assert req.title in response.get_data(as_text=True)
+    with client.session_transaction() as flask_session:
+        assert flask_session["requester_verified_email"] == req.email
