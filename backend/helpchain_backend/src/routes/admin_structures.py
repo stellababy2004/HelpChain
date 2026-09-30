@@ -6,15 +6,31 @@ import re
 from types import SimpleNamespace
 from datetime import datetime, timedelta
 
-from flask import abort, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import abort, current_app, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user
 from sqlalchemy import and_, func, or_
 from sqlalchemy.exc import IntegrityError
 
 from backend.extensions import db
 from backend.models import StructureContact, StructureCoverageArea, StructureService
+from ..admin_actor import resolve_current_admin_actor
 from ..services.public_intake_routing import PUBLIC_INTAKE_SERVICE_CODES
-from ..models import AdminUser, Intervenant, OrganizationAccessRequest, Request, Structure, utc_now
+from ..models import (
+    AdminUser,
+    AdminUserInvitation,
+    Intervenant,
+    OrganizationAccessRequest,
+    Request,
+    Structure,
+    utc_now,
+)
+from ..services.admin_team_invitations import (
+    INVITATION_TTL_HOURS,
+    InvitationAlreadyPending,
+    InvitationEmailAlreadyUsed,
+    InvitationRoleNotAllowed,
+    create_admin_team_invitation,
+)
 from ..services.organization_onboarding import (
     AccessRequestAlreadyApproved,
     AccessRequestEmailAlreadyUsed,
@@ -44,6 +60,7 @@ from ..services.prospect_auto_capture import (
 )
 from .admin import (
     CLOSED_STATUSES,
+    _audit_denied_action,
     _intervenant_availability,
     _intervenant_availability_badge,
     _intervenant_availability_label,
@@ -136,6 +153,47 @@ def _structure_or_403(structure_id: int) -> Structure:
         if current_sid is None or int(current_sid) != int(structure_id):
             abort(403)
     return Structure.query.get_or_404(structure_id)
+
+
+def _require_platform_global_superadmin_actor():
+    actor = resolve_current_admin_actor()
+    if (
+        not actor.is_authenticated
+        or actor.role != "superadmin"
+        or not actor.is_platform_global
+        or actor.admin_id is None
+    ):
+        _audit_denied_action(
+            required_roles={"platform_global_superadmin"},
+            actor_role=actor.role,
+        )
+        abort(403)
+    return actor
+
+
+def _structure_has_admin_users(structure_id: int) -> bool:
+    return (
+        db.session.query(AdminUser.id)
+        .filter(AdminUser.structure_id == structure_id)
+        .first()
+        is not None
+    )
+
+
+def _structure_has_pending_bootstrap_invitation(structure_id: int) -> bool:
+    now = utc_now()
+    return (
+        db.session.query(AdminUserInvitation.id)
+        .filter(
+            AdminUserInvitation.structure_id == structure_id,
+            AdminUserInvitation.role == "admin",
+            AdminUserInvitation.accepted_at.is_(None),
+            AdminUserInvitation.revoked_at.is_(None),
+            AdminUserInvitation.expires_at > now,
+        )
+        .first()
+        is not None
+    )
 
 
 def _safe_count(query) -> int | None:
@@ -682,7 +740,19 @@ def admin_structure_create():
 @admin_role_required("superadmin")
 def admin_structure_detail(structure_id: int):
     structure = _structure_or_403(structure_id)
+    actor = resolve_current_admin_actor()
     intelligence = build_enterprise_structure_dashboard(structure)
+    has_tenant_admin_users = int(intelligence.get("users_count") or 0) > 0
+    has_pending_bootstrap_invitation = (
+        int(intelligence.get("pending_bootstrap_admin_invitations_count") or 0) > 0
+    )
+    can_bootstrap_first_admin = (
+        actor.is_authenticated
+        and actor.role == "superadmin"
+        and actor.is_platform_global
+        and not has_tenant_admin_users
+        and not has_pending_bootstrap_invitation
+    )
     has_active_coverage = bool(intelligence["coverage"]["configured"])
     has_routable_service = any(
         service["is_active"] and service["code"].lower() in PUBLIC_INTAKE_SERVICE_CODES
@@ -712,9 +782,141 @@ def admin_structure_detail(structure_id: int):
             public_intake_ready=public_intake_ready,
             public_intake_guidance=public_intake_guidance,
             dashboard_mode=_structure_dashboard_mode(),
+            can_view_first_admin_bootstrap_panel=actor.is_platform_global,
+            can_bootstrap_first_admin=can_bootstrap_first_admin,
+            has_tenant_admin_users=has_tenant_admin_users,
+            has_pending_bootstrap_invitation=has_pending_bootstrap_invitation,
             **_workspace_select_options(),
         ),
         200,
+    )
+
+
+@admin_bp.post("/structures/<int:structure_id>/bootstrap-admin")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structure_bootstrap_admin(structure_id: int):
+    actor = _require_platform_global_superadmin_actor()
+    structure = (
+        Structure.query.filter(Structure.id == structure_id)
+        .with_for_update()
+        .first_or_404()
+    )
+
+    if _structure_has_admin_users(structure.id) or _structure_has_pending_bootstrap_invitation(
+        structure.id
+    ):
+        flash(
+            "La gestion des utilisateurs de cette organisation est deja initialisee.",
+            "warning",
+        )
+        return redirect(
+            url_for("admin.admin_structure_detail", structure_id=structure.id),
+            code=303,
+        )
+
+    email = (request.form.get("email") or "").strip()
+
+    try:
+        invitation, raw_token = create_admin_team_invitation(
+            structure_id=structure.id,
+            invited_by_admin_id=actor.admin_id,
+            email=email,
+            role="admin",
+        )
+
+        invitation_url = url_for(
+            "main.admin_team_invitation_accept",
+            token=raw_token,
+            _external=True,
+        )
+
+        from backend.mail_service import send_notification_email
+
+        mail_sent = send_notification_email(
+            invitation.email,
+            "Invitation a rejoindre HelpChain",
+            "emails/admin_team_invitation.html",
+            {
+                "invitation_url": invitation_url,
+                "structure_name": structure.name,
+                "role": invitation.role,
+                "ttl_hours": INVITATION_TTL_HOURS,
+            },
+            purpose="admin_team_invitation",
+            structure_id=structure.id,
+        )
+
+        if not mail_sent:
+            db.session.rollback()
+            flash(
+                "L'invitation n'a pas pu etre envoyee. Aucun compte n'a ete cree.",
+                "danger",
+            )
+            return redirect(
+                url_for("admin.admin_structure_detail", structure_id=structure.id),
+                code=303,
+            )
+
+        db.session.commit()
+    except InvitationEmailAlreadyUsed:
+        db.session.rollback()
+        flash("Un compte existe deja avec cette adresse e-mail.", "warning")
+        return redirect(
+            url_for("admin.admin_structure_detail", structure_id=structure.id),
+            code=303,
+        )
+    except InvitationAlreadyPending:
+        db.session.rollback()
+        flash("Une invitation active existe deja pour cette adresse e-mail.", "warning")
+        return redirect(
+            url_for("admin.admin_structure_detail", structure_id=structure.id),
+            code=303,
+        )
+    except InvitationRoleNotAllowed:
+        db.session.rollback()
+        flash("Le role d'invitation n'est pas autorise.", "warning")
+        return redirect(
+            url_for("admin.admin_structure_detail", structure_id=structure.id),
+            code=303,
+        )
+    except ValueError:
+        db.session.rollback()
+        flash("Adresse e-mail invalide.", "warning")
+        return redirect(
+            url_for("admin.admin_structure_detail", structure_id=structure.id),
+            code=303,
+        )
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(
+            "Admin team bootstrap invitation creation failed | "
+            "structure_id=%s | admin_id=%s",
+            structure.id,
+            actor.admin_id,
+        )
+        flash("Impossible de creer l'invitation.", "danger")
+        return redirect(
+            url_for("admin.admin_structure_detail", structure_id=structure.id),
+            code=303,
+        )
+
+    audit_admin_action(
+        action="ADMIN_TEAM_BOOTSTRAP_INVITATION_CREATED",
+        target_type="AdminUserInvitation",
+        target_id=invitation.id,
+        payload={
+            "actor_admin_id": actor.admin_id,
+            "structure_id": invitation.structure_id,
+            "invited_email": invitation.email,
+            "role": invitation.role,
+        },
+    )
+
+    flash("Invitation envoyee au premier administrateur.", "success")
+    return redirect(
+        url_for("admin.admin_structure_detail", structure_id=structure.id),
+        code=303,
     )
 
 

@@ -59,6 +59,46 @@
     {% endif %}
   </div>
 
+  {% if can_view_first_admin_bootstrap_panel %}
+    <div class="card shadow-sm p-3 mb-4" id="first-admin-bootstrap">
+      <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <strong>Premier administrateur</strong>
+        {% if can_bootstrap_first_admin %}
+          <span class="badge text-bg-warning">À initialiser</span>
+        {% elif has_pending_bootstrap_invitation %}
+          <span class="badge text-bg-info">Invitation en cours</span>
+        {% else %}
+          <span class="badge text-bg-success">Initialisé</span>
+        {% endif %}
+      </div>
+      {% if can_bootstrap_first_admin %}
+        <p class="small text-muted mb-3">
+          Invitez le premier administrateur de cette organisation. Il définira son mot de passe via un lien sécurisé.
+        </p>
+        <form method="POST" action="{{ url_for('admin.admin_structure_bootstrap_admin', structure_id=structure.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-8">
+              <label class="form-label" for="bootstrap_admin_email">Email administrateur</label>
+              <input class="form-control" id="bootstrap_admin_email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="col-12 col-md-4">
+              <button class="btn btn-primary w-100" type="submit">Inviter le premier administrateur</button>
+            </div>
+          </div>
+        </form>
+      {% else %}
+        <div class="small text-muted">
+          {% if has_pending_bootstrap_invitation %}
+            Une invitation administrateur est déjà en cours pour cette organisation.
+          {% else %}
+            La gestion des utilisateurs de cette organisation est déjà initialisée.
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
   <div class="row g-3 mb-4">
     {% for item in enterprise.executive_kpis %}
       {{ metric_card(item) }}

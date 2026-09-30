@@ -10,6 +10,7 @@ from sqlalchemy import and_, func, or_
 from backend.extensions import db
 from backend.models import (
     AdminUser,
+    AdminUserInvitation,
     Assignment,
     Intervenant,
     Request,
@@ -19,6 +20,7 @@ from backend.models import (
     StructureContact,
     StructureCoverageArea,
     StructureService,
+    utc_now,
 )
 
 
@@ -1385,7 +1387,31 @@ def build_enterprise_structure_dashboard(structure: Structure) -> dict[str, Any]
         profile["last_activity"] = activity[0]["timestamp"]
     health = build_health_explanation(int(structure.id), capacity)
     alerts = build_operational_alerts(int(structure.id), capacity)
-    users_count = _count(AdminUser.query.filter(AdminUser.structure_id == structure.id))
+    now = utc_now()
+    user_count_query = (
+        db.session.query(func.count(AdminUser.id))
+        .filter(AdminUser.structure_id == structure.id)
+        .scalar_subquery()
+    )
+    pending_bootstrap_query = (
+        db.session.query(func.count(AdminUserInvitation.id))
+        .filter(
+            AdminUserInvitation.structure_id == structure.id,
+            AdminUserInvitation.role == "admin",
+            AdminUserInvitation.accepted_at.is_(None),
+            AdminUserInvitation.revoked_at.is_(None),
+            AdminUserInvitation.expires_at > now,
+        )
+        .scalar_subquery()
+    )
+    users_count, pending_bootstrap_admin_invitations_count = db.session.query(
+        user_count_query,
+        pending_bootstrap_query,
+    ).one()
+    users_count = int(users_count or 0)
+    pending_bootstrap_admin_invitations_count = int(
+        pending_bootstrap_admin_invitations_count or 0
+    )
     executive_kpis = [
         {"label": "Readiness", "display": readiness["display"], "confidence": "élevée"},
         {"label": "Santé", "display": health["display"], "confidence": health["confidence"]},
@@ -1414,5 +1440,6 @@ def build_enterprise_structure_dashboard(structure: Structure) -> dict[str, Any]
         "executive_kpis": executive_kpis,
         "ai_readiness": build_ai_readiness(structure, capacity, services),
         "users_count": users_count,
+        "pending_bootstrap_admin_invitations_count": pending_bootstrap_admin_invitations_count,
         "generated_at": _now(),
     }

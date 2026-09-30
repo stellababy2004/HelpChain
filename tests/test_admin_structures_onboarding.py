@@ -4,6 +4,7 @@ import re
 
 from sqlalchemy import event
 from bs4 import BeautifulSoup
+from flask import g
 
 pytestmark = pytest.mark.shared_platform
 
@@ -28,14 +29,23 @@ def _count_select_queries(app):
 
 
 def _login_admin(client, admin_user):
+    for key in ("_current_admin_actor", "_session_admin_actor", "_bearer_admin_actor"):
+        g.pop(key, None)
     with client.session_transaction() as s:
+        s.clear()
         s["_user_id"] = str(admin_user.id)
+        s["_fresh"] = True
         s["user_id"] = admin_user.id
         s["role"] = admin_user.role
         s["is_authenticated"] = True
         s["is_admin"] = True
         s["admin_logged_in"] = True
         s["admin_id"] = admin_user.id
+        s["admin_user_id"] = admin_user.id
+        s["mfa_ok"] = True
+        s["mfa_ok_until"] = "2099-01-01T00:00:00+00:00"
+        s["admin_mfa_last_verified"] = 4102444800
+        s["admin_mfa_user_id"] = admin_user.id
 
 
 def _make_admin(session, *, username, email, role="admin", structure_id=None):
@@ -213,6 +223,418 @@ def test_structure_detail_loads(client, session):
     _login_admin(client, admin)
     resp = client.get(f"/admin/structures/{st.id}", follow_redirects=False)
     assert resp.status_code == 200
+
+
+def test_global_superadmin_sees_first_admin_bootstrap_form(client, session):
+    st = _make_structure(session, name="Bootstrap Empty", slug="bootstrap-empty")
+    admin = _make_admin(
+        session,
+        username="bootstrap_global_admin",
+        email="bootstrap-global@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, admin)
+
+    resp = client.get(f"/admin/structures/{st.id}", follow_redirects=False)
+
+    assert resp.status_code == 200
+    panel = BeautifulSoup(resp.data, "html.parser").select_one("#first-admin-bootstrap")
+    assert panel is not None
+    assert "Premier administrateur" in panel.get_text()
+    assert "Inviter le premier administrateur" in panel.get_text()
+    assert panel.select_one("form")["action"].endswith(
+        f"/admin/structures/{st.id}/bootstrap-admin"
+    )
+
+
+@pytest.mark.parametrize("role", ["admin", "ops"])
+def test_non_global_admins_cannot_bootstrap_first_admin(client, session, role):
+    target = _make_structure(session, name=f"Bootstrap Denied {role}", slug=f"bootstrap-denied-{role}")
+    own = _make_structure(session, name=f"Bootstrap Own {role}", slug=f"bootstrap-own-{role}")
+    actor = _make_admin(
+        session,
+        username=f"bootstrap_denied_{role}",
+        email=f"bootstrap-denied-{role}@test.local",
+        role=role,
+        structure_id=own.id,
+    )
+    _login_admin(client, actor)
+
+    resp = client.post(
+        f"/admin/structures/{target.id}/bootstrap-admin",
+        data={"email": f"first-{role}@test.local"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 403
+
+    from backend.models import AdminUserInvitation
+
+    assert AdminUserInvitation.query.filter_by(structure_id=target.id).count() == 0
+
+
+def test_unauthenticated_cannot_bootstrap_first_admin(client, session):
+    st = _make_structure(session, name="Bootstrap Anonymous", slug="bootstrap-anonymous")
+
+    resp = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "anonymous-bootstrap@test.local"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code in (302, 303)
+    assert "/admin/login" in (resp.headers.get("Location") or "")
+
+
+def test_bootstrap_creates_admin_invitation_for_url_structure_and_admin_role(
+    client, session, monkeypatch
+):
+    from backend.models import AdminUserInvitation
+
+    target = _make_structure(session, name="Bootstrap Target", slug="bootstrap-target")
+    other = _make_structure(session, name="Bootstrap Other", slug="bootstrap-other")
+    admin = _make_admin(
+        session,
+        username="bootstrap_creator",
+        email="bootstrap-creator@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, admin)
+    captured = {}
+
+    def fake_send(recipient, subject, template, context, **kwargs):
+        captured["recipient"] = recipient
+        captured["subject"] = subject
+        captured["template"] = template
+        captured["context"] = dict(context)
+        captured["kwargs"] = dict(kwargs)
+        return True
+
+    monkeypatch.setattr("backend.mail_service.send_notification_email", fake_send)
+
+    resp = client.post(
+        f"/admin/structures/{target.id}/bootstrap-admin",
+        data={
+            "email": "First.Admin@Example.TEST",
+            "role": "superadmin",
+            "structure_id": str(other.id),
+        },
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    invitation = AdminUserInvitation.query.filter_by(
+        email="first.admin@example.test"
+    ).one()
+    assert invitation.structure_id == target.id
+    assert invitation.structure_id != other.id
+    assert invitation.role == "admin"
+    assert invitation.invited_by_admin_id == admin.id
+    assert len(invitation.token_hash) == 64
+    raw_token = captured["context"]["invitation_url"].rsplit("/", 1)[-1]
+    assert raw_token
+    assert raw_token not in invitation.token_hash
+    assert captured["recipient"] == "first.admin@example.test"
+    assert captured["template"] == "emails/admin_team_invitation.html"
+    assert captured["kwargs"]["purpose"] == "admin_team_invitation"
+    assert captured["kwargs"]["structure_id"] == target.id
+
+
+def test_bootstrap_token_and_url_are_not_logged(client, session, monkeypatch, caplog):
+    from backend.models import AdminUserInvitation
+
+    st = _make_structure(session, name="Bootstrap Logs", slug="bootstrap-logs")
+    admin = _make_admin(
+        session,
+        username="bootstrap_log_admin",
+        email="bootstrap-log-admin@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, admin)
+    captured = {}
+
+    def fake_send(recipient, subject, template, context, **kwargs):
+        captured["url"] = context["invitation_url"]
+        return True
+
+    monkeypatch.setattr("backend.mail_service.send_notification_email", fake_send)
+
+    resp = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "bootstrap-logs@test.local"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    invitation = AdminUserInvitation.query.filter_by(email="bootstrap-logs@test.local").one()
+    raw_token = captured["url"].rsplit("/", 1)[-1]
+    logs = caplog.text
+    assert raw_token not in logs
+    assert captured["url"] not in logs
+    assert raw_token not in invitation.token_hash
+
+
+def test_bootstrap_acceptance_creates_structure_admin_who_can_manage_team(
+    client, session, monkeypatch
+):
+    from backend.models import AdminUser, AdminUserInvitation
+
+    st = _make_structure(session, name="Bootstrap Accept", slug="bootstrap-accept")
+    global_admin = _make_admin(
+        session,
+        username="bootstrap_accept_global",
+        email="bootstrap-accept-global@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, global_admin)
+    captured = {}
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda _recipient, _subject, _template, context, **_kwargs: captured.setdefault(
+            "url", context["invitation_url"]
+        )
+        or True,
+    )
+
+    client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "accepted-bootstrap@test.local"},
+        follow_redirects=False,
+    )
+    raw_token = captured["url"].rsplit("/", 1)[-1]
+
+    accept = client.post(
+        f"/team/invitation/{raw_token}",
+        data={"password": "SecurePass123", "confirm_password": "SecurePass123"},
+        follow_redirects=False,
+    )
+
+    assert accept.status_code == 303
+    created = AdminUser.query.filter_by(email="accepted-bootstrap@test.local").one()
+    assert created.role == "admin"
+    assert created.structure_id == st.id
+    invitation = AdminUserInvitation.query.filter_by(
+        email="accepted-bootstrap@test.local"
+    ).one()
+    assert invitation.accepted_at is not None
+
+    client = client.application.test_client()
+    _login_admin(client, created)
+    team = client.get("/admin/team", follow_redirects=False)
+    assert team.status_code == 200
+
+
+def test_bootstrap_refused_after_user_or_pending_invitation(client, session, monkeypatch):
+    from backend.models import AdminUserInvitation, utc_now
+
+    st = _make_structure(session, name="Bootstrap Once", slug="bootstrap-once")
+    global_admin = _make_admin(
+        session,
+        username="bootstrap_once_global",
+        email="bootstrap-once-global@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, global_admin)
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
+
+    first = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "first-bootstrap-once@test.local"},
+        follow_redirects=False,
+    )
+    second = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "second-bootstrap-once@test.local"},
+        follow_redirects=False,
+    )
+
+    assert first.status_code == 303
+    assert second.status_code == 303
+    assert AdminUserInvitation.query.filter_by(structure_id=st.id).count() == 1
+
+    invite = AdminUserInvitation.query.filter_by(structure_id=st.id).one()
+    invite.revoked_at = utc_now()
+    _make_admin(
+        session,
+        username="bootstrap_existing_tenant_admin",
+        email="bootstrap-existing-tenant-admin@test.local",
+        role="admin",
+        structure_id=st.id,
+    )
+
+    third = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "third-bootstrap-once@test.local"},
+        follow_redirects=False,
+    )
+
+    assert third.status_code == 303
+    assert AdminUserInvitation.query.filter_by(structure_id=st.id).count() == 1
+
+
+def test_bootstrap_rejects_existing_user_and_duplicate_pending_email(
+    client, session, monkeypatch
+):
+    from backend.models import AdminUserInvitation
+
+    st = _make_structure(session, name="Bootstrap Duplicates", slug="bootstrap-duplicates")
+    global_admin = _make_admin(
+        session,
+        username="bootstrap_dupes_global",
+        email="bootstrap-dupes-global@test.local",
+        role="superadmin",
+    )
+    existing = _make_admin(
+        session,
+        username="bootstrap_dupes_existing",
+        email="bootstrap-dupes-existing@test.local",
+        role="admin",
+        structure_id=None,
+    )
+    _login_admin(client, global_admin)
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
+
+    existing_resp = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": existing.email},
+        follow_redirects=False,
+    )
+
+    assert existing_resp.status_code == 303
+    assert AdminUserInvitation.query.filter_by(structure_id=st.id).count() == 0
+
+    first = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "bootstrap-pending-dupe@test.local"},
+        follow_redirects=False,
+    )
+    second = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "bootstrap-pending-dupe@test.local"},
+        follow_redirects=False,
+    )
+
+    assert first.status_code == 303
+    assert second.status_code == 303
+    assert AdminUserInvitation.query.filter_by(structure_id=st.id).count() == 1
+
+
+def test_bootstrap_email_failure_rolls_back_and_does_not_audit_success(
+    client, session, monkeypatch
+):
+    from backend.models import AdminAuditEvent, AdminUserInvitation
+
+    st = _make_structure(session, name="Bootstrap Mail Fail", slug="bootstrap-mail-fail")
+    global_admin = _make_admin(
+        session,
+        username="bootstrap_mail_fail_global",
+        email="bootstrap-mail-fail-global@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, global_admin)
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: False)
+
+    resp = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "bootstrap-mail-fail@test.local"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    assert AdminUserInvitation.query.filter_by(structure_id=st.id).count() == 0
+    assert (
+        AdminAuditEvent.query.filter_by(
+            action="ADMIN_TEAM_BOOTSTRAP_INVITATION_CREATED"
+        ).count()
+        == 0
+    )
+
+
+def test_bootstrap_success_creates_audit_event(client, session, monkeypatch):
+    from backend.models import AdminAuditEvent
+
+    st = _make_structure(session, name="Bootstrap Audit", slug="bootstrap-audit")
+    global_admin = _make_admin(
+        session,
+        username="bootstrap_audit_global",
+        email="bootstrap-audit-global@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, global_admin)
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
+
+    resp = client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "bootstrap-audit-target@test.local"},
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    event = AdminAuditEvent.query.filter_by(
+        action="ADMIN_TEAM_BOOTSTRAP_INVITATION_CREATED"
+    ).one()
+    assert event.target_type == "AdminUserInvitation"
+    assert event.payload["actor_admin_id"] == global_admin.id
+    assert event.payload["structure_id"] == st.id
+    assert event.payload["invited_email"] == "bootstrap-audit-target@test.local"
+    assert event.payload["role"] == "admin"
+
+
+def test_bootstrap_preserves_team_access_boundaries(client, session, monkeypatch):
+    from backend.models import AdminUser
+
+    st = _make_structure(session, name="Bootstrap Boundary", slug="bootstrap-boundary")
+    other = _make_structure(session, name="Bootstrap Boundary Other", slug="bootstrap-boundary-other")
+    global_admin = _make_admin(
+        session,
+        username="bootstrap_boundary_global",
+        email="bootstrap-boundary-global@test.local",
+        role="superadmin",
+    )
+    other_admin = _make_admin(
+        session,
+        username="bootstrap_boundary_other_admin",
+        email="bootstrap-boundary-other-admin@test.local",
+        role="admin",
+        structure_id=other.id,
+    )
+    _login_admin(client, global_admin)
+    captured = {}
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda _recipient, _subject, _template, context, **_kwargs: captured.setdefault(
+            "url", context["invitation_url"]
+        )
+        or True,
+    )
+
+    assert client.get("/admin/team", follow_redirects=False).status_code == 403
+
+    client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "bootstrap-boundary-admin@test.local"},
+        follow_redirects=False,
+    )
+    token = captured["url"].rsplit("/", 1)[-1]
+    client.post(
+        f"/team/invitation/{token}",
+        data={"password": "SecurePass123", "confirm_password": "SecurePass123"},
+        follow_redirects=False,
+    )
+    created = AdminUser.query.filter_by(email="bootstrap-boundary-admin@test.local").one()
+
+    tenant_client = client.application.test_client()
+    _login_admin(tenant_client, created)
+    assert tenant_client.get("/admin/team", follow_redirects=False).status_code == 200
+
+    other_client = client.application.test_client()
+    _login_admin(other_client, other_admin)
+    cross_tenant = other_client.post(
+        f"/admin/structures/{st.id}/bootstrap-admin",
+        data={"email": "cross-tenant-bootstrap@test.local"},
+        follow_redirects=False,
+    )
+    assert cross_tenant.status_code == 403
 
 
 @pytest.mark.parametrize("configuration", ["empty", "coverage_only", "ready"])
