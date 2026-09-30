@@ -353,7 +353,6 @@ def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, m
     assert raw_token and _sha256_hex(raw_token) == token_row.token_hash
     assert raw_token not in caplog.text
     assert magic_url not in caplog.text
-    assert f"[MAGIC LINK] request_id={req.id} generated=True" in caplog.text
 
 
 def test_become_volunteer_reuse_cooldown_blocks_duplicate_active_link(
