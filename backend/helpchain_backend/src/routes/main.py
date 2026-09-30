@@ -53,6 +53,7 @@ from ..constants.categories import (
 from ..category_data import ALIASES, CATEGORIES, COMMON
 from ..extensions import csrf, limiter, mail
 from ..models import (
+    AdminAuditEvent,
     Notification,
     OrganizationAccessRequest,
     ProfessionalLead,
@@ -74,6 +75,15 @@ from ..notifications.inapp import (
     mark_request_seen_for_volunteer,
 )
 from ..security_logging import log_security_event
+from ..services.admin_team_invitations import (
+    InvitationAlreadyUsed,
+    InvitationEmailAlreadyUsed,
+    InvitationExpired,
+    InvitationInvalid,
+    InvitationRevoked,
+    accept_admin_team_invitation,
+    get_admin_team_invitation,
+)
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
 from ..services.matching_v1 import get_matched_requests_v1
 from ..services.public_intake_routing import resolve_public_intake_destination
@@ -2276,6 +2286,99 @@ def achievements():
         200,
     )
 
+
+@main_bp.route("/team/invitation/<token>", methods=["GET", "POST"])
+@limiter.limit("10 per minute")
+def admin_team_invitation_accept(token):
+    try:
+        invitation = get_admin_team_invitation(token)
+    except (
+        InvitationInvalid,
+        InvitationExpired,
+        InvitationAlreadyUsed,
+        InvitationRevoked,
+    ):
+        return render_template(
+            "admin_team_invitation_accept.html",
+            invitation=None,
+            invitation_error=True,
+        ), 400
+
+    if request.method == "GET":
+        return render_template(
+            "admin_team_invitation_accept.html",
+            invitation=invitation,
+            invitation_error=False,
+        ), 200
+
+    password = request.form.get("password") or ""
+    confirm_password = request.form.get("confirm_password") or ""
+
+    if password != confirm_password:
+        flash("La confirmation du mot de passe ne correspond pas.", "warning")
+        return render_template(
+            "admin_team_invitation_accept.html",
+            invitation=invitation,
+            invitation_error=False,
+        ), 400
+
+    try:
+        user = accept_admin_team_invitation(
+            raw_token=token,
+            password=password,
+        )
+
+        ua = request.headers.get("User-Agent")
+        db.session.add(
+            AdminAuditEvent(
+                admin_user_id=user.id,
+                admin_username=user.username,
+                action="ADMIN_TEAM_INVITATION_ACCEPTED",
+                target_type="AdminUserInvitation",
+                target_id=invitation.id,
+                ip=request.remote_addr,
+                user_agent=(ua[:256] if ua else None),
+                payload={
+                    "structure_id": invitation.structure_id,
+                    "role": invitation.role,
+                },
+            )
+        )
+
+        db.session.commit()
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), "warning")
+        return render_template(
+            "admin_team_invitation_accept.html",
+            invitation=invitation,
+            invitation_error=False,
+        ), 400
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(
+            "Admin team invitation acceptance failed | invitation_id=%s",
+            invitation.id,
+        )
+        flash("Impossible d'accepter cette invitation.", "danger")
+        return render_template(
+            "admin_team_invitation_accept.html",
+            invitation=invitation,
+            invitation_error=False,
+        ), 500
+
+    current_app.logger.info(
+        "Admin team invitation accepted | invitation_id=%s | structure_id=%s | admin_id=%s",
+        invitation.id,
+        invitation.structure_id,
+        user.id,
+    )
+
+    flash(
+        "Votre compte HelpChain a été créé. Vous pouvez maintenant vous connecter.",
+        "success",
+    )
+    return redirect(url_for("admin.admin_login"), code=303)
 
 @main_bp.route("/volunteer_login", methods=["GET", "POST"])
 @limiter.limit("5 per 5 minutes")

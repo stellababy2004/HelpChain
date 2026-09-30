@@ -1,0 +1,187 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}Équipe | HelpChain{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h1 class="h3 mb-1">Équipe</h1>
+      <p class="text-muted mb-0">
+        Membres ayant accès à votre espace HelpChain.
+      </p>
+    </div>
+  </div>
+
+  <section class="card mb-4">
+    <div class="card-header">
+      <strong>Inviter un membre</strong>
+    </div>
+
+    <div class="card-body">
+      <form method="post"
+            action="{{ url_for('admin.admin_team_invite') }}"
+            class="row g-3 align-items-end">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="col-md-6">
+          <label for="team-email" class="form-label">
+            Adresse e-mail
+          </label>
+          <input
+            id="team-email"
+            name="email"
+            type="email"
+            class="form-control"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="col-md-3">
+          <label for="team-role" class="form-label">
+            Rôle
+          </label>
+          <select
+            id="team-role"
+            name="role"
+            class="form-select"
+            required
+          >
+            <option value="ops">Opérations</option>
+            <option value="readonly">Lecture seule</option>
+            <option value="admin">Administrateur</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100">
+            Envoyer l'invitation
+          </button>
+        </div>
+
+      </form>
+
+      <div class="form-text mt-3">
+        La personne recevra un lien personnel pour créer son mot de passe
+        et rejoindre votre organisation.
+      </div>
+    </div>
+  </section>
+
+  <section class="card mb-4">
+    <div class="card-header">
+      <strong>Membres</strong>
+    </div>
+
+    <div class="card-body p-0">
+      {% if team_members %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Utilisateur</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for member in team_members %}
+                <tr>
+                  <td>{{ member.username }}</td>
+                  <td>{{ member.email }}</td>
+                  <td>{{ member.role }}</td>
+                  <td>
+                    {% if member.is_active %}
+                      <span class="badge bg-success">Actif</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Inactif</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-4 text-muted">
+          Aucun membre trouvé.
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <strong>Invitations en attente</strong>
+    </div>
+
+    <div class="card-body p-0">
+      {% if pending_invitations %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>R?le</th>
+                <th>Cr??e le</th>
+                <th>Expire le</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for invitation in pending_invitations %}
+                <tr>
+                  <td>{{ invitation.email }}</td>
+                  <td>{{ invitation.role }}</td>
+                  <td>{{ invitation.created_at }}</td>
+                  <td>{{ invitation.expires_at }}</td>
+                  <td class="text-end">
+                    <div class="d-inline-flex gap-2">
+                      <form
+                        method="post"
+                        action="{{ url_for('admin.admin_team_invitation_resend', invitation_id=invitation.id) }}"
+                        class="d-inline"
+                      >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-primary"
+                        >
+                          Renvoyer
+                        </button>
+                      </form>
+
+                      <form
+                        method="post"
+                        action="{{ url_for('admin.admin_team_invitation_revoke', invitation_id=invitation.id) }}"
+                        class="d-inline"
+                      >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                        >
+                          R?voquer
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="p-4 text-muted">
+          Aucune invitation en attente.
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+{% endblock %}

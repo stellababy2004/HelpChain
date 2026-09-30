@@ -11,6 +11,7 @@ from backend.extensions import db
 from backend.models import (  # noqa: F401
     AdminAuditEvent,
     AdminLoginAttempt,
+    AdminUserInvitation,
     Assignment,
     CaseReferral,
     Intervenant,
@@ -74,6 +75,7 @@ __all__ = [
     "Volunteer",
     "AdminUser",
     "AdminLoginAttempt",
+    "AdminUserInvitation",
     "AdminAuditEvent",
     "Assignment",
     "CaseReferral",

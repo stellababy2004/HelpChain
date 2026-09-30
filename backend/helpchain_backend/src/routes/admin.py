@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from collections import Counter, defaultdict
 import csv
@@ -71,6 +71,7 @@ from ..models import (
     AdminLoginAttempt,
     ImportBatch,
     AdminUser,
+    AdminUserInvitation,
     Assignment,
     Case,
     CaseEvent,
@@ -132,6 +133,14 @@ from ..constants.categories import (
     normalize_request_category,
     request_category_choices,
     request_category_label,
+)
+from ..services.admin_team_invitations import (
+    INVITATION_TTL_HOURS,
+    InvitationAlreadyPending,
+    InvitationEmailAlreadyUsed,
+    InvitationRoleNotAllowed,
+    create_admin_team_invitation,
+    refresh_admin_team_invitation,
 )
 from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
@@ -2730,6 +2739,24 @@ def _is_structure_admin() -> bool:
     actor = resolve_current_admin_actor()
     return actor.is_authenticated and actor.role == "superadmin" and actor.is_structure_attached
 
+
+def _require_team_management_access():
+    """Return the authenticated organization admin actor or abort with 403."""
+    actor = resolve_current_admin_actor()
+
+    if (
+        not actor.is_authenticated
+        or actor.role != "admin"
+        or actor.structure_id is None
+        or actor.admin_id is None
+    ):
+        _audit_denied_action(
+            required_roles={"organization_admin"},
+            actor_role=actor.role,
+        )
+        abort(403)
+
+    return actor
 
 def _require_global_admin() -> None:
     # Platform-wide admin pages are gated by the canonical superadmin role.
@@ -5628,6 +5655,267 @@ def enforce_admin_onboarding():
     if not _admin_onboarding_required():
         return None
     return redirect(url_for("admin.admin_onboarding"), code=303)
+
+
+@admin_bp.get("/team")
+@admin_required
+def admin_team():
+    admin_required_404()
+    actor = _require_team_management_access()
+
+    team_members = (
+        AdminUser.query
+        .filter(AdminUser.structure_id == actor.structure_id)
+        .order_by(AdminUser.username.asc(), AdminUser.id.asc())
+        .all()
+    )
+
+    pending_invitations = (
+        AdminUserInvitation.query
+        .filter(
+            AdminUserInvitation.structure_id == actor.structure_id,
+            AdminUserInvitation.accepted_at.is_(None),
+            AdminUserInvitation.revoked_at.is_(None),
+        )
+        .order_by(AdminUserInvitation.created_at.desc())
+        .all()
+    )
+
+    return render_template(
+        "admin/team.html",
+        team_members=team_members,
+        pending_invitations=pending_invitations,
+    )
+
+@admin_bp.post("/team/invite")
+@admin_required
+def admin_team_invite():
+    admin_required_404()
+    actor = _require_team_management_access()
+
+    email = (request.form.get("email") or "").strip()
+    role = (request.form.get("role") or "").strip().lower()
+
+    try:
+        invitation, raw_token = create_admin_team_invitation(
+            structure_id=actor.structure_id,
+            invited_by_admin_id=actor.admin_id,
+            email=email,
+            role=role,
+        )
+
+        invitation_url = url_for(
+            "main.admin_team_invitation_accept",
+            token=raw_token,
+            _external=True,
+        )
+
+        from backend.mail_service import send_notification_email
+
+        mail_sent = send_notification_email(
+            invitation.email,
+            "Invitation à rejoindre HelpChain",
+            "emails/admin_team_invitation.html",
+            {
+                "invitation_url": invitation_url,
+                "structure_name": (
+                    invitation.structure.name
+                    if invitation.structure is not None
+                    else None
+                ),
+                "role": invitation.role,
+                "ttl_hours": INVITATION_TTL_HOURS,
+            },
+            purpose="admin_team_invitation",
+            structure_id=actor.structure_id,
+        )
+
+        if not mail_sent:
+            db.session.rollback()
+            flash(
+                "L'invitation n'a pas pu être envoyée. Aucun compte n'a été créé.",
+                "danger",
+            )
+            return redirect(url_for("admin.admin_team"), code=303)
+
+        db.session.commit()
+    except InvitationEmailAlreadyUsed:
+        db.session.rollback()
+        flash("Un compte existe déjà avec cette adresse e-mail.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+    except InvitationAlreadyPending:
+        db.session.rollback()
+        flash("Une invitation active existe déjà pour cette adresse e-mail.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+    except InvitationRoleNotAllowed:
+        db.session.rollback()
+        flash("Le rôle sélectionné n'est pas autorisé.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+    except ValueError:
+        db.session.rollback()
+        flash("Adresse e-mail invalide.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(
+            "Admin team invitation creation failed | structure_id=%s | admin_id=%s",
+            actor.structure_id,
+            actor.admin_id,
+        )
+        flash("Impossible de créer l'invitation.", "danger")
+        return redirect(url_for("admin.admin_team"), code=303)
+
+    audit_admin_action(
+        action="ADMIN_TEAM_INVITATION_CREATED",
+        target_type="AdminUserInvitation",
+        target_id=invitation.id,
+        payload={
+            "structure_id": invitation.structure_id,
+            "invited_by_admin_id": actor.admin_id,
+            "role": invitation.role,
+        },
+    )
+
+    flash(
+        f"Invitation créée pour {invitation.email}.",
+        "success",
+    )
+    return redirect(url_for("admin.admin_team"), code=303)
+
+@admin_bp.post("/team/invitations/<int:invitation_id>/revoke")
+@admin_required
+def admin_team_invitation_revoke(invitation_id):
+    admin_required_404()
+    actor = _require_team_management_access()
+
+    invitation = (
+        AdminUserInvitation.query
+        .filter(
+            AdminUserInvitation.id == invitation_id,
+            AdminUserInvitation.structure_id == actor.structure_id,
+        )
+        .first()
+    )
+
+    if invitation is None:
+        abort(404)
+
+    if invitation.accepted_at is not None:
+        flash("Cette invitation a déjà été acceptée.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+
+    if invitation.revoked_at is not None:
+        flash("Cette invitation a déjà été révoquée.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+
+    invitation.revoked_at = utc_now()
+    db.session.commit()
+
+    audit_admin_action(
+        action="ADMIN_TEAM_INVITATION_REVOKED",
+        target_type="AdminUserInvitation",
+        target_id=invitation.id,
+        payload={
+            "structure_id": invitation.structure_id,
+            "revoked_by_admin_id": actor.admin_id,
+            "role": invitation.role,
+        },
+    )
+
+    flash("Invitation révoquée.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
+@admin_bp.post("/team/invitations/<int:invitation_id>/resend")
+@admin_required
+def admin_team_invitation_resend(invitation_id):
+    admin_required_404()
+    actor = _require_team_management_access()
+
+    invitation = (
+        AdminUserInvitation.query
+        .filter(
+            AdminUserInvitation.id == invitation_id,
+            AdminUserInvitation.structure_id == actor.structure_id,
+        )
+        .first()
+    )
+
+    if invitation is None:
+        abort(404)
+
+    if invitation.accepted_at is not None:
+        flash("Cette invitation a déjà été acceptée.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+
+    if invitation.revoked_at is not None:
+        flash("Cette invitation a été révoquée.", "warning")
+        return redirect(url_for("admin.admin_team"), code=303)
+
+    try:
+        raw_token = refresh_admin_team_invitation(invitation)
+
+        invitation_url = url_for(
+            "main.admin_team_invitation_accept",
+            token=raw_token,
+            _external=True,
+        )
+
+        from backend.mail_service import send_notification_email
+
+        mail_sent = send_notification_email(
+            invitation.email,
+            "Invitation à rejoindre HelpChain",
+            "emails/admin_team_invitation.html",
+            {
+                "invitation_url": invitation_url,
+                "structure_name": (
+                    invitation.structure.name
+                    if invitation.structure is not None
+                    else None
+                ),
+                "role": invitation.role,
+                "ttl_hours": INVITATION_TTL_HOURS,
+            },
+            purpose="admin_team_invitation",
+            structure_id=actor.structure_id,
+        )
+
+        if not mail_sent:
+            db.session.rollback()
+            flash(
+                "L'invitation n'a pas pu être renvoyée.",
+                "danger",
+            )
+            return redirect(url_for("admin.admin_team"), code=303)
+
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(
+            "Admin team invitation resend failed | "
+            "invitation_id=%s | structure_id=%s | admin_id=%s",
+            invitation_id,
+            actor.structure_id,
+            actor.admin_id,
+        )
+        flash("Impossible de renvoyer l'invitation.", "danger")
+        return redirect(url_for("admin.admin_team"), code=303)
+
+    audit_admin_action(
+        action="ADMIN_TEAM_INVITATION_RESENT",
+        target_type="AdminUserInvitation",
+        target_id=invitation.id,
+        payload={
+            "structure_id": invitation.structure_id,
+            "resent_by_admin_id": actor.admin_id,
+            "role": invitation.role,
+        },
+    )
+
+    flash("Invitation renvoyée.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
 
 
 @admin_bp.get("/onboarding")
@@ -16242,4 +16530,3 @@ def admin_ops_action_queue_assign_v1(request_id):
         "assignee": current_admin_name,
         "status": getattr(r, "status", None),
     })
-

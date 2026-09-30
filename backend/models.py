@@ -219,6 +219,46 @@ class AdminUser(db.Model, UserMixin):
     structure = relationship("Structure", lazy="joined")
 
 
+class AdminUserInvitation(db.Model):
+    """Single-use invitation for an organization admin account."""
+
+    __tablename__ = "admin_user_invitations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    structure_id = db.Column(
+        db.Integer,
+        db.ForeignKey("structures.id"),
+        nullable=False,
+        index=True,
+    )
+    invited_by_admin_id = db.Column(
+        db.Integer,
+        db.ForeignKey("admin_users.id"),
+        nullable=False,
+    )
+    email = db.Column(db.String(255), nullable=False, index=True)
+    role = db.Column(db.String(32), nullable=False)
+    token_hash = db.Column(db.String(64), nullable=False, unique=True)
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=utc_now,
+        nullable=False,
+    )
+    expires_at = db.Column(db.DateTime(timezone=True), nullable=False)
+    accepted_at = db.Column(db.DateTime(timezone=True), nullable=True)
+    revoked_at = db.Column(db.DateTime(timezone=True), nullable=True)
+
+    structure = relationship(
+        "Structure",
+        foreign_keys=[structure_id],
+        lazy="joined",
+    )
+    invited_by = relationship(
+        "AdminUser",
+        foreign_keys=[invited_by_admin_id],
+        lazy="joined",
+    )
+
 class AdminLoginAttempt(db.Model):
     """Admin brute-force protection audit rows."""
 

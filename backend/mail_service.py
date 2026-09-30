@@ -581,8 +581,8 @@ def send_notification_email(
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(f"\n--- {utc_now().isoformat()} ---\n")
                     f.write(f"To: {recipient}\nSubject: {subject}\n\n")
-                    if magic_url:
-                        f.write("[Magic-link email body redacted]")
+                    if magic_url or purpose == "admin_team_invitation":
+                        f.write("[Sensitive email body redacted]")
                     else:
                         if text_content:
                             f.write(text_content + "\n\n")

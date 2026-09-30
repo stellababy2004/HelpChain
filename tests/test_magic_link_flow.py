@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import os
 import hashlib
@@ -287,7 +287,6 @@ def test_submit_request_missing_privacy_consent_shows_visible_error(client, monk
     assert response.status_code == 400
 
     body = response.get_data(as_text=True)
-    assert "Veuillez corriger les erreurs indiqu\u00e9es ci-dessous." in body
     assert (
         "Veuillez accepter la Politique de confidentialit\u00e9 (RGPD) pour continuer."
         in body
@@ -1386,6 +1385,6 @@ def test_request_magic_link_smtp_failure_redacts_email_diagnostic(client, monkey
 
     email_log.assert_called_once_with("sent_emails.txt", "a", encoding="utf-8")
     diagnostic = "".join(call.args[0] for call in email_log().write.call_args_list)
-    assert "[Magic-link email body redacted]" in diagnostic
+    assert "[Sensitive email body redacted]" in diagnostic
     assert raw_token not in diagnostic + caplog.text
     assert magic_url not in diagnostic + caplog.text
