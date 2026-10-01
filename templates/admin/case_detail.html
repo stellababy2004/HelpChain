@@ -128,7 +128,7 @@
             <strong><span class="hc-sla hc-sla--{{ case_sla.state }}">{{ case_sla.state_label }}</span></strong>
           </div>
           <div class="hc-case-overview-item">
-            <span>Score de risque</span>
+            <span>Score de triage initial</span>
             <strong>{{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (case_row.risk_score if case_row.risk_score is not none else '-') }}</strong>
           </div>
           <div class="hc-case-overview-item">
@@ -438,7 +438,7 @@
         <section class="hc-card hc-case-detail-card hc-case-detail-card--controls">
           <h2 class="hc-section-title">Controles du cas</h2>
           <div class="hc-case-control-meta">
-            <div><strong>Risk score:</strong> {{ case_row.risk_score if case_row.risk_score is not none else '-' }}</div>
+            <div><strong>Risque op&eacute;rationnel actuel:</strong> {{ case_row.risk_score if case_row.risk_score is not none else '-' }}</div>
             <div><strong>Opened:</strong> {{ case_row.opened_at|format_datetime_fr }}</div>
             <div><strong>Assigned:</strong> {{ case_row.assigned_at|format_datetime_fr }}</div>
             <div><strong>Resolved:</strong> {{ case_row.resolved_at|format_datetime_fr }}</div>
