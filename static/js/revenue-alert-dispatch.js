@@ -1,6 +1,6 @@
 ﻿async function dispatchRevenueAlerts() {
   try {
-    const res = await fetch("/admin/api/revenue-alert-dispatch", {
+    const res = await fetch(hcAnalyticsUrl("/admin/api/revenue-alert-dispatch"), {
       method: "POST",
       credentials: "same-origin"
     });

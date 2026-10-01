@@ -8,7 +8,7 @@ function hcDismissVisitor(label) {
 }
 
 async function loadRevenue() {
-  const res = await fetch("/admin/api/revenue-intelligence", {
+  const res = await fetch(hcAnalyticsUrl("/admin/api/revenue-intelligence"), {
     credentials: "same-origin"
   });
   const data = await res.json();
@@ -39,7 +39,7 @@ async function loadRevenue() {
 
     const pages = pagesList
       .slice(0, 4)
-      .map(p => `<span class="hc-rev-chip">${p}</span>`)
+      .map(p => `<span class="hc-rev-chip">${hcAnalyticsEscape(p)}</span>`)
       .join("");
 
     const scoreExplain = (s.score_components || [])
@@ -58,7 +58,7 @@ async function loadRevenue() {
         <td><div class="hc-rev-pages">${pages || '<span class="text-muted">-</span>'}</div></td>
         <td>
           <div class="hc-rev-actions ${actionClass}">
-            <button type="button" class="hc-rev-action hc-rev-action--primary" onclick='hcCopyText(${JSON.stringify(note)})'>Copy insight</button>
+            <button type="button" class="hc-rev-action hc-rev-action--primary" onclick='hcCopyText(${hcAnalyticsEscape(JSON.stringify(note))})'>Copy insight</button>
             <a class="hc-rev-action" href="/admin/professional-leads">Review leads</a>
             <button type="button" class="hc-rev-action" onclick='hcDismissVisitor(${JSON.stringify(label)})'>Ignore</button>
           </div>

@@ -283,6 +283,10 @@ class AnalyticsEvent(db.Model):
     __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
+    # NULL is reserved for historical events whose tenant cannot be established.
+    structure_id = db.Column(
+        db.Integer, db.ForeignKey("structures.id"), nullable=True, index=True
+    )
     event_type = db.Column(
         db.String(100), nullable=False
     )  # page_view, button_click, etc.

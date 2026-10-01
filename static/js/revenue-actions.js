@@ -1,5 +1,5 @@
 ﻿async function loadActions() {
-  const res = await fetch("/admin/api/revenue-intelligence", {
+  const res = await fetch(hcAnalyticsUrl("/admin/api/revenue-intelligence"), {
     credentials: "same-origin"
   });
   const data = await res.json();
@@ -26,7 +26,7 @@
           margin-bottom:10px;
         ">
           <strong>${action}</strong><br/>
-          <small>Score ${s.score} • ${valueLabel} • ${pages}</small><br/>
+          <small>Score ${s.score} • ${valueLabel} • ${hcAnalyticsEscape(pages)}</small><br/>
           <small>${scoreExplain}</small>
         </div>
       `;

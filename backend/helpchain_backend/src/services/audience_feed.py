@@ -111,7 +111,10 @@ def track_audience_page_view() -> bool:
     canonical_path = canonical_public_commercial_path(path) or path
 
     try:
+        from .website_analytics import first_party_structure
+
         event = AnalyticsEvent(
+            structure_id=first_party_structure().id,
             event_type="page_view",
             event_category="audience",
             event_action="page_view",

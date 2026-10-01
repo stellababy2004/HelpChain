@@ -4,8 +4,10 @@ import time
 
 from flask import (
     Blueprint,
+    abort,
     current_app,
     flash,
+    g,
     jsonify,
     redirect,
     request,
@@ -13,6 +15,8 @@ from flask import (
     url_for,
 )
 from flask_babel import gettext as _
+from markupsafe import escape
+from werkzeug.exceptions import HTTPException
 
 from ..extensions import csrf
 from ..services.telemetry_policy import (
@@ -20,6 +24,11 @@ from ..services.telemetry_policy import (
     extract_event_path,
     get_client_ip,
 )
+from ..services.website_analytics import (
+    analytics_actor, first_party_structure, ingestion_structure, ingestion_token,
+    read_scope, scope_description, scoped_events, validate_selectors,
+)
+from ..admin_policies import can_view_global_analytics
 
 analytics_bp = Blueprint(
     "analytics",
@@ -27,6 +36,86 @@ analytics_bp = Blueprint(
     template_folder=os.path.join(os.path.dirname(__file__), "..", "..", "templates"),
 )
 csrf.exempt(analytics_bp)
+
+_CONVERSION_ENDPOINTS = {
+    "analytics.admin_conversion_dashboard", "analytics.admin_conversion_funnel_api",
+    "analytics.admin_revenue_intelligence", "analytics.admin_revenue_alerts",
+    "analytics.admin_revenue_alert_dispatch", "analytics.website_tracking_config",
+}
+
+
+@analytics_bp.before_request
+def authorize_website_analytics():
+    if request.endpoint in _CONVERSION_ENDPOINTS:
+        g.website_analytics_structure = read_scope()
+    elif request.endpoint not in {"analytics.collect_event", "analytics.collect_website_event"}:
+        # Legacy dashboards/bookmarks contain global data, not scoped event queries.
+        if not can_view_global_analytics(analytics_actor()):
+            abort(403)
+
+
+@analytics_bp.after_request
+def describe_website_analytics(response):
+    if request.endpoint in _CONVERSION_ENDPOINTS:
+        response.headers["Cache-Control"] = "private, no-store"
+        if response.status_code == 200 and response.is_json:
+            payload = response.get_json()
+            payload["scope"] = scope_description(g.website_analytics_structure)
+            response.set_data(current_app.json.dumps(payload))
+    return response
+
+
+@analytics_bp.route("/admin/api/website-tracking")
+def website_tracking_config():
+    structure = g.website_analytics_structure
+    if structure is None:
+        abort(400, description="Select a site_id or structure_id")
+    return jsonify({
+        "site_id": structure.slug,
+        "ingestion_key": ingestion_token(structure),
+        "endpoint": url_for("analytics.collect_website_event"),
+        "transport": "server-to-server",
+    })
+
+
+@analytics_bp.route("/api/website/events", methods=["POST"])
+def collect_website_event():
+    from backend.extensions import db
+    from backend.models_with_analytics import AnalyticsEvent
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        abort(400)
+    structure = ingestion_structure(payload)
+    event_type = payload.get("event")
+    if event_type not in ("page_view", "cta_click", "form_submit"):
+        abort(400, description="Unsupported website event")
+    path = payload.get("page_url")
+    if not isinstance(path, str) or not path.startswith("/") or len(path) > 500:
+        abort(400, description="page_url must be a site-relative path of at most 500 characters")
+    sid = payload.get("session_id", "")
+    if not isinstance(sid, str) or len(sid) > 128:
+        abort(400, description="Invalid session_id")
+    event = AnalyticsEvent(
+        structure_id=structure.id, event_type=event_type,
+        event_category="website", event_action=event_type,
+        page_url=path.split("?", 1)[0].split("#", 1)[0],
+        user_session=sid, user_type="guest",
+    )
+    try:
+        db.session.add(event)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Website analytics collection failed")
+        return jsonify({"ok": False}), 500
+    return jsonify({"ok": True}), 201
+
+
+def _analytics_session_key(event):
+    sid = event.user_session or "anon"
+    tenant = event.structure_id if event.structure_id is not None else "legacy"
+    return f"{tenant}:{sid}"
 
 
 REVENUE_VISITOR_SCORE_FORMULA_VERSION = "legacy_revenue_visitor_v2_explainable"
@@ -63,7 +152,7 @@ def _explain_legacy_revenue_session(events):
             cta_events += 1
         if event_type == "demo_form_start":
             demo_starts += 1
-        if event_type.endswith("_form_submit"):
+        if event_type == "form_submit" or event_type.endswith("_form_submit"):
             form_submits += 1
         if page_url == "/demo":
             demo_page_views += 1
@@ -102,7 +191,7 @@ def _explain_legacy_revenue_session(events):
                 "form_submit",
                 "Form submitted",
                 form_submits * 100,
-                {"event_type_suffix": "_form_submit", "count": form_submits},
+                {"event_type": "form_submit", "event_type_suffix": "_form_submit", "count": form_submits},
             )
         )
     if demo_page_views:
@@ -135,19 +224,21 @@ def _persist_legacy_revenue_score(session_id, explanation):
         from ..extensions import db
         from ..models import ScoreExplanation
 
+        # Bound the namespaced identifier to the existing VARCHAR(120) contract.
+        subject_id = sha256(str(session_id).encode("utf-8")).hexdigest()
         existing = (
             ScoreExplanation.query.filter_by(
                 score_key="legacy_revenue_visitor",
-                subject_type="analytics_session",
-                subject_id=str(session_id),
+                subject_type="website_analytics_session",
+                subject_id=subject_id,
             )
             .order_by(ScoreExplanation.id.desc())
             .first()
         )
         row = existing or ScoreExplanation(
             score_key="legacy_revenue_visitor",
-            subject_type="analytics_session",
-            subject_id=str(session_id),
+            subject_type="website_analytics_session",
+            subject_id=subject_id,
             total_score=0,
             formula_version=REVENUE_VISITOR_SCORE_FORMULA_VERSION,
             confidence="low",
@@ -282,6 +373,17 @@ def collect_event():
         from backend.models_with_analytics import AnalyticsEvent
 
         payload = request.get_json(silent=True) or {}
+        if not isinstance(payload, dict):
+            abort(400)
+        for field in ("props", "properties", "metadata"):
+            if field in payload and not isinstance(payload[field], dict):
+                abort(400)
+        selectors = {"site_id", "tracking_id", "structure_id", "organization_id"}
+        if (selectors.intersection(payload) or selectors.intersection(request.args)
+                or request.headers.get("X-Analytics-Key")):
+            return collect_website_event()
+        structure = first_party_structure()
+        validate_selectors(structure, payload)
         event_path = extract_event_path(payload)
         decision = classify_public_telemetry_request(
             event_path,
@@ -307,6 +409,7 @@ def collect_event():
         props = payload.get("props") or payload.get("properties") or {}
 
         event = AnalyticsEvent(
+            structure_id=structure.id,
             event_type=str(event_name)[:100],
             event_category=str(props.get("category") or "first_party")[:100],
             event_action=str(props.get("action") or event_name)[:100],
@@ -337,7 +440,10 @@ def collect_event():
 
         return jsonify({"ok": True}), 201
 
+    except HTTPException:
+        raise
     except Exception as exc:
+        db.session.rollback()
         current_app.logger.warning("analytics event collection failed: %s", exc)
         return jsonify({"ok": False}), 500
 from collections import Counter, defaultdict
@@ -350,8 +456,6 @@ def _safe_rate(numerator: int, denominator: int) -> float:
 
 @analytics_bp.route("/admin/api/conversion-funnel")
 def admin_conversion_funnel_api():
-    if not session.get("admin_logged_in"):
-        return jsonify({"error": "Unauthorized"}), 403
 
     try:
         from backend.models_with_analytics import AnalyticsEvent
@@ -361,7 +465,7 @@ def admin_conversion_funnel_api():
         since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
         events = (
-            AnalyticsEvent.query
+            scoped_events(g.website_analytics_structure)
             .filter(AnalyticsEvent.created_at >= since)
             .order_by(AnalyticsEvent.created_at.desc())
             .all()
@@ -371,7 +475,7 @@ def admin_conversion_funnel_api():
 
         page_views = by_type.get("page_view", 0)
         cta_clicks = sum(count for event_type, count in by_type.items() if event_type.startswith("cta_"))
-        form_submits = sum(count for event_type, count in by_type.items() if event_type.endswith("_form_submit"))
+        form_submits = sum(count for event_type, count in by_type.items() if event_type == "form_submit" or event_type.endswith("_form_submit"))
 
         page_stats = defaultdict(lambda: {"page": "", "views": 0, "clicks": 0, "submits": 0})
         cta_stats = Counter()
@@ -386,7 +490,7 @@ def admin_conversion_funnel_api():
             elif event.event_type.startswith("cta_"):
                 row["clicks"] += 1
                 cta_stats[event.event_type] += 1
-            elif event.event_type.endswith("_form_submit"):
+            elif event.event_type == "form_submit" or event.event_type.endswith("_form_submit"):
                 row["submits"] += 1
 
         pages = []
@@ -419,9 +523,10 @@ def admin_conversion_funnel_api():
 
 @analytics_bp.route("/admin/conversion-dashboard")
 def admin_conversion_dashboard():
-    if not session.get("admin_logged_in"):
-        return redirect(url_for("admin.admin_login"))
-    return current_app.response_class(_conversion_dashboard_html(), mimetype="text/html")
+    scope = scope_description(g.website_analytics_structure)
+    label = " / ".join(str(value) for value in (scope["name"], scope["site_id"], scope["website"]) if value)
+    html = _conversion_dashboard_html().replace("<!-- analytics-scope -->", str(escape(label)))
+    return current_app.response_class(html, mimetype="text/html")
 
 
 def _conversion_dashboard_html():
@@ -498,6 +603,7 @@ def _conversion_dashboard_html():
     <section class="hc-conv-hero">
       <div>
         <h1 class="hc-conv-title">Conversion Engine</h1>
+        <p id="analyticsScope"><!-- analytics-scope --></p>
         <p class="hc-conv-subtitle">
           Lecture reelle des evenements collectes par HelpChain : pages vues, clics CTA, formulaires soumis et points de friction.
         </p>
@@ -583,14 +689,12 @@ def _conversion_dashboard_html():
 """
 @analytics_bp.route("/admin/api/revenue-intelligence")
 def admin_revenue_intelligence():
-    if not session.get("admin_logged_in"):
-        return jsonify({"error": "Unauthorized"}), 403
 
     from backend.models_with_analytics import AnalyticsEvent
     from collections import defaultdict
 
     events = (
-        AnalyticsEvent.query
+        scoped_events(g.website_analytics_structure)
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -599,7 +703,7 @@ def admin_revenue_intelligence():
     sessions = defaultdict(list)
 
     for e in events:
-        sid = e.user_session or "anon"
+        sid = _analytics_session_key(e)
         sessions[sid].append(e)
 
     results = []
@@ -619,7 +723,8 @@ def admin_revenue_intelligence():
             tier = "COLD"
 
         results.append({
-            "session": sid,
+            "session": evts[0].user_session or "anon",
+            "structure_id": evts[0].structure_id,
             "score": score,
             "tier": tier,
             "value": None,
@@ -648,14 +753,12 @@ def admin_revenue_intelligence():
 
 @analytics_bp.route("/admin/api/revenue-alerts")
 def admin_revenue_alerts():
-    if not session.get("admin_logged_in"):
-        return jsonify({"error": "Unauthorized"}), 403
 
     from backend.models_with_analytics import AnalyticsEvent
     from collections import defaultdict
 
     events = (
-        AnalyticsEvent.query
+        scoped_events(g.website_analytics_structure)
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -663,7 +766,7 @@ def admin_revenue_alerts():
     sessions = defaultdict(list)
 
     for e in events:
-        sid = e.user_session or "anon"
+        sid = _analytics_session_key(e)
         sessions[sid].append(e)
 
     alerts = []
@@ -679,7 +782,8 @@ def admin_revenue_alerts():
 
         if score >= 40 or (has_demo and has_cta and not has_submit):
             alerts.append({
-                "session": sid[:12],
+                "session": (evts[0].user_session or "anon")[:12],
+                "structure_id": evts[0].structure_id,
                 "score": score,
                 "level": "HOT" if score < 80 else "READY",
                 "message": "Visitor proche conversion: demo/CTA detecte sans formulaire soumis.",
@@ -715,8 +819,6 @@ _SENT_REVENUE_ALERTS = set()
 
 @analytics_bp.route("/admin/api/revenue-alert-dispatch", methods=["POST"])
 def admin_revenue_alert_dispatch():
-    if not session.get("admin_logged_in"):
-        return jsonify({"error": "Unauthorized"}), 403
 
     import smtplib
     import urllib.request
@@ -733,7 +835,7 @@ def admin_revenue_alert_dispatch():
     email_from = os.getenv("SMTP_FROM") or smtp_user
 
     events = (
-        AnalyticsEvent.query
+        scoped_events(g.website_analytics_structure)
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -741,7 +843,7 @@ def admin_revenue_alert_dispatch():
     sessions = defaultdict(list)
 
     for e in events:
-        sessions[e.user_session or "anon"].append(e)
+        sessions[_analytics_session_key(e)].append(e)
 
     dispatched = []
 
@@ -798,7 +900,8 @@ def admin_revenue_alert_dispatch():
 
         _SENT_REVENUE_ALERTS.add(alert_key)
         dispatched.append({
-            "session": sid[:12],
+            "session": (evts[0].user_session or "anon")[:12],
+            "structure_id": evts[0].structure_id,
             "level": level,
             "score": score,
             "value": None,

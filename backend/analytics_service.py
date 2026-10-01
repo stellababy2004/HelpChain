@@ -158,7 +158,10 @@ class AdvancedAnalytics:
 
             context = context or {}
 
+            from backend.helpchain_backend.src.services.website_analytics import first_party_structure
+
             event = AnalyticsEvent(
+                structure_id=first_party_structure().id,
                 event_type=event_type,
                 event_category=event_category,
                 event_action=event_action,

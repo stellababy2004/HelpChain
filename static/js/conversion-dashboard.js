@@ -1,11 +1,15 @@
 ﻿async function loadFunnel() {
   const days = document.getElementById("days").value;
 
-  const res = await fetch("/admin/api/conversion-funnel?days=" + encodeURIComponent(days), {
+  const res = await fetch(hcAnalyticsUrl("/admin/api/conversion-funnel?days=" + encodeURIComponent(days)), {
     credentials: "same-origin"
   });
 
   const data = await res.json();
+  if (!res.ok) {
+    document.getElementById("pagesBody").innerHTML = '<tr><td colspan="7">Analytics unavailable.</td></tr>';
+    return;
+  }
 
   const s = data.summary || {};
   document.getElementById("events").textContent = s.events ?? 0;
@@ -16,7 +20,7 @@
 
   const rows = (data.pages || []).map(row => `
     <tr>
-      <td><strong>${row.page}</strong></td>
+      <td><strong>${hcAnalyticsEscape(row.page)}</strong></td>
       <td>${row.views}</td>
       <td>${row.clicks}</td>
       <td>${row.submits}</td>
@@ -28,6 +32,21 @@
 
   document.getElementById("pagesBody").innerHTML =
     rows || '<tr><td colspan="7" class="text-muted">No conversion data.</td></tr>';
+}
+
+function hcAnalyticsUrl(path) {
+  const url = new URL(path, window.location.origin);
+  const scope = new URLSearchParams(window.location.search);
+  for (const key of ["structure_id", "organization_id", "site_id", "tracking_id"]) {
+    for (const value of scope.getAll(key)) url.searchParams.append(key, value);
+  }
+  return url.pathname + url.search;
+}
+
+function hcAnalyticsEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
