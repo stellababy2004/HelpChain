@@ -2137,7 +2137,7 @@ def admin_open_case_from_request(req_id: int):
         actor_user_id=getattr(current_user, "id", None),
         event_type="triage_scored",
         message=(
-            f"Triage scored at {int(triage.get('score') or 0)}/100 "
+            f"Triage initial : {int(triage.get('score') or 0)}/100 "
             f"({risk_label_from_score(int(triage.get('score') or 0))})"
         ),
         metadata={

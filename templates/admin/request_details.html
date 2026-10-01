@@ -252,8 +252,8 @@
     {% endif %}
     <div class="hc-risk-summary-grid">
       <article class="hc-risk-summary-card">
-        <h4>Évaluation du risque</h4>
-        <p><strong>Score de risque:</strong> {{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (req.risk_score or 0) }}/100</p>
+        <h4>Triage initial</h4>
+        <p><strong>Score de triage initial:</strong> {{ risk_ai_suggestion.risk_score if risk_ai_suggestion else (req.risk_score or 0) }}/100</p>
         <p><strong>Niveau de risque:</strong> {{ risk_ai_suggestion.risk_label if risk_ai_suggestion else risk_level_key|capitalize }}</p>
         <p class="mb-0"><strong>Dernière mise à jour:</strong> {{ req.risk_last_updated|format_datetime_fr }}</p>
       </article>
