@@ -175,10 +175,23 @@ def accept_admin_team_invitation(
     # Reuse AdminUser's existing password policy + Werkzeug hashing.
     user.set_password(password)
 
+    # Claim only a still-valid invitation. This write competes atomically with
+    # revocation, including when the invitation was read before cancellation.
+    now = _now()
+    claimed = AdminUserInvitation.query.filter(
+        AdminUserInvitation.id == invitation.id,
+        AdminUserInvitation.token_hash == hash_invitation_token(raw_token.strip()),
+        AdminUserInvitation.accepted_at.is_(None),
+        AdminUserInvitation.revoked_at.is_(None),
+        AdminUserInvitation.expires_at > now,
+    ).update({AdminUserInvitation.accepted_at: now}, synchronize_session=False)
+    if not claimed:
+        raise InvitationInvalid("invalid_invitation")
+
     db.session.add(user)
     db.session.flush()
 
-    invitation.accepted_at = _now()
+    db.session.refresh(invitation)
 
     return user
 

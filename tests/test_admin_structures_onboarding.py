@@ -9,6 +9,141 @@ from flask import g
 pytestmark = pytest.mark.shared_platform
 
 
+def _pending_bootstrap(session, structure, admin, email="cancel-first@test.local"):
+    from backend.helpchain_backend.src.services.admin_team_invitations import (
+        create_admin_team_invitation,
+    )
+
+    invitation, token = create_admin_team_invitation(
+        structure_id=structure.id, invited_by_admin_id=admin.id, email=email, role="admin"
+    )
+    session.commit()
+    return invitation, token
+
+
+def _cancel_url(structure, invitation):
+    return f"/admin/structures/{structure.id}/bootstrap-admin/{invitation.id}/revoke"
+
+
+def test_bootstrap_cancel_and_reinvite(client, session, monkeypatch):
+    from backend.models import AdminAuditEvent, AdminUserInvitation
+
+    structure = _make_structure(session, name="Cancel First", slug="cancel-first")
+    other = _make_structure(session, name="Other First", slug="other-first")
+    admin = _make_admin(session, username="cancel_global", email="cancel-global@test.local", role="superadmin")
+    invitation, token = _pending_bootstrap(session, structure, admin)
+    protected, protected_token = _pending_bootstrap(session, other, admin, "other-first@test.local")
+    original_hash = invitation.token_hash
+    _login_admin(client, admin)
+    panel = BeautifulSoup(client.get(f"/admin/structures/{structure.id}").data, "html.parser").select_one("#first-admin-bootstrap")
+    assert "Invitation en cours" in panel.get_text()
+    button = panel.select_one('[data-action="confirmSubmit"]')
+    assert button.get_text(strip=True) == "Annuler l’invitation"
+    assert button["type"] == "button"
+    assert button["data-confirm"] == "Êtes-vous sûr de vouloir annuler cette invitation ?"
+    assert button.find_parent("form")["action"] == _cancel_url(structure, invitation)
+    assert button.find_parent("form").select_one('[name="csrf_token"]') is not None
+    assert client.post(_cancel_url(structure, invitation)).status_code == 303
+    session.refresh(invitation)
+    session.refresh(protected)
+    assert invitation.revoked_at is not None
+    assert invitation.accepted_at is None
+    assert invitation.token_hash == original_hash
+    assert protected.revoked_at is None
+    assert client.get(f"/team/invitation/{protected_token}").status_code == 200
+    assert client.get(f"/team/invitation/{token}").status_code == 400
+    assert client.post(f"/team/invitation/{token}", data={"password": "StrongPassword123!", "confirm_password": "StrongPassword123!"}).status_code == 400
+    panel = BeautifulSoup(client.get(f"/admin/structures/{structure.id}").data, "html.parser").select_one("#first-admin-bootstrap")
+    assert panel.select_one('[name="email"]') is not None
+    assert "Inviter le premier administrateur" in panel.get_text()
+    assert "Annuler l’invitation" not in panel.get_text()
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **kw: True)
+    assert client.post(f"/admin/structures/{structure.id}/bootstrap-admin", data={"email": "replacement@test.local"}).status_code == 303
+    replacement = AdminUserInvitation.query.filter_by(structure_id=structure.id, revoked_at=None).one()
+    assert replacement.id != invitation.id
+    # Replaying the old form must leave the replacement pending.
+    assert client.post(_cancel_url(structure, invitation)).status_code == 303
+    session.refresh(replacement)
+    assert replacement.revoked_at is None
+    assert AdminUserInvitation.query.filter_by(structure_id=structure.id).count() == 2
+    audits = AdminAuditEvent.query.filter_by(action="ADMIN_TEAM_INVITATION_REVOKED", target_id=invitation.id).all()
+    assert len(audits) == 1
+    assert audits[0].payload["structure_id"] == structure.id
+
+
+@pytest.mark.parametrize("role,scoped", [("superadmin", True), ("admin", True), ("admin", False), ("ops", False), ("readonly", False)])
+def test_bootstrap_cancel_requires_global_superadmin(client, session, role, scoped):
+    own = _make_structure(session, name="Own Cancel", slug="own-cancel")
+    other = _make_structure(session, name="Foreign Cancel", slug="foreign-cancel")
+    admin = _make_admin(session, username="cancel_denied", email="cancel-denied@test.local", role=role, structure_id=own.id if scoped else None)
+    invitation, _ = _pending_bootstrap(session, other, admin)
+    _login_admin(client, admin)
+    assert client.post(_cancel_url(other, invitation)).status_code == 403
+    session.refresh(invitation)
+    assert invitation.revoked_at is None
+
+
+def test_bootstrap_cancel_scoped_to_invitation_and_post(client, session, app):
+    own = _make_structure(session, name="Cancel Scope", slug="cancel-scope")
+    other = _make_structure(session, name="Cancel Foreign", slug="cancel-foreign")
+    admin = _make_admin(session, username="cancel_scope", email="cancel-scope@test.local", role="superadmin")
+    invitation, _ = _pending_bootstrap(session, other, admin)
+    assert client.post(_cancel_url(other, invitation)).status_code in (302, 303)
+    _login_admin(client, admin)
+    assert client.post(_cancel_url(own, invitation)).status_code == 404
+    assert client.get(_cancel_url(other, invitation)).status_code == 405
+    app.config["WTF_CSRF_ENABLED"] = True
+    assert client.post(_cancel_url(other, invitation)).status_code == 400
+    session.refresh(invitation)
+    assert invitation.revoked_at is None
+
+
+@pytest.mark.parametrize("state", ["accepted", "expired", "ops"])
+def test_bootstrap_cancel_only_pending_admin_invitation(client, session, state):
+    from datetime import timedelta
+    from backend.models import utc_now
+
+    structure = _make_structure(session, name="Cancel State", slug="cancel-state")
+    admin = _make_admin(session, username="cancel_state", email="cancel-state@test.local", role="superadmin")
+    invitation, _ = _pending_bootstrap(session, structure, admin)
+    if state == "accepted":
+        invitation.accepted_at = utc_now()
+    elif state == "expired":
+        invitation.expires_at = utc_now() - timedelta(seconds=1)
+    else:
+        invitation.role = "ops"
+    session.commit()
+    _login_admin(client, admin)
+    assert client.post(_cancel_url(structure, invitation)).status_code == (404 if state == "ops" else 303)
+    session.refresh(invitation)
+    assert invitation.revoked_at is None
+
+
+@pytest.mark.parametrize("winner", ["revoked_at", "accepted_at"])
+def test_bootstrap_accept_rechecks_state_after_token_read(client, session, monkeypatch, winner):
+    from backend.models import AdminUser, AdminUserInvitation, utc_now
+    from backend.helpchain_backend.src.services import admin_team_invitations as service
+
+    structure = _make_structure(session, name="Cancel Race", slug="cancel-race")
+    admin = _make_admin(session, username="cancel_race", email="cancel-race@test.local", role="superadmin")
+    invitation, token = _pending_bootstrap(session, structure, admin)
+    original_get = service.get_admin_team_invitation
+
+    def read_then_transition(raw_token):
+        stale = original_get(raw_token)
+        # Simulate the winning write after validation, keeping the ORM object stale.
+        AdminUserInvitation.query.filter_by(id=stale.id).update(
+            {getattr(AdminUserInvitation, winner): utc_now()}, synchronize_session=False
+        )
+        return stale
+
+    monkeypatch.setattr(service, "get_admin_team_invitation", read_then_transition)
+    with pytest.raises(service.InvitationInvalid):
+        service.accept_admin_team_invitation(raw_token=token, password="StrongPassword123!")
+    assert AdminUser.query.filter_by(email=invitation.email).count() == 0
+    session.rollback()
+
+
 @contextmanager
 def _count_select_queries(app):
     from backend.extensions import db

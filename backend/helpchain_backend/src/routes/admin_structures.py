@@ -181,6 +181,10 @@ def _structure_has_admin_users(structure_id: int) -> bool:
 
 
 def _structure_has_pending_bootstrap_invitation(structure_id: int) -> bool:
+    return _pending_bootstrap_invitation(structure_id) is not None
+
+
+def _pending_bootstrap_invitation(structure_id: int):
     now = utc_now()
     return (
         db.session.query(AdminUserInvitation.id)
@@ -191,8 +195,8 @@ def _structure_has_pending_bootstrap_invitation(structure_id: int) -> bool:
             AdminUserInvitation.revoked_at.is_(None),
             AdminUserInvitation.expires_at > now,
         )
+        .order_by(AdminUserInvitation.id)
         .first()
-        is not None
     )
 
 
@@ -786,6 +790,8 @@ def admin_structure_detail(structure_id: int):
             can_bootstrap_first_admin=can_bootstrap_first_admin,
             has_tenant_admin_users=has_tenant_admin_users,
             has_pending_bootstrap_invitation=has_pending_bootstrap_invitation,
+            pending_bootstrap_invitation=_pending_bootstrap_invitation(structure.id)
+            if has_pending_bootstrap_invitation else None,
             **_workspace_select_options(),
         ),
         200,
@@ -917,6 +923,43 @@ def admin_structure_bootstrap_admin(structure_id: int):
     return redirect(
         url_for("admin.admin_structure_detail", structure_id=structure.id),
         code=303,
+    )
+
+
+@admin_bp.post("/structures/<int:structure_id>/bootstrap-admin/<int:invitation_id>/revoke")
+@admin_required
+@admin_role_required("superadmin")
+def admin_structure_bootstrap_admin_revoke(structure_id: int, invitation_id: int):
+    actor = _require_platform_global_superadmin_actor()
+    # Serialize with bootstrap creation; never resolve a stale form to a newer invitation.
+    Structure.query.filter(Structure.id == structure_id).with_for_update().first_or_404()
+    invitation = AdminUserInvitation.query.filter_by(
+        id=invitation_id, structure_id=structure_id, role="admin"
+    ).first_or_404()
+    changed = AdminUserInvitation.query.filter(
+        AdminUserInvitation.id == invitation.id,
+        AdminUserInvitation.structure_id == structure_id,
+        AdminUserInvitation.accepted_at.is_(None),
+        AdminUserInvitation.revoked_at.is_(None),
+        AdminUserInvitation.expires_at > utc_now(),
+    ).update({AdminUserInvitation.revoked_at: utc_now()}, synchronize_session=False)
+    db.session.commit()
+    if changed:
+        audit_admin_action(
+            action="ADMIN_TEAM_INVITATION_REVOKED",
+            target_type="AdminUserInvitation",
+            target_id=invitation_id,
+            payload={
+                "structure_id": structure_id,
+                "revoked_by_admin_id": actor.admin_id,
+                "role": "admin",
+            },
+        )
+        flash("Invitation annulée. Vous pouvez inviter un nouvel administrateur.", "success")
+    else:
+        flash("Cette invitation n’est plus en cours.", "warning")
+    return redirect(
+        url_for("admin.admin_structure_detail", structure_id=structure_id), code=303
     )
 
 
