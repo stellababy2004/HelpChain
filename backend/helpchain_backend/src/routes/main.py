@@ -2287,6 +2287,37 @@ def achievements():
     )
 
 
+@main_bp.route("/team/reset-access", methods=["GET", "POST"])
+def admin_access_reset():
+    from ..services.admin_access_reset import consume_access_reset
+
+    error = None
+    if request.method == "POST":
+        password = request.form.get("password") or ""
+        if password != request.form.get("confirm_password"):
+            error = "Les mots de passe ne correspondent pas."
+        else:
+            try:
+                consume_access_reset(request.form.get("token") or "", password)
+                db.session.commit()
+            except ValueError:
+                db.session.rollback()
+                error = "Lien invalide ou expiré, ou mot de passe insuffisamment sécurisé."
+            except Exception:
+                db.session.rollback()
+                # Never log submitted credentials, tokens or exception parameters.
+                error = "Impossible de réinitialiser votre accès."
+            else:
+                session.clear()
+                flash("Mot de passe mis à jour. Connectez-vous avec votre nouveau mot de passe.", "success")
+                return redirect(url_for("admin.admin_login"), code=303)
+    response = make_response(render_template("admin_access_reset.html", error=error),
+                             400 if error else 200)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    return response
+
+
 @main_bp.route("/team/invitation/<token>", methods=["GET", "POST"])
 @limiter.limit("10 per minute")
 def admin_team_invitation_accept(token):
@@ -6410,4 +6441,3 @@ def robots_txt():
 @main_bp.get("/sitemap.xml")
 def sitemap_xml():
     return send_from_directory(current_app.static_folder, "sitemap.xml")
-

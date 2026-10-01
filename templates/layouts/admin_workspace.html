@@ -59,6 +59,9 @@
           <div class="hc-admin-shellbar__navrow">
             <div class="hc-admin-shellnav-scroller" aria-label="Navigation administration">
               <nav class="hc-admin-shellnav">
+                {% if admin_role == 'admin' and current_user.structure_id is not none %}
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/team') else '' }}" href="{{ url_for('admin.admin_team') }}" {% if current_path.startswith('/admin/team') %}aria-current="page"{% endif %}>Équipe</a>
+                {% endif %}
                 <a class="hc-admin-shellnav__link {{ 'is-active' if is_home_active else '' }}" href="{{ url_for('admin.admin_home') }}" {% if is_home_active %}aria-current="page"{% endif %}>Accueil</a>
                 <a class="hc-admin-shellnav__link {{ 'is-active' if is_workspace_active else '' }}" href="{{ url_for('ops.ops_workspace') }}" {% if is_workspace_active %}aria-current="page"{% endif %}>Workspace</a>
                 <a class="hc-admin-shellnav__link {{ 'is-active' if is_requests_active else '' }}" href="{{ url_for('admin.admin_requests') }}" {% if is_requests_active %}aria-current="page"{% endif %}>Demandes</a>

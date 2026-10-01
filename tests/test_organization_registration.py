@@ -3,7 +3,7 @@ from backend.models import User
 from backend.helpchain_backend.src.models import Structure
 
 
-def test_organization_registration_creates_structure_and_admin(client, app):
+def test_legacy_organization_registration_requires_global_admin(client, app):
     resp = client.post(
         "/create-organization",
         json={
@@ -13,18 +13,24 @@ def test_organization_registration_creates_structure_and_admin(client, app):
             "password": "SecureTempPassword123",
         },
     )
-    assert resp.status_code == 201
-    data = resp.get_json()
-    assert data["status"] == "created"
+    assert resp.status_code == 403
 
     with app.app_context():
-        structure = db.session.get(Structure, data["structure_id"])
-        assert structure is not None
+        assert Structure.query.filter_by(name="CCAS Boulogne").first() is None
         admin = (
             db.session.query(User)
             .filter_by(email="admin@ccas-boulogne.fr")
             .first()
         )
-        assert admin is not None
-        assert admin.role == "admin"
-        assert admin.structure_id == structure.id
+        assert admin is None
+
+
+def test_legacy_organization_registration_uses_canonical_global_flow(client, app):
+    from tests.test_admin_team import _admin, _login
+
+    admin = _admin("global_registration", None, "superadmin")
+    db.session.commit()
+    _login(client, app, admin)
+    response = client.post("/create-organization", json={"password": "NeverUseThis123"})
+    assert response.status_code == 303
+    assert response.headers["Location"].endswith("/admin/structures/new")

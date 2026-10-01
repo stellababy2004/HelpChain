@@ -12,6 +12,24 @@ from backend.permissions import require_admin_login
 admin_roles_bp = Blueprint("admin_roles", __name__)
 
 
+@admin_roles_bp.before_request
+def restrict_legacy_role_management():
+    """Legacy User RBAC must not bypass canonical organization management."""
+    from flask import abort
+    from backend.helpchain_backend.src.admin_actor import resolve_current_admin_actor
+
+    actor = resolve_current_admin_actor()
+    if not actor.is_authenticated or actor.role != "superadmin":
+        abort(403)
+    # Account creation and membership changes belong to /admin/team. Keep the
+    # legacy role catalog available, but never expose its unscoped User CRUD.
+    if request.endpoint in {
+        "admin_roles.roles_dashboard", "admin_roles.create_user",
+        "admin_roles.manage_user_roles", "admin_roles.toggle_user_status",
+    }:
+        abort(403)
+
+
 @admin_roles_bp.route("/")
 @require_admin_login
 def roles_dashboard():

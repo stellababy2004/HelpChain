@@ -86,6 +86,7 @@
                 <th>Email</th>
                 <th>Rôle</th>
                 <th>Statut</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -99,6 +100,34 @@
                       <span class="badge bg-success">Actif</span>
                     {% else %}
                       <span class="badge bg-secondary">Inactif</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if member.role in ['admin', 'ops', 'readonly'] %}
+                    <div class="d-flex flex-wrap gap-2">
+                      {% if member.id != current_user.id %}
+                      <form method="post" action="{{ url_for('admin.admin_team_member_role', member_id=member.id) }}" class="d-flex gap-1">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <select name="role" class="form-select form-select-sm" aria-label="Rôle de {{ member.username }}">
+                          {% for value, label in [('ops', 'Opérateur'), ('readonly', 'Lecture seule'), ('admin', 'Administrateur')] %}
+                          <option value="{{ value }}" {% if member.role == value %}selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary">Enregistrer</button>
+                      </form>
+                      <form method="post" action="{{ url_for('admin.admin_team_member_status', member_id=member.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="is_active" value="{{ '0' if member.is_active else '1' }}">
+                        <button class="btn btn-sm btn-outline-secondary">{{ 'Désactiver' if member.is_active else 'Activer' }}</button>
+                      </form>
+                      {% endif %}
+                      {% if member.is_active %}
+                      <form method="post" action="{{ url_for('admin.admin_team_member_reset', member_id=member.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-sm btn-outline-primary">Réinitialiser l'accès</button>
+                      </form>
+                      {% endif %}
+                    </div>
                     {% endif %}
                   </td>
                 </tr>

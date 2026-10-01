@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Réinitialiser l'accès | HelpChain</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/jsdelivr/bootstrap-5.3.0.min.css') }}">
+  <script src="{{ url_for('static', filename='js/pages/admin_access_reset.js') }}" defer></script>
+</head>
+<body>
+  <main class="container py-5">
+    <h1>Réinitialiser votre accès</h1>
+    {% if error %}<p role="alert">{{ error }}</p>{% endif %}
+    <p>Choisissez un mot de passe contenant au moins 8 caractères, une majuscule, une minuscule et un chiffre.</p>
+    <form method="post" action="{{ url_for('main.admin_access_reset') }}" id="access-reset-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="token" id="reset-token">
+      <p><label for="password">Nouveau mot de passe</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></p>
+      <p><label for="confirm-password">Confirmer le mot de passe</label>
+        <input id="confirm-password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required></p>
+      <button type="submit">Enregistrer le mot de passe</button>
+    </form>
+    <noscript>Activez JavaScript pour utiliser ce lien sécurisé.</noscript>
+    {% if error %}<p>Ouvrez à nouveau le lien reçu pour réessayer, ou demandez un nouveau lien à votre administrateur.</p>{% endif %}
+  </main>
+</body>
+</html>

@@ -2303,7 +2303,7 @@ def _find_admin_user(login_identifier: str) -> AdminUser | None:
 
 
 def _verify_admin_password(user: AdminUser | None, password: str) -> bool:
-    if not user or not getattr(user, "password_hash", None):
+    if not user or not user.is_active or not getattr(user, "password_hash", None):
         return False
     try:
         return bool(user.check_password(password))
@@ -4895,6 +4895,8 @@ def operator_required(view_func):
     def wrapper(*args, **kwargs):
         if not session.get("admin_logged_in"):
             return _redirect_protected_login("admin.ops_login")
+        if isinstance(current_user._get_current_object(), AdminUser) and not current_user.is_active:
+            abort(403)
 
         if not (
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
@@ -5447,6 +5449,9 @@ def _finalize_admin_session(
     *,
     fallback_url: str,
 ):
+    if not user.is_active:
+        session.clear()
+        abort(403)
     _mfa_ok_set()
     session["admin_user_id"] = int(user.id)
     session["admin_logged_in"] = True
@@ -5686,6 +5691,125 @@ def admin_team():
         team_members=team_members,
         pending_invitations=pending_invitations,
     )
+
+def _team_member(actor, member_id):
+    # Never resolve an unscoped ID, including for platform administrators.
+    member = AdminUser.query.filter_by(
+        id=member_id, structure_id=actor.structure_id
+    ).first_or_404()
+    if member.role not in {"admin", "ops", "readonly"}:
+        abort(403)
+    return member
+
+
+@admin_bp.post("/team/users/<int:member_id>/role")
+@admin_required
+def admin_team_member_role(member_id):
+    actor = _require_team_management_access()
+    member = _team_member(actor, member_id)
+    role = (request.form.get("role") or "").strip().lower()
+    if role not in {"admin", "ops", "readonly"}:
+        abort(400)
+    if member.id == actor.admin_id and role != "admin":
+        abort(409)
+    if (
+        member.role == "admin"
+        and member.is_active
+        and role != "admin"
+        and AdminUser.query.filter(
+            AdminUser.structure_id == actor.structure_id,
+            AdminUser.role == "admin",
+            AdminUser.is_active.is_(True),
+            AdminUser.id != member.id,
+        ).count() == 0
+    ):
+        abort(409)
+    from ..services.admin_access_reset import invalidate_access_resets
+
+    old_role = member.role
+    member.role = role
+    invalidate_access_resets(member.email)
+    db.session.commit()
+    audit_admin_action(action="ADMIN_TEAM_ROLE_CHANGED", target_type="AdminUser",
+                       target_id=member.id, payload={"structure_id": actor.structure_id,
+                                                    "old": old_role, "new": role})
+    flash("Rôle mis à jour.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
+@admin_bp.post("/team/users/<int:member_id>/status")
+@admin_required
+def admin_team_member_status(member_id):
+    actor = _require_team_management_access()
+    member = _team_member(actor, member_id)
+    status = request.form.get("is_active")
+    if status not in {"0", "1"}:
+        abort(400)
+    if member.id == actor.admin_id and status == "0":
+        abort(409)
+    if (
+        member.role == "admin"
+        and member.is_active
+        and status == "0"
+        and AdminUser.query.filter(
+            AdminUser.structure_id == actor.structure_id,
+            AdminUser.role == "admin",
+            AdminUser.is_active.is_(True),
+            AdminUser.id != member.id,
+        ).count() == 0
+    ):
+        abort(409)
+    from ..services.admin_access_reset import invalidate_access_resets
+
+    member.is_active = status == "1"
+    invalidate_access_resets(member.email)
+    db.session.commit()
+    audit_admin_action(action="ADMIN_TEAM_STATUS_CHANGED", target_type="AdminUser",
+                       target_id=member.id, payload={"structure_id": actor.structure_id,
+                                                    "is_active": member.is_active})
+    flash("Statut mis à jour.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
+@admin_bp.post("/team/users/<int:member_id>/reset-access")
+@admin_required
+def admin_team_member_reset(member_id):
+    actor = _require_team_management_access()
+    member = _team_member(actor, member_id)
+    if not member.is_active:
+        abort(409)
+    from ..services.admin_access_reset import create_access_reset, TTL_MINUTES
+    from backend.mail_service import send_notification_email
+
+    row, raw = create_access_reset(member, actor)
+    # Fragments are not sent to servers, proxies or access logs.
+    base_url = (current_app.config.get("PUBLIC_BASE_URL") or request.url_root).rstrip("/")
+    reset_url = base_url + url_for("main.admin_access_reset") + "#" + raw
+    # Mail telemetry may commit the shared session. Persist deliberately and
+    # explicitly invalidate on failure rather than relying on rollback.
+    db.session.commit()
+    try:
+        sent = send_notification_email(
+            member.email, "Réinitialiser votre accès HelpChain",
+            "emails/admin_access_reset.html",
+            {"magic_link_url": reset_url, "ttl_minutes": TTL_MINUTES},
+            purpose="admin_access_reset", structure_id=actor.structure_id,
+        )
+    except Exception:
+        sent = False
+    if not sent:
+        db.session.rollback()
+        row.invalidated_at = utc_now()
+        row.invalidated_reason = "delivery_failed"
+        db.session.commit()
+        flash("Impossible d'envoyer le lien. Veuillez réessayer.", "danger")
+    else:
+        audit_admin_action(action="ADMIN_TEAM_ACCESS_RESET", target_type="AdminUser",
+                           target_id=member.id,
+                           payload={"structure_id": actor.structure_id})
+        flash("Lien de réinitialisation envoyé.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
 
 @admin_bp.post("/team/invite")
 @admin_required
@@ -14930,7 +15054,12 @@ def admin_security_summary():
 @admin_role_required("superadmin")
 def admin_roles():
     _require_global_admin()
-    admins = AdminUser.query.order_by(AdminUser.username.asc(), AdminUser.id.asc()).all()
+    admins = AdminUser.query.filter(or_(
+        AdminUser.structure_id.is_(None),
+        AdminUser.role.in_(["superadmin", "super_admin", "super-admin"]),
+    )).order_by(
+        AdminUser.username.asc(), AdminUser.id.asc()
+    ).all()
     superadmin_ids = [u.id for u in admins if _is_superadmin_role(getattr(u, "role", None))]
     last_superadmin_id = superadmin_ids[0] if len(superadmin_ids) == 1 else None
     role_options = [
@@ -14961,6 +15090,8 @@ def admin_roles_set_role(admin_id: int):
     target = db.session.get(AdminUser, admin_id)
     if not target:
         abort(404)
+    if target.structure_id is not None and not _is_superadmin_role(target.role):
+        abort(403)
 
     requested_role = (request.form.get("role") or "").strip().lower()
     allowed_roles = {"readonly", "ops", "superadmin"}
