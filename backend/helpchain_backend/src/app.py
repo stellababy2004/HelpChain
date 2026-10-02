@@ -168,25 +168,8 @@ def _install_slow_sql_logger(app: Flask) -> None:
 
 
 def _locale_selector():
-    # Honor explicit user choice first, but only for locales we actually ship.
-    candidates = [
-        (session.get("lang") or "").strip().lower(),
-        (request.cookies.get("hc_lang") or "").strip().lower(),
-    ]
-    for cand in candidates:
-        if cand in SUPPORTED_LOCALES:
-            return cand
-        short = cand.split("-")[0] if cand else ""
-        if short in SUPPORTED_LOCALES:
-            return short
-
-    try:
-        best = request.accept_languages.best_match(SUPPORTED_LOCALES)
-        if best:
-            return best
-    except Exception:
-        pass
-    return DEFAULT_LOCALE
+    # HelpChain UI is French-only.
+    return "fr"
 
 
 def add_security_headers(app: Flask):
@@ -1005,7 +988,7 @@ def create_app(config_object=None) -> Flask:
     except Exception as e:
         app.logger.info("admin_command blueprint not loaded: %s", e)
 
-        
+
 
     try:
         from .routes.risk_map import risk_map_bp
