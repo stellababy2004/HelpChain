@@ -1033,6 +1033,49 @@ def _magic_link_email_fingerprint(email: str | None) -> str | None:
     return _sha256_hex(cleaned)[:12]
 
 
+def _magic_link_env_name() -> str:
+    return str(
+        current_app.config.get("FLASK_CONFIG")
+        or current_app.config.get("APP_ENV")
+        or current_app.config.get("FLASK_ENV")
+        or os.getenv("FLASK_CONFIG")
+        or os.getenv("APP_ENV")
+        or os.getenv("FLASK_ENV")
+        or ""
+    ).strip().lower()
+
+
+def _magic_link_request_host_is_local() -> bool:
+    try:
+        hostname = (urlparse(request.host_url).hostname or "").strip().lower()
+    except Exception:
+        return False
+    return hostname in {"127.0.0.1", "localhost", "::1"}
+
+
+def _magic_link_should_use_public_base_url() -> bool:
+    env_name = _magic_link_env_name()
+    if env_name in {"prod", "production"}:
+        return True
+    if os.getenv("RENDER"):
+        return True
+    if env_name in {"dev", "development", "local", "test", "testing"}:
+        return False
+    if current_app.config.get("TESTING") or current_app.config.get("DEBUG"):
+        return False
+    if _magic_link_request_host_is_local():
+        return False
+    return True
+
+
+def _magic_link_url(raw_token: str) -> str:
+    path = url_for("main.magic_link_consume", token=raw_token, _external=False)
+    base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
+    if base and _magic_link_should_use_public_base_url():
+        return f"{base}{path}"
+    return url_for("main.magic_link_consume", token=raw_token, _external=True)
+
+
 def _magic_link_reject(
     reason: str,
     *,
@@ -2698,13 +2741,7 @@ def become_volunteer():
                 },
             )
 
-            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
-            path = url_for("main.magic_link_consume", token=raw_token, _external=False)
-            magic_url = (
-                f"{base}{path}"
-                if base
-                else url_for("main.magic_link_consume", token=raw_token, _external=True)
-            )
+            magic_url = _magic_link_url(raw_token)
 
             # Keep volunteer login subject stable in FR regardless of request locale.
             subject = "Votre lien de connexion HelpChain (15 min)"
@@ -4221,13 +4258,7 @@ def submit_request_confirm():
                     },
                 )
                 try:
-                    base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
-                    path = url_for("main.magic_link_consume", token=raw_token, _external=False)
-                    magic_url = (
-                        f"{base}{path}"
-                        if base
-                        else url_for("main.magic_link_consume", token=raw_token, _external=True)
-                    )
+                    magic_url = _magic_link_url(raw_token)
                 except Exception:
                     magic_url = f"/auth/magic/{raw_token}"
             except Exception:
@@ -6295,21 +6326,7 @@ def submit_request_resend():
                 },
             )
 
-            base = (current_app.config.get("PUBLIC_BASE_URL") or "").rstrip("/")
-            path = url_for(
-                "main.magic_link_consume",
-                token=raw_token,
-                _external=False,
-            )
-            magic_url = (
-                f"{base}{path}"
-                if base
-                else url_for(
-                    "main.magic_link_consume",
-                    token=raw_token,
-                    _external=True,
-                )
-            )
+            magic_url = _magic_link_url(raw_token)
 
             try:
                 from backend.mail_service import send_notification_email

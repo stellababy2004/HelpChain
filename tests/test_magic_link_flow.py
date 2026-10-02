@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import hashlib
 from datetime import UTC, datetime, timedelta
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -294,8 +295,6 @@ def test_submit_request_missing_privacy_consent_shows_visible_error(client, monk
 
 
 def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch, caplog):
-    from urllib.parse import urlsplit
-
     caplog.set_level("INFO")
     _reset_magic_link_rate_limits()
     _ensure_public_intake_route(session)
@@ -353,6 +352,80 @@ def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, m
     assert raw_token and _sha256_hex(raw_token) == token_row.token_hash
     assert raw_token not in caplog.text
     assert magic_url not in caplog.text
+
+
+def test_submit_request_confirm_dev_magic_link_uses_request_host(
+    client, session, monkeypatch
+):
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
+    monkeypatch.setitem(
+        client.application.config, "PUBLIC_BASE_URL", "https://helpchain.live"
+    )
+    monkeypatch.setitem(client.application.config, "FLASK_ENV", "development")
+    sent = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent.append(args),
+    )
+    payload = {
+        "name": "Local Magic Link",
+        "email": "local.magic@test.local",
+        "phone": "0600000000",
+        "category": "admin_help",
+        "urgency": "normal",
+        "title": "Local request magic link",
+        "description": "Local magic link should resolve to the local app.",
+        "location_text": "Boulogne-Billancourt",
+        "postcode": "92100",
+        "city": "Boulogne-Billancourt",
+        "privacy_consent": "1",
+        "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
+    }
+
+    preview = client.post(
+        "/submit_request",
+        data=payload,
+        follow_redirects=False,
+        base_url="http://127.0.0.1:5000",
+    )
+    assert preview.status_code == 200
+
+    confirm = client.post(
+        "/submit_request/confirm",
+        data={},
+        follow_redirects=False,
+        base_url="http://127.0.0.1:5000",
+    )
+    assert confirm.status_code in (302, 303)
+
+    assert len(sent) == 1
+    magic_url = sent[0][3]["magic_link_url"]
+    parsed = urlsplit(magic_url)
+    assert parsed.scheme == "http"
+    assert parsed.netloc == "127.0.0.1:5000"
+    assert parsed.path.startswith("/auth/magic/")
+    assert "helpchain.live" not in magic_url
+
+    accepted = client.get(parsed.path, base_url="http://127.0.0.1:5000")
+    assert accepted.status_code == 303
+    assert accepted.headers["Location"].endswith("/profile")
+
+
+def test_configured_production_magic_link_url_remains_helpchain_live(
+    client, monkeypatch
+):
+    monkeypatch.setitem(
+        client.application.config, "PUBLIC_BASE_URL", "https://helpchain.live"
+    )
+    monkeypatch.setitem(client.application.config, "APP_ENV", "production")
+
+    with client.application.test_request_context(
+        "/", base_url="http://127.0.0.1:5000"
+    ):
+        magic_url = main_routes._magic_link_url("production-token")
+
+    assert magic_url == "https://helpchain.live/auth/magic/production-token"
 
 
 def test_become_volunteer_reuse_cooldown_blocks_duplicate_active_link(
@@ -929,12 +1002,47 @@ def test_request_magic_link_resend_issues_token_and_sends_email(
     assert kwargs["purpose"] == "request_magic_link"
 
 
+def test_request_magic_link_resend_dev_magic_link_uses_request_host(
+    client, session, monkeypatch
+):
+    _reset_magic_link_rate_limits()
+    req = _create_request(session, "resend-local-url")
+    monkeypatch.setitem(
+        client.application.config, "PUBLIC_BASE_URL", "https://helpchain.live"
+    )
+    monkeypatch.setitem(client.application.config, "FLASK_ENV", "development")
+    sent_emails = []
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email",
+        lambda *args, **kwargs: sent_emails.append(args),
+    )
+
+    with client.session_transaction(
+        base_url="http://127.0.0.1:5000"
+    ) as flask_session:
+        flask_session["requester_email"] = req.email
+        flask_session["last_request_id"] = req.id
+
+    response = client.post(
+        "/submit_request/resend",
+        follow_redirects=False,
+        base_url="http://127.0.0.1:5000",
+    )
+
+    assert response.status_code == 303
+    assert len(sent_emails) == 1
+    magic_url = sent_emails[0][3]["magic_link_url"]
+    parsed = urlsplit(magic_url)
+    assert parsed.scheme == "http"
+    assert parsed.netloc == "127.0.0.1:5000"
+    assert parsed.path.startswith("/auth/magic/")
+    assert "helpchain.live" not in magic_url
+
+
 @pytest.mark.parametrize("expired", [False, True])
 def test_request_magic_link_resend_rotates_submitted_token(
     client, session, monkeypatch, expired, caplog
 ):
-    from urllib.parse import urlsplit
-
     caplog.set_level("INFO")
     _reset_magic_link_rate_limits()
     _ensure_public_intake_route(session)
