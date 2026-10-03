@@ -247,3 +247,4 @@ def test_reset_access_preserves_same_origin_referrer(client):
 
     assert response.status_code == 200
     assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
+    assert '<meta name="referrer" content="no-referrer">' not in response.text
