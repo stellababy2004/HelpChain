@@ -2357,7 +2357,6 @@ def admin_access_reset():
     response = make_response(render_template("admin_access_reset.html", error=error),
                              400 if error else 200)
     response.headers["Cache-Control"] = "no-store"
-    response.headers["Referrer-Policy"] = "no-referrer"
     return response
 
 

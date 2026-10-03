@@ -240,3 +240,10 @@ def test_legacy_user_management_cannot_bypass_tenant_rules(client, app, team):
             assert client.get(path).status_code == 403
         assert client.post("/admin/roles/users/1/toggle").status_code == 403
     assert client.post(f"/admin/roles/{member.id}/role", data={"role": "superadmin"}).status_code == 403
+
+
+def test_reset_access_preserves_same_origin_referrer(client):
+    response = client.get("/team/reset-access")
+
+    assert response.status_code == 200
+    assert response.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
