@@ -2156,6 +2156,57 @@ def admin_open_case_from_request(req_id: int):
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
 
 
+@admin_bp.post("/requests/<int:req_id>/release", endpoint="admin_request_release")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def admin_request_release(req_id: int):
+    """Allow the active owner to voluntarily release their own request."""
+    admin_required_404()
+    admin_id = _admin_id()
+    if not admin_id:
+        abort(403)
+
+    req = db.session.get(Request, req_id)
+    if not req:
+        abort(404)
+
+    if req.owner_id != admin_id:
+        _audit_denied_action(
+            action="request.release_owner",
+            target_type="Request",
+            target_id=req.id,
+            reason="Only the active owner can release the request.",
+        )
+        abort(403)
+
+    old_owner = req.owner_id
+    req.owner_id = None
+    req.owned_at = None
+    db.session.add(
+        RequestActivity(
+            request_id=req.id,
+            actor_admin_id=admin_id,
+            action="release_owner",
+            old_value=str(old_owner),
+            new_value="",
+            created_at=_now_utc(),
+        )
+    )
+    db.session.commit()
+    audit_admin_action(
+        action="request.release_owner",
+        target_type="Request",
+        target_id=req.id,
+        payload={
+            "req_id": req.id,
+            "old": {"owner_id": old_owner},
+            "new": {"owner_id": None},
+        },
+    )
+    flash("Prise en charge libérée.", "success")
+    return redirect(url_for("admin.admin_request_details", req_id=req_id), code=303)
+
+
 @admin_bp.post("/requests/<int:req_id>/unlock", endpoint="admin_request_unlock")
 @admin_required
 @admin_role_required("superadmin")
