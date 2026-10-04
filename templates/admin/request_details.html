@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}{{ _('Admin') }} - {{ _('Request') }} #{{ req.id }}{% endblock %}
 {% block body_class %}hc-page-admin hc-admin-workspace hc-admin-requests-page{% endblock %}
 {% block extra_css %}
@@ -8,6 +8,8 @@
 {% block content %}
 {% set is_locked = is_locked|default(false) %}
 {% set can_edit = (req.owner_id == current_user.id) or (current_user.role == 'superadmin') %}
+{% set req_status_norm = request_status_key %}
+{% set can_change_status = can_edit and request_status_next %}
 {% set risk_level_key = (req.risk_level or 'standard')|lower %}
 {% if risk_level_key not in ['standard', 'attention', 'critical'] %}
   {% set risk_level_key = 'standard' %}
@@ -55,14 +57,6 @@
   </nav>
 
   {% set req_status_raw = (req.status or '')|lower %}
-  {% set req_status_norm = req_status_raw %}
-  {% if req_status_norm in ['pending'] %}
-    {% set req_status_norm = 'open' %}
-  {% elif req_status_norm in ['approved'] %}
-    {% set req_status_norm = 'in_progress' %}
-  {% elif req_status_norm in ['rejected'] %}
-    {% set req_status_norm = 'cancelled' %}
-  {% endif %}
   {% set sm = status_meta(req_status_norm) %}
   {% set _prio = (req.priority or 'medium')|lower %}
   {% set is_closed_status = (req_status_norm == 'cancelled') %}
@@ -445,6 +439,8 @@
                         Responsable assigné
                       {% elif ev.action == "unassign" %}
                         Désaffectation
+                      {% elif ev.action == "archive" %}
+                        Archivage
                       {% elif ev.action == "note" %}
                         Note interne ajoutée
                       {% elif ev.action == "partner_referral_sent" %}
@@ -596,7 +592,7 @@
         <div class="card-body">
           <div class="d-flex align-items-center justify-content-between">
             <div class="fw-semibold">Cycle de vie</div>
-            {% if can_edit %}
+            {% if can_change_status %}
             <span class="badge text-bg-success">Modifiable</span>
             {% else %}
             <span class="badge text-bg-light border">Lecture seule</span>
@@ -609,12 +605,11 @@
 
           <hr class="my-3" />
 
-          {% if can_edit %}
-            {% set is_closed_status = (req_status_norm == 'cancelled') %}
+          {% if can_change_status %}
             <form method="post" action="{{ url_for('admin.update_status', req_id=req.id) }}" class="d-flex gap-2 align-items-center flex-wrap" id="statusForm">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <select name="status" class="form-select form-select-sm" style="max-width: 220px;" id="statusSelect">
-                {% for s in REQUEST_STATUS_ORDER %}
+                {% for s in REQUEST_STATUS_ORDER if s == req_status_norm or s in request_status_next %}
                   <option value="{{ s }}" {% if req_status_norm == s %}selected{% endif %}>{{ status_meta(s).label }}</option>
                 {% endfor %}
               </select>
@@ -630,12 +625,6 @@
                 >{{ resolution_note_value or '' }}</textarea>
               </div>
               <button type="submit" class="btn btn-sm btn-primary">Valider l’étape</button>
-            </form>
-            <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" class="mt-2">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-sm btn-outline-secondary" {% if is_closed_status %}disabled{% endif %}>
-                Archiver la sortie de flux
-              </button>
             </form>
             <script>
               (function () {
@@ -659,10 +648,26 @@
                 toggle();
               })();
             </script>
+          {% elif req_status_norm in ['done', 'cancelled'] %}
+            <div class="alert alert-info mb-0 py-2">
+              Le cycle de vie est clôturé. Le statut ne peut plus être modifié.
+            </div>
           {% else %}
             <div class="alert alert-info mb-0 py-2">
               Le changement de cycle de vie est réservé au responsable actif ou à la supervision.
             </div>
+          {% endif %}
+
+          {% if can_edit and current_user.role == 'superadmin' %}
+            <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" class="mt-2">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-secondary" {% if req.is_archived %}disabled{% endif %}>
+                Archiver la sortie de flux
+              </button>
+              {% if req_status_norm in ['open', 'in_progress'] %}
+                <div class="text-muted small mt-1">Une situation active sera annulée avant archivage.</div>
+              {% endif %}
+            </form>
           {% endif %}
         </div>
       </div>

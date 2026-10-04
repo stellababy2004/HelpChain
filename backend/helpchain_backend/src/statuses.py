@@ -29,6 +29,24 @@ REQUEST_STATUS_ALLOWED = set(REQUEST_STATUS_META.keys())
 REQUEST_STATUS_ORDER = ["open", "in_progress", "done", "cancelled"]
 REQUEST_CANONICAL_STATUS_ORDER = tuple(REQUEST_STATUS_ORDER)
 
+REQUEST_STATUS_TRANSITIONS = {
+    "open": frozenset({"in_progress", "cancelled"}),
+    "in_progress": frozenset({"done", "cancelled"}),
+    "done": frozenset(),
+    "cancelled": frozenset(),
+}
+
+
+def can_transition_request_status(
+    old_status: str | None,
+    new_status: str | None,
+) -> bool:
+    """Allow only forward lifecycle transitions; terminal states stay terminal."""
+    old = canonical_request_status(old_status)
+    new = normalize_request_status(new_status)
+    return new in REQUEST_STATUS_TRANSITIONS.get(old, frozenset())
+
+
 # Legacy write aliases -> canonical statuses (no migrations)
 REQUEST_STATUS_ALIASES = {
     "approved": "in_progress",  # legacy approved behaves like in_progress
