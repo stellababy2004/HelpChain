@@ -1399,22 +1399,33 @@ def admin_referral_partner_create():
         .order_by(OrganizationConnection.id.desc())
         .first()
     )
-    if historical and historical.status in {"suspended", "revoked"}:
+    if historical and historical.status == "suspended":
         flash(
             f"Une connexion existe déjà avec le statut { _connection_status_label(historical.status) }.",
             "warning",
         )
         return redirect(url_for("admin.admin_referral_partners"), code=303)
 
-    connection = OrganizationConnection(
-        source_structure_id=source_structure_id,
-        target_structure_id=target_structure_id,
-        status="pending",
-        connection_type="referral",
-        permissions_json=DEFAULT_CONNECTION_PERMISSIONS.copy(),
-        created_by_admin_id=getattr(current_user, "id", None),
-        created_at=utc_now(),
-    )
+    if historical and historical.status == "revoked":
+        connection = historical
+        connection.source_structure_id = source_structure_id
+        connection.target_structure_id = target_structure_id
+        connection.status = "pending"
+        connection.permissions_json = DEFAULT_CONNECTION_PERMISSIONS.copy()
+        connection.created_by_admin_id = getattr(current_user, "id", None)
+        connection.created_at = utc_now()
+        connection.accepted_at = None
+        connection.revoked_at = None
+    else:
+        connection = OrganizationConnection(
+            source_structure_id=source_structure_id,
+            target_structure_id=target_structure_id,
+            status="pending",
+            connection_type="referral",
+            permissions_json=DEFAULT_CONNECTION_PERMISSIONS.copy(),
+            created_by_admin_id=getattr(current_user, "id", None),
+            created_at=utc_now(),
+        )
     db.session.add(connection)
     db.session.flush()
     _audit_connection_action(

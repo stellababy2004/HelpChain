@@ -256,6 +256,31 @@ def test_duplicate_active_or_pending_connection_is_blocked(client, app):
     assert OrganizationConnection.query.first().id == first.id
 
 
+
+def test_revoked_connection_allows_new_pending_connection(client, app):
+    ctx = _seed_referral_context(active_connection=False)
+
+    first = _create_partner_connection(client, app, ctx)
+
+    b_client = app.test_client()
+    _login(b_client, app, ctx["admin_b"])
+    response = b_client.post(
+        f"/admin/referrals/partners/{first.id}/refuse",
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    db.session.refresh(first)
+    assert first.status == "revoked"
+
+    second = _create_partner_connection(client, app, ctx)
+
+    assert second is not None
+    assert second.id == first.id
+    assert second.source_structure_id == ctx["a"].id
+    assert second.target_structure_id == ctx["b"].id
+    assert second.status == "pending"
+    assert OrganizationConnection.query.count() == 1
 def test_structure_b_can_accept_pending_partner_connection(client, app):
     ctx = _seed_referral_context(active_connection=False)
     connection = _create_partner_connection(client, app, ctx)
