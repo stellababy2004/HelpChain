@@ -2090,7 +2090,7 @@ def _priority_with_manual_guard(
 
 @admin_bp.post("/requests/<int:req_id>/open-case")
 @admin_required
-@admin_role_required("ops", "superadmin")
+@admin_role_required("admin", "ops", "superadmin")
 def admin_open_case_from_request(req_id: int):
     admin_required_404()
     if not _cases_enabled():

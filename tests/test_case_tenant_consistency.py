@@ -367,3 +367,43 @@ def test_case_collaborator_invite_is_controlled_by_case_owner_scope(app, session
         json={"structure_id": seeded["structure_c"].id, "role": "viewer"},
     )
     assert denied.status_code == 403
+
+def test_admin_role_can_open_case_from_own_structure(app, session):
+    structure = _make_structure(
+        session,
+        name="Admin Open Case Scope",
+        slug="admin-open-case-scope",
+    )
+    admin = _make_admin(
+        session,
+        username="open_case_admin",
+        email="open-case-admin@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    user = _make_user(
+        session,
+        username="open_case_admin_user",
+        email="open-case-admin-user@test.local",
+        structure_id=structure.id,
+    )
+    req = _make_request(
+        session,
+        title="admin-open-case-request",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, app, admin)
+
+    response = client.post(
+        f"/admin/requests/{req.id}/open-case",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+
+    case_row = Case.query.filter_by(request_id=req.id).one()
+    assert case_row.structure_id == structure.id
