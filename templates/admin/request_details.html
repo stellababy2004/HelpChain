@@ -197,10 +197,12 @@
             🔒 Situation verrouillée pour éviter les modifications simultanées.
             {% if locked_by %} Cette demande est actuellement prise en charge par l’admin #{{ locked_by }}.{% endif %}
           </div>
-          <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-sm btn-outline-dark" type="submit">Déverrouiller</button>
-          </form>
+          {% if current_user.role == 'superadmin' %}
+            <form method="post" action="{{ url_for('admin.admin_request_unlock', req_id=req.id) }}" class="m-0">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-dark" type="submit">Déverrouiller</button>
+            </form>
+          {% endif %}
         </div>
       {% endif %}
 
