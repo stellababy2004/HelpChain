@@ -57,6 +57,9 @@ from ..services.request_sla import (
 )
 from ..statuses import (
     REQUEST_STATUS_ALLOWED,
+    REQUEST_STATUS_TRANSITIONS,
+    can_transition_request_status,
+    canonical_request_status,
     normalize_request_status,
     request_status_read_values,
     request_terminal_status_read_values,
@@ -131,7 +134,7 @@ def _log_status_change_once(
 
 def _is_request_locked(req) -> bool:
     """Consider a request locked when status is done or cancelled (canonical)."""
-    s = normalize_request_status(getattr(req, "status", None))
+    s = canonical_request_status(getattr(req, "status", None))
     return s in ("done", "cancelled")
 
 
@@ -139,7 +142,7 @@ REQUEST_LOCKED_BY_ADMIN_MESSAGE = (
     "🔒 Situation verrouillée pour éviter les modifications simultanées."
 )
 REQUEST_LOCKED_BY_STATUS_MESSAGE = (
-    "🔒 Situation verrouillée. Modifiez d’abord le statut pour réactiver les actions."
+    "🔒 Situation verrouillée. Le statut final ne peut plus être modifié."
 )
 
 
@@ -228,7 +231,7 @@ def update_status(req_id):
 
     new_status = (request.form.get("status") or "").strip()
     old_raw_status = req.status
-    old_status = normalize_request_status(old_raw_status)
+    old_status = canonical_request_status(old_raw_status)
     new_status = normalize_request_status(new_status)
 
     if new_status not in REQUEST_STATUS_ALLOWED:
@@ -259,6 +262,21 @@ def update_status(req_id):
         next_url = (request.form.get("next") or "").strip()
         if next_url and is_safe_url(next_url):
             return redirect(next_url)
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    if not can_transition_request_status(old_raw_status, new_status):
+        if request.is_json or (
+            request.accept_mimetypes
+            and request.accept_mimetypes.best == "application/json"
+        ):
+            return jsonify(
+                {
+                    "success": False,
+                    "status": old_status,
+                    "error": "invalid_status_transition",
+                }
+            ), 409
+        flash(_("This status transition is not allowed."), "warning")
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
     req.status = new_status
@@ -471,8 +489,11 @@ def admin_requests_bulk():
             if not can_edit_request(req, current_user):
                 skipped += 1
                 continue
-            old_status = normalize_request_status(getattr(req, "status", None))
+            old_status = canonical_request_status(getattr(req, "status", None))
             if old_status == target_status:
+                continue
+            if not can_transition_request_status(req.status, target_status):
+                skipped += 1
                 continue
             req.status = target_status
             if target_status in {"done", "cancelled"}:
@@ -531,18 +552,35 @@ def admin_request_archive(req_id: int):
     if not can_edit_request(req, current_user):
         abort(403)
 
-    old_status = normalize_request_status(getattr(req, "status", None))
-    req.status = "cancelled"
-    req.completed_at = utc_now()
+    old_status = canonical_request_status(getattr(req, "status", None))
+    if req.is_archived:
+        flash("Request already archived.", "info")
+        return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+    if old_status not in {"done", "cancelled"}:
+        if not can_transition_request_status(req.status, "cancelled"):
+            flash(_("This status transition is not allowed."), "warning")
+            return redirect(url_for("admin.admin_request_details", req_id=req.id))
+
+        req.status = "cancelled"
+        req.completed_at = utc_now()
+        log_request_activity(
+            req,
+            "status_change",
+            old=old_status,
+            new="cancelled",
+            actor_admin_id=getattr(current_user, "id", None),
+        )
+
     req.is_archived = True
     if getattr(req, "archived_at", None) is None:
         req.archived_at = utc_now()
 
     log_request_activity(
         req,
-        "status_change",
-        old=old_status,
-        new="cancelled",
+        "archive",
+        old="not_archived",
+        new="archived",
         actor_admin_id=getattr(current_user, "id", None),
     )
     db.session.commit()
@@ -552,7 +590,10 @@ def admin_request_archive(req_id: int):
         target_id=req.id,
         payload={
             "old": {"status": old_status, "archived": False},
-            "new": {"status": "cancelled", "archived": True},
+            "new": {
+                "status": canonical_request_status(req.status),
+                "archived": True,
+            },
         },
     )
     flash("Request archived and closed.", "success")
@@ -1938,6 +1979,10 @@ def admin_request_details(req_id: int):
             render_template(
                     "admin/request_details.html",
                     req=req,
+                    request_status_key=canonical_request_status(req.status),
+                    request_status_next=REQUEST_STATUS_TRANSITIONS.get(
+                        canonical_request_status(req.status), frozenset()
+                    ),
                     activities=activities,
                     logs=(req.logs if request_logs_supported else []),
                     STATUS_LABELS_BG=STATUS_LABELS_BG,
@@ -2043,6 +2088,10 @@ def admin_request_details(req_id: int):
         render_template(
             "admin/request_details.html",
             req=req,
+            request_status_key=canonical_request_status(req.status),
+            request_status_next=REQUEST_STATUS_TRANSITIONS.get(
+                canonical_request_status(req.status), frozenset()
+            ),
             activities=activities,
             logs=logs,
             STATUS_LABELS_BG=STATUS_LABELS_BG,
