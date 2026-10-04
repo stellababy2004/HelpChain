@@ -10646,3 +10646,6 @@ msgstr "Service pour les demandes publiques"
 
 msgid "Non utilisé pour le routage public"
 msgstr "Non utilisé pour le routage public"
+
+msgid "Déverrouiller"
+msgstr "Déverrouiller"
