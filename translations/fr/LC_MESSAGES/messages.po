@@ -10649,3 +10649,23 @@ msgstr "Non utilisé pour le routage public"
 
 msgid "Déverrouiller"
 msgstr "Déverrouiller"
+
+#: backend/helpchain_backend/src/routes/admin_requests.py
+msgid "This status transition is not allowed."
+msgstr "Cette transition de statut n'est pas autorisée."
+
+#: templates/admin/request_details.html
+msgid "Archivage"
+msgstr "Archivage"
+
+#: templates/admin/request_details.html
+msgid "Le cycle de vie est clôturé. Le statut ne peut plus être modifié."
+msgstr "Le cycle de vie est clôturé. Le statut ne peut plus être modifié."
+
+#: templates/admin/request_details.html
+msgid "Archiver la sortie de flux"
+msgstr "Archiver la sortie de flux"
+
+#: templates/admin/request_details.html
+msgid "Une situation active sera annulée avant archivage."
+msgstr "Une situation active sera annulée avant archivage."

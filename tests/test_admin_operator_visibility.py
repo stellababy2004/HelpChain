@@ -437,6 +437,18 @@ def test_admin_request_completion_updates_summary_queues(
         "Cas sans responsable",
     )
 
+    start_response = authenticated_admin_client.post(
+        f"/admin/requests/{req.id}/status",
+        data={"status": "in_progress", "next": "/admin/requests"},
+        follow_redirects=False,
+    )
+    assert start_response.status_code in (302, 303)
+
+    session.expire_all()
+    in_progress_req = session.get(type(req), req.id)
+    assert in_progress_req.status == "in_progress"
+    assert in_progress_req.completed_at is None
+
     response = authenticated_admin_client.post(
         f"/admin/requests/{req.id}/status",
         data={"status": "done", "next": "/admin/requests"},

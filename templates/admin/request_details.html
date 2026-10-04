@@ -440,7 +440,7 @@
                       {% elif ev.action == "unassign" %}
                         Désaffectation
                       {% elif ev.action == "archive" %}
-                        Archivage
+                        {{ _('Archivage') }}
                       {% elif ev.action == "note" %}
                         Note interne ajoutée
                       {% elif ev.action == "partner_referral_sent" %}
@@ -650,7 +650,7 @@
             </script>
           {% elif req_status_norm in ['done', 'cancelled'] %}
             <div class="alert alert-info mb-0 py-2">
-              Le cycle de vie est clôturé. Le statut ne peut plus être modifié.
+              {{ _('Le cycle de vie est clôturé. Le statut ne peut plus être modifié.') }}
             </div>
           {% else %}
             <div class="alert alert-info mb-0 py-2">
@@ -662,10 +662,10 @@
             <form method="post" action="{{ url_for('admin.admin_request_archive', req_id=req.id) }}" class="mt-2">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-sm btn-outline-secondary" {% if req.is_archived %}disabled{% endif %}>
-                Archiver la sortie de flux
+                {{ _('Archiver la sortie de flux') }}
               </button>
               {% if req_status_norm in ['open', 'in_progress'] %}
-                <div class="text-muted small mt-1">Une situation active sera annulée avant archivage.</div>
+                <div class="text-muted small mt-1">{{ _('Une situation active sera annulée avant archivage.') }}</div>
               {% endif %}
             </form>
           {% endif %}
