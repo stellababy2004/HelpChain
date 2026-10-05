@@ -6571,8 +6571,8 @@ def admin_forgot_password():
 
         # Same response whether the account exists or not.
         flash(
-            "Si un compte actif correspond ? ces informations, "
-            "un lien de r?initialisation a ?t? envoy?.",
+            "Si un compte actif correspond à ces informations, "
+            "un lien de réinitialisation a été envoyé.",
             "info",
         )
         return redirect(
