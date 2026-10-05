@@ -85,6 +85,29 @@ def main() -> int:
         admin.password_hash = password_hash
         admin.is_active = True
         admin.role = role
+
+        reset_mfa = (
+            os.getenv("ADMIN_SEED_RESET_MFA") or ""
+        ).strip().lower() in {"1", "true", "yes"}
+
+        if reset_mfa:
+            if role != "superadmin":
+                print(
+                    "[HC] ensure_render_admin: refused MFA recovery "
+                    "(ADMIN_SEED_ROLE must be superadmin)"
+                )
+                return 1
+
+            admin.totp_secret = None
+            admin.mfa_enabled = False
+            admin.mfa_enrolled_at = None
+            admin.backup_codes_hashes = None
+            admin.backup_codes_generated_at = None
+            print(
+                f"[HC] ensure_render_admin: MFA enrollment reset "
+                f"for production superadmin id={admin.id}"
+            )
+
         db.session.commit()
         print(f"[HC] ensure_render_admin: updated production admin id={admin.id}")
         return 0
