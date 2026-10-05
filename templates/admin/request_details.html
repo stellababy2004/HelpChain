@@ -731,7 +731,7 @@
       <div class="card border-0 shadow-sm mt-3 hc-card" id="cloturer-situation">
         <div class="card-body">
           <div class="small text-muted mb-2">Traçabilité de sortie</div>
-          {% set can_delete = ((req_status_norm == 'cancelled') and req.is_archived) %}
+          {% set can_delete = req.is_archived %}
           <div class="fw-semibold mb-1">Archivage sécurisé et retrait de visibilité</div>
           <div class="text-muted small mb-3">
             Les demandes retirées des listes restent restaurables pour préserver la continuité d’audit.
@@ -753,13 +753,9 @@
               {% endif %}
             </div>
           {% else %}
-            {% if req_status_norm != 'cancelled' %}
+            {% if not req.is_archived %}
               <div class="alert alert-warning py-2 mb-3">
-                Définissez d’abord le statut sur Annulée / clôturée pour activer la suppression.
-              </div>
-            {% elif not req.is_archived %}
-              <div class="alert alert-warning py-2 mb-3">
-                Les indicateurs d’archivage sont manquants. Utilisez Archiver (Clôturer).
+                {{ _("Archive the request before moving it to Deleted.") }}
               </div>
             {% endif %}
 

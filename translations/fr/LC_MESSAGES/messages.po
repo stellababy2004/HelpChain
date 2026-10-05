@@ -10669,3 +10669,6 @@ msgstr "Archiver la sortie de flux"
 #: templates/admin/request_details.html
 msgid "Une situation active sera annulée avant archivage."
 msgstr "Une situation active sera annulée avant archivage."
+
+msgid "Archive the request before moving it to Deleted."
+msgstr "Archivez d'abord la demande pour pouvoir la déplacer vers Supprimées."
