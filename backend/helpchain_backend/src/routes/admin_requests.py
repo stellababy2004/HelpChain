@@ -596,7 +596,7 @@ def admin_request_archive(req_id: int):
             },
         },
     )
-    flash("Request archived and closed.", "success")
+    flash(_("Request archived and closed."), "success")
     return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
 
