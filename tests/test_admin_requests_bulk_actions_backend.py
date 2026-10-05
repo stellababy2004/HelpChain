@@ -342,3 +342,49 @@ def test_lifecycle_form_matches_allowed_transitions(
         assert 'id="statusForm"' not in panel.group(1)
         assert "Modifiable" not in panel.group(1)
         assert "Le statut ne peut plus être modifié." in panel.group(1)
+
+
+@pytest.mark.parametrize("status", ["done", "cancelled"])
+@pytest.mark.parametrize("archived", [False, True])
+def test_delete_button_matches_archive_requirement(
+    admin_login, db_session, make_request, status, archived
+):
+    from html import unescape
+
+    _set_admin_role(db_session, admin_login, "superadmin")
+    req = make_request(status=status)
+    req.completed_at = datetime(2026, 1, 1, 12)
+    req.is_archived = archived
+    req.archived_at = datetime(2026, 1, 2, 12) if archived else None
+    db_session.commit()
+    db_session.refresh(req)
+    completed_before = req.completed_at
+
+    response = admin_login.get(f"/admin/requests/{req.id}")
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+
+    delete_form = re.search(
+        r'<form\b[^>]*action="/admin/requests/'
+        + str(req.id)
+        + r'/delete"[^>]*>(.*?)</form>',
+        html,
+        re.S,
+    )
+    assert delete_form is not None
+    button = re.search(r"<button\b([^>]*)>", delete_form.group(1), re.S)
+    assert button is not None
+    disabled = re.search(r"\bdisabled\b", button.group(1)) is not None
+    assert disabled is (not archived)
+
+    decoded = unescape(html)
+    has_warning = (
+        "Archive the request before moving it to Deleted." in decoded
+        or "Archivez d'abord la demande" in decoded
+    )
+    assert has_warning is (not archived)
+    assert "D\u00e9finissez d\u2019abord le statut" not in decoded
+
+    db_session.refresh(req)
+    assert req.status == status
+    assert req.completed_at == completed_before
