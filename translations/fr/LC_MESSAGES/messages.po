@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
@@ -10672,3 +10671,6 @@ msgstr "Une situation active sera annulée avant archivage."
 
 msgid "Archive the request before moving it to Deleted."
 msgstr "Archivez d'abord la demande pour pouvoir la déplacer vers Supprimées."
+
+msgid "Request archived and closed."
+msgstr "Demande archivée et clôturée."

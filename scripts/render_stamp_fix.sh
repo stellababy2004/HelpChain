@@ -13,6 +13,11 @@ echo "[HC] render_stamp_fix.sh running"
 "$PY" -m pip install --upgrade pip
 "$PY" -m pip install -r requirements.txt
 
+echo "[HC] Compiling French translations..."
+"$PY" -m babel.messages.frontend compile -d translations -l fr
+test -s translations/fr/LC_MESSAGES/messages.mo
+
+
 if [ "${HC_ENABLE_DB_STAMP_FIX:-0}" = "1" ]; then
   TARGET_REV="${HC_STAMP_TARGET_REV:-b2d5c3f1a9e0}"
   echo "Stamp fix enabled. Forcing alembic_version to ${TARGET_REV}"
