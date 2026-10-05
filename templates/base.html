@@ -1105,6 +1105,14 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
                 </li>
                 {% endif %}
               {% endif %}
+              {% if admin_logged_in %}
+              <li class="nav-item">
+                <a class="nav-link {{ 'active' if ep == 'admin.admin_change_password' else '' }}"
+                   href="{{ url_for('admin.admin_change_password') }}">
+                  <i class="fas fa-shield-alt me-1 hc-icon" aria-hidden="true"></i>{{ _('S?curit?') }}
+                </a>
+              </li>
+              {% endif %}
               <li class="nav-item">
                 {% if admin_logged_in %}
                 <form method="post" action="{{ url_for('admin.admin_logout') }}" class="d-inline">
