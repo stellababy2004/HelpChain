@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from urllib.parse import urlsplit
 
 import pytest
+from sqlalchemy.sql.dml import Update
 
 from backend.helpchain_backend.src.models.magic_link_token import MagicLinkToken
 from backend.helpchain_backend.src.routes import main as main_routes
@@ -15,6 +16,7 @@ from backend.models import (
     Structure,
     StructureCoverageArea,
     StructureService,
+    Volunteer,
 )
 
 
@@ -222,6 +224,92 @@ def test_request_magic_link_is_single_use(client, session):
     assert ("Submit a request" in second.get_data(as_text=True)) or ("Demander" in second.get_data(as_text=True)) or ("demande" in second.get_data(as_text=True).lower()) or ("HelpChain" in second.get_data(as_text=True))
 
 
+def test_magic_link_claim_uses_atomic_conditional_update(client, monkeypatch):
+    raw_token = "atomic-claim-token"
+    token_hash = _sha256_hex(raw_token)
+    captured = {}
+
+    class _Result:
+        rowcount = 1
+
+    def fake_execute(statement):
+        captured["statement"] = statement
+        return _Result()
+
+    monkeypatch.setattr(main_routes.db.session, "execute", fake_execute)
+    row = MagicLinkToken(
+        id=123,
+        purpose="request",
+        email="atomic.claim@test.local",
+        request_id=456,
+        token_hash=token_hash,
+        expires_at=datetime.now(UTC) + timedelta(minutes=15),
+    )
+
+    with client.application.test_request_context(
+        f"/auth/magic/{raw_token}",
+        headers={"User-Agent": "atomic-test"},
+        environ_base={"REMOTE_ADDR": "203.0.113.210"},
+    ):
+        assert main_routes._claim_magic_link_token(
+            row,
+            token_hash=token_hash,
+            now=datetime.now(UTC),
+        )
+
+    statement = captured["statement"]
+    assert isinstance(statement, Update)
+    compiled = str(statement).lower()
+    assert compiled.startswith("update magic_link_tokens")
+    assert "token_hash" in compiled
+    assert "purpose in" in compiled
+    assert "used_at is null" in compiled
+    assert "invalidated_at is null" in compiled
+    assert "expires_at >" in compiled
+
+
+def test_atomic_claim_loser_is_rejected_without_authentication(client, session, monkeypatch):
+    _reset_magic_link_rate_limits()
+    req = _create_request(session, "atomic-loser")
+    raw_token = "atomic-loser-token"
+    token_hash = _sha256_hex(raw_token)
+
+    session.add(
+        MagicLinkToken(
+            purpose="request",
+            email=req.email,
+            request_id=req.id,
+            token_hash=token_hash,
+            expires_at=datetime.now(UTC) + timedelta(minutes=15),
+        )
+    )
+    session.commit()
+
+    def lose_race(ml, *, token_hash, now):
+        raced = session.query(MagicLinkToken).filter_by(token_hash=token_hash).one()
+        raced.used_at = now
+        session.commit()
+        return False
+
+    monkeypatch.setattr(main_routes, "_claim_magic_link_token", lose_race)
+
+    response = client.get(f"/auth/magic/{raw_token}", follow_redirects=False)
+
+    assert response.status_code == 200
+    with client.session_transaction() as flask_session:
+        assert not flask_session.get("requester_authenticated")
+        assert not flask_session.get("requester_verified_email")
+
+    rejected_event = (
+        session.query(SecurityEvent)
+        .filter_by(event_type="magic_link_rejected")
+        .order_by(SecurityEvent.id.desc())
+        .first()
+    )
+    assert rejected_event is not None
+    assert rejected_event.meta["reason"] == "already_used"
+
+
 def test_expired_magic_link_is_rejected_and_marked_invalid(client, session):
     _reset_magic_link_rate_limits()
     req = _create_request(session, "expired")
@@ -352,6 +440,8 @@ def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, m
     assert raw_token and _sha256_hex(raw_token) == token_row.token_hash
     assert raw_token not in caplog.text
     assert magic_url not in caplog.text
+    assert "request.magic@test.local" not in caplog.text
+    assert "r***@test.local" in caplog.text
 
 
 def test_submit_request_confirm_dev_magic_link_uses_request_host(
@@ -428,6 +518,71 @@ def test_configured_production_magic_link_url_remains_helpchain_live(
     assert magic_url == "https://helpchain.live/auth/magic/production-token"
 
 
+@pytest.mark.parametrize("preexisting", [False, True])
+def test_volunteer_magic_link_success_sets_only_volunteer_session(
+    client,
+    session,
+    preexisting,
+):
+    _reset_magic_link_rate_limits()
+    email = "volunteer.success@test.local"
+    raw_token = f"volunteer-success-{preexisting}"
+    token_hash = _sha256_hex(raw_token)
+    existing = None
+    if preexisting:
+        existing = Volunteer(email=email.upper(), is_active=True)
+        session.add(existing)
+        session.flush()
+
+    session.add(
+        MagicLinkToken(
+            purpose="volunteer",
+            email=email,
+            token_hash=token_hash,
+            expires_at=datetime.now(UTC) + timedelta(minutes=15),
+        )
+    )
+    session.commit()
+    existing_id = existing.id if existing is not None else None
+
+    with client.session_transaction() as flask_session:
+        flask_session["requester_authenticated"] = True
+        flask_session["requester_verified_email"] = "requester@test.local"
+        flask_session["admin_logged_in"] = True
+        flask_session["volunteer_next"] = "https://evil.example/steal"
+
+    first = client.get(f"/auth/magic/{raw_token}", follow_redirects=False)
+
+    assert first.status_code == 303
+    assert first.headers["Location"].endswith("/volunteer/dashboard")
+    assert "evil.example" not in first.headers["Location"]
+
+    session.expire_all()
+    volunteers = session.query(Volunteer).filter(Volunteer.email.ilike(email)).all()
+    assert len(volunteers) == 1
+    volunteer = volunteers[0]
+    if existing_id is not None:
+        assert volunteer.id == existing_id
+
+    with client.session_transaction() as flask_session:
+        assert flask_session["volunteer_id"] == volunteer.id
+        assert flask_session["volunteer_logged_in"] is True
+        assert not flask_session.get("requester_authenticated")
+        assert not flask_session.get("requester_verified_email")
+        assert not flask_session.get("admin_logged_in")
+
+    second = client.get(f"/auth/magic/{raw_token}", follow_redirects=False)
+    assert second.status_code == 200
+    rejected_event = (
+        session.query(SecurityEvent)
+        .filter_by(event_type="magic_link_rejected")
+        .order_by(SecurityEvent.id.desc())
+        .first()
+    )
+    assert rejected_event is not None
+    assert rejected_event.meta["reason"] == "already_used"
+
+
 def test_become_volunteer_reuse_cooldown_blocks_duplicate_active_link(
     client, session, monkeypatch
 ):
@@ -455,6 +610,19 @@ def test_become_volunteer_reuse_cooldown_blocks_duplicate_active_link(
     assert len(tokens) == 1
     assert tokens[0].used_at is None
     assert tokens[0].invalidated_at is None
+
+
+def test_volunteer_magic_link_logs_mask_email(client, monkeypatch, caplog):
+    caplog.set_level("INFO")
+    _reset_magic_link_rate_limits()
+    monkeypatch.setattr("backend.mail_service.send_notification_email", lambda *a, **k: True)
+    email = "volunteer.logging@test.local"
+
+    response = _post_volunteer_magic(client, email, remote_addr="203.0.113.211")
+
+    assert response.status_code == 200
+    assert email not in caplog.text
+    assert "v***@test.local" in caplog.text
 
 
 def test_submit_request_confirm_rate_limits_magic_link_by_email(

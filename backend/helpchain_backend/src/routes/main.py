@@ -32,7 +32,7 @@ from flask_mail import Message
 from flask_limiter.util import get_remote_address
 from flask_login import current_user, login_required, logout_user
 from markupsafe import Markup, escape
-from sqlalchemy import desc, func, or_
+from sqlalchemy import desc, func, or_, update
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
@@ -1096,6 +1096,31 @@ def _magic_link_reject(
     return render_template("magic_link_invalid.html"), 200
 
 
+def _claim_magic_link_token(
+    ml: MagicLinkToken,
+    *,
+    token_hash: str,
+    now: datetime,
+) -> bool:
+    result = db.session.execute(
+        update(MagicLinkToken)
+        .where(MagicLinkToken.id == ml.id)
+        .where(MagicLinkToken.token_hash == token_hash)
+        .where(MagicLinkToken.purpose == ml.purpose)
+        .where(MagicLinkToken.purpose.in_(("request", "volunteer")))
+        .where(MagicLinkToken.used_at.is_(None))
+        .where(MagicLinkToken.invalidated_at.is_(None))
+        .where(MagicLinkToken.expires_at > now)
+        .values(
+            used_at=now,
+            used_ip=_client_ip(),
+            used_ua=(request.headers.get("User-Agent") or "")[:255],
+        )
+        .execution_options(synchronize_session=False)
+    )
+    return int(result.rowcount or 0) == 1
+
+
 def _magic_link_rate_limited(*, purpose: str, email: str, ip: str) -> bool:
     window_sec = 15 * 60
     ip_allowed, _ = _rate_limit_check(f"ml:issue:ip:{ip}", limit=10, window_sec=window_sec)
@@ -1980,12 +2005,14 @@ def magic_link_consume(token: str):
             purpose=ml.purpose,
         )
 
-    # Single-use claim via explicit row mutation to avoid bulk-update timezone sync issues.
+    # Single-use claim via one conditional UPDATE so concurrent consumers cannot
+    # both pass a check-then-write window.
     try:
-        ml.used_at = now
-        ml.used_ip = _client_ip()
-        ml.used_ua = (request.headers.get("User-Agent") or "")[:255]
-        db.session.commit()
+        claimed = _claim_magic_link_token(ml, token_hash=token_hash, now=now)
+        if claimed:
+            db.session.commit()
+        else:
+            db.session.rollback()
     except OperationalError:
         db.session.rollback()
         return _magic_link_reject(
@@ -1995,7 +2022,39 @@ def magic_link_consume(token: str):
             purpose=getattr(ml, "purpose", None),
         )
 
+    if not claimed:
+        db.session.expire_all()
+        current = MagicLinkToken.query.filter_by(token_hash=token_hash).first()
+        current_expires_at = _require_utc_datetime(
+            getattr(current, "expires_at", None),
+            assume_naive_utc=True,
+        )
+        current_used_at = _require_utc_datetime(
+            getattr(current, "used_at", None),
+            assume_naive_utc=True,
+        )
+        current_invalidated_at = _require_utc_datetime(
+            getattr(current, "invalidated_at", None),
+            assume_naive_utc=True,
+        )
+        reason = "invalid"
+        if current is None:
+            reason = "not_found"
+        elif current_invalidated_at is not None:
+            reason = "invalid"
+        elif current_used_at is not None:
+            reason = "already_used"
+        elif current_expires_at is None or utc_now() > current_expires_at:
+            reason = "expired"
+        return _magic_link_reject(
+            reason,
+            token_hash=token_hash,
+            token_id=getattr(current, "id", getattr(ml, "id", None)),
+            purpose=getattr(current, "purpose", getattr(ml, "purpose", None)),
+        )
+
     # Reload to get purpose/email/request_id.
+    db.session.expire_all()
     ml = MagicLinkToken.query.filter_by(token_hash=token_hash).first()
     if ml is None:
         return _magic_link_reject("not_found", token_hash=token_hash)
@@ -2599,7 +2658,7 @@ def become_volunteer():
                 current_app.logger.info(
                     "[VOL-MAGIC] honeypot autofill ignored website=%r email=%r",
                     website,
-                    email_l,
+                    _mask_email_for_log(email_l),
                 )
             else:
                 suppress = True
@@ -2684,7 +2743,7 @@ def become_volunteer():
             "[VOL-MAGIC] pre-send decision suppress=%s reasons=%s email=%s ip=%s",
             suppress,
             suppress_reasons,
-            email,
+            _mask_email_for_log(email),
             ip,
         )
         if suppress:
@@ -2695,16 +2754,20 @@ def become_volunteer():
                 bool(website),
                 started_at,
                 ip,
-                email_key,
+                _mask_email_for_log(email_key) if email else email_key,
                 response_cooldown_seconds,
             )
             return _volunteer_magic_ok_response(resend_email=email)
         current_app.logger.info(
-            "[VOL-MAGIC] not suppressed, continuing to token+send email=%s", email
+            "[VOL-MAGIC] not suppressed, continuing to token+send email=%s",
+            _mask_email_for_log(email),
         )
 
         try:
-            current_app.logger.info("[VOL-MAGIC] creating token for email=%s", email)
+            current_app.logger.info(
+                "[VOL-MAGIC] creating token for email=%s",
+                _mask_email_for_log(email),
+            )
             raw_token = secrets.token_urlsafe(32)
             token_hash = _sha256_hex(raw_token)
             ttl_minutes = 15
@@ -2727,7 +2790,7 @@ def become_volunteer():
             current_app.logger.info(
                 "[MAGIC LINK VOL] token created id=%s email=%s expires_at=%s",
                 row.id,
-                email,
+                _mask_email_for_log(email),
                 expires_at,
             )
             log_security_event(
@@ -2764,9 +2827,12 @@ def become_volunteer():
                 from backend.mail_service import send_notification_email
 
                 current_app.logger.info(
-                    "[VOL-MAGIC] about to call send_notification_email email=%s", email
+                    "[VOL-MAGIC] about to call send_notification_email email=%s",
+                    _mask_email_for_log(email),
                 )
-                current_app.logger.info("[VOL-MAGIC] sending to=%s", email)
+                current_app.logger.info(
+                    "[VOL-MAGIC] sending to=%s", _mask_email_for_log(email)
+                )
                 send_ok = send_notification_email(
                     email,
                     subject,
@@ -3908,7 +3974,7 @@ def submit_request():
             len(cleaned["name"] or ""),
             cleaned["phone"],
             len(cleaned["phone"] or ""),
-            cleaned["email"],
+            _mask_email_for_log(cleaned["email"]),
             len(cleaned["email"] or ""),
             cleaned["category"],
             cleaned["urgency"],
