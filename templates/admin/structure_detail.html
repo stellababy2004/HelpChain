@@ -25,6 +25,7 @@
             <th>Nom</th>
             <th>Email</th>
             <th>Rôle</th>
+            <th class="text-end">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -33,11 +34,23 @@
             <td class="small">{{ u.username }}</td>
             <td class="small text-muted">{{ u.email }}</td>
             <td class="small text-muted">{{ u.role }}</td>
+            <td class="text-end">
+              <form method="POST"
+                    action="{{ url_for('admin.superadmin_user_reset_access', member_id=u.id) }}"
+                    class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        class="btn btn-outline-secondary btn-sm"
+                        onclick="return confirm('Envoyer un lien s?curis? de r?initialisation ? cet administrateur ?');">
+                  R?initialiser l?acc?s
+                </button>
+              </form>
+            </td>
           </tr>
           {% endfor %}
           {% if admins|length == 0 %}
           <tr>
-            <td colspan="3">
+            <td colspan="4">
               <div class="hc-empty-state">
                 <div class="hc-empty-state__title">Aucun administrateur assigné</div>
                 <div class="hc-empty-state__text">Cette structure n’a pas encore d’administrateur lié.</div>

@@ -3408,6 +3408,7 @@ def require_admin_session():
         "admin.admin_login",
         "admin.ops_login",
         "admin.admin_login_legacy",
+        "admin.admin_forgot_password",
         "admin.admin_email_2fa",
         "admin.admin_2fa",
         "admin.admin_mfa_setup",
@@ -5811,6 +5812,78 @@ def admin_team_member_reset(member_id):
     return redirect(url_for("admin.admin_team"), code=303)
 
 
+@admin_bp.post("/platform/users/<int:member_id>/reset-access")
+@admin_role_required("superadmin")
+def superadmin_user_reset_access(member_id):
+    if _admin_role_value() != "superadmin":
+        abort(403)
+
+    actor = current_user
+    member = AdminUser.query.filter_by(id=member_id, is_active=True).first_or_404()
+
+    from ..services.admin_access_reset import create_access_reset, TTL_MINUTES
+    from backend.mail_service import send_notification_email
+
+    try:
+        row, raw = create_access_reset(
+            member,
+            actor,
+            allow_platform_admin=True,
+        )
+    except ValueError:
+        abort(403)
+
+    base_url = (
+        current_app.config.get("PUBLIC_BASE_URL") or request.url_root
+    ).rstrip("/")
+    reset_url = (
+        base_url
+        + url_for("main.admin_access_reset")
+        + "#"
+        + raw
+    )
+
+    db.session.commit()
+
+    try:
+        sent = send_notification_email(
+            member.email,
+            "R?initialiser votre acc?s HelpChain",
+            "emails/admin_access_reset.html",
+            {
+                "magic_link_url": reset_url,
+                "ttl_minutes": TTL_MINUTES,
+            },
+            purpose="admin_access_reset",
+            structure_id=member.structure_id,
+        )
+    except Exception:
+        sent = False
+
+    if not sent:
+        db.session.rollback()
+        row.invalidated_at = utc_now()
+        row.invalidated_reason = "delivery_failed"
+        db.session.commit()
+        flash(
+            "Impossible d'envoyer le lien. Veuillez r?essayer.",
+            "danger",
+        )
+    else:
+        audit_admin_action(
+            action="SUPERADMIN_ACCESS_RESET",
+            target_type="AdminUser",
+            target_id=member.id,
+            payload={"structure_id": member.structure_id},
+        )
+        flash("Lien de r?initialisation envoy?.", "success")
+
+    return redirect(
+        request.referrer or _default_admin_landing_url(actor),
+        code=303,
+    )
+
+
 @admin_bp.post("/team/invite")
 @admin_required
 def admin_team_invite():
@@ -6391,13 +6464,137 @@ def admin_ops_login():
     return redirect(url_for("admin.admin_login_legacy", next=next_url), code=redirect_code)
 
 
-@admin_bp.route("/login", methods=["GET", "POST"], endpoint="admin_login")
+@admin_bp.route("/change-password", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_change_password():
+    user = current_user
+
+    if request.method == "POST":
+        current_password = request.form.get("current_password", "")
+        new_password = request.form.get("new_password", "")
+        confirm_password = request.form.get("confirm_password", "")
+
+        if not user.check_password(current_password):
+            flash("Le mot de passe actuel est incorrect.", "danger")
+        elif new_password != confirm_password:
+            flash("Les nouveaux mots de passe ne correspondent pas.", "danger")
+        else:
+            try:
+                user.set_password(new_password)
+
+                from ..services.admin_access_reset import invalidate_access_resets
+                invalidate_access_resets(user.email)
+
+                db.session.commit()
+
+                audit_admin_action(
+                    action="admin.password.changed",
+                    target_type="AdminUser",
+                    target_id=int(user.id),
+                    payload={"self_service": True},
+                )
+
+                flash("Votre mot de passe a ?t? modifi?.", "success")
+                return redirect(
+                    url_for("admin.admin_change_password"),
+                    code=303,
+                )
+            except ValueError as exc:
+                db.session.rollback()
+                flash(str(exc), "danger")
+
+    response = make_response(
+        render_template("admin/change_password.html")
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@admin_bp.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
+def admin_forgot_password():
+    if request.method == "POST":
+        identifier = (request.form.get("identifier") or "").strip()
+        user = _find_admin_user(identifier) if identifier else None
+
+        if user is not None and user.is_active and user.email:
+            from ..services.admin_access_reset import (
+                create_self_access_reset,
+                TTL_MINUTES,
+            )
+            from backend.mail_service import send_notification_email
+
+            try:
+                row, raw = create_self_access_reset(user)
+
+                base_url = (
+                    current_app.config.get("PUBLIC_BASE_URL")
+                    or request.url_root
+                ).rstrip("/")
+
+                reset_url = (
+                    base_url
+                    + url_for("main.admin_access_reset")
+                    + "#"
+                    + raw
+                )
+
+                db.session.commit()
+
+                try:
+                    sent = send_notification_email(
+                        user.email,
+                        "R?initialiser votre acc?s HelpChain",
+                        "emails/admin_access_reset.html",
+                        {
+                            "magic_link_url": reset_url,
+                            "ttl_minutes": TTL_MINUTES,
+                        },
+                        purpose="admin_access_reset",
+                        structure_id=user.structure_id,
+                    )
+                except Exception:
+                    sent = False
+
+                if not sent:
+                    db.session.rollback()
+                    row.invalidated_at = utc_now()
+                    row.invalidated_reason = "delivery_failed"
+                    db.session.commit()
+
+            except Exception:
+                db.session.rollback()
+                current_app.logger.warning(
+                    "Admin self-service password reset request failed"
+                )
+
+        # Same response whether the account exists or not.
+        flash(
+            "Si un compte actif correspond ? ces informations, "
+            "un lien de r?initialisation a ?t? envoy?.",
+            "info",
+        )
+        return redirect(
+            url_for("admin.admin_forgot_password"),
+            code=303,
+        )
+
+    response = make_response(
+        render_template("admin/forgot_password.html")
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @admin_bp.route("/login", methods=["GET", "POST"])
 @limiter.limit(
     "5 per minute",
     methods=["POST"],
     on_breach=_admin_auth_rate_limit_response,
 )
+
+@admin_bp.route("/login", methods=["GET", "POST"], endpoint="admin_login")
 def admin_login_legacy():
     """Legacy admin login endpoint kept for backward-compatible tests/clients."""
     next_candidate = (
