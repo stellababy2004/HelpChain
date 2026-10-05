@@ -95,6 +95,30 @@
             La gestion des utilisateurs de cette organisation est déjà initialisée.
           {% endif %}
         </div>
+        {% if structure_admins %}
+          <div class="mt-3">
+            {% for u in structure_admins %}
+              <div class="border rounded p-3 mb-2 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                  <div class="fw-semibold">{{ u.username }}</div>
+                  <div class="small text-muted">{{ u.email }}</div>
+                </div>
+                <form method="POST"
+                      action="{{ url_for('admin.superadmin_user_reset_access', member_id=u.id) }}"
+                      class="m-0">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-outline-secondary btn-sm"
+                          type="submit"
+                          data-action="confirmSubmit"
+                          data-confirm="Envoyer un lien s?curis? de r?initialisation ? cet administrateur ?">
+                    R?initialiser l?acc?s
+                  </button>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
         {% if pending_bootstrap_invitation %}
           <form class="mt-3" method="POST" action="{{ url_for('admin.admin_structure_bootstrap_admin_revoke', structure_id=structure.id, invitation_id=pending_bootstrap_invitation.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

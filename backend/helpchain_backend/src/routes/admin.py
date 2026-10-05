@@ -5848,7 +5848,7 @@ def superadmin_user_reset_access(member_id):
     try:
         sent = send_notification_email(
             member.email,
-            "R?initialiser votre acc?s HelpChain",
+            "Réinitialiser votre accès HelpChain",
             "emails/admin_access_reset.html",
             {
                 "magic_link_url": reset_url,
@@ -5876,7 +5876,7 @@ def superadmin_user_reset_access(member_id):
             target_id=member.id,
             payload={"structure_id": member.structure_id},
         )
-        flash("Lien de r?initialisation envoy?.", "success")
+        flash("Lien de réinitialisation envoyé.", "success")
 
     return redirect(
         request.referrer or _default_admin_landing_url(actor),
@@ -6495,7 +6495,7 @@ def admin_change_password():
                     payload={"self_service": True},
                 )
 
-                flash("Votre mot de passe a ?t? modifi?.", "success")
+                flash("Votre mot de passe a été modifié.", "success")
                 return redirect(
                     url_for("admin.admin_change_password"),
                     code=303,
@@ -6545,7 +6545,7 @@ def admin_forgot_password():
                 try:
                     sent = send_notification_email(
                         user.email,
-                        "R?initialiser votre acc?s HelpChain",
+                        "Réinitialiser votre accès HelpChain",
                         "emails/admin_access_reset.html",
                         {
                             "magic_link_url": reset_url,
