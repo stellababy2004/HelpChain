@@ -110,8 +110,20 @@
                   <button class="btn btn-outline-secondary btn-sm"
                           type="submit"
                           data-action="confirmSubmit"
-                          data-confirm="Envoyer un lien s?curis? de r?initialisation ? cet administrateur ?">
-                    R?initialiser l?acc?s
+                          data-confirm="Envoyer un lien sécurisé de réinitialisation à cet administrateur ?">
+                    Réinitialiser l’accès
+                  </button>
+                </form>
+
+                <form method="POST"
+                      action="{{ url_for('admin.superadmin_user_reset_mfa', member_id=u.id) }}"
+                      class="m-0">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-outline-warning btn-sm"
+                          type="submit"
+                          data-action="confirmSubmit"
+                          data-confirm="Réinitialiser le MFA de cet administrateur ? Il devra configurer une nouvelle authentification à deux facteurs.">
+                    Réinitialiser MFA
                   </button>
                 </form>
               </div>

@@ -5884,6 +5884,44 @@ def superadmin_user_reset_access(member_id):
     )
 
 
+@admin_bp.post("/platform/users/<int:member_id>/reset-mfa")
+@admin_role_required("superadmin")
+def superadmin_user_reset_mfa(member_id):
+    if _admin_role_value() != "superadmin":
+        abort(403)
+
+    actor = current_user
+    member = AdminUser.query.filter_by(
+        id=member_id,
+        is_active=True,
+    ).first_or_404()
+
+    if member.id == actor.id:
+        abort(403)
+
+    member.totp_secret = None
+    member.mfa_enabled = False
+    member.mfa_enrolled_at = None
+    member.backup_codes_hashes = None
+    member.backup_codes_generated_at = None
+
+    db.session.commit()
+
+    audit_admin_action(
+        action="SUPERADMIN_MFA_RESET",
+        target_type="AdminUser",
+        target_id=member.id,
+        payload={"structure_id": member.structure_id},
+    )
+
+    flash("MFA réinitialisée. L’administrateur devra l’activer à nouveau.", "success")
+
+    return redirect(
+        request.referrer or _default_admin_landing_url(actor),
+        code=303,
+    )
+
+
 @admin_bp.post("/team/invite")
 @admin_required
 def admin_team_invite():
