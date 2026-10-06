@@ -698,48 +698,43 @@ def _conversion_dashboard_html():
       </table>
     </section>
           <section class="hc-conv-table" style="margin-top:20px">
-      <h5 style="padding:16px">Hot Revenue Alerts</h5>
-      <div id="revAlerts" style="padding:0 16px 16px">
-        <div class="hc-alert-empty">Loading alerts...</div>
-      </div>
-    </section>
-    <section class="hc-conv-table" style="margin-top:20px">
-      <h5 style="padding:16px">Revenue Intelligence</h5>
-
-      <div style="padding:0 16px 12px">
-        <strong>Total estimated:</strong>
-        <span id="revTotal">-</span>
-<div style="padding:0 16px 12px; color:#b45309; font-weight:600">
-  Potential lost: <span id="revLost">-</span>
-</div>
+      <div style="padding:16px 16px 8px">
+        <h5 style="margin:0">Who should I contact today?</h5>
+        <p style="margin:6px 0 0; color:#64748b">
+          Priorisation commerciale basee sur l'intention, l'adequation du prospect et les signaux de conversion.
+        </p>
       </div>
 
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Session</th>
-            <th>Score</th>
-            <th>Tier</th>
-            <th>EUR</th>
-            <th>Pages</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="revBody"></tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Prospect</th>
+              <th>Intent</th>
+              <th>Fit</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Next action</th>
+            </tr>
+          </thead>
+          <tbody id="salesPriorityBody">
+            <tr>
+              <td colspan="6" class="text-muted">Chargement...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
-  </main>
 
-  <script src="/static/js/conversion-dashboard.js"></script>
-  <script src="/static/js/revenue-intelligence.js"></script>
-  <script src="/static/js/revenue-alerts.js"></script>
-  <script src="/static/js/revenue-alert-dispatch.js"></script>
-<section class="hc-conv-table" style="margin-top:20px">
-  <h5 style="padding:16px">Recommended Actions</h5>
+    <section class="hc-conv-card" style="margin-top:20px">
+      <div class="hc-conv-label">Sales Intelligence</div>
+      <p style="margin:8px 0 0; color:#64748b">
+        Les visiteurs anonymes peuvent montrer une forte intention, mais restent non contactables
+        tant qu'ils ne se sont pas identifies volontairement.
+      </p>
+    </section>
 
-  <div id="revActions" style="padding:0 16px 16px"></div>
-</section>
-
-<script src="/static/js/revenue-actions.js"></script>
+    <script src="/static/js/sales-intelligence.js"></script>
 </body>
 </html>
 """
