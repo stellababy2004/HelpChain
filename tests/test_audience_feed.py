@@ -197,3 +197,24 @@ def test_admin_page_requests_do_not_pollute_audience_feed(authenticated_admin_cl
     assert response.status_code == 200
     assert AnalyticsEvent.query.count() == 0
     assert UserBehavior.query.count() == 0
+
+
+def test_events_public_cta_click_is_persisted(client):
+    response = client.post(
+        "/events",
+        json={
+            "event": "revenue_cta_click",
+            "props": {
+                "page": "/",
+                "cta": "hero_pilot_access",
+                "intent": "pilot",
+            },
+        },
+        headers=PUBLIC_HEADERS,
+    )
+
+    assert response.status_code == 201
+    assert response.get_json() == {"ok": True}
+    event = AnalyticsEvent.query.one()
+    assert event.page_url == "/"
+    assert event.event_type == "revenue_cta_click"

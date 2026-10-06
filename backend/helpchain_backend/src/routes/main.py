@@ -1664,46 +1664,6 @@ def index():
     )
 
 
-@main_bp.post("/events")
-@csrf.exempt
-@limiter.limit("120 per minute")
-def events_collect():
-    data = request.get_json(silent=True) or {}
-    event = (data.get("event") or "").strip()
-    if not event:
-        return jsonify({"ok": False}), 400
-
-    event_path = extract_event_path(data)
-    decision = classify_public_telemetry_request(
-        event_path,
-        user_agent=request.headers.get("User-Agent"),
-        client_ip=get_client_ip(),
-    )
-    if not decision.should_persist:
-        try:
-            current_app.logger.info(
-                "[EVENT-IGNORED] %s ip=%s path=%s reason=%s",
-                event,
-                get_client_ip() or "",
-                event_path or "",
-                decision.reason or "ignored",
-            )
-        except Exception:
-            pass
-        return jsonify({"ok": True, "ignored": True}), 200
-
-    try:
-        current_app.logger.info(
-            "[EVENT-QUALIFIED] %s ip=%s path=%s props=%s",
-            event,
-            get_client_ip() or "",
-            decision.canonical_path or event_path or "",
-            data.get("props") or {},
-        )
-    except Exception:
-        pass
-    return jsonify({"ok": True, "ignored": False}), 200
-
 
 def _emit_event(event: str, props: dict | None = None) -> None:
     """Internal telemetry helper aligned with /events payload shape."""
