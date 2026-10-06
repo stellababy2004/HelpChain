@@ -2,10 +2,12 @@
 
 from flask import abort, current_app, request, session
 from itsdangerous import BadSignature, URLSafeSerializer
+from sqlalchemy import or_
 
 from backend.extensions import db
 from backend.models import Structure
 from backend.models_with_analytics import AnalyticsEvent
+from .analytics_v2 import ANALYTICS_SCOPE_TENANT
 from ..admin_actor import BearerActorResolutionError, resolve_current_admin_actor
 from ..admin_policies import can_view_global_analytics
 
@@ -73,7 +75,12 @@ def read_scope():
 
 
 def scoped_events(structure):
-    query = AnalyticsEvent.query
+    query = AnalyticsEvent.query.filter(
+        or_(
+            AnalyticsEvent.analytics_scope == ANALYTICS_SCOPE_TENANT,
+            AnalyticsEvent.analytics_scope.is_(None),
+        )
+    )
     return query.filter_by(structure_id=structure.id) if structure is not None else query
 
 

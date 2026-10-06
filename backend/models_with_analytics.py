@@ -296,8 +296,12 @@ class AnalyticsEvent(db.Model):
     event_action = db.Column(db.String(100), nullable=True)  # specific action
     event_label = db.Column(db.String(255), nullable=True)  # additional info
     event_value = db.Column(db.Integer, nullable=True)  # numeric value
+    event_id = db.Column(db.String(128), nullable=True, index=True)
+    analytics_scope = db.Column(db.String(40), nullable=True, index=True)
+    properties_json = db.Column(db.Text, nullable=True)
 
     # User context
+    visitor_id = db.Column(db.String(128), nullable=True, index=True)
     user_session = db.Column(db.String(128), nullable=True)  # session identifier
     user_type = db.Column(db.String(50), default="guest")  # guest, volunteer, admin
     user_ip = db.Column(db.String(45), nullable=True)
@@ -329,6 +333,8 @@ class UserBehavior(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.String(128), unique=True, nullable=False)
+    visitor_id = db.Column(db.String(128), nullable=True, index=True)
+    analytics_scope = db.Column(db.String(40), nullable=True, index=True)
 
     # User info
     user_type = db.Column(db.String(50), default="guest")

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from secrets import token_urlsafe
 
-from flask import current_app, request, session
+from flask import current_app, request
 from sqlalchemy import inspect as sa_inspect
 
 from backend.extensions import db
+from .analytics_v2 import ANALYTICS_SCOPE_PLATFORM_SALES, analytics_identity
 from .telemetry_policy import (
     canonical_public_commercial_path,
     classify_public_telemetry_request,
@@ -66,14 +66,6 @@ def _analytics_tables_available() -> bool:
         return False
 
 
-def _audience_session_id() -> str:
-    sid = (session.get("hc_audience_sid") or "").strip()
-    if not sid:
-        sid = f"aud_{token_urlsafe(18)}"
-        session["hc_audience_sid"] = sid
-    return sid
-
-
 def _device_type(user_agent: str | None) -> str:
     ua = (user_agent or "").lower()
     if any(token in ua for token in ("mobile", "iphone", "android")):
@@ -103,10 +95,10 @@ def track_audience_page_view() -> bool:
         return False
 
     now = utc_now()
-    session_id = _audience_session_id()
+    identity = analytics_identity()
+    session_id = identity["session_id"]
     referrer = (request.referrer or "").strip() or None
     user_agent = (request.headers.get("User-Agent") or "").strip()[:500] or None
-    ip_address = (request.remote_addr or "").strip()[:45] or None
     device_type = _device_type(user_agent)
     canonical_path = canonical_public_commercial_path(path) or path
 
@@ -119,9 +111,12 @@ def track_audience_page_view() -> bool:
             event_category="audience",
             event_action="page_view",
             event_label="high_intent" if canonical_path in HIGH_INTENT_AUDIENCE_PATHS else "public",
+            event_id=None,
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id=identity["visitor_id"],
             user_session=session_id,
             user_type="guest",
-            user_ip=ip_address,
+            user_ip=None,
             user_agent=user_agent,
             page_url=canonical_path,
             referrer=referrer,
@@ -135,8 +130,10 @@ def track_audience_page_view() -> bool:
         if behavior is None:
             behavior = UserBehavior(
                 session_id=session_id,
+                visitor_id=identity["visitor_id"],
+                analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
                 user_type="guest",
-                ip_address=ip_address,
+                ip_address=None,
                 user_agent=user_agent,
                 device_info=device_type,
                 entry_page=canonical_path,

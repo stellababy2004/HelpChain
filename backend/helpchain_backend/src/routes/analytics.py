@@ -26,7 +26,15 @@ from ..services.telemetry_policy import (
 )
 from ..services.website_analytics import (
     analytics_actor, first_party_structure, ingestion_structure, ingestion_token,
-    read_scope, scope_description, scoped_events, validate_selectors,
+    read_scope, scope_description, validate_selectors,
+)
+from ..services.analytics_v2 import (
+    ANALYTICS_SCOPE_PLATFORM_SALES,
+    ANALYTICS_SCOPE_TENANT,
+    analytics_identity,
+    analytics_properties_json,
+    canonical_event_type,
+    safe_event_id,
 )
 from ..admin_policies import can_view_global_analytics
 
@@ -37,16 +45,27 @@ analytics_bp = Blueprint(
 )
 csrf.exempt(analytics_bp)
 
-_CONVERSION_ENDPOINTS = {
-    "analytics.admin_conversion_dashboard", "analytics.admin_conversion_funnel_api",
-    "analytics.admin_revenue_intelligence", "analytics.admin_revenue_alerts",
-    "analytics.admin_revenue_alert_dispatch", "analytics.website_tracking_config",
+_PLATFORM_SALES_ENDPOINTS = {
+    "analytics.admin_conversion_dashboard",
+    "analytics.admin_conversion_funnel_api",
+    "analytics.admin_revenue_intelligence",
+    "analytics.admin_revenue_alerts",
+    "analytics.admin_revenue_alert_dispatch",
+}
+
+_TENANT_ANALYTICS_ENDPOINTS = {
+    "analytics.website_tracking_config",
 }
 
 
 @analytics_bp.before_request
 def authorize_website_analytics():
-    if request.endpoint in _CONVERSION_ENDPOINTS:
+    if request.endpoint in _PLATFORM_SALES_ENDPOINTS:
+        actor = analytics_actor()
+        if not can_view_global_analytics(actor):
+            abort(403)
+        g.website_analytics_structure = None
+    elif request.endpoint in _TENANT_ANALYTICS_ENDPOINTS:
         g.website_analytics_structure = read_scope()
     elif request.endpoint not in {"analytics.collect_event", "analytics.collect_website_event"}:
         # Legacy dashboards/bookmarks contain global data, not scoped event queries.
@@ -56,11 +75,20 @@ def authorize_website_analytics():
 
 @analytics_bp.after_request
 def describe_website_analytics(response):
-    if request.endpoint in _CONVERSION_ENDPOINTS:
+    if request.endpoint in _PLATFORM_SALES_ENDPOINTS or request.endpoint in _TENANT_ANALYTICS_ENDPOINTS:
         response.headers["Cache-Control"] = "private, no-store"
         if response.status_code == 200 and response.is_json:
             payload = response.get_json()
-            payload["scope"] = scope_description(g.website_analytics_structure)
+            if request.endpoint in _PLATFORM_SALES_ENDPOINTS:
+                payload["scope"] = {
+                    "analytics_scope": ANALYTICS_SCOPE_PLATFORM_SALES,
+                    "name": "HelpChain platform sales intelligence",
+                    "structure_id": None,
+                    "site_id": "helpchain.live",
+                    "website": "https://helpchain.live",
+                }
+            else:
+                payload["scope"] = scope_description(g.website_analytics_structure)
             response.set_data(current_app.json.dumps(payload))
     return response
 
@@ -87,20 +115,30 @@ def collect_website_event():
     if not isinstance(payload, dict):
         abort(400)
     structure = ingestion_structure(payload)
-    event_type = payload.get("event")
-    if event_type not in ("page_view", "cta_click", "form_submit"):
+    original_event_type = str(payload.get("event") or payload.get("event_type") or "")
+    event_type = canonical_event_type(original_event_type)
+    if event_type not in ("page_view", "cta_click", "form_started", "form_submitted", "form_abandoned"):
         abort(400, description="Unsupported website event")
     path = payload.get("page_url")
     if not isinstance(path, str) or not path.startswith("/") or len(path) > 500:
         abort(400, description="page_url must be a site-relative path of at most 500 characters")
-    sid = payload.get("session_id", "")
-    if not isinstance(sid, str) or len(sid) > 128:
-        abort(400, description="Invalid session_id")
+    identity = analytics_identity(payload)
+    event_id = safe_event_id(payload)
+    if event_id and AnalyticsEvent.query.filter_by(event_id=event_id).first():
+        return jsonify({"ok": True, "duplicate": True}), 200
     event = AnalyticsEvent(
         structure_id=structure.id, event_type=event_type,
         event_category="website", event_action=event_type,
         page_url=path.split("?", 1)[0].split("#", 1)[0],
-        user_session=sid, user_type="guest",
+        visitor_id=identity["visitor_id"],
+        user_session=identity["session_id"], user_type="guest",
+        event_id=event_id or None,
+        analytics_scope=ANALYTICS_SCOPE_TENANT,
+        properties_json=analytics_properties_json(
+            payload=payload,
+            original_event_type=original_event_type,
+            canonical_type=event_type,
+        ),
     )
     try:
         db.session.add(event)
@@ -116,6 +154,14 @@ def _analytics_session_key(event):
     sid = event.user_session or "anon"
     tenant = event.structure_id if event.structure_id is not None else "legacy"
     return f"{tenant}:{sid}"
+
+
+def _platform_sales_events():
+    from backend.models_with_analytics import AnalyticsEvent
+
+    return AnalyticsEvent.query.filter(
+        AnalyticsEvent.analytics_scope == ANALYTICS_SCOPE_PLATFORM_SALES
+    )
 
 
 REVENUE_VISITOR_SCORE_FORMULA_VERSION = "legacy_revenue_visitor_v2_explainable"
@@ -146,13 +192,14 @@ def _explain_legacy_revenue_session(events):
         if page_url:
             pages.add(page_url)
         event_type = getattr(event, "event_type", None) or ""
-        if event_type == "page_view":
+        normalized_type = canonical_event_type(event_type)
+        if normalized_type == "page_view":
             page_views += 1
-        if event_type.startswith("cta_"):
+        if normalized_type == "cta_click":
             cta_events += 1
-        if event_type == "demo_form_start":
+        if normalized_type == "form_started":
             demo_starts += 1
-        if event_type == "form_submit" or event_type.endswith("_form_submit"):
+        if normalized_type == "form_submitted":
             form_submits += 1
         if page_url == "/demo":
             demo_page_views += 1
@@ -399,29 +446,37 @@ def collect_event():
             )
             return jsonify({"ok": True, "ignored": True}), 200
 
-        event_name = (
+        original_event_name = str(
             payload.get("event")
             or payload.get("event_type")
             or payload.get("name")
             or "unknown"
         )
+        event_name = canonical_event_type(original_event_name)
 
         props = payload.get("props") or payload.get("properties") or {}
+        identity = analytics_identity(payload)
+        event_id = safe_event_id(payload)
+        if event_id and AnalyticsEvent.query.filter_by(event_id=event_id).first():
+            return jsonify({"ok": True, "duplicate": True}), 200
 
         event = AnalyticsEvent(
             structure_id=structure.id,
             event_type=str(event_name)[:100],
             event_category=str(props.get("category") or "first_party")[:100],
             event_action=str(props.get("action") or event_name)[:100],
-            event_label=str(props.get("label") or "")[:255],
-            user_session=str(
-                payload.get("session_id")
-                or props.get("session_id")
-                or request.cookies.get("session")
-                or ""
-            )[:128],
+            event_label=str(props.get("label") or props.get("cta") or "")[:255],
+            event_id=event_id or None,
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            properties_json=analytics_properties_json(
+                payload=payload,
+                original_event_type=original_event_name,
+                canonical_type=event_name,
+            ),
+            visitor_id=identity["visitor_id"],
+            user_session=identity["session_id"],
             user_type="admin" if session.get("admin_logged_in") else "guest",
-            user_ip=_hash_ip(get_client_ip()),
+            user_ip=None,
             user_agent=(request.headers.get("User-Agent") or "")[:500],
             page_url=str(decision.canonical_path or event_path or "")[:500],
             page_title=str(payload.get("title") or props.get("title") or "")[:255],
@@ -465,17 +520,17 @@ def admin_conversion_funnel_api():
         since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
         events = (
-            scoped_events(g.website_analytics_structure)
+            _platform_sales_events()
             .filter(AnalyticsEvent.created_at >= since)
             .order_by(AnalyticsEvent.created_at.desc())
             .all()
         )
 
-        by_type = Counter(e.event_type for e in events)
+        by_type = Counter(canonical_event_type(e.event_type) for e in events)
 
         page_views = by_type.get("page_view", 0)
-        cta_clicks = sum(count for event_type, count in by_type.items() if event_type.startswith("cta_"))
-        form_submits = sum(count for event_type, count in by_type.items() if event_type == "form_submit" or event_type.endswith("_form_submit"))
+        cta_clicks = by_type.get("cta_click", 0)
+        form_submits = by_type.get("form_submitted", 0)
 
         page_stats = defaultdict(lambda: {"page": "", "views": 0, "clicks": 0, "submits": 0})
         cta_stats = Counter()
@@ -485,12 +540,13 @@ def admin_conversion_funnel_api():
             row = page_stats[page]
             row["page"] = page
 
-            if event.event_type == "page_view":
+            normalized_type = canonical_event_type(event.event_type)
+            if normalized_type == "page_view":
                 row["views"] += 1
-            elif event.event_type.startswith("cta_"):
+            elif normalized_type == "cta_click":
                 row["clicks"] += 1
                 cta_stats[event.event_type] += 1
-            elif event.event_type == "form_submit" or event.event_type.endswith("_form_submit"):
+            elif normalized_type == "form_submitted":
                 row["submits"] += 1
 
         pages = []
@@ -523,8 +579,7 @@ def admin_conversion_funnel_api():
 
 @analytics_bp.route("/admin/conversion-dashboard")
 def admin_conversion_dashboard():
-    scope = scope_description(g.website_analytics_structure)
-    label = " / ".join(str(value) for value in (scope["name"], scope["site_id"], scope["website"]) if value)
+    label = "HelpChain platform sales intelligence / helpchain.live"
     html = _conversion_dashboard_html().replace("<!-- analytics-scope -->", str(escape(label)))
     return current_app.response_class(html, mimetype="text/html")
 
@@ -694,7 +749,7 @@ def admin_revenue_intelligence():
     from collections import defaultdict
 
     events = (
-        scoped_events(g.website_analytics_structure)
+        _platform_sales_events()
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -758,7 +813,7 @@ def admin_revenue_alerts():
     from collections import defaultdict
 
     events = (
-        scoped_events(g.website_analytics_structure)
+        _platform_sales_events()
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -835,7 +890,7 @@ def admin_revenue_alert_dispatch():
     email_from = os.getenv("SMTP_FROM") or smtp_user
 
     events = (
-        scoped_events(g.website_analytics_structure)
+        _platform_sales_events()
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
