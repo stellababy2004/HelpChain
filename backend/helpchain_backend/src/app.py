@@ -674,6 +674,10 @@ def create_app(config_object=None) -> Flask:
         app.config.get("MAIL_DEFAULT_SENDER"),
     )
 
+    engine_options = dict(app.config.get("SQLALCHEMY_ENGINE_OPTIONS") or {})
+    engine_options.setdefault("hide_parameters", True)
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options
+
     # DB + Migrate
     db.init_app(app)
     migrate.init_app(app, db, directory="migrations")
