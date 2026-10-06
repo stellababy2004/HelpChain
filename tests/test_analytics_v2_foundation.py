@@ -1,0 +1,317 @@
+﻿import json
+from datetime import timedelta
+
+from backend.models import AdminUser, Structure, utc_now
+from backend.models_with_analytics import AnalyticsEvent, UserBehavior
+from backend.helpchain_backend.src.services.analytics_v2 import (
+    ANALYTICS_SCOPE_PLATFORM_SALES,
+    ANALYTICS_SCOPE_TENANT,
+)
+from backend.helpchain_backend.src.services.website_analytics import ingestion_token
+
+
+PUBLIC_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "X-Forwarded-For": "203.0.113.55",
+}
+
+
+def _login(client, app, admin):
+    with client.session_transaction() as sess:
+        sess.update({
+            "_user_id": str(admin.id),
+            "admin_user_id": admin.id,
+            "admin_id": admin.id,
+            "user_id": admin.id,
+            "role": admin.role,
+            "admin_logged_in": True,
+            "is_admin": True,
+            "is_authenticated": True,
+            "mfa_required": True,
+            "mfa_ok": True,
+            "mfa_ok_until": (utc_now() + timedelta(minutes=30)).isoformat(),
+            "admin_mfa_last_verified": 4102444800,
+            "admin_mfa_user_id": admin.id,
+        })
+        sess[app.config.get("MFA_SESSION_KEY", "mfa_ok")] = True
+
+
+def test_first_party_legacy_cta_is_canonical_and_deduped(client):
+    payload = {
+        "event_id": "evt_phase1_legacy_cta",
+        "event": "deployment_pilot_cta_clicked",
+        "props": {
+            "url": "/deploiement",
+            "category": "conversion",
+            "cta": "hero_pilot_access",
+        },
+    }
+
+    response = client.post("/events", json=payload, headers=PUBLIC_HEADERS)
+    duplicate = client.post("/events", json=payload, headers=PUBLIC_HEADERS)
+
+    assert response.status_code == 201
+    assert duplicate.status_code == 200
+    assert duplicate.get_json()["duplicate"] is True
+    assert AnalyticsEvent.query.count() == 1
+    event = AnalyticsEvent.query.one()
+    assert event.event_type == "cta_click"
+    assert event.analytics_scope == ANALYTICS_SCOPE_PLATFORM_SALES
+    assert event.event_id == "evt_phase1_legacy_cta"
+    assert event.visitor_id.startswith("vis_")
+    assert event.user_session.startswith("aud_")
+    assert event.user_ip is None
+    props = json.loads(event.properties_json)
+    assert props["original_event_type"] == "deployment_pilot_cta_clicked"
+    assert props["canonical_event_type"] == "cta_click"
+
+
+def test_server_page_view_uses_visitor_session_and_no_raw_ip(client):
+    response = client.get("/offre", headers=PUBLIC_HEADERS)
+
+    assert response.status_code == 200
+    event = AnalyticsEvent.query.filter_by(page_url="/offre").one()
+    assert event.event_type == "page_view"
+    assert event.analytics_scope == ANALYTICS_SCOPE_PLATFORM_SALES
+    assert event.visitor_id.startswith("vis_")
+    assert event.user_session.startswith("aud_")
+    assert event.user_ip is None
+    behavior = UserBehavior.query.filter_by(session_id=event.user_session).one()
+    assert behavior.visitor_id == event.visitor_id
+    assert behavior.analytics_scope == ANALYTICS_SCOPE_PLATFORM_SALES
+    assert behavior.ip_address is None
+
+
+def test_external_tenant_event_gets_tenant_scope_and_canonical_form_submit(client, session):
+    structure = Structure(name="Tenant Analytics", slug="tenant-analytics")
+    session.add(structure)
+    session.commit()
+
+    response = client.post(
+        "/api/website/events",
+        headers={"X-Analytics-Key": ingestion_token(structure), **PUBLIC_HEADERS},
+        json={
+            "site_id": structure.slug,
+            "event_id": "evt_tenant_submit",
+            "event": "form_submit",
+            "page_url": "/tenant-demo",
+            "visitor_id": "vis_external",
+            "session_id": "aud_external",
+        },
+    )
+
+    assert response.status_code == 201
+    event = AnalyticsEvent.query.filter_by(event_id="evt_tenant_submit").one()
+    assert event.structure_id == structure.id
+    assert event.analytics_scope == ANALYTICS_SCOPE_TENANT
+    assert event.event_type == "form_submitted"
+    assert event.visitor_id == "vis_external"
+    assert event.user_session == "aud_external"
+
+
+def test_conversion_funnel_excludes_platform_sales_events(app, session):
+    structure = Structure(name="Scoped Org", slug="scoped-org")
+    session.add(structure)
+    session.flush()
+
+    global_admin = AdminUser(
+        username="global_sales_admin",
+        email="global-sales-admin@test.local",
+        role="superadmin",
+        structure_id=None,
+        password_hash="x",
+        is_active=True,
+        mfa_enabled=True,
+        totp_secret="phase1-secret",
+    )
+    session.add_all([
+        global_admin,
+        AnalyticsEvent(
+            structure_id=structure.id,
+            analytics_scope=ANALYTICS_SCOPE_TENANT,
+            event_type="page_view",
+            page_url="/tenant-only",
+            user_session="aud_tenant",
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            event_type="page_view",
+            page_url="/offre",
+            user_session="aud_platform",
+        ),
+    ])
+    session.commit()
+
+    global_client = app.test_client()
+    _login(global_client, app, global_admin)
+    response = global_client.get("/admin/api/conversion-funnel")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["scope"]["name"] == "All organizations / sites"
+    assert data["scope"]["structure_id"] is None
+    assert data["summary"]["events"] == 1
+    assert "/tenant-only" in response.get_data(as_text=True)
+    assert "/offre" not in response.get_data(as_text=True)
+
+
+def test_visitor_intent_groups_sessions_by_visitor_and_excludes_tenant(app, session):
+    structure = Structure(name="Intent Tenant", slug="intent-tenant")
+    session.add(structure)
+    session.flush()
+
+    global_admin = AdminUser(
+        username="intent_global_admin",
+        email="intent-global-admin@test.local",
+        role="superadmin",
+        structure_id=None,
+        password_hash="x",
+        is_active=True,
+        mfa_enabled=True,
+        totp_secret="intent-secret",
+    )
+    session.add(global_admin)
+    session.flush()
+
+    now = utc_now()
+
+    session.add_all([
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_first",
+            event_type="page_view",
+            page_url="/offre",
+            created_at=now - timedelta(days=2),
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_first",
+            event_type="page_view",
+            page_url="/demo",
+            created_at=now - timedelta(days=2),
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_second",
+            event_type="page_view",
+            page_url="/demander-acces",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_second",
+            event_type="cta_click",
+            page_url="/demo",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_second",
+            event_type="form_started",
+            page_url="/demo",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            structure_id=structure.id,
+            analytics_scope=ANALYTICS_SCOPE_TENANT,
+            visitor_id="vis_tenant_only",
+            user_session="aud_tenant",
+            event_type="form_submitted",
+            page_url="/demo",
+            created_at=now,
+        ),
+    ])
+
+    from backend.helpchain_backend.src.models.professional_lead import ProfessionalLead
+
+    session.add(
+        ProfessionalLead(
+            visitor_id="vis_hot_prospect",
+            email="marie@example.test",
+            full_name="Marie Dupont",
+            profession="Responsable",
+            organization="CCAS Boulogne-Billancourt",
+            city="Boulogne-Billancourt",
+            source="demo",
+        )
+    )
+
+    session.commit()
+
+    client = app.test_client()
+    _login(client, app, global_admin)
+
+    response = client.get("/admin/api/visitor-intent?days=30")
+
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data["scope"]["analytics_scope"] == ANALYTICS_SCOPE_PLATFORM_SALES
+    assert data["visitor_count"] == 1
+
+    visitor = data["visitors"][0]
+    assert visitor["visitor_id"] == "vis_hot_prospect"
+    assert visitor["session_count"] == 2
+    assert visitor["level"] == "hot"
+    assert visitor["score"] >= 70
+    assert visitor["contactable"] is True
+    assert visitor["fit"]["score"] >= 70
+    assert visitor["fit"]["level"] == "strong"
+    assert visitor["priority"]["score"] >= 55
+    assert visitor["priority"]["next_best_action"] in {"contact_today", "contact_soon"}
+    assert visitor["prospect"]["type"] == "professional_lead"
+    assert visitor["prospect"]["name"] == "Marie Dupont"
+    assert visitor["prospect"]["organization"] == "CCAS Boulogne-Billancourt"
+    assert visitor["prospect"]["email"] == "marie@example.test"
+    assert "vis_tenant_only" not in response.get_data(as_text=True)
+
+
+def test_professional_lead_keeps_current_analytics_visitor(client):
+    from backend.helpchain_backend.src.models.professional_lead import ProfessionalLead
+    from backend.helpchain_backend.src.services.prospect_auto_capture import (
+        attach_session_intelligence_to_professional_lead,
+    )
+
+    with client.application.test_request_context("/professionnels/pilote"):
+        from flask import session
+
+        session["hc_visitor_id"] = "vis_identified_test"
+
+        lead = ProfessionalLead(
+            email="marie@example.test",
+            full_name="Marie Dupont",
+            profession="Responsable",
+            organization="CCAS Test",
+        )
+
+        attach_session_intelligence_to_professional_lead(lead)
+
+        assert lead.visitor_id == "vis_identified_test"
+
+
+
+def test_access_request_keeps_current_analytics_visitor(client):
+    from backend.helpchain_backend.src.models.organization_access_request import OrganizationAccessRequest
+    from backend.helpchain_backend.src.services.prospect_auto_capture import (
+        attach_session_intelligence_to_access_request,
+    )
+
+    with client.application.test_request_context("/demander-acces"):
+        from flask import session
+
+        session["hc_visitor_id"] = "vis_access_test"
+
+        request_row = OrganizationAccessRequest(
+            organization_name="CCAS Test",
+            contact_name="Marie Dupont",
+            email="marie@example.test",
+        )
+
+        attach_session_intelligence_to_access_request(request_row)
+
+        assert request_row.visitor_id == "vis_access_test"

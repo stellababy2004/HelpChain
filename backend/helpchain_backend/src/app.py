@@ -675,6 +675,9 @@ def create_app(config_object=None) -> Flask:
     )
 
     # DB + Migrate
+    engine_options = dict(app.config.get("SQLALCHEMY_ENGINE_OPTIONS") or {})
+    engine_options["hide_parameters"] = True
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = engine_options
     db.init_app(app)
     migrate.init_app(app, db, directory="migrations")
 

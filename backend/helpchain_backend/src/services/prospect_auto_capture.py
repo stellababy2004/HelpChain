@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from backend.helpchain_backend.src.services.radar_v2 import compute_radar_v2
 
 import json
@@ -38,6 +38,11 @@ AUDIENCE_PAGE_SCORES = (
     ("/professionnels", 4),
     ("/", 1),
 )
+
+
+def get_current_visitor_id() -> str | None:
+    visitor_id = (session.get("hc_visitor_id") or "").strip()
+    return visitor_id or None
 
 
 def get_current_audience_session_id() -> str | None:
@@ -310,6 +315,7 @@ def extract_audience_context(notes: str | None) -> dict | None:
 
 
 def attach_session_intelligence_to_access_request(access_request) -> dict | None:
+    access_request.visitor_id = get_current_visitor_id()
     summary = summarize_session_intelligence(
         territory_hint=getattr(access_request, "city", None),
         territory_source="access_request_city",
@@ -325,6 +331,7 @@ def attach_session_intelligence_to_access_request(access_request) -> dict | None
 
 
 def attach_session_intelligence_to_professional_lead(lead) -> dict | None:
+    lead.visitor_id = get_current_visitor_id()
     summary = summarize_session_intelligence(
         territory_hint=getattr(lead, "city", None),
         territory_source="professional_lead_city",
@@ -368,6 +375,10 @@ def captured_audience_session_targets() -> dict[str, str]:
     except Exception:
         return targets
     return targets
+
+
+
+
 
 
 

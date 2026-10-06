@@ -746,22 +746,23 @@ def admin_structure_detail(structure_id: int):
     structure = _structure_or_403(structure_id)
     actor = resolve_current_admin_actor()
 
-    structure_admins = (
-        AdminUser.query
-        .filter(
-            AdminUser.structure_id == structure.id,
-            AdminUser.is_active.is_(True),
-            AdminUser.role == "admin",
-        )
-        .order_by(AdminUser.username.asc())
-        .all()
-    )
-
     intelligence = build_enterprise_structure_dashboard(structure)
     has_tenant_admin_users = int(intelligence.get("users_count") or 0) > 0
     has_pending_bootstrap_invitation = (
         int(intelligence.get("pending_bootstrap_admin_invitations_count") or 0) > 0
     )
+    structure_admins = []
+    if has_tenant_admin_users:
+        structure_admins = (
+            AdminUser.query
+            .filter(
+                AdminUser.structure_id == structure.id,
+                AdminUser.is_active.is_(True),
+                AdminUser.role == "admin",
+            )
+            .order_by(AdminUser.username.asc())
+            .all()
+        )
     can_bootstrap_first_admin = (
         actor.is_authenticated
         and actor.role == "superadmin"

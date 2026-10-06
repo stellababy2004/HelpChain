@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import math
 import os
 import re
@@ -105,6 +106,7 @@ from ..statuses import normalize_request_status
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
 main_bp = Blueprint("main", __name__)
+logger = logging.getLogger(__name__)
 
 _SCHEMA_TABLE_EXISTS_CACHE: dict[str, bool] = {}
 _PUBLIC_SEO_CANONICAL_ENDPOINTS: dict[str, str] = {
@@ -726,6 +728,14 @@ def _mask_email_for_log(email: str | None) -> str:
     if not local:
         return f"***@{domain}"
     return f"{local[:1]}***@{domain}"
+
+
+def _log_magic_link_masked_email(flow: str, email: str | None) -> None:
+    logger.info(
+        "[MAGIC LINK] flow=%s email=%s",
+        flow,
+        _mask_email_for_log(email),
+    )
 
 
 def _extract_email_domain(email: str | None) -> str | None:
@@ -2685,6 +2695,7 @@ def become_volunteer():
         if not email or "@" not in email:
             return _volunteer_magic_ok_response()
         session["volunteer_magic_email"] = email
+        _log_magic_link_masked_email("volunteer", email)
 
         email_hash = _sha256_hex(email)
         risk = _compute_magic_link_risk(ip, email)
@@ -4161,6 +4172,8 @@ def submit_request_confirm():
         ip = _client_ip()
         email = (draft.get("email") or "").strip().lower()
         email_hash = _sha256_hex(email) if email else None
+        if email:
+            _log_magic_link_masked_email("request", email)
         risk = _compute_magic_link_risk(ip, email)
         _detect_suspicious_activity(ip, email)
         if email:
