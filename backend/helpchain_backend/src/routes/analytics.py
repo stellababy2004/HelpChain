@@ -26,7 +26,7 @@ from ..services.telemetry_policy import (
 )
 from ..services.website_analytics import (
     analytics_actor, first_party_structure, ingestion_structure, ingestion_token,
-    read_scope, scope_description, validate_selectors,
+    read_scope, scope_description, scoped_events, validate_selectors,
 )
 from ..services.analytics_v2 import (
     ANALYTICS_SCOPE_PLATFORM_SALES,
@@ -46,15 +46,14 @@ analytics_bp = Blueprint(
 csrf.exempt(analytics_bp)
 
 _PLATFORM_SALES_ENDPOINTS = {
+    "analytics.admin_visitor_intent_api",
+}
+_CONVERSION_ENDPOINTS = {
     "analytics.admin_conversion_dashboard",
     "analytics.admin_conversion_funnel_api",
-    "analytics.admin_visitor_intent_api",
     "analytics.admin_revenue_intelligence",
     "analytics.admin_revenue_alerts",
     "analytics.admin_revenue_alert_dispatch",
-}
-
-_TENANT_ANALYTICS_ENDPOINTS = {
     "analytics.website_tracking_config",
 }
 
@@ -66,7 +65,7 @@ def authorize_website_analytics():
         if not can_view_global_analytics(actor):
             abort(403)
         g.website_analytics_structure = None
-    elif request.endpoint in _TENANT_ANALYTICS_ENDPOINTS:
+    elif request.endpoint in _CONVERSION_ENDPOINTS:
         g.website_analytics_structure = read_scope()
     elif request.endpoint not in {"analytics.collect_event", "analytics.collect_website_event"}:
         # Legacy dashboards/bookmarks contain global data, not scoped event queries.
@@ -76,7 +75,7 @@ def authorize_website_analytics():
 
 @analytics_bp.after_request
 def describe_website_analytics(response):
-    if request.endpoint in _PLATFORM_SALES_ENDPOINTS or request.endpoint in _TENANT_ANALYTICS_ENDPOINTS:
+    if request.endpoint in _PLATFORM_SALES_ENDPOINTS or request.endpoint in _CONVERSION_ENDPOINTS:
         response.headers["Cache-Control"] = "private, no-store"
         if response.status_code == 200 and response.is_json:
             payload = response.get_json()
@@ -521,7 +520,7 @@ def admin_conversion_funnel_api():
         since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
         events = (
-            _platform_sales_events()
+            scoped_events(g.website_analytics_structure)
             .filter(AnalyticsEvent.created_at >= since)
             .order_by(AnalyticsEvent.created_at.desc())
             .all()
@@ -580,7 +579,8 @@ def admin_conversion_funnel_api():
 
 @analytics_bp.route("/admin/conversion-dashboard")
 def admin_conversion_dashboard():
-    label = "HelpChain platform sales intelligence / helpchain.live"
+    scope = scope_description(g.website_analytics_structure)
+    label = " / ".join(str(value) for value in (scope["name"], scope["site_id"], scope["website"]) if value)
     html = _conversion_dashboard_html().replace("<!-- analytics-scope -->", str(escape(label)))
     return current_app.response_class(html, mimetype="text/html")
 
@@ -745,7 +745,7 @@ def admin_revenue_intelligence():
     from collections import defaultdict
 
     events = (
-        _platform_sales_events()
+        scoped_events(g.website_analytics_structure)
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -809,7 +809,7 @@ def admin_revenue_alerts():
     from collections import defaultdict
 
     events = (
-        _platform_sales_events()
+        scoped_events(g.website_analytics_structure)
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()
@@ -886,7 +886,7 @@ def admin_revenue_alert_dispatch():
     email_from = os.getenv("SMTP_FROM") or smtp_user
 
     events = (
-        _platform_sales_events()
+        scoped_events(g.website_analytics_structure)
         .order_by(AnalyticsEvent.created_at.desc())
         .limit(2000)
         .all()

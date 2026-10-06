@@ -109,7 +109,7 @@ def test_external_tenant_event_gets_tenant_scope_and_canonical_form_submit(clien
     assert event.user_session == "aud_external"
 
 
-def test_platform_sales_endpoint_excludes_tenant_events(app, session):
+def test_conversion_funnel_excludes_platform_sales_events(app, session):
     structure = Structure(name="Scoped Org", slug="scoped-org")
     session.add(structure)
     session.flush()
@@ -148,10 +148,11 @@ def test_platform_sales_endpoint_excludes_tenant_events(app, session):
 
     assert response.status_code == 200
     data = response.get_json()
-    assert data["scope"]["analytics_scope"] == ANALYTICS_SCOPE_PLATFORM_SALES
+    assert data["scope"]["name"] == "All organizations / sites"
+    assert data["scope"]["structure_id"] is None
     assert data["summary"]["events"] == 1
-    assert "/offre" in response.get_data(as_text=True)
-    assert "/tenant-only" not in response.get_data(as_text=True)
+    assert "/tenant-only" in response.get_data(as_text=True)
+    assert "/offre" not in response.get_data(as_text=True)
 
 
 def test_visitor_intent_groups_sessions_by_visitor_and_excludes_tenant(app, session):

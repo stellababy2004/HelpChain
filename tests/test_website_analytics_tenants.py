@@ -115,7 +115,7 @@ def test_external_backend_records_correct_tenant(client, tenants, event):
     assert response.status_code == 201
     row = AnalyticsEvent.query.filter_by(user_session="external-visitor").one()
     assert row.structure_id == tenants["a"].id
-    assert row.event_type == event
+    assert row.event_type == ("form_submitted" if event == "form_submit" else event)
     assert row.page_url == "/external-page"
 
 
