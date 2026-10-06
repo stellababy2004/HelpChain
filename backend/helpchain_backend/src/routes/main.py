@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import math
 import os
 import re
@@ -95,12 +96,15 @@ from ..services.prospect_auto_capture import (
     attach_session_intelligence_to_professional_lead,
     summarize_session_intelligence,
 )
+
 from ..services.telemetry_policy import (
     classify_public_telemetry_request,
     extract_event_path,
     get_client_ip,
 )
 from ..statuses import normalize_request_status
+
+logger = logging.getLogger(__name__)
 
 COUNTRIES_SUPPORTED = ["FR", "CH", "CA", "BG"]
 
@@ -1664,46 +1668,6 @@ def index():
     )
 
 
-@main_bp.post("/events")
-@csrf.exempt
-@limiter.limit("120 per minute")
-def events_collect():
-    data = request.get_json(silent=True) or {}
-    event = (data.get("event") or "").strip()
-    if not event:
-        return jsonify({"ok": False}), 400
-
-    event_path = extract_event_path(data)
-    decision = classify_public_telemetry_request(
-        event_path,
-        user_agent=request.headers.get("User-Agent"),
-        client_ip=get_client_ip(),
-    )
-    if not decision.should_persist:
-        try:
-            current_app.logger.info(
-                "[EVENT-IGNORED] %s ip=%s path=%s reason=%s",
-                event,
-                get_client_ip() or "",
-                event_path or "",
-                decision.reason or "ignored",
-            )
-        except Exception:
-            pass
-        return jsonify({"ok": True, "ignored": True}), 200
-
-    try:
-        current_app.logger.info(
-            "[EVENT-QUALIFIED] %s ip=%s path=%s props=%s",
-            event,
-            get_client_ip() or "",
-            decision.canonical_path or event_path or "",
-            data.get("props") or {},
-        )
-    except Exception:
-        pass
-    return jsonify({"ok": True, "ignored": False}), 200
-
 
 def _emit_event(event: str, props: dict | None = None) -> None:
     """Internal telemetry helper aligned with /events payload shape."""
@@ -2739,7 +2703,7 @@ def become_volunteer():
                 },
             )
 
-        current_app.logger.info(
+        logger.info(
             "[VOL-MAGIC] pre-send decision suppress=%s reasons=%s email=%s ip=%s",
             suppress,
             suppress_reasons,
@@ -2747,7 +2711,7 @@ def become_volunteer():
             ip,
         )
         if suppress:
-            current_app.logger.info(
+            logger.info(
                 "[VOL-MAGIC] suppress=%s reason=%s website=%s started_at=%s ip=%s email_key=%s cooldown_seconds=%s",
                 suppress,
                 ",".join(suppress_reasons) if suppress_reasons else "-",
@@ -2758,13 +2722,13 @@ def become_volunteer():
                 response_cooldown_seconds,
             )
             return _volunteer_magic_ok_response(resend_email=email)
-        current_app.logger.info(
+        logger.info(
             "[VOL-MAGIC] not suppressed, continuing to token+send email=%s",
             _mask_email_for_log(email),
         )
 
         try:
-            current_app.logger.info(
+            logger.info(
                 "[VOL-MAGIC] creating token for email=%s",
                 _mask_email_for_log(email),
             )
@@ -2787,7 +2751,7 @@ def become_volunteer():
             )
             db.session.add(row)
             db.session.commit()
-            current_app.logger.info(
+            logger.info(
                 "[MAGIC LINK VOL] token created id=%s email=%s expires_at=%s",
                 row.id,
                 _mask_email_for_log(email),
@@ -2826,11 +2790,11 @@ def become_volunteer():
             try:
                 from backend.mail_service import send_notification_email
 
-                current_app.logger.info(
+                logger.info(
                     "[VOL-MAGIC] about to call send_notification_email email=%s",
                     _mask_email_for_log(email),
                 )
-                current_app.logger.info(
+                logger.info(
                     "[VOL-MAGIC] sending to=%s", _mask_email_for_log(email)
                 )
                 send_ok = send_notification_email(
@@ -3968,7 +3932,7 @@ def submit_request():
 
         errors, cleaned = validate_submit_request_form(request.form)
 
-        current_app.logger.warning(
+        logger.warning(
             "Parsed: name=%r(len=%s) phone=%r(len=%s) email=%r(len=%s) category=%r urgency=%r desc_len=%s title=%r",
             cleaned["name"],
             len(cleaned["name"] or ""),
