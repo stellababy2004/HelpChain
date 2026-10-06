@@ -972,12 +972,20 @@ def admin_revenue_alert_dispatch():
 
 @analytics_bp.route("/admin/api/visitor-intent")
 def admin_visitor_intent_api():
-    """Return explainable platform-sales intent grouped by visitor."""
+    """Return explainable platform-sales intelligence grouped by visitor."""
     from collections import defaultdict
 
     from backend.models_with_analytics import AnalyticsEvent
+    from backend.helpchain_backend.src.models.organization_access_request import (
+        OrganizationAccessRequest,
+    )
+    from backend.helpchain_backend.src.models.professional_lead import ProfessionalLead
     from backend.helpchain_backend.src.services.intent_intelligence import (
         calculate_intent_score,
+    )
+    from backend.helpchain_backend.src.services.sales_priority import (
+        calculate_fit_score,
+        calculate_priority_score,
     )
 
     days = request.args.get("days", default=30, type=int)
@@ -998,19 +1006,82 @@ def admin_visitor_intent_api():
         if visitor_id:
             visitors[visitor_id].append(event)
 
+    visitor_ids = list(visitors)
+
+    professional_leads = {}
+    access_requests = {}
+
+    if visitor_ids:
+        professional_leads = {
+            lead.visitor_id: lead
+            for lead in ProfessionalLead.query.filter(
+                ProfessionalLead.visitor_id.in_(visitor_ids)
+            ).all()
+            if lead.visitor_id
+        }
+
+        access_requests = {
+            access_request.visitor_id: access_request
+            for access_request in OrganizationAccessRequest.query.filter(
+                OrganizationAccessRequest.visitor_id.in_(visitor_ids)
+            ).all()
+            if access_request.visitor_id
+        }
+
     results = []
+
     for visitor_id, visitor_events in visitors.items():
         intent = calculate_intent_score(visitor_events)
-        results.append(
-            {
-                "visitor_id": visitor_id,
-                **intent.as_dict(),
-                "contactable": False,
-            }
+
+        prospect = access_requests.get(visitor_id) or professional_leads.get(visitor_id)
+        contactable = prospect is not None
+
+        fit = calculate_fit_score(prospect) if prospect is not None else None
+
+        form_submitted = any(
+            canonical_event_type(event.event_type) == "form_submitted"
+            for event in visitor_events
         )
+
+        priority = calculate_priority_score(
+            intent_score=intent.score,
+            fit_score=fit.score if fit is not None else 0,
+            contactable=contactable,
+            form_submitted=form_submitted,
+        )
+
+        result = {
+            "visitor_id": visitor_id,
+            **intent.as_dict(),
+            "contactable": contactable,
+            "fit": fit.as_dict() if fit is not None else None,
+            "priority": priority.as_dict(),
+        }
+
+        if prospect is not None:
+            result["prospect"] = {
+                "type": (
+                    "organization_access_request"
+                    if visitor_id in access_requests
+                    else "professional_lead"
+                ),
+                "id": prospect.id,
+                "name": (
+                    getattr(prospect, "contact_name", None)
+                    or getattr(prospect, "full_name", None)
+                ),
+                "organization": (
+                    getattr(prospect, "organization_name", None)
+                    or getattr(prospect, "organization", None)
+                ),
+                "email": getattr(prospect, "email", None),
+            }
+
+        results.append(result)
 
     results.sort(
         key=lambda item: (
+            item["priority"]["score"],
             item["score"],
             item["last_activity_at"] or "",
         ),
@@ -1024,3 +1095,4 @@ def admin_visitor_intent_api():
             "visitors": results,
         }
     )
+

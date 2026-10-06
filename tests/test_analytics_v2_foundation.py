@@ -225,6 +225,21 @@ def test_visitor_intent_groups_sessions_by_visitor_and_excludes_tenant(app, sess
             created_at=now,
         ),
     ])
+
+    from backend.helpchain_backend.src.models.professional_lead import ProfessionalLead
+
+    session.add(
+        ProfessionalLead(
+            visitor_id="vis_hot_prospect",
+            email="marie@example.test",
+            full_name="Marie Dupont",
+            profession="Responsable",
+            organization="CCAS Boulogne-Billancourt",
+            city="Boulogne-Billancourt",
+            source="demo",
+        )
+    )
+
     session.commit()
 
     client = app.test_client()
@@ -243,7 +258,15 @@ def test_visitor_intent_groups_sessions_by_visitor_and_excludes_tenant(app, sess
     assert visitor["session_count"] == 2
     assert visitor["level"] == "hot"
     assert visitor["score"] >= 70
-    assert visitor["contactable"] is False
+    assert visitor["contactable"] is True
+    assert visitor["fit"]["score"] >= 70
+    assert visitor["fit"]["level"] == "strong"
+    assert visitor["priority"]["score"] >= 55
+    assert visitor["priority"]["next_best_action"] in {"contact_today", "contact_soon"}
+    assert visitor["prospect"]["type"] == "professional_lead"
+    assert visitor["prospect"]["name"] == "Marie Dupont"
+    assert visitor["prospect"]["organization"] == "CCAS Boulogne-Billancourt"
+    assert visitor["prospect"]["email"] == "marie@example.test"
     assert "vis_tenant_only" not in response.get_data(as_text=True)
 
 
