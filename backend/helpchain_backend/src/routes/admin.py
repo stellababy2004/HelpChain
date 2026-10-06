@@ -9727,13 +9727,20 @@ def admin_pilotage():
             return ""
         return norm.replace("_", " ")
 
+    category_expr = func.lower(
+        func.trim(func.coalesce(Request.category, ""))
+    )
+
     top_category_row = (
         active_query.with_entities(
-            func.lower(func.trim(func.coalesce(Request.category, ""))).label("cat"),
+            category_expr.label("cat"),
             func.count(Request.id).label("cnt"),
         )
-        .group_by("cat")
-        .order_by(func.count(Request.id).desc(), func.lower(Request.category).asc())
+        .group_by(category_expr)
+        .order_by(
+            func.count(Request.id).desc(),
+            category_expr.asc(),
+        )
         .all()
     )
     top_category = ""
