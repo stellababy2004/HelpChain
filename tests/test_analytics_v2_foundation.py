@@ -152,3 +152,96 @@ def test_platform_sales_endpoint_excludes_tenant_events(app, session):
     assert data["summary"]["events"] == 1
     assert "/offre" in response.get_data(as_text=True)
     assert "/tenant-only" not in response.get_data(as_text=True)
+
+
+def test_visitor_intent_groups_sessions_by_visitor_and_excludes_tenant(app, session):
+    structure = Structure(name="Intent Tenant", slug="intent-tenant")
+    session.add(structure)
+    session.flush()
+
+    global_admin = AdminUser(
+        username="intent_global_admin",
+        email="intent-global-admin@test.local",
+        role="superadmin",
+        structure_id=None,
+        password_hash="x",
+        is_active=True,
+        mfa_enabled=True,
+        totp_secret="intent-secret",
+    )
+    session.add(global_admin)
+    session.flush()
+
+    now = utc_now()
+
+    session.add_all([
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_first",
+            event_type="page_view",
+            page_url="/offre",
+            created_at=now - timedelta(days=2),
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_first",
+            event_type="page_view",
+            page_url="/demo",
+            created_at=now - timedelta(days=2),
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_second",
+            event_type="page_view",
+            page_url="/demander-acces",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_second",
+            event_type="cta_click",
+            page_url="/demo",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            analytics_scope=ANALYTICS_SCOPE_PLATFORM_SALES,
+            visitor_id="vis_hot_prospect",
+            user_session="aud_second",
+            event_type="form_started",
+            page_url="/demo",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            structure_id=structure.id,
+            analytics_scope=ANALYTICS_SCOPE_TENANT,
+            visitor_id="vis_tenant_only",
+            user_session="aud_tenant",
+            event_type="form_submitted",
+            page_url="/demo",
+            created_at=now,
+        ),
+    ])
+    session.commit()
+
+    client = app.test_client()
+    _login(client, app, global_admin)
+
+    response = client.get("/admin/api/visitor-intent?days=30")
+
+    assert response.status_code == 200
+    data = response.get_json()
+
+    assert data["scope"]["analytics_scope"] == ANALYTICS_SCOPE_PLATFORM_SALES
+    assert data["visitor_count"] == 1
+
+    visitor = data["visitors"][0]
+    assert visitor["visitor_id"] == "vis_hot_prospect"
+    assert visitor["session_count"] == 2
+    assert visitor["level"] == "hot"
+    assert visitor["score"] >= 70
+    assert visitor["contactable"] is False
+    assert "vis_tenant_only" not in response.get_data(as_text=True)

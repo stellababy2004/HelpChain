@@ -48,6 +48,7 @@ csrf.exempt(analytics_bp)
 _PLATFORM_SALES_ENDPOINTS = {
     "analytics.admin_conversion_dashboard",
     "analytics.admin_conversion_funnel_api",
+    "analytics.admin_visitor_intent_api",
     "analytics.admin_revenue_intelligence",
     "analytics.admin_revenue_alerts",
     "analytics.admin_revenue_alert_dispatch",
@@ -967,3 +968,59 @@ def admin_revenue_alert_dispatch():
     return jsonify({"ok": True, "dispatched": dispatched, "count": len(dispatched)})
 
 
+
+
+@analytics_bp.route("/admin/api/visitor-intent")
+def admin_visitor_intent_api():
+    """Return explainable platform-sales intent grouped by visitor."""
+    from collections import defaultdict
+
+    from backend.models_with_analytics import AnalyticsEvent
+    from backend.helpchain_backend.src.services.intent_intelligence import (
+        calculate_intent_score,
+    )
+
+    days = request.args.get("days", default=30, type=int)
+    days = max(1, min(days, 365))
+    since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
+
+    events = (
+        _platform_sales_events()
+        .filter(AnalyticsEvent.created_at >= since)
+        .filter(AnalyticsEvent.visitor_id.isnot(None))
+        .order_by(AnalyticsEvent.created_at.desc())
+        .all()
+    )
+
+    visitors = defaultdict(list)
+    for event in events:
+        visitor_id = (event.visitor_id or "").strip()
+        if visitor_id:
+            visitors[visitor_id].append(event)
+
+    results = []
+    for visitor_id, visitor_events in visitors.items():
+        intent = calculate_intent_score(visitor_events)
+        results.append(
+            {
+                "visitor_id": visitor_id,
+                **intent.as_dict(),
+                "contactable": False,
+            }
+        )
+
+    results.sort(
+        key=lambda item: (
+            item["score"],
+            item["last_activity_at"] or "",
+        ),
+        reverse=True,
+    )
+
+    return jsonify(
+        {
+            "period_days": days,
+            "visitor_count": len(results),
+            "visitors": results,
+        }
+    )
