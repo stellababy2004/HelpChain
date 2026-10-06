@@ -2430,14 +2430,17 @@
     var href = el.getAttribute("href") || "";
     var type = null;
 
+    var declaredEvent = el.getAttribute("data-hc-event") || "";
+    if (declaredEvent.indexOf("cta_") === 0) return;
+
     if (href.indexOf("/demo") >= 0 || /démo|demo|planifier/i.test(text)) {
-      return; // disabled duplicate CTA tracking; handled by hc-intent-tracking.js
+      type = "cta_demo_click";
     } else if (href.indexOf("/contact") >= 0 || /contact|échanger/i.test(text)) {
       type = "cta_contact_click";
     } else if (href.indexOf("/demander-acces") >= 0 || /accès|access/i.test(text)) {
       type = "cta_access_request_click";
-    } else if (href.indexOf("/professionnels") >= 0 || href.indexOf("/pilote") >= 0 || /pilote|professionnel/i.test(text)) {
-      return; // disabled duplicate CTA tracking; handled by hc-intent-tracking.js
+    } else if (href.indexOf("/professionnels/pilote") >= 0 || href.indexOf("/pilote") >= 0 || /pilote/i.test(text)) {
+      type = "cta_pilot_click";
     }
 
     if (!type) return;

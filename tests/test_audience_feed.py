@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+
 from bs4 import BeautifulSoup
 
 from backend.models_with_analytics import AnalyticsEvent, UserBehavior
@@ -218,3 +220,48 @@ def test_events_public_cta_click_is_persisted(client):
     event = AnalyticsEvent.query.one()
     assert event.page_url == "/"
     assert event.event_type == "revenue_cta_click"
+
+
+def test_homepage_pilot_cta_preserves_custom_event_and_counts_once(
+    client,
+    authenticated_admin_client,
+):
+    response = client.get("/", headers=PUBLIC_HEADERS)
+
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.get_data(as_text=True), "html.parser")
+    cta = soup.select_one('a[href="/demo"][data-hc-event="home_primary_cta"]')
+    assert cta is not None
+    assert "Demander" in cta.get_text(" ", strip=True)
+
+    script = Path("static/js/hc-core.js").read_text(encoding="utf-8")
+    assert 'type = "cta_demo_click";' in script
+    assert "handled by hc-intent-tracking.js" not in script
+
+    for event_name in ("home_primary_cta", "cta_demo_click"):
+        event_response = client.post(
+            "/events",
+            json={
+                "event": event_name,
+                "props": {
+                    "page": "/",
+                    "url": "/",
+                    "category": "conversion",
+                    "action": "click",
+                    "label": "Demander un pilote",
+                    "href": "/demo",
+                },
+            },
+            headers=PUBLIC_HEADERS,
+        )
+        assert event_response.status_code == 201
+
+    funnel = authenticated_admin_client.get("/admin/api/conversion-funnel?days=30")
+
+    assert funnel.status_code == 200
+    payload = funnel.get_json()
+    assert payload["summary"]["cta_clicks"] == 1
+    assert payload["summary"]["page_views"] == 1
+    assert AnalyticsEvent.query.filter_by(event_type="home_primary_cta").count() == 1
+    assert AnalyticsEvent.query.filter_by(event_type="cta_demo_click").count() == 1
+    assert payload["top_ctas"] == [{"event": "cta_demo_click", "count": 1}]
