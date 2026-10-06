@@ -1,4 +1,4 @@
-import json
+﻿import json
 from datetime import timedelta
 
 from backend.models import AdminUser, Structure, utc_now
@@ -245,3 +245,49 @@ def test_visitor_intent_groups_sessions_by_visitor_and_excludes_tenant(app, sess
     assert visitor["score"] >= 70
     assert visitor["contactable"] is False
     assert "vis_tenant_only" not in response.get_data(as_text=True)
+
+
+def test_professional_lead_keeps_current_analytics_visitor(client):
+    from backend.helpchain_backend.src.models.professional_lead import ProfessionalLead
+    from backend.helpchain_backend.src.services.prospect_auto_capture import (
+        attach_session_intelligence_to_professional_lead,
+    )
+
+    with client.application.test_request_context("/professionnels/pilote"):
+        from flask import session
+
+        session["hc_visitor_id"] = "vis_identified_test"
+
+        lead = ProfessionalLead(
+            email="marie@example.test",
+            full_name="Marie Dupont",
+            profession="Responsable",
+            organization="CCAS Test",
+        )
+
+        attach_session_intelligence_to_professional_lead(lead)
+
+        assert lead.visitor_id == "vis_identified_test"
+
+
+
+def test_access_request_keeps_current_analytics_visitor(client):
+    from backend.helpchain_backend.src.models.organization_access_request import OrganizationAccessRequest
+    from backend.helpchain_backend.src.services.prospect_auto_capture import (
+        attach_session_intelligence_to_access_request,
+    )
+
+    with client.application.test_request_context("/demander-acces"):
+        from flask import session
+
+        session["hc_visitor_id"] = "vis_access_test"
+
+        request_row = OrganizationAccessRequest(
+            organization_name="CCAS Test",
+            contact_name="Marie Dupont",
+            email="marie@example.test",
+        )
+
+        attach_session_intelligence_to_access_request(request_row)
+
+        assert request_row.visitor_id == "vis_access_test"

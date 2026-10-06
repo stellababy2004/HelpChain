@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import UTC, datetime, timezone
 
@@ -9,6 +9,7 @@ class ProfessionalLead(db.Model):
     __tablename__ = "professional_leads"
 
     id = db.Column(db.Integer, primary_key=True)
+    visitor_id = db.Column(db.String(128), nullable=True, index=True)
 
     # Core
     email = db.Column(db.String(255), nullable=False, index=True)
@@ -53,3 +54,4 @@ class ProfessionalLead(db.Model):
             f"<ProfessionalLead id={self.id} email={self.email} "
             f"profession={self.profession}>"
         )
+

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import UTC, datetime
 
@@ -9,6 +9,7 @@ class OrganizationAccessRequest(db.Model):
     __tablename__ = "organization_access_requests"
 
     id = db.Column(db.Integer, primary_key=True)
+    visitor_id = db.Column(db.String(128), nullable=True, index=True)
 
     organization_name = db.Column(db.String(255), nullable=False)
     contact_name = db.Column(db.String(160), nullable=False)
@@ -56,3 +57,4 @@ class OrganizationAccessRequest(db.Model):
             f"<OrganizationAccessRequest id={self.id} "
             f"organization_name={self.organization_name!r} status={self.status!r}>"
         )
+
