@@ -15,6 +15,7 @@ except Exception:  # pragma: no cover - optional in some environments
 PUBLIC_COMMERCIAL_PATH_ALIASES = {
     "/": "/",
     "/offre": "/offre",
+    "/tarifs": "/tarifs",
     "/deploiement": "/deploiement",
     "/professionnels": "/professionnels",
     "/professionnels/pilote": "/professionnels/pilote",

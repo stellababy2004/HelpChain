@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 PUBLIC_PAGES = (
     "/",
     "/offre",
+    "/tarifs",
     "/deploiement",
     "/comment-ca-marche",
     "/securite",
@@ -116,6 +117,7 @@ def test_robots_and_sitemap_public_routes(client):
     for path in (
         "https://helpchain.live/",
         "https://helpchain.live/offre",
+        "https://helpchain.live/tarifs",
         "https://helpchain.live/deploiement",
         "https://helpchain.live/comment-ca-marche",
         "https://helpchain.live/securite",

@@ -117,6 +117,7 @@ _PUBLIC_SEO_CANONICAL_ENDPOINTS: dict[str, str] = {
     "main.comment_ca_marche": "main.comment_ca_marche",
     "main.deploiement": "main.deploiement",
     "main.offre": "main.offre",
+    "main.tarifs": "main.tarifs",
     "main.securite": "main.securite",
     "main.professionnels": "main.professionnels",
     "main.pour_les_structures": "main.pour_les_structures",
@@ -133,6 +134,7 @@ _PUBLIC_SEO_PAGE_NAMES: dict[str, str] = {
     "main.comment_ca_marche": "Comment ca marche",
     "main.deploiement": "Deploiement",
     "main.offre": "Offre",
+    "main.tarifs": "Tarifs",
     "main.securite": "Securite",
     "main.professionnels": "Professionnels",
     "main.pour_les_structures": "Structures",
@@ -148,6 +150,7 @@ _PUBLIC_SEO_BREADCRUMBS: dict[str, tuple[str, ...]] = {
     "main.comment_ca_marche": ("main.index", "main.comment_ca_marche"),
     "main.deploiement": ("main.index", "main.deploiement"),
     "main.offre": ("main.index", "main.offre"),
+    "main.tarifs": ("main.index", "main.tarifs"),
     "main.securite": ("main.index", "main.securite"),
     "main.professionnels": ("main.index", "main.professionnels"),
     "main.pour_les_structures": ("main.index", "main.pour_les_structures"),
@@ -6140,6 +6143,11 @@ def premium_onboarding():
 @main_bp.get("/offre")
 def offre():
     return render_template("offre.html")
+
+
+@main_bp.get("/tarifs")
+def tarifs():
+    return render_template("tarifs.html")
 
 
 @main_bp.get("/pilotage-indicateurs")

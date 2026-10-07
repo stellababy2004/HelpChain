@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Tarifs HelpChain | Coordination des demandes et des affectations") }}{% endblock %}
+{% block meta_description %}{{ _("Tarifs HelpChain : offres mensuelles pour centraliser les demandes, les affectations, le suivi et la coordination entre equipes et partenaires.") }}{% endblock %}
+{% block og_title %}{{ _("Tarifs HelpChain | Coordination des demandes et des affectations") }}{% endblock %}
+{% block og_image %}{{ og_image_url('og-home-1200x630.jpg') }}{% endblock %}
+{% block og_image_alt %}{{ _("Apercu de la page Tarifs HelpChain") }}{% endblock %}
+{% block body_class %}hc-page-trust hc-page-offre hc-page-tarifs{% endblock %}
+
+{% block extra_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/offre.css') }}?v=20260515-institutional-polish">
+{% endblock %}
+
+{% block content %}
+<main class="hc-offre">
+  <section class="hc-offre__section">
+    <div class="hc-offre__shell hc-offre__hero">
+      <div class="hc-offre__hero-copy">
+        <span class="hc-offre__eyebrow">{{ _("Tarifs HelpChain") }}</span>
+        <h1>{{ _("Une coordination plus simple. Un tarif adapté à votre organisation.") }}</h1>
+        <p class="hc-offre__lead">
+          {{ _("HelpChain centralise les demandes, les affectations, le suivi et la coordination entre équipes et partenaires.") }}
+        </p>
+        <div class="hc-offre__actions">
+          <a href="#offres" class="hc-offre__btn hc-offre__btn--primary">{{ _("Voir les offres") }}</a>
+          <a href="/demo" class="hc-offre__btn hc-offre__btn--secondary" data-hc-event="cta_pricing_pilot" data-hc-cta="pricing_pilot" data-hc-intent="pilot">{{ _("Demander un pilote") }}</a>
+        </div>
+      </div>
+
+      <aside class="hc-offre__hero-panel" aria-label="{{ _('Tarif de démarrage') }}">
+        <div class="hc-offre__panel-label">{{ _("À partir de") }}</div>
+        <div class="hc-offre__panel-value">{{ _("300 € / mois") }}</div>
+        <p class="hc-offre__panel-copy">
+          {{ _("Un premier niveau pour structurer les demandes, les affectations et le suivi dans une organisation locale.") }}
+        </p>
+        <ul class="hc-offre__panel-list">
+          <li>
+            <strong>{{ _("Demandes centralisées") }}</strong>
+            <span>{{ _("Les situations, statuts et responsables restent visibles dans un même espace.") }}</span>
+          </li>
+          <li>
+            <strong>{{ _("Coordination suivie") }}</strong>
+            <span>{{ _("Les équipes suivent les affectations, les relances et les points de blocage.") }}</span>
+          </li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <section class="hc-offre__section" id="offres">
+    <div class="hc-offre__shell">
+      <div class="hc-offre__section-head">
+        <span class="hc-offre__eyebrow">{{ _("Offres") }}</span>
+        <h2>{{ _("À partir de 300 € / mois") }}</h2>
+        <p>{{ _("Trois cadres simples selon votre niveau de coordination, votre nombre d'intervenants et votre périmètre d'organisation.") }}</p>
+      </div>
+
+      <div class="hc-offre__grid hc-offre__grid--offers">
+        <article class="hc-offre__card">
+          <div class="hc-offre__card-label">{{ _("Structure") }}</div>
+          <h3>{{ _("STRUCTURE") }}</h3>
+          <p class="hc-offre__buyer">{{ _("À partir de 300 €/mois") }}</p>
+          <p>{{ _("Pour les associations, établissements et structures locales souhaitant centraliser leurs demandes et leur suivi.") }}</p>
+        </article>
+
+        <article class="hc-offre__card hc-offre__card--featured">
+          <span class="hc-offre__badge">{{ _("Coordination renforcée") }}</span>
+          <div class="hc-offre__card-label">{{ _("Coordination avancée") }}</div>
+          <h3>{{ _("COORDINATION AVANCÉE") }}</h3>
+          <p class="hc-offre__buyer">{{ _("À partir de 500 €/mois") }}</p>
+          <p>{{ _("Pour les équipes ayant des besoins de coordination plus importants, plusieurs intervenants et partenaires.") }}</p>
+        </article>
+
+        <article class="hc-offre__card">
+          <div class="hc-offre__card-label">{{ _("Réseau") }}</div>
+          <h3>{{ _("RÉSEAU / MULTI-STRUCTURES") }}</h3>
+          <p class="hc-offre__buyer">{{ _("Sur devis") }}</p>
+          <p>{{ _("Pour les collectivités, fédérations et réseaux coordonnant plusieurs organisations.") }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="hc-offre__section">
+    <div class="hc-offre__shell">
+      <article class="hc-offre__final">
+        <span class="hc-offre__eyebrow">{{ _("Pilote") }}</span>
+        <h2>{{ _("Vous souhaitez d'abord tester HelpChain ?") }}</h2>
+        <p class="hc-offre__lead">{{ _("Pilote de 30 jours — à partir de 250 €") }}</p>
+        <p>{{ _("Testez HelpChain sur un processus réel, avec un périmètre défini et un point de bilan à la fin du pilote.") }}</p>
+        <div class="hc-offre__actions">
+          <a href="/demo" class="hc-offre__btn hc-offre__btn--primary" data-hc-event="cta_pricing_pilot" data-hc-cta="pricing_pilot" data-hc-intent="pilot">{{ _("Demander un pilote") }}</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+{% endblock %}

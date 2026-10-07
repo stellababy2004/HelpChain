@@ -765,6 +765,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
       'main.cas_usage',
       'main.deploiement',
       'main.offre',
+      'main.tarifs',
       'main.pilotage_indicateurs',
       'main.simulation_operationnelle',
       'main.partenariats',
@@ -851,6 +852,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
           {% set secteurs_active = ep.startswith('main.pour_les_structures') or ep.startswith('main.professionnels') or ep.startswith('main.collectivites_associations') %}
           {% set securite_active = ep.startswith('main.securite') or ep.startswith('main.architecture') or ep.startswith('main.gouvernance') %}
           {% set deploiement_active = ep.startswith('main.deploiement') %}
+          {% set tarifs_active = ep.startswith('main.tarifs') %}
           {% set ressources_active = ep.startswith('main.cas_usage') or ep.startswith('main.pilotage_indicateurs') or ep.startswith('main.simulation_operationnelle') or ep.startswith('main.partenariats') or ep.startswith('main.faq') or ep.startswith('main.pourquoi_helpchain') or ep.startswith('main.vision_europeenne') %}
           {% set analyses_active = ep.startswith('main.analyse_fragmentation') or ep.startswith('main.analyse_relances_perdues') %}
           {% if is_ops_shell %}
@@ -921,6 +923,11 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
               </a>
             </li>
             <li class="nav-item">
+              <a class="nav-link {{ 'active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>
+                <span class="hc-navlabel">{{ _('Tarifs') }}</span>
+              </a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link {{ 'active' if ressources_active else '' }}" href="{{ url_for('main.architecture') }}" {% if ressources_active %}aria-current="page"{% endif %}>
                 <span class="hc-navlabel">{{ _('Architecture') }}</span>
               </a>
@@ -988,6 +995,11 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             <li class="nav-item">
               <a class="nav-link {{ 'active' if deploiement_active else '' }}" href="{{ url_for('main.deploiement') }}" {% if deploiement_active %}aria-current="page"{% endif %}>
                 {{ _('Déploiement') }}
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link {{ 'active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>
+                {{ _('Tarifs') }}
               </a>
             </li>
             <li class="nav-item">
@@ -1278,6 +1290,9 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if deploiement_active else '' }}" href="{{ url_for('main.deploiement') }}" {% if deploiement_active %}aria-current="page"{% endif %}>{{ _('Déploiement') }}</a>
+          </li>
+          <li class="hc-mobile-nav__item">
+            <a class="{{ 'is-active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>{{ _('Tarifs') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if ressources_active else '' }}" href="{{ url_for('main.architecture') }}" {% if ressources_active %}aria-current="page"{% endif %}>{{ _('Architecture') }}</a>

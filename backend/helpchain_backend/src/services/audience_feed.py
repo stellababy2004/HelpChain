@@ -25,6 +25,7 @@ except Exception:  # pragma: no cover - analytics module is optional in some env
 
 HIGH_INTENT_AUDIENCE_PATHS = {
     "/offre",
+    "/tarifs",
     "/deploiement",
     "/professionnels",
     "/professionnels/pilote",
