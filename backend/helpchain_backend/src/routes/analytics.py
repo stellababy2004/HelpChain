@@ -265,6 +265,64 @@ def _persist_legacy_revenue_score(session_id, explanation):
             pass
 
 
+def _persist_legacy_revenue_scores(scored_sessions):
+    if not scored_sessions:
+        return
+    try:
+        from ..extensions import db
+        from ..models import ScoreExplanation
+
+        entries = []
+        for session_id, explanation in scored_sessions:
+            subject_id = sha256(str(session_id).encode("utf-8")).hexdigest()
+            entries.append((subject_id, explanation))
+        subject_ids = list(dict.fromkeys(subject_id for subject_id, _ in entries))
+        existing_rows = (
+            ScoreExplanation.query.filter(
+                ScoreExplanation.score_key == "legacy_revenue_visitor",
+                ScoreExplanation.subject_type == "website_analytics_session",
+                ScoreExplanation.subject_id.in_(subject_ids),
+            )
+            .order_by(ScoreExplanation.id.desc())
+            .all()
+        )
+        existing_by_subject = {}
+        for row in existing_rows:
+            existing_by_subject.setdefault(row.subject_id, row)
+
+        for subject_id, explanation in entries:
+            row = existing_by_subject.get(subject_id)
+            if row is None:
+                row = ScoreExplanation(
+                    score_key="legacy_revenue_visitor",
+                    subject_type="website_analytics_session",
+                    subject_id=subject_id,
+                    total_score=0,
+                    formula_version=REVENUE_VISITOR_SCORE_FORMULA_VERSION,
+                    confidence="low",
+                    component_list_json="[]",
+                    evidence_json="{}",
+                    originating_event_ids_json="[]",
+                )
+                db.session.add(row)
+                existing_by_subject[subject_id] = row
+            row.total_score = int(explanation["total_score"])
+            row.formula_version = REVENUE_VISITOR_SCORE_FORMULA_VERSION
+            row.confidence = str(explanation.get("confidence") or "low")
+            row.component_list_json = json.dumps(explanation.get("components") or [], sort_keys=True)
+            row.evidence_json = json.dumps(explanation.get("evidence") or {}, sort_keys=True)
+            row.originating_event_ids_json = json.dumps(
+                explanation.get("originating_event_ids") or [],
+                sort_keys=True,
+            )
+        db.session.commit()
+    except Exception:
+        try:
+            db.session.rollback()
+        except Exception:
+            pass
+
+
 @analytics_bp.route("/analytics")
 def analytics_page():
     # Redirect to admin analytics if user is admin, otherwise to login
@@ -707,11 +765,12 @@ def admin_revenue_intelligence():
         sessions[sid].append(e)
 
     results = []
+    score_explanations = []
 
     for sid, evts in sessions.items():
         explanation = _explain_legacy_revenue_session(evts)
         score = int(explanation["total_score"])
-        _persist_legacy_revenue_score(sid, explanation)
+        score_explanations.append((sid, explanation))
 
         if score >= 80:
             tier = "READY"
@@ -738,6 +797,8 @@ def admin_revenue_intelligence():
             "score_formula_version": REVENUE_VISITOR_SCORE_FORMULA_VERSION,
             "pages": explanation["pages"],
         })
+
+    _persist_legacy_revenue_scores(score_explanations)
 
     return jsonify({
         "sessions": results,
@@ -778,7 +839,6 @@ def admin_revenue_alerts():
         has_demo = "demo_page" in components
         has_cta = "cta_events" in components
         has_submit = "form_submit" in components
-        _persist_legacy_revenue_score(sid, explanation)
 
         if score >= 40 or (has_demo and has_cta and not has_submit):
             alerts.append({
