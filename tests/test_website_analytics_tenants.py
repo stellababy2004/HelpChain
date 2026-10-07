@@ -279,12 +279,61 @@ def test_malformed_external_events_are_rejected(client, tenants, payload):
     assert AnalyticsEvent.query.count() == count
 
 
-def test_score_explanations_do_not_mix_same_session_between_tenants(app, client, tenants):
+def test_revenue_intelligence_scores_same_session_tenants_with_batched_persistence(app, client, tenants, session):
+    from backend.helpchain_backend.src.models import ScoreExplanation
+
+    login(client, app, tenants["users"]["global"])
+    response = client.get("/admin/api/revenue-intelligence")
+    assert response.status_code == 200
+    assert len(response.json["sessions"]) == 3
+    assert sorted(s["score"] for s in response.json["sessions"]) == [1, 111, 111]
+    assert {s["structure_id"] for s in response.json["sessions"]} == {None, tenants["a"].id, tenants["b"].id}
+    rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
+    assert len(rows) == 3
+    assert len({row.subject_id for row in rows}) == 3
+    assert sorted(row.total_score for row in rows) == [1, 111, 111]
+
+    session.add(AnalyticsEvent(
+        structure_id=tenants["a"].id,
+        event_type="cta_click",
+        user_session="same-session",
+        page_url=f"/{tenants['a'].slug}",
+    ))
+    session.commit()
+
+    response = client.get("/admin/api/revenue-intelligence")
+    assert response.status_code == 200
+    assert sorted(s["score"] for s in response.json["sessions"]) == [1, 111, 121]
+    rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
+    assert len(rows) == 3
+    assert len({row.subject_id for row in rows}) == 3
+    assert sorted(row.total_score for row in rows) == [1, 111, 121]
+
+
+def test_revenue_alerts_score_without_creating_persistence(app, client, tenants):
+    from backend.helpchain_backend.src.models import ScoreExplanation
+
+    login(client, app, tenants["users"]["global"])
+    response = client.get("/admin/api/revenue-alerts")
+    assert response.status_code == 200
+    assert response.json["count"] == 2
+    assert sorted(alert["score"] for alert in response.json["alerts"]) == [111, 111]
+    assert {alert["structure_id"] for alert in response.json["alerts"]} == {tenants["a"].id, tenants["b"].id}
+    rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
+    assert rows == []
+
+
+def test_revenue_alerts_do_not_duplicate_intelligence_persistence(app, client, tenants):
     from backend.helpchain_backend.src.models import ScoreExplanation
 
     login(client, app, tenants["users"]["global"])
     assert client.get("/admin/api/revenue-intelligence").status_code == 200
     rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
     assert len(rows) == 3
-    assert len({row.subject_id for row in rows}) == 3
-    assert sorted(row.total_score for row in rows) == [1, 111, 111]
+    row_ids = {row.id for row in rows}
+
+    response = client.get("/admin/api/revenue-alerts")
+    assert response.status_code == 200
+    rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
+    assert len(rows) == 3
+    assert {row.id for row in rows} == row_ids
