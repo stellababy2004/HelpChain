@@ -43,6 +43,7 @@ from flask_mail import Message
 from babel.support import Translations
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
+from sqlalchemy.exc import IntegrityError
 
 try:
     import psutil
@@ -14045,6 +14046,7 @@ def _professional_lead_activity_label(action: str | None) -> str:
         "status_changed": "status",
         "owner_changed": "owner",
         "notes_updated": "notes",
+        "converted_to_intervenant": "conversion intervenant",
     }.get((action or "").strip().lower(), (action or "activity").replace("_", " "))
 
 
@@ -14701,6 +14703,122 @@ def admin_professional_lead_mark_contacted(lead_id: int):
     return redirect(url_for("admin.admin_professional_leads"), code=303)
 
 
+def _professional_lead_intervenant_name(lead: ProfessionalLead) -> str:
+    full_name = (getattr(lead, "full_name", None) or "").strip()
+    if full_name:
+        return full_name
+    email = (getattr(lead, "email", None) or "").strip()
+    if email and "@" in email:
+        return email.split("@", 1)[0].replace(".", " ").replace("_", " ").strip().title()
+    return f"Professional lead #{lead.id}"
+
+
+def _professional_lead_conversion_note(lead: ProfessionalLead) -> str:
+    parts = [f"Created from ProfessionalLead #{lead.id}."]
+    organization = (getattr(lead, "organization", None) or "").strip()
+    if organization:
+        parts.append(f"Organization: {organization}.")
+    message = (getattr(lead, "message", None) or "").strip()
+    if message:
+        parts.append(f"Lead message: {message}")
+    return "\n".join(parts)
+
+
+@admin_bp.post("/professional-leads/<int:lead_id>/convert-intervenant")
+@login_required
+@admin_required
+@admin_role_required("superadmin")
+def admin_professional_lead_convert_intervenant(lead_id: int):
+    _require_professional_lead_access()
+    if not _table_exists("professional_leads"):
+        flash("Professional leads table is not available.", "warning")
+        return redirect(url_for("admin.admin_professional_leads"), code=303)
+    if not _table_exists("intervenants"):
+        flash("Intervenants table is not available.", "warning")
+        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead_id), code=303)
+    if not _table_has_column("professional_leads", "intervenant_id"):
+        flash("Professional lead conversion is not available until migrations are applied.", "warning")
+        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead_id), code=303)
+
+    lead = (
+        ProfessionalLead.query.filter(ProfessionalLead.id == lead_id)
+        .with_for_update()
+        .first_or_404()
+    )
+    existing_intervenant_id = getattr(lead, "intervenant_id", None)
+    if existing_intervenant_id:
+        intervenant = db.session.get(Intervenant, int(existing_intervenant_id))
+        if intervenant is None:
+            flash("The linked intervenant could not be found.", "warning")
+            return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+        flash("Lead already converted to an intervenant.", "info")
+        return redirect(_intervenant_detail_url(intervenant, None), code=303)
+
+    if (lead.status or "").strip().lower() != "qualified":
+        flash("Qualification required before conversion.", "warning")
+        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+
+    raw_structure_id = (request.form.get("structure_id") or "").strip()
+    try:
+        structure_id = int(raw_structure_id)
+    except (TypeError, ValueError):
+        structure_id = 0
+    structure = db.session.get(Structure, structure_id) if structure_id else None
+    if structure is None:
+        flash("Target structure is required for conversion.", "warning")
+        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+
+    normalized_email = (lead.email or "").strip().lower()
+    if normalized_email:
+        duplicate = (
+            Intervenant.query.filter(Intervenant.structure_id == structure.id)
+            .filter(func.lower(func.trim(Intervenant.email)) == normalized_email)
+            .first()
+        )
+        if duplicate is not None:
+            flash("An intervenant with this email already exists in the selected structure.", "warning")
+            return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+
+    actor_type = _normalize_intervenant_actor_type(getattr(lead, "profession", None))
+    if actor_type not in INTERVENANT_ACTOR_TYPE_LABELS:
+        actor_type = "field_referent"
+    availability = "unavailable"
+
+    intervenant = Intervenant(
+        structure_id=int(structure.id),
+        name=_professional_lead_intervenant_name(lead),
+        actor_type=actor_type,
+        email=(lead.email or "").strip() or None,
+        phone=(lead.phone or "").strip() or None,
+        location=(lead.city or "").strip() or None,
+        availability=availability if _table_has_column("intervenants", "availability") else None,
+        is_active=False,
+    )
+    if hasattr(intervenant, "internal_notes") and _table_has_column("intervenants", "internal_notes"):
+        intervenant.internal_notes = _professional_lead_conversion_note(lead)
+
+    try:
+        db.session.add(intervenant)
+        db.session.flush()
+        lead.intervenant_id = intervenant.id
+        _record_professional_lead_touch(
+            lead,
+            action="converted_to_intervenant",
+            payload={
+                "intervenant_id": intervenant.id,
+                "structure_id": structure.id,
+            },
+        )
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Conversion failed because the lead is already linked or a duplicate exists.", "warning")
+        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+
+    flash("Lead converted to intervenant.", "success")
+    return redirect(_intervenant_detail_url(intervenant, None), code=303)
+
+
 @admin_bp.route("/professional-leads/<int:lead_id>", methods=["GET", "POST"])
 @login_required
 @admin_required
@@ -14713,6 +14831,9 @@ def admin_professional_lead_detail(lead_id: int):
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
     status_choices = PROFESSIONAL_LEAD_STATUS_CHOICES
+    converted_intervenant = None
+    if getattr(lead, "intervenant_id", None):
+        converted_intervenant = db.session.get(Intervenant, int(lead.intervenant_id))
 
     if request.method == "POST":
         status = (request.form.get("status") or "").strip().lower()
@@ -14741,6 +14862,8 @@ def admin_professional_lead_detail(lead_id: int):
             "admin/professional_lead_detail.html",
             lead=lead,
             status_choices=status_choices,
+            structures=Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).limit(500).all(),
+            converted_intervenant=converted_intervenant,
             audience_context=extract_audience_context(lead.notes),
             lead_notes=notes_without_audience_context(lead.notes),
         ),

@@ -63,6 +63,39 @@
       </div>
     {% endif %}
 
+    <div class="hc-card mt-3">
+      <div class="hc-card__section hc-card__section--header">
+        <strong>Conversion intervenant</strong>
+        <span class="hc-muted small">Action explicite apres qualification du lead.</span>
+      </div>
+      <div class="p-3">
+        {% if converted_intervenant %}
+          <p class="hc-muted mb-3">Ce lead est deja lie a un intervenant operationnel.</p>
+          <a class="btn btn-outline-primary" href="{{ url_for('admin.admin_intervenant_detail', intervenant_id=converted_intervenant.id) }}">
+            Voir l'intervenant
+          </a>
+        {% elif (lead.status or 'new') == 'qualified' %}
+          <form method="POST" action="{{ url_for('admin.admin_professional_lead_convert_intervenant', lead_id=lead.id) }}" class="row g-3 align-items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="col-12 col-lg-8">
+              <label for="conversion_structure_id" class="form-label">Structure cible</label>
+              <select id="conversion_structure_id" name="structure_id" class="hc-input" required>
+                <option value="">Selectionner une structure</option>
+                {% for structure in structures %}
+                  <option value="{{ structure.id }}">{{ structure.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-lg-4">
+              <button class="btn btn-primary w-100" type="submit">Convertir en intervenant</button>
+            </div>
+          </form>
+        {% else %}
+          <p class="hc-muted mb-0">Qualification requise avant conversion en intervenant.</p>
+        {% endif %}
+      </div>
+    </div>
+
     <form method="POST" class="mt-3">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 

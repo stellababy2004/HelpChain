@@ -39,6 +39,13 @@ class ProfessionalLead(db.Model):
     last_touched_by_admin_id = db.Column(
         db.Integer, db.ForeignKey("admin_users.id"), nullable=True, index=True
     )
+    intervenant_id = db.Column(
+        db.Integer,
+        db.ForeignKey("intervenants.id"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
     next_action_at = db.Column(db.DateTime(timezone=True), nullable=True, index=True)
     next_action_note = db.Column(db.String(255), nullable=True)
 
@@ -47,6 +54,8 @@ class ProfessionalLead(db.Model):
         nullable=False,
         default=lambda: datetime.now(UTC),
     )
+
+    intervenant = db.relationship("Intervenant", foreign_keys=[intervenant_id])
 
     def __repr__(self) -> str:
         return (
