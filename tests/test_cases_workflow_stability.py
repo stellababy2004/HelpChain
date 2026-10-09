@@ -130,6 +130,29 @@ def _make_intervenant(session, *, structure_id: int, name: str, email: str):
     return row
 
 
+def _make_converted_professional_lead(
+    session,
+    *,
+    structure_id: int,
+    name: str,
+    email: str,
+):
+    intervenant = _make_intervenant(
+        session,
+        structure_id=structure_id,
+        name=name,
+        email=email,
+    )
+    lead = _make_professional_lead(
+        session,
+        full_name=name,
+        email=email,
+    )
+    lead.intervenant_id = intervenant.id
+    session.commit()
+    return lead, intervenant
+
+
 def test_cases_require_authentication(client):
     resp = client.get("/admin/cases")
     assert resp.status_code in {302, 303, 403, 404}
@@ -647,6 +670,311 @@ def test_unassigning_converted_lead_removes_operational_assignment(app, session)
     assert unassign_response.status_code == 303
     assert assignment.status == "removed"
     assert case_row.assigned_professional_lead_id is None
+
+
+def test_resolving_case_removes_only_linked_operational_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="Resolve Sync Scope",
+        slug="resolve-sync-scope",
+    )
+    user = _make_user(
+        session,
+        username="resolve_sync_requester",
+        email="resolve_sync_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="resolve_sync_ops",
+        email="resolve_sync_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead, linked_intervenant = _make_converted_professional_lead(
+        session,
+        structure_id=structure.id,
+        name="Resolve Linked Professional",
+        email="resolve-linked@test.local",
+    )
+    other_intervenant = _make_intervenant(
+        session,
+        structure_id=structure.id,
+        name="Resolve Other Professional",
+        email="resolve-other@test.local",
+    )
+
+    req = _make_request(
+        session,
+        title="resolve linked request",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="in_progress",
+    )
+    other_req = _make_request(
+        session,
+        title="resolve unrelated request",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="in_progress",
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="in_progress",
+    )
+    case_row.assigned_professional_lead_id = lead.id
+    linked_assignment = Assignment(
+        request_id=req.id,
+        intervenant_id=linked_intervenant.id,
+        structure_id=structure.id,
+        assigned_by_admin_id=admin.id,
+        status="active",
+    )
+    same_request_other_intervenant = Assignment(
+        request_id=req.id,
+        intervenant_id=other_intervenant.id,
+        structure_id=structure.id,
+        assigned_by_admin_id=admin.id,
+        status="active",
+    )
+    same_intervenant_other_request = Assignment(
+        request_id=other_req.id,
+        intervenant_id=linked_intervenant.id,
+        structure_id=structure.id,
+        assigned_by_admin_id=admin.id,
+        status="active",
+    )
+    session.add_all(
+        [
+            linked_assignment,
+            same_request_other_intervenant,
+            same_intervenant_other_request,
+        ]
+    )
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/status",
+        data={"status": "resolved"},
+        follow_redirects=False,
+    )
+
+    session.refresh(linked_assignment)
+    session.refresh(same_request_other_intervenant)
+    session.refresh(same_intervenant_other_request)
+
+    assert response.status_code == 303
+    assert linked_assignment.status == "removed"
+    assert same_request_other_intervenant.status == "active"
+    assert same_intervenant_other_request.status == "active"
+
+
+@pytest.mark.parametrize("old_status", ["assigned", "in_progress"])
+def test_cancelling_operational_case_removes_linked_assignment(
+    app, session, old_status
+):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name=f"Cancel Sync Scope {old_status}",
+        slug=f"cancel-sync-scope-{old_status}",
+    )
+    user = _make_user(
+        session,
+        username=f"cancel_sync_requester_{old_status}",
+        email=f"cancel_sync_requester_{old_status}@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username=f"cancel_sync_ops_{old_status}",
+        email=f"cancel_sync_ops_{old_status}@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead, intervenant = _make_converted_professional_lead(
+        session,
+        structure_id=structure.id,
+        name=f"Cancel Linked Professional {old_status}",
+        email=f"cancel-linked-{old_status}@test.local",
+    )
+    req = _make_request(
+        session,
+        title=f"cancel linked request {old_status}",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="in_progress",
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status=old_status,
+    )
+    case_row.assigned_professional_lead_id = lead.id
+    assignment = Assignment(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+        assigned_by_admin_id=admin.id,
+        status="active",
+    )
+    session.add(assignment)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/status",
+        data={"status": "cancelled"},
+        follow_redirects=False,
+    )
+
+    session.refresh(assignment)
+    assert response.status_code == 303
+    assert assignment.status == "removed"
+
+
+def test_closing_resolved_case_leaves_no_active_linked_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="Close Sync Scope",
+        slug="close-sync-scope",
+    )
+    user = _make_user(
+        session,
+        username="close_sync_requester",
+        email="close_sync_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="close_sync_ops",
+        email="close_sync_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead, intervenant = _make_converted_professional_lead(
+        session,
+        structure_id=structure.id,
+        name="Close Linked Professional",
+        email="close-linked@test.local",
+    )
+    req = _make_request(
+        session,
+        title="close linked request",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="in_progress",
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="resolved",
+    )
+    case_row.assigned_professional_lead_id = lead.id
+    assignment = Assignment(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+        assigned_by_admin_id=admin.id,
+        status="active",
+    )
+    session.add(assignment)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/status",
+        data={"status": "closed"},
+        follow_redirects=False,
+    )
+
+    session.refresh(assignment)
+    assert response.status_code == 303
+    assert assignment.status == "removed"
+
+
+def test_reopening_resolved_case_restores_operational_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="Reopen Sync Scope",
+        slug="reopen-sync-scope",
+    )
+    user = _make_user(
+        session,
+        username="reopen_sync_requester",
+        email="reopen_sync_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="reopen_sync_ops",
+        email="reopen_sync_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead, intervenant = _make_converted_professional_lead(
+        session,
+        structure_id=structure.id,
+        name="Reopen Linked Professional",
+        email="reopen-linked@test.local",
+    )
+    req = _make_request(
+        session,
+        title="reopen linked request",
+        user_id=user.id,
+        structure_id=structure.id,
+        status="in_progress",
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="resolved",
+    )
+    case_row.assigned_professional_lead_id = lead.id
+    assignment = Assignment(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+        assigned_by_admin_id=admin.id,
+        status="removed",
+    )
+    session.add(assignment)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/status",
+        data={"status": "in_progress"},
+        follow_redirects=False,
+    )
+
+    rows = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+    ).all()
+    session.refresh(assignment)
+
+    assert response.status_code == 303
+    assert len(rows) == 1
+    assert assignment.status == "active"
 
 
 def test_case_detail_renders_professional_participant_name_not_unknown(app, session):
