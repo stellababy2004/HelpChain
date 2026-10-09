@@ -10706,3 +10706,15 @@ msgstr "Archivez d'abord la demande pour pouvoir la déplacer vers Supprimées."
 
 msgid "Request archived and closed."
 msgstr "Demande archivée et clôturée."
+
+#: templates/admin/professionals_map.html
+msgid "Toutes les zones"
+msgstr "Toutes les zones"
+
+#: templates/admin/professionals_map.html
+msgid "Toutes"
+msgstr "Toutes"
+
+#: templates/admin/professionals_map.html
+msgid "Ouvrir les cas actifs"
+msgstr "Ouvrir les cas actifs"
