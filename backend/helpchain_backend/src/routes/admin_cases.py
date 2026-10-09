@@ -87,6 +87,14 @@ CASE_STATUS_TRANSITIONS = {
     "closed": set(),
     "cancelled": set(),
 }
+CASE_OPERATIONAL_ASSIGNMENT_ACTIVE_STATUSES = {
+    "active",
+    "pending",
+    "accepted",
+    "in_progress",
+}
+CASE_TERMINAL_OPERATIONAL_STATUSES = {"resolved", "closed", "cancelled"}
+CASE_REOPEN_OPERATIONAL_STATUSES = {"assigned", "in_progress"}
 
 
 def _safe_json_dict(raw: str | None) -> dict:
@@ -324,6 +332,93 @@ def _case_status_transition_allowed(old_status: str, new_status: str) -> bool:
     if old_key not in CASE_STATUS_TRANSITIONS:
         return False
     return new_key in CASE_STATUS_TRANSITIONS[old_key]
+
+
+def _intervenant_for_professional_lead_id(
+    professional_lead_id: int | None,
+) -> Intervenant | None:
+    if professional_lead_id is None:
+        return None
+    lead = db.session.get(ProfessionalLead, int(professional_lead_id))
+    if lead is None:
+        return None
+    intervenant_id = getattr(lead, "intervenant_id", None)
+    if intervenant_id is None:
+        return None
+    return db.session.get(Intervenant, int(intervenant_id))
+
+
+def _case_operational_assignment_query(req: Request, intervenant: Intervenant):
+    query = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+    )
+    intervenant_structure_id = getattr(intervenant, "structure_id", None)
+    if intervenant_structure_id is not None:
+        query = query.filter(Assignment.structure_id == intervenant_structure_id)
+    return query
+
+
+def _case_active_operational_assignment_query(req: Request, intervenant: Intervenant):
+    return _case_operational_assignment_query(req, intervenant).filter(
+        func.lower(func.coalesce(Assignment.status, "")).in_(
+            CASE_OPERATIONAL_ASSIGNMENT_ACTIVE_STATUSES
+        )
+    )
+
+
+def _remove_case_operational_assignment_for_lead(
+    req: Request | None,
+    professional_lead_id: int | None,
+) -> int:
+    if req is None or professional_lead_id is None:
+        return 0
+    intervenant = _intervenant_for_professional_lead_id(professional_lead_id)
+    if intervenant is None:
+        return 0
+
+    assignments = _case_active_operational_assignment_query(req, intervenant).all()
+    for assignment in assignments:
+        assignment.status = "removed"
+    return len(assignments)
+
+
+def _ensure_case_operational_assignment_for_lead(
+    req: Request | None,
+    professional_lead_id: int | None,
+    *,
+    assigned_by_admin_id: int | None = None,
+) -> Assignment | None:
+    if req is None or professional_lead_id is None:
+        return None
+    intervenant = _intervenant_for_professional_lead_id(professional_lead_id)
+    if intervenant is None:
+        return None
+
+    active_assignment = _case_active_operational_assignment_query(
+        req, intervenant
+    ).first()
+    if active_assignment is not None:
+        return active_assignment
+
+    existing_assignment = (
+        _case_operational_assignment_query(req, intervenant)
+        .order_by(Assignment.assigned_at.desc(), Assignment.id.desc())
+        .first()
+    )
+    if existing_assignment is not None:
+        existing_assignment.status = "active"
+        return existing_assignment
+
+    assignment = Assignment(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=intervenant.structure_id,
+        assigned_by_admin_id=assigned_by_admin_id,
+        status="active",
+    )
+    db.session.add(assignment)
+    return assignment
 
 
 def _owner_query_for_current_scope():
@@ -658,7 +753,7 @@ def admin_case_add_coordination_note(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_set_status(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, req = _get_scoped_case_or_404(case_id)
 
     new_status = (request.form.get("status") or "").strip().lower()
     if new_status not in CATEGORY_CASE_STATUSES:
@@ -700,6 +795,21 @@ def admin_case_set_status(case_id: int):
 
         if new_status == "cancelled" and not case_row.closed_at:
             case_row.closed_at = now
+
+        if new_status in CASE_TERMINAL_OPERATIONAL_STATUSES:
+            _remove_case_operational_assignment_for_lead(
+                req,
+                case_row.assigned_professional_lead_id,
+            )
+        elif (
+            old_status in CASE_TERMINAL_OPERATIONAL_STATUSES
+            and new_status in CASE_REOPEN_OPERATIONAL_STATUSES
+        ):
+            _ensure_case_operational_assignment_for_lead(
+                req,
+                case_row.assigned_professional_lead_id,
+                assigned_by_admin_id=getattr(current_user, "id", None),
+            )
 
         # ✅ STATUS LABELS
         STATUS_LABELS = {
@@ -816,23 +926,10 @@ def admin_case_assign_professional(case_id: int):
 
         # Remove the operational assignment linked to the previous lead.
         if old_lead_id is not None and req is not None:
-            old_lead = db.session.get(ProfessionalLead, old_lead_id)
-            old_intervenant_id = (
-                getattr(old_lead, "intervenant_id", None)
-                if old_lead is not None
-                else None
+            _remove_case_operational_assignment_for_lead(
+                req,
+                old_lead_id,
             )
-            if old_intervenant_id is not None:
-                old_assignments = Assignment.query.filter_by(
-                    request_id=req.id,
-                    intervenant_id=old_intervenant_id,
-                ).filter(
-                    func.lower(func.coalesce(Assignment.status, "")).in_(
-                        {"active", "pending", "accepted", "in_progress"}
-                    )
-                ).all()
-                for assignment in old_assignments:
-                    assignment.status = "removed"
 
         case_row.assigned_professional_lead_id = lead_id
         case_row.last_activity_at = now
@@ -853,32 +950,11 @@ def admin_case_assign_professional(case_id: int):
 
             # If the lead has been converted to an Intervenant, mirror the
             # Case assignment into the operational Assignment table.
-            intervenant_id = getattr(selected_lead, "intervenant_id", None)
-            if intervenant_id is not None and req is not None:
-                intervenant = db.session.get(Intervenant, intervenant_id)
-                if intervenant is not None:
-                    existing = Assignment.query.filter_by(
-                        request_id=req.id,
-                        intervenant_id=intervenant.id,
-                        structure_id=intervenant.structure_id,
-                    ).filter(
-                        func.lower(func.coalesce(Assignment.status, "")).in_(
-                            {"active", "pending", "accepted", "in_progress"}
-                        )
-                    ).first()
-
-                    if existing is None:
-                        db.session.add(
-                            Assignment(
-                                request_id=req.id,
-                                intervenant_id=intervenant.id,
-                                structure_id=intervenant.structure_id,
-                                assigned_by_admin_id=getattr(
-                                    current_user, "id", None
-                                ),
-                                status="active",
-                            )
-                        )
+            _ensure_case_operational_assignment_for_lead(
+                req,
+                lead_id,
+                assigned_by_admin_id=getattr(current_user, "id", None),
+            )
 
         _append_case_event(
             case_id=case_row.id,
