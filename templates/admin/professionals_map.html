@@ -69,7 +69,7 @@
     <div class="hc-risk-map-contextbar" aria-live="polite">
       <div class="hc-risk-map-contextbar__primary">
         <span class="hc-risk-map-contextbar__label">Zone active</span>
-        <strong>{% if scope_structure %}{{ scope_structure.name }}{% else %}Boulogne-Billancourt{% endif %}</strong>
+        <strong>{% if scope_structure %}{{ scope_structure.name }}{% else %}{{ _('Toutes les zones') }}{% endif %}</strong>
       </div>
       <div class="hc-risk-map-contextbar__secondary">{% if scope_structure %}La carte signale clairement les intervenants concentres sur une meme ville lorsqu'ils partagent les memes coordonnees de repli.{% else %}Reperez la couverture visible avant attribution, relance ou orientation vers la file operateur.{% endif %}</div>
     </div>
@@ -95,7 +95,7 @@
             <div class="hc-risk-map-control">
               <label class="form-label" for="proMapZoneSelect">Zone</label>
               <select class="form-select" id="proMapZoneSelect" disabled>
-                <option selected>{% if scope_structure %}{{ scope_structure.name }}{% else %}Boulogne-Billancourt{% endif %}</option>
+                <option selected>{% if scope_structure %}{{ scope_structure.name }}{% else %}{{ _('Toutes les zones') }}{% endif %}</option>
               </select>
             </div>
           </div>
@@ -110,7 +110,7 @@
         <div class="hc-map-command-panel__copy">Reperez les zones visibles, la densite de couverture et la ressource dominante avant attribution.</div>
         <div class="hc-map-command-panel__metrics">
           <span class="hc-map-command-panel__metric">
-            <strong>{% if scope_structure %}{{ scope_structure.name }}{% else %}Boulogne{% endif %}</strong>
+            <strong>{% if scope_structure %}{{ scope_structure.name }}{% else %}{{ _('Toutes') }}{% endif %}</strong>
             <span>zone active</span>
           </span>
           <span class="hc-map-command-panel__metric">
@@ -125,13 +125,13 @@
     <div class="hc-map-action-bar hc-risk-map-actionstrip" aria-label="Actions sur la couverture">
       <div class="hc-risk-map-actionstrip__content">
         <div class="hc-risk-map-actionstrip__title">Actions sur la zone</div>
-        <div class="hc-risk-map-actionstrip__meta">{% if scope_structure %}{{ scope_structure.name }}{% else %}Boulogne-Billancourt{% endif %}</div>
+        <div class="hc-risk-map-actionstrip__meta">{% if scope_structure %}{{ scope_structure.name }}{% else %}{{ _('Toutes les zones') }}{% endif %}</div>
         <div class="hc-risk-map-actionstrip__meta">{% if scope_structure %}Passez du marqueur groupe a la liste detaillee de cette structure sans perdre le contexte territorial.{% else %}Passez de la carte a la liste detaillee ou a la file operateur sans quitter le contexte territorial.{% endif %}</div>
       </div>
       <div class="hc-risk-map-actionstrip__actions">
         <a href="{{ map_list_url }}" class="btn btn-primary btn-sm">Voir la liste</a>
         <a href="{{ map_add_url }}" class="btn btn-outline-secondary btn-sm">Ajouter un intervenant</a>
-        <a href="{{ url_for('ops.ops_cases_list', city='Boulogne-Billancourt') }}" class="btn btn-outline-secondary btn-sm">Ouvrir les cas actifs</a>
+        <a href="{{ url_for('ops.ops_cases_list') }}" class="btn btn-outline-secondary btn-sm">{{ _('Ouvrir les cas actifs') }}</a>
       </div>
     </div>
   </div>
