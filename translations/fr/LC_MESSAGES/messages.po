@@ -7466,6 +7466,38 @@ msgstr "Créé le"
 msgid "Source:"
 msgstr ""
 
+#: templates/admin/professional_lead_detail.html:68
+msgid "Conversion intervenant"
+msgstr "Conversion intervenant"
+
+#: templates/admin/professional_lead_detail.html:69
+msgid "Action explicite apres qualification du lead."
+msgstr "Action explicite apres qualification du lead."
+
+#: templates/admin/professional_lead_detail.html:73
+msgid "Ce lead est deja lie a un intervenant operationnel."
+msgstr "Ce lead est deja lie a un intervenant operationnel."
+
+#: templates/admin/professional_lead_detail.html:75
+msgid "Voir l'intervenant"
+msgstr "Voir l'intervenant"
+
+#: templates/admin/professional_lead_detail.html:81
+msgid "Structure cible"
+msgstr "Structure cible"
+
+#: templates/admin/professional_lead_detail.html:83
+msgid "Selectionner une structure"
+msgstr "Selectionner une structure"
+
+#: templates/admin/professional_lead_detail.html:90
+msgid "Convertir en intervenant"
+msgstr "Convertir en intervenant"
+
+#: templates/admin/professional_lead_detail.html:94
+msgid "Qualification requise avant conversion en intervenant."
+msgstr "Qualification requise avant conversion en intervenant."
+
 #: templates/admin/professional_lead_detail.html:19 templates/admin/professional_leads.html:35
 #: templates/admin/professional_leads.html:57 templates/admin/request_details.html:428
 #: templates/admin/request_details.html:518 templates/admin/requests.html:230 templates/admin/requests.html:318
