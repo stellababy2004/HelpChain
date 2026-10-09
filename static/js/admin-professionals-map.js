@@ -121,12 +121,12 @@
   }
 
   function popupActionsHtml(city) {
-    var selectedCity = encodeURIComponent(city || "Boulogne-Billancourt");
+    var selectedCity = city ? "?city=" + encodeURIComponent(city) : "";
     return [
       '<div class="hc-risk-map-popup__actions">',
       '<a class="hc-risk-map-popup__action" href="' + esc(listUrl) + '">Voir les intervenants</a>',
-      '<a class="hc-risk-map-popup__action" href="/ops/cases?city=' + selectedCity + '">Voir les cas lies</a>',
-      '<a class="hc-risk-map-popup__action" href="/admin/requests?city=' + selectedCity + '">Voir les demandes</a>',
+      '<a class="hc-risk-map-popup__action" href="/ops/cases' + selectedCity + '">Voir les cas lies</a>',
+      '<a class="hc-risk-map-popup__action" href="/admin/requests' + selectedCity + '">Voir les demandes</a>',
       "</div>",
     ].join("");
   }
@@ -140,7 +140,7 @@
     var safeWorkload = Number.isFinite(workload) ? workload : 0;
     var address = esc((item && item.address) || "");
     var coordsLabel = item && item.has_exact_coordinates ? "coordonnees exactes" : "coordonnees ville";
-    var actionCity = (item && item.city) || "Boulogne-Billancourt";
+    var actionCity = (item && item.city) || "";
     var activeLabel = item && item.is_active === false ? "Inactif" : "Actif";
 
     return [
