@@ -114,6 +114,22 @@ def _make_professional_lead(session, *, full_name: str, email: str):
     return row
 
 
+def _make_intervenant(session, *, structure_id: int, name: str, email: str):
+    from backend.models import Intervenant
+
+    row = Intervenant(
+        structure_id=structure_id,
+        name=name,
+        email=email,
+        actor_type="field_referent",
+        availability="unavailable",
+        is_active=False,
+    )
+    session.add(row)
+    session.commit()
+    return row
+
+
 def test_cases_require_authentication(client):
     resp = client.get("/admin/cases")
     assert resp.status_code in {302, 303, 403, 404}
@@ -330,6 +346,307 @@ def test_assigning_professional_upserts_canonical_case_participant(app, session)
     assert participant_rows[0].professional_lead_id == lead.id
     assert participant_rows[0].role == "primary_professional"
     assert participant_rows[0].status == "active"
+
+
+def test_assigning_converted_lead_creates_operational_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="Assignment Sync Scope",
+        slug="assignment-sync-scope",
+    )
+    user = _make_user(
+        session,
+        username="assignment_sync_requester",
+        email="assignment_sync_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="assignment_sync_ops",
+        email="assignment_sync_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    intervenant = _make_intervenant(
+        session,
+        structure_id=structure.id,
+        name="Marie Dupont",
+        email="marie-sync@test.local",
+    )
+    lead = _make_professional_lead(
+        session,
+        full_name="Marie Dupont",
+        email="marie-sync@test.local",
+    )
+    lead.intervenant_id = intervenant.id
+    session.commit()
+
+    req = _make_request(
+        session,
+        title="assignment sync",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+    )
+
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+
+    assignment = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+    ).one()
+
+    assert response.status_code == 303
+    assert assignment.status == "active"
+    assert assignment.assigned_by_admin_id == admin.id
+
+
+def test_assigning_same_converted_lead_does_not_duplicate_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="No Duplicate Scope",
+        slug="no-duplicate-scope",
+    )
+    user = _make_user(
+        session,
+        username="no_duplicate_requester",
+        email="no_duplicate_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="no_duplicate_ops",
+        email="no_duplicate_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    intervenant = _make_intervenant(
+        session,
+        structure_id=structure.id,
+        name="No Duplicate Marie",
+        email="no-duplicate-marie@test.local",
+    )
+    lead = _make_professional_lead(
+        session,
+        full_name="No Duplicate Marie",
+        email="no-duplicate-marie@test.local",
+    )
+    lead.intervenant_id = intervenant.id
+    session.commit()
+
+    req = _make_request(
+        session,
+        title="no duplicate assignment",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+    )
+
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    for _ in range(2):
+        response = client.post(
+            f"/admin/cases/{case_row.id}/assign-professional",
+            data={"assigned_professional_lead_id": str(lead.id)},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+
+    rows = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+    ).all()
+
+    assert len(rows) == 1
+    assert rows[0].status == "active"
+
+
+def test_reassigning_converted_lead_removes_old_and_creates_new_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="Reassignment Scope",
+        slug="reassignment-scope",
+    )
+    user = _make_user(
+        session,
+        username="reassignment_requester",
+        email="reassignment_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="reassignment_ops",
+        email="reassignment_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+
+    first_intervenant = _make_intervenant(
+        session,
+        structure_id=structure.id,
+        name="First Professional",
+        email="first-professional@test.local",
+    )
+    first_lead = _make_professional_lead(
+        session,
+        full_name="First Professional",
+        email="first-professional@test.local",
+    )
+    first_lead.intervenant_id = first_intervenant.id
+
+    second_intervenant = _make_intervenant(
+        session,
+        structure_id=structure.id,
+        name="Second Professional",
+        email="second-professional@test.local",
+    )
+    second_lead = _make_professional_lead(
+        session,
+        full_name="Second Professional",
+        email="second-professional@test.local",
+    )
+    second_lead.intervenant_id = second_intervenant.id
+    session.commit()
+
+    req = _make_request(
+        session,
+        title="reassignment",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+    )
+
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    first_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(first_lead.id)},
+        follow_redirects=False,
+    )
+    second_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(second_lead.id)},
+        follow_redirects=False,
+    )
+
+    old_assignment = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=first_intervenant.id,
+    ).one()
+    new_assignment = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=second_intervenant.id,
+    ).one()
+
+    session.refresh(case_row)
+
+    assert first_response.status_code == 303
+    assert second_response.status_code == 303
+    assert old_assignment.status == "removed"
+    assert new_assignment.status == "active"
+    assert case_row.assigned_professional_lead_id == second_lead.id
+
+
+def test_unassigning_converted_lead_removes_operational_assignment(app, session):
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session,
+        name="Unassignment Scope",
+        slug="unassignment-scope",
+    )
+    user = _make_user(
+        session,
+        username="unassignment_requester",
+        email="unassignment_requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="unassignment_ops",
+        email="unassignment_ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    intervenant = _make_intervenant(
+        session,
+        structure_id=structure.id,
+        name="Unassigned Professional",
+        email="unassigned-professional@test.local",
+    )
+    lead = _make_professional_lead(
+        session,
+        full_name="Unassigned Professional",
+        email="unassigned-professional@test.local",
+    )
+    lead.intervenant_id = intervenant.id
+    session.commit()
+
+    req = _make_request(
+        session,
+        title="unassignment",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+    )
+
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    assign_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+    unassign_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": ""},
+        follow_redirects=False,
+    )
+
+    assignment = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+    ).one()
+    session.refresh(case_row)
+
+    assert assign_response.status_code == 303
+    assert unassign_response.status_code == 303
+    assert assignment.status == "removed"
+    assert case_row.assigned_professional_lead_id is None
 
 
 def test_case_detail_renders_professional_participant_name_not_unknown(app, session):

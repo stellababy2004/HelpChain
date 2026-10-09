@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from collections import defaultdict
@@ -12,6 +12,7 @@ from sqlalchemy.orm import joinedload
 from backend.extensions import db
 from ..models import (
     AdminUser,
+    Assignment,
     Case,
     CaseCollaborator,
     CaseEvent,
@@ -783,12 +784,13 @@ def admin_case_assign_owner(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_professional(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, req = _get_scoped_case_or_404(case_id)
     lead_raw = (
         request.form.get("assigned_professional_lead_id")
         or request.form.get("primary_professional_lead_id")
         or ""
     ).strip()
+
     lead_id = None
     if lead_raw:
         try:
@@ -796,19 +798,50 @@ def admin_case_assign_professional(case_id: int):
         except Exception:
             lead_id = None
 
-    if lead_id is not None and not (db.session.get(ProfessionalLead, lead_id) or db.session.get(Intervenant, lead_id)):
+    selected_lead = (
+        db.session.get(ProfessionalLead, lead_id)
+        if lead_id is not None
+        else None
+    )
+    if lead_id is not None and selected_lead is None:
         flash("Selected professional lead does not exist.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id),
+            code=303,
+        )
 
     old_lead_id = case_row.assigned_professional_lead_id
     if old_lead_id != lead_id:
         now = _now_utc()
+
+        # Remove the operational assignment linked to the previous lead.
+        if old_lead_id is not None and req is not None:
+            old_lead = db.session.get(ProfessionalLead, old_lead_id)
+            old_intervenant_id = (
+                getattr(old_lead, "intervenant_id", None)
+                if old_lead is not None
+                else None
+            )
+            if old_intervenant_id is not None:
+                old_assignments = Assignment.query.filter_by(
+                    request_id=req.id,
+                    intervenant_id=old_intervenant_id,
+                ).filter(
+                    func.lower(func.coalesce(Assignment.status, "")).in_(
+                        {"active", "pending", "accepted", "in_progress"}
+                    )
+                ).all()
+                for assignment in old_assignments:
+                    assignment.status = "removed"
+
         case_row.assigned_professional_lead_id = lead_id
         case_row.last_activity_at = now
+
         if lead_id and not case_row.assigned_at:
             case_row.assigned_at = now
             if case_row.status in {"new", "triaged"}:
                 case_row.status = "assigned"
+
         if lead_id:
             _upsert_case_participant(
                 case_id=case_row.id,
@@ -817,6 +850,36 @@ def admin_case_assign_professional(case_id: int):
                 professional_lead_id=lead_id,
                 status="active",
             )
+
+            # If the lead has been converted to an Intervenant, mirror the
+            # Case assignment into the operational Assignment table.
+            intervenant_id = getattr(selected_lead, "intervenant_id", None)
+            if intervenant_id is not None and req is not None:
+                intervenant = db.session.get(Intervenant, intervenant_id)
+                if intervenant is not None:
+                    existing = Assignment.query.filter_by(
+                        request_id=req.id,
+                        intervenant_id=intervenant.id,
+                        structure_id=intervenant.structure_id,
+                    ).filter(
+                        func.lower(func.coalesce(Assignment.status, "")).in_(
+                            {"active", "pending", "accepted", "in_progress"}
+                        )
+                    ).first()
+
+                    if existing is None:
+                        db.session.add(
+                            Assignment(
+                                request_id=req.id,
+                                intervenant_id=intervenant.id,
+                                structure_id=intervenant.structure_id,
+                                assigned_by_admin_id=getattr(
+                                    current_user, "id", None
+                                ),
+                                status="active",
+                            )
+                        )
+
         _append_case_event(
             case_id=case_row.id,
             actor_user_id=getattr(current_user, "id", None),
@@ -831,7 +894,11 @@ def admin_case_assign_professional(case_id: int):
         evaluate_case_alerts(case_row)
         db.session.commit()
         flash("Case professional assignment updated.", "success")
-    return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+
+    return redirect(
+        url_for("admin.admin_case_detail", case_id=case_row.id),
+        code=303,
+    )
 
 
 @admin_bp.post("/cases/<int:case_id>/participants")
