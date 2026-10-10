@@ -337,6 +337,11 @@ class UserBehavior(db.Model):
     device_info = db.Column(db.String(100), nullable=True)  # browser, OS, device
     location = db.Column(db.String(100), nullable=True)  # city, country
 
+    # Privacy-safe first-touch acquisition attribution
+    utm_source = db.Column(db.String(100), nullable=True)
+    utm_medium = db.Column(db.String(100), nullable=True)
+    utm_campaign = db.Column(db.String(150), nullable=True)
+
     # Session data
     session_start = db.Column(db.DateTime, default=utc_now)
     last_activity = db.Column(db.DateTime, default=utc_now)

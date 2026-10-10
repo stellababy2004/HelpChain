@@ -139,6 +139,25 @@ def track_audience_page_view() -> bool:
         db.session.add(event)
 
         behavior = UserBehavior.query.filter_by(session_id=session_id).first()
+
+        # Privacy-safe first-touch acquisition attribution.
+        # Store only allowlisted UTM values, never the full query string.
+        def clean_utm(name, max_length):
+            value = (request.args.get(name) or "").strip()
+            if not value:
+                return None
+            value = "".join(
+                char for char in value
+                if char.isalnum() or char in "-_."
+            )
+            return value[:max_length] or None
+
+        incoming_utm = (
+            clean_utm("utm_source", 100),
+            clean_utm("utm_medium", 100),
+            clean_utm("utm_campaign", 150),
+        )
+
         if behavior is None:
             behavior = UserBehavior(
                 session_id=session_id,
@@ -149,8 +168,25 @@ def track_audience_page_view() -> bool:
                 session_start=now,
                 last_activity=now,
                 pages_visited=0,
+                utm_source=incoming_utm[0],
+                utm_medium=incoming_utm[1],
+                utm_campaign=incoming_utm[2],
             )
             db.session.add(behavior)
+        elif (
+            not any(
+                (
+                    behavior.utm_source,
+                    behavior.utm_medium,
+                    behavior.utm_campaign,
+                )
+            )
+            and any(incoming_utm)
+        ):
+            behavior.utm_source = incoming_utm[0]
+            behavior.utm_medium = incoming_utm[1]
+            behavior.utm_campaign = incoming_utm[2]
+
         if approximate_city and not behavior.location:
             behavior.location = approximate_city
         behavior.pages_visited = (behavior.pages_visited or 0) + 1

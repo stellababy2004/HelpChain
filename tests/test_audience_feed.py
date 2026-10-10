@@ -36,6 +36,77 @@ def test_tracked_public_page_creates_page_view(client):
     assert event.user_agent is None
 
 
+
+def test_public_page_captures_first_touch_utm(client):
+    response = client.get(
+        "/offre?utm_source=linkedin&utm_medium=social&utm_campaign=escp_octobre",
+        headers=PUBLIC_HEADERS,
+    )
+
+    assert response.status_code == 200
+
+    behavior = UserBehavior.query.one()
+    assert behavior.utm_source == "linkedin"
+    assert behavior.utm_medium == "social"
+    assert behavior.utm_campaign == "escp_octobre"
+
+    event = AnalyticsEvent.query.filter_by(event_type="page_view").one()
+    assert event.page_url == "/offre"
+    assert "utm_" not in event.page_url
+
+
+def test_public_page_keeps_first_touch_utm(client):
+    first = client.get(
+        "/offre?utm_source=linkedin&utm_medium=social&utm_campaign=escp_octobre",
+        headers=PUBLIC_HEADERS,
+    )
+    second = client.get(
+        "/demander-acces?utm_source=google&utm_medium=cpc&utm_campaign=other_campaign",
+        headers=PUBLIC_HEADERS,
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+
+    behavior = UserBehavior.query.one()
+    assert behavior.pages_visited == 2
+    assert behavior.utm_source == "linkedin"
+    assert behavior.utm_medium == "social"
+    assert behavior.utm_campaign == "escp_octobre"
+
+
+def test_public_page_sanitizes_and_bounds_utm(client):
+    campaign = "campaign!" + ("x" * 200)
+
+    response = client.get(
+        "/offre",
+        query_string={
+            "utm_source": " Linked In<script> ",
+            "utm_medium": "paid social / test",
+            "utm_campaign": campaign,
+            "email": "private@example.com",
+            "token": "super-secret",
+        },
+        headers=PUBLIC_HEADERS,
+    )
+
+    assert response.status_code == 200
+
+    behavior = UserBehavior.query.one()
+
+    assert behavior.utm_source == "LinkedInscript"
+    assert behavior.utm_medium == "paidsocialtest"
+    assert behavior.utm_campaign == "campaign" + ("x" * 142)
+    assert len(behavior.utm_source) <= 100
+    assert len(behavior.utm_medium) <= 100
+    assert len(behavior.utm_campaign) == 150
+
+    event = AnalyticsEvent.query.filter_by(event_type="page_view").one()
+    assert event.page_url == "/offre"
+    assert "private@example.com" not in event.page_url
+    assert "super-secret" not in event.page_url
+
+
 def test_static_assets_do_not_create_page_view(client):
     client.get("/static/css/pages/admin-ui.css", headers=PUBLIC_HEADERS)
 
