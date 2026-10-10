@@ -697,10 +697,9 @@
     attributionControl: true,
   }).setView([defaultLat, defaultLng], defaultZoom);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    subdomains: "abcd",
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+    attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map);
 
   var heatLayer = L.layerGroup().addTo(map);
