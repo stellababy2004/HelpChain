@@ -224,6 +224,7 @@ def add_security_headers(app: Flask):
         # Allow restrained map assets for admin territorial risk map.
         map_script_origin = "https://unpkg.com"
         map_tile_origin = "https://*.tile.openstreetmap.org"
+        osm_tile_origin = "https://tile.openstreetmap.org"
         carto_tile_origin = "https://*.basemaps.cartocdn.com"
         turnstile_enabled = bool(app.config.get("HC_TURNSTILE_ENABLED", False))
         turnstile_origin = "https://challenges.cloudflare.com"
@@ -233,6 +234,8 @@ def add_security_headers(app: Flask):
             style_src.append(map_script_origin)
         if map_tile_origin not in img_src:
             img_src.append(map_tile_origin)
+        if osm_tile_origin not in img_src:
+            img_src.append(osm_tile_origin)
         if carto_tile_origin not in img_src:
             img_src.append(carto_tile_origin)
         if is_dev_csp:
