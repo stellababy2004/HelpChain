@@ -7,7 +7,10 @@
 
   const data = await res.json();
   if (!res.ok) {
-    document.getElementById("pagesBody").innerHTML = '<tr><td colspan="7">Analytics unavailable.</td></tr>';
+    document.getElementById("pagesBody").innerHTML =
+      '<tr><td colspan="7">Analytics unavailable.</td></tr>';
+    document.getElementById("acquisitionBody").innerHTML =
+      '<tr><td colspan="7">Analytics unavailable.</td></tr>';
     return;
   }
 
@@ -32,6 +35,22 @@
 
   document.getElementById("pagesBody").innerHTML =
     rows || '<tr><td colspan="7" class="text-muted">No conversion data.</td></tr>';
+
+  const acquisitionRows = (data.acquisition || []).map(row => `
+    <tr>
+      <td><strong>${hcAnalyticsEscape(row.source)}</strong></td>
+      <td>${hcAnalyticsEscape(row.medium)}</td>
+      <td>${hcAnalyticsEscape(row.campaign)}</td>
+      <td>${row.sessions ?? 0}</td>
+      <td>${row.cta_clicks ?? 0}</td>
+      <td>${row.form_submits ?? 0}</td>
+      <td><strong>${row.conversion_rate ?? 0}%</strong></td>
+    </tr>
+  `).join("");
+
+  document.getElementById("acquisitionBody").innerHTML =
+    acquisitionRows ||
+    '<tr><td colspan="7" class="text-muted">No acquisition data.</td></tr>';
 }
 
 function hcAnalyticsUrl(path) {
