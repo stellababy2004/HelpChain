@@ -1062,6 +1062,29 @@ def create_app(config_object=None) -> Flask:
         app, "volunteer_reports", "main.volunteer_reports", "/volunteer/reports"
     )
 
+    @app.get("/health/live")
+    def health_live():
+        """Process-only liveness check for platform probes; intentionally avoids DB I/O."""
+        from datetime import UTC, datetime
+
+        return (
+            jsonify(
+                {
+                    "status": "ok",
+                    "app": "ok",
+                    "time": datetime.now(UTC).isoformat(),
+                    "environment": env_name or "unknown",
+                    "version": (
+                        os.getenv("APP_VERSION")
+                        or os.getenv("GIT_SHA")
+                        or os.getenv("HEROKU_SLUG_COMMIT")
+                        or ""
+                    ),
+                }
+            ),
+            200,
+        )
+
     @app.get("/health")
     def health():
         from datetime import UTC, datetime
