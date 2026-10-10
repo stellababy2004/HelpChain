@@ -119,6 +119,9 @@ def test_events_public_commercial_page_is_persisted(client):
     event = AnalyticsEvent.query.one()
     assert event.page_url == "/offre"
     assert event.event_type == "page_view"
+    assert event.user_ip is None
+    assert event.user_agent is None
+    assert event.screen_resolution is None
 
 
 def test_events_admin_path_is_ignored(client):
