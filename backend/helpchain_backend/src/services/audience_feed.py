@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from secrets import token_urlsafe
+from urllib.parse import urlsplit
 
 from flask import current_app, request, session
 from sqlalchemy import inspect as sa_inspect
@@ -105,9 +106,12 @@ def track_audience_page_view() -> bool:
 
     now = utc_now()
     session_id = _audience_session_id()
-    referrer = (request.referrer or "").strip() or None
+    # Keep only the referring site, never its path, query string or fragment.
+    raw_referrer = (request.referrer or "").strip()
+    parsed_referrer = urlsplit(raw_referrer)
+    referrer = (f"{parsed_referrer.scheme}://{parsed_referrer.netloc}"
+                if parsed_referrer.scheme in ("http", "https") and parsed_referrer.netloc else None)
     user_agent = (request.headers.get("User-Agent") or "").strip()[:500] or None
-    ip_address = (request.remote_addr or "").strip()[:45] or None
     device_type = _device_type(user_agent)
     canonical_path = canonical_public_commercial_path(path) or path
 
@@ -122,8 +126,6 @@ def track_audience_page_view() -> bool:
             event_label="high_intent" if canonical_path in HIGH_INTENT_AUDIENCE_PATHS else "public",
             user_session=session_id,
             user_type="guest",
-            user_ip=ip_address,
-            user_agent=user_agent,
             page_url=canonical_path,
             referrer=referrer,
             device_type=device_type,
@@ -137,8 +139,6 @@ def track_audience_page_view() -> bool:
             behavior = UserBehavior(
                 session_id=session_id,
                 user_type="guest",
-                ip_address=ip_address,
-                user_agent=user_agent,
                 device_info=device_type,
                 entry_page=canonical_path,
                 session_start=now,
