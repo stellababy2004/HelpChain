@@ -21477,3 +21477,1264 @@ body.hc-admin-pilotage-page .hc-pilotage-table .btn{
     white-space: normal;
   }
 }
+
+/* FOUNDER GROWTH COCKPIT */
+body.hc-page-admin .hc-revenue-page .hc-founder-growth {
+  overflow: hidden;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signals {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 14px;
+  background: var(--bs-body-bg, #fff);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal strong {
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  line-height: 1;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal small {
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal--hot {
+  border-top: 3px solid #dc3545;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal--followup {
+  border-top: 3px solid #fd7e14;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal--demo {
+  border-top: 3px solid #0d6efd;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal--pipeline {
+  border-top: 3px solid #6f42c1;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__signal--won {
+  border-top: 3px solid #198754;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 0.8fr);
+  gap: 18px;
+  align-items: start;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__actions {
+  display: grid;
+  gap: 10px;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__action {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 12px;
+  background: var(--bs-body-bg, #fff);
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__rank {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  background: var(--bs-primary, #0d6efd);
+  color: #fff;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__actionBody {
+  min-width: 0;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__focus {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(13, 110, 253, 0.04);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__focusBlock {
+  padding: 4px;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__focusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+body.hc-page-admin .hc-revenue-page .hc-founder-growth__focusRow:last-child {
+  border-bottom: 0;
+}
+
+body.hc-page-admin .hc-revenue-page #founder-intelligence {
+  scroll-margin-top: 90px;
+}
+
+@media (max-width: 1100px) {
+  body.hc-page-admin .hc-revenue-page .hc-founder-growth__signals {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.hc-page-admin .hc-revenue-page .hc-founder-growth__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  body.hc-page-admin .hc-revenue-page .hc-founder-growth__signals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.hc-page-admin .hc-revenue-page .hc-founder-growth__action {
+    grid-template-columns: 30px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  body.hc-page-admin .hc-revenue-page .hc-founder-growth__rank {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 430px) {
+  body.hc-page-admin .hc-revenue-page .hc-founder-growth__signals {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* FOUNDER GROWTH TURBO PASS */
+
+.hc-admin-revenue-page .hc-revenue-kpis--compact {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: .65rem;
+}
+
+.hc-admin-revenue-page .hc-revenue-kpis--compact .hc-revenue-kpi {
+    min-height: 112px;
+    padding: .9rem 1rem;
+}
+
+.hc-admin-revenue-page .hc-revenue-kpis--compact .hc-revenue-kpi__value {
+    font-size: clamp(1.35rem, 2vw, 2rem);
+    line-height: 1.05;
+}
+
+.hc-admin-revenue-page .hc-revenue-kpis--compact small {
+    font-size: .72rem;
+    line-height: 1.25;
+}
+
+.hc-founder-growth {
+    margin-top: .25rem;
+}
+
+.hc-founder-growth__signals {
+    gap: .75rem;
+}
+
+.hc-founder-growth__signal {
+    min-height: 135px;
+    padding: 1rem 1.1rem;
+}
+
+.hc-founder-growth__signal strong {
+    overflow-wrap: anywhere;
+}
+
+.hc-founder-growth__action,
+.hc-founder-growth__focusBlock,
+.hc-founder-growth__actions .hc-empty-state {
+    min-height: 0;
+}
+
+.hc-founder-growth .hc-empty-state {
+    padding: 1.6rem 1.25rem;
+}
+
+.hc-founder-growth .hc-empty-state__title {
+    margin-top: .25rem;
+}
+
+.hc-founder-intelligence-details {
+    border: 1px solid var(--hc-border, #d8e1ec);
+    border-radius: 20px;
+    background: rgba(255,255,255,.72);
+    box-shadow: 0 12px 30px rgba(31,55,85,.06);
+    overflow: hidden;
+}
+
+.hc-founder-intelligence-summary {
+    list-style: none;
+    cursor: pointer;
+    min-height: 78px;
+    padding: 1rem 1.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: #17324f;
+}
+
+.hc-founder-intelligence-summary::-webkit-details-marker {
+    display: none;
+}
+
+.hc-founder-intelligence-summary span:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.hc-founder-intelligence-summary strong {
+    font-size: 1.05rem;
+}
+
+.hc-founder-intelligence-summary small {
+    color: #687b94;
+    font-weight: 500;
+}
+
+.hc-founder-intelligence-summary__action {
+    white-space: nowrap;
+    border: 1px solid #ccd9e8;
+    border-radius: 999px;
+    padding: .45rem .8rem;
+    background: #fff;
+    font-weight: 700;
+    font-size: .82rem;
+}
+
+.hc-founder-intelligence-details[open]
+.hc-founder-intelligence-summary__action {
+    font-size: 0;
+}
+
+.hc-founder-intelligence-details[open]
+.hc-founder-intelligence-summary__action::after {
+    content: "Masquer ?";
+    font-size: .82rem;
+}
+
+.hc-founder-intelligence-body {
+    padding: 0 .75rem .75rem;
+}
+
+.hc-founder-intelligence-body > .hc-founder-cockpit {
+    margin-bottom: 0 !important;
+    box-shadow: none;
+}
+
+.hc-founder-intelligence-body .hc-empty-state {
+    min-height: 150px;
+    padding: 1.4rem;
+}
+
+.hc-founder-intelligence-body .hc-founder-cockpit__panel {
+    min-height: 0;
+}
+
+/* Keep unavailable CRM money data visually quiet. */
+.hc-revenue-kpi--money .hc-revenue-kpi__value,
+.hc-founder-growth__signal--pipeline strong,
+.hc-founder-growth__signal--won strong {
+    overflow-wrap: anywhere;
+}
+
+/* Founder page should read like a cockpit, not a diagnostic report. */
+.hc-admin-revenue-page .hc-founder-growth + .hc-founder-intelligence-details {
+    margin-top: .9rem;
+}
+
+@media (max-width: 1250px) {
+    .hc-admin-revenue-page .hc-revenue-kpis--compact {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .hc-admin-revenue-page .hc-revenue-kpis--compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hc-founder-intelligence-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .hc-admin-revenue-page .hc-revenue-kpis--compact {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* FOUNDER GROWTH TURBO 2 */
+
+.hc-founder-growth {
+    border-radius: 22px;
+}
+
+.hc-founder-growth__signals {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.hc-founder-growth__signal {
+    min-width: 0;
+    min-height: 128px;
+}
+
+.hc-founder-growth__signal strong {
+    font-size: clamp(1.55rem, 2vw, 2.25rem);
+    line-height: 1;
+}
+
+.hc-founder-growth__signal--pipeline strong,
+.hc-founder-growth__signal--won strong {
+    font-size: 2rem;
+}
+
+.hc-growth-engine-shell {
+    border: 1px solid #d8e2ef;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff, #f5f9ff);
+    box-shadow: 0 12px 30px rgba(31,55,85,.06);
+    padding: 1.15rem 1.35rem;
+}
+
+.hc-growth-engine-shell__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hc-growth-engine-shell__head > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: .22rem;
+}
+
+.hc-growth-engine-shell__kicker {
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    color: #2764c8;
+}
+
+.hc-growth-engine-shell__head strong {
+    color: #183450;
+    font-size: 1.2rem;
+}
+
+.hc-growth-engine-shell__head small {
+    color: #667b95;
+}
+
+.hc-growth-engine-shell__status {
+    padding: .42rem .72rem;
+    border-radius: 999px;
+    border: 1px solid #cddbed;
+    background: #fff;
+    color: #315d92;
+    font-size: .78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+    .hc-founder-growth__signals {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .hc-founder-growth__signals {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hc-growth-engine-shell__head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 430px) {
+    .hc-founder-growth__signals {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* HELPCHAIN GROWTH ENGINE CANONICAL */
+
+body.hc-page-admin .hc-revenue-page section.hc-growth-engine-shell {
+    display: block !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 1rem;
+    padding: 1.45rem 1.55rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-engine-shell__head {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-engine-shell__head > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: .22rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-engine-shell__head strong {
+    color: #183450;
+    font-size: 1.2rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-engine-shell__head small {
+    color: #667b95;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-funnel {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+
+    grid-template-columns:
+        minmax(125px,1fr)
+        minmax(125px,1fr)
+        22px
+        minmax(125px,1fr)
+        22px
+        minmax(125px,1fr)
+        22px
+        minmax(125px,1fr)
+        22px
+        minmax(125px,1fr);
+
+    align-items: stretch;
+    gap: .5rem;
+    margin-top: 1.25rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+
+    position: relative;
+    min-width: 0;
+    min-height: 132px;
+    padding: .95rem;
+
+    flex-direction: column;
+    justify-content: center;
+
+    border: 1px solid #dbe4ef;
+    border-radius: 16px;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+
+    box-shadow: 0 6px 18px rgba(29,53,84,.04);
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage:hover {
+    color: inherit;
+    border-color: #9fb9dc;
+    box-shadow: 0 8px 22px rgba(29,53,84,.08);
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__index {
+    position: absolute;
+    top: .65rem;
+    right: .75rem;
+    color: #9aabc0;
+    font-size: .65rem;
+    font-weight: 800;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__label {
+    color: #667b94;
+    font-size: .69rem;
+    font-weight: 800;
+    letter-spacing: .07em;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage strong {
+    margin-top: .35rem;
+    color: #173552;
+    font-size: 1.85rem;
+    line-height: 1.05;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage small {
+    margin-top: .45rem;
+    color: #71849a;
+    line-height: 1.25;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
+    font-size: 1.15rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage--traffic {
+    border-top: 3px solid #64748b;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage--interest {
+    border-top: 3px solid #7c3aed;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage--lead {
+    border-top: 3px solid #2563eb;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage--demo {
+    border-top: 3px solid #0891b2;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage--pilot {
+    border-top: 3px solid #d97706;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-funnel__stage--client {
+    border-top: 3px solid #15803d;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-command {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    max-height: none !important;
+
+    grid-template-columns: minmax(0,1.6fr) minmax(300px,.9fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__primary {
+    padding: 1.1rem 1.25rem;
+    border-radius: 17px;
+    background: #173552;
+    color: #fff;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__eyebrow {
+    display: block;
+    margin-bottom: .4rem;
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    opacity: .72;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__primary > strong {
+    display: block;
+    font-size: 1.12rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__primary p {
+    margin: .4rem 0 0;
+    opacity: .9;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-top: .7rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__meta span {
+    padding: .25rem .5rem;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 999px;
+    font-size: .7rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__signals {
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap: .55rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__signals > div {
+    padding: .8rem .9rem;
+    border: 1px solid #dbe4ef;
+    border-radius: 14px;
+    background: #fff;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__signals span {
+    display: block;
+    color: #71849a;
+    font-size: .65rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-command__signals strong {
+    display: block;
+    margin-top: .15rem;
+    color: #173552;
+    font-size: 1.3rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell > .hc-growth-engine__footer {
+    display: flex !important;
+    visibility: visible !important;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    margin-top: 1rem;
+    padding-top: .85rem;
+
+    border-top: 1px solid #e5ebf2;
+
+    color: #71849a;
+    font-size: .8rem;
+}
+
+body.hc-page-admin .hc-revenue-page
+section.hc-growth-engine-shell .hc-growth-engine__footer a {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* Founder Intelligence stays compact by default */
+
+body.hc-page-admin .hc-revenue-page
+details.hc-founder-intelligence-details:not([open]) > *:not(summary) {
+    display: none;
+}
+
+/* Detailed Revenue workspace gets visually separated */
+
+body.hc-page-admin .hc-revenue-page .hc-revenue-detail-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem .2rem .6rem;
+    padding: 0 .25rem;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-revenue-detail-label span {
+    color: #60758e;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+body.hc-page-admin .hc-revenue-page .hc-revenue-detail-label small {
+    color: #8b9caf;
+}
+
+@media (max-width: 1350px) {
+
+    body.hc-page-admin .hc-revenue-page
+    section.hc-growth-engine-shell > .hc-growth-funnel {
+        grid-template-columns: repeat(3,minmax(0,1fr));
+    }
+
+    body.hc-page-admin .hc-revenue-page
+    section.hc-growth-engine-shell .hc-growth-funnel__arrow {
+        display: none;
+    }
+}
+
+@media (max-width: 850px) {
+
+    body.hc-page-admin .hc-revenue-page
+    section.hc-growth-engine-shell > .hc-growth-funnel {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+
+    body.hc-page-admin .hc-revenue-page
+    section.hc-growth-engine-shell > .hc-growth-command {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+
+    body.hc-page-admin .hc-revenue-page
+    section.hc-growth-engine-shell > .hc-growth-funnel {
+        grid-template-columns: 1fr;
+    }
+
+    body.hc-page-admin .hc-revenue-page
+    section.hc-growth-engine-shell > .hc-growth-engine__footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* HELPCHAIN GROWTH ACQUISITION CANONICAL */
+
+.hc-growth-acquisition {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 18px;
+  background: rgba(248, 250, 252, .88);
+}
+
+.hc-growth-acquisition__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hc-growth-acquisition__head > div {
+  display: grid;
+  gap: .2rem;
+}
+
+.hc-growth-acquisition__head span {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.hc-growth-acquisition__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .75rem;
+  margin-bottom: .9rem;
+}
+
+.hc-growth-acquisition__metrics > div {
+  display: grid;
+  gap: .25rem;
+  padding: .8rem;
+  border: 1px solid rgba(148, 163, 184, .22);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.hc-growth-acquisition__metrics span {
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+}
+
+.hc-growth-acquisition__metrics strong {
+  font-size: 1.35rem;
+}
+
+.hc-growth-acquisition__sources {
+  display: grid;
+  gap: .55rem;
+}
+
+.hc-growth-acquisition__source {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: .7rem .8rem;
+  border: 1px solid rgba(148, 163, 184, .18);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.hc-growth-acquisition__source > div:first-child {
+  display: grid;
+  gap: .15rem;
+}
+
+.hc-growth-acquisition__source small {
+  opacity: .7;
+}
+
+.hc-growth-acquisition__source-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .4rem;
+}
+
+.hc-growth-acquisition__source-stats span {
+  padding: .25rem .45rem;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, .7);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.hc-growth-acquisition__empty {
+  margin: 0;
+  opacity: .72;
+}
+
+@media (max-width: 900px) {
+  .hc-growth-acquisition__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hc-growth-acquisition__source {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hc-growth-acquisition__source-stats {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .hc-growth-acquisition__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .hc-growth-acquisition__head {
+    flex-direction: column;
+  }
+}
+
+
+/* HELPCHAIN NEXT BEST ACTION CONTRAST FIX */
+
+.hc-growth-next-action,
+.hc-growth-next-action * {
+  color: rgba(255, 255, 255, .96);
+}
+
+.hc-growth-next-action p,
+.hc-growth-next-action small,
+.hc-growth-next-action span:not(.hc-growth-next-action__eyebrow) {
+  color: rgba(255, 255, 255, .78);
+}
+
+.hc-growth-next-action__eyebrow {
+  color: rgba(255, 255, 255, .72);
+}
+
+.hc-growth-next-action a {
+  color: #fff;
+  text-decoration-color: rgba(255, 255, 255, .55);
+}
+
+
+/* HELPCHAIN GROWTH FINAL VISUAL FIX */
+
+/* Acquisition header: keep title and link inside the card */
+.hc-growth-acquisition {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.hc-growth-acquisition__head {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.hc-growth-acquisition__head > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hc-growth-acquisition__head > a {
+  flex: 0 0 auto;
+  max-width: 40%;
+  margin-left: auto;
+  padding: .35rem .55rem;
+  white-space: nowrap;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+
+/* Next Best Action: force readable text on dark background */
+.hc-growth-engine-shell [class*="next-action"] p,
+.hc-growth-engine-shell [class*="next-action"] small,
+.hc-growth-engine-shell [class*="next-action"] div,
+.hc-growth-engine-shell [class*="next-action"] span {
+  color: rgba(255, 255, 255, .82) !important;
+}
+
+.hc-growth-engine-shell [class*="next-action"] h1,
+.hc-growth-engine-shell [class*="next-action"] h2,
+.hc-growth-engine-shell [class*="next-action"] h3,
+.hc-growth-engine-shell [class*="next-action"] strong {
+  color: #fff !important;
+}
+
+
+/* Defensive rule for the dark action panel itself */
+.hc-growth-engine-shell [class*="action"] {
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
+  .hc-growth-acquisition__head {
+    flex-direction: column;
+  }
+
+  .hc-growth-acquisition__head > a {
+    max-width: 100%;
+    margin-left: 0;
+    white-space: normal;
+    text-align: left;
+  }
+}
+
+
+/* HELPCHAIN GROWTH COMMAND CONTRAST FINAL */
+
+.hc-growth-command__primary {
+  color: #ffffff !important;
+}
+
+.hc-growth-command__primary .hc-growth-command__eyebrow {
+  color: rgba(255, 255, 255, .72) !important;
+}
+
+.hc-growth-command__primary strong,
+.hc-growth-command__primary h1,
+.hc-growth-command__primary h2,
+.hc-growth-command__primary h3 {
+  color: #ffffff !important;
+}
+
+.hc-growth-command__primary p,
+.hc-growth-command__primary small,
+.hc-growth-command__primary .hc-growth-command__meta {
+  color: rgba(255, 255, 255, .82) !important;
+}
+
+/* Acquisition header */
+.hc-growth-acquisition__head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.hc-growth-acquisition__head > div {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+
+.hc-growth-acquisition__head > a {
+  display: inline-block !important;
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+  padding: .35rem .5rem !important;
+  max-width: 220px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  box-sizing: border-box !important;
+}
+
+
+/* HELPCHAIN REVENUE DETAILS CANONICAL */
+
+.hc-revenue-details {
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, .28);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, .88);
+  box-shadow: 0 14px 35px rgba(15, 23, 42, .05);
+}
+
+.hc-revenue-details__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 1.15rem 1.35rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.hc-revenue-details__summary::-webkit-details-marker {
+  display: none;
+}
+
+.hc-revenue-details__summary::marker {
+  display: none;
+  content: "";
+}
+
+.hc-revenue-details__summary-copy {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+}
+
+.hc-revenue-details__eyebrow {
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  color: #2563eb;
+}
+
+.hc-revenue-details__summary-copy strong {
+  font-size: 1.08rem;
+  color: #132a46;
+}
+
+.hc-revenue-details__summary-copy > span:last-child {
+  font-size: .88rem;
+  color: #64748b;
+}
+
+.hc-revenue-details__action {
+  flex: 0 0 auto;
+  padding: .55rem .85rem;
+  border: 1px solid rgba(148, 163, 184, .35);
+  border-radius: 999px;
+  background: #fff;
+  color: #163a63;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.hc-revenue-details__action::after {
+  content: " ?";
+}
+
+.hc-revenue-details[open]
+  .hc-revenue-details__action::after {
+  content: " ?";
+}
+
+.hc-revenue-details[open]
+  .hc-revenue-details__summary {
+  border-bottom: 1px solid rgba(148, 163, 184, .22);
+}
+
+.hc-revenue-details__body {
+  padding: 1rem;
+}
+
+.hc-revenue-details__body
+  > .hc-card:first-child {
+  margin-top: 0;
+}
+
+@media (max-width: 700px) {
+
+  .hc-revenue-details__summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hc-revenue-details__action {
+    white-space: normal;
+  }
+}
+
+/* HELPCHAIN ADMIN SURFACE SYSTEM — START */
+
+/*
+ * Canonical visual language for founder/admin surfaces.
+ * Goal:
+ * - same light surfaces
+ * - same border
+ * - same radius
+ * - same shadow
+ * - predictable empty states
+ * - no isolated dark dashboard blocks
+ */
+
+:root {
+  --hc-admin-surface: #ffffff;
+  --hc-admin-surface-soft: #f8fbff;
+  --hc-admin-surface-muted: #f3f7fc;
+  --hc-admin-border: #d7e2ef;
+  --hc-admin-border-strong: #c8d7e8;
+  --hc-admin-text: #173454;
+  --hc-admin-text-muted: #607692;
+  --hc-admin-accent: #1769e8;
+  --hc-admin-radius: 20px;
+  --hc-admin-radius-sm: 14px;
+  --hc-admin-shadow: 0 12px 32px rgba(25, 55, 90, 0.07);
+}
+
+/* Main cards / dashboard panels */
+.hc-card,
+.hc-founder-growth,
+.hc-growth-engine-shell,
+.hc-founder-cockpit,
+.hc-revenue-filterbar,
+.hc-revenue-details,
+.hc-revenue-sidegrid > *,
+.hc-growth-acquisition {
+  background: var(--hc-admin-surface);
+  border-color: var(--hc-admin-border);
+  color: var(--hc-admin-text);
+}
+
+/* Standard nested cards */
+.hc-founder-growth__metric,
+.hc-growth-funnel__stage,
+.hc-growth-command__signals > *,
+.hc-growth-acquisition__metric,
+.hc-growth-acquisition__source,
+.hc-revenue-pipeline,
+.hc-empty-state {
+  background: var(--hc-admin-surface);
+  border-color: var(--hc-admin-border);
+  color: var(--hc-admin-text);
+}
+
+/* Founder action card: remove isolated dark visual language */
+.hc-growth-command__primary {
+  background: var(--hc-admin-surface-soft) !important;
+  border: 1px solid var(--hc-admin-border) !important;
+  color: var(--hc-admin-text) !important;
+  box-shadow: none !important;
+}
+
+.hc-growth-command__primary *,
+.hc-growth-command__primary .hc-muted,
+.hc-growth-command__primary p,
+.hc-growth-command__primary span,
+.hc-growth-command__primary strong {
+  color: inherit;
+}
+
+.hc-growth-command__primary .hc-growth-command__eyebrow {
+  color: var(--hc-admin-text-muted) !important;
+}
+
+/* Common empty-state visual */
+.hc-empty-state {
+  border: 1px solid var(--hc-admin-border);
+  border-radius: var(--hc-admin-radius-sm);
+  box-shadow: none;
+}
+
+/* Consistent secondary panels */
+.hc-founder-growth__quick,
+.hc-founder-growth__focus,
+.hc-founder-cockpit__section,
+.hc-founder-cockpit__panel {
+  background: var(--hc-admin-surface-soft);
+  border-color: var(--hc-admin-border);
+  color: var(--hc-admin-text);
+}
+
+/* Unified details/summary bars */
+.hc-founder-intelligence-details,
+.hc-revenue-details {
+  background: var(--hc-admin-surface);
+  border: 1px solid var(--hc-admin-border);
+  border-radius: var(--hc-admin-radius);
+  box-shadow: var(--hc-admin-shadow);
+}
+
+.hc-founder-intelligence-summary,
+.hc-revenue-details__summary {
+  background: var(--hc-admin-surface);
+  color: var(--hc-admin-text);
+}
+
+/* Consistent muted copy */
+.hc-founder-growth .hc-muted,
+.hc-growth-engine-shell .hc-muted,
+.hc-founder-cockpit .hc-muted,
+.hc-revenue-details .hc-muted {
+  color: var(--hc-admin-text-muted);
+}
+
+/* Inputs share the same visual language */
+.hc-revenue-filters input,
+.hc-revenue-filters select {
+  background: var(--hc-admin-surface);
+  border-color: var(--hc-admin-border);
+  color: var(--hc-admin-text);
+  border-radius: 12px;
+}
+
+/* Keep important links visibly actionable */
+.hc-growth-engine-shell a,
+.hc-founder-growth a,
+.hc-revenue-details a {
+  color: var(--hc-admin-accent);
+}
+
+/* HELPCHAIN ADMIN SURFACE SYSTEM — END */

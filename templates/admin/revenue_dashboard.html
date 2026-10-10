@@ -42,40 +42,539 @@
     </div>
   </div>
 
-  <section class="hc-revenue-kpis hc-revenue-kpi-grid mb-3" aria-label="Revenue KPIs">
-    <article class="hc-revenue-kpi">
-      <span class="hc-revenue-kpi__label">New Leads</span>
-      <strong class="hc-revenue-kpi__value">{{ metrics.new_leads.display }}</strong>
-      {{ metric_meta(metrics.new_leads) }}
-    </article>
-    <article class="hc-revenue-kpi hc-revenue-kpi--hot">
-      <span class="hc-revenue-kpi__label">Hot Leads</span>
-      <strong class="hc-revenue-kpi__value">{{ metrics.hot_leads.display }}</strong>
-      {{ metric_meta(metrics.hot_leads) }}
-    </article>
-    <article class="hc-revenue-kpi hc-revenue-kpi--due">
-      <span class="hc-revenue-kpi__label">Overdue Follow-ups</span>
-      <strong class="hc-revenue-kpi__value">{{ metrics.overdue_followups.display }}</strong>
-      {{ metric_meta(metrics.overdue_followups) }}
-    </article>
-    <article class="hc-revenue-kpi hc-revenue-kpi--demo">
-      <span class="hc-revenue-kpi__label">Demos Pending</span>
-      <strong class="hc-revenue-kpi__value">{{ metrics.demos_pending.display }}</strong>
-      {{ metric_meta(metrics.demos_pending) }}
-    </article>
-    <article class="hc-revenue-kpi hc-revenue-kpi--money">
-      <span class="hc-revenue-kpi__label">Active Pipeline EUR</span>
-      <strong class="hc-revenue-kpi__value">{{ metrics.active_pipeline.display }}</strong>
-      {{ metric_meta(metrics.active_pipeline) }}
-    </article>
-    <article class="hc-revenue-kpi hc-revenue-kpi--money">
-      <span class="hc-revenue-kpi__label">Won This Month EUR</span>
-      <strong class="hc-revenue-kpi__value">{{ metrics.won_this_month.display }}</strong>
-      {{ metric_meta(metrics.won_this_month) }}
-    </article>
+
+
+  <section class="hc-card hc-founder-growth mb-3" aria-label="Founder growth today">
+    <div class="hc-card__section hc-card__section--header">
+      <div>
+        <div class="hc-admin-kicker">Founder Growth</div>
+        <strong>{{ _('Aujourd&#8217;hui') }}</strong>
+        <div class="hc-muted small">
+          Vos priorit&#233;s commerciales essentielles, en un coup d&#8217;&#339;il.
+        </div>
+      </div>
+      <span class="badge text-bg-light border">
+        {{ founder_cockpit.summary.total_items or 0 }} {{ _('opportunité(s) suivie(s)') }}
+      </span>
+    </div>
+
+    <div class="p-3">
+      <div class="hc-founder-growth__signals mb-3">
+        <article class="hc-founder-growth__signal hc-founder-growth__signal--hot">
+          <span class="hc-muted small">{{ _('HOT') }}</span>
+          <strong>{{ metrics.hot_leads.display }}</strong>
+          <small>{{ _('leads prioritaires') }}</small>
+        </article>
+
+        <article class="hc-founder-growth__signal hc-founder-growth__signal--followup">
+          <span class="hc-muted small">{{ _('FOLLOW-UP') }}</span>
+          <strong>{{ metrics.overdue_followups.display }}</strong>
+          <small>{{ _('en retard') }}</small>
+        </article>
+
+        <article class="hc-founder-growth__signal hc-founder-growth__signal--demo">
+          <span class="hc-muted small">{{ _('DEMOS') }}</span>
+          <strong>{{ metrics.demos_pending.display }}</strong>
+          <small>{{ _('&#224; faire avancer') }}</small>
+        </article>
+
+        <article class="hc-founder-growth__signal hc-founder-growth__signal--pipeline">
+          <span class="hc-muted small">{{ _('PIPELINE') }}</span>
+          <strong>{{ '&#8212;'|safe if 'No CRM' in metrics.active_pipeline.display else metrics.active_pipeline.display }}</strong>
+          <small>{{ _('valeur active') }}</small>
+        </article>
+
+        <article class="hc-founder-growth__signal hc-founder-growth__signal--won">
+          <span class="hc-muted small">{{ _('WON') }}</span>
+          <strong>{{ '&#8212;'|safe if 'No CRM' in metrics.won_this_month.display else metrics.won_this_month.display }}</strong>
+          <small>{{ _('ce mois') }}</small>
+        </article>
+      </div>
+
+      <div class="hc-founder-growth__layout">
+        <div>
+          <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+            <div>
+              <strong>{{ _('Ce que je dois faire aujourd&#8217;hui') }}</strong>
+              <div class="hc-muted small">
+                {{ _('Les actions &#224; traiter en priorit&#233; aujourd&#8217;hui.') }}
+              </div>
+            </div>
+            <span class="badge text-bg-primary">
+              {{ founder_cockpit.daily_queue|length }}
+            </span>
+          </div>
+
+          <div class="hc-founder-growth__actions">
+            {% for item in founder_cockpit.daily_queue %}
+              <article class="hc-founder-growth__action">
+                <div class="hc-founder-growth__rank">{{ loop.index }}</div>
+
+                <div class="hc-founder-growth__actionBody">
+                  <div class="d-flex justify-content-between gap-2">
+                    <strong class="text-truncate">
+                      {{ item.organization or item.account_name or _('Organisation inconnue') }}
+                    </strong>
+
+                    <span class="badge text-bg-primary">
+                      {{ item.daily_priority_score if item.daily_priority_score is not none else '?' }}
+                    </span>
+                  </div>
+
+                  <div class="hc-muted small mt-1">
+                    {{ item.relationship_stage|replace('_', ' ') }}
+                    • {{ item.account_strength }}
+                    • {{ item.outreach_label or item.outreach_stage }}
+                  </div>
+
+                  <div class="mt-2">
+                    <strong>{{ _('Prochaine action :') }}</strong>
+                    {{ item.daily_recommended_action or _('Aucune action prioritaire disponible.') }}
+                  </div>
+
+                  {% if item.daily_priority_reasons %}
+                    <div class="hc-founder-cockpit__chips mt-2">
+                      {% for reason in item.daily_priority_reasons[:3] %}
+                        <span class="badge text-bg-light border">{{ reason }}</span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </article>
+            {% else %}
+              <div class="hc-empty-state">
+                <div class="hc-empty-state__title">{{ _('Rien d&#8217;urgent aujourd&#8217;hui') }}</div>
+                <div class="hc-empty-state__text">
+                  {{ _('Aucune action prioritaire d&#233;tect&#233;e.') }}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <aside class="hc-founder-growth__focus">
+          <div class="hc-founder-growth__focusBlock">
+            <strong>{{ _('Lecture rapide') }}</strong>
+
+            <div class="hc-founder-growth__focusRow mt-2">
+              <span>{{ _('Nouveaux leads') }}</span>
+              <strong>{{ metrics.new_leads.display }}</strong>
+            </div>
+
+            <div class="hc-founder-growth__focusRow">
+              <span>{{ _('Opportunit&#233;s suivies') }}</span>
+              <strong>{{ founder_cockpit.summary.total_items or 0 }}</strong>
+            </div>
+
+            <div class="hc-founder-growth__focusRow">
+              <span>{{ _('Signaux chauds cette semaine') }}</span>
+              <strong>{{ founder_cockpit.hot_this_week|length }}</strong>
+            </div>
+
+            <div class="hc-founder-growth__focusRow">
+              <span>{{ _('Opportunit&#233;s bloqu&#233;es') }}</span>
+              <strong>{{ founder_cockpit.stalled_opportunities|length }}</strong>
+            </div>
+
+            <div class="hc-founder-growth__focusRow">
+              <span>{{ _('Actions recommand&#233;es') }}</span>
+              <strong>{{ founder_cockpit.next_founder_actions|length }}</strong>
+            </div>
+          </div>
+
+          <div class="hc-founder-growth__focusBlock mt-3">
+            <strong>{{ _('Focus') }}</strong>
+
+            {% if founder_cockpit.daily_queue %}
+              {% set first_action = founder_cockpit.daily_queue[0] %}
+              <div class="mt-2">
+                <div class="hc-muted small">{{ _('Priorité n°1') }}</div>
+                <strong>
+                  {{ first_action.organization or first_action.account_name or _('Organisation inconnue') }}
+                </strong>
+                <div class="small mt-1">
+                  {{ first_action.daily_recommended_action or _('Aucune action prioritaire disponible.') }}
+                </div>
+              </div>
+            {% else %}
+              <div class="hc-muted small mt-2">
+                {{ _('Aucune action commerciale urgente d&#233;tect&#233;e.') }}
+              </div>
+            {% endif %}
+          </div>
+
+          <a class="btn btn-outline-primary btn-sm w-100 mt-3"
+             href="#founder-intelligence">
+            {{ _('Voir l&#8217;intelligence d&#233;taill&#233;e') }}
+          </a>
+        </aside>
+      </div>
+    </div>
   </section>
 
-  <section class="hc-card hc-founder-cockpit mb-3" aria-label="Founder sales cockpit">
+
+
+
+<section class="hc-growth-engine-shell mb-3" aria-label="Growth Engine">
+
+  <div class="hc-growth-engine-shell__head">
+    <div>
+      <span class="hc-growth-engine-shell__kicker">
+        GROWTH ENGINE
+      </span>
+
+      <strong>
+        Acquisition &#8594; Conversion
+      </strong>
+
+      <small>
+        Une lecture simple du parcours commercial HelpChain.
+      </small>
+    </div>
+
+    <a
+      class="hc-growth-engine-shell__status"
+      href="{{ url_for('analytics.admin_conversion_dashboard') }}"
+    >
+      Acquisition intelligence
+    </a>
+  </div>
+
+
+  <div class="hc-growth-funnel">
+
+    <a
+      class="hc-growth-funnel__stage hc-growth-funnel__stage--traffic"
+      href="{{ url_for('analytics.admin_conversion_dashboard') }}"
+    >
+      <span class="hc-growth-funnel__index">01</span>
+      <span class="hc-growth-funnel__label">VISITEURS</span>
+
+      <strong>
+        {% if acquisition_context and acquisition_context.available %}
+          {{ acquisition_context.summary.sessions }}
+        {% else %}
+          ?
+        {% endif %}
+      </strong>
+
+      <small>
+        sessions sur 30 jours
+      </small>
+    </a>
+
+
+    <a
+      class="hc-growth-funnel__stage hc-growth-funnel__stage--interest"
+      href="{{ url_for('analytics.admin_conversion_dashboard') }}"
+    >
+      <span class="hc-growth-funnel__index">02</span>
+      <span class="hc-growth-funnel__label">
+        INT&#201;R&#202;T
+      </span>
+
+      <strong>
+        {{ founder_cockpit.hot_this_week|length }}
+      </strong>
+
+      <small>
+        signaux chauds cette semaine
+      </small>
+    </a>
+
+
+    <div class="hc-growth-funnel__arrow">
+      &#8594;
+    </div>
+
+
+    <div class="hc-growth-funnel__stage hc-growth-funnel__stage--lead">
+      <span class="hc-growth-funnel__index">03</span>
+      <span class="hc-growth-funnel__label">LEADS</span>
+
+      <strong>
+        {{ metrics.new_leads.display }}
+      </strong>
+
+      <small>
+        nouveaux leads
+      </small>
+    </div>
+
+
+    <div class="hc-growth-funnel__arrow">
+      &#8594;
+    </div>
+
+
+    <div class="hc-growth-funnel__stage hc-growth-funnel__stage--demo">
+      <span class="hc-growth-funnel__index">04</span>
+      <span class="hc-growth-funnel__label">
+        D&#201;MOS
+      </span>
+
+      <strong>
+        {{ metrics.demos_pending.display }}
+      </strong>
+
+      <small>
+        &#224; faire avancer
+      </small>
+    </div>
+
+
+    <div class="hc-growth-funnel__arrow">
+      &#8594;
+    </div>
+
+
+    <div class="hc-growth-funnel__stage hc-growth-funnel__stage--pilot">
+      <span class="hc-growth-funnel__index">05</span>
+      <span class="hc-growth-funnel__label">
+        PILOTES
+      </span>
+
+      <strong>
+        {% if founder_cockpit.pilot_progression_summary
+              and founder_cockpit.pilot_progression_summary.active
+              is defined %}
+          {{ founder_cockpit.pilot_progression_summary.active }}
+        {% else %}
+          &#8212;
+        {% endif %}
+      </strong>
+
+      <small>
+        progression pilote
+      </small>
+    </div>
+
+
+    <div class="hc-growth-funnel__arrow">
+      &#8594;
+    </div>
+
+
+    <div class="hc-growth-funnel__stage hc-growth-funnel__stage--client">
+      <span class="hc-growth-funnel__index">06</span>
+      <span class="hc-growth-funnel__label">
+        CLIENTS
+      </span>
+
+      <strong>
+        {% if 'No CRM' in metrics.won_this_month.display %}
+          &#8212;
+        {% else %}
+          {{ metrics.won_this_month.display }}
+        {% endif %}
+      </strong>
+
+      <small>
+        gagn&#233;s ce mois
+      </small>
+    </div>
+
+  </div>
+
+
+  <div class="hc-growth-command">
+
+    <div class="hc-growth-command__primary">
+
+      <span class="hc-growth-command__eyebrow">
+        NEXT BEST ACTION
+      </span>
+
+      {% if founder_cockpit.daily_queue %}
+
+        {% set growth_action = founder_cockpit.daily_queue[0] %}
+
+        <strong>
+          {{ growth_action.organization or 'Organisation prioritaire' }}
+        </strong>
+
+        <p>
+          {{ growth_action.daily_recommended_action
+             or growth_action.recommended_action
+             or 'Revoir cette opportunit&#233; aujourd&#8217;hui.' }}
+        </p>
+
+        <div class="hc-growth-command__meta">
+
+          {% if growth_action.relationship_stage %}
+            <span>
+              {{ growth_action.relationship_stage|replace('_', ' ') }}
+            </span>
+          {% endif %}
+
+          {% if growth_action.daily_priority_score is defined %}
+            <span>
+              Score {{ growth_action.daily_priority_score }}
+            </span>
+          {% endif %}
+
+        </div>
+
+      {% else %}
+
+        <strong>
+          Aucune action commerciale urgente
+        </strong>
+
+        <p>
+          Rien &#224; traiter en priorit&#233; aujourd&#8217;hui.
+          HelpChain fera remonter ici la prochaine action utile.
+        </p>
+
+      {% endif %}
+
+    </div>
+
+
+    <div class="hc-growth-command__signals">
+
+      <div>
+        <span>HOT LEADS</span>
+        <strong>{{ metrics.hot_leads.display }}</strong>
+      </div>
+
+      <div>
+        <span>FOLLOW-UP</span>
+        <strong>{{ metrics.overdue_followups.display }}</strong>
+      </div>
+
+      <div>
+        <span>SIGNAUX CHAUDS</span>
+        <strong>{{ founder_cockpit.hot_this_week|length }}</strong>
+      </div>
+
+      <div>
+        <span>BLOQU&#201;ES</span>
+        <strong>{{ founder_cockpit.stalled_opportunities|length }}</strong>
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="hc-growth-acquisition">
+
+    <div class="hc-growth-acquisition__head">
+      <div>
+        <span>ACQUISITION - 30 JOURS</span>
+        <strong>Ce qui attire et convertit</strong>
+      </div>
+
+      <a href="{{ url_for('analytics.admin_conversion_dashboard') }}">Voir le detail</a>
+    </div>
+
+    {% if acquisition_context and acquisition_context.available %}
+
+      <div class="hc-growth-acquisition__metrics">
+
+        <div>
+          <span>SESSIONS</span>
+          <strong>{{ acquisition_context.summary.sessions }}</strong>
+        </div>
+
+        <div>
+          <span>VUES</span>
+          <strong>{{ acquisition_context.summary.page_views }}</strong>
+        </div>
+
+        <div>
+          <span>CTA</span>
+          <strong>{{ acquisition_context.summary.cta_clicks }}</strong>
+        </div>
+
+        <div>
+          <span>FORMULAIRES</span>
+          <strong>{{ acquisition_context.summary.form_submits }}</strong>
+        </div>
+
+      </div>
+
+      {% if acquisition_context.acquisition %}
+
+        <div class="hc-growth-acquisition__sources">
+
+          {% for source in acquisition_context.acquisition[:4] %}
+
+            <div class="hc-growth-acquisition__source">
+
+              <div>
+                <strong>{{ source.source }}</strong>
+
+                <small>
+                  {% if source.medium != '-' %}
+                    {{ source.medium }}
+                  {% endif %}
+
+                  {% if source.campaign != '-' %}
+                    • {{ source.campaign }}
+                  {% endif %}
+                </small>
+              </div>
+
+              <div class="hc-growth-acquisition__source-stats">
+                <span>{{ source.sessions }} session(s)</span>
+                <span>{{ source.cta_clicks }} CTA</span>
+                <span>{{ source.form_submits }} formulaire(s)</span>
+              </div>
+
+            </div>
+
+          {% endfor %}
+
+        </div>
+
+      {% else %}
+
+        <p class="hc-growth-acquisition__empty">
+          Pas encore de source d’acquisition attribuée sur cette période.
+        </p>
+
+      {% endif %}
+
+    {% else %}
+
+      <p class="hc-growth-acquisition__empty">
+        Les données d’acquisition ne sont pas disponibles pour ce périmètre.
+      </p>
+
+    {% endif %}
+
+  </div>
+
+<div class="hc-growth-engine__footer">
+
+    <span>
+      Sources, campagnes, CTA et formulaires sont disponibles
+      dans Acquisition Performance.
+    </span>
+
+    <a href="{{ url_for('analytics.admin_conversion_dashboard') }}">
+      Ouvrir Acquisition Performance &#8594;
+    </a>
+
+  </div>
+
+  <div id="growth-engine-anchor"></div>
+
+</section>
+
+<details class="hc-founder-intelligence-details mb-3" id="founder-intelligence">
+  <summary class="hc-founder-intelligence-summary">
+    <span>
+      <strong>Founder Intelligence</strong>
+      <small>Analyse d&#233;taill&#233;e des opportunit&#233;s, signaux, relations et territoires</small>
+    </span>
+    <span class="hc-founder-intelligence-summary__action">Voir les d&#233;tails</span>
+  </summary>
+  <div class="hc-founder-intelligence-body">
+<section class="hc-card hc-founder-cockpit mb-3" aria-label="Founder sales cockpit">
     <div class="hc-card__section hc-card__section--header">
       <div>
         <strong>Founder Priority Queue</strong>
@@ -204,7 +703,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Hot this week') }}</div>
+        <div class="hc-founder-cockpit__heading">Hot this week</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.hot_this_week %}
             <article class="hc-founder-cockpit__item">
@@ -232,7 +731,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Silent high-intent') }}</div>
+        <div class="hc-founder-cockpit__heading">Silent high-intent</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.silent_high_intent %}
             <article class="hc-founder-cockpit__item">
@@ -260,7 +759,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Territory acceleration') }}</div>
+        <div class="hc-founder-cockpit__heading">Territory acceleration</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.territory_acceleration %}
             <article class="hc-founder-cockpit__item">
@@ -288,7 +787,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Stalled opportunities') }}</div>
+        <div class="hc-founder-cockpit__heading">Stalled opportunities</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.stalled_opportunities %}
             <article class="hc-founder-cockpit__item">
@@ -316,7 +815,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Recommended founder actions') }}</div>
+        <div class="hc-founder-cockpit__heading">Recommended founder actions</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.recommended_founder_actions %}
             <article class="hc-founder-cockpit__item">
@@ -344,7 +843,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Relationship temperature') }}</div>
+        <div class="hc-founder-cockpit__heading">Relationship temperature</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.relationship_temperature_rows %}
             <article class="hc-founder-cockpit__item">
@@ -371,7 +870,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Institutional memory timeline') }}</div>
+        <div class="hc-founder-cockpit__heading">Institutional memory timeline</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.institutional_memory_timeline %}
             <article class="hc-founder-cockpit__item">
@@ -401,7 +900,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Relationship State') }}</div>
+        <div class="hc-founder-cockpit__heading">Relationship State</div>
         <div class="hc-founder-cockpit__list">
           {% for state, count in founder_cockpit.relationship_state_summary.items() %}
             <article class="hc-founder-cockpit__item">
@@ -421,7 +920,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Pilot Progression') }}</div>
+        <div class="hc-founder-cockpit__heading">Pilot Progression</div>
         <div class="hc-founder-cockpit__list">
           {% for state, count in founder_cockpit.pilot_progression_summary.items() %}
             <article class="hc-founder-cockpit__item">
@@ -441,7 +940,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Next Founder Actions') }}</div>
+        <div class="hc-founder-cockpit__heading">Next Founder Actions</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.next_founder_actions %}
             <article class="hc-founder-cockpit__item">
@@ -470,7 +969,36 @@
 
   <div class="hc-revenue-grid">
     <main>
-      <form method="GET" class="hc-card hc-revenue-filterbar hc-revenue-filters mb-3">
+
+  </div>
+</details>
+
+
+<details class="hc-revenue-details mb-3" id="revenue-details">
+  <summary class="hc-revenue-details__summary">
+
+    <div class="hc-revenue-details__summary-copy">
+      <span class="hc-revenue-details__eyebrow">
+        PIPELINE COMMERCIAL
+      </span>
+
+      <strong>
+        Pipeline commercial détaillé
+      </strong>
+
+      <span>
+        Filtres, opportunités, suivi et informations commerciales avancées.
+      </span>
+    </div>
+
+    <span class="hc-revenue-details__action">
+      Voir les détails
+    </span>
+
+  </summary>
+
+  <div class="hc-revenue-details__body">
+<form method="GET" class="hc-card hc-revenue-filterbar hc-revenue-filters mb-3">
         <div class="hc-revenue-filtergrid">
           <div>
             <label class="hc-muted" for="q">Search</label>
@@ -737,6 +1265,9 @@
         </div>
       </div>
     </section>
+  </div>
+</details>
+
   </div>
 </div>
 </div>

@@ -12991,6 +12991,39 @@ def admin_revenue():
     all_rows = _build_revenue_pipeline_rows()
     filtered_rows = _filter_revenue_rows(all_rows, filters)
     founder_cockpit = _build_founder_cockpit_context(all_rows)
+
+    acquisition_context = {
+        "period_days": 30,
+        "summary": {
+            "events": 0,
+            "sessions": 0,
+            "page_views": 0,
+            "cta_clicks": 0,
+            "form_submits": 0,
+            "view_to_click": 0.0,
+            "click_to_submit": 0.0,
+        },
+        "pages": [],
+        "top_ctas": [],
+        "acquisition": [],
+        "available": False,
+    }
+
+    try:
+        from .analytics import build_conversion_funnel_context
+        from ..services.website_analytics import read_scope
+
+        acquisition_context = build_conversion_funnel_context(
+            read_scope(),
+            days=30,
+        )
+        acquisition_context["available"] = True
+    except Exception as exc:
+        current_app.logger.warning(
+            "founder growth acquisition context unavailable: %s",
+            exc,
+        )
+
     return (
         render_template(
             "admin/revenue_dashboard.html",
@@ -13004,6 +13037,7 @@ def admin_revenue():
             active_filters=any(filters.values()),
             radar=_build_audience_map_context(),
             founder_cockpit=founder_cockpit,
+            acquisition_context=acquisition_context,
             analytics_developer_mode=_analytics_developer_mode(),
         ),
         200,
