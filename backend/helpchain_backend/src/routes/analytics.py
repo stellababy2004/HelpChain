@@ -421,9 +421,10 @@ def _hash_ip(value: str | None) -> str | None:
 def collect_event():
     """Collect real first-party analytics events.
 
-    Stores privacy-conscious telemetry only:
-    - no raw IP address
-    - hashed IP only
+    Stores privacy-conscious first-party telemetry only:
+    - no raw or hashed IP address
+    - no full User-Agent
+    - no exact screen resolution
     - no credentials
     """
     try:
@@ -479,8 +480,8 @@ def collect_event():
                 or ""
             )[:128],
             user_type="admin" if session.get("admin_logged_in") else "guest",
-            user_ip=_hash_ip(get_client_ip()),
-            user_agent=(request.headers.get("User-Agent") or "")[:500],
+            user_ip=None,
+            user_agent=None,
             page_url=str(decision.canonical_path or event_path or "")[:500],
             page_title=str(payload.get("title") or props.get("title") or "")[:255],
             referrer=str(
@@ -489,7 +490,7 @@ def collect_event():
                 or request.headers.get("Referer")
                 or ""
             )[:500],
-            screen_resolution=str(props.get("screen") or props.get("screen_resolution") or "")[:20],
+            screen_resolution=None,
             device_type=str(props.get("device") or props.get("device_type") or "")[:50],
         )
 
