@@ -20,6 +20,23 @@ def test_database_connection(app, db_schema):
         assert result == 1
 
 
+
+def test_liveness_endpoint_does_not_touch_database(client, monkeypatch):
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("liveness probe must not query the database")
+
+    monkeypatch.setattr(db.session, "execute", fail_if_called)
+
+    resp = client.get("/health/live")
+
+    assert resp.status_code == 200
+    assert resp.is_json
+    data = resp.get_json() or {}
+    assert data.get("status") == "ok"
+    assert data.get("app") == "ok"
+    assert "db" not in data
+    assert "time" in data
+
 def test_health_endpoint_is_safe_and_operational(client):
     resp = client.get("/health")
 
