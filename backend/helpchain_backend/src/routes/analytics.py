@@ -429,7 +429,7 @@ def collect_event():
     """
     try:
         from backend.extensions import db
-        from backend.models_with_analytics import AnalyticsEvent
+        from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 
         payload = request.get_json(silent=True) or {}
         if not isinstance(payload, dict):
@@ -517,7 +517,7 @@ def _safe_rate(numerator: int, denominator: int) -> float:
 def admin_conversion_funnel_api():
 
     try:
-        from backend.models_with_analytics import AnalyticsEvent
+        from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 
         days = request.args.get("days", default=30, type=int)
         days = max(1, min(days, 365))
@@ -561,6 +561,106 @@ def admin_conversion_funnel_api():
 
         pages.sort(key=lambda item: (item["clicks"], item["views"]), reverse=True)
 
+        # Acquisition attribution is resolved only for sessions already present
+        # in the tenant-scoped analytics event set above.
+        scoped_session_ids = {
+            str(event.user_session).strip()
+            for event in events
+            if event.user_session and str(event.user_session).strip()
+        }
+
+        behavior_by_session = {}
+        if scoped_session_ids:
+            behaviors = (
+                UserBehavior.query
+                .filter(UserBehavior.session_id.in_(scoped_session_ids))
+                .all()
+            )
+            behavior_by_session = {
+                behavior.session_id: behavior
+                for behavior in behaviors
+            }
+
+        acquisition_buckets = {}
+
+        for session_id in scoped_session_ids:
+            behavior = behavior_by_session.get(session_id)
+
+            source = (
+                (behavior.utm_source or "").strip()
+                if behavior else ""
+            ) or "Direct / unattributed"
+            medium = (
+                (behavior.utm_medium or "").strip()
+                if behavior else ""
+            ) or "-"
+            campaign = (
+                (behavior.utm_campaign or "").strip()
+                if behavior else ""
+            ) or "-"
+
+            key = (source, medium, campaign)
+            bucket = acquisition_buckets.setdefault(
+                key,
+                {
+                    "source": source,
+                    "medium": medium,
+                    "campaign": campaign,
+                    "sessions": 0,
+                    "cta_clicks": 0,
+                    "form_submits": 0,
+                },
+            )
+            bucket["sessions"] += 1
+
+        for event in events:
+            session_id = str(event.user_session or "").strip()
+            if not session_id:
+                continue
+
+            behavior = behavior_by_session.get(session_id)
+            source = (
+                (behavior.utm_source or "").strip()
+                if behavior else ""
+            ) or "Direct / unattributed"
+            medium = (
+                (behavior.utm_medium or "").strip()
+                if behavior else ""
+            ) or "-"
+            campaign = (
+                (behavior.utm_campaign or "").strip()
+                if behavior else ""
+            ) or "-"
+
+            bucket = acquisition_buckets.get((source, medium, campaign))
+            if bucket is None:
+                continue
+
+            if event.event_type.startswith("cta_"):
+                bucket["cta_clicks"] += 1
+            elif (
+                event.event_type == "form_submit"
+                or event.event_type.endswith("_form_submit")
+            ):
+                bucket["form_submits"] += 1
+
+        acquisition = []
+        for bucket in acquisition_buckets.values():
+            bucket["conversion_rate"] = _safe_rate(
+                bucket["form_submits"],
+                bucket["sessions"],
+            )
+            acquisition.append(bucket)
+
+        acquisition.sort(
+            key=lambda item: (
+                item["form_submits"],
+                item["cta_clicks"],
+                item["sessions"],
+            ),
+            reverse=True,
+        )
+
         return jsonify({
             "period_days": days,
             "summary": {
@@ -573,6 +673,7 @@ def admin_conversion_funnel_api():
             },
             "pages": pages[:20],
             "top_ctas": [{"event": key, "count": value} for key, value in cta_stats.most_common(10)],
+            "acquisition": acquisition[:50],
         })
 
     except Exception as exc:
@@ -680,6 +781,30 @@ def _conversion_dashboard_html():
       <article class="hc-conv-card"><div class="hc-conv-label">CTA clicks</div><div id="clicks" class="hc-conv-value">-</div></article>
       <article class="hc-conv-card"><div class="hc-conv-label">View to click</div><div id="v2c" class="hc-conv-value">-</div></article>
       <article class="hc-conv-card"><div class="hc-conv-label">Click to submit</div><div id="c2s" class="hc-conv-value">-</div></article>
+    </section>
+
+    <section class="hc-conv-table" style="margin-bottom:20px">
+      <h5 style="padding:16px">Acquisition Performance</h5>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Medium</th>
+              <th>Campaign</th>
+              <th>Sessions</th>
+              <th>CTA</th>
+              <th>Forms</th>
+              <th>Conversion</th>
+            </tr>
+          </thead>
+          <tbody id="acquisitionBody">
+            <tr>
+              <td colspan="7" class="text-muted">Chargement...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section class="hc-conv-table">

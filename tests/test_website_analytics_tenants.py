@@ -4,7 +4,7 @@ import pytest
 from flask import g
 
 from backend.models import AdminUser, Structure, utc_now
-from backend.models_with_analytics import AnalyticsEvent
+from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 from backend.helpchain_backend.src.services.website_analytics import ingestion_token
 
 
@@ -337,3 +337,160 @@ def test_revenue_alerts_do_not_duplicate_intelligence_persistence(app, client, t
     rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
     assert len(rows) == 3
     assert {row.id for row in rows} == row_ids
+
+
+def test_conversion_funnel_acquisition_is_tenant_scoped(app, client, tenants, session):
+    now = utc_now()
+
+    session.add_all([
+        UserBehavior(
+            session_id="acquisition-a",
+            utm_source="linkedin",
+            utm_medium="social",
+            utm_campaign="escp_octobre",
+            session_start=now,
+            last_activity=now,
+        ),
+        UserBehavior(
+            session_id="acquisition-b",
+            utm_source="google",
+            utm_medium="cpc",
+            utm_campaign="pilot_b",
+            session_start=now,
+            last_activity=now,
+        ),
+    ])
+
+    session.add_all([
+        AnalyticsEvent(
+            structure_id=tenants["a"].id,
+            event_type="page_view",
+            user_session="acquisition-a",
+            page_url="/tarifs",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            structure_id=tenants["a"].id,
+            event_type="cta_demo_click",
+            user_session="acquisition-a",
+            page_url="/tarifs",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            structure_id=tenants["a"].id,
+            event_type="form_submit",
+            user_session="acquisition-a",
+            page_url="/demo",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            structure_id=tenants["b"].id,
+            event_type="page_view",
+            user_session="acquisition-b",
+            page_url="/offre",
+            created_at=now,
+        ),
+    ])
+    session.commit()
+
+    login(client, app, tenants["users"]["admin"])
+    response = client.get("/admin/api/conversion-funnel?days=30")
+
+    assert response.status_code == 200
+    acquisition = response.get_json()["acquisition"]
+
+    linkedin = next(row for row in acquisition if row["source"] == "linkedin")
+    assert linkedin == {
+        "source": "linkedin",
+        "medium": "social",
+        "campaign": "escp_octobre",
+        "sessions": 1,
+        "cta_clicks": 1,
+        "form_submits": 1,
+        "conversion_rate": 100.0,
+    }
+
+    assert all(row["source"] != "google" for row in acquisition)
+    assert "pilot_b" not in response.get_data(as_text=True)
+
+
+def test_conversion_funnel_acquisition_includes_direct_session(app, client, tenants, session):
+    now = utc_now()
+
+    session.add(
+        AnalyticsEvent(
+            structure_id=tenants["a"].id,
+            event_type="page_view",
+            user_session="direct-acquisition-a",
+            user_ip="198.51.100.25",
+            page_url="/securite",
+            created_at=now,
+        )
+    )
+    session.commit()
+
+    login(client, app, tenants["users"]["admin"])
+    response = client.get("/admin/api/conversion-funnel?days=30")
+
+    assert response.status_code == 200
+    acquisition = response.get_json()["acquisition"]
+
+    direct = next(
+        row for row in acquisition
+        if row["source"] == "Direct / unattributed"
+    )
+
+    assert direct["medium"] == "-"
+    assert direct["campaign"] == "-"
+    assert direct["sessions"] >= 1
+
+    # Acquisition attribution must not expose or use the event IP.
+    assert "198.51.100.25" not in response.get_data(as_text=True)
+
+
+def test_global_acquisition_can_see_both_scoped_sources(app, client, tenants, session):
+    now = utc_now()
+
+    session.add_all([
+        UserBehavior(
+            session_id="global-acquisition-a",
+            utm_source="linkedin",
+            utm_medium="social",
+            utm_campaign="campaign_a",
+            session_start=now,
+            last_activity=now,
+        ),
+        UserBehavior(
+            session_id="global-acquisition-b",
+            utm_source="google",
+            utm_medium="organic",
+            utm_campaign="campaign_b",
+            session_start=now,
+            last_activity=now,
+        ),
+        AnalyticsEvent(
+            structure_id=tenants["a"].id,
+            event_type="page_view",
+            user_session="global-acquisition-a",
+            page_url="/a-source",
+            created_at=now,
+        ),
+        AnalyticsEvent(
+            structure_id=tenants["b"].id,
+            event_type="page_view",
+            user_session="global-acquisition-b",
+            page_url="/b-source",
+            created_at=now,
+        ),
+    ])
+    session.commit()
+
+    login(client, app, tenants["users"]["global"])
+    response = client.get("/admin/api/conversion-funnel?days=30")
+
+    assert response.status_code == 200
+    sources = {row["source"] for row in response.get_json()["acquisition"]}
+
+    assert "linkedin" in sources
+    assert "google" in sources
+
