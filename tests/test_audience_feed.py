@@ -30,6 +30,10 @@ def test_tracked_public_page_creates_page_view(client):
     behavior = UserBehavior.query.filter_by(session_id=event.user_session).one()
     assert behavior.entry_page == "/offre"
     assert behavior.pages_visited == 1
+    assert behavior.ip_address is None
+    assert behavior.user_agent is None
+    assert event.user_ip is None
+    assert event.user_agent is None
 
 
 def test_static_assets_do_not_create_page_view(client):
@@ -48,7 +52,13 @@ def test_referrer_is_captured(client):
     )
 
     event = AnalyticsEvent.query.filter_by(page_url="/deploiement").one()
-    assert event.referrer == "https://www.linkedin.com/company/helpchain"
+    assert event.referrer == "https://www.linkedin.com"
+
+
+def test_referrer_sensitive_path_and_query_are_not_saved(client):
+    client.get("/offre", headers={**PUBLIC_HEADERS, "Referer": "https://example.org/private?token=secret#fragment"})
+    event = AnalyticsEvent.query.filter_by(page_url="/offre").one()
+    assert event.referrer == "https://example.org"
 
 
 def test_high_intent_page_view_is_stored(client):
