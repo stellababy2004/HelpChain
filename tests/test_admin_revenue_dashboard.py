@@ -1,4 +1,4 @@
-﻿from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 from backend.helpchain_backend.src.models import (
@@ -25,13 +25,13 @@ def test_admin_revenue_empty_state_safe(authenticated_admin_client):
     assert "Founder Priority Queue" in html
     assert "No revenue signals yet" in html
     assert "Weighted Pipeline" in html
-    assert "Stalled opportunities" in html
-    assert "Recommended founder actions" in html
-    assert "Relationship temperature" in html
-    assert "Institutional memory timeline" in html
-    assert "Relationship State" in html
-    assert "Pilot Progression" in html
-    assert "Next Founder Actions" in html
+    assert 'data-testid="founder-stalled-opportunities"' in html
+    assert 'data-testid="founder-recommended-actions"' in html
+    assert 'data-testid="founder-relationship-temperature"' in html
+    assert 'data-testid="founder-memory-timeline"' in html
+    assert 'data-testid="founder-relationship-state"' in html
+    assert 'data-testid="founder-pilot-progression"' in html
+    assert 'data-testid="founder-next-actions"' in html
 
 
 def test_admin_revenue_unified_rows_display(authenticated_admin_client, session):
@@ -327,9 +327,9 @@ def test_admin_revenue_renders_revenue_signal_sections(
     html = response.get_data(as_text=True)
 
     assert response.status_code == 200
-    assert "Hot this week" in html
-    assert "Silent high-intent" in html
-    assert "Territory acceleration" in html
+    assert 'data-testid="founder-hot-this-week"' in html
+    assert 'data-testid="founder-silent-high-intent"' in html
+    assert 'data-testid="founder-territory-acceleration"' in html
 
 
 def test_admin_revenue_renders_operational_founder_sections(
@@ -386,16 +386,16 @@ def test_admin_revenue_renders_operational_founder_sections(
     html = response.get_data(as_text=True)
 
     assert response.status_code == 200
-    assert "Stalled opportunities" in html
-    assert "Recommended founder actions" in html
-    assert "Relationship temperature" in html
-    assert "Institutional memory timeline" in html
-    assert "Relationship State" in html
-    assert "Pilot Progression" in html
-    assert "Next Founder Actions" in html
+    assert 'data-testid="founder-stalled-opportunities"' in html
+    assert 'data-testid="founder-recommended-actions"' in html
+    assert 'data-testid="founder-relationship-temperature"' in html
+    assert 'data-testid="founder-memory-timeline"' in html
+    assert 'data-testid="founder-relationship-state"' in html
+    assert 'data-testid="founder-pilot-progression"' in html
+    assert 'data-testid="founder-next-actions"' in html
     assert "Ville de Paris" in html
     assert "Re-contact deployment lead" in html
-    assert "Hot this week" in html
-    assert "Silent high-intent" in html
-    assert "Territory acceleration" in html
+    assert 'data-testid="founder-hot-this-week"' in html
+    assert 'data-testid="founder-silent-high-intent"' in html
+    assert 'data-testid="founder-territory-acceleration"' in html
     assert "Paris" in html

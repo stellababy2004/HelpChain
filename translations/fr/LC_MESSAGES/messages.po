@@ -10718,3 +10718,249 @@ msgstr "Toutes"
 #: templates/admin/professionals_map.html
 msgid "Ouvrir les cas actifs"
 msgstr "Ouvrir les cas actifs"
+
+msgid "à faire avancer"
+msgstr "à faire avancer"
+
+msgid "ACQUISITION - 30 JOURS"
+msgstr "ACQUISITION - 30 JOURS"
+
+msgid "Actions recommandées"
+msgstr "Actions recommandées"
+
+msgid "Aucune action commerciale urgente détectée."
+msgstr "Aucune action commerciale urgente détectée."
+
+msgid "Aucune action prioritaire détectée."
+msgstr "Aucune action prioritaire détectée."
+
+msgid "Aucune action prioritaire disponible."
+msgstr "Aucune action prioritaire disponible."
+
+msgid "Aujourd’hui"
+msgstr "Aujourd’hui"
+
+msgid "CTA"
+msgstr "CTA"
+
+msgid "Ce que je dois faire aujourd’hui"
+msgstr "Ce que je dois faire aujourd’hui"
+
+msgid "Ce qui attire et convertit"
+msgstr "Ce qui attire et convertit"
+
+msgid "DEMOS"
+msgstr "DEMOS"
+
+msgid "FOLLOW-UP"
+msgstr "FOLLOW-UP"
+
+msgid "FORMULAIRES"
+msgstr "FORMULAIRES"
+
+msgid "Filtres, opportunités, suivi et informations commerciales avancées."
+msgstr "Filtres, opportunités, suivi et informations commerciales avancées."
+
+msgid "Focus"
+msgstr "Focus"
+
+msgid "Founder Growth"
+msgstr "Founder Growth"
+
+msgid "Founder Intelligence"
+msgstr "Founder Intelligence"
+
+msgid "HOT"
+msgstr "HOT"
+
+msgid "HOT LEADS"
+msgstr "HOT LEADS"
+
+msgid "HelpChain fera remonter ici la prochaine action utile."
+msgstr "HelpChain fera remonter ici la prochaine action utile."
+
+msgid "LEADS"
+msgstr "LEADS"
+
+msgid "Lecture rapide"
+msgstr "Lecture rapide"
+
+msgid "Les actions à traiter en priorité aujourd’hui."
+msgstr "Les actions à traiter en priorité aujourd’hui."
+
+msgid "Les données d’acquisition ne sont pas disponibles pour ce périmètre."
+msgstr "Les données d’acquisition ne sont pas disponibles pour ce périmètre."
+
+msgid "Nouveaux leads"
+msgstr "Nouveaux leads"
+
+msgid "Opportunités bloquées"
+msgstr "Opportunités bloquées"
+
+msgid "Opportunités suivies"
+msgstr "Opportunités suivies"
+
+msgid "Organisation inconnue"
+msgstr "Organisation inconnue"
+
+msgid "PIPELINE"
+msgstr "PIPELINE"
+
+msgid "Pas encore de source d’acquisition attribuée sur cette période."
+msgstr "Pas encore de source d’acquisition attribuée sur cette période."
+
+msgid "Priorité n°1"
+msgstr "Priorité n°1"
+
+msgid "Prochaine action :"
+msgstr "Prochaine action :"
+
+msgid "Rien d’urgent aujourd’hui"
+msgstr "Rien d’urgent aujourd’hui"
+
+msgid "SESSIONS"
+msgstr "SESSIONS"
+
+msgid "SIGNAUX CHAUDS"
+msgstr "SIGNAUX CHAUDS"
+
+msgid "Score"
+msgstr "Score"
+
+msgid "Signaux chauds cette semaine"
+msgstr "Signaux chauds cette semaine"
+
+msgid "Sources, campagnes, CTA et formulaires sont disponibles dans Acquisition Performance."
+msgstr "Sources, campagnes, CTA et formulaires sont disponibles dans Acquisition Performance."
+
+msgid "VISITEURS"
+msgstr "VISITEURS"
+
+msgid "VUES"
+msgstr "VUES"
+
+msgid "Voir l’intelligence détaillée"
+msgstr "Voir l’intelligence détaillée"
+
+msgid "Voir le détail"
+msgstr "Voir le détail"
+
+msgid "WON"
+msgstr "WON"
+
+msgid "ce mois"
+msgstr "ce mois"
+
+msgid "en retard"
+msgstr "en retard"
+
+msgid "formulaire(s)"
+msgstr "formulaire(s)"
+
+msgid "leads prioritaires"
+msgstr "leads prioritaires"
+
+msgid "opportunité(s) suivie(s)"
+msgstr "opportunité(s) suivie(s)"
+
+msgid "session(s)"
+msgstr "session(s)"
+
+msgid "valeur active"
+msgstr "valeur active"
+
+msgid "Acquisition intelligence"
+msgstr "Acquisition intelligence"
+
+msgid "Acquisition → Conversion"
+msgstr "Acquisition → Conversion"
+
+msgid "Analyse détaillée des opportunités, signaux, relations et territoires"
+msgstr "Analyse détaillée des opportunités, signaux, relations et territoires"
+
+msgid "Aucune action commerciale urgente"
+msgstr "Aucune action commerciale urgente"
+
+msgid "BLOQUÉES"
+msgstr "BLOQUÉES"
+
+msgid "CLIENTS"
+msgstr "CLIENTS"
+
+msgid "DÉMOS"
+msgstr "DÉMOS"
+
+msgid "GROWTH ENGINE"
+msgstr "GROWTH ENGINE"
+
+msgid "INTÉRÊT"
+msgstr "INTÉRÊT"
+
+msgid "NEXT BEST ACTION"
+msgstr "NEXT BEST ACTION"
+
+msgid "Ouvrir Acquisition Performance →"
+msgstr "Ouvrir Acquisition Performance →"
+
+msgid "PILOTES"
+msgstr "PILOTES"
+
+msgid "PIPELINE COMMERCIAL"
+msgstr "PIPELINE COMMERCIAL"
+
+msgid "Pipeline commercial détaillé"
+msgstr "Pipeline commercial détaillé"
+
+msgid "Rien à traiter en priorité aujourd’hui."
+msgstr "Rien à traiter en priorité aujourd’hui."
+
+msgid "Une lecture simple du parcours commercial HelpChain."
+msgstr "Une lecture simple du parcours commercial HelpChain."
+
+msgid "Voir les détails"
+msgstr "Voir les détails"
+
+msgid "Vos priorités commerciales essentielles, en un coup d’œil."
+msgstr "Vos priorités commerciales essentielles, en un coup d’œil."
+
+msgid "gagnés ce mois"
+msgstr "gagnés ce mois"
+
+msgid "nouveaux leads"
+msgstr "nouveaux leads"
+
+msgid "progression pilote"
+msgstr "progression pilote"
+
+msgid "sessions sur 30 jours"
+msgstr "sessions sur 30 jours"
+
+msgid "signaux chauds cette semaine"
+msgstr "signaux chauds cette semaine"
+
+msgid "Actions recommand&#233;es"
+msgstr "Actions recommandées"
+
+msgid "Aucune action prioritaire d&#233;tect&#233;e."
+msgstr "Aucune action prioritaire détectée."
+
+msgid "Aujourd&#8217;hui"
+msgstr "Aujourd’hui"
+
+msgid "Ce que je dois faire aujourd&#8217;hui"
+msgstr "Ce que je dois faire aujourd’hui"
+
+msgid "Les actions &#224; traiter en priorit&#233; aujourd&#8217;hui."
+msgstr "Les actions à traiter en priorité aujourd’hui."
+
+msgid "Opportunit&#233;s bloqu&#233;es"
+msgstr "Opportunités bloquées"
+
+msgid "Opportunit&#233;s suivies"
+msgstr "Opportunités suivies"
+
+msgid "Rien d&#8217;urgent aujourd&#8217;hui"
+msgstr "Rien d’urgent aujourd’hui"
+
+msgid "Voir l&#8217;intelligence d&#233;taill&#233;e"
+msgstr "Voir l’intelligence détaillée"

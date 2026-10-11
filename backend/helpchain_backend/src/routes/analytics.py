@@ -513,172 +513,282 @@ def _safe_rate(numerator: int, denominator: int) -> float:
     return round((numerator / denominator) * 100, 1) if denominator else 0.0
 
 
-@analytics_bp.route("/admin/api/conversion-funnel")
-def admin_conversion_funnel_api():
+def build_conversion_funnel_context(
+    structure,
+    *,
+    days: int = 30,
+) -> dict[str, object]:
+    """
+    Build the scoped acquisition/conversion context used by both the
+    Conversion dashboard API and the founder Revenue dashboard.
 
-    try:
-        from backend.models_with_analytics import AnalyticsEvent, UserBehavior
+    Event totals remain event counts. Session totals are unique scoped
+    analytics sessions and must not be presented as unique people.
+    """
+    from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 
-        days = request.args.get("days", default=30, type=int)
-        days = max(1, min(days, 365))
-        since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
+    days = max(1, min(int(days or 30), 365))
+    since = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=days)
 
-        events = (
-            scoped_events(g.website_analytics_structure)
-            .filter(AnalyticsEvent.created_at >= since)
-            .order_by(AnalyticsEvent.created_at.desc())
+    events = (
+        scoped_events(structure)
+        .filter(AnalyticsEvent.created_at >= since)
+        .order_by(AnalyticsEvent.created_at.desc())
+        .all()
+    )
+
+    by_type = Counter(event.event_type for event in events)
+
+    page_views = by_type.get("page_view", 0)
+    cta_clicks = sum(
+        count
+        for event_type, count in by_type.items()
+        if event_type.startswith("cta_")
+    )
+    form_submits = sum(
+        count
+        for event_type, count in by_type.items()
+        if (
+            event_type == "form_submit"
+            or event_type.endswith("_form_submit")
+        )
+    )
+
+    page_stats = defaultdict(
+        lambda: {
+            "page": "",
+            "views": 0,
+            "clicks": 0,
+            "submits": 0,
+        }
+    )
+    cta_stats = Counter()
+
+    for event in events:
+        page = event.page_url or "/unknown"
+        row = page_stats[page]
+        row["page"] = page
+
+        if event.event_type == "page_view":
+            row["views"] += 1
+        elif event.event_type.startswith("cta_"):
+            row["clicks"] += 1
+            cta_stats[event.event_type] += 1
+        elif (
+            event.event_type == "form_submit"
+            or event.event_type.endswith("_form_submit")
+        ):
+            row["submits"] += 1
+
+    pages = []
+
+    for row in page_stats.values():
+        row["view_to_click"] = _safe_rate(
+            row["clicks"],
+            row["views"],
+        )
+        row["click_to_submit"] = _safe_rate(
+            row["submits"],
+            row["clicks"],
+        )
+        row["dropoff_after_click"] = max(
+            0,
+            row["clicks"] - row["submits"],
+        )
+        pages.append(row)
+
+    pages.sort(
+        key=lambda item: (
+            item["clicks"],
+            item["views"],
+        ),
+        reverse=True,
+    )
+
+    # Scope session identity with structure_id. This avoids treating the
+    # same raw session id from two structures as the same analytics session.
+    scoped_sessions = {}
+
+    for event in events:
+        session_id = str(event.user_session or "").strip()
+        if not session_id:
+            continue
+
+        key = _analytics_session_key(event)
+
+        scoped_sessions.setdefault(
+            key,
+            {
+                "session_id": session_id,
+                "structure_id": event.structure_id,
+            },
+        )
+
+    # UserBehavior currently has no structure_id. Therefore UTM attribution
+    # is only attached when a raw session id maps to exactly one scoped
+    # analytics session in this result set. Ambiguous raw ids stay direct.
+    raw_session_counts = Counter(
+        item["session_id"]
+        for item in scoped_sessions.values()
+    )
+
+    safe_raw_session_ids = {
+        session_id
+        for session_id, count in raw_session_counts.items()
+        if count == 1
+    }
+
+    behavior_by_session = {}
+
+    if safe_raw_session_ids:
+        behaviors = (
+            UserBehavior.query
+            .filter(
+                UserBehavior.session_id.in_(
+                    safe_raw_session_ids
+                )
+            )
             .all()
         )
 
-        by_type = Counter(e.event_type for e in events)
-
-        page_views = by_type.get("page_view", 0)
-        cta_clicks = sum(count for event_type, count in by_type.items() if event_type.startswith("cta_"))
-        form_submits = sum(count for event_type, count in by_type.items() if event_type == "form_submit" or event_type.endswith("_form_submit"))
-
-        page_stats = defaultdict(lambda: {"page": "", "views": 0, "clicks": 0, "submits": 0})
-        cta_stats = Counter()
-
-        for event in events:
-            page = event.page_url or "/unknown"
-            row = page_stats[page]
-            row["page"] = page
-
-            if event.event_type == "page_view":
-                row["views"] += 1
-            elif event.event_type.startswith("cta_"):
-                row["clicks"] += 1
-                cta_stats[event.event_type] += 1
-            elif event.event_type == "form_submit" or event.event_type.endswith("_form_submit"):
-                row["submits"] += 1
-
-        pages = []
-        for row in page_stats.values():
-            row["view_to_click"] = _safe_rate(row["clicks"], row["views"])
-            row["click_to_submit"] = _safe_rate(row["submits"], row["clicks"])
-            row["dropoff_after_click"] = max(0, row["clicks"] - row["submits"])
-            pages.append(row)
-
-        pages.sort(key=lambda item: (item["clicks"], item["views"]), reverse=True)
-
-        # Acquisition attribution is resolved only for sessions already present
-        # in the tenant-scoped analytics event set above.
-        scoped_session_ids = {
-            str(event.user_session).strip()
-            for event in events
-            if event.user_session and str(event.user_session).strip()
+        behavior_by_session = {
+            behavior.session_id: behavior
+            for behavior in behaviors
         }
 
-        behavior_by_session = {}
-        if scoped_session_ids:
-            behaviors = (
-                UserBehavior.query
-                .filter(UserBehavior.session_id.in_(scoped_session_ids))
-                .all()
-            )
-            behavior_by_session = {
-                behavior.session_id: behavior
-                for behavior in behaviors
-            }
+    acquisition_buckets = {}
 
-        acquisition_buckets = {}
+    def acquisition_key(session_id):
+        behavior = behavior_by_session.get(session_id)
 
-        for session_id in scoped_session_ids:
-            behavior = behavior_by_session.get(session_id)
+        source = (
+            (behavior.utm_source or "").strip()
+            if behavior else ""
+        ) or "Direct / unattributed"
 
-            source = (
-                (behavior.utm_source or "").strip()
-                if behavior else ""
-            ) or "Direct / unattributed"
-            medium = (
-                (behavior.utm_medium or "").strip()
-                if behavior else ""
-            ) or "-"
-            campaign = (
-                (behavior.utm_campaign or "").strip()
-                if behavior else ""
-            ) or "-"
+        medium = (
+            (behavior.utm_medium or "").strip()
+            if behavior else ""
+        ) or "-"
 
-            key = (source, medium, campaign)
-            bucket = acquisition_buckets.setdefault(
-                key,
-                {
-                    "source": source,
-                    "medium": medium,
-                    "campaign": campaign,
-                    "sessions": 0,
-                    "cta_clicks": 0,
-                    "form_submits": 0,
-                },
-            )
-            bucket["sessions"] += 1
+        campaign = (
+            (behavior.utm_campaign or "").strip()
+            if behavior else ""
+        ) or "-"
 
-        for event in events:
-            session_id = str(event.user_session or "").strip()
-            if not session_id:
-                continue
+        return source, medium, campaign
 
-            behavior = behavior_by_session.get(session_id)
-            source = (
-                (behavior.utm_source or "").strip()
-                if behavior else ""
-            ) or "Direct / unattributed"
-            medium = (
-                (behavior.utm_medium or "").strip()
-                if behavior else ""
-            ) or "-"
-            campaign = (
-                (behavior.utm_campaign or "").strip()
-                if behavior else ""
-            ) or "-"
+    for scoped_session in scoped_sessions.values():
+        session_id = scoped_session["session_id"]
+        source, medium, campaign = acquisition_key(session_id)
 
-            bucket = acquisition_buckets.get((source, medium, campaign))
-            if bucket is None:
-                continue
-
-            if event.event_type.startswith("cta_"):
-                bucket["cta_clicks"] += 1
-            elif (
-                event.event_type == "form_submit"
-                or event.event_type.endswith("_form_submit")
-            ):
-                bucket["form_submits"] += 1
-
-        acquisition = []
-        for bucket in acquisition_buckets.values():
-            bucket["conversion_rate"] = _safe_rate(
-                bucket["form_submits"],
-                bucket["sessions"],
-            )
-            acquisition.append(bucket)
-
-        acquisition.sort(
-            key=lambda item: (
-                item["form_submits"],
-                item["cta_clicks"],
-                item["sessions"],
-            ),
-            reverse=True,
+        bucket = acquisition_buckets.setdefault(
+            (source, medium, campaign),
+            {
+                "source": source,
+                "medium": medium,
+                "campaign": campaign,
+                "sessions": 0,
+                "cta_clicks": 0,
+                "form_submits": 0,
+            },
         )
 
-        return jsonify({
-            "period_days": days,
-            "summary": {
-                "events": len(events),
-                "page_views": page_views,
-                "cta_clicks": cta_clicks,
-                "form_submits": form_submits,
-                "view_to_click": _safe_rate(cta_clicks, page_views),
-                "click_to_submit": _safe_rate(form_submits, cta_clicks),
-            },
-            "pages": pages[:20],
-            "top_ctas": [{"event": key, "count": value} for key, value in cta_stats.most_common(10)],
-            "acquisition": acquisition[:50],
-        })
+        bucket["sessions"] += 1
+
+    for event in events:
+        session_id = str(event.user_session or "").strip()
+
+        if not session_id:
+            continue
+
+        source, medium, campaign = acquisition_key(session_id)
+
+        bucket = acquisition_buckets.get(
+            (source, medium, campaign)
+        )
+
+        if bucket is None:
+            continue
+
+        if event.event_type.startswith("cta_"):
+            bucket["cta_clicks"] += 1
+        elif (
+            event.event_type == "form_submit"
+            or event.event_type.endswith("_form_submit")
+        ):
+            bucket["form_submits"] += 1
+
+    acquisition = []
+
+    for bucket in acquisition_buckets.values():
+        bucket["conversion_rate"] = _safe_rate(
+            bucket["form_submits"],
+            bucket["sessions"],
+        )
+        acquisition.append(bucket)
+
+    acquisition.sort(
+        key=lambda item: (
+            item["form_submits"],
+            item["cta_clicks"],
+            item["sessions"],
+        ),
+        reverse=True,
+    )
+
+    session_count = len(scoped_sessions)
+
+    return {
+        "period_days": days,
+        "summary": {
+            "events": len(events),
+            "sessions": session_count,
+            "page_views": page_views,
+            "cta_clicks": cta_clicks,
+            "form_submits": form_submits,
+            "view_to_click": _safe_rate(
+                cta_clicks,
+                page_views,
+            ),
+            "click_to_submit": _safe_rate(
+                form_submits,
+                cta_clicks,
+            ),
+        },
+        "pages": pages[:20],
+        "top_ctas": [
+            {"event": key, "count": value}
+            for key, value in cta_stats.most_common(10)
+        ],
+        "acquisition": acquisition[:50],
+    }
+
+
+@analytics_bp.route("/admin/api/conversion-funnel")
+def admin_conversion_funnel_api():
+    try:
+        days = request.args.get(
+            "days",
+            default=30,
+            type=int,
+        )
+
+        return jsonify(
+            build_conversion_funnel_context(
+                g.website_analytics_structure,
+                days=days,
+            )
+        )
 
     except Exception as exc:
-        current_app.logger.warning("conversion funnel API failed: %s", exc)
-        return jsonify({"error": "Failed to load conversion funnel"}), 500
+        current_app.logger.warning(
+            "conversion funnel API failed: %s",
+            exc,
+        )
+        return jsonify(
+            {"error": "Failed to load conversion funnel"}
+        ), 500
 
 
 @analytics_bp.route("/admin/conversion-dashboard")
