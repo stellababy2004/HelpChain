@@ -9,7 +9,7 @@ REQUEST = Path(
 
 
 def test_request_template_has_valid_jinja():
-    Environment().parse(REQUEST)
+    Environment(autoescape=True).parse(REQUEST)
 
 
 def test_request_core_remains_present():

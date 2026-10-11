@@ -84,7 +84,7 @@ def test_request_risk_ui_is_adaptive():
 
 
 def test_request_template_remains_valid():
-    Environment().parse(REQUEST)
+    Environment(autoescape=True).parse(REQUEST)
 
 
 def test_existing_mobilisation_guards_remain():

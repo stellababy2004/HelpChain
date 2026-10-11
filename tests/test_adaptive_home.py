@@ -6,7 +6,7 @@ HOME = HOME_PATH.read_text(encoding="utf-8")
 
 
 def test_home_jinja_is_valid():
-    Environment().parse(HOME)
+    Environment(autoescape=True).parse(HOME)
 
 
 def test_core_requests_remain_available():
