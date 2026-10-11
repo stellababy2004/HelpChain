@@ -64,19 +64,19 @@
                 {% endif %}
                 <a class="hc-admin-shellnav__link {{ 'is-active' if is_home_active else '' }}" href="{{ url_for('admin.admin_home') }}" {% if is_home_active %}aria-current="page"{% endif %}>Accueil</a>
                 {% if adaptive_global_admin or adaptive_module_enabled('workspace') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_workspace_active else '' }}" href="{{ url_for('ops.ops_workspace') }}" {% if is_workspace_active %}aria-current="page"{% endif %}>Workspace</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_workspace_active else '' }}" href="{{ url_for('ops.ops_workspace') }}" {% if is_workspace_active %}aria-current="page"{% endif %}>{{ _('Workspace') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('requests') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_requests_active else '' }}" href="{{ url_for('admin.admin_requests') }}" {% if is_requests_active %}aria-current="page"{% endif %}>Demandes</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_requests_active else '' }}" href="{{ url_for('admin.admin_requests') }}" {% if is_requests_active %}aria-current="page"{% endif %}>{{ _('Demandes') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('cases') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_cases_active else '' }}" href="{{ cases_href }}" {% if is_cases_active %}aria-current="page"{% endif %}>Cas</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_cases_active else '' }}" href="{{ cases_href }}" {% if is_cases_active %}aria-current="page"{% endif %}>{{ _('Cas') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('referrals') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_referrals_active else '' }}" href="{{ url_for('admin.admin_referrals_index') }}" {% if is_referrals_active %}aria-current="page"{% endif %}>Orientations partenaires</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_referrals_active else '' }}" href="{{ url_for('admin.admin_referrals_index') }}" {% if is_referrals_active %}aria-current="page"{% endif %}>{{ _('Orientations partenaires') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('notifications') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_notifications_active else '' }}" href="{{ notifications_href }}" {% if is_notifications_active %}aria-current="page"{% endif %}>Notifications</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_notifications_active else '' }}" href="{{ notifications_href }}" {% if is_notifications_active %}aria-current="page"{% endif %}>{{ _('Notifications') }}</a>
                 {% endif %}
                 {% if can_access_professional_leads %}
                   <a class="hc-admin-shellnav__link {{ 'is-active' if is_leads_active else '' }}" href="{{ url_for('admin.admin_professional_leads') }}" {% if is_leads_active %}aria-current="page"{% endif %}>Leads</a>
@@ -85,25 +85,25 @@
                   <a class="hc-admin-shellnav__link {{ 'is-active' if is_revenue_active else '' }}" href="{{ url_for('admin.admin_revenue') }}" {% if is_revenue_active %}aria-current="page"{% endif %}>Revenue</a>
                 {% endif %}
                 {% if adaptive_global_admin %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_conversion_active else '' }}" href="/admin/conversion-dashboard" {% if is_conversion_active %}aria-current="page"{% endif %}>Conversion</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_conversion_active else '' }}" href="/admin/conversion-dashboard" {% if is_conversion_active %}aria-current="page"{% endif %}>{{ _('Conversion') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('pilotage') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_pilotage_dashboard_active else '' }}" href="{{ url_for('admin.admin_pilotage') }}" {% if is_pilotage_dashboard_active %}aria-current="page"{% endif %}>Pilotage opérationnel</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_pilotage_dashboard_active else '' }}" href="{{ url_for('admin.admin_pilotage') }}" {% if is_pilotage_dashboard_active %}aria-current="page"{% endif %}>{{ _('Pilotage opérationnel') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('reports') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_reports_active else '' }}" href="{{ url_for('admin.admin_operations_report') }}" {% if is_reports_active %}aria-current="page"{% endif %}>Rapports</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_reports_active else '' }}" href="{{ url_for('admin.admin_operations_report') }}" {% if is_reports_active %}aria-current="page"{% endif %}>{{ _('Rapports') }}</a>
                 {% endif %}
                 {% if can_access_global_analytics %}
                   <a class="hc-admin-shellnav__link {{ 'is-active' if is_audience_active else '' }}" href="{{ url_for('admin.admin_audience_map') }}" {% if is_audience_active %}aria-current="page"{% endif %}>Audience</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('connectors') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_integrations_active else '' }}" href="{{ url_for('admin.admin_integrations') }}" {% if is_integrations_active %}aria-current="page"{% endif %}>Connecteurs</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_integrations_active else '' }}" href="{{ url_for('admin.admin_integrations') }}" {% if is_integrations_active %}aria-current="page"{% endif %}>{{ _('Connecteurs') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('security') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_security_active else '' }}" href="{{ url_for('admin.admin_security') }}" {% if is_security_active %}aria-current="page"{% endif %}>Sécurité</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_security_active else '' }}" href="{{ url_for('admin.admin_security') }}" {% if is_security_active %}aria-current="page"{% endif %}>{{ _('Sécurité') }}</a>
                 {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('platform') %}
-                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_platform_active else '' }}" href="{{ url_for('admin.admin_structures') }}" {% if is_platform_active %}aria-current="page"{% endif %}>Plateforme</a>
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_platform_active else '' }}" href="{{ url_for('admin.admin_structures') }}" {% if is_platform_active %}aria-current="page"{% endif %}>{{ _('Plateforme') }}</a>
                 {% endif %}
               </nav>
             </div>
