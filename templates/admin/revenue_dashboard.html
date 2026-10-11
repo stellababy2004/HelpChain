@@ -75,7 +75,7 @@
         <article class="hc-founder-growth__signal hc-founder-growth__signal--demo">
           <span class="hc-muted small">{{ _('DEMOS') }}</span>
           <strong>{{ metrics.demos_pending.display }}</strong>
-          <small>{{ _('{{ _('à faire avancer') }}') }}</small>
+          <small>{{ _('à faire avancer') }}</small>
         </article>
 
         <article class="hc-founder-growth__signal hc-founder-growth__signal--pipeline">
@@ -701,7 +701,7 @@
         </div>
       </div>
 
-      <div class="hc-founder-cockpit__panel">
+      <div class="hc-founder-cockpit__panel" data-testid="founder-hot-this-week">
         <div class="hc-founder-cockpit__heading">{{ _('Hot this week') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.hot_this_week %}
@@ -730,7 +730,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Silent high-intent') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-silent-high-intent">{{ _('Silent high-intent') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.silent_high_intent %}
             <article class="hc-founder-cockpit__item">
@@ -758,7 +758,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Territory acceleration') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-territory-acceleration">{{ _('Territory acceleration') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.territory_acceleration %}
             <article class="hc-founder-cockpit__item">
@@ -785,7 +785,7 @@
         </div>
       </div>
 
-      <div class="hc-founder-cockpit__panel">
+      <div class="hc-founder-cockpit__panel" data-testid="founder-stalled-opportunities">
         <div class="hc-founder-cockpit__heading">{{ _('Stalled opportunities') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.stalled_opportunities %}
@@ -814,7 +814,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Recommended founder actions') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-recommended-actions">{{ _('Recommended founder actions') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.recommended_founder_actions %}
             <article class="hc-founder-cockpit__item">
@@ -842,7 +842,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Relationship temperature') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-relationship-temperature">{{ _('Relationship temperature') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.relationship_temperature_rows %}
             <article class="hc-founder-cockpit__item">
@@ -869,7 +869,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Institutional memory timeline') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-memory-timeline">{{ _('Institutional memory timeline') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.institutional_memory_timeline %}
             <article class="hc-founder-cockpit__item">
@@ -899,7 +899,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Relationship State') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-relationship-state">{{ _('Relationship State') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for state, count in founder_cockpit.relationship_state_summary.items() %}
             <article class="hc-founder-cockpit__item">
@@ -919,7 +919,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Pilot Progression') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-pilot-progression">{{ _('Pilot Progression') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for state, count in founder_cockpit.pilot_progression_summary.items() %}
             <article class="hc-founder-cockpit__item">
@@ -939,7 +939,7 @@
       </div>
 
       <div class="hc-founder-cockpit__panel">
-        <div class="hc-founder-cockpit__heading">{{ _('Next Founder Actions') }}</div>
+        <div class="hc-founder-cockpit__heading" data-testid="founder-next-actions">{{ _('Next Founder Actions') }}</div>
         <div class="hc-founder-cockpit__list">
           {% for item in founder_cockpit.next_founder_actions %}
             <article class="hc-founder-cockpit__item">
