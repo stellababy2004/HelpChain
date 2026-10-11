@@ -781,6 +781,7 @@
     </aside>
   </div>
 
+  {% if adaptive_global_admin or adaptive_module_enabled('mobilisation') %}
   <section class="hc-case-secondary">
     <!-- Appariement et mobilisation -->
     <div id="matching-mobilisation" class="card border-0 shadow-sm mb-3 hc-main-block hc-main-block--mobilization">
@@ -1088,7 +1089,9 @@
     </div>
     {% endif %}
   </section>
+  {% endif %}
 
+  {% if adaptive_global_admin or adaptive_module_enabled('mobilisation') %}
   <div class="offcanvas offcanvas-end hc-offcanvas" tabindex="-1" id="hcVolunteerDrawer" aria-labelledby="hcVolunteerDrawerLabel">
     <div class="offcanvas-header">
       <div>
@@ -1119,6 +1122,7 @@
       </div>
     </div>
   </div>
+  {% endif %}
 
 </div>
 
@@ -1126,7 +1130,9 @@
 
 {% block scripts %}
   {{ super() }}
+  {% if adaptive_global_admin or adaptive_module_enabled('mobilisation') %}
   <script src="{{ url_for('static', filename='js/admin-volunteer-drawer.js') }}"></script>
+  {% endif %}
 {% endblock %}
 
 
