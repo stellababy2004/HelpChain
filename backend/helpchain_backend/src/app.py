@@ -443,6 +443,9 @@ def maybe_self_heal_local_sqlite(app, db):
         app.logger.exception("[SELFHEAL] repair failed: %s", exc)
 
 
+from backend.helpchain_backend.src.services.adaptive_experience import adaptive_modules
+from backend.models import Structure
+
 def create_app(config_object=None) -> Flask:
     """
     Single source of truth for app factory.
@@ -1736,6 +1739,56 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
 """, org=org, contact=contact, email=email, city=city, status=status, notes=notes, value=value, today=datetime.now().strftime("%d/%m/%Y"))
     # --- End Proposal Engine Clean V2 ---
 
+
+
+    @app.context_processor
+    def inject_adaptive_experience():
+        """Expose adaptive UI modules without replacing authorization."""
+        modules = ()
+        is_global_admin = False
+
+        try:
+            if current_user.is_authenticated:
+                role = str(
+                    getattr(current_user, "role", "") or ""
+                ).strip().lower()
+
+                is_global_admin = role in {
+                    "superadmin",
+                    "super_admin",
+                    "super-admin",
+                }
+
+                structure = None
+                structure_id = getattr(
+                    current_user,
+                    "structure_id",
+                    None,
+                )
+
+                if structure_id is not None:
+                    structure = db.session.get(
+                        Structure,
+                        int(structure_id),
+                    )
+
+                modules = adaptive_modules(
+                    structure,
+                    global_admin=is_global_admin,
+                )
+        except Exception:
+            app.logger.exception(
+                "Failed to build adaptive experience for current admin user"
+            )
+            modules = ()
+
+        return {
+            "adaptive_modules": modules,
+            "adaptive_module_enabled": (
+                lambda module: module in modules
+            ),
+            "adaptive_global_admin": is_global_admin,
+        }
 
     return app
 
