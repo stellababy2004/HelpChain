@@ -170,9 +170,15 @@
 
     <div class="hc-ops-actions">
       <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.admin_requests') }}">Voir les demandes</a>
+      {% if adaptive_global_admin or adaptive_module_enabled('notifications') %}
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_notifications_list') }}">Voir les notifications</a>
+      {% endif %}
+      {% if adaptive_global_admin or adaptive_module_enabled('security') %}
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_security') }}">Voir la sécurité</a>
+      {% endif %}
+      {% if adaptive_global_admin or adaptive_module_enabled('platform') %}
       <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_roles') }}">Gérer les rôles</a>
+      {% endif %}
     </div>
   </div>
 
@@ -196,6 +202,7 @@
       </div>
     </section>
 
+    {% if adaptive_global_admin or adaptive_module_enabled('notifications') %}
     <section class="hc-card hc-command-panel {{ 'hc-pressure-watch' if queue_pending or queue_blocked else 'hc-pressure-calm' }}">
       <div class="hc-command-panel__kicker">File de diffusion</div>
       <h2 class="hc-command-panel__title">Pipeline notifications</h2>
@@ -214,7 +221,9 @@
         </a>
       </div>
     </section>
+    {% endif %}
 
+    {% if adaptive_global_admin or adaptive_module_enabled('security') %}
     <section class="hc-card hc-command-panel {{ 'hc-pressure-watch' if security_summary.available and (security_failed or security_denied or security_risky) else 'hc-pressure-calm' }}">
       <div class="hc-command-panel__kicker">Sécurité</div>
       <h2 class="hc-command-panel__title">Signaux sensibles</h2>
@@ -233,17 +242,23 @@
         </a>
       </div>
     </section>
+    {% endif %}
 
     <section class="hc-card hc-command-panel {{ 'hc-pressure-watch' if ops.top_city else 'hc-pressure-calm' }}">
       <div class="hc-command-panel__kicker">Prochaines actions</div>
       <h2 class="hc-command-panel__title">Raccourcis opérationnels</h2>
       <div class="hc-command-list">
         <a href="{{ url_for('admin.admin_requests') }}">Qualifier les demandes ouvertes</a>
+        {% if adaptive_global_admin or adaptive_module_enabled('notifications') %}
         <a href="{{ url_for('admin.admin_notifications_list', status='failed') }}">Diagnostiquer les notifications en échec</a>
+        {% endif %}
+        {% if adaptive_global_admin or adaptive_module_enabled('security') %}
         <a href="{{ url_for('admin.admin_security') }}">Contrôler les anomalies sécurité</a>
+        {% endif %}
       </div>
     </section>
   </div>
+  {% if adaptive_global_admin or adaptive_module_enabled('pilotage') %}
 
   <div class="hc-card mb-3 hc-admin-map-access">
     <div class="hc-card__header">
@@ -398,6 +413,7 @@
       </div>
     {% endif %}
   </section>
+  {% endif %}
 
   <div class="hc-ops-intelligence-grid mb-3">
     <section class="hc-card hc-ops-intelligence hc-pressure-critical">
@@ -466,6 +482,7 @@
       </div>
     </section>
 
+    {% if adaptive_global_admin or adaptive_module_enabled('pilotage') %}
     <section class="hc-card hc-ops-intelligence {{ 'hc-pressure-watch' if ops.top_city else 'hc-pressure-calm' }}">
       <div class="hc-card__header">
         <div>
@@ -493,6 +510,7 @@
         </article>
       </div>
     </section>
+    {% endif %}
   </div>
 
   <div class="hc-card hc-admin-table-shell hc-admin-home-command-shell hc-ops-table-shell {{ 'hc-pressure-watch' if attention_total or stale_total else 'hc-pressure-calm' }}">
