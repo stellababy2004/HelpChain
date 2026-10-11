@@ -35,6 +35,7 @@ def test_school_uses_existing_default_capabilities():
         "requests",
         "cases",
         "referrals",
+        "risk_triage",
     )
 
 

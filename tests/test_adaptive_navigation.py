@@ -22,6 +22,7 @@ def test_school_gets_simple_navigation():
         "requests",
         "cases",
         "referrals",
+        "risk_triage",
     )
 
 

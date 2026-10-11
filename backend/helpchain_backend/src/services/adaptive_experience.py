@@ -24,6 +24,7 @@ MODULE_REGISTRY: dict[str, dict[str, Any]] = {
     "notifications": {"label": "Notifications"},
     "professionals": {"label": "Intervenants"},
     "mobilisation": {"label": "Mobilisation"},
+    "risk_triage": {"label": "Risk / Triage"},
     "pilotage": {"label": "Pilotage op?rationnel"},
     "maps": {"label": "Cartes"},
     "reports": {"label": "Rapports"},
@@ -44,9 +45,11 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
     ),
     "social_support": (
         "workspace", "requests", "cases", "referrals",
+        "risk_triage",
     ),
     "emergency_assistance": (
         "requests", "cases", "notifications",
+        "risk_triage",
     ),
     "volunteer_coordination": (
         "workspace", "requests", "mobilisation", "notifications",
@@ -57,6 +60,7 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
     "humanitarian_response": (
         "workspace", "requests", "cases",
         "mobilisation", "notifications", "reports",
+        "risk_triage",
     ),
     "case_coordination": (
         "requests", "cases", "referrals", "professionals",
@@ -66,18 +70,22 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
     ),
     "emergency_triage": (
         "requests", "cases", "notifications",
+        "risk_triage",
     ),
     "security_response": (
         "requests", "cases", "notifications",
     ),
     "risk_escalation": (
         "requests", "cases", "notifications",
+        "risk_triage",
     ),
     "emergency_response": (
         "requests", "cases", "notifications",
+        "risk_triage",
     ),
     "emergency_medical_response": (
         "requests", "cases", "notifications",
+        "risk_triage",
     ),
     "financial_assistance": (
         "requests", "cases", "referrals",
@@ -92,6 +100,7 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
     "crisis_coordination": (
         "requests", "cases", "referrals",
         "notifications", "pilotage", "maps",
+        "risk_triage",
     ),
     "legal_assistance": (
         "requests", "cases", "referrals",
@@ -110,6 +119,7 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
     ),
     "child_support": (
         "requests", "cases", "referrals",
+        "risk_triage",
     ),
     "education_support": (
         "requests", "cases", "referrals",
@@ -117,6 +127,7 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
     "case_management": (
         "workspace", "requests", "cases",
         "referrals", "professionals",
+        "risk_triage",
     ),
 }
 
