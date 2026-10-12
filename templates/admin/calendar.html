@@ -201,20 +201,22 @@
                                             rows="3">{{ event.description or '' }}</textarea>
                                 </div>
                               </div>
-                              <div class="modal-footer justify-content-between">
+                              <div class="modal-footer">
                                 <button class="btn btn-primary" type="submit">
                                   {{ _('Enregistrer') }}
                                 </button>
-                            </form>
-                                <form method="post"
-                                      action="{{ url_for('admin.admin_calendar_delete_event', event_id=event.id) }}"
-                                      onsubmit="return confirm('{{ _('Supprimer cet événement ?') }}');">
-                                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                  <button class="btn btn-outline-danger" type="submit">
-                                    {{ _('Supprimer') }}
-                                  </button>
-                                </form>
                               </div>
+                            </form>
+                            <div class="px-3 pb-3">
+                              <form method="post"
+                                    action="{{ url_for('admin.admin_calendar_delete_event', event_id=event.id) }}"
+                                    onsubmit="return confirm('{{ _('Supprimer cet événement ?') }}');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button class="btn btn-outline-danger" type="submit">
+                                  {{ _('Supprimer') }}
+                                </button>
+                              </form>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -230,13 +232,5 @@
   </div>
 
 </div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".hc-admin-calendar-page .modal").forEach(function (modal) {
-    document.body.appendChild(modal);
-  });
-});
-</script>
 
 {% endblock %}
