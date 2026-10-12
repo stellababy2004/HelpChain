@@ -1747,6 +1747,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
         """Expose adaptive UI modules without replacing authorization."""
         modules = ()
         is_global_admin = False
+        organization_type = ""
 
         try:
             actor = resolve_current_admin_actor()
@@ -1765,6 +1766,9 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
                     structure,
                     global_admin=is_global_admin,
                 )
+                organization_type = (
+                    getattr(structure, "organization_type", None) or ""
+                ).strip().lower()
         except Exception:
             app.logger.exception(
                 "Failed to build adaptive experience for current admin user"
@@ -1777,6 +1781,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
                 lambda module: module in modules
             ),
             "adaptive_global_admin": is_global_admin,
+            "adaptive_organization_type": organization_type,
         }
 
     return app

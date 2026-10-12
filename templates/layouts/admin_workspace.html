@@ -109,6 +109,7 @@
             </div>
           </div>
 
+          {% if adaptive_global_admin or adaptive_module_enabled('pilotage') %}
           <div class="hc-admin-shellbar__subrow">
             <span class="hc-admin-shellsubnav__label">Pilotage</span>
             <div class="hc-admin-shellsubnav-scroller" aria-label="Navigation pilotage">
@@ -120,6 +121,7 @@
               </div>
             </div>
           </div>
+          {% endif %}
         </div>
       </div>
     </div>

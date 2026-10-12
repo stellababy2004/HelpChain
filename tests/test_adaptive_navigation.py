@@ -80,3 +80,11 @@ def test_home_remains_available():
     source = TEMPLATE.read_text(encoding="utf-8")
 
     assert "url_for('admin.admin_home')" in source
+
+def test_adaptive_context_exposes_organization_type():
+    source = Path(
+        "backend/helpchain_backend/src/app.py"
+    ).read_text(encoding="utf-8")
+
+    assert '"adaptive_organization_type": organization_type' in source
+    assert 'getattr(structure, "organization_type", None)' in source
