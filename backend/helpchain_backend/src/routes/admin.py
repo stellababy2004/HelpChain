@@ -15648,6 +15648,7 @@ from . import admin_referrals as _admin_referrals  # noqa: F401
 from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
 from . import admin_cases as _admin_cases  # noqa: F401
 from . import admin_notifications as _admin_notifications  # noqa: F401
+from . import admin_calendar as _admin_calendar  # noqa: F401
 from . import admin_structures as _admin_structures  # noqa: F401
 
 build_requests_query = _admin_requests.build_requests_query

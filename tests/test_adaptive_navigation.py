@@ -19,6 +19,7 @@ def test_school_gets_simple_navigation():
 
     assert modules == (
         "home",
+        "calendar",
         "requests",
         "cases",
         "referrals",
@@ -36,6 +37,7 @@ def test_school_falls_back_to_defaults_for_unknown_capability_labels():
 
     assert modules == (
         "home",
+        "calendar",
         "requests",
         "cases",
         "referrals",

@@ -22738,3 +22738,38 @@ body.hc-page-admin .hc-revenue-page .hc-revenue-detail-label small {
 }
 
 /* HELPCHAIN ADMIN SURFACE SYSTEM — END */
+
+/* Organization calendar - preserve semantic page order */
+body.hc-admin-calendar-page .hc-admin-wrap{
+  display: flex;
+  flex-direction: column;
+}
+
+body.hc-admin-calendar-page .hc-admin-wrap > .hc-page-hero{
+  order: 0 !important;
+}
+
+body.hc-admin-calendar-page .hc-admin-wrap > #calendar-new-event{
+  order: 1 !important;
+}
+
+body.hc-admin-calendar-page .hc-admin-wrap > .hc-card:not(.hc-page-hero){
+  order: 2 !important;
+}
+
+
+
+/* Organization calendar - keep Bootstrap event modal above its backdrop */
+body.hc-admin-calendar-page .modal {
+  z-index: 10050 !important;
+}
+
+body.hc-admin-calendar-page .modal-dialog,
+body.hc-admin-calendar-page .modal-content {
+  position: relative;
+  z-index: 10051 !important;
+}
+
+body.hc-admin-calendar-page .modal-backdrop {
+  z-index: 10040 !important;
+}
