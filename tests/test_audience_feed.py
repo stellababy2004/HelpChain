@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from bs4 import BeautifulSoup
+from flask import g
 
 from backend.models_with_analytics import AnalyticsEvent, UserBehavior
 
@@ -340,6 +341,11 @@ def test_homepage_pilot_cta_preserves_custom_event_and_counts_once(
         )
         assert event_response.status_code == 201
 
+    # ``db_schema`` keeps an outer app context alive for the test. Clear the
+    # public client's request-scoped actor cache before using a separate admin
+    # client, matching the fresh app context used by real HTTP requests.
+    g.pop("_current_admin_actor", None)
+    g.pop("_session_admin_actor", None)
     funnel = authenticated_admin_client.get("/admin/api/conversion-funnel?days=30")
 
     assert funnel.status_code == 200
