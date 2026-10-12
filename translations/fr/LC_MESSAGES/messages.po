@@ -10986,3 +10986,51 @@ msgstr "Workspace"
 
 msgid "Sécurité"
 msgstr "Sécurité"
+
+msgid "Aucune relance en attente"
+msgstr "Aucune relance en attente"
+
+msgid "Aucune situation prioritaire immédiate"
+msgstr "Aucune situation prioritaire immédiate"
+
+msgid "Pilotage de l’établissement"
+msgstr "Pilotage de l’établissement"
+
+msgid "Priorités"
+msgstr "Priorités"
+
+msgid "Sans responsable"
+msgstr "Sans responsable"
+
+msgid "Suivez les demandes, identifiez les situations à traiter et organisez les prochaines actions de l’équipe."
+msgstr "Suivez les demandes, identifiez les situations à traiter et organisez les prochaines actions de l’équipe."
+
+msgid "Suivi à jour"
+msgstr "Suivi à jour"
+
+msgid "Tableau de bord de l’établissement"
+msgstr "Tableau de bord de l’établissement"
+
+msgid "Toutes les demandes sont attribuées"
+msgstr "Toutes les demandes sont attribuées"
+
+msgid "À reprendre"
+msgstr "À reprendre"
+
+msgid "à attribuer"
+msgstr "à attribuer"
+
+msgid "à relancer"
+msgstr "à relancer"
+
+msgid "à traiter"
+msgstr "à traiter"
+
+msgid "demande"
+msgstr "demande"
+
+msgid "sans action récente"
+msgstr "sans action récente"
+
+msgid "situation"
+msgstr "situation"
