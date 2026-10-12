@@ -22773,3 +22773,6 @@ body.hc-admin-calendar-page .modal-content {
 body.hc-admin-calendar-page .modal-backdrop {
   z-index: 10040 !important;
 }
+body.hc-admin-calendar-page .modal-backdrop.show {
+  opacity: 0.28;
+}

@@ -38,6 +38,14 @@ def _scoped_calendar_event_or_404(event_id: int):
 PARIS_TZ = ZoneInfo("Europe/Paris")
 
 
+def _calendar_local_datetime(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return value.astimezone(PARIS_TZ)
+
+
 def _parse_calendar_local_datetime(raw_value: str) -> datetime:
     value = datetime.fromisoformat(raw_value)
     if value.tzinfo is None:
@@ -51,7 +59,7 @@ def _parse_calendar_local_datetime(raw_value: str) -> datetime:
 def admin_calendar():
     admin_required_404()
 
-    now = datetime.now()
+    now = datetime.now(PARIS_TZ)
     try:
         year = int(request.args.get("year", now.year))
         month = int(request.args.get("month", now.month))
@@ -83,6 +91,9 @@ def admin_calendar():
         .order_by(CalendarEvent.starts_at.asc())
         .all()
     )
+    for event in events:
+        event.starts_at = _calendar_local_datetime(event.starts_at)
+        event.ends_at = _calendar_local_datetime(event.ends_at)
 
     return render_template(
         "admin/calendar.html",
