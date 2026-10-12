@@ -487,6 +487,7 @@
   {% endif %}
 
   <div class="hc-ops-intelligence-grid mb-3">
+    {% if adaptive_organization_type != 'school' %}
     <section class="hc-card hc-ops-intelligence hc-pressure-critical">
       <div class="hc-card__header">
         <div>
@@ -552,6 +553,8 @@
         </article>
       </div>
     </section>
+
+    {% endif %}
 
     {% if adaptive_global_admin or adaptive_module_enabled('pilotage') %}
     <section class="hc-card hc-ops-intelligence {{ 'hc-pressure-watch' if ops.top_city else 'hc-pressure-calm' }}">
