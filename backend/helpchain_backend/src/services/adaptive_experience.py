@@ -17,6 +17,7 @@ from .enterprise_structure_intelligence import ORGANIZATION_TYPES
 # Product modules understood by the adaptive UI layer.
 MODULE_REGISTRY: dict[str, dict[str, Any]] = {
     "home": {"label": "Accueil"},
+    "calendar": {"label": "Calendrier"},
     "workspace": {"label": "Workspace"},
     "requests": {"label": "Demandes"},
     "cases": {"label": "Cas"},
@@ -189,7 +190,7 @@ def modules_for_capabilities(
     capabilities: tuple[str, ...] | list[str],
 ) -> tuple[str, ...]:
     """Translate operational capabilities into visible product modules."""
-    enabled = {"home"}
+    enabled = {"home", "calendar"}
 
     for capability in capabilities:
         enabled.update(CAPABILITY_MODULES.get(capability, ()))

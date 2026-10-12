@@ -21,6 +21,7 @@
     {% set cases_href = url_for('ops.ops_cases_list') if is_ops_context else url_for('admin.admin_cases_list') %}
     {% set notifications_href = url_for('ops.ops_notifications_list') if is_ops_context else url_for('admin.admin_notifications_list') %}
     {% set is_home_active = current_path.startswith('/admin/home') or current_path in ['/admin', '/admin/'] %}
+    {% set is_calendar_active = current_path.startswith('/admin/calendar') %}
     {% set is_workspace_active = current_path.startswith('/ops/workspace') or current_path == '/ops' or current_path.startswith('/admin/operator') %}
     {% set is_requests_active = current_path.startswith('/admin/requests') %}
     {% set is_cases_active = current_path.startswith('/ops/cases') or current_path.startswith('/admin/cases') %}
@@ -63,6 +64,9 @@
                   <a class="hc-admin-shellnav__link {{ 'is-active' if current_path.startswith('/admin/team') else '' }}" href="{{ url_for('admin.admin_team') }}" {% if current_path.startswith('/admin/team') %}aria-current="page"{% endif %}>Équipe</a>
                 {% endif %}
                 <a class="hc-admin-shellnav__link {{ 'is-active' if is_home_active else '' }}" href="{{ url_for('admin.admin_home') }}" {% if is_home_active %}aria-current="page"{% endif %}>Accueil</a>
+                {% if adaptive_global_admin or adaptive_module_enabled('calendar') %}
+                  <a class="hc-admin-shellnav__link {{ 'is-active' if is_calendar_active else '' }}" href="{{ url_for('admin.admin_calendar') }}" {% if is_calendar_active %}aria-current="page"{% endif %}>{{ _('Calendrier') }}</a>
+                {% endif %}
                 {% if adaptive_global_admin or adaptive_module_enabled('workspace') %}
                   <a class="hc-admin-shellnav__link {{ 'is-active' if is_workspace_active else '' }}" href="{{ url_for('ops.ops_workspace') }}" {% if is_workspace_active %}aria-current="page"{% endif %}>{{ _('Workspace') }}</a>
                 {% endif %}

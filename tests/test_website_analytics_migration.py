@@ -1,4 +1,4 @@
-import importlib.util
+﻿import importlib.util
 from pathlib import Path
 
 from alembic.migration import MigrationContext
@@ -32,4 +32,4 @@ def test_website_analytics_migration_preserves_unassigned_history(monkeypatch):
 
 
 def test_website_analytics_revision_is_the_single_head():
-    assert ScriptDirectory("migrations").get_heads() == ["20261010_utm"]
+    assert ScriptDirectory("migrations").get_heads() == ["19b787489955"]

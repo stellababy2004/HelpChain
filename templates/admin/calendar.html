@@ -1,0 +1,242 @@
+{% extends "layouts/admin_workspace.html" %}
+
+{% block title %}{{ _('Calendrier | HelpChain') }}{% endblock %}
+
+{% block admin_body_class %}{{ 'hc-admin-calendar-page' }}{% endblock %}
+
+{% block admin_content %}
+<div class="hc-admin-wrap hc-admin-wrap--wide hc-admin-module-page">
+
+  <div class="hc-card mb-3 hc-page-hero">
+    <div class="hc-row hc-admin-headerTop">
+      <div>
+        <div class="hc-admin-kicker">{{ _('Organisation') }}</div>
+        <h1 class="hc-admin-title">{{ _('Calendrier') }}</h1>
+        <div class="hc-muted">
+          {{ _('Planifiez les rendez-vous, relances, réunions et échéances de votre organisation.') }}
+        </div>
+      </div>
+
+      <div>
+        <button class="btn btn-primary" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#calendar-new-event"
+                aria-expanded="false"
+                aria-controls="calendar-new-event">
+          {{ _('Nouvel événement') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="collapse mb-3" id="calendar-new-event">
+    <div class="hc-card p-3">
+      <h2 class="h6 mb-3">{{ _('Nouvel événement') }}</h2>
+
+      <form method="post" action="{{ url_for('admin.admin_calendar_create_event') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <label class="form-label" for="calendar-title">{{ _('Titre') }}</label>
+            <input id="calendar-title" name="title" class="form-control"
+                   maxlength="200" required>
+          </div>
+
+          <div class="col-12 col-lg-3">
+            <label class="form-label" for="calendar-type">{{ _('Type') }}</label>
+            <select id="calendar-type" name="event_type" class="form-select">
+              <option value="meeting">{{ _('Réunion / rendez-vous') }}</option>
+              <option value="follow_up">{{ _('Relance / suivi') }}</option>
+              <option value="partner">{{ _('Partenaire') }}</option>
+              <option value="deadline">{{ _('Échéance') }}</option>
+              <option value="other">{{ _('Autre') }}</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <label class="form-label" for="calendar-start">{{ _('Début') }}</label>
+            <input id="calendar-start" name="starts_at"
+                   type="datetime-local" class="form-control" required>
+          </div>
+
+          <div class="col-12 col-md-6 col-lg-3">
+            <label class="form-label" for="calendar-end">{{ _('Fin') }}</label>
+            <input id="calendar-end" name="ends_at"
+                   type="datetime-local" class="form-control">
+          </div>
+
+          <div class="col-12 col-lg-9">
+            <label class="form-label" for="calendar-description">{{ _('Description') }}</label>
+            <textarea id="calendar-description" name="description"
+                      class="form-control" rows="2"></textarea>
+          </div>
+
+          <div class="col-12 d-flex justify-content-end">
+            <button class="btn btn-primary" type="submit">
+              {{ _('Ajouter au calendrier') }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="hc-card mb-3 p-3">
+    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
+      <div class="d-flex gap-2 align-items-center">
+        <a class="btn btn-outline-secondary btn-sm"
+           href="{{ url_for('admin.admin_calendar', year=previous_month.year, month=previous_month.month) }}">
+          &larr;
+        </a>
+
+        <strong>
+          {{ calendar_month }}/{{ calendar_year }}
+        </strong>
+
+        <a class="btn btn-outline-secondary btn-sm"
+           href="{{ url_for('admin.admin_calendar', year=next_month.year, month=next_month.month) }}">
+          &rarr;
+        </a>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 align-items-center">
+        <a class="btn btn-outline-secondary btn-sm"
+           href="{{ url_for('admin.admin_calendar') }}">
+          {{ _("Aujourd'hui") }}
+        </a>
+        <button class="btn btn-outline-secondary btn-sm" type="button">
+          {{ _('Semaine') }}
+        </button>
+        <button class="btn btn-primary btn-sm" type="button">
+          {{ _('Mois') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hc-card overflow-hidden">
+    <div class="table-responsive">
+      <table class="table table-bordered mb-0 align-top">
+        <thead>
+          <tr>
+            <th class="text-center">{{ _('Lundi') }}</th>
+            <th class="text-center">{{ _('Mardi') }}</th>
+            <th class="text-center">{{ _('Mercredi') }}</th>
+            <th class="text-center">{{ _('Jeudi') }}</th>
+            <th class="text-center">{{ _('Vendredi') }}</th>
+            <th class="text-center">{{ _('Samedi') }}</th>
+            <th class="text-center">{{ _('Dimanche') }}</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for week in calendar_weeks %}
+            <tr>
+              {% for day in week %}
+                <td style="min-width: 145px; height: 125px;"
+                    class="{% if day.month != calendar_month %}text-muted bg-light{% endif %}">
+                  <div class="d-flex justify-content-between mb-2">
+                    <strong {% if day == today %}class="badge text-bg-primary"{% endif %}>
+                      {{ day.day }}
+                    </strong>
+                  </div>
+
+                  {% for event in events %}
+                    {% if event.starts_at.date() == day %}
+                      <button type="button"
+                              class="btn btn-light border w-100 text-start px-2 py-1 mb-1 small"
+                              data-bs-toggle="modal"
+                              data-bs-target="#calendar-event-{{ event.id }}">
+                        <strong>{{ event.starts_at.strftime('%H:%M') }}</strong>
+                        {{ event.title }}
+                      </button>
+
+                      <div class="modal fade" id="calendar-event-{{ event.id }}"
+                           tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <form method="post"
+                                  action="{{ url_for('admin.admin_calendar_update_event', event_id=event.id) }}">
+                              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                              <div class="modal-header">
+                                <h2 class="modal-title fs-5">{{ _('Modifier l’événement') }}</h2>
+                                <button type="button" class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="{{ _('Fermer') }}"></button>
+                              </div>
+                              <div class="modal-body">
+                                <div class="mb-3">
+                                  <label class="form-label">{{ _('Titre') }}</label>
+                                  <input name="title" class="form-control"
+                                         maxlength="200" required
+                                         value="{{ event.title }}">
+                                </div>
+                                <div class="mb-3">
+                                  <label class="form-label">{{ _('Type') }}</label>
+                                  <select name="event_type" class="form-select">
+                                    <option value="meeting" {% if event.event_type == 'meeting' %}selected{% endif %}>{{ _('Réunion / rendez-vous') }}</option>
+                                    <option value="follow_up" {% if event.event_type == 'follow_up' %}selected{% endif %}>{{ _('Relance / suivi') }}</option>
+                                    <option value="partner" {% if event.event_type == 'partner' %}selected{% endif %}>{{ _('Partenaire') }}</option>
+                                    <option value="deadline" {% if event.event_type == 'deadline' %}selected{% endif %}>{{ _('Échéance') }}</option>
+                                    <option value="other" {% if event.event_type == 'other' %}selected{% endif %}>{{ _('Autre') }}</option>
+                                  </select>
+                                </div>
+                                <div class="row g-3">
+                                  <div class="col-md-6">
+                                    <label class="form-label">{{ _('Début') }}</label>
+                                    <input name="starts_at" type="datetime-local"
+                                           class="form-control" required
+                                           value="{{ event.starts_at.strftime('%Y-%m-%dT%H:%M') }}">
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label class="form-label">{{ _('Fin') }}</label>
+                                    <input name="ends_at" type="datetime-local"
+                                           class="form-control"
+                                           value="{{ event.ends_at.strftime('%Y-%m-%dT%H:%M') if event.ends_at else '' }}">
+                                  </div>
+                                </div>
+                                <div class="mt-3">
+                                  <label class="form-label">{{ _('Description') }}</label>
+                                  <textarea name="description" class="form-control"
+                                            rows="3">{{ event.description or '' }}</textarea>
+                                </div>
+                              </div>
+                              <div class="modal-footer justify-content-between">
+                                <button class="btn btn-primary" type="submit">
+                                  {{ _('Enregistrer') }}
+                                </button>
+                            </form>
+                                <form method="post"
+                                      action="{{ url_for('admin.admin_calendar_delete_event', event_id=event.id) }}"
+                                      onsubmit="return confirm('{{ _('Supprimer cet événement ?') }}');">
+                                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                  <button class="btn btn-outline-danger" type="submit">
+                                    {{ _('Supprimer') }}
+                                  </button>
+                                </form>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".hc-admin-calendar-page .modal").forEach(function (modal) {
+    document.body.appendChild(modal);
+  });
+});
+</script>
+
+{% endblock %}

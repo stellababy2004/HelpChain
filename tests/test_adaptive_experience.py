@@ -32,6 +32,7 @@ def test_school_uses_existing_default_capabilities():
 
     assert modules == (
         "home",
+        "calendar",
         "requests",
         "cases",
         "referrals",
@@ -80,7 +81,7 @@ def test_configured_capabilities_override_type_defaults():
 def test_unknown_organization_is_safe_by_default():
     modules = adaptive_modules(structure("something_unknown"))
 
-    assert modules == ("home",)
+    assert modules == ("home", "calendar")
 
 
 def test_global_admin_keeps_full_cockpit():

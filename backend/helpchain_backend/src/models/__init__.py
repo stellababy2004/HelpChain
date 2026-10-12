@@ -53,6 +53,7 @@ from .professional_lead_activity import ProfessionalLeadActivity  # noqa: F401
 from .score_explanation import ScoreExplanation  # noqa: F401
 from .case import Case  # noqa: F401
 from .case_event import CaseEvent  # noqa: F401
+from .calendar_event import CalendarEvent  # noqa: F401
 from .case_participant import CaseParticipant  # noqa: F401
 from .case_collaborator import CaseCollaborator  # noqa: F401
 
@@ -112,6 +113,7 @@ __all__ = [
     "ScoreExplanation",
     "Case",
     "CaseEvent",
+    "CalendarEvent",
     "CaseParticipant",
     "CaseCollaborator",
     "VolunteerRequestState",
