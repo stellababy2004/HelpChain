@@ -10964,3 +10964,25 @@ msgstr "Rien d’urgent aujourd’hui"
 
 msgid "Voir l&#8217;intelligence d&#233;taill&#233;e"
 msgstr "Voir l’intelligence détaillée"
+
+msgid "Cas"
+msgstr "Cas"
+
+msgid "Connecteurs"
+msgstr "Connecteurs"
+
+msgid "Conversion"
+msgstr "Conversion"
+
+msgid "Plateforme"
+msgstr "Plateforme"
+
+msgid "Rapports"
+msgstr "Rapports"
+
+
+msgid "Workspace"
+msgstr "Workspace"
+
+msgid "Sécurité"
+msgstr "Sécurité"
