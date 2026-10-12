@@ -443,6 +443,7 @@ def maybe_self_heal_local_sqlite(app, db):
         app.logger.exception("[SELFHEAL] repair failed: %s", exc)
 
 
+from backend.helpchain_backend.src.admin_actor import resolve_current_admin_actor
 from backend.helpchain_backend.src.services.adaptive_experience import adaptive_modules
 from backend.models import Structure
 
@@ -1748,23 +1749,11 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
         is_global_admin = False
 
         try:
-            if current_user.is_authenticated:
-                role = str(
-                    getattr(current_user, "role", "") or ""
-                ).strip().lower()
-
-                is_global_admin = role in {
-                    "superadmin",
-                    "super_admin",
-                    "super-admin",
-                }
-
+            actor = resolve_current_admin_actor()
+            if actor.is_authenticated:
+                is_global_admin = actor.has_founder_global_access
                 structure = None
-                structure_id = getattr(
-                    current_user,
-                    "structure_id",
-                    None,
-                )
+                structure_id = actor.structure_id
 
                 if structure_id is not None:
                     structure = db.session.get(

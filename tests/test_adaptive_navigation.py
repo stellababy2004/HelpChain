@@ -65,7 +65,7 @@ def test_founder_tools_remain_global_only():
     assert "can_access_professional_leads = adaptive_global_admin" in source
     assert "can_access_global_analytics = adaptive_global_admin" in source
 
-    conversion = source.index(">Conversion</a>")
+    conversion = source.index('href="/admin/conversion-dashboard"')
     guard = source.rfind(
         "{% if adaptive_global_admin %}",
         0,
