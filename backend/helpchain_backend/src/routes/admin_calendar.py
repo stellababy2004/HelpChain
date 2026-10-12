@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from calendar import Calendar
-from datetime import datetime
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user
@@ -32,6 +33,16 @@ def _scoped_calendar_event_or_404(event_id: int):
     return _scoped_calendar_events_query().filter(
         CalendarEvent.id == event_id
     ).first_or_404()
+
+
+PARIS_TZ = ZoneInfo("Europe/Paris")
+
+
+def _parse_calendar_local_datetime(raw_value: str) -> datetime:
+    value = datetime.fromisoformat(raw_value)
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=PARIS_TZ)
+    return value.astimezone(UTC)
 
 
 @admin_bp.get("/calendar")
@@ -126,7 +137,7 @@ def admin_calendar_create_event():
         event_type = "other"
 
     try:
-        starts_at = datetime.fromisoformat(starts_at_raw)
+        starts_at = _parse_calendar_local_datetime(starts_at_raw)
     except (TypeError, ValueError):
         flash("La date de debut est invalide.", "warning")
         return redirect(url_for("admin.admin_calendar"), code=303)
@@ -134,7 +145,7 @@ def admin_calendar_create_event():
     ends_at = None
     if ends_at_raw:
         try:
-            ends_at = datetime.fromisoformat(ends_at_raw)
+            ends_at = _parse_calendar_local_datetime(ends_at_raw)
         except (TypeError, ValueError):
             flash("La date de fin est invalide.", "warning")
             return redirect(url_for("admin.admin_calendar"), code=303)
@@ -195,7 +206,7 @@ def admin_calendar_update_event(event_id):
         event_type = "other"
 
     try:
-        starts_at = datetime.fromisoformat(starts_at_raw)
+        starts_at = _parse_calendar_local_datetime(starts_at_raw)
     except (TypeError, ValueError):
         flash("La date de debut est invalide.", "warning")
         return redirect(url_for("admin.admin_calendar"), code=303)
@@ -203,7 +214,7 @@ def admin_calendar_update_event(event_id):
     ends_at = None
     if ends_at_raw:
         try:
-            ends_at = datetime.fromisoformat(ends_at_raw)
+            ends_at = _parse_calendar_local_datetime(ends_at_raw)
         except (TypeError, ValueError):
             flash("La date de fin est invalide.", "warning")
             return redirect(url_for("admin.admin_calendar"), code=303)

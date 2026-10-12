@@ -11034,3 +11034,87 @@ msgstr "sans action récente"
 
 msgid "situation"
 msgstr "situation"
+# Organization calendar
+msgid "Ajouter au calendrier"
+msgstr "Ajouter au calendrier"
+
+msgid "Calendrier"
+msgstr "Calendrier"
+
+msgid "Calendrier | HelpChain"
+msgstr "Calendrier | HelpChain"
+
+msgid "Dimanche"
+msgstr "Dimanche"
+
+msgid "Début"
+msgstr "Début"
+
+msgid "Enregistrer"
+msgstr "Enregistrer"
+
+msgid "Fermer"
+msgstr "Fermer"
+
+msgid "Fin"
+msgstr "Fin"
+
+msgid "Jeudi"
+msgstr "Jeudi"
+
+msgid "Lundi"
+msgstr "Lundi"
+
+msgid "Mardi"
+msgstr "Mardi"
+
+msgid "Mercredi"
+msgstr "Mercredi"
+
+msgid "Modifier l’événement"
+msgstr "Modifier l’événement"
+
+msgid "Mois"
+msgstr "Mois"
+
+msgid "Nouvel événement"
+msgstr "Nouvel événement"
+
+msgid "Organisation"
+msgstr "Organisation"
+
+msgid "Partenaire"
+msgstr "Partenaire"
+
+msgid "Planifiez les rendez-vous, relances, réunions et échéances de votre organisation."
+msgstr "Planifiez les rendez-vous, relances, réunions et échéances de votre organisation."
+
+msgid "Relance / suivi"
+msgstr "Relance / suivi"
+
+msgid "Réunion / rendez-vous"
+msgstr "Réunion / rendez-vous"
+
+msgid "Samedi"
+msgstr "Samedi"
+
+msgid "Semaine"
+msgstr "Semaine"
+
+msgid "Supprimer"
+msgstr "Supprimer"
+
+msgid "Supprimer cet événement ?"
+msgstr "Supprimer cet événement ?"
+
+msgid "Titre"
+msgstr "Titre"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Vendredi"
+msgstr "Vendredi"
+
+msgid "Échéance"
+msgstr "Échéance"
