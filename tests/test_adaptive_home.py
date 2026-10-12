@@ -16,14 +16,14 @@ def test_core_requests_remain_available():
 def test_notifications_are_adaptive():
     assert HOME.count(
         "adaptive_module_enabled('notifications')"
-    ) == 3
+    ) == 4
     assert "admin.admin_notifications_list" in HOME
 
 
 def test_security_is_adaptive():
     assert HOME.count(
         "adaptive_module_enabled('security')"
-    ) == 3
+    ) == 4
     assert "admin.admin_security" in HOME
 
 

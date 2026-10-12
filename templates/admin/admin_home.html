@@ -73,6 +73,71 @@
 {% endif %}
 
 <div class="hc-admin-wrap hc-admin-wrap--wide" data-hc-autosync="true" data-hc-autosync-interval="30000">
+  {% if adaptive_organization_type == 'school' %}
+  <div class="hc-card mb-3 hc-page-hero hc-ops-hero {{ hero_pressure }}">
+    <div class="hc-row hc-admin-headerTop hc-ops-hero__header">
+      <div class="hc-ops-hero__intro">
+        <div class="hc-ops-hero__eyebrow">Pilotage de l’établissement</div>
+        <div class="hc-ops-hero__status">
+          <span class="hc-ops-hero__status-dot" aria-hidden="true"></span>
+          {{ hero_status }}
+        </div>
+        <h1 class="hc-admin-title hc-ops-hero__title">Tableau de bord de l’établissement</h1>
+        <div class="hc-muted hc-ops-hero__lede">Suivez les demandes, identifiez les situations à traiter et organisez les prochaines actions de l’équipe.</div>
+      </div>
+
+      <div class="hc-ops-hero__microgrid" aria-label="Synthèse de l’établissement">
+        <article class="hc-ops-hero__microcard hc-ops-hero__microcard--focus {{ 'hc-pressure-critical' if attention_total else 'hc-pressure-calm' }}">
+          <span class="hc-ops-hero__microkicker">Priorités</span>
+          <strong class="hc-ops-hero__microvalue">{{ attention_total }}</strong>
+          <span class="hc-ops-hero__microtext">
+            {% if attention_total %}
+              {{ attention_total }} situation{{ 's' if attention_total > 1 else '' }} à traiter
+            {% else %}
+              Aucune situation prioritaire immédiate
+            {% endif %}
+          </span>
+        </article>
+
+        <article class="hc-ops-hero__microcard hc-ops-hero__microcard--focus {{ 'hc-pressure-elevated' if followup_total else 'hc-pressure-calm' }}">
+          <span class="hc-ops-hero__microkicker">Relances</span>
+          <strong class="hc-ops-hero__microvalue">{{ followup_total }}</strong>
+          <span class="hc-ops-hero__microtext">
+            {% if followup_total %}
+              {{ followup_total }} demande{{ 's' if followup_total > 1 else '' }} à relancer
+            {% else %}
+              Aucune relance en attente
+            {% endif %}
+          </span>
+        </article>
+
+        <article class="hc-ops-hero__microcard hc-ops-hero__microcard--focus {{ 'hc-pressure-elevated' if unassigned_total else 'hc-pressure-calm' }}">
+          <span class="hc-ops-hero__microkicker">Sans responsable</span>
+          <strong class="hc-ops-hero__microvalue">{{ unassigned_total }}</strong>
+          <span class="hc-ops-hero__microtext">
+            {% if unassigned_total %}
+              {{ unassigned_total }} demande{{ 's' if unassigned_total > 1 else '' }} à attribuer
+            {% else %}
+              Toutes les demandes sont attribuées
+            {% endif %}
+          </span>
+        </article>
+
+        <article class="hc-ops-hero__microcard {{ 'hc-pressure-watch' if stale_total else 'hc-pressure-calm' }}">
+          <span class="hc-ops-hero__microkicker">À reprendre</span>
+          <strong class="hc-ops-hero__microvalue">{{ stale_total }}</strong>
+          <span class="hc-ops-hero__microtext">
+            {% if stale_total %}
+              {{ stale_total }} demande{{ 's' if stale_total > 1 else '' }} sans action récente
+            {% else %}
+              Suivi à jour
+            {% endif %}
+          </span>
+        </article>
+      </div>
+    </div>
+  </div>
+  {% else %}
   <div class="hc-card mb-3 hc-page-hero hc-ops-hero {{ hero_pressure }}">
     <div class="hc-row hc-admin-headerTop hc-ops-hero__header">
       <div class="hc-ops-hero__intro">
@@ -138,6 +203,8 @@
     </div>
   </div>
 
+  {% endif %}
+
   <div class="hc-card mb-3 p-3 hc-ops-snapshot-shell">
     <div class="hc-ops-summary mb-3">
       <div class="hc-ops-summary__item {{ 'hc-pressure-critical' if attention_total else 'hc-pressure-calm' }}">
@@ -150,11 +217,14 @@
         <div class="hc-ops-summary__value {{ 'is-alert' if unassigned_total }}">{{ unassigned_total }}</div>
         <div class="hc-muted small">{{ stale_total }} sans action récente</div>
       </div>
+      {% if adaptive_global_admin or adaptive_module_enabled('notifications') %}
       <div class="hc-ops-summary__item {{ 'hc-pressure-watch' if queue_pending or queue_blocked else 'hc-pressure-calm' }}">
         <div class="hc-ops-summary__label">File de diffusion</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if queue_dead_letter or queue_retry }}">{{ queue_pending }}</div>
         <div class="hc-muted small">{{ queue_processing }} en cours, {{ queue_failed }} en échec</div>
       </div>
+      {% endif %}
+      {% if adaptive_global_admin or adaptive_module_enabled('security') %}
       <div class="hc-ops-summary__item {{ 'hc-pressure-watch' if security_summary.available and (security_failed or security_denied or security_risky) else 'hc-pressure-calm' }}">
         <div class="hc-ops-summary__label">Sécurité</div>
         <div class="hc-ops-summary__value {{ 'is-alert' if security_summary.available and (security_failed or security_denied or security_risky) }}">{{ security_failed if security_summary.available else "N/A" }}</div>
@@ -166,6 +236,7 @@
           {% endif %}
         </div>
       </div>
+      {% endif %}
     </div>
 
     <div class="hc-ops-actions">
