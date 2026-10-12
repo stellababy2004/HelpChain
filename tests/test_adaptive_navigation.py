@@ -26,6 +26,22 @@ def test_school_gets_simple_navigation():
     )
 
 
+def test_school_falls_back_to_defaults_for_unknown_capability_labels():
+    structure = Structure(
+        "school",
+        '["Soutien ? l\'enfance", "Soutien ?ducatif"]',
+    )
+
+    modules = adaptive_modules(structure)
+
+    assert modules == (
+        "home",
+        "requests",
+        "cases",
+        "referrals",
+        "risk_triage",
+    )
+
 def test_municipality_gets_operational_pilotage():
     modules = adaptive_modules(Structure("municipality"))
 

@@ -165,8 +165,14 @@ def organization_capabilities(structure: Any) -> tuple[str, ...]:
         getattr(structure, "capabilities_json", None)
     )
 
-    if configured:
-        return tuple(dict.fromkeys(configured))
+    recognized = [
+        capability
+        for capability in configured
+        if capability in CAPABILITY_MODULES
+    ]
+
+    if recognized:
+        return tuple(dict.fromkeys(recognized))
 
     organization_type = (
         getattr(structure, "organization_type", None) or ""
