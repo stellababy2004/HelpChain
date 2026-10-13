@@ -151,7 +151,19 @@
                         {{ event.title }}
                       </button>
 
-                      <div class="modal fade" id="calendar-event-{{ event.id }}"
+                    {% endif %}
+                  {% endfor %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% for event in events %}
+  <div class="modal fade" id="calendar-event-{{ event.id }}"
                            tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog">
                           <div class="modal-content">
@@ -220,16 +232,7 @@
                           </div>
                         </div>
                       </div>
-                    {% endif %}
-                  {% endfor %}
-                </td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
+{% endfor %}
 
 </div>
 
