@@ -2,10 +2,14 @@ import json
 from types import SimpleNamespace
 
 from backend.helpchain_backend.src.services.adaptive_experience import (
+    CCAS_DASHBOARD_PROFILE,
+    GENERIC_DASHBOARD_PROFILE,
     GLOBAL_ADMIN_MODULES,
+    SCHOOL_DASHBOARD_PROFILE,
     adaptive_modules,
     module_enabled,
     organization_capabilities,
+    resolve_dashboard_profile,
 )
 
 
@@ -102,3 +106,31 @@ def test_module_enabled_helper():
     assert module_enabled(item, "requests")
     assert module_enabled(item, "cases")
     assert not module_enabled(item, "platform")
+
+
+def test_unknown_organization_uses_generic_dashboard_profile():
+    assert resolve_dashboard_profile(structure("unknown")) is GENERIC_DASHBOARD_PROFILE
+    assert resolve_dashboard_profile(None) is GENERIC_DASHBOARD_PROFILE
+
+
+def test_school_uses_school_dashboard_profile():
+    profile = resolve_dashboard_profile(structure("school"))
+
+    assert profile is SCHOOL_DASHBOARD_PROFILE
+    assert profile.key == "school"
+    assert profile.show_operational_intelligence is False
+    assert tuple(metric.key for metric in profile.hero_metrics) == (
+        "priority",
+        "follow_up",
+        "unassigned",
+        "stale",
+    )
+
+
+def test_ccas_uses_ccas_dashboard_profile():
+    profile = resolve_dashboard_profile(structure("ccas"))
+
+    assert profile is CCAS_DASHBOARD_PROFILE
+    assert profile.key == "ccas"
+    assert profile.hero_title == "Tableau de bord du CCAS"
+    assert profile.show_operational_intelligence is True

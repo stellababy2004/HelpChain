@@ -444,7 +444,10 @@ def maybe_self_heal_local_sqlite(app, db):
 
 
 from backend.helpchain_backend.src.admin_actor import resolve_current_admin_actor
-from backend.helpchain_backend.src.services.adaptive_experience import adaptive_modules
+from backend.helpchain_backend.src.services.adaptive_experience import (
+    adaptive_modules,
+    resolve_dashboard_profile,
+)
 from backend.models import Structure
 
 def create_app(config_object=None) -> Flask:
@@ -1748,6 +1751,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
         modules = ()
         is_global_admin = False
         organization_type = ""
+        dashboard_profile = resolve_dashboard_profile(None)
 
         try:
             actor = resolve_current_admin_actor()
@@ -1769,6 +1773,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
                 organization_type = (
                     getattr(structure, "organization_type", None) or ""
                 ).strip().lower()
+                dashboard_profile = resolve_dashboard_profile(structure)
         except Exception:
             app.logger.exception(
                 "Failed to build adaptive experience for current admin user"
@@ -1782,6 +1787,7 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
             ),
             "adaptive_global_admin": is_global_admin,
             "adaptive_organization_type": organization_type,
+            "adaptive_dashboard_profile": dashboard_profile,
         }
 
     return app
