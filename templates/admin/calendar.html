@@ -243,6 +243,18 @@
                                 </div>
                               </div>
                               <div class="modal-footer">
+                                {% if event.request %}
+                                  <a class="btn btn-outline-primary"
+                                     href="{{ url_for('admin.admin_request_details', req_id=event.request_id) }}">
+                                    {{ _('Voir la demande') }}
+                                  </a>
+                                {% endif %}
+                                {% if event.case %}
+                                  <a class="btn btn-outline-primary"
+                                     href="{{ url_for('admin.admin_case_detail', case_id=event.case_id) }}">
+                                    {{ _('Ouvrir le dossier') }}
+                                  </a>
+                                {% endif %}
                                 <button class="btn btn-primary" type="submit">
                                   {{ _('Enregistrer') }}
                                 </button>

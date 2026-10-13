@@ -11121,3 +11121,9 @@ msgstr "Échéance"
 
 msgid "Planifier une relance"
 msgstr "Planifier une relance"
+
+msgid "Voir la demande"
+msgstr "Voir la demande"
+
+msgid "Ouvrir le dossier"
+msgstr "Ouvrir le dossier"

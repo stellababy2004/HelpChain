@@ -275,6 +275,46 @@ def test_request_follow_up_calendar_rejects_cross_structure_request(client, sess
     assert CalendarEvent.query.count() == before
 
 
+def test_calendar_event_modal_links_to_request_and_case(client, session):
+    structure = _make_structure(
+        session,
+        structure_id=9209,
+        name="Calendar Linked Records",
+        slug="calendar-linked-records",
+    )
+    admin = _make_admin(session, structure_id=structure.id)
+    request_row = _make_request(session, structure_id=structure.id)
+    case = Case(
+        request_id=request_row.id,
+        structure_id=structure.id,
+        status="new",
+        priority="normal",
+    )
+    event = CalendarEvent(
+        structure_id=structure.id,
+        request_id=request_row.id,
+        case=case,
+        title="Linked follow-up",
+        event_type="follow_up",
+        status="scheduled",
+        starts_at=datetime(2026, 10, 26, 10, 0, tzinfo=UTC),
+        all_day=False,
+    )
+    session.add_all([case, event])
+    session.commit()
+
+    _login_admin(client, admin)
+
+    response = client.get("/admin/calendar")
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Voir la demande" in html
+    assert f'href="/admin/requests/{request_row.id}"' in html
+    assert "Ouvrir le dossier" in html
+    assert f'href="/admin/cases/{case.id}"' in html
+
+
 
 
 def test_calendar_update_and_delete_are_structure_scoped(client, session):
