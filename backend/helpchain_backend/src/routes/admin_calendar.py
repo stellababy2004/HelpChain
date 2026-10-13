@@ -9,7 +9,7 @@ from flask_login import current_user
 
 from backend.extensions import db
 
-from ..models import CalendarEvent
+from ..models import CalendarEvent, Case, Request
 from .admin import (
     _current_structure_id,
     _is_global_admin,
@@ -58,6 +58,27 @@ def _parse_calendar_local_datetime(raw_value: str) -> datetime:
 @admin_role_required("readonly", "ops", "admin", "superadmin")
 def admin_calendar():
     admin_required_404()
+
+    calendar_request = None
+    linked_case = None
+    request_id_raw = (request.args.get("request_id") or "").strip()
+    if request_id_raw:
+        try:
+            request_id = int(request_id_raw)
+        except ValueError:
+            return ("", 404)
+        if _is_global_admin():
+            return ("", 404)
+        structure_id = _current_structure_id()
+        calendar_request = Request.query.filter(
+            Request.id == request_id,
+            Request.structure_id == structure_id,
+            Request.deleted_at.is_(None),
+        ).first_or_404()
+        linked_case = Case.query.filter(
+            Case.request_id == calendar_request.id,
+            Case.structure_id == structure_id,
+        ).first()
 
     now = datetime.now(PARIS_TZ)
     calendar_view = (request.args.get("view") or "month").strip().lower()
@@ -124,6 +145,11 @@ def admin_calendar():
         previous_month=previous_month,
         next_month=next_month,
         today=now.date(),
+        calendar_request=calendar_request,
+        linked_case=linked_case,
+        default_event_type=(
+            "follow_up" if calendar_request is not None else "meeting"
+        ),
     )
 
 @admin_bp.post("/calendar/events")
@@ -142,6 +168,24 @@ def admin_calendar_create_event():
         return redirect(url_for("admin.admin_calendar"), code=303)
 
     structure_id = _current_structure_id()
+
+    calendar_request = None
+    linked_case = None
+    request_id_raw = (request.form.get("request_id") or "").strip()
+    if request_id_raw:
+        try:
+            request_id = int(request_id_raw)
+        except ValueError:
+            return ("", 404)
+        calendar_request = Request.query.filter(
+            Request.id == request_id,
+            Request.structure_id == structure_id,
+            Request.deleted_at.is_(None),
+        ).first_or_404()
+        linked_case = Case.query.filter(
+            Case.request_id == calendar_request.id,
+            Case.structure_id == structure_id,
+        ).first()
 
     title = (request.form.get("title") or "").strip()
     description = (request.form.get("description") or "").strip() or None
@@ -190,6 +234,8 @@ def admin_calendar_create_event():
 
     event = CalendarEvent(
         structure_id=structure_id,
+        request_id=(calendar_request.id if calendar_request else None),
+        case_id=(linked_case.id if linked_case else None),
         created_by_user_id=getattr(current_user, "id", None),
         title=title,
         description=description,

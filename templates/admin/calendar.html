@@ -21,7 +21,7 @@
         <button class="btn btn-primary" type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#calendar-new-event"
-                aria-expanded="false"
+                aria-expanded="{{ 'true' if calendar_request else 'false' }}"
                 aria-controls="calendar-new-event">
           {{ _('Nouvel événement') }}
         </button>
@@ -29,12 +29,15 @@
     </div>
   </div>
 
-  <div class="collapse mb-3" id="calendar-new-event">
+  <div class="collapse{% if calendar_request %} show{% endif %} mb-3" id="calendar-new-event">
     <div class="hc-card p-3">
       <h2 class="h6 mb-3">{{ _('Nouvel événement') }}</h2>
 
       <form method="post" action="{{ url_for('admin.admin_calendar_create_event') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if calendar_request %}
+        <input type="hidden" name="request_id" value="{{ calendar_request.id }}">
+      {% endif %}
         <div class="row g-3">
           <div class="col-12 col-lg-6">
             <label class="form-label" for="calendar-title">{{ _('Titre') }}</label>
@@ -45,8 +48,8 @@
           <div class="col-12 col-lg-3">
             <label class="form-label" for="calendar-type">{{ _('Type') }}</label>
             <select id="calendar-type" name="event_type" class="form-select">
-              <option value="meeting">{{ _('Réunion / rendez-vous') }}</option>
-              <option value="follow_up">{{ _('Relance / suivi') }}</option>
+              <option value="meeting" {% if default_event_type == 'meeting' %}selected{% endif %}>{{ _('Réunion / rendez-vous') }}</option>
+              <option value="follow_up" {% if default_event_type == 'follow_up' %}selected{% endif %}>{{ _('Relance / suivi') }}</option>
               <option value="partner">{{ _('Partenaire') }}</option>
               <option value="deadline">{{ _('Échéance') }}</option>
               <option value="other">{{ _('Autre') }}</option>

@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from uuid import uuid4
 
 from backend.models import AdminUser, Structure
-from backend.helpchain_backend.src.models import CalendarEvent
+from backend.helpchain_backend.src.models import CalendarEvent, Case, Request
 
 
 def _login_admin(client, admin_user):
@@ -39,6 +39,20 @@ def _make_admin(session, *, structure_id):
     session.add(admin)
     session.commit()
     return admin
+
+
+def _make_request(session, *, structure_id, owner_id=None, title="Calendar request"):
+    request_row = Request(
+        title=title,
+        description="Calendar follow-up request",
+        category="general",
+        status="open",
+        structure_id=structure_id,
+        owner_id=owner_id,
+    )
+    session.add(request_row)
+    session.commit()
+    return request_row
 
 
 def test_calendar_is_structure_scoped(client, session):
@@ -156,6 +170,108 @@ def test_global_admin_cannot_create_event_without_explicit_structure(client, ses
 
     assert response.status_code == 303
     assert response.headers["Location"].endswith("/admin/calendar")
+    assert CalendarEvent.query.count() == before
+
+
+def test_request_detail_can_plan_follow_up_in_organization_calendar(client, session):
+    structure = _make_structure(
+        session,
+        structure_id=9206,
+        name="Calendar Follow-up",
+        slug="calendar-follow-up",
+    )
+    admin = _make_admin(session, structure_id=structure.id)
+    request_row = _make_request(
+        session,
+        structure_id=structure.id,
+        owner_id=admin.id,
+        title="Housing follow-up",
+    )
+    case = Case(
+        request_id=request_row.id,
+        structure_id=structure.id,
+        status="new",
+        priority="normal",
+    )
+    session.add(case)
+    session.commit()
+
+    _login_admin(client, admin)
+
+    detail_response = client.get(f"/admin/requests/{request_row.id}")
+    assert detail_response.status_code == 200
+    detail_html = detail_response.get_data(as_text=True)
+    assert "Planifier une relance" in detail_html
+    assert f'/admin/calendar?request_id={request_row.id}' in detail_html
+
+    calendar_response = client.get(
+        f"/admin/calendar?request_id={request_row.id}"
+    )
+    assert calendar_response.status_code == 200
+    calendar_html = calendar_response.get_data(as_text=True)
+    assert 'class="collapse show mb-3" id="calendar-new-event"' in calendar_html
+    assert 'name="request_id" value="{}"'.format(request_row.id) in calendar_html
+    assert 'value="follow_up" selected' in calendar_html
+
+    create_response = client.post(
+        "/admin/calendar/events",
+        data={
+            "request_id": str(request_row.id),
+            "title": "Relance logement",
+            "event_type": "follow_up",
+            "starts_at": "2026-10-25T09:30",
+            "ends_at": "",
+        },
+        follow_redirects=False,
+    )
+
+    assert create_response.status_code == 303
+    event = CalendarEvent.query.filter_by(title="Relance logement").one()
+    assert event.event_type == "follow_up"
+    assert event.structure_id == structure.id
+    assert event.request_id == request_row.id
+    assert event.case_id == case.id
+
+
+def test_request_follow_up_calendar_rejects_cross_structure_request(client, session):
+    own_structure = _make_structure(
+        session,
+        structure_id=9207,
+        name="Calendar Link Own",
+        slug="calendar-link-own",
+    )
+    other_structure = _make_structure(
+        session,
+        structure_id=9208,
+        name="Calendar Link Other",
+        slug="calendar-link-other",
+    )
+    admin = _make_admin(session, structure_id=own_structure.id)
+    other_request = _make_request(
+        session,
+        structure_id=other_structure.id,
+        title="Other tenant request",
+    )
+
+    _login_admin(client, admin)
+
+    assert client.get(
+        f"/admin/calendar?request_id={other_request.id}"
+    ).status_code == 404
+
+    before = CalendarEvent.query.count()
+    response = client.post(
+        "/admin/calendar/events",
+        data={
+            "request_id": str(other_request.id),
+            "title": "Forbidden follow-up",
+            "event_type": "follow_up",
+            "starts_at": "2026-10-25T10:30",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 404
     assert CalendarEvent.query.count() == before
 
 
