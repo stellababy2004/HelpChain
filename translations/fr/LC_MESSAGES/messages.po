@@ -11118,3 +11118,6 @@ msgstr "Vendredi"
 
 msgid "Échéance"
 msgstr "Échéance"
+
+msgid "Planifier une relance"
+msgstr "Planifier une relance"
