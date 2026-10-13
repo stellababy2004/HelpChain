@@ -388,3 +388,50 @@ def test_delete_button_matches_archive_requirement(
     db_session.refresh(req)
     assert req.status == status
     assert req.completed_at == completed_before
+
+
+def test_restore_deleted_request_keeps_it_archived_and_audited(
+    admin_login, db_session, make_request
+):
+    _set_admin_role(db_session, admin_login, "superadmin")
+    req = make_request(status="done")
+    req.completed_at = datetime(2026, 1, 1, 12)
+    req.is_archived = True
+    req.archived_at = datetime(2026, 1, 2, 12)
+    db_session.commit()
+
+    admin_id = _admin_id_from_client(admin_login)
+    with admin_login.session_transaction() as sess:
+        sess["admin_mfa_last_verified"] = int(time.time())
+        sess["admin_mfa_user_id"] = admin_id
+
+    delete_response = admin_login.post(
+        f"/admin/requests/{req.id}/delete",
+        follow_redirects=False,
+    )
+    assert delete_response.status_code in (302, 303)
+
+    db_session.refresh(req)
+    assert req.deleted_at is not None
+    assert req.is_archived is True
+    archived_at = req.archived_at
+
+    restore_response = admin_login.post(
+        f"/admin/requests/{req.id}/restore-deleted",
+        follow_redirects=False,
+    )
+    assert restore_response.status_code in (302, 303)
+
+    db_session.refresh(req)
+    assert req.deleted_at is None
+    assert req.is_archived is True
+    assert req.archived_at == archived_at
+    assert req.status == "done"
+
+    restore_events = (
+        db_session.query(RequestActivity)
+        .filter_by(request_id=req.id, action="restore_deleted")
+        .all()
+    )
+    assert len(restore_events) == 1
+    assert restore_events[0].actor_admin_id == admin_id
