@@ -27,6 +27,7 @@ from ..services.case_matching import (
     eligible_professional_leads_query,
     suggest_professional_leads_for_case,
 )
+from ..services.case_lifecycle import require_case_operationally_writable
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
 from .admin import (
@@ -301,7 +302,11 @@ def build_case_copilot(case, request, events=None, assignments=None):
     }
 
 
-def _get_scoped_case_or_404(case_id: int) -> tuple[Case, Request]:
+def _get_scoped_case_or_404(
+    case_id: int,
+    *,
+    require_writable: bool = False,
+) -> tuple[Case, Request]:
     case_row = db.session.get(Case, int(case_id))
     if not case_row:
         abort(404)
@@ -321,6 +326,8 @@ def _get_scoped_case_or_404(case_id: int) -> tuple[Case, Request]:
         abort(404)
     if getattr(case_row, "structure_id", None) != getattr(req, "structure_id", None):
         abort(404)
+    if require_writable:
+        require_case_operationally_writable(case_row)
     return case_row, req
 
 
@@ -719,7 +726,7 @@ def admin_case_detail(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_add_coordination_note(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, _req = _get_scoped_case_or_404(case_id, require_writable=True)
 
     message = (request.form.get("message") or "").strip()
     if not message:
@@ -753,7 +760,7 @@ def admin_case_add_coordination_note(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_set_status(case_id: int):
     admin_required_404()
-    case_row, req = _get_scoped_case_or_404(case_id)
+    case_row, req = _get_scoped_case_or_404(case_id, require_writable=True)
 
     new_status = (request.form.get("status") or "").strip().lower()
     if new_status not in CATEGORY_CASE_STATUSES:
@@ -845,7 +852,7 @@ def admin_case_set_status(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_owner(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, _req = _get_scoped_case_or_404(case_id, require_writable=True)
     owner_raw = (request.form.get("owner_user_id") or "").strip()
     owner_id = None
     if owner_raw:
@@ -894,7 +901,7 @@ def admin_case_assign_owner(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_professional(case_id: int):
     admin_required_404()
-    case_row, req = _get_scoped_case_or_404(case_id)
+    case_row, req = _get_scoped_case_or_404(case_id, require_writable=True)
     lead_raw = (
         request.form.get("assigned_professional_lead_id")
         or request.form.get("primary_professional_lead_id")
@@ -982,7 +989,7 @@ def admin_case_assign_professional(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_add_participant(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, _req = _get_scoped_case_or_404(case_id, require_writable=True)
 
     participant_type = (request.form.get("participant_type") or "").strip().lower()
     role = (request.form.get("role") or "contributor").strip().lower()
@@ -1092,7 +1099,7 @@ def admin_case_add_participant(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_add_event(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, _req = _get_scoped_case_or_404(case_id, require_writable=True)
     event_type = (request.form.get("event_type") or "note_added").strip().lower()
     message = (request.form.get("message") or "").strip()
     metadata = _safe_json_dict(request.form.get("metadata_json"))
@@ -1126,7 +1133,7 @@ def admin_case_add_event(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_set_priority(case_id: int):
     admin_required_404()
-    case_row, _req = _get_scoped_case_or_404(case_id)
+    case_row, _req = _get_scoped_case_or_404(case_id, require_writable=True)
     new_priority = (request.form.get("priority") or "").strip().lower()
 
     if new_priority not in CASE_PRIORITIES:
