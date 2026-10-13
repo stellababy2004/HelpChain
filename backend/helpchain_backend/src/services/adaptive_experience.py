@@ -9,6 +9,8 @@ It does NOT replace backend authorization.
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Any
 
 from .enterprise_structure_intelligence import ORGANIZATION_TYPES
@@ -134,6 +136,105 @@ CAPABILITY_MODULES: dict[str, tuple[str, ...]] = {
 
 
 GLOBAL_ADMIN_MODULES: tuple[str, ...] = tuple(MODULE_REGISTRY)
+
+
+@dataclass(frozen=True)
+class DashboardMetricSlot:
+    """Presentation metadata for one existing dashboard metric."""
+
+    key: str
+    label: str
+    detail_variant: str
+    focus: bool = False
+
+
+@dataclass(frozen=True)
+class DashboardProfile:
+    """Declarative presentation profile for the shared admin dashboard."""
+
+    key: str
+    hero_eyebrow: str
+    hero_title: str
+    hero_description: str
+    hero_metrics: tuple[DashboardMetricSlot, ...]
+    show_hero_signal: bool = True
+    show_operational_intelligence: bool = True
+
+
+GENERIC_DASHBOARD_PROFILE = DashboardProfile(
+    key="generic",
+    hero_eyebrow="Pilotage administratif",
+    hero_title="Centre de coordination admin",
+    hero_description=(
+        "Vue opérationnelle rapide pour prioriser les prochaines actions, "
+        "surveiller la pression et garder une lecture territoriale "
+        "immédiatement exploitable."
+    ),
+    hero_metrics=(
+        DashboardMetricSlot("priority", "Priorités", "priority_action", True),
+        DashboardMetricSlot("follow_up", "Relances", "follow_up_today", True),
+        DashboardMetricSlot("territory", "Territoire", "territory"),
+        DashboardMetricSlot("flow", "Flux", "flow"),
+    ),
+)
+
+
+SCHOOL_DASHBOARD_PROFILE = DashboardProfile(
+    key="school",
+    hero_eyebrow="Pilotage de l’établissement",
+    hero_title="Tableau de bord de l’établissement",
+    hero_description=(
+        "Suivez les demandes, identifiez les situations à traiter et "
+        "organisez les prochaines actions de l’équipe."
+    ),
+    hero_metrics=(
+        DashboardMetricSlot("priority", "Priorités", "situations_to_treat", True),
+        DashboardMetricSlot("follow_up", "Relances", "requests_to_follow_up", True),
+        DashboardMetricSlot("unassigned", "Sans responsable", "unassigned", True),
+        DashboardMetricSlot("stale", "À reprendre", "stale"),
+    ),
+    show_hero_signal=False,
+    show_operational_intelligence=False,
+)
+
+
+CCAS_DASHBOARD_PROFILE = DashboardProfile(
+    key="ccas",
+    hero_eyebrow="Coordination sociale",
+    hero_title="Tableau de bord du CCAS",
+    hero_description=(
+        "Coordonnez les situations à traiter, planifiez les relances et "
+        "assurez le suivi des demandes sans responsable."
+    ),
+    hero_metrics=(
+        DashboardMetricSlot(
+            "priority", "Situations à traiter", "situations_to_treat", True
+        ),
+        DashboardMetricSlot("follow_up", "Relances", "requests_to_follow_up", True),
+        DashboardMetricSlot("unassigned", "Sans responsable", "unassigned", True),
+        DashboardMetricSlot("stale", "Suivi des situations", "stale"),
+    ),
+    show_hero_signal=False,
+)
+
+
+DASHBOARD_PROFILES = MappingProxyType(
+    {
+        "school": SCHOOL_DASHBOARD_PROFILE,
+        "ccas": CCAS_DASHBOARD_PROFILE,
+    }
+)
+
+
+def resolve_dashboard_profile(structure: Any) -> DashboardProfile:
+    """Return presentation metadata without affecting modules or access."""
+    organization_type = (
+        getattr(structure, "organization_type", None) or ""
+    ).strip().lower()
+    return DASHBOARD_PROFILES.get(
+        organization_type,
+        GENERIC_DASHBOARD_PROFILE,
+    )
 
 
 def _json_list(value: Any) -> list[str]:

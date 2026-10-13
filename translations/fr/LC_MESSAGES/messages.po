@@ -11127,3 +11127,63 @@ msgstr "Voir la demande"
 
 msgid "Ouvrir le dossier"
 msgstr "Ouvrir le dossier"
+
+msgid "Pilotage administratif"
+msgstr "Pilotage administratif"
+
+msgid "Centre de coordination admin"
+msgstr "Centre de coordination admin"
+
+msgid "Vue opérationnelle rapide pour prioriser les prochaines actions, surveiller la pression et garder une lecture territoriale immédiatement exploitable."
+msgstr "Vue opérationnelle rapide pour prioriser les prochaines actions, surveiller la pression et garder une lecture territoriale immédiatement exploitable."
+
+msgid "Coordination sociale"
+msgstr "Coordination sociale"
+
+msgid "Tableau de bord du CCAS"
+msgstr "Tableau de bord du CCAS"
+
+msgid "Coordonnez les situations à traiter, planifiez les relances et assurez le suivi des demandes sans responsable."
+msgstr "Coordonnez les situations à traiter, planifiez les relances et assurez le suivi des demandes sans responsable."
+
+msgid "Situations à traiter"
+msgstr "Situations à traiter"
+
+msgid "Suivi des situations"
+msgstr "Suivi des situations"
+
+msgid "Synthèse opérationnelle"
+msgstr "Synthèse opérationnelle"
+
+msgid "situation prioritaire"
+msgstr "situation prioritaire"
+
+msgid "nécessite une action"
+msgstr "nécessite une action"
+
+msgid "nécessitent une action"
+msgstr "nécessitent une action"
+
+msgid "relance"
+msgstr "relance"
+
+msgid "en attente aujourd'hui"
+msgstr "en attente aujourd'hui"
+
+msgid "Relances stabilisées à ce stade"
+msgstr "Relances stabilisées à ce stade"
+
+msgid "Activité concentrée sur"
+msgstr "Activité concentrée sur"
+
+msgid "Couverture stable sur la majorité des territoires"
+msgstr "Couverture stable sur la majorité des territoires"
+
+msgid "diffusion"
+msgstr "diffusion"
+
+msgid "en cours"
+msgstr "en cours"
+
+msgid "Charge opérationnelle modérée"
+msgstr "Charge opérationnelle modérée"
