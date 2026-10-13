@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -283,6 +284,200 @@ def test_invalid_status_transition_is_rejected(app, session):
     assert resp.status_code == 303
     assert case_row.status == "closed"
     assert CaseEvent.query.filter_by(case_id=case_row.id, event_type="status_changed").count() == 0
+
+
+def test_assigning_and_unassigning_case_owner_syncs_lifecycle_audit_and_detail(
+    app, session, monkeypatch
+):
+    from backend.helpchain_backend.src.models import CaseEvent
+    from backend.helpchain_backend.src.routes import admin_cases
+
+    structure = _make_structure(
+        session,
+        name="Owner Lifecycle Scope",
+        slug="owner-lifecycle-scope",
+    )
+    user = _make_user(
+        session,
+        username="owner_lifecycle_requester",
+        email="owner_lifecycle_requester@test.local",
+        structure_id=structure.id,
+    )
+    actor = _make_admin(
+        session,
+        username="owner_lifecycle_actor",
+        email="owner_lifecycle_actor@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    owner = _make_admin(
+        session,
+        username="owner_lifecycle_assignee",
+        email="owner_lifecycle_assignee@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    req = _make_request(
+        session,
+        title="owner lifecycle request",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="new",
+    )
+    initial_activity_at = case_row.last_activity_at
+
+    risk_recalculation_case_ids = []
+    real_update_case_risk = admin_cases.update_case_risk
+
+    def track_update_case_risk(updated_case):
+        risk_recalculation_case_ids.append(updated_case.id)
+        return real_update_case_risk(updated_case)
+
+    monkeypatch.setattr(admin_cases, "update_case_risk", track_update_case_risk)
+
+    client = app.test_client()
+    _login_admin(client, actor)
+    assign_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-owner",
+        data={"owner_user_id": str(owner.id)},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    session.refresh(req)
+    assigned_activity_at = case_row.last_activity_at
+    assigned_event = CaseEvent.query.filter_by(
+        case_id=case_row.id,
+        event_type="owner_assigned",
+    ).one()
+    assigned_metadata = json.loads(assigned_event.metadata_json)
+
+    assert assign_response.status_code == 303
+    assert case_row.owner_user_id == owner.id
+    assert req.owner_id == owner.id
+    assert req.owned_at == assigned_activity_at
+    assert case_row.status == "assigned"
+    assert case_row.assigned_at == assigned_activity_at
+    assert assigned_activity_at > initial_activity_at
+    assert risk_recalculation_case_ids == [case_row.id]
+    assert assigned_event.actor_user_id == actor.id
+    assert assigned_metadata == {
+        "old_owner_user_id": None,
+        "new_owner_user_id": owner.id,
+    }
+
+    detail_response = client.get(f"/admin/cases/{case_row.id}")
+    detail_html = detail_response.get_data(as_text=True)
+    assert detail_response.status_code == 200
+    assert "owner_lifecycle_assignee" in detail_html
+
+    unassign_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-owner",
+        data={"owner_user_id": ""},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    session.refresh(req)
+    owner_events = (
+        CaseEvent.query.filter_by(
+            case_id=case_row.id,
+            event_type="owner_assigned",
+        )
+        .order_by(CaseEvent.id.asc())
+        .all()
+    )
+    unassigned_event = owner_events[1]
+    unassigned_metadata = json.loads(unassigned_event.metadata_json)
+
+    assert unassign_response.status_code == 303
+    assert case_row.owner_user_id is None
+    assert req.owner_id is None
+    assert req.owned_at is None
+    assert case_row.status == "assigned"
+    assert case_row.assigned_at == assigned_activity_at
+    assert case_row.last_activity_at > assigned_activity_at
+    assert risk_recalculation_case_ids == [case_row.id, case_row.id]
+    assert len(owner_events) == 2
+    assert unassigned_event.actor_user_id == actor.id
+    assert unassigned_metadata == {
+        "old_owner_user_id": owner.id,
+        "new_owner_user_id": None,
+    }
+
+
+def test_case_owner_assignment_rejects_owner_from_other_structure(app, session):
+    from backend.helpchain_backend.src.models import CaseEvent
+
+    structure = _make_structure(
+        session,
+        name="Owner Scope",
+        slug="owner-scope",
+    )
+    other_structure = _make_structure(
+        session,
+        name="Foreign Owner Scope",
+        slug="foreign-owner-scope",
+    )
+    user = _make_user(
+        session,
+        username="owner_scope_requester",
+        email="owner_scope_requester@test.local",
+        structure_id=structure.id,
+    )
+    actor = _make_admin(
+        session,
+        username="owner_scope_actor",
+        email="owner_scope_actor@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    foreign_owner = _make_admin(
+        session,
+        username="foreign_owner",
+        email="foreign_owner@test.local",
+        role="ops",
+        structure_id=other_structure.id,
+    )
+    req = _make_request(
+        session,
+        title="owner scope request",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="new",
+    )
+    initial_activity_at = case_row.last_activity_at
+
+    client = app.test_client()
+    _login_admin(client, actor)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-owner",
+        data={"owner_user_id": str(foreign_owner.id)},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    session.refresh(req)
+    assert response.status_code == 303
+    assert case_row.owner_user_id is None
+    assert req.owner_id is None
+    assert req.owned_at is None
+    assert case_row.status == "new"
+    assert case_row.last_activity_at == initial_activity_at
+    assert CaseEvent.query.filter_by(
+        case_id=case_row.id,
+        event_type="owner_assigned",
+    ).count() == 0
 
 
 def test_request_to_case_conversion_creates_case_and_timeline(app, session):
