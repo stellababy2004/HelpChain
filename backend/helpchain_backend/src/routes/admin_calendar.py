@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from calendar import Calendar
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from flask import flash, redirect, render_template, request, url_for
@@ -60,15 +60,20 @@ def admin_calendar():
     admin_required_404()
 
     now = datetime.now(PARIS_TZ)
+    calendar_view = (request.args.get("view") or "month").strip().lower()
+    if calendar_view not in {"month", "week", "today"}:
+        calendar_view = "month"
+
     try:
         year = int(request.args.get("year", now.year))
         month = int(request.args.get("month", now.month))
-        selected = datetime(year, month, 1)
+        day = int(request.args.get("day", now.day))
+        selected_date = datetime(year, month, day).date()
     except (TypeError, ValueError):
-        selected = datetime(now.year, now.month, 1)
+        selected_date = now.date()
 
-    year = selected.year
-    month = selected.month
+    year = selected_date.year
+    month = selected_date.month
 
     previous_month = (
         datetime(year - 1, 12, 1)
@@ -81,10 +86,21 @@ def admin_calendar():
         else datetime(year, month + 1, 1)
     )
 
-    calendar_weeks = Calendar(firstweekday=0).monthdatescalendar(
-        year,
-        month,
-    )
+    previous_date = selected_date - timedelta(days=1 if calendar_view == "today" else 7)
+    next_date = selected_date + timedelta(days=1 if calendar_view == "today" else 7)
+
+    if calendar_view == "week":
+        week_start = selected_date - timedelta(days=selected_date.weekday())
+        calendar_weeks = [
+            [week_start + timedelta(days=offset) for offset in range(7)]
+        ]
+    elif calendar_view == "today":
+        calendar_weeks = [[selected_date]]
+    else:
+        calendar_weeks = Calendar(firstweekday=0).monthdatescalendar(
+            year,
+            month,
+        )
 
     events = (
         _scoped_calendar_events_query()
@@ -101,6 +117,10 @@ def admin_calendar():
         calendar_weeks=calendar_weeks,
         calendar_year=year,
         calendar_month=month,
+        calendar_view=calendar_view,
+        selected_date=selected_date,
+        previous_date=previous_date,
+        next_date=next_date,
         previous_month=previous_month,
         next_month=next_month,
         today=now.date(),

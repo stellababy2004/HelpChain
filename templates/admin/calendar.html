@@ -84,32 +84,54 @@
   <div class="hc-card mb-3 p-3">
     <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
       <div class="d-flex gap-2 align-items-center">
-        <a class="btn btn-outline-secondary btn-sm"
-           href="{{ url_for('admin.admin_calendar', year=previous_month.year, month=previous_month.month) }}">
-          &larr;
-        </a>
+        {% if calendar_view == 'month' %}
+          <a class="btn btn-outline-secondary btn-sm"
+             href="{{ url_for('admin.admin_calendar', view='month', year=previous_month.year, month=previous_month.month, day=1) }}">
+            &larr;
+          </a>
+        {% else %}
+          <a class="btn btn-outline-secondary btn-sm"
+             href="{{ url_for('admin.admin_calendar', view=calendar_view, year=previous_date.year, month=previous_date.month, day=previous_date.day) }}">
+            &larr;
+          </a>
+        {% endif %}
 
         <strong>
-          {{ calendar_month }}/{{ calendar_year }}
+          {% if calendar_view == 'today' %}
+            {{ selected_date.strftime('%d/%m/%Y') }}
+          {% elif calendar_view == 'week' %}
+            {{ calendar_weeks[0][0].strftime('%d/%m') }} - {{ calendar_weeks[0][-1].strftime('%d/%m/%Y') }}
+          {% else %}
+            {{ calendar_month }}/{{ calendar_year }}
+          {% endif %}
         </strong>
 
-        <a class="btn btn-outline-secondary btn-sm"
-           href="{{ url_for('admin.admin_calendar', year=next_month.year, month=next_month.month) }}">
-          &rarr;
-        </a>
+        {% if calendar_view == 'month' %}
+          <a class="btn btn-outline-secondary btn-sm"
+             href="{{ url_for('admin.admin_calendar', view='month', year=next_month.year, month=next_month.month, day=1) }}">
+            &rarr;
+          </a>
+        {% else %}
+          <a class="btn btn-outline-secondary btn-sm"
+             href="{{ url_for('admin.admin_calendar', view=calendar_view, year=next_date.year, month=next_date.month, day=next_date.day) }}">
+            &rarr;
+          </a>
+        {% endif %}
       </div>
 
       <div class="d-flex flex-wrap gap-2 align-items-center">
-        <a class="btn btn-outline-secondary btn-sm"
-           href="{{ url_for('admin.admin_calendar') }}">
+        <a class="btn {{ 'btn-primary' if calendar_view == 'today' else 'btn-outline-secondary' }} btn-sm"
+           href="{{ url_for('admin.admin_calendar', view='today', year=today.year, month=today.month, day=today.day) }}">
           {{ _("Aujourd'hui") }}
         </a>
-        <button class="btn btn-outline-secondary btn-sm" type="button">
+        <a class="btn {{ 'btn-primary' if calendar_view == 'week' else 'btn-outline-secondary' }} btn-sm"
+           href="{{ url_for('admin.admin_calendar', view='week', year=selected_date.year, month=selected_date.month, day=selected_date.day) }}">
           {{ _('Semaine') }}
-        </button>
-        <button class="btn btn-primary btn-sm" type="button">
+        </a>
+        <a class="btn {{ 'btn-primary' if calendar_view == 'month' else 'btn-outline-secondary' }} btn-sm"
+           href="{{ url_for('admin.admin_calendar', view='month', year=selected_date.year, month=selected_date.month, day=1) }}">
           {{ _('Mois') }}
-        </button>
+        </a>
       </div>
     </div>
   </div>
@@ -119,13 +141,17 @@
       <table class="table table-bordered mb-0 align-top">
         <thead>
           <tr>
-            <th class="text-center">{{ _('Lundi') }}</th>
-            <th class="text-center">{{ _('Mardi') }}</th>
-            <th class="text-center">{{ _('Mercredi') }}</th>
-            <th class="text-center">{{ _('Jeudi') }}</th>
-            <th class="text-center">{{ _('Vendredi') }}</th>
-            <th class="text-center">{{ _('Samedi') }}</th>
-            <th class="text-center">{{ _('Dimanche') }}</th>
+            {% if calendar_view == 'today' %}
+              <th class="text-center">{{ selected_date.strftime('%d/%m/%Y') }}</th>
+            {% else %}
+              <th class="text-center">{{ _('Lundi') }}</th>
+              <th class="text-center">{{ _('Mardi') }}</th>
+              <th class="text-center">{{ _('Mercredi') }}</th>
+              <th class="text-center">{{ _('Jeudi') }}</th>
+              <th class="text-center">{{ _('Vendredi') }}</th>
+              <th class="text-center">{{ _('Samedi') }}</th>
+              <th class="text-center">{{ _('Dimanche') }}</th>
+            {% endif %}
           </tr>
         </thead>
 
