@@ -185,6 +185,130 @@ def test_inline_status_update_persists_for_created_request(admin_ops_client, cli
         assert refreshed.status in ("pending", "in_progress")
 
 
+def test_public_request_to_resolved_case_lifecycle(
+    app, client, session, public_intake_destination
+):
+    from flask import g
+
+    from backend.helpchain_backend.src.models import (
+        Case,
+        CaseParticipant,
+        ProfessionalLead,
+    )
+    from backend.models import Assignment, Intervenant
+
+    admin = AdminUser(
+        username="request_case_lifecycle_ops",
+        email="request-case-lifecycle-ops@test.local",
+        password_hash="x",
+        role="superadmin",
+        is_active=True,
+        structure_id=None,
+    )
+    session.add(admin)
+    session.commit()
+
+    title = _submit_public_request(
+        client, f"request-to-case-lifecycle-{time.time_ns()}"
+    )
+
+    request_row = (
+        session.query(Request)
+        .filter_by(title=title)
+        .order_by(Request.id.desc())
+        .first()
+    )
+    assert request_row is not None
+    assert request_row.structure_id == public_intake_destination.id
+    routed_service = session.get(StructureService, request_row.service_id)
+    assert routed_service is not None
+    assert routed_service.code == "orientation"
+    assert routed_service.structure_id == public_intake_destination.id
+
+    admin_client = app.test_client()
+    with admin_client.session_transaction() as admin_session:
+        admin_session["_user_id"] = str(admin.id)
+        admin_session["user_id"] = admin.id
+        admin_session["admin_id"] = admin.id
+        admin_session["admin_user_id"] = admin.id
+        admin_session["role"] = admin.role
+        admin_session["is_authenticated"] = True
+        admin_session["is_admin"] = True
+        admin_session["admin_logged_in"] = True
+
+    g.pop("_login_user", None)
+    assert admin_client.get("/admin/cases").status_code == 200
+    g.structure_id = public_intake_destination.id
+    open_response = admin_client.post(
+        f"/admin/requests/{request_row.id}/open-case",
+        follow_redirects=False,
+    )
+    assert open_response.status_code == 303
+    assert "/admin/cases/" in open_response.headers["Location"]
+
+    case_rows = Case.query.filter_by(request_id=request_row.id).all()
+    assert len(case_rows) == 1
+    case_row = case_rows[0]
+    assert case_row.structure_id == request_row.structure_id
+
+    intervenant = Intervenant(
+        structure_id=request_row.structure_id,
+        name="Lifecycle Professional",
+        email="lifecycle-professional@test.local",
+        actor_type="field_referent",
+        availability="unavailable",
+        is_active=False,
+    )
+    session.add(intervenant)
+    session.flush()
+    lead = ProfessionalLead(
+        full_name="Lifecycle Professional",
+        email="lifecycle-professional@test.local",
+        profession="Coordination",
+        city="Paris",
+        source="test",
+        status="new",
+        intervenant_id=intervenant.id,
+    )
+    session.add(lead)
+    session.commit()
+
+    assign_response = admin_client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+    assert assign_response.status_code == 303
+
+    session.refresh(case_row)
+    assert case_row.assigned_professional_lead_id == lead.id
+    participant = CaseParticipant.query.filter_by(case_id=case_row.id).one()
+    assert participant.participant_type == "professional_lead"
+    assert participant.professional_lead_id == lead.id
+    assert participant.role == "primary_professional"
+    assert participant.status == "active"
+
+    assignment = Assignment.query.filter_by(
+        request_id=request_row.id,
+        intervenant_id=intervenant.id,
+        structure_id=request_row.structure_id,
+    ).one()
+    assert assignment.status == "active"
+
+    for status in ("in_progress", "resolved"):
+        status_response = admin_client.post(
+            f"/admin/cases/{case_row.id}/status",
+            data={"status": status},
+            follow_redirects=False,
+        )
+        assert status_response.status_code == 303
+        session.refresh(case_row)
+        assert case_row.status == status
+
+    session.refresh(assignment)
+    assert assignment.status == "removed"
+
+
 def test_smoke_uses_test_sqlalchemy_database(app):
     uri = app.config.get("SQLALCHEMY_DATABASE_URI") or ""
     assert uri
