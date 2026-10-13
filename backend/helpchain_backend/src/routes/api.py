@@ -32,6 +32,7 @@ from ..models import (
     db,
 )
 from ..security_logging import log_security_event
+from ..services.case_lifecycle import require_case_operationally_writable
 from .admin import admin_required, admin_required_404, admin_role_required, _is_global_admin
 from ..security.api_authz import require_api_auth, require_roles
 
@@ -612,6 +613,8 @@ def invite_structure_to_case(case_id: int):
         admin_structure_id = getattr(current_user, "structure_id", None)
     if not _is_global_admin() and admin_structure_id is not None and case_row.structure_id != admin_structure_id:
         return jsonify({"error": "forbidden"}), 403
+
+    require_case_operationally_writable(case_row)
 
     if structure_id == case_row.structure_id:
         return jsonify({"error": "structure already owns case"}), 400

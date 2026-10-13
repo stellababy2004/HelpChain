@@ -60,6 +60,7 @@
 } %}
 {% set case_status_key = (case_row.status or 'open')|replace('_', '-')|lower %}
 {% set case_status_label = status_display_labels.get((case_row.status or '')|lower, (case_row.status or '-')|replace('_', ' ')|title) %}
+{% set case_is_closed = (case_row.status or '')|lower == 'closed' %}
 {% set owner_ns = namespace(label='Non attribue') %}
 {% for o in owners %}
   {% if case_row.owner_user_id == o[0] %}
@@ -274,11 +275,13 @@
                   </div>
                 {% endif %}
               </div>
+              {% if not case_is_closed %}
               <form method="post" action="{{ url_for('admin.admin_case_assign_professional', case_id=case_row.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="assigned_professional_lead_id" value="{{ lead.id }}">
                 <button class="btn btn-outline-primary btn-sm" type="submit">Assigner</button>
               </form>
+              {% endif %}
             </article>
           {% else %}
             <div class="hc-empty-state hc-empty-state--compact">
@@ -342,6 +345,7 @@
         </div>
 
         <div class="hc-case-journal">
+          {% if not case_is_closed %}
           <form method="post" action="{{ url_for('admin.admin_case_add_coordination_note', case_id=case_row.id) }}" class="hc-case-journal__form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label class="form-label" for="hc-case-journal-message">Note de coordination</label>
@@ -357,6 +361,7 @@
               <button class="btn btn-primary btn-sm" type="submit">Ajouter la note</button>
             </div>
           </form>
+          {% endif %}
 
           <div class="hc-case-journal__feed">
             {% for ev in coordination_events %}
@@ -446,6 +451,7 @@
             <div><strong>Dernière activité :</strong> <span title="{{ case_activity_ref|format_datetime_fr }}">{{ case_activity_ref|format_datetime_fr }}</span></div>
           </div>
 
+          {% if not case_is_closed %}
           <form method="post" action="{{ url_for('admin.admin_case_set_status', case_id=case_row.id) }}" class="hc-case-control-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label class="form-label">Statut</label>
@@ -501,8 +507,10 @@
               <button class="btn btn-primary btn-sm" type="submit">Attribuer</button>
             </div>
           </form>
+          {% endif %}
         </section>
 
+        {% if not case_is_closed %}
         <section class="hc-card hc-case-detail-card hc-case-detail-card--quick">
           <h2 class="hc-section-title">Actions rapides</h2>
           <div class="hc-case-quick-actions">
@@ -518,6 +526,7 @@
             </form>
           </div>
         </section>
+        {% endif %}
 
         <section class="hc-card hc-case-detail-card hc-case-detail-card--structures">
           <h2 class="hc-section-title">Structures associées</h2>
@@ -533,6 +542,7 @@
           </ul>
         </section>
 
+        {% if not case_is_closed %}
         <section class="hc-card hc-case-detail-card hc-case-detail-card--add-participant">
           <h2 class="hc-section-title">Ajouter un participant</h2>
           <form method="post" action="{{ url_for('admin.admin_case_add_participant', case_id=case_row.id) }}">
@@ -585,7 +595,9 @@
             <button class="btn btn-primary btn-sm" type="submit">Ajouter le participant</button>
           </form>
         </section>
+        {% endif %}
 
+        {% if not case_is_closed %}
         <section class="hc-card hc-case-detail-card hc-case-detail-card--note">
           <h2 class="hc-section-title">Ajouter un evenement / une note</h2>
           <form method="post" action="{{ url_for('admin.admin_case_add_event', case_id=case_row.id) }}">
@@ -612,6 +624,7 @@
             <button class="btn btn-primary btn-sm" type="submit">Ajouter l'evenement</button>
           </form>
         </section>
+        {% endif %}
       </div>
     </aside>
   </div>

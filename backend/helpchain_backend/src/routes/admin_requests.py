@@ -46,6 +46,10 @@ from ..models import (
 )
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..services.case_risk import risk_label_from_score, score_request_risk
+from ..services.case_lifecycle import (
+    case_is_closed,
+    require_case_operationally_writable,
+)
 from ..services.case_summary import build_case_summary
 from ..services.geocoding import request_address_display_text
 from ..services.recommendation_engine import compute_recommendation
@@ -1887,7 +1891,11 @@ def admin_request_details(req_id: int):
     if _cases_enabled():
         linked_case = Case.query.filter(Case.request_id == req.id).first()
     risk_ai_suggestion = _build_risk_ai_suggestion(req)
-    if linked_case and linked_case.owner_user_id != req.owner_id:
+    if (
+        linked_case
+        and not case_is_closed(linked_case)
+        and linked_case.owner_user_id != req.owner_id
+    ):
         linked_case.owner_user_id = req.owner_id
         linked_case.last_activity_at = utc_now()
         db.session.commit()
@@ -2437,12 +2445,19 @@ def admin_request_assign(req_id: int):
             return redirect(next_url)
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
 
+    linked_case = (
+        Case.query.filter(Case.request_id == req.id).first()
+        if _cases_enabled()
+        else None
+    )
+    if linked_case:
+        require_case_operationally_writable(linked_case)
+
     takeover = False
     old_owner = req.owner_id
     req.owner_id = current_user.id
     req.owned_at = utc_now()
 
-    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
     if linked_case and linked_case.owner_user_id != current_user.id:
         linked_case.owner_user_id = current_user.id
         linked_case.last_activity_at = utc_now()
@@ -2516,16 +2531,18 @@ def admin_request_unassign(req_id: int):
         return redirect(url_for("admin.admin_request_details", req_id=req.id))
     if not can_edit_request(req, current_user):
         abort(403)
+    linked_case = (
+        Case.query.filter(Case.request_id == req.id).first()
+        if _cases_enabled()
+        else None
+    )
+    if linked_case:
+        require_case_operationally_writable(linked_case)
+
     old_owner = req.owner_id
     req.owner_id = None
     req.owned_at = None
 
-    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
-    if linked_case and linked_case.owner_user_id == old_owner:
-        linked_case.owner_user_id = None
-        linked_case.last_activity_at = utc_now()
-
-    linked_case = Case.query.filter(Case.request_id == req.id).first() if _cases_enabled() else None
     if linked_case and linked_case.owner_user_id == old_owner:
         linked_case.owner_user_id = None
         linked_case.last_activity_at = utc_now()

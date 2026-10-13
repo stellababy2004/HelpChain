@@ -281,9 +281,264 @@ def test_invalid_status_transition_is_rejected(app, session):
     resp = client.post(f"/admin/cases/{case_row.id}/status", data={"status": "in_progress"})
 
     session.refresh(case_row)
-    assert resp.status_code == 303
+    assert resp.status_code == 409
     assert case_row.status == "closed"
     assert CaseEvent.query.filter_by(case_id=case_row.id, event_type="status_changed").count() == 0
+
+
+def test_closed_case_rejects_all_direct_operational_mutations(app, session):
+    from backend.helpchain_backend.src.models import CaseEvent, CaseParticipant
+
+    structure = _make_structure(
+        session,
+        name="Closed Write Protection",
+        slug="closed-write-protection",
+    )
+    user = _make_user(
+        session,
+        username="closed_write_requester",
+        email="closed-write-requester@test.local",
+        structure_id=structure.id,
+    )
+    actor = _make_admin(
+        session,
+        username="closed_write_actor",
+        email="closed-write-actor@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    owner = _make_admin(
+        session,
+        username="closed_write_owner",
+        email="closed-write-owner@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead = _make_professional_lead(
+        session,
+        full_name="Closed Write Lead",
+        email="closed-write-lead@test.local",
+    )
+    req = _make_request(
+        session,
+        title="closed write protected case",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="closed",
+    )
+    original_last_activity_at = case_row.last_activity_at
+    client = app.test_client()
+    _login_admin(client, actor)
+
+    mutations = (
+        ("assign-owner", {"owner_user_id": str(owner.id)}),
+        (
+            "assign-professional",
+            {"assigned_professional_lead_id": str(lead.id)},
+        ),
+        ("priority", {"priority": "critical"}),
+        (
+            "participants",
+            {
+                "participant_type": "external_contact",
+                "role": "contributor",
+                "status": "active",
+                "external_name": "Closed mutation participant",
+            },
+        ),
+        ("coordination-note", {"message": "Closed mutation note"}),
+        (
+            "events",
+            {"event_type": "note_added", "message": "Closed mutation event"},
+        ),
+        ("status", {"status": "in_progress"}),
+    )
+
+    for endpoint, data in mutations:
+        response = client.post(
+            f"/admin/cases/{case_row.id}/{endpoint}",
+            data=data,
+            follow_redirects=False,
+        )
+        assert response.status_code == 409, endpoint
+
+    session.refresh(case_row)
+    session.refresh(req)
+    assert case_row.status == "closed"
+    assert case_row.owner_user_id is None
+    assert case_row.assigned_professional_lead_id is None
+    assert case_row.priority == "normal"
+    assert case_row.last_activity_at == original_last_activity_at
+    assert req.owner_id is None
+    assert CaseParticipant.query.filter_by(case_id=case_row.id).count() == 0
+    assert CaseEvent.query.filter_by(case_id=case_row.id).count() == 0
+
+    detail_response = client.get(f"/admin/cases/{case_row.id}")
+    detail_html = detail_response.get_data(as_text=True)
+    assert detail_response.status_code == 200
+    assert "closed write protected case" in detail_html
+    for endpoint, _data in mutations:
+        assert f"/admin/cases/{case_row.id}/{endpoint}" not in detail_html
+
+
+def test_active_case_still_accepts_direct_operational_mutations(app, session):
+    from backend.helpchain_backend.src.models import CaseEvent, CaseParticipant
+
+    structure = _make_structure(
+        session,
+        name="Active Write Control",
+        slug="active-write-control",
+    )
+    user = _make_user(
+        session,
+        username="active_write_requester",
+        email="active-write-requester@test.local",
+        structure_id=structure.id,
+    )
+    actor = _make_admin(
+        session,
+        username="active_write_actor",
+        email="active-write-actor@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    owner = _make_admin(
+        session,
+        username="active_write_owner",
+        email="active-write-owner@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead = _make_professional_lead(
+        session,
+        full_name="Active Write Lead",
+        email="active-write-lead@test.local",
+    )
+    req = _make_request(
+        session,
+        title="active writable case",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="new",
+    )
+    client = app.test_client()
+    _login_admin(client, actor)
+
+    mutations = (
+        ("assign-owner", {"owner_user_id": str(owner.id)}),
+        (
+            "assign-professional",
+            {"assigned_professional_lead_id": str(lead.id)},
+        ),
+        ("priority", {"priority": "critical"}),
+        (
+            "participants",
+            {
+                "participant_type": "external_contact",
+                "role": "contributor",
+                "status": "active",
+                "external_name": "Active participant",
+            },
+        ),
+        ("coordination-note", {"message": "Active coordination note"}),
+        (
+            "events",
+            {"event_type": "note_added", "message": "Active case event"},
+        ),
+        ("status", {"status": "in_progress"}),
+    )
+
+    for endpoint, data in mutations:
+        response = client.post(
+            f"/admin/cases/{case_row.id}/{endpoint}",
+            data=data,
+            follow_redirects=False,
+        )
+        assert response.status_code == 303, endpoint
+
+    session.refresh(case_row)
+    session.refresh(req)
+    assert case_row.status == "in_progress"
+    assert case_row.owner_user_id == owner.id
+    assert case_row.assigned_professional_lead_id == lead.id
+    assert case_row.priority == "critical"
+    assert req.owner_id == owner.id
+    assert CaseParticipant.query.filter_by(case_id=case_row.id).count() == 2
+    assert CaseEvent.query.filter_by(case_id=case_row.id).count() >= 7
+
+
+def test_closed_case_owner_is_not_mutated_through_request_workflow(app, session):
+    structure = _make_structure(
+        session,
+        name="Closed Request Sync Protection",
+        slug="closed-request-sync-protection",
+    )
+    user = _make_user(
+        session,
+        username="closed_request_sync_user",
+        email="closed-request-sync-user@test.local",
+        structure_id=structure.id,
+    )
+    actor = _make_admin(
+        session,
+        username="closed_request_sync_actor",
+        email="closed-request-sync-actor@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    historical_owner = _make_admin(
+        session,
+        username="closed_request_historical_owner",
+        email="closed-request-historical-owner@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    req = _make_request(
+        session,
+        title="closed request owner sync",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    req.owner_id = actor.id
+    req.owned_at = datetime.now(UTC)
+    case_row = _make_case(
+        session,
+        request_id=req.id,
+        structure_id=structure.id,
+        status="closed",
+    )
+    case_row.owner_user_id = historical_owner.id
+    original_last_activity_at = case_row.last_activity_at
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, actor)
+
+    detail_response = client.get(f"/admin/requests/{req.id}")
+    session.refresh(case_row)
+    assert detail_response.status_code == 200
+    assert case_row.owner_user_id == historical_owner.id
+    assert case_row.last_activity_at == original_last_activity_at
+
+    unassign_response = client.post(
+        f"/admin/requests/{req.id}/unassign",
+        follow_redirects=False,
+    )
+    session.refresh(case_row)
+    session.refresh(req)
+    assert unassign_response.status_code == 409
+    assert req.owner_id == actor.id
+    assert case_row.owner_user_id == historical_owner.id
 
 
 def test_assigning_and_unassigning_case_owner_syncs_lifecycle_audit_and_detail(

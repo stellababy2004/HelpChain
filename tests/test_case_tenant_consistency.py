@@ -368,6 +368,29 @@ def test_case_collaborator_invite_is_controlled_by_case_owner_scope(app, session
     )
     assert denied.status_code == 403
 
+
+def test_closed_case_rejects_collaborator_invitation(app, session):
+    seeded = _seed_case_scope(session)
+    seeded["visible_case"].status = "closed"
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, app, seeded["ops_a"])
+
+    response = client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    )
+
+    assert response.status_code == 409
+    assert (
+        CaseCollaborator.query.filter(
+            CaseCollaborator.case_id == seeded["visible_case"].id,
+            CaseCollaborator.structure_id == seeded["structure_b"].id,
+        ).first()
+        is None
+    )
+
 def test_admin_role_can_open_case_from_own_structure(app, session):
     structure = _make_structure(
         session,
