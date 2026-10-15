@@ -2177,6 +2177,27 @@
         line-height: 1.05;
       }
     }
+
+    html body.hc-page-home .hc-home-premium__platform-outcomes.hc-home-premium__platform-outcomes--problem {
+      position: relative;
+      z-index: 2;
+      grid-template-columns: minmax(0, 1fr);
+      width: min(88%, 900px);
+      margin: -30px auto 0;
+    }
+
+    html body.hc-page-home .hc-home-premium__platform-outcomes.hc-home-premium__platform-outcomes--problem article {
+      min-height: 0;
+      border-color: rgba(19, 42, 63, 0.13);
+      box-shadow: 0 18px 38px rgba(15, 38, 58, 0.12);
+    }
+
+    @media (max-width: 767.98px) {
+      html body.hc-page-home .hc-home-premium__platform-outcomes.hc-home-premium__platform-outcomes--problem {
+        width: calc(100% - 24px);
+        margin-top: -14px;
+      }
+    }
   </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home-hero-canonical.css') }}">
 {% endblock %}
@@ -2200,11 +2221,9 @@
         <a href="{{ url_for('main.securite') }}">{{ _('Sécurité') }}</a>
         <a href="{{ url_for('main.deploiement') }}">{{ _('Déploiement') }}</a>
         <a href="{{ url_for('main.tarifs') }}">{{ _('Tarifs') }}</a>
-        <a href="{{ url_for('main.architecture') }}">{{ _('Architecture') }}</a>
-        <a href="{{ url_for('main.analyse_fragmentation') }}">{{ _('Analyses opérationnelles') }}</a>
       </nav>
       <div class="hc-home-premium__nav-actions">
-        <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Demander un accès pilote') }}</a>
+        <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Demander un pilote') }}</a>
       </div>
       <button
         type="button"
@@ -2232,11 +2251,9 @@
           <li><a href="{{ url_for('main.securite') }}">{{ _('Sécurité') }}</a></li>
           <li><a href="{{ url_for('main.deploiement') }}">{{ _('Déploiement') }}</a></li>
           <li><a href="{{ url_for('main.tarifs') }}">{{ _('Tarifs') }}</a></li>
-          <li><a href="{{ url_for('main.architecture') }}">{{ _('Architecture') }}</a></li>
-          <li><a href="{{ url_for('main.analyse_fragmentation') }}">{{ _('Analyses opérationnelles') }}</a></li>
         </ul>
         <div class="hc-home-premium__mobile-cta">
-          <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Demander un accès pilote') }}</a>
+          <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Demander un pilote') }}</a>
         </div>
       </div>
     </div>
@@ -2245,26 +2262,25 @@
 <section class="hc-home-premium__hero" aria-labelledby="hc-home-hero-title">
   <div class="hc-home-premium__hero-grid">
     <div class="hc-home-premium__hero-copy">
-      <p class="hc-home-premium__eyebrow">{{ _('PLATEFORME DE COORDINATION OPÉRATIONNELLE') }}</p>
+      <p class="hc-home-premium__eyebrow">{{ _('POUR LES ACTEURS QUI ACCOMPAGNENT ET COORDONNENT DES SITUATIONS') }}</p>
 
-      <h1 id="hc-home-hero-title">{{ _('Coordonnez des opérations multi-acteurs sans perdre la continuité.') }}</h1>
+      <h1 id="hc-home-hero-title">{{ _('Quand plusieurs structures accompagnent une même situation, qui fait quoi ?') }}</h1>
 
       <p class="hc-home-premium__lead">
-        {{ _('HelpChain structure la réception, l’orientation, le suivi et la gouvernance opérationnelle dans des environnements multi-équipes et multi-structures.') }}
+        {{ _('HelpChain permet aux associations, CCAS, collectivités et professionnels de suivre ensemble une situation, de savoir qui intervient et où elle en est — sans se perdre entre emails, appels et fichiers Excel.') }}
       </p>
 
       <div class="hc-home-premium__hero-support" aria-label="{{ _('Actions et repères pilote') }}">
         <div class="hc-home-premium__hero-actions">
           <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo" data-hc-event="home_primary_cta">{{ _('Demander un pilote') }}</a>
-          <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}" data-hc-event="home_secondary_cta">{{ _('Voir le fonctionnement') }}</a>
+          <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}" data-hc-event="home_secondary_cta">{{ _('Voir comment ça marche') }}</a>
         </div>
         <p class="hc-home-premium__hero-public-cta">
           <span>{{ _('Besoin d’aide ?') }}</span>
           <a class="hc-home-premium__hero-public-link" href="{{ url_for('main.orienter') }}">{{ _('Orienter une demande') }} <span aria-hidden="true">→</span></a>
         </p>
         <div class="hc-home-premium__hero-supportInline">
-          <p class="hc-home-premium__hero-supportMeta">{{ _('CCAS · associations · établissements scolaires · structures multi-sites') }}</p>
-          <p class="hc-home-premium__hero-demo-note">{{ _('Déploiement pilote cadré : périmètre clair, rôles définis et continuité visible dès les premiers flux.') }}</p>
+          <p class="hc-home-premium__hero-supportMeta">{{ _('Pour les CCAS, collectivités, associations, établissements et réseaux qui travaillent avec plusieurs intervenants.') }}</p>
         </div>
       </div>
     </div>
@@ -2273,7 +2289,7 @@
       <div class="hc-home-premium__shot-card hc-home-premium__shot-card--hero">
         <div class="hc-home-premium__shot-bar">
           <span></span><span></span><span></span>
-          <strong>{{ _('Pilotage opérationnel') }}</strong>
+          <strong>{{ _('Suivi des situations') }}</strong>
         </div>
         <img
           class="hc-home-premium__shot-img hc-home-premium__shot-img--hero"
@@ -2295,15 +2311,15 @@
          aria-labelledby="hc-platform-showcase-title">
   <div class="hc-home-premium__platform-showcaseHead">
     <p class="hc-home-premium__section-kicker">
-      {{ _('UN ESPACE DE PILOTAGE UNIQUE') }}
+       {{ _('LE PROBLÈME') }}
     </p>
 
     <h2 id="hc-platform-showcase-title">
-      {{ _('Une vision opérationnelle commune, du signal initial jusqu’au suivi.') }}
+      {{ _('Une situation passe souvent par plusieurs personnes et plusieurs structures.') }}
     </h2>
 
     <p>
-      {{ _('Priorités, responsabilités, demandes, situations à traiter et capacité du réseau restent lisibles dans un même environnement de travail.') }}
+      {{ _('Un appel au CCAS. Un email à une association. Un partenaire qui reprend le dossier. Une information transmise par téléphone.') }}
     </p>
   </div>
 
@@ -2311,7 +2327,7 @@
     <div class="hc-home-premium__platform-browser">
       <div class="hc-home-premium__platform-browserBar">
         <span></span><span></span><span></span>
-        <strong>{{ _('HelpChain · Workspace opérationnel') }}</strong>
+        <strong>{{ _('HelpChain · Un suivi partagé') }}</strong>
       </div>
 
       <img
@@ -2320,56 +2336,44 @@
         loading="lazy"
       >
     </div>
-  </div>
-
-  <div class="hc-home-premium__platform-outcomes"
-       aria-label="{{ _('Principaux bénéfices opérationnels') }}">
-    <article>
-      <strong>{{ _('Centraliser') }}</strong>
-      <span>{{ _('Une lecture commune des demandes et situations actives.') }}</span>
-    </article>
-
-    <article>
-      <strong>{{ _('Coordonner') }}</strong>
-      <span>{{ _('Des responsabilités et relais visibles entre acteurs.') }}</span>
-    </article>
-
-    <article>
-      <strong>{{ _('Superviser') }}</strong>
-      <span>{{ _('Des priorités et signaux exploitables pour le pilotage.') }}</span>
-    </article>
+    <div class="hc-home-premium__platform-outcomes hc-home-premium__platform-outcomes--problem"
+         aria-label="{{ _('Conséquence du suivi fragmenté') }}">
+      <article>
+        <strong>{{ _('Et très vite…') }}</strong>
+        <span>{{ _('Les responsabilités se dispersent, les actions déjà menées deviennent difficiles à retrouver et les prochaines étapes restent floues.') }}</span>
+      </article>
+    </div>
   </div>
 </section>
 
   <section class="hc-home-premium__section hc-home-premium__section--product" id="product" aria-labelledby="hc-home-product-title">
     <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
-      <p>{{ _('SÉQUENCE OPÉRATIONNELLE') }}</p>
-      <h2 id="hc-home-product-title">{{ _('Une plateforme unifiée pour la coordination opérationnelle et la continuité inter-structures.') }}</h2>
-      <p>{{ _('Réception, orientation, suivi et gouvernance restent visibles dans une même continuité opérationnelle.') }}</p>
+      <p>{{ _('AVEC HELPCHAIN') }}</p>
+      <h2 id="hc-home-product-title">{{ _('Tout le monde retrouve le même fil de suivi.') }}</h2>
+      <p>{{ _('Une situation est créée, un responsable est identifié, les actions sont suivies et les partenaires peuvent intervenir sans perdre le contexte.') }}</p>
     </div>
 
     <div class="hc-home-premium__trust-strip" aria-label="{{ _('Conçu pour les réalités de') }}">
-      <strong>{{ _('Parcours opératoire :') }}</strong>
-      <span>{{ _('Réception') }}</span>
-      <span>{{ _('Orientation') }}</span>
-      <span>{{ _('Suivi') }}</span>
-      <span>{{ _('Pilotage') }}</span>
-      <span>{{ _('Gouvernance') }}</span>
+      <strong>{{ _('Le fil de suivi :') }}</strong>
+      <span>{{ _('1. La demande arrive') }}</span>
+      <span>{{ _('2. Un responsable est identifié') }}</span>
+      <span>{{ _('3. Les actions sont suivies') }}</span>
+      <span>{{ _('4. Un partenaire peut prendre le relais') }}</span>
+      <span>{{ _('Le passage d’une étape à l’autre reste compréhensible, même quand l’intervenant change.') }}</span>
     </div>
   </section>
 
   <section class="hc-home-premium__section hc-home-premium__section--product" aria-labelledby="hc-home-intake-title">
     <div class="hc-home-premium__product-row hc-home-premium__product-row--intake">
       <div class="hc-home-premium__product-copy hc-home-premium__product-copy--intro">
-        <p class="hc-home-premium__section-kicker">{{ _('01 · RÉCEPTION OPÉRATIONNELLE') }}</p>
-        <h2 id="hc-home-intake-title">{{ _('Centralisez les demandes sans perdre le contexte initial') }}</h2>
-        <p>{{ _('La plateforme HelpChain structure la réception, la qualification, la priorisation et le premier cadrage dans une seule interface opérationnelle.') }}</p>
+        <p class="hc-home-premium__section-kicker">{{ _('01 · UNE DEMANDE ARRIVE') }}</p>
+        <h2 id="hc-home-intake-title">{{ _('Une demande arrive. Elle ne se perd plus.') }}</h2>
+        <p>{{ _('Elle est enregistrée, attribuée à la bonne personne et suivie jusqu’à sa prise en charge.') }}</p>
         <ul class="hc-home-premium__workflow-points">
-          <li>{{ _('Une entrée commune pour éviter les emails, tableurs et relais informels dispersés.') }}</li>
-          <li>{{ _('Des priorités, catégories et responsables visibles dès les premiers échanges.') }}</li>
-          <li>{{ _('Un point d’entrée exploitable pour la suite du traitement, sans ressaisie.') }}</li>
+          <li>{{ _('Les demandes sont regroupées au même endroit.') }}</li>
+          <li>{{ _('Un responsable peut être identifié.') }}</li>
+          <li>{{ _('Les priorités et les prochaines actions restent visibles.') }}</li>
         </ul>
-        <div class="hc-home-premium__workflow-note">{{ _('Ce premier niveau donne une base commune avant toute orientation plus fine.') }}</div>
       </div>
       <div class="hc-home-premium__product-visual">
         <div class="hc-home-premium__shot-card">
@@ -2390,11 +2394,10 @@
       </div>
       <div class="hc-home-premium__product-copy hc-home-premium__product-copy--details">
         <ul class="hc-home-premium__workflow-points">
-          <li>{{ _('Une entrée commune pour éviter les emails, tableurs et relais informels dispersés.') }}</li>
-          <li>{{ _('Des priorités, catégories et responsables visibles dès les premiers échanges.') }}</li>
-          <li>{{ _('Un point d’entrée exploitable pour la suite du traitement, sans ressaisie.') }}</li>
+          <li>{{ _('Les demandes sont regroupées au même endroit.') }}</li>
+          <li>{{ _('Un responsable peut être identifié.') }}</li>
+          <li>{{ _('Les priorités et les prochaines actions restent visibles.') }}</li>
         </ul>
-        <div class="hc-home-premium__workflow-note">{{ _('Ce premier niveau donne une base commune avant toute orientation plus fine.') }}</div>
       </div>
     </div>
   </section>
@@ -2419,15 +2422,14 @@
         </div>
       </div>
       <div class="hc-home-premium__product-copy">
-        <p class="hc-home-premium__section-kicker">{{ _('02 · ORIENTATION ET SUIVI') }}</p>
-        <h2 id="hc-home-case-title">{{ _('Pilotez le suivi opérationnel des situations avec des responsabilités explicites') }}</h2>
-        <p>{{ _('Responsables, priorités, actions récentes et lecture partagée pour renforcer le pilotage des situations et éviter les zones grises opérationnelles.') }}</p>
+        <p class="hc-home-premium__section-kicker">{{ _('02 · LE SUIVI') }}</p>
+        <h2 id="hc-home-case-title">{{ _('À tout moment, vous savez qui s’en occupe.') }}</h2>
+        <p>{{ _('Plus besoin de rechercher dans les emails ou de demander à plusieurs collègues où en est la situation.') }}</p>
         <ul class="hc-home-premium__workflow-points">
-          <li>{{ _('Chaque situation garde un responsable lisible et un fil d’activité réutilisable.') }}</li>
-          <li>{{ _('Les décisions, relances et changements de statut restent visibles dans le temps.') }}</li>
-          <li>{{ _('Les équipes peuvent reprendre un suivi sans perdre l’historique utile.') }}</li>
+          <li>{{ _('Le responsable est visible.') }}</li>
+          <li>{{ _('Les actions restent dans l’historique.') }}</li>
+          <li>{{ _('Une autre personne peut reprendre le suivi sans repartir de zéro.') }}</li>
         </ul>
-        <div class="hc-home-premium__workflow-note">{{ _('Le suivi ne repose plus sur la mémoire locale d’une seule personne ou d’un seul service.') }}</div>
       </div>
     </div>
   </section>
@@ -2435,28 +2437,27 @@
   <section class="hc-home-premium__section hc-home-premium__section--product hc-home-premium__section--trust" aria-labelledby="hc-home-security-title">
     <div class="hc-home-premium__product-row hc-home-premium__product-row--security">
       <div class="hc-home-premium__product-copy">
-        <p class="hc-home-premium__section-kicker">{{ _('03 · PILOTAGE ET GOUVERNANCE') }}</p>
-        <h2 id="hc-home-security-title">{{ _('Gardez un cadre de contrôle compatible avec les usages institutionnels') }}</h2>
-        <p>{{ _('Contrôle des accès, supervision administrative, indicateurs clés, traçabilité native et visibilité de continuité dans la plateforme HelpChain.') }}</p>
+        <p class="hc-home-premium__section-kicker">{{ _('03 · LES PARTENAIRES') }}</p>
+        <h2 id="hc-home-security-title">{{ _('Une autre structure doit intervenir ? Faites-la entrer dans le suivi.') }}</h2>
+        <p>{{ _('HelpChain permet de coordonner le relais avec une structure partenaire tout en gardant un cadre clair sur ce que chacun peut voir et faire.') }}</p>
         <ul class="hc-home-premium__workflow-points">
-          <li>{{ _('Des accès par rôles et périmètres plutôt qu’une visibilité uniforme pour tous.') }}</li>
-          <li>{{ _('Des indicateurs utiles pour relire la charge, les délais et les situations en cours.') }}</li>
-          <li>{{ _('Une gouvernance opérationnelle conçue pour des structures qui doivent coordonner sans perdre le contrôle.') }}</li>
+          <li>{{ _('Le relais entre structures reste visible.') }}</li>
+          <li>{{ _('Chaque organisation intervient dans son périmètre.') }}</li>
+          <li>{{ _('Le suivi ne disparaît pas lorsqu’une situation change de structure.') }}</li>
         </ul>
-        <div class="hc-home-premium__workflow-note">{{ _('Le pilotage devient exploitable sans ajouter une couche parallèle qui fragilise la mémoire opérationnelle.') }}</div>
       </div>
       <div class="hc-home-premium__product-visual">
         <div class="hc-home-premium__shot-card hc-home-premium__shot-card--trust">
           <div class="hc-home-premium__shot-bar">
             <span></span><span></span><span></span>
-            <strong>{{ _('Sécurité & administration') }}</strong>
+            <strong>{{ _('Relais entre structures') }}</strong>
           </div>
           <img
             class="hc-home-premium__shot-img hc-home-premium__shot-img--module-securite"
-            src="{{ url_for('static', filename='img/platform/helpchain-platform-04.png') }}"
-            alt="{{ _('Interface HelpChain de sécurité, gouvernance et supervision administrative') }}"
-            width="1536"
-            height="1024"
+            src="{{ url_for('static', filename='img/platform/helpchain-platform-06.png') }}"
+            alt="{{ _('Vue HelpChain d’une demande avec orientation vers une structure partenaire') }}"
+            width="1718"
+            height="916"
             loading="lazy"
             decoding="async"
           >
@@ -2466,120 +2467,25 @@
   </section>
 
   <section class="hc-home-premium__section hc-home-premium__section--product" aria-labelledby="hc-home-interstructure-title">
-    <div class="hc-home-premium__product-row hc-home-premium__product-row--reverse">
-      <div class="hc-home-premium__product-visual">
-        <div class="hc-home-premium__shot-card hc-home-premium__shot-card--interstructure">
-          <div class="hc-home-premium__shot-bar">
-            <span></span><span></span><span></span>
-            <strong>{{ _('Coordination inter-structures') }}</strong>
-          </div>
-          <img
-            class="hc-home-premium__shot-img"
-            src="{{ url_for('static', filename='img/platform/helpchain-platform-06.png') }}"
-            alt="{{ _('Vue HelpChain d’une demande avec orientation vers partenaire dans un cadre inter-structures maîtrisé') }}"
-            width="1718"
-            height="916"
-            loading="lazy"
-            decoding="async"
-          >
-        </div>
-      </div>
-      <div class="hc-home-premium__product-copy">
-        <p class="hc-home-premium__section-kicker">{{ _('COORDINATION INTER-STRUCTURES MAÎTRISÉE') }}</p>
-        <h2 id="hc-home-interstructure-title">{{ _('Coordonnez plusieurs structures et réseaux partenaires sans exposer tout le dossier.') }}</h2>
-        <p>{{ _('HelpChain permet de faire circuler une orientation, un retour partenaire ou un point de suivi utile sans transformer le suivi multi-acteurs en visibilité totale entre structures ni en partage intégral du dossier.') }}</p>
-        <ul class="hc-home-premium__workflow-points">
-          <li>{{ _('Chaque organisation accède uniquement au périmètre qui relève de son intervention, selon ses habilitations et son niveau de responsabilité.') }}</li>
-          <li>{{ _('Les échanges inter-structures restent traçables, avec statuts, retours, journaux d’action et historique partagé sous contrôle.') }}</li>
-          <li>{{ _('Le cloisonnement par structure, les droits par rôle et la visibilité contrôlée soutiennent une gouvernance multi-structures crédible.') }}</li>
-        </ul>
-        <div class="hc-home-premium__workflow-note">{{ _('Une coopération opérationnelle devient possible sans ouvrir l’intégralité du suivi interne à tous les partenaires ni affaiblir le cadre de responsabilité.') }}</div>
-      </div>
+    <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
+      <p>{{ _('CE QUE ÇA CHANGE') }}</p>
+      <h2 id="hc-home-interstructure-title">{{ _('Moins de temps à chercher l’information. Plus de visibilité pour agir.') }}</h2>
+    </div>
+    <div class="hc-home-premium__platform-outcomes" aria-label="{{ _('Bénéfices de HelpChain') }}">
+      <article>
+        <strong>{{ _('Des responsabilités claires.') }}</strong>
+        <span>{{ _('Chacun voit le responsable et les prochaines actions.') }}</span>
+      </article>
+      <article>
+        <strong>{{ _('Un historique qui permet de reprendre.') }}</strong>
+        <span>{{ _('Une autre personne retrouve les actions menées sans repartir de zéro.') }}</span>
+      </article>
+      <article>
+        <strong>{{ _('Des relais maîtrisés entre structures.') }}</strong>
+        <span>{{ _('Les partenaires interviennent dans un cadre clair et partagé.') }}</span>
+      </article>
     </div>
   </section>
-
-  <section class="hc-home-premium__section hc-home-premium__section--governance" aria-labelledby="hc-home-governance-title">
-    <div class="hc-home-premium__outcomes-card hc-home-premium__outcomes-card--governance">
-      <div class="hc-home-premium__section-head hc-home-premium__section-head--compact">
-        <p>{{ _('POUR LES DIRECTIONS ET RESPONSABLES OPÉRATIONNELS') }}</p>
-        <h2 id="hc-home-governance-title">{{ _('Sans couche de coordination, la continuité casse dès que plusieurs équipes ou structures interviennent.') }}</h2>
-        <p>{{ _('Les outils locaux permettent d’exécuter. Ils suffisent moins pour piloter les relais, les périmètres, la reprise de suivi et la responsabilité quand les flux passent entre plusieurs acteurs.') }}</p>
-      </div>
-      <ul class="hc-home-premium__outcomes-list hc-home-premium__outcomes-list--governance">
-        <li>{{ _('Relais visibles entre services, sites et structures partenaires') }}</li>
-        <li>{{ _('Responsabilités explicites malgré la multiplicité des intervenants') }}</li>
-        <li>{{ _('Périmètres distincts sans exposition globale des dossiers') }}</li>
-        <li>{{ _('Pilotage exploitable pour la direction, les superviseurs et la gouvernance') }}</li>
-        <li>{{ _('Traçabilité utile pour reprise, audit et relecture opérationnelle') }}</li>
-        <li>{{ _('Infrastructure au-dessus des outils existants, sans refonte brutale') }}</li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="hc-home-premium__section hc-home-premium__section--revenue" aria-labelledby="hc-home-revenue-title">
-    <div class="hc-home-premium__outcomes-card hc-home-premium__outcomes-card--revenue">
-      <div class="hc-home-premium__section-head hc-home-premium__section-head--compact">
-        <p>{{ _('SIGNAUX OPÉRATIONNELS') }}</p>
-        <h2 id="hc-home-revenue-title">{{ _('Ce que HelpChain rend visible dans l’exploitation quotidienne.') }}</h2>
-        <p>{{ _('La plateforme n’ajoute pas une couche de KPI marketing. Elle rend lisibles des signaux de continuité, de charge, de reprise et de supervision utiles aux équipes comme à la gouvernance.') }}</p>
-      </div>
-
-      <ul class="hc-home-premium__outcomes-list hc-home-premium__outcomes-list--revenue">
-        <li>{{ _('Demandes sans responsable assigné ou sans reprise confirmée') }}</li>
-        <li>{{ _('Relances sans activité récente et échéances sous pression') }}</li>
-        <li>{{ _('Flux en attente par structure, équipe ou périmètre') }}</li>
-        <li>{{ _('Transferts inter-structures encore ouverts ou non clôturés') }}</li>
-        <li>{{ _('Historique de décisions et de changements de statut relisible') }}</li>
-        <li>{{ _('Premiers indicateurs de supervision disponibles dès un pilote cadré') }}</li>
-      </ul>
-
-      <div class="hc-home-premium__revenue-cta">
-        <strong>{{ _('Des signaux exploitables avant un déploiement large.') }}</strong>
-        <span>{{ _('Le pilote sert à valider la continuité, la visibilité et la gouvernance sur un flux réel avant toute extension multi-équipes ou multi-structures.') }}</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="hc-home-premium__section hc-home-premium__section--relay" aria-labelledby="hc-home-relay-title">
-    <div class="hc-home-premium__relay-card">
-      <div class="hc-home-premium__section-head hc-home-premium__section-head--compact">
-        <p>{{ _('INFRASTRUCTURE AU-DESSUS DE L’EXISTANT') }}</p>
-        <h2 id="hc-home-relay-title">{{ _('Connectée à vos outils, sans remplacer votre organisation') }}</h2>
-        <p class="hc-home-premium__relay-subtitle">{{ _('HelpChain ajoute une couche de coordination opérationnelle au-dessus de vos outils existants pour rendre visibles les relais, les priorités et la continuité sans déplacer inutilement les données sensibles.') }}</p>
-      </div>
-
-      <div class="hc-home-premium__relay-layout">
-        <div class="hc-home-premium__relay-copy">
-          <p>{{ _('Vos équipes disposent déjà d’outils métiers, de procédures et d’environnements internes. HelpChain n’a pas vocation à les remplacer.') }}</p>
-          <p>{{ _('La plateforme reçoit uniquement les signaux utiles au suivi opérationnel — statut, priorité, catégorie, échéance, structure concernée — afin de rendre le pilotage multi-acteurs lisible sans ouvrir l’intégralité des dossiers métiers.') }}</p>
-        </div>
-
-        <div class="hc-home-premium__relay-signals">
-          <article class="hc-home-premium__relay-panel">
-            <h3>{{ _('Signaux utiles à la coordination') }}</h3>
-            <ul class="hc-home-premium__relay-list">
-              <li>{{ _('Statut d’une situation') }}</li>
-              <li>{{ _('Niveau de priorité') }}</li>
-              <li>{{ _('Échéance ou date de relance') }}</li>
-              <li>{{ _('Identifiant interne non nominatif') }}</li>
-            </ul>
-          </article>
-
-          <article class="hc-home-premium__relay-panel hc-home-premium__relay-panel--muted">
-            <h3>{{ _('Informations non nécessaires') }}</h3>
-            <ul class="hc-home-premium__relay-list">
-              <li>{{ _('Diagnostic médical') }}</li>
-              <li>{{ _('Compte rendu métier détaillé') }}</li>
-              <li>{{ _('Données confidentielles inutiles') }}</li>
-              <li>{{ _('Dossier complet non nécessaire à la coordination') }}</li>
-            </ul>
-          </article>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
 
 <section class="hc-home-premium__audiences"
          aria-labelledby="hc-home-audiences-title">
@@ -2589,11 +2495,11 @@
     </p>
 
     <h2 id="hc-home-audiences-title">
-      {{ _('Une même continuité opérationnelle pour des organisations aux réalités différentes.') }}
+      {{ _('Pour les organisations qui doivent travailler ensemble autour de situations concrètes.') }}
     </h2>
 
     <p>
-      {{ _('HelpChain s’adapte aux structures qui doivent coordonner des demandes, des équipes, des partenaires et des relais sans multiplier les outils parallèles.') }}
+      {{ _('Des organisations différentes, avec un même besoin de coordination concrète.') }}
     </p>
   </div>
 
@@ -2601,25 +2507,25 @@
     <article>
       <span>01</span>
       <h3>{{ _('Collectivités & CCAS') }}</h3>
-      <p>{{ _('Orienter les demandes, répartir les responsabilités et suivre les relais territoriaux.') }}</p>
+      <p>{{ _('Suivre les demandes, identifier les responsables et coordonner les relais avec les acteurs du territoire.') }}</p>
     </article>
 
     <article>
       <span>02</span>
       <h3>{{ _('Associations') }}</h3>
-      <p>{{ _('Coordonner besoins, équipes, bénévoles et partenaires autour d’actions concrètes.') }}</p>
+      <p>{{ _('Organiser les situations, les équipes et les partenaires sans disperser le suivi.') }}</p>
     </article>
 
     <article>
       <span>03</span>
-      <h3>{{ _('Établissements scolaires') }}</h3>
-      <p>{{ _('Structurer les besoins, initiatives, contributions et relais avec la communauté éducative.') }}</p>
+      <h3>{{ _('Établissements') }}</h3>
+      <p>{{ _('Centraliser les demandes et coordonner les personnes qui doivent intervenir.') }}</p>
     </article>
 
     <article>
       <span>04</span>
       <h3>{{ _('Réseaux & structures multi-sites') }}</h3>
-      <p>{{ _('Conserver une lecture commune des priorités et responsabilités entre plusieurs entités.') }}</p>
+      <p>{{ _('Garder une vision claire des situations et des relais entre plusieurs équipes ou sites.') }}</p>
     </article>
   </div>
 </section>
@@ -2627,30 +2533,30 @@
 <section class="hc-home-premium__section hc-home-premium__section--case-study-teaser" aria-labelledby="hc-home-case-study-title">
     <div class="hc-case-study hc-case-study--teaser">
       <p class="hc-case-study__eyebrow">DÉMARRAGE PILOTE</p>
-      <h2 id="hc-home-case-study-title" class="hc-case-study__title">Comment une structure démarre en 14 jours</h2>
+      <h2 id="hc-home-case-study-title" class="hc-case-study__title">Testez HelpChain sur une situation réelle.</h2>
       <p class="hc-case-study__intro">
-        Un pilote HelpChain peut commencer sur un périmètre simple, avec une équipe restreinte, des habilitations définies et des situations réelles, avant toute extension.
+        Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Le pilote permet de vérifier rapidement si HelpChain répond à votre manière de travailler.
       </p>
       <div class="hc-case-study__timeline hc-case-study__timeline--compact">
         <article class="hc-case-study__item">
           <p class="hc-case-study__day">Jour 1</p>
           <div class="hc-case-study__card">
             <h3>Réunion de cadrage</h3>
-            <p>Identification du périmètre, des priorités, des responsabilités et du premier circuit de coordination à tester.</p>
+            <p>Choix du périmètre, de l’équipe et des premières situations à suivre.</p>
           </div>
         </article>
         <article class="hc-case-study__item">
           <p class="hc-case-study__day">Jour 5</p>
           <div class="hc-case-study__card">
             <h3>Ajout des équipes habilitées</h3>
-            <p>Activation des accès utiles, selon les responsabilités, les habilitations et le niveau de visibilité requis.</p>
+            <p>Ouverture des accès utiles selon le rôle et la structure de chaque personne.</p>
           </div>
         </article>
         <article class="hc-case-study__item">
           <p class="hc-case-study__day">Jour 14</p>
           <div class="hc-case-study__card">
             <h3>Suivi actif et premier bilan</h3>
-            <p>Lecture des premiers indicateurs, ajustements ciblés et décision sur la suite du déploiement, service par service ou structure par structure.</p>
+            <p>Relecture du suivi, ajustements ciblés et décision sur la suite du pilote.</p>
           </div>
         </article>
       </div>
@@ -2668,19 +2574,17 @@
       <div class="hc-home-premium__security-hero">
         <div class="hc-home-premium__security-copy">
           <div class="hc-home-premium__security-copyMain">
-            <p class="hc-home-premium__section-kicker">{{ _('Sécurité & gouvernance') }}</p>
-            <h2 id="hc-home-security-governance-title">{{ _('Une infrastructure de coordination conçue pour des environnements institutionnels exigeants') }}</h2>
+            <p class="hc-home-premium__section-kicker">{{ _('UN CADRE DE CONFIANCE') }}</p>
+            <h2 id="hc-home-security-governance-title">{{ _('Les bonnes informations, aux bonnes personnes.') }}</h2>
             <p class="hc-home-premium__security-lead">
-              {{ _('HelpChain structure la coordination sécurisée entre structures, collectivités, CCAS et partenaires opérationnels avec un cadre lisible d’accès par rôles, de traçabilité native, de supervision administrative et de continuité opérationnelle.') }}
-            </p>
-            <p class="hc-home-premium__security-lead hc-home-premium__security-lead--secondary">
-              {{ _('Approche France / Europe, hébergement européen, RGPD by design et gouvernance des accès restent intégrés dans la même couche opérationnelle.') }}
+              {{ _('HelpChain organise les accès par rôle, structure et périmètre. La journalisation, la gouvernance et la continuité inter-structures soutiennent une coordination opérationnelle maîtrisée lorsque des réseaux partenaires interviennent, dans une approche RGPD avec hébergement européen.') }}
             </p>
             <ul class="hc-home-premium__security-chips" aria-label="{{ _('Repères de confiance') }}">
-              <li>{{ _('Hébergement européen') }}</li>
-              <li>{{ _('Segmentation des accès') }}</li>
-              <li>{{ _('Journalisation native') }}</li>
-              <li>{{ _('Supervision administrative') }}</li>
+              <li>{{ _('Accès par rôles') }}</li>
+              <li>{{ _('Segmentation par structure') }}</li>
+              <li>{{ _('Traçabilité & journalisation') }}</li>
+              <li>{{ _('RGPD & hébergement européen') }}</li>
+              <li>{{ _('Gouvernance & continuité') }}</li>
             </ul>
           </div>
 
@@ -2690,58 +2594,19 @@
           <div class="hc-home-premium__security-panelCard">
             <div class="hc-home-premium__security-panelHead">
               <p>{{ _('Cadre de confiance') }}</p>
-              <h3 id="hc-home-security-panel-title">{{ _('Gouvernance, contrôle et stabilité dans une même couche opérationnelle') }}</h3>
+              <h3 id="hc-home-security-panel-title">{{ _('Administration et sécurité') }}</h3>
             </div>
-            <ul class="hc-home-premium__security-panelList">
-              <li>
-                <span class="hc-home-premium__security-panelLabel">{{ _('Accès') }}</span>
-                <strong>{{ _('Accès par rôles et cloisonnement par périmètre') }}</strong>
-                <p>{{ _('Chaque acteur intervient selon son rôle, sa structure et son niveau d’habilitation.') }}</p>
-              </li>
-              <li>
-                <span class="hc-home-premium__security-panelLabel">{{ _('Traçabilité') }}</span>
-                <strong>{{ _('Journalisation des actions structurantes') }}</strong>
-                <p>{{ _('Historique exploitable pour le suivi, la relecture et la responsabilité opérationnelle.') }}</p>
-              </li>
-              <li>
-                <span class="hc-home-premium__security-panelLabel">{{ _('Résilience') }}</span>
-                <strong>{{ _('Continuité opérationnelle et stabilité d’exploitation') }}</strong>
-                <p>{{ _('Infrastructure pensée pour un usage durable, administrable et maîtrisé.') }}</p>
-              </li>
-            </ul>
+            <img
+              class="hc-home-premium__shot-img hc-home-premium__shot-img--module-securite"
+              src="{{ url_for('static', filename='img/platform/helpchain-platform-04.png') }}"
+              alt="{{ _('Interface HelpChain de sécurité et de supervision administrative') }}"
+              width="1536"
+              height="1024"
+              loading="lazy"
+              decoding="async"
+            >
           </div>
         </aside>
-      </div>
-
-      <div class="hc-home-premium__security-grid row g-3 g-xl-4">
-        <div class="col-12 col-md-6">
-          <article class="hc-home-premium__security-card h-100">
-            <span class="hc-home-premium__security-cardEyebrow">{{ _('Gouvernance') }}</span>
-            <h3>{{ _('Gouvernance opérationnelle intégrée') }}</h3>
-            <p>{{ _('HelpChain organise les responsabilités, les périmètres d’action et la supervision administrative dans un cadre lisible pour les structures multi-acteurs.') }}</p>
-          </article>
-        </div>
-        <div class="col-12 col-md-6">
-          <article class="hc-home-premium__security-card h-100">
-            <span class="hc-home-premium__security-cardEyebrow">{{ _('Accès') }}</span>
-            <h3>{{ _('Segmentation des accès') }}</h3>
-            <p>{{ _('Les accès sont structurés selon une logique d’accès par rôles afin de limiter l’exposition des informations aux seuls intervenants habilités.') }}</p>
-          </article>
-        </div>
-        <div class="col-12 col-md-6">
-          <article class="hc-home-premium__security-card h-100">
-            <span class="hc-home-premium__security-cardEyebrow">{{ _('Traçabilité') }}</span>
-            <h3>{{ _('Traçabilité native et journalisation') }}</h3>
-            <p>{{ _('Les événements clés, changements de statut et actions sensibles s’inscrivent dans une logique de journalisation exploitable dans le temps.') }}</p>
-          </article>
-        </div>
-        <div class="col-12 col-md-6">
-          <article class="hc-home-premium__security-card h-100">
-            <span class="hc-home-premium__security-cardEyebrow">{{ _('Conformité') }}</span>
-            <h3>{{ _('Logique RGPD by design') }}</h3>
-            <p>{{ _('La plateforme privilégie la maîtrise des accès, la minimisation des expositions inutiles et un cadre cohérent avec les attentes de conformité RGPD.') }}</p>
-          </article>
-        </div>
       </div>
 
     </div>
@@ -2750,18 +2615,14 @@
 <section class="hc-home-premium__section hc-home-premium__section--cta" aria-labelledby="hc-home-final-title">
     <div class="hc-home-premium__cta-card">
       <div class="hc-home-premium__cta-copy">
-        <p>{{ _('PRÊT POUR UN DÉPLOIEMENT CADRÉ') }}</p>
-        <h2 id="hc-home-final-title">
-          <span class="hc-home-premium__cta-title-line">{{ _('Présentez votre organisation.') }}</span>
-          <span class="hc-home-premium__cta-title-line">{{ _('Définissons un pilote exploitable.') }}</span>
-        </h2>
-        <p>{{ _('Nous échangeons sur vos flux, vos équipes, vos habilitations et votre périmètre afin d’identifier un scénario de déploiement progressif, gouvernable et exploitable en conditions réelles.') }}</p>
+        <p>{{ _('DÉMARRER SIMPLEMENT') }}</p>
+        <h2 id="hc-home-final-title">{{ _('Vous gérez des situations avec plusieurs équipes ou partenaires ?') }}</h2>
+        <p>{{ _('Montrez-nous comment vous travaillez aujourd’hui. Nous verrons ensemble si HelpChain peut simplifier votre coordination.') }}</p>
       </div>
       <div class="hc-home-premium__cta-actions">
         <div class="hc-home-premium__cta-buttons">
           <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Demander un pilote') }}</a>
-          <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.deploiement') }}">{{ _('Voir un scénario de déploiement') }}</a>
-          <a class="hc-btn hc-btn--ghost btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}">{{ _('Voir le fonctionnement') }}</a>
+          <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}">{{ _('Voir comment ça marche') }}</a>
         </div>
         <p class="hc-home-premium__cta-note">{{ _('Échange orienté sur votre organisation · Périmètre pilote cadré · France / UE') }}</p>
       </div>
