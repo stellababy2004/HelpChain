@@ -1,16 +1,16 @@
 {
   "id": "/",
-  "name": "HelpChain - Свързваме нуждаещи се с доброволци",
+  "name": "HelpChain — Plateforme SaaS de coordination opérationnelle",
   "short_name": "HelpChain",
-  "description": "Платформа за свързване на хора в нужда с доброволци. Подайте сигнал за помощ или станете доброволец.",
+  "description": "HelpChain est une plateforme SaaS de coordination opérationnelle pour les collectivités, CCAS et leurs partenaires.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1976d2",
   "orientation": "portrait-primary",
   "scope": "/",
-  "lang": "bg",
-  "categories": ["social", "productivity", "utilities"],
+  "lang": "fr",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/static/icons/icon-144x144.png",

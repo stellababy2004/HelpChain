@@ -244,14 +244,18 @@ def _public_structured_data() -> list[dict[str, object]]:
         "@id": organization_id,
         "name": "HelpChain",
         "url": homepage_url,
-        "logo": url_for("static", filename="img/hc-logo-mark.svg", _external=True),
+        "logo": url_for("static", filename="icons/icon-512x512.png", _external=True),
         "description": _(
-            "HelpChain est une plateforme de coordination operationnelle concue et operee depuis la France pour structurer le pilotage, la tracabilite et la continuite operationnelle dans des environnements institutionnels et multi-acteurs."
+            "HelpChain est une plateforme SaaS de coordination operationnelle pour les collectivites, CCAS et leurs partenaires."
         ),
         "email": "contact@helpchain.live",
         "location": {
             "@type": "Place",
-            "name": "Paris Region, France",
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Boulogne-Billancourt",
+                "addressCountry": "FR",
+            },
         },
         "areaServed": france_area,
         "knowsAbout": operational_keywords,
@@ -277,7 +281,7 @@ def _public_structured_data() -> list[dict[str, object]]:
         "inLanguage": locale_code,
         "availableLanguage": available_languages,
         "description": _(
-            "Plateforme metier de coordination operationnelle concue et operee depuis la France pour le pilotage des flux, la supervision des workflows, la tracabilite des actions et la continuite inter-structures."
+            "HelpChain est une plateforme SaaS de coordination operationnelle pour les collectivites, CCAS et leurs partenaires."
         ),
         "mainEntityOfPage": canonical_url,
         "featureList": [
@@ -293,7 +297,7 @@ def _public_structured_data() -> list[dict[str, object]]:
         "audience": {
             "@type": "Audience",
             "audienceType": _(
-                "collectivites, etablissements, operateurs, structures publiques et reseaux professionnels"
+                "collectivites locales, CCAS et leurs partenaires"
             ),
         },
         "areaServed": france_area,
