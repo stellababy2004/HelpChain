@@ -2118,7 +2118,7 @@ def set_lang_switch(lang):
         next_url,
     )
     resp = make_response(redirect(next_url))
-    resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax", secure=current_app.config.get("SESSION_COOKIE_SECURE", False), httponly=True)
     return resp
 
 
@@ -2147,7 +2147,7 @@ def set_lang(locale):
         next_url,
     )
     resp = make_response(redirect(next_url))
-    resp.set_cookie("hc_lang", locale, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    resp.set_cookie("hc_lang", locale, max_age=60 * 60 * 24 * 365, samesite="Lax", secure=current_app.config.get("SESSION_COOKIE_SECURE", False), httponly=True)
     return resp
 
 
@@ -6438,7 +6438,7 @@ def set_language():
         next_url,
     )
     resp = make_response(redirect(next_url))
-    resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax")
+    resp.set_cookie("hc_lang", lang, max_age=60 * 60 * 24 * 365, samesite="Lax", secure=current_app.config.get("SESSION_COOKIE_SECURE", False), httponly=True)
     return resp
 
 
