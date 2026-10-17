@@ -56,7 +56,7 @@ def _create_admin(session, role: str) -> AdminUser:
 
 def test_roles_page_superadmin_access(authenticated_admin_client, session):
     client = authenticated_admin_client
-    _satisfy_superadmin_access(session, client, structure_id=1)
+    _satisfy_superadmin_access(session, client, structure_id=None)
     resp = client.get("/admin/roles", follow_redirects=False)
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
@@ -73,7 +73,7 @@ def test_roles_page_denied_for_ops(authenticated_admin_client, session):
 
 def test_change_role_logs_audit_event(authenticated_admin_client, session):
     client = authenticated_admin_client
-    actor = _satisfy_superadmin_access(session, client, structure_id=1)
+    actor = _satisfy_superadmin_access(session, client, structure_id=None)
     target = _create_admin(session, "ops")
 
     session.query(AdminAuditEvent).delete()
@@ -104,7 +104,7 @@ def test_change_role_logs_audit_event(authenticated_admin_client, session):
 
 def test_cannot_downgrade_last_superadmin(authenticated_admin_client, session):
     client = authenticated_admin_client
-    actor = _satisfy_superadmin_access(session, client, structure_id=1)
+    actor = _satisfy_superadmin_access(session, client, structure_id=None)
 
     # Ensure no other superadmin remains.
     (

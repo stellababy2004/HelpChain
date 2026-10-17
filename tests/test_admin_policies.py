@@ -40,8 +40,8 @@ def test_professional_lead_and_global_analytics_helpers_match_founder_access():
     assert can_access_professional_leads(founder_global) is True
     assert can_view_global_analytics(founder_global) is True
 
-    assert can_access_professional_leads(founder_scoped) is True
-    assert can_view_global_analytics(founder_scoped) is True
+    assert can_access_professional_leads(founder_scoped) is False
+    assert can_view_global_analytics(founder_scoped) is False
 
 
 def test_operational_export_helper_respects_admin_scope():

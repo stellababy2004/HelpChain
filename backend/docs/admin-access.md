@@ -35,11 +35,16 @@ Required Render environment variables:
 - `ADMIN_SEED_EMAIL`
 - `ADMIN_SEED_PASSWORD`
 - Optional: `ADMIN_SEED_ROLE`
+- Recovery only: `ADMIN_SEED_FORCE_RESET=1`
+- MFA recovery only: `ADMIN_SEED_RESET_MFA=1`
 
 Production notes:
 - This flow affects only the production database configured for the Render service.
 - It does not reset any local SQLite admin password.
-- Operators should rotate/set the values in Render, then restart/redeploy the service.
+- A normal restart creates the configured admin only when no matching account exists.
+- If the account already exists, username, email, password, role, and active status are left unchanged.
+- Credential recovery requires `ADMIN_SEED_FORCE_RESET=1` for that restart. Remove the flag after recovery.
+- MFA recovery is separate and requires `ADMIN_SEED_RESET_MFA=1`. Remove the flag after recovery.
 
 ## Local runtime recovery flow
 
