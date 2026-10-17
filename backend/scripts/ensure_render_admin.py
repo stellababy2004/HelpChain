@@ -30,6 +30,12 @@ def main() -> int:
     email = (os.getenv("ADMIN_SEED_EMAIL") or "").strip()
     password = os.getenv("ADMIN_SEED_PASSWORD") or ""
     role = (os.getenv("ADMIN_SEED_ROLE") or "superadmin").strip() or "superadmin"
+    force_reset = (
+        os.getenv("ADMIN_SEED_FORCE_RESET") or ""
+    ).strip().lower() in {"1", "true", "yes"}
+    reset_mfa = (
+        os.getenv("ADMIN_SEED_RESET_MFA") or ""
+    ).strip().lower() in {"1", "true", "yes"}
 
     if not username or not email or not password:
         print(
@@ -80,15 +86,23 @@ def main() -> int:
             print(f"[HC] ensure_render_admin: created production admin id={admin.id}")
             return 0
 
-        admin.username = username
-        admin.email = email
-        admin.password_hash = password_hash
-        admin.is_active = True
-        admin.role = role
+        if not force_reset and not reset_mfa:
+            print(
+                f"[HC] ensure_render_admin: existing production admin id={admin.id}; "
+                "no changes requested"
+            )
+            return 0
 
-        reset_mfa = (
-            os.getenv("ADMIN_SEED_RESET_MFA") or ""
-        ).strip().lower() in {"1", "true", "yes"}
+        if force_reset:
+            admin.username = username
+            admin.email = email
+            admin.password_hash = password_hash
+            admin.is_active = True
+            admin.role = role
+            print(
+                f"[HC] ensure_render_admin: explicit credential recovery "
+                f"requested for production admin id={admin.id}"
+            )
 
         if reset_mfa:
             if role != "superadmin":
@@ -109,7 +123,7 @@ def main() -> int:
             )
 
         db.session.commit()
-        print(f"[HC] ensure_render_admin: updated production admin id={admin.id}")
+        print(f"[HC] ensure_render_admin: recovery completed for production admin id={admin.id}")
         return 0
 
 
