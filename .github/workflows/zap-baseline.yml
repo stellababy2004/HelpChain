@@ -56,21 +56,9 @@ jobs:
         uses: zaproxy/action-baseline@2b5fc7f98d837319798ab7f128ea50b7d40563b6
         with:
           target: ${{ env.TARGET_URL }}
-          rules_file_name: .zap/rules.tsv
           cmd_options: >-
             -a
             -m 5
             -t ${{ env.TARGET_URL }}
           allow_issue_writing: false
 
-      - name: Convert ZAP report to SARIF
-        run: |
-          mkdir -p zap
-          # ZAP action генерира report.md и report_html.html; ще архивираме
-          cp -r report.* zap/ || true
-
-      - name: Upload ZAP artifacts
-        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392
-        with:
-          name: zap-baseline-report
-          path: zap/
