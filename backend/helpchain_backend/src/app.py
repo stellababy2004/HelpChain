@@ -555,7 +555,6 @@ def create_app(config_object=None) -> Flask:
     # will fail with "CSRF session token is missing".
     if app.debug or app.config.get("DEBUG"):
         app.config["SESSION_COOKIE_SECURE"] = False
-    app.config["SESSION_COOKIE_SECURE"] = False
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_PERMANENT"] = False
