@@ -50,3 +50,10 @@ def test_cookie_security_flags_are_hardened(app):
     assert app.config.get("SESSION_COOKIE_SAMESITE") == "Lax"
     assert app.config.get("REMEMBER_COOKIE_HTTPONLY") is True
     assert app.config.get("REMEMBER_COOKIE_SAMESITE") == "Lax"
+
+
+def test_admin_reauth_page_is_not_cacheable(authenticated_admin_client):
+    client = authenticated_admin_client
+    resp = client.get("/admin/re-auth")
+    assert resp.status_code == 200
+    assert resp.headers["Cache-Control"] == "no-store"

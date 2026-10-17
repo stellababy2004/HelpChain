@@ -25,6 +25,7 @@ def _capture_mail(monkeypatch):
 def test_forgot_password_page_and_login_link(client):
     login = client.get("/admin/login")
     assert login.status_code == 200
+    assert login.headers["Cache-Control"] == "no-store"
     assert "/admin/forgot-password" in login.text
 
     page = client.get("/admin/forgot-password")

@@ -6721,7 +6721,9 @@ def admin_login_legacy():
 
         return _complete_admin_login(user, next_url, via="admin_login_legacy")
 
-    return render_template("admin/login.html", next=next_url)
+    response = make_response(render_template("admin/login.html", next=next_url))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @admin_bp.route("/re-auth", methods=["GET", "POST"])
@@ -6803,7 +6805,9 @@ def admin_reauth():
             )
         flash("Veuillez confirmer votre identité pour continuer.", "danger")
 
-    return render_template("admin/reauth.html", next=next_url)
+    response = make_response(render_template("admin/reauth.html", next=next_url))
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @admin_bp.route("/logout", methods=["GET", "POST"])
