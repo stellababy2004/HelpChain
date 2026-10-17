@@ -292,11 +292,9 @@ def add_security_headers(app: Flask):
 
         # HSTS only when really on HTTPS and in production-ish env
         if (
-            app.config.get("ENV") == "production"
-            or app.config.get("APP_ENV") == "production"
-            or (
-                (app.config.get("FLASK_CONFIG") or "").lower() in ("prod", "production")
-            )
+            (os.getenv("FLASK_CONFIG") or "").lower() in ("prod", "production")
+            or (os.getenv("APP_ENV") or "").lower() == "production"
+            or (os.getenv("FLASK_ENV") or "").lower() == "production"
         ):
             if request.is_secure:
                 resp.headers["Strict-Transport-Security"] = (
