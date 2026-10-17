@@ -82,7 +82,7 @@ def test_can_view_global_analytics_denies_structure_scoped_admin():
     assert can_view_global_analytics(actor) is False
 
 
-def test_can_view_global_analytics_preserves_structure_attached_superadmin_access():
+def test_can_view_global_analytics_denies_structure_attached_superadmin():
     actor = AdminActor(
         admin_id=3,
         role="superadmin",
@@ -93,7 +93,7 @@ def test_can_view_global_analytics_preserves_structure_attached_superadmin_acces
         raw_admin=None,
     )
 
-    assert can_view_global_analytics(actor) is True
+    assert can_view_global_analytics(actor) is False
 
 
 def test_global_superadmin_can_access_global_analytics_surfaces_and_nav(app, session):

@@ -45,7 +45,11 @@ class AdminActor:
 
     @property
     def has_founder_global_access(self) -> bool:
-        return self.is_authenticated and self.role == "superadmin"
+        return (
+            self.is_authenticated
+            and self.role == "superadmin"
+            and self.is_platform_global
+        )
 
     @property
     def tenant_scope_id(self) -> int | None:

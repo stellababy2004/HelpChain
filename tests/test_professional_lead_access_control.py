@@ -228,7 +228,7 @@ def test_superadmin_keeps_global_professional_lead_access_and_nav(app, session):
     assert "Founder review" in (lead.notes or "")
 
 
-def test_structure_attached_superadmin_keeps_founder_global_professional_lead_access(
+def test_structure_attached_superadmin_cannot_access_global_professional_leads(
     app, session
 ):
     _structure_admin, _superadmin, lead, _request_a, case_row = _seed_professional_lead_access_data(
@@ -249,10 +249,8 @@ def test_structure_attached_superadmin_keeps_founder_global_professional_lead_ac
     listing = client.get("/admin/professional-leads")
     detail = client.get(f"/admin/professional-leads/{lead.id}")
 
-    assert listing.status_code == 200
-    assert detail.status_code == 200
-    assert "global-lead@example.org" in listing.get_data(as_text=True)
-    assert "global-lead@example.org" in detail.get_data(as_text=True)
+    assert listing.status_code == 403
+    assert detail.status_code == 403
 
 
 def test_structure_admin_case_detail_still_renders_linked_professional_lead_reference(app, session):
