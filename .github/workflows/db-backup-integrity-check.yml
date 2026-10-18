@@ -35,11 +35,17 @@ jobs:
             exit 1
           fi
 
-          latest_key="$(aws s3api list-objects-v2 \
+          latest_key=""
+          for key in $(aws s3api list-objects-v2 \
             --bucket "${S3_BUCKET}" \
             --prefix "postgres/helpchain_prod_" \
-            --query "reverse(sort_by(Contents,&LastModified))[?ends_with(Key, '.sql.gz')][0].Key" \
-            --output text)"
+            --query 'reverse(sort_by(Contents,&LastModified))[*].Key' \
+            --output text); do
+            if [[ "${key}" == *.sql.gz ]]; then
+              latest_key="${key}"
+              break
+            fi
+          done
 
           if [[ -z "${latest_key:-}" || "${latest_key}" == "None" ]]; then
             echo "backup integrity status: FAILED"
