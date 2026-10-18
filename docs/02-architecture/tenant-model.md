@@ -1,16 +1,16 @@
-﻿# Tenant Model
+# Tenant Model
 
 ## Purpose
 
-HelpChain is designed as a multi-tenant coordination platform.
+HelpChain is a multi-tenant coordination platform.
 
-Each tenant represents an organization or structure using the platform.
+Each structure represents an organizational tenant boundary. Operational data belonging to one structure is isolated from users attached to another structure unless the authenticated actor has explicit platform-global access.
 
 ## Core tenant concepts
 
 ### Structure
 
-A structure is the main organizational boundary.
+A structure is the main organizational and tenant boundary.
 
 Examples:
 
@@ -20,12 +20,14 @@ Examples:
 - social coordination service
 - institutional pilot structure
 
-A structure can own or scope:
+A structure can scope:
 
 - users
 - services
 - requests
 - cases
+- assignments
+- notifications
 - operational indicators
 - dashboards
 - access permissions
@@ -43,31 +45,72 @@ Examples:
 - cellule psychologique
 - terrain / intervention
 
-### User scope
+## Actor scope
 
-Users should be attached to the structure they operate in, unless they are platform-level superadmins.
+Authenticated administrative actors have a tenant scope derived from their role and structure attachment.
 
-## Scoping principle
+A platform-global actor requires both:
 
-Operational data should be filtered by structure whenever a user is not a platform-level superadmin.
+- role `superadmin`;
+- no attached `structure_id`.
 
-This protects tenant isolation and prevents accidental cross-structure visibility.
+A `superadmin` attached to a structure is not platform-global and remains tenant-scoped.
 
-## Tenant isolation rules
+Roles such as `admin` and `ops` do not gain cross-tenant access merely from their administrative role.
 
-| Object | Should be structure-scoped |
-|---|---:|
-| Requests | yes |
-| Cases | yes |
-| Services | yes |
-| Admin users | preferably yes |
-| Operators | yes |
-| Notifications | yes |
-| Audit/activity logs | yes when linked to tenant data |
-| Global platform settings | no |
+Inactive accounts are not resolved as authenticated administrative actors.
+
+## Tenant isolation rule
+
+For non-global actors, operational access is constrained to the actor's own `structure_id`.
+
+When a requested resource belongs to another structure, authorization must deny or hide that resource according to the route semantics.
+
+Platform-global actors may operate across structures where the relevant policy permits it.
+
+## Protected operational scope
+
+Tenant isolation is enforced across sensitive operational areas including:
+
+- requests and request mutations;
+- cases;
+- assignments and intervenant access;
+- notifications;
+- operational dashboards and KPIs;
+- organization user management;
+- referrals;
+- operational data exports.
+
+Global analytics and professional-lead access require founder/platform-global authorization rather than a structure-bound administrative role.
+
+## Authorization principle
+
+HelpChain does not treat the `superadmin` role alone as sufficient for platform-global access.
+
+The effective global-access invariant is:
+
+`authenticated + superadmin + platform-global`
+
+Platform-global status is derived from a `superadmin` actor having no attached structure.
+
+This prevents a structure-bound `superadmin` from automatically receiving access to other tenants.
+
+## Verification
+
+Tenant boundaries are protected by automated authorization and regression tests.
+
+The targeted tenant/security regression suite was verified on 18 October 2026:
+
+- 69 tests collected;
+- 69 tests passed;
+- 0 tests failed.
+
+The suite covers policy invariants and cross-tenant scenarios across operational resources.
 
 ## Product principle
 
-The tenant model allows HelpChain to serve multiple institutions without mixing their operational data.
+Tenant isolation is a security boundary of HelpChain, not only a user-interface convention.
 
-This is essential for institutional trust, GDPR alignment and future SaaS monetization.
+This allows multiple organizations to use the platform while keeping their operational data logically separated, except where explicit platform-global authorization applies.
+
+This boundary supports institutional trust, privacy governance and GDPR-oriented operation.

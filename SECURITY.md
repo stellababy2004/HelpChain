@@ -1,4 +1,4 @@
-﻿# Security Policy
+# Security Policy
 
 ## Security Overview
 
@@ -58,7 +58,11 @@ HelpChain is designed around the following principles:
 - secure password handling;
 - session protection and renewal;
 - multi-factor authentication support for privileged accounts;
-- scoped permissions and operational roles.
+- role-based access control combined with tenant/structure scoping;
+- platform-global access restricted to authenticated, structure-independent superadmin actors;
+- structure-bound administrative actors restricted to their permitted tenant scope;
+- inactive administrative accounts are not resolved as authenticated admin actors;
+- cross-tenant authorization protected by automated regression tests.
 
 ### Data Protection
 
@@ -104,4 +108,4 @@ This includes:
 
 ---
 
-Last updated: May 2026
+Last updated: October 2026
