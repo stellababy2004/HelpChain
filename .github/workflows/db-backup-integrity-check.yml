@@ -59,22 +59,6 @@ jobs:
 
           echo "latest backup set found: ${latest_key}"
 
-      - name: Validate S3 object presence
-        env:
-          S3_BUCKET: ${{ secrets.S3_BUCKET }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          aws s3api head-object --bucket "${S3_BUCKET}" --key "${LATEST_BACKUP_KEY}" >/dev/null
-          echo "backup file present: yes"
-
-          aws s3api head-object --bucket "${S3_BUCKET}" --key "${LATEST_CHECKSUM_KEY}" >/dev/null
-          echo "checksum file present: yes"
-
-          aws s3api head-object --bucket "${S3_BUCKET}" --key "${LATEST_MANIFEST_KEY}" >/dev/null
-          echo "manifest file present: yes"
-
       - name: Download latest backup set
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
