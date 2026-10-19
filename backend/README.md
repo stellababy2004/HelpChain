@@ -210,8 +210,8 @@ Logging:
 - Use `-NoLog` to suppress logging.
 
 ```pwsh
-pip install -r requirements.txt
-python app.py
+pip install -r ..\requirements.txt
+python ..\run.py
 ```
 
 Visit: `http://127.0.0.1:5000/demo/volunteers` for the volunteer dashboard demo.
