@@ -24,10 +24,10 @@ echo "$staged_files" | grep -Eq '(^|/)env\.txt$' && {
   exit 1
 }
 
-# Block obvious real secrets inside backend/.env.example
-if echo "$staged_files" | grep -Eq '^backend/\.env\.example$'; then
-  if grep -Eq 'postgresql://|postgres://|npg_' backend/.env.example; then
-    echo "ERROR: backend/.env.example appears to contain real DB credentials."
+# Block obvious real secrets inside .env.example
+if echo "$staged_files" | grep -Eq '^\.env\.example$'; then
+  if grep -Eq 'postgresql://|postgres://|npg_' .env.example; then
+    echo "ERROR: .env.example appears to contain real DB credentials."
     exit 1
   fi
 fi

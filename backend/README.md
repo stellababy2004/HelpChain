@@ -220,11 +220,9 @@ Visit: `http://127.0.0.1:5000/demo/volunteers` for the volunteer dashboard demo.
 
 ### 1. Secrets & Environment Loading
 
-The application loads environment variables from a `.env` file in the `backend/` directory via `python-dotenv` (explicit path in `app.py`). Priority order for secrets:
+The canonical application environment template is `.env.example` at the repository root. Copy it to `.env` at the repository root; the application loads that root `.env` via `python-dotenv`.
 
-1. `HELPCHAIN_SECRET_KEY` (preferred modern name)
-2. `SECRET_KEY` (legacy fallback)
-3. Default development value (`dev-insecure-change-me`) only if neither is provided.
+`SECRET_KEY` should be set to a strong random value. A development-only fallback is used when it is absent.
 
 Generate a strong key:
 
@@ -232,29 +230,28 @@ Generate a strong key:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
-Add it to `.env`:
+Add it to the repository-root `.env`:
 
 ```dotenv
-HELPCHAIN_SECRET_KEY=your_long_random_value_here
+SECRET_KEY=your_long_random_value_here
 ```
 
 You can still use a transient shell value for quick tests:
 
 ```pwsh
-$env:HELPCHAIN_SECRET_KEY = "your_long_random_value_here"
-python app.py
+$env:SECRET_KEY = "your_long_random_value_here"
+python ..\run.py
 ```
 
 ### 2. Sample `.env` Variables
 
-`backend/.env.example` documents extended settings (Postgres, mail, external services). Minimal local `.env` example:
+From the `backend/` directory, create the local root `.env` from the canonical template:
 
-```dotenv
-HELPCHAIN_SECRET_KEY=CHANGE_ME_STRONG_RANDOM
-ADMIN_USER_PASSWORD=REPLACE_ME_ADMIN_PASSWORD
-MICROSOFT_TENANT_ID=common
-MICROSOFT_CLIENT_ID=CHANGE-ME-CLIENT-ID
+```pwsh
+Copy-Item ..\.env.example ..\.env
 ```
+
+Review the placeholder values in `../.env` before starting the application with the root dependencies and entry point shown above.
 
 ### 3. Database Selection
 
