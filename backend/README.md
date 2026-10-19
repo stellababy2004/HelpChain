@@ -53,10 +53,10 @@ Adjust the regex in the snippet if your build artifacts use a different fingerpr
 
 ### Manual Run (single entry point)
 
-From the `backend` directory, the canonical entry point is `app.py`:
+From the repository root, the canonical entry point is `run.py`:
 
 ```pwsh
-python app.py
+python run.py
 ```
 
 In another terminal, run the smoke test (uses PyJWT + httpx):
