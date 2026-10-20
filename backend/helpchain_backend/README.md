@@ -1,86 +1,32 @@
-# HelpChain Project
+# HelpChain application package
 
-HelpChain is a Flask-based web application designed to provide a seamless experience for users needing assistance. This project includes various components such as API routes, controllers, services, and utilities to facilitate the core functionalities.
+`backend/helpchain_backend/` is an internal Python package of the HelpChain repository. It is not a standalone repository or independently deployed application.
 
-## Project Structure
+The application factory and runtime configuration are under `backend/helpchain_backend/src/`. Application configuration is defined in `backend/helpchain_backend/src/config.py`.
 
-```
-helpchain-backend
-├── src
-│   ├── app.py                  # Main entry point for the application
-│   ├── config.py               # Configuration settings for the application
-│   ├── routes
-│   │   └── api.py              # API routes definition
-│   ├── controllers
-│   │   └── helpchain_controller.py # Logic for handling help chain requests
-│   ├── services
-│   │   └── ngrok_service.py     # Logic for ngrok tunnel management
-│   ├── utils
-│   │   └── qr_generator.py      # QR code generation utilities
-│   └── __init__.py             # Package initialization
-├── scripts
-│   └── start_helpchain.py       # Script to start the Flask app and ngrok tunnel
-├── tests
-│   └── test_app.py              # Tests for the application functionality
-├── requirements.txt              # List of project dependencies
-├── .env                          # Environment variables and sensitive settings
-├── .gitignore                    # Files and directories to ignore in version control
-└── README.md                     # Project documentation
+## Setup
+
+Run setup commands from the repository root:
+
+```pwsh
+pip install -r requirements.txt
+Copy-Item .env.example .env
 ```
 
-## Installation
+`requirements.txt` is the canonical runtime dependency manifest. `.env.example` is the canonical environment template; review its placeholder values before starting the application.
 
-1. Clone the repository:
+## Local execution
 
-   ```
-   git clone <repository-url>
-   cd helpchain-backend
-   ```
+From the repository root:
 
-2. Create a virtual environment:
-
-   ```
-   python -m venv venv
-   ```
-
-3. Activate the virtual environment:
-
-   - On Windows:
-     ```
-     venv\Scripts\activate
-     ```
-   - On macOS/Linux:
-     ```
-     source venv/bin/activate
-     ```
-
-4. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-
-## Usage
-
-To start the application, run the following command:
-
-```
-python scripts/start_helpchain.py
+```pwsh
+python run.py
 ```
 
-This will launch the Flask server and ngrok tunnel, providing you with a public URL to access the application.
+## Tests
 
-## Testing
+Run tests from the repository root so the canonical root `pytest.ini` is used:
 
-To run the tests, execute:
-
+```pwsh
+pytest
 ```
-pytest tests/test_app.py
-```
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any enhancements or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.

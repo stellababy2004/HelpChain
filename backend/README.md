@@ -27,8 +27,7 @@ Initial test-stable release — 13 passing tests.
 - Добавихме Celery задача `generate_sample_analytics` и модул `analytics_sample_data.py`, за да пълним автоматично аналитичните таблици.
 - Вкарахме новия WebSocket клиент `helpchain-websocket.js` и service worker `sw.js` за стабилни real-time връзки и офлайн кеширане.
 - Разширихме локализацията: нов език (FR), обновени `messages.po/.pot`, езиков селектор в навигацията и обновен `init_multilingual.py`.
-- Утвърдихме конфигурацията – `.env.example` и `config.py` вече описват Postgres setup, а уеб push модулът показва ясни fallback-и при липсващ VAPID ключ.
-- Утвърдихме конфигурацията – `.env.example` и `config.py` вече описват Postgres setup, а уеб push модулът показва ясни fallback-и при липсващ VAPID ключ.
+- Утвърдихме конфигурацията – root `.env.example` и `backend/helpchain_backend/src/config.py` описват Postgres setup, а уеб push модулът показва ясни fallback-и при липсващ VAPID ключ.
 
 ## Deployment snippets
 
@@ -57,12 +56,6 @@ From the repository root, the canonical entry point is `run.py`:
 
 ```pwsh
 python run.py
-```
-
-In another terminal, run the smoke test (uses PyJWT + httpx):
-
-```pwsh
-python scripts/smoke_fts.py
 ```
 
 Service worker cache note:
@@ -167,47 +160,13 @@ Notes:
   - Stop the server, then delete the SQLite file and restart:
     ```pwsh
     Remove-Item .\instance\volunteers.db -Force
-    python app.py
+    python ..\run.py
     ```
   - Seeds and FTS structures are recreated automatically on startup.
 
-### Dev Helper (PowerShell)
+### Local setup and startup
 
-Use the helper script to run common tasks quickly from the `backend` folder:
-
-```pwsh
-# Start the app
-pwsh ./scripts/dev.ps1 -Task run
-
-# Health (no auth)
-pwsh ./scripts/dev.ps1 -Task health
-
-# Login (prints token)
-pwsh ./scripts/dev.ps1 -Task login -Username admin -Password secret123
-
-# FTS status (JWT required; does login internally)
-pwsh ./scripts/dev.ps1 -Task fts-status
-
-# Smoke test (FTS + role-based email checks)
-pwsh ./scripts/dev.ps1 -Task smoke
-
-# Rebuild FTS index
-pwsh ./scripts/dev.ps1 -Task fts-rebuild
-
-# Reset local SQLite DB
-pwsh ./scripts/dev.ps1 -Task reset-db
-```
-
-Options:
-
-- `-BaseUrl`: defaults to `http://127.0.0.1:5000`
-- `-Username` / `-Password`: defaults to `admin` / `secret123`
-- `-NoLog`: disable transcript logging for this run
-
-Logging:
-
-- By default, runs auto-log to `./.logs/dev-<task>-<timestamp>.log` (PowerShell Transcript).
-- Use `-NoLog` to suppress logging.
+From the `backend` directory, use the canonical root dependency manifest and entrypoint:
 
 ```pwsh
 pip install -r ..\requirements.txt
@@ -255,21 +214,21 @@ Review the placeholder values in `../.env` before starting the application with 
 
 ### 3. Database Selection
 
-Default: SQLite file `instance/volunteers.db` auto-created by `app.py`.
+The canonical application is started from the repository root with `python run.py`. Local database selection is controlled by the root environment and `backend/helpchain_backend/src/config.py`.
 
 Switch to Postgres:
 
 ```pwsh
 $env:DATABASE_URL = 'postgresql+psycopg://user:pass@host/dbname'
-python app.py  # or python appy.py for full entrypoint
+python ..\run.py
 ```
 
-Migrations (when using `appy.py` / Flask-Migrate):
+Run migrations from the repository root with the canonical application and migration directory:
 
 ```pwsh
-$env:FLASK_APP='appy.py'
-flask db migrate -m "add field"
-flask db upgrade
+Set-Location ..
+python -m flask --app run:app db migrate --directory migrations -m "add field"
+python -m flask --app run:app db upgrade --directory migrations
 ```
 
 ### 4. Locale Selection Logic
@@ -294,7 +253,7 @@ Adjust request limits (defaults 60/60s) via:
 ```pwsh
 $env:HELPCHAIN_RATE_LIMIT='100'
 $env:HELPCHAIN_RATE_WINDOW='120'
-python app.py
+python ..\run.py
 ```
 
 Headers surfaced when throttled: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Window`, `Retry-After`.
@@ -318,7 +277,7 @@ Invoke-RestMethod -Headers @{Authorization="Bearer $token"} http://127.0.0.1:500
 
 ```pwsh
 Remove-Item .\instance\volunteers.db -Force
-python app.py  # seeds sample HelpRequest rows
+python ..\run.py
 ```
 
 ### 8. Security Checklist (Dev vs Prod)
@@ -347,38 +306,6 @@ python -c "from dotenv import load_dotenv; load_dotenv(); import os; print(os.ge
 ```
 
 Store final secrets only in `.env` or vault; avoid committing `.env`.
-
-### Automated Environment Setup (PowerShell / Windows)
-
-Use the helper script to create an isolated virtual environment and start the server. This avoids version conflicts with globally installed packages (e.g. `httpx`, `numpy`, `pytest`).
-
-```pwsh
-Set-Location backend
-pwsh ./scripts/setup-and-run.ps1
-```
-
-Flags:
-
-| Flag                    | Description                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| `-UseAltDeps`           | Install from `requirements-alt.txt` (httpx>=0.27, numpy>=2,<2.3, pytest>=8.2). |
-| `-SkipInstall`          | Skip dependency installation (reuse existing venv).                            |
-| `-JustInstall`          | Install dependencies then exit (no run).                                       |
-| `-PythonExe`            | Specify Python executable (e.g. `python3.12`).                                 |
-| `-ListenHost` / `-Port` | Override listen host/port.                                                     |
-
-Examples:
-
-```pwsh
-# Use alternate dependency versions
-pwsh ./scripts/setup-and-run.ps1 -UseAltDeps
-
-# Only reinstall dependencies then exit
-pwsh ./scripts/setup-and-run.ps1 -JustInstall
-
-# Fast restart (skip install)
-pwsh ./scripts/setup-and-run.ps1 -SkipInstall
-```
 
 ### Volunteer Dashboard (Requests UI)
 
@@ -513,7 +440,7 @@ Tune via environment variables:
 ```pwsh
 $env:HELPCHAIN_RATE_LIMIT = '60'
 $env:HELPCHAIN_RATE_WINDOW = '60'
-python app.py
+python ..\run.py
 ```
 
 ### Privacy Masking (Updated)
@@ -532,30 +459,20 @@ Phone mask: all but last 2 digits replaced by `*`.
 
 ### Database & Migrations
 
-`app.py` creates/uses SQLite database `backend/instance/volunteers.db` and seeds sample `HelpRequest` rows if empty.
+Database configuration comes from the root `.env` and `backend/helpchain_backend/src/config.py`. Use the `postgresql+psycopg://` dialect for PostgreSQL.
 
-For production / evolving schema use Flask-Migrate (already imported in `appy.py`). Basic commands:
+Run Flask-Migrate from the repository root against the canonical application and migration directory:
 
 ```pwsh
-flask db init        # once
-flask db migrate -m "add help_request fields"  # generate revision
-flask db upgrade     # apply
+python -m flask --app run:app db migrate --directory migrations -m "example"
+python -m flask --app run:app db upgrade --directory migrations
 ```
 
-If running via `python app.py` set FLASK_APP first:
+To run locally against PostgreSQL from the repository root:
 
 ```pwsh
-$env:FLASK_APP = 'appy.py'
-flask db migrate -m "example"
-flask db upgrade
-```
-
-SQLite file for app.py: `backend/instance/volunteers.db` (auto-created). For tests `appy.py` may use in-memory or `test_local.sqlite`. To switch to Postgres set env:
-
-```pwsh
-$env:USE_POSTGRES='true'
 $env:DATABASE_URL='postgresql+psycopg://user:pass@host/dbname'
-python appy.py
+python run.py
 ```
 
 ### Model Mapping
@@ -578,7 +495,7 @@ Use JWT role claim; privileged roles see `email` / `phone` fields else they are 
 
 ### Extending
 
-- Add new filter? Extend query logic in `app.py` inside `/api/requests` route.
+- Add new filter? Extend the canonical `/api/requests` route implementation.
 - Add sorting? Accept `sort=created_at|priority` and append `order_by` before pagination.
 - Replace Bearer with JWT? Verify token, extract subject, then scope queries (e.g. only assigned volunteer requests).
 
@@ -603,59 +520,3 @@ Indexes:
 
 - ETag invalidation uses max(updated_at); heavy concurrent writes could benefit from version columns or incremental page hashes.
 - Authentication currently 1h fixed expiry; implement refresh tokens or sliding expiration for production.
-
-### Alternate Dependencies Rationale
-
-`requirements-alt.txt` provides relaxed/updated versions to satisfy other tools (e.g. Ollama needing `httpx>=0.27`, newer `pytest-asyncio` needing `pytest>=8`). Use only if you hit resolver warnings; otherwise prefer the main `requirements.txt` for stability.
-
-### Makefile (Unix / Git Bash)
-
-Common targets (run from `backend` directory with `make <target>`):
-
-| Target        | Action                                                    |
-| ------------- | --------------------------------------------------------- |
-| `venv`        | Create virtual environment `.venv`.                       |
-| `install`     | Install pinned dependencies from `requirements.txt`.      |
-| `update-deps` | Run `pip-compile requirements.in` to refresh lock file.   |
-| `sync-deps`   | Strict sync via `pip-sync` (removes extraneous packages). |
-| `run`         | Start the Flask app (`app.py`).                           |
-| `clean`       | Remove `.venv` and `__pycache__` folders.                 |
-
-Examples:
-
-```bash
-make venv
-make install
-make run
-make update-deps
-make sync-deps
-```
-
-### Automated Dependency Lock Update (GitHub Actions)
-
-Workflow: `.github/workflows/deps-lock-update.yml`
-
-Triggers:
-
-- Weekly (cron Monday 03:00 UTC)
-- Manual dispatch
-- Push changes to `backend/requirements.in`
-
-Process:
-
-1. Checks out repo on Ubuntu runner.
-2. Installs `pip-tools`.
-3. Runs `pip-compile requirements.in -> requirements.txt`.
-4. Runs `pip-audit` security scan (results summarized in issue).
-5. Opens a pull request with the updated `requirements.txt` instead of committing directly to the base branch.
-
-If no changes are needed the workflow exits early with a message.
-
-On change it now:
-
-1. Captures a unified diff of `requirements.txt`.
-2. Creates/updates an issue titled `Dependency update: requirements.txt (YYYY-MM-DD)` including diff + vulnerability summary.
-3. Opens a PR `chore: dependency lock refresh` referencing the issue (labels: `dependencies`, `automation`, adds `security` if vulns found).
-
-Labels: `dependencies`, `automation`. Close the issue manually if not needed; future runs will append comments instead of opening duplicates.
-
