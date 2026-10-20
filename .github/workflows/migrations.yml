@@ -1,30 +1,54 @@
 ﻿name: Migration Safety
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "migrations/**"
+      - "scripts/migration_guard.py"
+      - "tests/test_migration_guard.py"
+      - ".github/workflows/migrations.yml"
+  pull_request:
+    paths:
+      - "migrations/**"
+      - "scripts/migration_guard.py"
+      - "tests/test_migration_guard.py"
+      - ".github/workflows/migrations.yml"
 
 jobs:
   migrations:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+        with:
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
+          python -m pip install -r requirements.txt
 
-      - name: Migration Guard v7
-        continue-on-error: true
+      - name: Find changed migrations
+        id: changed-migrations
+        shell: bash
         run: |
-          python scripts/migration_guard_v7.py
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE="${{ github.event.before }}"
+          fi
 
-      - name: Migration Doctor
-        continue-on-error: true
+          git diff --name-only --diff-filter=AM "$BASE" "${{ github.sha }}" -- "migrations/versions/*.py" > changed_migrations.txt
+
+          echo "Changed migrations:"
+          cat changed_migrations.txt
+
+      - name: Migration safety guard
+        shell: bash
         run: |
-          python scripts/migration_doctor.py
-
-      - name: Runtime Estimator
-        continue-on-error: true
-        run: |
-          python scripts/migration_estimator.py
-
+          mapfile -t migrations < changed_migrations.txt
+          python scripts/migration_guard.py "${migrations[@]}"
