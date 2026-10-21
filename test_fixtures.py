@@ -1,6 +1,7 @@
-import pytest
 from datetime import timedelta
 from pathlib import Path
+
+import pytest
 from sqlalchemy import inspect as sa_inspect
 
 from backend.models import utc_now
@@ -89,9 +90,10 @@ def app():
 @pytest.fixture
 def db_schema(app):
     with app.app_context():
-        from backend.models import db
         import backend.models  # noqa: F401
         import backend.models_with_analytics  # noqa: F401
+
+        from backend.models import db
 
         db_path = _sqlite_db_path(app)
         db.session.remove()
@@ -341,8 +343,9 @@ def test_volunteer(session):
 
 @pytest.fixture
 def test_admin_user(session):
-    from backend.models import AdminUser
     from werkzeug.security import generate_password_hash
+
+    from backend.models import AdminUser
 
     admin = session.query(AdminUser).filter_by(username="security_admin").first()
     if not admin:
