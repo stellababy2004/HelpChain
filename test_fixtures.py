@@ -78,8 +78,16 @@ def app():
             db.engine.dispose()
         except Exception:
             pass
-    db_path = Path(str(app.config.get("SQLALCHEMY_DATABASE_URI") or "").replace("sqlite:///", "", 1))
-    for candidate in (db_path, db_path.with_suffix(db_path.suffix + "-shm"), db_path.with_suffix(db_path.suffix + "-wal")):
+    db_path = Path(
+        str(app.config.get("SQLALCHEMY_DATABASE_URI") or "").replace(
+            "sqlite:///", "", 1
+        )
+    )
+    for candidate in (
+        db_path,
+        db_path.with_suffix(db_path.suffix + "-shm"),
+        db_path.with_suffix(db_path.suffix + "-wal"),
+    ):
         try:
             if candidate.exists():
                 candidate.unlink()
@@ -169,7 +177,9 @@ def init_test_data(app, session, db_schema):
     try:
         from backend.models import Volunteer
 
-        volunteer = session.query(Volunteer).filter_by(email="volunteer@test.local").first()
+        volunteer = (
+            session.query(Volunteer).filter_by(email="volunteer@test.local").first()
+        )
         if not volunteer:
             volunteer = Volunteer(email="volunteer@test.local", name="Test Volunteer")
             if hasattr(volunteer, "structure_id"):
@@ -183,7 +193,9 @@ def init_test_data(app, session, db_schema):
         try:
             from backend.models import User
 
-            volunteer = session.query(User).filter_by(email="volunteer@test.local").first()
+            volunteer = (
+                session.query(User).filter_by(email="volunteer@test.local").first()
+            )
             if not volunteer:
                 volunteer = User(
                     username="volunteer_test_user",
