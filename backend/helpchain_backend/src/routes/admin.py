@@ -4732,8 +4732,35 @@ def _hf_translate_fr_to(*, locale: str, text: str) -> str | None:
                 _HF_TRANSLATOR_FAILED.add(model_name)
             return None
         try:
-            tokenizer = MarianTokenizer.from_pretrained(model_name)
-            model = MarianMTModel.from_pretrained(model_name)
+            if model_name == "Helsinki-NLP/opus-mt-fr-en":
+                tokenizer = MarianTokenizer.from_pretrained(
+                    model_name,
+                    revision="c4aed37b318c763fd177aa449b44e3b783cc6c02",
+                )
+                model = MarianMTModel.from_pretrained(
+                    model_name,
+                    revision="c4aed37b318c763fd177aa449b44e3b783cc6c02",
+                )
+            elif model_name == "Helsinki-NLP/opus-mt-fr-de":
+                tokenizer = MarianTokenizer.from_pretrained(
+                    model_name,
+                    revision="db80d261062d75a60e1d4897f13673313a33d50b",
+                )
+                model = MarianMTModel.from_pretrained(
+                    model_name,
+                    revision="db80d261062d75a60e1d4897f13673313a33d50b",
+                )
+            elif model_name == "Helsinki-NLP/opus-mt-fr-bg":
+                tokenizer = MarianTokenizer.from_pretrained(
+                    model_name,
+                    revision="617ad12c5336703f8ec16fec90d9cc5eab920339",
+                )
+                model = MarianMTModel.from_pretrained(
+                    model_name,
+                    revision="617ad12c5336703f8ec16fec90d9cc5eab920339",
+                )
+            else:
+                return None
         except Exception:
             with _HF_TRANSLATOR_LOCK:
                 _HF_TRANSLATOR_FAILED.add(model_name)

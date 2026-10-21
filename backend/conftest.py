@@ -199,7 +199,7 @@ def prepare_database():
 
             server = None
             thread = None
-            bind_addrs = [("127.0.0.1", 3000), ("0.0.0.0", 3000)]
+            bind_addrs = [("127.0.0.1", 3000)]
             for addr in bind_addrs:
                 try:
                     server = _ReusableHTTPServer((addr[0], addr[1]), _StubHandler)

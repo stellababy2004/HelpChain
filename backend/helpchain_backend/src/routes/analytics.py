@@ -1,6 +1,8 @@
 ﻿import json
 import os
 import time
+import urllib.request
+from urllib.parse import urlparse
 
 from flask import (
     Blueprint,
@@ -1113,11 +1115,40 @@ def admin_revenue_alerts():
 
 _SENT_REVENUE_ALERTS = set()
 
+
+def _is_valid_slack_webhook_url(value: str | None) -> bool:
+    if not value:
+        return False
+    try:
+        parsed = urlparse(value)
+        port = parsed.port
+    except ValueError:
+        return False
+    if parsed.scheme != "https" or parsed.hostname not in {
+        "hooks.slack.com",
+        "hooks.slack-gov.com",
+    }:
+        return False
+    if parsed.username or parsed.password or port not in {None, 443}:
+        return False
+    if parsed.params or parsed.query or parsed.fragment:
+        return False
+    path_parts = parsed.path.split("/")
+    return (
+        len(path_parts) == 5
+        and path_parts[:2] == ["", "services"]
+        and all(path_parts[2:])
+    )
+
+
+class _RejectSlackWebhookRedirects(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
 @analytics_bp.route("/admin/api/revenue-alert-dispatch", methods=["POST"])
 def admin_revenue_alert_dispatch():
 
     import smtplib
-    import urllib.request
     from email.message import EmailMessage
     from backend.models_with_analytics import AnalyticsEvent
     from collections import defaultdict
@@ -1172,12 +1203,25 @@ def admin_revenue_alert_dispatch():
         )
 
         if slack_webhook:
-            try:
-                payload = json.dumps({"text": message}).encode("utf-8")
-                req = urllib.request.Request(slack_webhook, data=payload, headers={"Content-Type": "application/json"})
-                urllib.request.urlopen(req, timeout=5)
-            except Exception as exc:
-                current_app.logger.warning("Revenue Slack alert failed: %s", exc)
+            if not _is_valid_slack_webhook_url(slack_webhook):
+                current_app.logger.warning(
+                    "Revenue Slack webhook configuration rejected."
+                )
+            else:
+                try:
+                    payload = json.dumps({"text": message}).encode("utf-8")
+                    req = urllib.request.Request(
+                        slack_webhook,
+                        data=payload,
+                        headers={"Content-Type": "application/json"},
+                    )
+                    urllib.request.build_opener(
+                        _RejectSlackWebhookRedirects()
+                    ).open(req, timeout=5)
+                except Exception as exc:
+                    current_app.logger.warning(
+                        "Revenue Slack alert failed (%s).", type(exc).__name__
+                    )
 
         if email_to and smtp_host and smtp_user and smtp_password and email_from:
             try:

@@ -1,5 +1,4 @@
 from datetime import timedelta
-
 import pytest
 from flask import g
 
@@ -234,6 +233,77 @@ def test_dispatch_scope_and_legacy_global_endpoints(app, client, tenants):
     }).status_code == 403
     for endpoint in ("/api/analytics/data", "/api/analytics/bookmarks", "/analytics/stream"):
         assert client.get(endpoint).status_code == 403
+
+
+@pytest.mark.parametrize(
+    "webhook",
+    [
+        "file:///etc/passwd",
+        "http://hooks.slack.com/services/T/B/token",
+        "https:///services/T/B/token",
+        "https://127.0.0.1/services/T/B/token",
+        "https://hooks.slack.com.evil.example/services/T/B/token",
+        "https://hooks.slack.com/not-services/T/B/token",
+        "https://user@hooks.slack.com/services/T/B/token",
+    ],
+)
+def test_revenue_alert_dispatch_rejects_invalid_slack_webhook(
+    app, client, tenants, monkeypatch, caplog, webhook
+):
+    login(client, app, tenants["users"]["admin"])
+    monkeypatch.setenv("HC_REVENUE_ALERT_SLACK_WEBHOOK", webhook)
+    outbound_calls = []
+    monkeypatch.setattr(
+        "urllib.request.build_opener",
+        lambda *handlers: pytest.fail("invalid webhook must not create an opener"),
+    )
+
+    response = client.post("/admin/api/revenue-alert-dispatch")
+
+    assert response.status_code == 200
+    assert outbound_calls == []
+    assert webhook not in caplog.text
+
+
+@pytest.mark.parametrize("hostname", ["hooks.slack.com", "hooks.slack-gov.com"])
+def test_revenue_alert_dispatch_allows_documented_slack_webhook_hosts(
+    app, client, tenants, monkeypatch, hostname
+):
+    login(client, app, tenants["users"]["admin"])
+    webhook = f"https://{hostname}/services/T000/B000/token"
+    monkeypatch.setenv("HC_REVENUE_ALERT_SLACK_WEBHOOK", webhook)
+    outbound_calls = []
+
+    class FakeOpener:
+        def open(self, request, timeout):
+            outbound_calls.append((request, timeout))
+
+    redirect_handlers = []
+
+    def fake_build_opener(*handlers):
+        redirect_handlers.extend(handlers)
+        return FakeOpener()
+
+    monkeypatch.setattr("urllib.request.build_opener", fake_build_opener)
+
+    response = client.post("/admin/api/revenue-alert-dispatch")
+
+    assert response.status_code == 200
+    assert len(outbound_calls) == 1
+    assert outbound_calls[0][0].full_url == webhook
+    assert outbound_calls[0][1] == 5
+    assert len(redirect_handlers) == 1
+    assert (
+        redirect_handlers[0].redirect_request(
+            outbound_calls[0][0],
+            None,
+            302,
+            "Found",
+            {},
+            "http://127.0.0.1/internal",
+        )
+        is None
+    )
 
 
 def test_legacy_events_cannot_bypass_external_credentials(client, tenants):
