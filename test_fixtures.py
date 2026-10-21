@@ -21,6 +21,10 @@ def _set_test_env(monkeypatch, tmp_path_factory):
 
     monkeypatch.setenv("HC_ENV", "test")
     monkeypatch.setenv("HELPCHAIN_TESTING", "1")
+    monkeypatch.setenv(
+        "SECRET_KEY",
+        "helpchain-pytest-secret-key-32-bytes-minimum",
+    )
     monkeypatch.setenv("HC_DEFAULT_STRUCTURE_SLUG", "default")
     # Ensure admin test passwords satisfy policy (upper/lower/digit).
     monkeypatch.setenv("TEST_ADMIN_PASSWORD", "TestPassword1")

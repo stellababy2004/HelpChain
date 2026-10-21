@@ -52,12 +52,12 @@ def test_admin_analytics_empty_state_uses_real_data_only(app):
             filters_context={"days": 30, "start_date": None, "end_date": None},
         )
 
-    assert "No operational analytics available yet." in content
-    assert "Live data only" in content
-    assert "No trend data available yet." in content
-    assert "No category data available yet." in content
-    assert "No geolocation data available yet." in content
-    assert "No prediction data available yet." in content
+    assert "Aucune analytique opérationnelle n'est encore disponible." in content
+    assert "Données réelles uniquement" in content
+    assert "Aucune donnée de tendance n'est encore disponible." in content
+    assert "Aucune donnée de catégorie n'est encore disponible." in content
+    assert "Aucune donnée de géolocalisation n'est encore disponible." in content
+    assert "Aucune donnée de prévision n'est encore disponible." in content
     assert 'id="geoData"' in content
     assert '+12.5%' not in content
     assert '+2.1%' not in content
@@ -75,4 +75,4 @@ def test_analytics_stream_has_no_sample_events(authenticated_admin_client):
     assert payload["sse_enabled"] is False
     assert payload["events"] == []
     assert payload["status"] == "idle"
-    assert payload["message"] == "No analytics events available yet."
+    assert payload["message"] == "Aucun événement analytique n'est encore disponible."
