@@ -7,11 +7,11 @@
 - Review required: Yes
 - Notes: Validate against current role and tenant enforcement in code and runtime before using this document for security decisions.
 
-This document describes the current intended HelpChain access model, login entrypoints, and key endpoints based on the documented implementation.
+This document is a supporting endpoint inventory. The login, role, and tenant rules identified below as current implementation have been checked against repository code and focused tests. The remaining endpoint matrix still requires route-by-route validation.
 
 HelpChain uses a role-based access model combined with tenant scoping.
 
-Where route behavior or enforcement is environment-dependent, validate directly against current code and runtime.
+Application code, route guards, actor policies, and focused tests remain authoritative for current implementation. See `docs/06-auth-and-access-model.md`, `docs/06-security/rbac-matrix.md`, and `docs/02-architecture/tenant-model.md`.
 
 Two key mechanisms enforce access control:
 
@@ -43,31 +43,48 @@ Local development access depends on the entrypoint used.
 
 ## 2. Login Entrypoints
 
-Current documented login entrypoints:
-- `/admin/ops/login`
+### Current implementation
 
-Legacy admin login:
 - `/admin/login`
+  - canonical web login for `AdminUser` accounts;
+  - accepts username-or-email plus password;
+  - continues through MFA when required;
+  - creates the completed admin session only after the applicable authentication steps succeed.
+
+### Legacy compatibility
+
+- `/admin/ops/login`
+  - remains registered for compatibility;
+  - GET and POST redirect to `/admin/login`;
+  - does not provide a separate authentication flow.
 
 Volunteer login:
 - `/volunteer_login`
 
-Admin, superadmin, operator, readonly all use the same authenticated model: `AdminUser`.
+The `admin`, `superadmin`, `ops`, and `readonly` administrative roles use the `AdminUser` model.
 
 ## 3. Role Model
 
-This section describes the intended normalized role model. Validate against current route decorators, normalization logic, and tenant filters before relying on it as a security decision record.
+### Current implementation
 
-Roles are stored on `AdminUser.role` and normalized in `admin.py`:
-- `admin`, `super_admin`, `superadmin` are normalized to **superadmin**
-- `ops` is **operator**
-- `readonly` is **readonly**
+Roles are stored on `AdminUser.role`. Current canonical normalization is:
+
+- `admin` remains `admin`;
+- `superadmin`, `super_admin`, and `super-admin` normalize to `superadmin`;
+- `ops` remains `ops`;
+- `readonly` and `read-only` normalize to `readonly`.
+
+`admin` and `superadmin` are distinct roles. A structure-level `admin` does not become a platform `superadmin`.
 
 Tenant scoping uses `AdminUser.structure_id`:
-- **global_admin**: normalized admin role AND `structure_id is NULL`
-- **structure_admin**: normalized admin role AND `structure_id is NOT NULL`
-- **operator**: role `ops`
-- **readonly**: role `readonly`
+
+- **platform-global superadmin**: active authenticated actor, canonical role `superadmin`, and `structure_id is NULL`;
+- **structure-attached superadmin**: role `superadmin` with a structure; remains tenant-scoped;
+- **structure admin**: role `admin` with a structure; tenant-scoped;
+- **operator**: role `ops`; tenant-scoped to the attached structure;
+- **readonly**: role `readonly`; access only where explicitly allowed and within tenant scope.
+
+Platform-global status does not by itself grant every route. The relevant route guard or policy must allow the operation, and web routes may additionally require MFA or fresh authentication.
 
 ## 4. Navigation Layers
 
@@ -79,7 +96,7 @@ The UI is split into four layers:
 4. Operations
 
 Visibility rules:
-- Global admin: Public + Platform Admin + Operations
+- Platform-global superadmin: Public + Platform Admin + Operations where permitted
 - Structure admin: Public + Structure Admin + Operations
 - Operator: Public + Operations
 - Anonymous: Public
@@ -95,14 +112,14 @@ Public:
 - `/pour-les-structures`
 - `/contact`
 
-Admin Platform (global admin only):
+Admin Platform (platform-global superadmin where enforced by the current route policy):
 - `/admin/structures`
 - `/admin/roles`
 - `/admin/sla`
 - `/admin/audit`
 - `/admin/security`
 
-Structure Admin (structure admin + global admin):
+Structure Admin (structure admin + platform-global superadmin, subject to route policy):
 - `/admin/requests`
 - `/admin/requests/new`
 - `/admin/requests/<id>`
@@ -128,7 +145,7 @@ Legend:
 - redirect → login
 - 403/404 denied
 
-| Route | Anonymous | Operator | Structure Admin | Global Admin |
+| Route | Anonymous | Operator | Structure Admin | Platform-global Superadmin |
 | --- | --- | --- | --- | --- |
 | `/` | ✔ | ✔ | ✔ | ✔ |
 | `/comment-ca-marche` | ✔ | ✔ | ✔ | ✔ |
@@ -153,15 +170,17 @@ Legend:
 | `/requests/operations` | ✔ | ✔ | ✔ | ✔ |
 
 Notes:
-- Admin endpoints often use `admin_required` (404 for non-admin) and some use `login_required` (redirects to `/admin/ops/login`).
+- The matrix is a working inventory, not proof of every route. Verify the actual decorators, policies, and object-scope checks before making a security decision.
+- The admin session gate and protected admin redirects use the canonical `/admin/login` surface.
+- Individual decorators may deny with 403 or hide a resource with 404.
 - Structure-admin access to `/admin/structures/<id>` is restricted to their own structure.
 
 ## 7. Security Notes
 
-- **Global vs structure admin enforcement**: Platform-only admin routes require a normalized admin role and `structure_id is NULL`.
-- **Tenant scoping**: Admin request queries are filtered by `current_structure_id()` unless the user is global admin.
-- **Role normalization**: `admin`, `super_admin`, `superadmin` are treated as `superadmin`.
-- **Route protection**: `admin_required` hides admin routes from non-admins (404), `operator_required` restricts ops routes to `ops`, `readonly`, or admins.
+- **Platform-global invariant**: the actor must resolve from an active `AdminUser`, be authenticated, have canonical role `superadmin`, and have no attached `structure_id`.
+- **Tenant scoping**: non-global administrative actors remain constrained to their attached structure. A structure-attached `superadmin` is not platform-global.
+- **Role normalization**: `admin` remains distinct; only `super_admin` and `super-admin` are legacy aliases for `superadmin`.
+- **Route protection**: authentication, role checks, tenant filtering, object-level checks, and MFA/fresh-auth requirements are separate layers. No single role label guarantees access to every endpoint.
 - **Operational requests endpoints** (`/requests/*`) currently have no auth guard in `social_requests.py` and are publicly accessible.
 
 ### Direct URL protection
@@ -177,15 +196,16 @@ Requests, operations and dashboards are scoped by:
 
 structure_id
 
-Global admins are expected to bypass tenant filtering.
-Structure admins and operators are expected to be restricted to their own structure.
+Platform-global superadmins may bypass tenant filtering only where the relevant policy permits it.
+Structure-bound admins, ops users, and structure-attached superadmins remain restricted to their own structure.
 
 ## 8. Local Test Accounts
 
 Roles map to `AdminUser` fields:
 
 Example mapping:
-- Global admin: `role=admin|superadmin`, `structure_id=NULL`
+- Platform-global superadmin: `role=superadmin`, `structure_id=NULL`
+- Structure-attached superadmin: `role=superadmin`, `structure_id=<id>`
 - Structure admin: `role=admin`, `structure_id=<id>`
 - Operator: `role=ops`, `structure_id=<id>`
 - Readonly: `role=readonly`, `structure_id=<id>`
@@ -199,7 +219,7 @@ These scripts use the real password hashing mechanism; do not set passwords manu
 
 ## 9. QA Test Checklist
 
-Global admin tests:
+Platform-global superadmin tests:
 - Access `/admin/structures`, `/admin/roles`, `/admin/sla`, `/admin/audit`, `/admin/security`
 - Access `/admin/structures/<any>` dashboard
 
