@@ -92,7 +92,6 @@ def db_schema(app):
     with app.app_context():
         import backend.models  # noqa: F401
         import backend.models_with_analytics  # noqa: F401
-
         from backend.models import db
 
         db_path = _sqlite_db_path(app)
