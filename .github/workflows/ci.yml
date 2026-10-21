@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -34,25 +34,84 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev-minimal.txt
 
-      - name: Ruff (workflow files only)
+      - name: Ruff and Black (changed Python files only)
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CURRENT_SHA: ${{ github.sha }}
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '^\.github/workflows/.*\.yml$' || true)
-          if [ -n "$CHANGED_FILES" ]; then
-            echo "No Python files changed in last commit; skipping Ruff."
-          else
-            echo "No workflow files changed"
+          set -euo pipefail
+
+          case "$EVENT_NAME" in
+            pull_request)
+              start_sha="$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")"
+              end_sha="$PR_HEAD_SHA"
+              ;;
+            push)
+              start_sha="$BEFORE_SHA"
+              end_sha="$CURRENT_SHA"
+              ;;
+            workflow_dispatch)
+              echo "workflow_dispatch has no intrinsic changed-file range; skipping changed-file lint."
+              exit 0
+              ;;
+            *)
+              echo "Unsupported event: $EVENT_NAME"
+              exit 1
+              ;;
+          esac
+
+          if [[ ! "$start_sha" =~ ^[0-9a-f]{40}$ ]] ||
+             [[ ! "$end_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid Git comparison range: $start_sha..$end_sha"
+            exit 1
           fi
 
-      - name: Black (workflow files only)
-        shell: bash
-        run: |
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep '^\.github/workflows/.*\.yml$' || true)
-          if [ -n "$CHANGED_FILES" ]; then
-            echo "No Python files changed in last commit; skipping Black."
-          else
-            echo "No workflow files changed"
+          if [[ "$start_sha" =~ ^0+$ ]]; then
+            start_sha="$(git hash-object -t tree /dev/null)"
+          elif ! git cat-file -e "${start_sha}^{commit}" 2>/dev/null; then
+            echo "Unable to resolve comparison base: $start_sha"
+            exit 1
           fi
+
+          if ! git cat-file -e "${end_sha}^{commit}" 2>/dev/null; then
+            echo "Unable to resolve comparison head: $end_sha"
+            exit 1
+          fi
+
+          git diff --name-only \
+            --diff-filter=ACMRT \
+            "$start_sha" "$end_sha" \
+            -- '*.py' >/dev/null
+
+          mapfile -d '' -t candidates < <(
+            git diff --name-only -z \
+              --diff-filter=ACMRT \
+              "$start_sha" "$end_sha" \
+              -- '*.py'
+          )
+
+          changed_python=()
+          for path in "${candidates[@]}"; do
+            if [[ -f "$path" ]] &&
+               git ls-files --error-unmatch -- "$path" >/dev/null 2>&1; then
+              changed_python+=("$path")
+            fi
+          done
+
+          if (( ${#changed_python[@]} == 0 )); then
+            echo "No existing tracked Python files changed; skipping Ruff and Black."
+            exit 0
+          fi
+
+          printf 'Checking %d changed Python file(s):\n' "${#changed_python[@]}"
+          printf '  %q\n' "${changed_python[@]}"
+
+          python -m ruff check "${changed_python[@]}"
+          black --check "${changed_python[@]}"
 
   smoke:
     name: Smoke Gate (admin + integrity)
