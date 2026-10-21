@@ -2,7 +2,7 @@ name: Security Scans (Bandit & pip-audit)
 
 on:
   push:
-    branches: [ main, vercel-setup-health ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -16,10 +16,8 @@ concurrency:
 
 jobs:
   bandit:
-    if: false
     name: Bandit (SAST)
     runs-on: ubuntu-latest
-    continue-on-error: true  # временно не-блокиращ, докато отработим находките
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -31,22 +29,55 @@ jobs:
           cache: 'pip'
 
       - name: Install Bandit
-        run: pip install --upgrade pip bandit
+        run: pip install --upgrade pip 'bandit[sarif]==1.8.6'
 
-      - name: Run Bandit (SARIF)
+      - name: Run Bandit baseline (SARIF)
+        shell: bash
         run: |
-          bandit -r . -x tests,.venv,venv,env,.git -f sarif -o bandit.sarif || true
+          set -uo pipefail
+
+          set +e
+          bandit -r \
+            backend/helpchain_backend/src \
+            backend/admin \
+            backend/core \
+            backend/routes \
+            backend/scripts/ensure_render_admin.py \
+            backend/scripts/run_notification_job_processor.py \
+            backend/*.py \
+            appy.py \
+            run.py \
+            wsgi.py \
+            --exclude tests,migrations,vendor,_vendor,_archive,.venv,venv,env,build,dist,__pycache__,.pytest_cache,.ruff_cache,.mypy_cache,backend/backups,backend/tests,backend/migrations,backend/vendor,backend/helpchain_backend/vendor,backend/helpchain_backend/src/test_asgi.py,backend/appy_with_analytics.py,backend/notification_dashboard.py,backend/app.legacy.py,backend/security_logging.py,backend/helpchain_backend/src/security_logging.py \
+            --severity-level medium \
+            --confidence-level medium \
+            --format sarif \
+            --output bandit.sarif
+          status=$?
+          set -e
+
+          if [[ "$status" -ne 0 && "$status" -ne 1 ]]; then
+            echo "Bandit failed to execute (exit code $status)."
+            exit "$status"
+          fi
+
+          python -c "import json; data=json.load(open('bandit.sarif', encoding='utf-8')); assert data.get('version') == '2.1.0' and isinstance(data.get('runs'), list)"
+
+          if [[ "$status" -eq 1 ]]; then
+            echo "Bandit found baseline findings; report uploaded for review (temporarily non-blocking)."
+          else
+            echo "Bandit completed with no findings at the configured threshold."
+          fi
 
       - name: Upload SARIF (Bandit)
+        if: always() && hashFiles('bandit.sarif') != ''
         uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0 # v3
         with:
           sarif_file: bandit.sarif
 
   pip-audit:
-    if: false
     name: pip-audit (Dependencies)
     runs-on: ubuntu-latest
-    continue-on-error: true  # временно не-блокиращ за да видим пълния отчет
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -58,27 +89,45 @@ jobs:
           cache: 'pip'
 
       - name: Install pip-audit
-        run: pip install --upgrade pip pip-audit
+        run: pip install --upgrade pip pip-audit==2.10.1
 
-      - name: Audit requirements (SARIF)
+      - name: Audit canonical runtime requirements (JSON baseline)
         shell: bash
         run: |
+          set -uo pipefail
+
+          if [[ ! -f requirements.txt ]]; then
+            echo "Canonical runtime manifest requirements.txt is missing."
+            exit 2
+          fi
+
+          set +e
+          pip-audit \
+            --requirement requirements.txt \
+            --format json \
+            --output pip-audit.requirements.json \
+            --strict \
+            --progress-spinner off
+          status=$?
           set -e
-          OUTPUTS=()
-          if [ -f requirements.txt ]; then
-            pip-audit -r requirements.txt -f sarif -o pip-audit.requirements.sarif --progress-spinner off || true
-            OUTPUTS+=(pip-audit.requirements.sarif)
+
+          if [[ "$status" -ne 0 && "$status" -ne 1 ]]; then
+            echo "pip-audit failed to execute (exit code $status)."
+            exit "$status"
           fi
-          if [ -f requirements-dev.txt ]; then
-            pip-audit -r requirements-dev.txt -f sarif -o pip-audit.dev.sarif --progress-spinner off || true
-            OUTPUTS+=(pip-audit.dev.sarif)
+
+          python -c "import json; data=json.load(open('pip-audit.requirements.json', encoding='utf-8')); assert isinstance(data.get('dependencies'), list)"
+
+          if [[ "$status" -eq 1 ]]; then
+            echo "pip-audit found baseline vulnerabilities; report uploaded for review (temporarily non-blocking)."
+          else
+            echo "pip-audit completed with no known vulnerabilities."
           fi
-          if [ -f requirements-dev-minimal.txt ]; then
-            pip-audit -r requirements-dev-minimal.txt -f sarif -o pip-audit.dev-min.sarif --progress-spinner off || true
-            OUTPUTS+=(pip-audit.dev-min.sarif)
-          fi
-          if [ ${#OUTPUTS[@]} -eq 0 ]; then
-            echo "No requirements files found; auditing installed env"
-            pip-audit -f sarif -o pip-audit.env.sarif --progress-spinner off || true
-          fi
+
+      - name: Upload pip-audit baseline report
+        if: always() && hashFiles('pip-audit.requirements.json') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pip-audit-runtime-baseline
+          path: pip-audit.requirements.json
 
