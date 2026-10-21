@@ -251,3 +251,28 @@ _archive/*
 !_archive/scratch/**
 _inventory/
 
+
+# Local development audit and temporary artifacts
+.pytest-runtime/
+*_audit.txt
+*_evidence.txt
+*_scan.txt
+*_source.txt
+*_target.txt
+adaptive_helpchain_phase0_*.txt
+founder_revenue_dashboard.txt
+*.growth-engine-backup
+*.growth-engine-final-backup
+*.turbo-backup
+*.turbo2-backup
+*.before-acquisition-ui
+*.before-ui-unification
+*.before-founder-growth
+*.before-french-text-repair
+*.before-i18n-fix
+*.before-pipeline-collapse
+*.modal-bak
+fix_calendar_backdrop.py
+fix_calendar_modal.py
+static/css/pages/admin-ui.css.growth-cleanup-backup
+templates/layouts/admin_workspace.html.bak
