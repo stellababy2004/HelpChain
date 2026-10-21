@@ -110,7 +110,24 @@ jobs:
           printf 'Checking %d changed Python file(s):\n' "${#changed_python[@]}"
           printf '  %q\n' "${changed_python[@]}"
 
-          python -m ruff check "${changed_python[@]}"
+          base_dir="$(mktemp -d)"
+          trap 'rm -rf "$base_dir"' EXIT
+
+          for path in "${changed_python[@]}"; do
+            base_file="$base_dir/$path"
+            mkdir -p "$(dirname "$base_file")"
+
+            if git show "$start_sha:$path" > "$base_file" 2>/dev/null; then
+              python -m ruff check "$base_file" --output-format=json > "$base_file.ruff.json" || true
+            else
+              printf '[]' > "$base_file.ruff.json"
+            fi
+
+            python -m ruff check "$path" --output-format=json > "$base_file.head.ruff.json" || true
+
+            python -c 'import collections,json,sys; b=collections.Counter((x["code"],x["message"]) for x in json.load(open(sys.argv[1],encoding="utf-8"))); h=collections.Counter((x["code"],x["message"]) for x in json.load(open(sys.argv[2],encoding="utf-8"))); n=h-b; print("New Ruff findings:", dict(n)) if n else print("No new Ruff findings:", sys.argv[3]); sys.exit(1 if n else 0)' "$base_file.ruff.json" "$base_file.head.ruff.json" "$path"
+          done
+
           black --check "${changed_python[@]}"
 
   smoke:
