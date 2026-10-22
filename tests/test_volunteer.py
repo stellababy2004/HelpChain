@@ -1,5 +1,6 @@
 ﻿import pytest
 
+
 class TestVolunteerIntegration:
     """Integration Ñ‚ÐµÑÑ‚Ð¾Ð²Ðµ Ð·Ð° volunteer Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¾Ð½Ð°Ð»Ð½Ð¾ÑÑ‚"""
 
@@ -169,9 +170,7 @@ class TestVolunteerIntegration:
         session.add(req)
         session.commit()
 
-        response = authenticated_volunteer_client.get(
-            f"/volunteer/requests/{req.id}"
-        )
+        response = authenticated_volunteer_client.get(f"/volunteer/requests/{req.id}")
 
         assert response.status_code == 200
 
