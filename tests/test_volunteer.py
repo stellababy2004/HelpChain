@@ -101,3 +101,40 @@
         assert "Exemple démo" not in data
         assert "Voir un exemple" not in data
 
+
+    def test_volunteer_can_express_interest_then_view_request(
+        self, authenticated_volunteer_client, init_test_data, session
+    ):
+        """Regression: interest grants access to request details."""
+        from backend.models import Request
+        from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+
+        client = authenticated_volunteer_client
+        volunteer = init_test_data["volunteer"]
+        structure = init_test_data["structure"]
+
+        req = Request(
+            title="Volunteer flow regression test",
+            description="Test request",
+            status="open",
+            structure_id=structure.id,
+        )
+        session.add(req)
+        session.commit()
+
+        response = client.post(
+            f"/volunteer/requests/{req.id}/help",
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+
+        interest = VolunteerInterest.query.filter_by(
+            volunteer_id=volunteer.id,
+            request_id=req.id,
+        ).first()
+
+        assert interest is not None
+        assert interest.status == "pending"
+
+        response = client.get(f"/volunteer/requests/{req.id}")
+        assert response.status_code == 200
