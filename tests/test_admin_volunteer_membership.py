@@ -18,15 +18,22 @@ def membership(app, session, init_test_data):
         _seed_intervenant_route_data(session)
     )
     target.actor_type = "volunteer"
-    volunteer = Volunteer(name="Compte bénévole confirmé", email="membership@example.test")
+    volunteer = Volunteer(
+        name="Compte bénévole confirmé", email="membership@example.test"
+    )
     session.add(volunteer)
     session.commit()
     client = app.test_client()
     _login_admin(client, app, admin)
     return SimpleNamespace(
-        client=client, admin=admin, global_admin=global_admin,
-        structure=structure, other_structure=other_structure,
-        target=target, other=other, volunteer=volunteer,
+        client=client,
+        admin=admin,
+        global_admin=global_admin,
+        structure=structure,
+        other_structure=other_structure,
+        target=target,
+        other=other,
+        volunteer=volunteer,
     )
 
 
@@ -51,13 +58,23 @@ def test_admin_can_create_genuine_volunteer_actor(membership, session):
 
     page = membership.client.get("/admin/intervenants/new")
     assert 'value="volunteer"' in page.get_data(as_text=True)
-    response = membership.client.post("/admin/intervenants/new", data={
-        "full_name": "Bénévole opérationnel", "profession": "volunteer",
-        "email": "canonical-volunteer@example.test", "city": "Paris",
-        "availability": "available", "structure_id": str(membership.structure.id),
-    })
+    response = membership.client.post(
+        "/admin/intervenants/new",
+        data={
+            "full_name": "Bénévole opérationnel",
+            "profession": "volunteer",
+            "email": "canonical-volunteer@example.test",
+            "city": "Paris",
+            "availability": "available",
+            "structure_id": str(membership.structure.id),
+        },
+    )
     assert response.status_code == 302
-    actor = session.query(Intervenant).filter_by(email="canonical-volunteer@example.test").one()
+    actor = (
+        session.query(Intervenant)
+        .filter_by(email="canonical-volunteer@example.test")
+        .one()
+    )
     assert actor.actor_type == "volunteer"
     assert actor.structure_id == membership.structure.id
     assert actor.legacy_volunteer_id is None
@@ -71,7 +88,9 @@ def test_authorized_admin_can_link_with_identity_preview(membership, session, sc
     path = _path(data, scoped)
     page = data.client.get(path)
     assert data.volunteer.email not in page.get_data(as_text=True)
-    preview = data.client.get(path, query_string={"link_volunteer_id": data.volunteer.id})
+    preview = data.client.get(
+        path, query_string={"link_volunteer_id": data.volunteer.id}
+    )
     html = preview.get_data(as_text=True)
     assert "Lier un compte bénévole" in html
     assert data.volunteer.name in html
@@ -83,14 +102,18 @@ def test_authorized_admin_can_link_with_identity_preview(membership, session, sc
     session.refresh(data.target)
     assert data.target.legacy_volunteer_id == data.volunteer.id
     assert session.query(Volunteer).count() == count
-    event = session.query(IntervenantActivity).filter_by(
-        intervenant_id=data.target.id, event_type="volunteer_account_linked"
-    ).one()
+    event = (
+        session.query(IntervenantActivity)
+        .filter_by(intervenant_id=data.target.id, event_type="volunteer_account_linked")
+        .one()
+    )
     assert event.actor_admin_id == data.admin.id
     assert event.structure_id == data.structure.id
     assert json.loads(event.meta_json) == {
-        "volunteer_id": data.volunteer.id, "intervenant_id": data.target.id,
-        "structure_id": data.structure.id, "result": "linked",
+        "volunteer_id": data.volunteer.id,
+        "intervenant_id": data.target.id,
+        "structure_id": data.structure.id,
+        "result": "linked",
     }
 
 
@@ -110,11 +133,15 @@ def test_link_is_idempotent_without_reactivating_actor(membership, session):
     assert data.target.availability == "unavailable"
     session.refresh(data.volunteer)
     assert data.volunteer.is_active is False
-    events = session.query(IntervenantActivity).filter_by(
-        intervenant_id=data.target.id, event_type="volunteer_account_linked"
-    ).order_by(IntervenantActivity.id).all()
+    events = (
+        session.query(IntervenantActivity)
+        .filter_by(intervenant_id=data.target.id, event_type="volunteer_account_linked")
+        .order_by(IntervenantActivity.id)
+        .all()
+    )
     assert [json.loads(event.meta_json)["result"] for event in events] == [
-        "linked", "already_linked",
+        "linked",
+        "already_linked",
     ]
 
 
@@ -127,7 +154,8 @@ def test_existing_volunteer_link_blocks_another_actor(
 
     data = membership
     previous = Intervenant(
-        actor_type="volunteer", legacy_volunteer_id=data.volunteer.id,
+        actor_type="volunteer",
+        legacy_volunteer_id=data.volunteer.id,
         structure_id=data.structure.id if same_structure else data.other_structure.id,
         is_active=not inactive,
     )
@@ -138,12 +166,17 @@ def test_existing_volunteer_link_blocks_another_actor(
     session.refresh(previous)
     assert data.target.legacy_volunteer_id is None
     assert previous.legacy_volunteer_id == data.volunteer.id
-    assert session.query(IntervenantActivity).filter_by(
-        event_type="volunteer_account_linked"
-    ).count() == 0
+    assert (
+        session.query(IntervenantActivity)
+        .filter_by(event_type="volunteer_account_linked")
+        .count()
+        == 0
+    )
 
 
-def test_target_cannot_be_reassigned_to_another_volunteer(membership, session, init_test_data):
+def test_target_cannot_be_reassigned_to_another_volunteer(
+    membership, session, init_test_data
+):
     data = membership
     data.target.legacy_volunteer_id = init_test_data["volunteer"].id
     session.commit()
@@ -173,11 +206,16 @@ def test_cross_tenant_admin_cannot_link(membership, session, app, role):
     assert data.target.legacy_volunteer_id is None
 
 
-@pytest.mark.parametrize("field,value,status", [
-    ("structure_id", "", 400), ("structure_id", "999999", 403),
-    ("volunteer_id", "999999", 404), ("confirm_volunteer", "", 400),
-    ("confirm_volunteer", "999999", 400),
-])
+@pytest.mark.parametrize(
+    "field,value,status",
+    [
+        ("structure_id", "", 400),
+        ("structure_id", "999999", 403),
+        ("volunteer_id", "999999", 404),
+        ("confirm_volunteer", "", 400),
+        ("confirm_volunteer", "999999", 400),
+    ],
+)
 def test_link_requires_explicit_valid_identity_and_structure(
     membership, session, field, value, status
 ):
@@ -209,16 +247,21 @@ def test_link_requires_csrf(membership, app, session):
     path = _path(data)
     assert data.client.post(path, data=_payload(data)).status_code == 400
     page = data.client.get(path, query_string={"link_volunteer_id": data.volunteer.id})
-    token = re.search(r'name="csrf_token"\s+value="([^"]+)"', page.get_data(as_text=True))
+    token = re.search(
+        r'name="csrf_token"\s+value="([^"]+)"', page.get_data(as_text=True)
+    )
     assert token
     response = data.client.post(path, data=_payload(data, csrf_token=token.group(1)))
     assert response.status_code == 303
 
 
-def test_membership_service_checks_scope_without_tenant_fallback(membership, app, session):
+def test_membership_service_checks_scope_without_tenant_fallback(
+    membership, app, session
+):
     from flask import session as flask_session
     from backend.helpchain_backend.src.services.volunteer_membership import (
-        VolunteerLinkError, link_volunteer_to_intervenant,
+        VolunteerLinkError,
+        link_volunteer_to_intervenant,
     )
 
     data = membership
@@ -228,8 +271,10 @@ def test_membership_service_checks_scope_without_tenant_fallback(membership, app
         flask_session.update(admin_logged_in=True, admin_id=data.admin.id)
         with pytest.raises(VolunteerLinkError) as error:
             link_volunteer_to_intervenant(
-                volunteer_id=data.volunteer.id, intervenant_id=data.target.id,
-                structure_id=data.structure.id, confirmed=True,
+                volunteer_id=data.volunteer.id,
+                intervenant_id=data.target.id,
+                structure_id=data.structure.id,
+                confirmed=True,
             )
         assert error.value.status_code == 403
     assert data.target.legacy_volunteer_id is None
@@ -247,7 +292,9 @@ def test_duplicate_email_identities_require_manual_review(membership, session):
     from backend.models import Volunteer
 
     data = membership
-    duplicate = Volunteer(name="Autre compte", email=f" {data.volunteer.email.upper()} ")
+    duplicate = Volunteer(
+        name="Autre compte", email=f" {data.volunteer.email.upper()} "
+    )
     session.add(duplicate)
     session.commit()
     assert data.client.post(_path(data), data=_payload(data)).status_code == 409
@@ -255,11 +302,16 @@ def test_duplicate_email_identities_require_manual_review(membership, session):
     assert data.target.legacy_volunteer_id is None
 
 
-@pytest.mark.parametrize("failure", ["anonymous", "cross_tenant", "wrong_target_structure", "missing_target"])
-def test_service_independently_validates_administrator_and_target(membership, app, session, failure):
+@pytest.mark.parametrize(
+    "failure", ["anonymous", "cross_tenant", "wrong_target_structure", "missing_target"]
+)
+def test_service_independently_validates_administrator_and_target(
+    membership, app, session, failure
+):
     from flask import session as flask_session
     from backend.helpchain_backend.src.services.volunteer_membership import (
-        VolunteerLinkError, link_volunteer_to_intervenant,
+        VolunteerLinkError,
+        link_volunteer_to_intervenant,
     )
 
     data = membership
@@ -277,8 +329,10 @@ def test_service_independently_validates_administrator_and_target(membership, ap
             flask_session.update(admin_logged_in=True, admin_id=data.admin.id)
         with pytest.raises(VolunteerLinkError) as error:
             link_volunteer_to_intervenant(
-                volunteer_id=data.volunteer.id, intervenant_id=target_id,
-                structure_id=structure_id, confirmed=True,
+                volunteer_id=data.volunteer.id,
+                intervenant_id=target_id,
+                structure_id=structure_id,
+                confirmed=True,
             )
         assert error.value.status_code == (404 if failure == "missing_target" else 403)
     session.refresh(data.target)
@@ -336,10 +390,20 @@ def test_admin_link_grants_only_canonical_structure_access(membership, session, 
     data.volunteer.skills = "documents logement transport"
     data.volunteer.availability = "weekends"
     data.volunteer.volunteer_onboarded = True
-    own = Request(title="documents logement transport", city="Paris", priority="urgent",
-                  status="open", structure_id=data.structure.id)
-    other = Request(title="documents logement transport", city="Paris", priority="urgent",
-                    status="open", structure_id=data.other_structure.id)
+    own = Request(
+        title="documents logement transport",
+        city="Paris",
+        priority="urgent",
+        status="open",
+        structure_id=data.structure.id,
+    )
+    other = Request(
+        title="documents logement transport",
+        city="Paris",
+        priority="urgent",
+        status="open",
+        structure_id=data.other_structure.id,
+    )
     session.add_all([own, other])
     session.commit()
     assert data.client.post(_path(data), data=_payload(data)).status_code == 303

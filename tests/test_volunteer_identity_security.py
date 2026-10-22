@@ -13,8 +13,11 @@ def _identity_path(data):
 
 def _identity_payload():
     return {
-        "name": "Identité mise à jour", "email": "updated-identity@example.test",
-        "phone": "0102030405", "location": "Paris", "skills": "documents",
+        "name": "Identité mise à jour",
+        "email": "updated-identity@example.test",
+        "phone": "0102030405",
+        "location": "Paris",
+        "skills": "documents",
     }
 
 
@@ -26,23 +29,39 @@ def _link_identity(data, session, active=True):
 
 @pytest.mark.parametrize("role", ["admin", "superadmin"])
 @pytest.mark.parametrize("active_link", [True, False])
-def test_own_structure_identity_edit_is_permitted(membership, session, app, role, active_link):
+def test_own_structure_identity_edit_is_permitted(
+    membership, session, app, role, active_link
+):
     data = membership
     _link_identity(data, session, active_link)
     data.admin.role = role
     session.commit()
     _login_admin(data.client, app, data.admin)
-    assert data.client.post(_identity_path(data), data=_identity_payload()).status_code == 302
+    assert (
+        data.client.post(_identity_path(data), data=_identity_payload()).status_code
+        == 302
+    )
     session.refresh(data.volunteer)
     assert data.volunteer.email == _identity_payload()["email"]
     assert data.target.legacy_volunteer_id == data.volunteer.id
 
 
-@pytest.mark.parametrize("restriction", [
-    "cross_tenant", "attached_superadmin_cross_tenant", "readonly", "ops",
-    "no_structure", "unlinked", "inactive_admin", "ambiguous",
-])
-def test_identity_edit_rejects_unauthorized_admin(membership, session, app, restriction):
+@pytest.mark.parametrize(
+    "restriction",
+    [
+        "cross_tenant",
+        "attached_superadmin_cross_tenant",
+        "readonly",
+        "ops",
+        "no_structure",
+        "unlinked",
+        "inactive_admin",
+        "ambiguous",
+    ],
+)
+def test_identity_edit_rejects_unauthorized_admin(
+    membership, session, app, restriction
+):
     from backend.models import Intervenant
 
     data = membership
@@ -60,15 +79,22 @@ def test_identity_edit_rejects_unauthorized_admin(membership, session, app, rest
     elif restriction == "inactive_admin":
         data.admin.is_active = False
     else:
-        session.add(Intervenant(
-            structure_id=data.structure.id, legacy_volunteer_id=data.volunteer.id,
-            actor_type="volunteer", is_active=False,
-        ))
+        session.add(
+            Intervenant(
+                structure_id=data.structure.id,
+                legacy_volunteer_id=data.volunteer.id,
+                actor_type="volunteer",
+                is_active=False,
+            )
+        )
     session.commit()
     original = (data.volunteer.name, data.volunteer.email)
     _login_admin(data.client, app, data.admin)
     expected_status = 404 if restriction == "inactive_admin" else 403
-    assert data.client.post(_identity_path(data), data=_identity_payload()).status_code == expected_status
+    assert (
+        data.client.post(_identity_path(data), data=_identity_payload()).status_code
+        == expected_status
+    )
     session.refresh(data.volunteer)
     assert (data.volunteer.name, data.volunteer.email) == original
 
@@ -76,7 +102,10 @@ def test_identity_edit_rejects_unauthorized_admin(membership, session, app, rest
 def test_global_superadmin_can_edit_unlinked_identity(membership, session, app):
     data = membership
     _login_admin(data.client, app, data.global_admin)
-    assert data.client.post(_identity_path(data), data=_identity_payload()).status_code == 302
+    assert (
+        data.client.post(_identity_path(data), data=_identity_payload()).status_code
+        == 302
+    )
     session.refresh(data.volunteer)
     assert data.volunteer.email == _identity_payload()["email"]
     assert data.target.legacy_volunteer_id is None
@@ -89,15 +118,19 @@ def _profile_path(data, scoped=True):
 
 def _profile_payload(data, **changes):
     payload = {
-        "name": data.target.name, "actor_type": "volunteer",
-        "email": data.target.email, "availability": "available",
+        "name": data.target.name,
+        "actor_type": "volunteer",
+        "email": data.target.email,
+        "availability": "available",
     }
     payload.update(changes)
     return payload
 
 
 @pytest.mark.parametrize("scoped", [True, False])
-def test_readonly_can_view_but_cannot_mutate_intervenant(membership, session, app, scoped):
+def test_readonly_can_view_but_cannot_mutate_intervenant(
+    membership, session, app, scoped
+):
     data = membership
     _link_identity(data, session, active=False)
     data.target.availability = "unavailable"
@@ -106,10 +139,15 @@ def test_readonly_can_view_but_cannot_mutate_intervenant(membership, session, ap
     _login_admin(data.client, app, data.admin)
     path = _profile_path(data, scoped)
     assert data.client.get(path).status_code == 200
-    response = data.client.post(path, data=_profile_payload(
-        data, actor_type="social_worker", legacy_volunteer_id="999999",
-        structure_id=str(data.other_structure.id),
-    ))
+    response = data.client.post(
+        path,
+        data=_profile_payload(
+            data,
+            actor_type="social_worker",
+            legacy_volunteer_id="999999",
+            structure_id=str(data.other_structure.id),
+        ),
+    )
     assert response.status_code == 403
     session.refresh(data.target)
     assert data.target.actor_type == "volunteer"
@@ -120,7 +158,9 @@ def test_readonly_can_view_but_cannot_mutate_intervenant(membership, session, ap
 
 
 @pytest.mark.parametrize("global_admin", [True, False])
-def test_authorized_admin_can_update_intervenant_profile(membership, session, app, global_admin):
+def test_authorized_admin_can_update_intervenant_profile(
+    membership, session, app, global_admin
+):
     data = membership
     _link_identity(data, session, active=False)
     _login_admin(data.client, app, data.global_admin if global_admin else data.admin)
@@ -150,7 +190,10 @@ def test_profile_mutation_requires_authority_over_membership_fields(
     elif change == "is_active":
         payload["availability"] = "unavailable"
     expected_status = 404 if change == "inactive_admin" else 403
-    assert data.client.post(_profile_path(data), data=payload).status_code == expected_status
+    assert (
+        data.client.post(_profile_path(data), data=payload).status_code
+        == expected_status
+    )
     session.refresh(data.target)
     assert data.target.actor_type == "volunteer"
     assert data.target.is_active is True
@@ -162,9 +205,14 @@ def test_ops_retains_non_membership_profile_editing(membership, session, app):
     data.admin.role = "ops"
     session.commit()
     _login_admin(data.client, app, data.admin)
-    response = data.client.post(_profile_path(data), data=_profile_payload(
-        data, name="Nom opérationnel", availability="busy",
-    ))
+    response = data.client.post(
+        _profile_path(data),
+        data=_profile_payload(
+            data,
+            name="Nom opérationnel",
+            availability="busy",
+        ),
+    )
     assert response.status_code == 302
     session.refresh(data.target)
     assert data.target.name == "Nom opérationnel"
@@ -181,10 +229,16 @@ def test_readonly_cannot_create_intervenant_profile(membership, session, app):
     _login_admin(data.client, app, data.admin)
     count = session.query(Intervenant).count()
     assert data.client.get("/admin/intervenants/new").status_code == 200
-    response = data.client.post("/admin/intervenants/new", data={
-        "full_name": "Non autorisé", "profession": "volunteer", "city": "Paris",
-        "availability": "available", "structure_id": str(data.structure.id),
-    })
+    response = data.client.post(
+        "/admin/intervenants/new",
+        data={
+            "full_name": "Non autorisé",
+            "profession": "volunteer",
+            "city": "Paris",
+            "availability": "available",
+            "structure_id": str(data.structure.id),
+        },
+    )
     assert response.status_code == 403
     assert session.query(Intervenant).count() == count
 
@@ -193,18 +247,23 @@ def _consume_volunteer_token(client, session, email):
     from backend.helpchain_backend.src.models.magic_link_token import MagicLinkToken
 
     raw = "identity-security-token"
-    session.add(MagicLinkToken(
-        purpose="volunteer", email=email,
-        token_hash=hashlib.sha256(raw.encode()).hexdigest(),
-        expires_at=datetime.now(UTC) + timedelta(minutes=15),
-    ))
+    session.add(
+        MagicLinkToken(
+            purpose="volunteer",
+            email=email,
+            token_hash=hashlib.sha256(raw.encode()).hexdigest(),
+            expires_at=datetime.now(UTC) + timedelta(minutes=15),
+        )
+    )
     session.commit()
     return client.get(f"/auth/magic/{raw}")
 
 
 @pytest.mark.parametrize("mailbox", ["alice_team", "alice%team"])
 @pytest.mark.parametrize("existing_exact", [True, False])
-def test_magic_link_email_wildcards_are_literal(client, session, mailbox, existing_exact):
+def test_magic_link_email_wildcards_are_literal(
+    client, session, mailbox, existing_exact
+):
     from backend.models import Intervenant, Volunteer
 
     decoy = Volunteer(email="aliceXteam@example.test")
@@ -241,7 +300,9 @@ def test_magic_link_normalizes_trim_and_case(client, session):
     assert session.query(Volunteer).count() == 1
 
 
-@pytest.mark.parametrize("second_email", ["duplicate@example.test", " DUPLICATE@EXAMPLE.TEST "])
+@pytest.mark.parametrize(
+    "second_email", ["duplicate@example.test", " DUPLICATE@EXAMPLE.TEST "]
+)
 def test_magic_link_ambiguous_identity_authenticates_neither_account(
     client, session, second_email
 ):
@@ -260,5 +321,9 @@ def test_magic_link_ambiguous_identity_authenticates_neither_account(
         assert not sess.get("volunteer_id")
         assert not sess.get("volunteer_logged_in")
     assert session.query(Volunteer).count() == 2
-    rejected = session.query(SecurityEvent).filter_by(event_type="magic_link_rejected").all()
-    assert any((event.meta or {}).get("reason") == "ambiguous_identity" for event in rejected)
+    rejected = (
+        session.query(SecurityEvent).filter_by(event_type="magic_link_rejected").all()
+    )
+    assert any(
+        (event.meta or {}).get("reason") == "ambiguous_identity" for event in rejected
+    )
