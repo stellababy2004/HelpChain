@@ -127,6 +127,13 @@
           </div>
           {% endif %}
         </div>
+        <div class="hc-admin-shellbar__account">
+          <a class="hc-admin-shellbar__account-link" href="{{ url_for('admin.admin_change_password') }}">Mot de passe</a>
+          <form method="post" action="{{ url_for('admin.admin_logout') }}" class="hc-admin-shellbar__logout-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="hc-admin-shellbar__account-link hc-admin-shellbar__logout">Déconnexion</button>
+          </form>
+        </div>
       </div>
     </div>
     {% block admin_content %}{% endblock %}

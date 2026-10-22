@@ -22806,3 +22806,97 @@ body.hc-admin-calendar-page .modal-backdrop {
 body.hc-admin-calendar-page .modal-backdrop.show {
   opacity: 0.28;
 }
+
+/* ===== ADMIN ACCOUNT ACTIONS ===== */
+body.hc-page-admin .hc-admin-shellbar__inner{
+  grid-template-columns: minmax(108px, 132px) minmax(0, 1fr) auto !important;
+}
+
+body.hc-page-admin .hc-admin-shellbar__account{
+  grid-column: 3;
+  grid-row: 1;
+  align-self: start;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .7rem;
+  min-width: max-content;
+  padding-top: .25rem;
+}
+
+body.hc-page-admin .hc-admin-shellbar__logout-form{
+  display: inline-flex;
+  margin: 0;
+}
+
+body.hc-page-admin .hc-admin-shellbar__account-link{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: .2rem 0;
+  font: inherit;
+  font-size: .72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #52657a;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+body.hc-page-admin .hc-admin-shellbar__account-link:hover,
+body.hc-page-admin .hc-admin-shellbar__account-link:focus-visible{
+  color: #1f4f82;
+  text-decoration: underline;
+}
+
+body.hc-page-admin .hc-admin-shellbar__logout{
+  color: #6b7280;
+}
+
+@media (max-width: 1279.98px){
+  body.hc-page-admin .hc-admin-shellbar__inner{
+    grid-template-columns: 1fr auto !important;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__brand{
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__account{
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__navzone{
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+@media (max-width: 767.98px){
+  body.hc-page-admin .hc-admin-shellbar__inner{
+    grid-template-columns: 1fr !important;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__brand,
+  body.hc-page-admin .hc-admin-shellbar__navzone,
+  body.hc-page-admin .hc-admin-shellbar__account{
+    grid-column: 1;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__brand{
+    grid-row: 1;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__account{
+    grid-row: 2;
+    justify-content: flex-start;
+    padding-top: 0;
+  }
+
+  body.hc-page-admin .hc-admin-shellbar__navzone{
+    grid-row: 3;
+  }
+}
