@@ -1595,7 +1595,7 @@ msgstr "Чакащи"
 
 #: templates/admin_dashboard.html:241 templates/volunteer_dashboard.html:332 templates/volunteer_request_details.html:80
 msgid "В процес"
-msgstr "В процес"
+msgstr "En cours"
 
 #: templates/admin_dashboard.html:249 templates/admin_dashboard.html:317
 msgid "Доброволци"
@@ -1611,7 +1611,7 @@ msgstr "Име"
 
 #: templates/admin_dashboard.html:264 templates/volunteer_request_details.html:64
 msgid "Описание"
-msgstr "Описание"
+msgstr "Description"
 
 #: templates/admin_dashboard.html:265
 msgid "Статус"
@@ -3198,11 +3198,11 @@ msgstr "Demandeer"
 
 #: templates/dashboard_helper.html:65 templates/volunteer_request_details.html:202
 msgid "Email requester"
-msgstr "Email demandeer"
+msgstr "Envoyer un e-mail"
 
 #: templates/dashboard_helper.html:70 templates/volunteer_request_details.html:207
 msgid "Call requester"
-msgstr "Call demandeer"
+msgstr "Appeler"
 
 #: templates/dashboard_helper.html:75
 msgid "Use only this contact for this request. Stay respectful and keep it focused on solving the issue."
@@ -3210,7 +3210,7 @@ msgstr "Use only this contact for this demande. Stay respectful and keep it focu
 
 #: templates/dashboard_helper.html:79 templates/volunteer_request_details.html:218
 msgid "Contact appears once the request is assigned, in progress, and the requester shared details."
-msgstr "Contact appears once the demande is assigné, in progress, and the demandeer shared details."
+msgstr "Les coordonnées deviennent accessibles lorsque la demande est attribuée, en cours et que la personne a partagé ses coordonnées."
 
 #: templates/dashboard_helper.html:87
 msgid "You don't have any assigned requests yet."
@@ -6475,15 +6475,15 @@ msgstr "Това е покана, не ангажимент. Можеш спок
 
 #: templates/volunteer_dashboard.html:326 templates/volunteer_request_details.html:82
 msgid "Завършено"
-msgstr "Завършено"
+msgstr "Terminée"
 
 #: templates/volunteer_dashboard.html:329 templates/volunteer_request_details.html:84
 msgid "Отказано"
-msgstr "Отказано"
+msgstr "Annulée"
 
 #: templates/volunteer_dashboard.html:335 templates/volunteer_request_details.html:86
 msgid "Нова"
-msgstr "Нова"
+msgstr "Nouvelle"
 
 #: templates/volunteer_dashboard.html:340
 msgid "Assigned to you"
@@ -6491,16 +6491,16 @@ msgstr "Assigné to you"
 
 #: templates/volunteer_dashboard.html:343 templates/volunteer_request_details.html:93
 msgid "Одобрен/а"
-msgstr "Одобрен/а"
+msgstr "Approuvé(e)"
 
 #: templates/volunteer_dashboard.html:346 templates/volunteer_dashboard.html:429 templates/volunteer_dashboard.html:551
 #: templates/volunteer_dashboard.html:694 templates/volunteer_request_details.html:97
 msgid "В изчакване"
-msgstr "В изчакване"
+msgstr "En attente"
 
 #: templates/volunteer_dashboard.html:349 templates/volunteer_request_details.html:95
 msgid "Отхвърлен/а"
-msgstr "Отхвърлен/а"
+msgstr "Refusé(e)"
 
 #: templates/volunteer_dashboard.html:359
 msgid "Нова заявка"
@@ -6669,7 +6669,7 @@ msgstr "Човек търси помощ за попълване на докум
 #: templates/volunteer_dashboard.html:653 templates/volunteer_dashboard.html:707
 #: templates/volunteer_request_details.html:15
 msgid "Ще помогна"
-msgstr "Ще помогна"
+msgstr "Je peux aider"
 
 #: templates/volunteer_dashboard.html:657
 msgid "Нямаш ангажимент да откликваш на всяка заявка. Ти избираш кога и как да помогнеш."
@@ -7125,115 +7125,115 @@ msgstr ""
 
 #: templates/volunteer_request_details.html:2 templates/volunteer_request_details.html:28
 msgid "Детайли за заявка"
-msgstr "Детайли за заявка"
+msgstr "Détails de la demande"
 
 #: templates/volunteer_request_details.html:18
 msgid "Демо: нищо не се записва."
-msgstr "Демо: нищо не се записва."
+msgstr "Démo : aucune donnée n’est enregistrée."
 
 #: templates/volunteer_request_details.html:20
 msgid "Следва кратък преглед и потвърждение."
-msgstr "Следва кратък преглед и потвърждение."
+msgstr "Un bref examen et une confirmation suivront."
 
 #: templates/volunteer_request_details.html:29
 msgid "Назад"
-msgstr "Назад"
+msgstr "Retour"
 
 #: templates/volunteer_request_details.html:37
 msgid "You marked that you can help."
-msgstr "You marked that you can help."
+msgstr "Vous avez indiqué que vous pouvez aider."
 
 #: templates/volunteer_request_details.html:39
 msgid "Go to contact"
-msgstr "Go to contact"
+msgstr "Voir les coordonnées"
 
 #: templates/volunteer_request_details.html:43
 msgid "You marked that you can't help right now."
-msgstr "You marked that you can’t help right now."
+msgstr "Vous avez indiqué que vous ne pouvez pas aider pour le moment."
 
 #: templates/volunteer_request_details.html:45 templates/volunteer_request_details.html:139
 msgid "Last signal"
-msgstr "Last signal"
+msgstr "Dernière indication"
 
 #: templates/volunteer_request_details.html:48
 msgid "You haven't sent a signal yet."
-msgstr "You haven’t sent a signal yet."
+msgstr "Vous n’avez pas encore indiqué votre disponibilité."
 
 #: templates/volunteer_request_details.html:53
 msgid "Заявка"
-msgstr "Заявка"
+msgstr "Demande"
 
 #: templates/volunteer_request_details.html:67
 msgid "Няма описание."
-msgstr "Няма описание."
+msgstr "Aucune description."
 
 #: templates/volunteer_request_details.html:91
 msgid "Назначен/а"
-msgstr "Назначен/а"
+msgstr "Assigné(e)"
 
 #: templates/volunteer_request_details.html:103
 msgid "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
-msgstr "Имаш зелена светлина за тази заявка. Използвай бутоните долу, за да се свържеш с човека."
+msgstr "Vous pouvez intervenir sur cette demande. Utilisez les options ci-dessous pour contacter la personne."
 
 #: templates/volunteer_request_details.html:107
 msgid "Заявката е изпратена. Ще получиш известие при решение."
-msgstr "Заявката е изпратена. Ще получиш известие при решение."
+msgstr "Votre demande a été envoyée. Vous recevrez une notification lorsqu’une décision sera prise."
 
 #: templates/volunteer_request_details.html:113
 msgid "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
-msgstr "Щом екипът потвърди, ще получиш известие и ще отключим контакта (ако е нужно)."
+msgstr "Dès que l’équipe aura confirmé, vous recevrez une notification et les coordonnées seront accessibles si nécessaire."
 
 #: templates/volunteer_request_details.html:115
 msgid "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
-msgstr "Ти си потвърден/а за тази заявка. Следвай указанията по-долу и действай спокойно."
+msgstr "Votre intervention est confirmée pour cette demande. Suivez les indications ci-dessous."
 
 #: templates/volunteer_request_details.html:117
 msgid "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти."
-msgstr "Няма проблем — можеш да помогнеш по друга заявка. Благодарим ти."
+msgstr "Vous pouvez proposer votre aide sur une autre demande. Merci pour votre disponibilité."
 
 #: templates/volunteer_request_details.html:119
 msgid "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
-msgstr "Ако можеш да помогнеш, натисни „Мога да помогна“ — това ни дава сигнал да те свържем."
+msgstr "Si vous pouvez aider, cliquez sur « Je peux aider » afin que nous puissions organiser la mise en relation."
 
 #: templates/volunteer_request_details.html:133
 msgid "Твоят сигнал"
-msgstr "Твоят сигнал"
+msgstr "Votre disponibilité"
 
 #: templates/volunteer_request_details.html:135
 msgid "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
-msgstr "Това е бърз сигнал към екипа. Не е обвързващ — помага ни да реагираме по-точно."
+msgstr "Cette indication informe rapidement l’équipe de votre disponibilité. Elle ne vous engage pas."
 
 #: templates/admin/request_details.html:271 templates/admin/requests.html:451 templates/volunteer_request_details.html:142
 msgid "Can help"
-msgstr "Can help"
+msgstr "Disponible"
 
 #: templates/admin/request_details.html:273 templates/admin/requests.html:453 templates/volunteer_request_details.html:144
 msgid "Can't help"
-msgstr "Can’t help"
+msgstr "Indisponible"
 
 #: templates/volunteer_request_details.html:159
 msgid "Мога да помогна"
-msgstr "Мога да помогна"
+msgstr "Je peux aider"
 
 #: templates/volunteer_request_details.html:163
 msgid "Не мога да помогна"
-msgstr "Не мога да помогна"
+msgstr "Je ne peux pas aider"
 
 #: templates/volunteer_request_details.html:169
 msgid "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина."
-msgstr "Ако не можеш — всичко е ок. По-добре честен сигнал, отколкото тишина."
+msgstr "Si vous n’êtes pas disponible, indiquez-le simplement afin que l’équipe puisse s’organiser."
 
 #: templates/volunteer_request_details.html:174
 msgid "Изчакване"
-msgstr "Изчакване"
+msgstr "En attente"
 
 #: templates/volunteer_request_details.html:176
 msgid "Потвърдено"
-msgstr "Потвърдено"
+msgstr "Confirmé"
 
 #: templates/volunteer_request_details.html:213
 msgid "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
-msgstr "Използвай този контакт само за тази заявка. Бъди уважителен/а и конкретен/а — това ускорява помощта."
+msgstr "Utilisez ces coordonnées uniquement dans le cadre de cette demande. Restez respectueux(se) et précis(e) dans vos échanges."
 
 #: templates/volunteer_settings.html:6 templates/volunteer_settings.html:22 templates/volunteer_settings.html:33
 #, fuzzy
