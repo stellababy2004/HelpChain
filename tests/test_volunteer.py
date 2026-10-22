@@ -141,3 +141,34 @@
 
         response = client.get(f"/volunteer/requests/{req.id}")
         assert response.status_code == 200
+
+    def test_assigned_volunteer_can_view_request_from_another_structure(
+        self, authenticated_volunteer_client, init_test_data, session
+    ):
+        """Assigned volunteer must not be blocked by legacy default tenant scope."""
+        from backend.models import Request, Structure
+
+        volunteer = init_test_data["volunteer"]
+
+        other_structure = Structure(
+            name="Other volunteer structure",
+            slug="other-volunteer-structure",
+        )
+        session.add(other_structure)
+        session.commit()
+
+        req = Request(
+            title="Cross-structure assigned request",
+            description="Regression test for legacy volunteer tenant scope",
+            status="in_progress",
+            structure_id=other_structure.id,
+            assigned_volunteer_id=volunteer.id,
+        )
+        session.add(req)
+        session.commit()
+
+        response = authenticated_volunteer_client.get(
+            f"/volunteer/requests/{req.id}"
+        )
+
+        assert response.status_code == 200

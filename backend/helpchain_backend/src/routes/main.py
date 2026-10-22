@@ -3300,7 +3300,7 @@ def volunteer_request_details(req_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    req = get_scoped_request_or_404(req_id)
+    req = Request.query.filter(Request.id == req_id).first_or_404()
     try:
         db.session.refresh(req)
     except Exception:
