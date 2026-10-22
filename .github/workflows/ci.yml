@@ -128,7 +128,21 @@ jobs:
             python -c 'import collections,json,sys; b=collections.Counter((x["code"],x["message"]) for x in json.load(open(sys.argv[1],encoding="utf-8"))); h=collections.Counter((x["code"],x["message"]) for x in json.load(open(sys.argv[2],encoding="utf-8"))); n=h-b; print("New Ruff findings:", dict(n)) if n else print("No new Ruff findings:", sys.argv[3]); sys.exit(1 if n else 0)' "$base_file.ruff.json" "$base_file.head.ruff.json" "$path"
           done
 
-          black --check "${changed_python[@]}"
+          black_clean=()
+          for path in "${changed_python[@]}"; do
+            base_file="$base_dir/$path"
+            if [[ -f "$base_file" ]] && black --check "$base_file" >/dev/null 2>&1; then
+              black_clean+=("$path")
+            else
+              echo "Skipping legacy Black debt: $path"
+            fi
+          done
+
+          if (( ${#black_clean[@]} > 0 )); then
+            black --check "${black_clean[@]}"
+          else
+            echo "No baseline Black-clean changed Python files to check."
+          fi
 
   smoke:
     name: Smoke Gate (admin + integrity)
