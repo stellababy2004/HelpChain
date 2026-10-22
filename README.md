@@ -15,7 +15,7 @@
   <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-production-4169E1?logo=postgresql&logoColor=white">
   <img alt="France" src="https://img.shields.io/badge/Primary_market-France-0055A4">
   <img alt="Status" src="https://img.shields.io/badge/Status-Active_development-F59E0B">
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-MIT-2EA44F"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Proprietary-informational"></a>
 </p>
 
 <p align="center">
@@ -228,6 +228,10 @@ This keeps **feature existence**, **automated regression coverage** and **pilot 
 **Current engineering focus:** end-to-end acceptance, role/tenant consistency and verified product documentation
 
 HelpChain is being developed toward controlled real-world use. Commercial, pilot and scale claims should be based on verified field evidence rather than repository activity alone.
+
+## License
+
+HelpChain is proprietary software. The source code and associated materials are not open source and may not be copied, modified, distributed, deployed or commercially used without prior written permission. See [LICENSE](LICENSE) for the applicable terms.
 
 ---
 
