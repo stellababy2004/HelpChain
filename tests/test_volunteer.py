@@ -89,7 +89,9 @@
             "scoped_requests_query",
             lambda: Request.query.filter(Request.id == -1),
         )
-        monkeypatch.setattr(main_routes, "get_matched_requests_v1", lambda *args, **kwargs: [])
+        monkeypatch.setattr(
+            main_routes, "get_matched_requests_v1", lambda *args, **kwargs: []
+        )
 
         response = authenticated_volunteer_client.get("/volunteer_dashboard")
 
@@ -101,13 +103,14 @@
         assert "Exemple démo" not in data
         assert "Voir un exemple" not in data
 
-
     def test_volunteer_can_express_interest_then_view_request(
         self, authenticated_volunteer_client, init_test_data, session
     ):
         """Regression: interest grants access to request details."""
         from backend.models import Request
-        from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+        from backend.helpchain_backend.src.models.volunteer_interest import (
+            VolunteerInterest,
+        )
 
         client = authenticated_volunteer_client
         volunteer = init_test_data["volunteer"]
