@@ -86,7 +86,11 @@ from ..services.admin_team_invitations import (
     get_admin_team_invitation,
 )
 from ..services.matching_v1 import dismiss_for as match_dismiss_for
-from ..services.matching_v1 import get_matched_requests_v1
+from ..services.matching_v1 import (
+    can_express_interest,
+    get_matched_requests_v1,
+    volunteer_authorized_structure_id,
+)
 from ..services.public_intake_routing import resolve_public_intake_destination
 from ..services.matching_v1 import mark_seen as match_mark_seen
 from ..services.geocoding import request_address_display_text
@@ -1500,29 +1504,16 @@ def is_remote_request(req) -> bool:
 def is_request_matching_volunteer(
     request_obj, volunteer_obj, interested_request_ids: set[int] | None = None
 ):
-    """MVP matching (V2.2.A): status open + volunteer active + profile complete + not already interested."""
-    if not request_obj or not volunteer_obj:
+    """Discover eligible requests, optionally excluding existing interests."""
+    if not can_express_interest(volunteer_obj, request_obj):
         return False
 
-    if (getattr(request_obj, "status", "") or "").lower() != "open":
-        return False
-
-    if not getattr(volunteer_obj, "is_active", False):
-        return False
-
-    # profile completeness (location + availability)
+    # Profile readiness controls this discovery list, not interest authorization.
     if not (
-        getattr(volunteer_obj, "location", None)
+        getattr(volunteer_obj, "is_active", False)
+        and getattr(volunteer_obj, "location", None)
         and getattr(volunteer_obj, "availability", None)
     ):
-        return False
-
-    # exclude assigned/archived/deleted
-    if getattr(request_obj, "assigned_volunteer_id", None) is not None:
-        return False
-    if getattr(request_obj, "is_archived", False):
-        return False
-    if getattr(request_obj, "deleted_at", None) is not None:
         return False
 
     if (
@@ -2059,12 +2050,18 @@ def magic_link_consume(token: str):
         if lang:
             session["lang"] = lang
 
-        # Find-or-create the volunteer record (MVP-safe).
-        v = Volunteer.query.filter(Volunteer.email.ilike(email)).first()
-        if not v:
+        # Email authenticates one exact identity; it never establishes membership.
+        matches = Volunteer.query.filter(
+            func.lower(func.trim(Volunteer.email)) == email
+        ).limit(2).all()
+        if len(matches) > 1:
+            return _magic_link_reject(
+                "ambiguous_identity", token_hash=token_hash,
+                token_id=ml.id, purpose=ml.purpose,
+            )
+        v = matches[0] if matches else None
+        if v is None:
             v = Volunteer(email=email, is_active=True)
-            if hasattr(Volunteer, "structure_id"):
-                v.structure_id = current_structure_id()
             db.session.add(v)
             db.session.commit()
 
@@ -2894,7 +2891,11 @@ def volunteer_dashboard():
 
     just_logged_in = session.pop("just_logged_in", None)
 
-    open_requests = scoped_requests_query().filter_by(status="open").all()
+    volunteer_structure_id = volunteer_authorized_structure_id(volunteer)
+    open_requests = (
+        Request.query.filter_by(structure_id=volunteer_structure_id, status="open").all()
+        if volunteer_structure_id is not None else []
+    )
 
     my_interest_req_ids = set(
         rid
@@ -3027,7 +3028,7 @@ def volunteer_dashboard():
     my_interests = (
         db.session.query(VolunteerInterest, Request)
         .join(Request, Request.id == VolunteerInterest.request_id)
-        .filter(Request.structure_id == _current_structure_id())
+        # Existing interests grant personal access independently of new discovery.
         .filter(VolunteerInterest.volunteer_id == volunteer.id)
         .order_by(VolunteerInterest.created_at.desc())
         .limit(30)
@@ -3423,8 +3424,7 @@ def volunteer_help(req_id: int):
 
     req = Request.query.filter(Request.id == req_id).first_or_404()
     is_assigned = getattr(req, "assigned_volunteer_id", None) == volunteer.id
-    is_open = (getattr(req, "status", "") or "").lower() == "open"
-    if not (is_assigned or is_open):
+    if not (is_assigned or can_express_interest(volunteer, req)):
         abort(404)
 
     interest = VolunteerInterest.query.filter_by(

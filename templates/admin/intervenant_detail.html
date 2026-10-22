@@ -77,6 +77,58 @@
     </div>
   </div>
 
+  {% if can_link_volunteer %}
+  <section class="hc-card mb-3" aria-labelledby="volunteer-link-heading">
+    <div class="hc-card__section hc-card__section--header">
+      <strong id="volunteer-link-heading">Lier un compte bénévole</strong>
+    </div>
+    <div class="hc-card__section">
+      <p>Structure de rattachement : <strong>{{ structure.name if structure else intervenant.structure_id }}</strong>.</p>
+      {% if intervenant.legacy_volunteer_id is not none %}
+        <p>Compte lié : <strong>#{{ intervenant.legacy_volunteer_id }}</strong>
+          {% if linked_volunteer %}— {{ linked_volunteer.name or 'Nom non renseigné' }} — {{ linked_volunteer.email or 'Email non renseigné' }}{% endif %}.
+        </p>
+        <p class="hc-muted">Le remplacement d’un compte lié nécessite une vérification administrative distincte.</p>
+      {% else %}
+        <p>Vérifiez l’identité du compte existant avant de confirmer son rattachement à cette structure.</p>
+        <form method="get" action="{{ request.path }}" class="d-flex gap-2 align-items-end mb-3">
+          <div>
+            <label for="link_volunteer_id" class="form-label">Identifiant du compte bénévole</label>
+            <input type="number" min="1" step="1" required class="form-control"
+                   id="link_volunteer_id" name="link_volunteer_id"
+                   value="{{ volunteer_link_preview.id if volunteer_link_preview else '' }}">
+          </div>
+          <button type="submit" class="btn btn-outline-secondary">Vérifier ce compte</button>
+        </form>
+        {% if volunteer_link_error %}<p class="text-danger" role="alert">{{ volunteer_link_error }}</p>{% endif %}
+        {% if volunteer_link_preview %}
+        <div class="alert alert-info">
+          <strong>Compte #{{ volunteer_link_preview.id }}</strong><br>
+          {{ volunteer_link_preview.name or 'Nom non renseigné' }}<br>
+          {{ volunteer_link_preview.email or 'Email non renseigné' }}<br>
+          {{ 'Compte actif' if volunteer_link_preview.is_active else 'Compte inactif' }}
+        </div>
+        <form method="post" action="{{ request.path }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="intervenant_action" value="link_volunteer">
+          <input type="hidden" name="structure_id" value="{{ intervenant.structure_id }}">
+          <input type="hidden" name="volunteer_id" value="{{ volunteer_link_preview.id }}">
+          <div class="form-check mb-3">
+            <input type="checkbox" required class="form-check-input" id="confirm_volunteer"
+                   name="confirm_volunteer" value="{{ volunteer_link_preview.id }}">
+            <label class="form-check-label" for="confirm_volunteer">
+              Je confirme l’identité du compte #{{ volunteer_link_preview.id }} et son rattachement à {{ structure.name if structure else intervenant.structure_id }}.
+            </label>
+          </div>
+          <p class="hc-muted">Ce lien autorise les nouvelles demandes de cette structure lorsque l’intervenant est actif. Aucun compte ne sera activé automatiquement.</p>
+          <button type="submit" class="btn btn-primary">Lier ce compte bénévole</button>
+        </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
   <div class="hc-intervenant-ops-summary">
     {% for item in operational_summary %}
     <div class="hc-card hc-intervenant-ops-card">

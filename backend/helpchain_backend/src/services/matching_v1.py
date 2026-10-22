@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 from backend.core.tenant import current_structure_id
 from ..models import (
+    Intervenant,
     Request,
     Volunteer,
     VolunteerMatchFeedback,
@@ -313,6 +314,38 @@ def _cleanup_cache(now_ts: float) -> None:
         _MATCH_CACHE.pop(k, None)
 
 
+def volunteer_authorized_structure_id(volunteer: Volunteer) -> int | None:
+    """Resolve one active canonical actor; missing or ambiguous links fail closed."""
+    if not volunteer or not getattr(volunteer, "id", None):
+        return None
+    actors = (
+        db.session.query(Intervenant.structure_id, Intervenant.is_active, Intervenant.actor_type)
+        .filter(Intervenant.legacy_volunteer_id == volunteer.id)
+        .limit(2)
+        .all()
+    )
+    if len(actors) != 1 or not actors[0].is_active or actors[0].actor_type != "volunteer":
+        return None
+    return actors[0].structure_id
+
+
+def _request_accepts_interest(req: Request, structure_id: int | None) -> bool:
+    """Shared request eligibility against explicitly resolved actor membership."""
+    return bool(
+        structure_id is not None
+        and req
+        and (getattr(req, "status", "") or "").lower() == "open"
+        and getattr(req, "structure_id", None) == structure_id
+        and getattr(req, "assigned_volunteer_id", None) is None
+        and not getattr(req, "is_archived", False)
+        and getattr(req, "deleted_at", None) is None
+    )
+
+
+def can_express_interest(volunteer: Volunteer, req: Request) -> bool:
+    return _request_accepts_interest(req, volunteer_authorized_structure_id(volunteer))
+
+
 def get_matched_requests_v1(
     volunteer: Volunteer,
     limit: int = 12,
@@ -322,6 +355,9 @@ def get_matched_requests_v1(
     max_text_chars: int = 800,
     cache_ttl_sec: int = 90,
 ) -> list[tuple[Request, int, dict]]:
+    structure_id = volunteer_authorized_structure_id(volunteer)
+    if structure_id is None:
+        return []
     now_ts = time.time()
     key = _cache_key(
         volunteer=volunteer,
@@ -331,6 +367,7 @@ def get_matched_requests_v1(
         near=near,
         max_text_chars=max_text_chars,
     )
+    key = f"structure:{structure_id}|{key}"
     cached = _MATCH_CACHE.get(key)
     if cached and cached[0] > now_ts:
         req_ids = [rid for rid, _, _ in cached[1]]
@@ -341,14 +378,14 @@ def get_matched_requests_v1(
         hydrated: list[tuple[Request, int, dict]] = []
         for rid, pct, breakdown in cached[1]:
             r = by_id.get(rid)
-            if r is not None:
+            if r is not None and _request_accepts_interest(r, structure_id):
                 hydrated.append((r, pct, dict(breakdown or {})))
         if hydrated:
             return hydrated[: int(limit)]
 
     q = Request.query.filter(Request.deleted_at.is_(None)).filter(
         Request.is_archived.is_(False)
-    )
+    ).filter(Request.structure_id == structure_id)
     now = _now()
     dismiss_filter_applied = False
     try:
@@ -393,7 +430,7 @@ def get_matched_requests_v1(
         if dismiss_filter_applied:
             q_fallback = Request.query.filter(Request.deleted_at.is_(None)).filter(
                 Request.is_archived.is_(False)
-            )
+            ).filter(Request.structure_id == structure_id)
             if vloc:
                 like = f"%{vloc}%"
                 conditions = []
@@ -417,6 +454,8 @@ def get_matched_requests_v1(
     results: list[tuple[Request, int, dict]] = []
     prio_norm = _norm(prio) or "all"
     for req in candidates:
+        if not _request_accepts_interest(req, structure_id):
+            continue
         s_loc = _score_location(getattr(volunteer, "location", "") or "", req)
         s_sk = _score_skills(volunteer, req, max_text_chars=max_text_chars)
         s_pr = _score_priority(req)

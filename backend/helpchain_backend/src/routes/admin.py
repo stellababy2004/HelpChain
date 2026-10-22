@@ -143,6 +143,7 @@ from ..services.admin_team_invitations import (
     create_admin_team_invitation,
     refresh_admin_team_invitation,
 )
+from ..services.volunteer_membership import VolunteerLinkError, link_volunteer_to_intervenant
 from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
@@ -720,6 +721,7 @@ INTERVENANT_CITY_COORDS = {
 INTERVENANT_DEFAULT_COORDS = INTERVENANT_CITY_COORDS["paris"]
 ACTIVE_ASSIGNMENT_STATUSES = {"active", "pending", "accepted", "in_progress"}
 INTERVENANT_ACTOR_TYPE_OPTIONS = (
+    ("volunteer", "Bénévole"),
     ("social_worker", "Travailleur social"),
     ("coordinator", "Coordinateur"),
     ("psychologist", "Psychologue"),
@@ -751,7 +753,7 @@ INTERVENANT_ACTOR_TYPE_ALIASES = {
     "professionnel_sante": "health_professional",
     "professional": "field_referent",
     "professionnel": "field_referent",
-    "volunteer": "field_referent",
+    "volunteer": "volunteer",
     "lawyer": "legal_advisor",
     "legal_advisor": "legal_advisor",
     "juriste": "legal_advisor",
@@ -1321,6 +1323,34 @@ def _intervenant_detail_template(
     active_cases = _active_intervenant_assignments(intervenant)
     assignment_options = _intervenant_assignment_options(intervenant)
 
+    membership_actor = resolve_current_admin_actor()
+    can_link_volunteer = bool(
+        intervenant.actor_type == "volunteer"
+        and membership_actor.is_authenticated
+        and membership_actor.role in {"admin", "superadmin"}
+        and (
+            membership_actor.is_platform_global
+            or membership_actor.structure_id == intervenant.structure_id
+        )
+    )
+    linked_volunteer = None
+    volunteer_link_preview = None
+    volunteer_link_error = None
+    if can_link_volunteer:
+        if intervenant.legacy_volunteer_id is not None:
+            linked_volunteer = db.session.get(Volunteer, intervenant.legacy_volunteer_id)
+        else:
+            preview_id = request.args.get("link_volunteer_id")
+            if request.form.get("intervenant_action") == "link_volunteer":
+                preview_id = request.form.get("volunteer_id")
+            if preview_id:
+                try:
+                    volunteer_link_preview = db.session.get(Volunteer, int(preview_id))
+                except (TypeError, ValueError):
+                    pass
+                if volunteer_link_preview is None:
+                    volunteer_link_error = "Compte bénévole introuvable. Vérifiez l’identifiant."
+
     return (
         render_template(
             "admin/intervenant_detail.html",
@@ -1328,6 +1358,10 @@ def _intervenant_detail_template(
             structure=structure,
             structure_context_id=structure_context_id,
             can_view_structure_detail=_is_global_admin(),
+            can_link_volunteer=can_link_volunteer,
+            linked_volunteer=linked_volunteer,
+            volunteer_link_preview=volunteer_link_preview,
+            volunteer_link_error=volunteer_link_error,
             city=city,
             address=address,
             actor_type_options=INTERVENANT_ACTOR_TYPE_OPTIONS,
@@ -1348,7 +1382,7 @@ def _intervenant_detail_template(
             operational_summary=operational_context["summary_cards"],
             operational_timeline=operational_context["timeline_items"],
             form_data=form_data or _intervenant_detail_form_data(intervenant),
-            edit_panel_open=status_code >= 400,
+            edit_panel_open=status_code >= 400 and request.form.get("intervenant_action") != "link_volunteer",
             has_coordinates=(
                 hasattr(intervenant, "latitude")
                 and hasattr(intervenant, "longitude")
@@ -1360,7 +1394,20 @@ def _intervenant_detail_template(
     )
 
 
+def _require_intervenant_profile_actor(intervenant: Intervenant | None = None):
+    actor = resolve_current_admin_actor()
+    if not actor.is_authenticated or actor.role not in {"admin", "superadmin", "ops"}:
+        abort(403)
+    if not actor.is_platform_global:
+        if actor.structure_id is None:
+            abort(403)
+        if intervenant is not None and intervenant.structure_id != actor.structure_id:
+            abort(403)
+    return actor
+
+
 def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
+    actor = _require_intervenant_profile_actor(intervenant)
     errors: list[str] = []
     name = (request.form.get("name") or "").strip()
     actor_type = _normalize_intervenant_actor_type(request.form.get("actor_type"))
@@ -1375,6 +1422,13 @@ def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
 
     if errors:
         return errors
+
+    # Ops retain operational profile edits, not changes to membership authority.
+    if actor.role == "ops" and (
+        actor_type != intervenant.actor_type
+        or (availability != "unavailable") != bool(intervenant.is_active)
+    ):
+        abort(403)
 
     intervenant.name = name
     intervenant.actor_type = actor_type
@@ -1443,8 +1497,38 @@ def _handle_intervenant_operational_action(
     intervenant: Intervenant, structure_context_id: int | None = None
 ):
     action = (request.form.get("intervenant_action") or "").strip()
-    if action not in {"assign_request", "remove_assignment"}:
+    if action not in {"assign_request", "remove_assignment", "link_volunteer"}:
         return None
+
+    if action == "link_volunteer":
+        try:
+            volunteer_id = int(request.form.get("volunteer_id") or "0")
+            structure_id = int(request.form.get("structure_id") or "0")
+        except (TypeError, ValueError):
+            flash("Identifiants du compte et de la structure requis.", "warning")
+            return _intervenant_detail_template(
+                intervenant, structure_context_id=structure_context_id, status_code=400
+            )
+        try:
+            changed = link_volunteer_to_intervenant(
+                volunteer_id=volunteer_id,
+                intervenant_id=intervenant.id,
+                structure_id=structure_id,
+                confirmed=request.form.get("confirm_volunteer") == str(volunteer_id),
+            )
+            db.session.commit()
+        except VolunteerLinkError as exc:
+            db.session.rollback()
+            flash(str(exc), "warning")
+            return _intervenant_detail_template(
+                intervenant, structure_context_id=structure_context_id,
+                status_code=exc.status_code,
+            )
+        except Exception:
+            db.session.rollback()
+            raise
+        flash("Compte bénévole lié." if changed else "Ce compte bénévole est déjà lié.", "success")
+        return redirect(_intervenant_detail_url(intervenant, structure_context_id), code=303)
 
     if action == "assign_request":
         raw_request_id = (request.form.get("request_id") or "").strip()
@@ -8873,6 +8957,9 @@ def admin_intervenants_new():
             selected_structure_id = getattr(current_user, "structure_id", None)
 
     if request.method == "POST":
+        actor = _require_intervenant_profile_actor()
+        if not actor.is_platform_global:
+            selected_structure_id = actor.structure_id
         full_name = (request.form.get("full_name") or "").strip()
         email = (request.form.get("email") or "").strip() or None
         profession = _normalize_intervenant_actor_type(request.form.get("profession"))
@@ -9250,9 +9337,25 @@ def edit_volunteer(id):
 
     from flask import abort
 
+    actor = resolve_current_admin_actor()
+    if not actor.is_authenticated or actor.role not in {"admin", "superadmin"}:
+        abort(403)
+
     volunteer = db.session.get(Volunteer, id)
     if not volunteer:
         abort(404)
+
+    if not actor.is_platform_global:
+        # Ownership survives inactivity. Missing/ambiguous links confer no scope.
+        memberships = db.session.query(Intervenant.structure_id).filter(
+            Intervenant.legacy_volunteer_id == volunteer.id
+        ).limit(2).all()
+        if (
+            actor.structure_id is None
+            or len(memberships) != 1
+            or memberships[0][0] != actor.structure_id
+        ):
+            abort(403)
 
     import logging
 

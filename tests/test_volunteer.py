@@ -1,6 +1,206 @@
 ﻿import pytest
 
 
+@pytest.fixture
+def linked_intervenant(init_test_data, session):
+    from backend.models import Intervenant, Structure
+
+    structure = Structure(name="Volunteer authorized structure", slug="volunteer-authorized")
+    session.add(structure)
+    session.flush()
+    actor = Intervenant(
+        structure_id=structure.id,
+        legacy_volunteer_id=init_test_data["volunteer"].id,
+        actor_type="volunteer",
+        is_active=True,
+    )
+    session.add(actor)
+    session.commit()
+    return actor
+
+
+@pytest.mark.parametrize("request_status", ["open", "in_progress", "done"])
+@pytest.mark.parametrize("discovery", ["smart", "basic"])
+def test_smart_match_action_agrees_with_help(
+    authenticated_volunteer_client, init_test_data, session, request_status,
+    linked_intervenant, discovery, monkeypatch,
+):
+    from backend.models import Request
+    from backend.helpchain_backend.src.services.matching_v1 import (
+        _MATCH_CACHE, get_matched_requests_v1,
+    )
+
+    volunteer = init_test_data["volunteer"]
+    volunteer.location = "Paris"
+    volunteer.skills = "documents logement transport"
+    volunteer.availability = "weekends"
+    volunteer.is_active = True
+    volunteer.volunteer_onboarded = True
+    req = Request(
+        title="documents logement transport", description="Volunteer match",
+        city="Paris", priority="urgent", status=request_status,
+        structure_id=linked_intervenant.structure_id,
+    )
+    session.add(req)
+    session.commit()
+    _MATCH_CACHE.clear()
+    matches = get_matched_requests_v1(volunteer, min_percent=0)
+    if discovery == "basic":
+        from backend.helpchain_backend.src.routes import main as main_routes
+
+        monkeypatch.setattr(main_routes, "get_matched_requests_v1", lambda *args, **kwargs: [])
+    dashboard = authenticated_volunteer_client.get("/volunteer/dashboard")
+    assert dashboard.status_code == 200
+    action = f"/volunteer/requests/{req.id}/help"
+    offered = action in dashboard.get_data(as_text=True)
+    response = authenticated_volunteer_client.post(action)
+    if offered:
+        assert response.status_code == 303
+    assert offered == (request_status == "open")
+    assert (req.id in {r.id for r, _, _ in matches}) == offered
+    if not offered:
+        assert response.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "change", ["closed", "unlinked", "moved", "request_moved", "inactive", "ambiguous", "professional"]
+)
+def test_smart_match_cache_rechecks_eligibility(
+    authenticated_volunteer_client, init_test_data, session, linked_intervenant, change
+):
+    from backend.models import Intervenant, Request
+    from backend.helpchain_backend.src.services.matching_v1 import (
+        _MATCH_CACHE, get_matched_requests_v1,
+    )
+
+    volunteer = init_test_data["volunteer"]
+    volunteer.location = "Paris"
+    volunteer.availability = "weekends"
+    volunteer.is_active = True
+    req = Request(title="Cached match", city="Paris", status="open",
+                  structure_id=linked_intervenant.structure_id)
+    session.add(req)
+    session.commit()
+    _MATCH_CACHE.clear()
+    assert req.id in {r.id for r, _, _ in get_matched_requests_v1(volunteer, min_percent=0)}
+    if change == "closed":
+        req.status = "done"
+    elif change == "unlinked":
+        linked_intervenant.legacy_volunteer_id = None
+    elif change == "moved":
+        linked_intervenant.structure_id = init_test_data["structure"].id
+    elif change == "request_moved":
+        req.structure_id = init_test_data["structure"].id
+    elif change == "inactive":
+        linked_intervenant.is_active = False
+    elif change == "professional":
+        linked_intervenant.actor_type = "social_worker"
+    else:
+        session.add(Intervenant(
+            legacy_volunteer_id=volunteer.id,
+            structure_id=init_test_data["structure"].id,
+            is_active=True,
+        ))
+    session.commit()
+    assert req.id not in {r.id for r, _, _ in get_matched_requests_v1(volunteer, min_percent=0)}
+    assert authenticated_volunteer_client.post(
+        f"/volunteer/requests/{req.id}/help"
+    ).status_code == 404
+
+
+@pytest.mark.parametrize("linked", [False, True])
+def test_default_tenant_does_not_authorize_volunteer_interest(
+    authenticated_volunteer_client, init_test_data, session, linked
+):
+    from backend.models import Intervenant, Request, Structure
+    from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+    from backend.helpchain_backend.src.services.matching_v1 import (
+        _MATCH_CACHE, get_matched_requests_v1,
+    )
+
+    volunteer = init_test_data["volunteer"]
+    volunteer.location = "Paris"
+    volunteer.skills = "documents logement transport"
+    volunteer.availability = "weekends"
+    volunteer.volunteer_onboarded = True
+    if linked:
+        other = Structure(name="Explicit membership", slug="explicit-membership")
+        session.add(other)
+        session.flush()
+        session.add(Intervenant(
+            structure_id=other.id, legacy_volunteer_id=volunteer.id, is_active=True,
+        ))
+    req = Request(
+        title="documents logement transport", city="Paris", status="open",
+        priority="urgent", structure_id=init_test_data["structure"].id,
+    )
+    session.add(req)
+    session.commit()
+    _MATCH_CACHE.clear()
+    assert req.id not in {r.id for r, _, _ in get_matched_requests_v1(volunteer, min_percent=0)}
+    action = f"/volunteer/requests/{req.id}/help"
+    dashboard = authenticated_volunteer_client.get("/volunteer/dashboard")
+    assert dashboard.status_code == 200
+    assert action not in dashboard.get_data(as_text=True)
+    assert authenticated_volunteer_client.post(action).status_code == 404
+    assert VolunteerInterest.query.filter_by(
+        volunteer_id=volunteer.id, request_id=req.id
+    ).first() is None
+
+
+@pytest.mark.parametrize(
+    "restriction", ["other_tenant", "assigned_elsewhere", "archived", "deleted"]
+)
+def test_unrelated_request_is_not_actionable(
+    authenticated_volunteer_client, init_test_data, session, restriction, linked_intervenant
+):
+    from datetime import datetime
+    from backend.models import Request, Structure
+    from backend.helpchain_backend.src.models.volunteer_interest import VolunteerInterest
+    from backend.helpchain_backend.src.services.matching_v1 import (
+        _MATCH_CACHE, get_matched_requests_v1,
+    )
+
+    volunteer = init_test_data["volunteer"]
+    volunteer.location = "Paris"
+    volunteer.skills = "documents logement transport"
+    volunteer.availability = "weekends"
+    volunteer.is_active = True
+    volunteer.volunteer_onboarded = True
+    structure_id = linked_intervenant.structure_id
+    if restriction == "other_tenant":
+        other = Structure(name="Unrelated tenant", slug="unrelated-interest-tenant")
+        session.add(other)
+        session.flush()
+        structure_id = other.id
+    req = Request(
+        title="documents logement transport", city="Paris", priority="urgent",
+        status="open", structure_id=structure_id,
+        assigned_volunteer_id=volunteer.id + 100 if restriction == "assigned_elsewhere" else None,
+        is_archived=restriction == "archived",
+        deleted_at=datetime.now() if restriction == "deleted" else None,
+    )
+    session.add(req)
+    session.commit()
+    _MATCH_CACHE.clear()
+    assert req.id not in {r.id for r, _, _ in get_matched_requests_v1(volunteer, min_percent=0)}
+    action = f"/volunteer/requests/{req.id}/help"
+    dashboard = authenticated_volunteer_client.get("/volunteer/dashboard")
+    assert dashboard.status_code == 200
+    assert action not in dashboard.get_data(as_text=True)
+    assert authenticated_volunteer_client.post(action).status_code == 404
+    for endpoint in ("", "/can-help", "/cant-help"):
+        path = f"/volunteer/requests/{req.id}{endpoint}"
+        response = (
+            authenticated_volunteer_client.get(path)
+            if not endpoint else authenticated_volunteer_client.post(path)
+        )
+        assert response.status_code == 404
+    assert VolunteerInterest.query.filter_by(
+        volunteer_id=volunteer.id, request_id=req.id
+    ).first() is None
+
+
 class TestVolunteerIntegration:
     """Integration Ñ‚ÐµÑÑ‚Ð¾Ð²Ðµ Ð·Ð° volunteer Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¾Ð½Ð°Ð»Ð½Ð¾ÑÑ‚"""
 
@@ -107,7 +307,7 @@ class TestVolunteerIntegration:
         assert "Voir un exemple" not in data
 
     def test_volunteer_can_express_interest_then_view_request(
-        self, authenticated_volunteer_client, init_test_data, session
+        self, authenticated_volunteer_client, init_test_data, session, linked_intervenant
     ):
         """Regression: interest grants access to request details."""
         from backend.models import Request
@@ -117,13 +317,12 @@ class TestVolunteerIntegration:
 
         client = authenticated_volunteer_client
         volunteer = init_test_data["volunteer"]
-        structure = init_test_data["structure"]
 
         req = Request(
             title="Volunteer flow regression test",
             description="Test request",
             status="open",
-            structure_id=structure.id,
+            structure_id=linked_intervenant.structure_id,
         )
         session.add(req)
         session.commit()
@@ -144,6 +343,19 @@ class TestVolunteerIntegration:
 
         response = client.get(f"/volunteer/requests/{req.id}")
         assert response.status_code == 200
+
+        # An existing interest continues to grant viewing after discovery ends.
+        req.status = "in_progress"
+        session.commit()
+        assert client.get(f"/volunteer/requests/{req.id}").status_code == 200
+
+        linked_intervenant.legacy_volunteer_id = None
+        volunteer.volunteer_onboarded = True
+        session.commit()
+        dashboard = client.get("/volunteer/dashboard")
+        assert dashboard.status_code == 200
+        assert req.title in dashboard.get_data(as_text=True)
+        assert client.get(f"/volunteer/requests/{req.id}").status_code == 200
 
     def test_assigned_volunteer_can_view_request_from_another_structure(
         self, authenticated_volunteer_client, init_test_data, session
