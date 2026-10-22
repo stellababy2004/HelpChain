@@ -2381,15 +2381,30 @@
             <span></span><span></span><span></span>
             <strong>{{ _('Module demandes') }}</strong>
           </div>
-          <img
-            class="hc-home-premium__shot-img hc-home-premium__shot-img--module-demandes"
-            src="{{ url_for('static', filename='img/platform/helpchain-platform-02.png') }}?v=20260603-demandes-readable"
-            alt="{{ _('Liste des demandes HelpChain avec statuts, responsables et priorités') }}"
-            width="1480"
-            height="1063"
-            loading="lazy"
-            decoding="async"
-          >
+          <div class="hc-home-premium__shot-viewport hc-home-premium__shot-viewport--demandes">
+            <div class="hc-product-demo hc-product-demo--request" role="img" aria-label="{{ _('Exemple de demande HelpChain avec priorité, responsable, statut et prochaine action') }}">
+              <div class="hc-product-demo__toolbar">
+                <span class="hc-product-demo__eyebrow">{{ _('DEMANDE #HC-052') }}</span>
+                <span class="hc-product-demo__status hc-product-demo__status--progress">{{ _('En cours') }}</span>
+              </div>
+              <div class="hc-product-demo__request-main">
+                <div>
+                  <p class="hc-product-demo__label">{{ _('Demande') }}</p>
+                  <h4>{{ _('Accompagnement logement · Paris 16') }}</h4>
+                  <p>{{ _('Orientation vers le service social') }}</p>
+                </div>
+                <span class="hc-product-demo__priority">{{ _('Priorité élevée') }}</span>
+              </div>
+              <div class="hc-product-demo__meta-grid">
+                <div><span>{{ _('Responsable') }}</span><strong>{{ _('Claire Martin') }}</strong></div>
+                <div><span>{{ _('Dernière activité') }}</span><strong>{{ _('Aujourd’hui · 10:24') }}</strong></div>
+              </div>
+              <div class="hc-product-demo__next-action">
+                <div><span>{{ _('PROCHAINE ACTION') }}</span><strong>{{ _('Contacter le partenaire logement') }}</strong></div>
+                <span class="hc-product-demo__button">{{ _('Ouvrir') }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="hc-home-premium__product-copy hc-home-premium__product-copy--details">
@@ -2410,15 +2425,23 @@
             <span></span><span></span><span></span>
             <strong>{{ _('Module dossiers') }}</strong>
           </div>
-          <img
-            class="hc-home-premium__shot-img"
-            src="{{ url_for('static', filename='img/platform/helpchain-platform-03.png') }}"
-            alt="{{ _('Vue dossier HelpChain avec responsable, priorité et actions récentes') }}"
-            width="1874"
-            height="868"
-            loading="lazy"
-            decoding="async"
-          >
+          <div class="hc-home-premium__shot-viewport hc-home-premium__shot-viewport--dossiers">
+            <div class="hc-product-demo hc-product-demo--case" role="img" aria-label="{{ _('Exemple de dossier HelpChain avec responsable et historique des actions') }}">
+              <div class="hc-product-demo__toolbar">
+                <span class="hc-product-demo__eyebrow">{{ _('DOSSIER #D-019') }}</span>
+                <span class="hc-product-demo__status">{{ _('Suivi actif') }}</span>
+              </div>
+              <div class="hc-product-demo__case-head">
+                <div><p class="hc-product-demo__label">{{ _('Situation') }}</p><h4>{{ _('Situation Demo · Boulogne-Billancourt') }}</h4></div>
+                <div class="hc-product-demo__owner"><span>{{ _('Responsable') }}</span><strong><i>CM</i>{{ _('Claire Martin') }}</strong></div>
+              </div>
+              <div class="hc-product-demo__timeline" aria-label="{{ _('Historique récent') }}">
+                <article><i></i><div><strong>{{ _('Compte rendu ajouté') }}</strong><span>{{ _('Aujourd’hui · 09:42') }}</span></div></article>
+                <article><i></i><div><strong>{{ _('Relance partenaire consignée') }}</strong><span>{{ _('Hier · 16:10') }}</span></div></article>
+                <article><i></i><div><strong>{{ _('Responsable confirmé') }}</strong><span>{{ _('Lundi · 11:35') }}</span></div></article>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="hc-home-premium__product-copy">
@@ -2452,15 +2475,25 @@
             <span></span><span></span><span></span>
             <strong>{{ _('Relais entre structures') }}</strong>
           </div>
-          <img
-            class="hc-home-premium__shot-img hc-home-premium__shot-img--module-securite"
-            src="{{ url_for('static', filename='img/platform/helpchain-platform-06.png') }}"
-            alt="{{ _('Vue HelpChain d’une demande avec orientation vers une structure partenaire') }}"
-            width="1718"
-            height="916"
-            loading="lazy"
-            decoding="async"
-          >
+          <div class="hc-home-premium__shot-viewport hc-home-premium__shot-viewport--partenaires">
+            <div class="hc-product-demo hc-product-demo--relay" role="img" aria-label="{{ _('Exemple de relais entre deux structures avec validation et continuité du suivi') }}">
+              <div class="hc-product-demo__toolbar">
+                <span class="hc-product-demo__eyebrow">{{ _('RELAIS INTER-STRUCTURES') }}</span>
+                <span class="hc-product-demo__status hc-product-demo__status--pending">{{ _('Validation requise') }}</span>
+              </div>
+              <div class="hc-product-demo__relay-flow">
+                <article><span>01</span><i>HC</i><div><strong>{{ _('CCAS Paris 16') }}</strong><small>{{ _('Structure d’origine') }}</small></div></article>
+                <div class="hc-product-demo__relay-line"><span>{{ _('Contexte transmis') }}</span></div>
+                <article><span>02</span><i>PL</i><div><strong>{{ _('Partenaire logement') }}</strong><small>{{ _('Périmètre autorisé') }}</small></div></article>
+              </div>
+              <div class="hc-product-demo__relay-checks">
+                <span>✓ {{ _('Responsable visible') }}</span>
+                <span>✓ {{ _('Historique conservé') }}</span>
+                <span>✓ {{ _('Accès limité au relais') }}</span>
+              </div>
+              <div class="hc-product-demo__relay-action"><span>{{ _('En attente de validation partenaire') }}</span><strong>{{ _('Valider le relais') }}</strong></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2596,15 +2629,28 @@
               <p>{{ _('Cadre de confiance') }}</p>
               <h3 id="hc-home-security-panel-title">{{ _('Administration et sécurité') }}</h3>
             </div>
-            <img
-              class="hc-home-premium__shot-img hc-home-premium__shot-img--module-securite"
-              src="{{ url_for('static', filename='img/platform/helpchain-platform-04.png') }}"
-              alt="{{ _('Interface HelpChain de sécurité et de supervision administrative') }}"
-              width="1536"
-              height="1024"
-              loading="lazy"
-              decoding="async"
-            >
+            <div class="hc-home-premium__shot-viewport hc-home-premium__shot-viewport--securite">
+              <div class="hc-product-demo hc-product-demo--security" role="img" aria-label="{{ _('Exemple HelpChain des accès par rôle, du journal d’audit et des indicateurs de sécurité') }}">
+                <div class="hc-product-demo__security-signals">
+                  <span><i></i>{{ _('Accès conformes') }}</span>
+                  <span><i></i>{{ _('0 anomalie critique') }}</span>
+                  <span><i></i>{{ _('Journal actif') }}</span>
+                </div>
+                <div class="hc-product-demo__security-grid">
+                  <section>
+                    <p class="hc-product-demo__label">{{ _('ACCÈS PAR RÔLE') }}</p>
+                    <div class="hc-product-demo__role"><i>AD</i><div><strong>{{ _('Administrateur') }}</strong><span>{{ _('Structure · Paramètres · Audit') }}</span></div><b>{{ _('Complet') }}</b></div>
+                    <div class="hc-product-demo__role"><i>IN</i><div><strong>{{ _('Intervenant') }}</strong><span>{{ _('Demandes et dossiers attribués') }}</span></div><b>{{ _('Limité') }}</b></div>
+                  </section>
+                  <section>
+                    <p class="hc-product-demo__label">{{ _('JOURNAL D’AUDIT') }}</p>
+                    <div class="hc-product-demo__audit"><time>10:24</time><div><strong>{{ _('Dossier consulté') }}</strong><span>{{ _('Claire Martin · Paris') }}</span></div></div>
+                    <div class="hc-product-demo__audit"><time>09:58</time><div><strong>{{ _('Accès partenaire validé') }}</strong><span>{{ _('admin_paris') }}</span></div></div>
+                    <div class="hc-product-demo__audit"><time>09:31</time><div><strong>{{ _('Rôle mis à jour') }}</strong><span>{{ _('Journalisation enregistrée') }}</span></div></div>
+                  </section>
+                </div>
+              </div>
+            </div>
           </div>
         </aside>
       </div>
