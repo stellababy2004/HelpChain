@@ -1,4 +1,6 @@
-﻿class TestVolunteerIntegration:
+﻿import pytest
+
+class TestVolunteerIntegration:
     """Integration Ñ‚ÐµÑÑ‚Ð¾Ð²Ðµ Ð·Ð° volunteer Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¾Ð½Ð°Ð»Ð½Ð¾ÑÑ‚"""
 
     def test_volunteer_login_flow(self, client, init_test_data):
@@ -172,3 +174,43 @@
         )
 
         assert response.status_code == 200
+
+    @pytest.mark.parametrize(
+        "action_path",
+        ["can-help", "cant-help"],
+    )
+    def test_assigned_volunteer_can_signal_on_cross_structure_request(
+        self,
+        authenticated_volunteer_client,
+        init_test_data,
+        session,
+        action_path,
+    ):
+        """Assigned volunteer can signal on a request from another structure."""
+        from backend.models import Request, Structure
+
+        volunteer = init_test_data["volunteer"]
+
+        other_structure = Structure(
+            name="Cross structure signal test",
+            slug=f"cross-structure-signal-{action_path}",
+        )
+        session.add(other_structure)
+        session.commit()
+
+        req = Request(
+            title="Cross-structure signal request",
+            description="Regression test for volunteer action tenant scope",
+            status="in_progress",
+            structure_id=other_structure.id,
+            assigned_volunteer_id=volunteer.id,
+        )
+        session.add(req)
+        session.commit()
+
+        response = authenticated_volunteer_client.post(
+            f"/volunteer/requests/{req.id}/{action_path}",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 303

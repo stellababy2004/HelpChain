@@ -3504,7 +3504,9 @@ def volunteer_can_help(req_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    req = get_scoped_request_or_404(req_id)
+    req = Request.query.filter(Request.id == req_id).first_or_404()
+    if not can_view_request(volunteer, req, db):
+        abort(404)
 
     _upsert_volunteer_action(req, volunteer, "CAN_HELP")
 
@@ -3521,7 +3523,9 @@ def volunteer_cant_help(req_id: int):
     if not volunteer:
         return redirect(url_for("main.become_volunteer", next=request.path))
 
-    req = get_scoped_request_or_404(req_id)
+    req = Request.query.filter(Request.id == req_id).first_or_404()
+    if not can_view_request(volunteer, req, db):
+        abort(404)
 
     _upsert_volunteer_action(req, volunteer, "CANT_HELP")
 
