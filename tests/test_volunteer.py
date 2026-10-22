@@ -213,3 +213,35 @@ class TestVolunteerIntegration:
         )
 
         assert response.status_code == 303
+
+    def test_assigned_volunteer_can_help_cross_structure_request(
+        self, authenticated_volunteer_client, init_test_data, session
+    ):
+        """Assigned volunteer can express interest across structures."""
+        from backend.models import Request, Structure
+
+        volunteer = init_test_data["volunteer"]
+
+        other_structure = Structure(
+            name="Cross structure help test",
+            slug="cross-structure-help-test",
+        )
+        session.add(other_structure)
+        session.commit()
+
+        req = Request(
+            title="Cross-structure help request",
+            description="Regression test for volunteer help tenant scope",
+            status="in_progress",
+            structure_id=other_structure.id,
+            assigned_volunteer_id=volunteer.id,
+        )
+        session.add(req)
+        session.commit()
+
+        response = authenticated_volunteer_client.post(
+            f"/volunteer/requests/{req.id}/help",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 303

@@ -3421,7 +3421,11 @@ def volunteer_help(req_id: int):
     current_app.logger.info("VOL_HELP DB=%s", db.engine.url)
     current_app.logger.info("VOL_HELP req_id=%s", req_id)
 
-    req = get_scoped_request_or_404(req_id)
+    req = Request.query.filter(Request.id == req_id).first_or_404()
+    is_assigned = getattr(req, "assigned_volunteer_id", None) == volunteer.id
+    is_open = (getattr(req, "status", "") or "").lower() == "open"
+    if not (is_assigned or is_open):
+        abort(404)
 
     interest = VolunteerInterest.query.filter_by(
         volunteer_id=volunteer.id, request_id=req.id
