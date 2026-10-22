@@ -841,8 +841,8 @@
           {% set csrf = '' %}
         {% endif %}
         {% if matched_volunteers %}
-          <div class="table-responsive hc-admin-tablewrap">
-            <table class="table align-middle hc-admin-table hc-workflow-table">
+          <div class="table-responsive hc-admin-tablewrap hc-volunteer-tablewrap">
+            <table class="table align-middle hc-admin-table hc-workflow-table hc-volunteer-table">
               <thead>
                 <tr>
                   <th>Bénévole</th>
@@ -916,6 +916,7 @@
       </div>
     </div>
 
+    {% if last_vol_signal or volunteer_signals or can_help_count or cant_help_count %}
     <div class="card border-0 shadow-sm mb-3 hc-main-block hc-main-block--volunteer-signals">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -992,7 +993,9 @@
         {% endif %}
       </div>
     </div>
+    {% endif %}
 
+    {% if volunteer_engagement or latest_actions %}
     <div class="card border-0 shadow-sm mb-3 hc-card hc-main-block hc-main-block--volunteer-actions">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -1028,6 +1031,7 @@
         {% endif %}
       </div>
     </div>
+    {% endif %}
 
     {% if interests %}
     <div class="card border-0 shadow-sm mb-3 hc-card hc-main-block hc-main-block--interests">

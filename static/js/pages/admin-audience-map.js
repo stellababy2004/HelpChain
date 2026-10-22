@@ -17,7 +17,7 @@
     ? window.HCMapsLive.create(root, {
         loadingText: "Lecture d'intelligence territoriale...",
         refreshText: "Actualisation des signaux territoriaux...",
-        stableText: "Intelligence live"
+        stableText: "Analyse en direct"
       })
     : null;
 
@@ -34,9 +34,9 @@
   var HEAT_ZONES = [];
 
   var PRIORITY_META = {
-    Haute: { cssClass: "audience-marker--high", popupEyebrow: "Territoire prioritaire", action: "Planifier une prise de contact cette semaine.", intensity: "High", zoom: 12, zIndexOffset: 500 },
-    Moyenne: { cssClass: "audience-marker--medium", popupEyebrow: "Territoire a qualifier", action: "Qualifier les interlocuteurs avant priorisation territoriale.", intensity: "Medium", zoom: 11.4, zIndexOffset: 350 },
-    Observation: { cssClass: "audience-marker--watch", popupEyebrow: "Territoire en observation", action: "Conserver en observation territoriale.", intensity: "Watch", zoom: 11, zIndexOffset: 220 },
+    Haute: { cssClass: "audience-marker--high", popupEyebrow: "Territoire prioritaire", action: "Planifier une prise de contact cette semaine.", intensity: "Élevée", zoom: 12, zIndexOffset: 500 },
+    Moyenne: { cssClass: "audience-marker--medium", popupEyebrow: "Territoire a qualifier", action: "Qualifier les interlocuteurs avant priorisation territoriale.", intensity: "Moyenne", zoom: 11.4, zIndexOffset: 350 },
+    Observation: { cssClass: "audience-marker--watch", popupEyebrow: "Territoire en observation", action: "Conserver en observation territoriale.", intensity: "À surveiller", zoom: 11, zIndexOffset: 220 },
   };
   var QUALIFIED_PAGE_WEIGHTS = {
     "/demo": 40,
@@ -88,6 +88,27 @@
       .replace(/'/g, "&#39;");
   }
 
+  function frenchDisplayText(value) {
+    var text = String(value || "").trim();
+    var translations = {
+      "Waiting for sufficient analytics data.": "En attente de données analytiques suffisantes.",
+      "No priority recommendation available.": "Aucune priorité recommandée.",
+      "Continue monitoring": "Poursuivre le suivi",
+      "Continue monitoring.": "Poursuivre le suivi.",
+      "High-conversion probability": "Forte probabilité de conversion",
+      "High-priority founder follow-up": "Suivi prioritaire par la direction",
+      "Prioritize direct founder follow-up": "Prioriser un suivi direct par la direction",
+      "Outreach now": "Prendre contact maintenant",
+      "No CRM opportunity linked.": "Aucune opportunité CRM associée.",
+      "Lead qualifie": "Contact qualifié",
+      "ACCOUNT": "COMPTE",
+      "low": "faible",
+      "medium": "moyenne",
+      "high": "élevée"
+    };
+    return translations[text] || text;
+  }
+
   function setText(id, value) {
     var el = document.getElementById(id);
     if (el) {
@@ -111,7 +132,7 @@
   function formatDepartment(point) {
     var number = point.departmentNumber || point.department_code || "";
     var name = point.departmentName || point.department || "";
-    return String((number + " " + name).trim() || "No territory identified yet.");
+    return String((number + " " + name).trim() || "Aucun territoire identifié pour le moment.");
   }
 
   function formatEuro(value) {
@@ -134,8 +155,8 @@
     var meta = getPriorityMeta(point.priority);
     var sourceLabel = String(point.intelligence_source || "").indexOf("observed") !== -1
       ? "Signal observe"
-      : "No qualified audience signals detected yet.";
-    var structuresLabel = point.structures_label || point.structures || "No organization structure data linked.";
+      : "Aucun signal d’audience qualifié détecté pour le moment.";
+    var structuresLabel = point.structures_label || point.structures || "Aucune structure associée.";
     return [
       '<div class="hc-audience-popup">',
       '<div class="hc-audience-popup__eyebrow">' + escapeHtml(meta.popupEyebrow) + "</div>",
@@ -144,7 +165,7 @@
       '<span class="hc-audience-popup__dept">Departement ' + escapeHtml(formatDepartment(point)) + "</span>",
       "</div>",
       '<div class="hc-audience-popup__stats">',
-      "<span><strong>" + escapeHtml(sourceLabel) + "</strong><em>" + escapeHtml(point.needs || "No qualified audience signals detected yet.") + "</em></span>",
+      "<span><strong>" + escapeHtml(sourceLabel) + "</strong><em>" + escapeHtml(point.needs || "Aucun signal d’audience qualifié détecté pour le moment.") + "</em></span>",
       "<span><strong>Structures</strong><em>" + escapeHtml(structuresLabel) + "</em></span>",
       "<span><strong>Priorite</strong><em>" + escapeHtml(point.priority) + "</em></span>",
       "</div>",
@@ -294,7 +315,7 @@
   function buildFounderAction(row) {
     var estimatedDemand = getEstimatedDemand(row);
     if (row.priority === "Haute" && estimatedDemand >= 8) {
-      return "Outreach now";
+      return "Prendre contact maintenant";
     }
     if (row.priority === "Moyenne") {
       return "Email cible aujourd'hui";
@@ -465,7 +486,7 @@
       })
       .map(function (row) {
         var pagesViewed = Array.isArray(row.pages_viewed) ? row.pages_viewed : [];
-        var territoryLabel = String(row.organization || row.email || "Lead qualifie");
+        var territoryLabel = String(row.organization || row.email || "Contact qualifié");
         if (row.email && row.organization && row.organization !== row.email) {
           territoryLabel += " - " + row.email;
         }
@@ -587,9 +608,9 @@
     }
     return {
       title: "Opportunite cette semaine",
-      modeLabel: "Unavailable",
+      modeLabel: "Indisponible",
       label: "Niveau d'activité",
-      context: "No CRM opportunity is linked to audience signals.",
+      context: "Aucune opportunité CRM n’est liée aux signaux d’audience.",
       value: estimatedOpportunityThisWeek(),
     };
   }
@@ -599,7 +620,7 @@
       return;
     }
     founderQueueEl.innerHTML = [
-      '<div class="hc-empty-state">',
+      '<div class="hc-empty-state audience-module-empty">',
       '<div class="hc-empty-state__title">Pas encore assez de signaux comptes.</div>',
       '<div class="hc-empty-state__text">Les recommandations s\'affineront avec les prochains signaux qualifiés.</div>',
       "</div>",
@@ -845,13 +866,13 @@
   function updateSidebar(point) {
     var detailCard = document.getElementById("audienceMapDetailCard");
     setText("audienceMapDetailCity", point.city);
-    setText("audienceMapDetailDemand", point.needs || "No qualified audience signals detected yet.");
-    setText("audienceMapDetailStructures", point.structures_label || point.structures || "No organization structure data linked.");
+    setText("audienceMapDetailDemand", point.needs || "Aucun signal d’audience qualifié détecté pour le moment.");
+    setText("audienceMapDetailStructures", point.structures_label || point.structures || "Aucune structure associée.");
     setText("audienceMapDetailDepartment", formatDepartment(point));
-    setText("audienceMapDetailPriority", point.priority);
-    setText("audienceMapDetailIntensity", getPriorityMeta(point.priority).intensity);
-    setText("audienceMapDetailRecommendation", point.recommendation);
-    setText("audienceMapDetailAction", buildActionSuggestion(point.priority));
+    setText("audienceMapDetailPriority", frenchDisplayText(point.priority));
+    setText("audienceMapDetailIntensity", frenchDisplayText(getPriorityMeta(point.priority).intensity));
+    setText("audienceMapDetailRecommendation", frenchDisplayText(point.recommendation));
+    setText("audienceMapDetailAction", frenchDisplayText(buildActionSuggestion(point.priority)));
     setAudiencePressure(
       detailCard,
       point.priority === "Haute" ? "elevated" : (point.priority === "Moyenne" ? "watch" : "calm")
@@ -928,6 +949,10 @@
       return;
     }
     deptScoresEl.innerHTML = "";
+    if (!DEPARTMENT_SCORES.length) {
+      deptScoresEl.innerHTML = '<div class="hc-empty-state audience-module-empty"><div class="hc-empty-state__title">Aucun département prioritaire.</div><div class="hc-empty-state__text">Les priorités apparaîtront avec les prochains signaux territoriaux.</div></div>';
+      return;
+    }
     DEPARTMENT_SCORES.forEach(function (dept) {
       var button = document.createElement("button");
       button.type = "button";
@@ -949,6 +974,10 @@
       return;
     }
     liveSignalsEl.innerHTML = "";
+    if (!LIVE_SIGNALS.length) {
+      liveSignalsEl.innerHTML = '<div class="hc-empty-state audience-module-empty"><div class="hc-empty-state__title">Aucun signal récent.</div><div class="hc-empty-state__text">Les nouveaux signaux apparaîtront ici.</div></div>';
+      return;
+    }
     LIVE_SIGNALS.forEach(function (signal) {
       var button = document.createElement("button");
       button.type = "button";
@@ -972,9 +1001,9 @@
     var recommendations = recommendationLogic();
     if (!recommendations.length) {
       recommendationsEl.innerHTML = [
-        '<div class="hc-empty-state">',
-        '<div class="hc-empty-state__title">No priority recommendation available.</div>',
-        '<div class="hc-empty-state__text">No recommendation is shown until it can be traced to observed signals.</div>',
+        '<div class="hc-empty-state audience-module-empty">',
+        '<div class="hc-empty-state__title">Aucune priorité recommandée.</div>',
+        '<div class="hc-empty-state__text">Une recommandation apparaîtra dès qu’elle pourra être reliée à des signaux observés.</div>',
         "</div>",
       ].join("");
       return;
@@ -1042,7 +1071,7 @@
         }
         accountLines.push('<span class="audience-founder-row__reason">Pages vues: ' + escapeHtml(item.pagesViewed.join(", ") || "Pages non renseignees") + "</span>");
         accountLines.push('<span class="audience-founder-row__reason">Derniere activite: ' + escapeHtml(item.lastActivity) + "</span>");
-        accountLines.push('<span class="audience-founder-row__reason"><span class="audience-inline-tag">ACCOUNT</span> <span class="audience-inline-tag">' + escapeHtml(item.sourceLabel) + '</span> <span class="audience-inline-tag">Confiance ' + escapeHtml(item.confidence) + "</span></span>");
+        accountLines.push('<span class="audience-founder-row__reason"><span class="audience-inline-tag">COMPTE</span> <span class="audience-inline-tag">' + escapeHtml(frenchDisplayText(item.sourceLabel)) + '</span> <span class="audience-inline-tag">Confiance ' + escapeHtml(frenchDisplayText(item.confidence)) + "</span></span>");
         if (item.salesNote) {
           accountLines.push('<span class="audience-founder-row__reason">Note de qualification: ' + escapeHtml(item.salesNote) + "</span>");
         }
@@ -1052,14 +1081,14 @@
           '<span class="audience-founder-row__reason">Organisation probable: ' + escapeHtml(item.accountName || item.domain || "-") + "</span>",
           '<span class="audience-founder-row__reason"><span class="audience-inline-tag">' + escapeHtml(item.scoreLabel) + '</span> <span class="audience-inline-tag">Niveau moyen ' + escapeHtml(item.avgScore) + "</span></span>",
           accountLines.join(""),
-          '<span class="audience-founder-row__action">Action suggeree: ' + escapeHtml(item.action) + "</span>",
+          '<span class="audience-founder-row__action">Action suggérée : ' + escapeHtml(frenchDisplayText(item.action)) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
             renderActionLink("Voir activité", "btn btn-sm btn-outline-primary", accountLeadsUrl, "Ouvrir l'activité qualifiée") +
             renderActionLink("Préparer contact", "btn btn-sm btn-outline-primary", accountEmailHref, item.actionEmail ? "Préparer un contact" : "Email non disponible") +
             renderActionLink("Planifier échange", "btn btn-sm btn-primary", accountCallHref, item.actionEmail ? "Proposer un échange" : "Ouvrir l'activité qualifiée") +
           "</span>",
           "</span>",
-          '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
+          '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(frenchDisplayText(item.priority)) + "</span>",
         ].join("");
         founderQueueEl.appendChild(accountCard);
         return;
@@ -1112,14 +1141,14 @@
 }).join("") || '<span class="audience-inline-tag audience-inline-tag--page">Pages non renseignees</span>') +
 "</span>",
           intelligenceLines.join(""),
-          '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
+          '<span class="audience-founder-row__action">' + escapeHtml(frenchDisplayText(item.action)) + "</span>",
           '<span class="d-flex flex-wrap gap-2 mt-2">' +
             renderActionLink("Voir activité", "btn btn-sm btn-outline-primary", leadLeadsUrl, "Ouvrir l'activité qualifiée") +
             renderActionLink("Préparer contact", "btn btn-sm btn-outline-primary", leadEmailHref, item.actionEmail ? "Préparer un contact" : "Email non disponible") +
             renderActionLink("Planifier échange", "btn btn-sm btn-primary", leadCallHref, item.actionEmail ? "Proposer un échange" : "Ouvrir l'activité qualifiée") +
           "</span>",
           "</span>",
-          '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
+          '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(frenchDisplayText(item.priority)) + "</span>",
         ].join("");
         founderQueueEl.appendChild(card);
         return;
@@ -1138,9 +1167,9 @@
   return '<span class="audience-inline-tag audience-inline-tag--page">' + escapeHtml(page) + '</span>';
 }).join("") || '<span class="audience-inline-tag audience-inline-tag--page">Aucun parcours</span>') +
 "</span>",
-        '<span class="audience-founder-row__action">' + escapeHtml(item.action) + "</span>",
+        '<span class="audience-founder-row__action">' + escapeHtml(frenchDisplayText(item.action)) + "</span>",
         "</span>",
-        '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.priority) + "</span>",
+        '<span class="audience-founder-row__badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(frenchDisplayText(item.priority)) + "</span>",
       ].join("");
       button.addEventListener("click", function () {
         focusCity(item.focusSlug);
@@ -1154,7 +1183,7 @@
       return;
     }
     var mode = estimatedOpportunityMode();
-    estimatedOpportunityEl.textContent = "No CRM opportunity linked.";
+    estimatedOpportunityEl.textContent = "Aucune opportunité CRM associée.";
     if (opportunityTitleEl) {
       opportunityTitleEl.innerHTML =
         escapeHtml(mode.title) +
@@ -1177,7 +1206,7 @@
     var hotCount = DEPARTMENT_SCORES.filter(function (dept) { return dept.score >= 70; }).length;
     if (!hotCount) {
       forecastEl.innerHTML = [
-        '<div class="hc-empty-state">',
+        '<div class="hc-empty-state audience-module-empty">',
         '<div class="hc-empty-state__title">Données insuffisantes.</div>',
         '<div class="hc-empty-state__text">Les tendances apparaîtront lorsqu’un volume suffisant de signaux territoriaux sera observé.</div>',
         '</div>',
@@ -1201,6 +1230,10 @@
       return;
     }
     shortlistEl.innerHTML = "";
+    if (!PIPELINE_SHORTLIST.length) {
+      shortlistEl.innerHTML = '<div class="hc-empty-state audience-module-empty"><div class="hc-empty-state__title">Aucune priorité immédiate.</div><div class="hc-empty-state__text">Aucun territoire ne nécessite d’action à ce stade.</div></div>';
+      return;
+    }
     PIPELINE_SHORTLIST.forEach(function (item, index) {
       var row = document.createElement("div");
       row.className = "audience-shortlist-item";
@@ -1230,6 +1263,10 @@
   });
 
   if (cityListEl) {
+    cityListEl.innerHTML = "";
+    if (!LOCATIONS.length) {
+      cityListEl.innerHTML = '<div class="hc-empty-state audience-module-empty"><div class="hc-empty-state__title">Aucune ville active.</div><div class="hc-empty-state__text">Les villes apparaîtront lorsqu’un signal localisé sera disponible.</div></div>';
+    }
     LOCATIONS.slice()
       .sort(function (a, b) { return (Number(b.needs) || 0) - (Number(a.needs) || 0); })
       .slice(0, 5)
@@ -1238,11 +1275,11 @@
         button.type = "button";
         button.className = "audience-city-item";
         button.setAttribute("data-city-slug", point.slug);
-        button.setAttribute("title", point.city + " - " + (point.needs || "No qualified audience signals detected yet.") + " signaux");
+        button.setAttribute("title", point.city + " - " + (point.needs || "aucun signal d’audience qualifié") + " signaux");
         button.innerHTML =
           '<span class="audience-city-item__rank">' + (index + 1) + '.</span>' +
           '<span class="audience-city-item__label">' + escapeHtml(point.city) + '</span>' +
-          '<span class="audience-city-item__meta">' + escapeHtml(point.needs || "No qualified audience signals detected yet.") + ' signaux</span>' +
+          '<span class="audience-city-item__meta">' + escapeHtml(point.needs || "aucun signal d’audience qualifié") + ' signaux</span>' +
           '<span class="audience-city-item__arrow" aria-hidden="true">›</span>';
         button.addEventListener("click", function () {
           focusCity(point.slug);
@@ -1279,7 +1316,7 @@
     if (LOCATIONS.length) {
       focusCity(LOCATIONS[0].slug);
     }
-    if (liveManager) liveManager.stable("Intelligence live", 260);
+    if (liveManager) liveManager.stable("Analyse en direct", 260);
   }, 0);
 })();
 

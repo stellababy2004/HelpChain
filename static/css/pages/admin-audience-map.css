@@ -2558,6 +2558,85 @@ body.hc-admin-audience-page .hc-audience-map-embedded .hc-admin-table td {
   padding: 8px 10px !important;
 }
 
+body.hc-admin-audience-page .hc-audience-map-embedded-main,
+body.hc-admin-audience-page .hc-audience-map-embedded-side,
+body.hc-admin-audience-page .hc-audience-intelligence-panel {
+  min-width: 0;
+}
+
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-admin-table {
+  min-width: 560px;
+  table-layout: fixed;
+}
+
+body.hc-admin-audience-page .hc-audience-pages-table__page { width: 34%; }
+body.hc-admin-audience-page .hc-audience-pages-table__views { width: 11%; }
+body.hc-admin-audience-page .hc-audience-pages-table__reading { width: 23%; }
+body.hc-admin-audience-page .hc-audience-pages-table__weight { width: 32%; }
+
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-admin-table th,
+body.hc-admin-audience-page .hc-audience-map-embedded .hc-admin-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-admin-card__header {
+  flex-wrap: wrap;
+}
+
+body.hc-admin-audience-page .hc-audience-intelligence-panel {
+  align-self: start;
+  height: auto !important;
+}
+
+body.hc-admin-audience-page :is(.audience-founder-queue, .audience-signal-list, .audience-action-list, .audience-forecast-card, .audience-shortlist) .hc-empty-state {
+  display: block !important;
+  margin: 0 !important;
+  padding: .65rem .75rem !important;
+  border: 1px dashed rgba(148, 163, 184, .55);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, .82);
+}
+
+body.hc-admin-audience-page :is(.audience-founder-queue, .audience-signal-list, .audience-action-list, .audience-forecast-card, .audience-shortlist) .hc-empty-state__title {
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+body.hc-admin-audience-page :is(.audience-founder-queue, .audience-signal-list, .audience-action-list, .audience-forecast-card, .audience-shortlist) .hc-empty-state__text {
+  margin-top: .2rem;
+  font-size: .76rem;
+  line-height: 1.35;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intelligence-card :is(h2, .hc-section-eyebrow) {
+  color: #f8fafc !important;
+}
+
+body.hc-admin-audience-page .hc-audience-sidepanel-live .hc-live-intelligence-card p {
+  color: rgba(241, 245, 249, .82) !important;
+}
+
+/* Preserve the semantic template order against the global admin sequence rules. */
+body.hc-admin-audience-page .hc-map-page--audience > .hc-admin-headerCard { order: 0 !important; }
+body.hc-admin-audience-page .hc-map-page--audience > .hc-kpis { order: 1 !important; }
+body.hc-admin-audience-page .hc-map-page--audience > .hc-admin-table-shell { order: 2 !important; }
+body.hc-admin-audience-page .hc-map-page--audience > .row.g-3 { order: 3 !important; }
+
+/* These analytical modules need their compact empty states; older page rules hide them globally. */
+body.hc-admin-audience-page .hc-map-page--audience :is(
+  .audience-city-list,
+  .audience-opportunity-grid,
+  .audience-founder-queue,
+  .audience-signal-list,
+  .audience-action-list,
+  .audience-forecast-card,
+  .audience-shortlist
+) > .hc-empty-state {
+  display: block !important;
+  visibility: visible !important;
+}
+
 body.hc-admin-audience-page .hc-audience-map-embedded .audience-side-module {
   padding: 10px 12px !important;
   border-radius: 14px !important;
@@ -3503,5 +3582,19 @@ body.hc-admin-audience-page .hc-audience-detailCard.mb-3{
 body.hc-admin-audience-page .hc-audience-sidepanel-live.mt-3,
 body.hc-admin-audience-page .audience-sidebar-footer.mt-3{
   margin-top: .55rem !important;
+}
+
+body.hc-admin-audience-page .hc-map-page--audience .audience-module-empty{
+  display: block !important;
+  visibility: visible !important;
+  margin: 0 !important;
+  padding: .65rem .75rem !important;
+}
+
+body.hc-admin-audience-page .hc-map-page--audience #audienceRevenueRadarEmpty,
+body.hc-admin-audience-page .hc-map-page--audience #audienceRevenueRadarEmpty .audience-module-empty{
+  width: 100%;
+  max-width: none;
+  min-height: 0;
 }
 

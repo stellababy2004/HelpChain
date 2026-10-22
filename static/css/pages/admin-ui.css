@@ -21157,7 +21157,7 @@ body.hc-admin-pilotage-page .hc-pilotage-hero{
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, .95fr);
   gap: 1rem;
-  align-items: stretch;
+  align-items: start;
 }
 
 body.hc-admin-pilotage-page .hc-pilotage-hero__main{
@@ -21236,11 +21236,22 @@ body.hc-admin-pilotage-page .hc-pilotage-hero__side{
 
 body.hc-admin-pilotage-page .hc-command-grid--pilotage{
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  height: 100%;
 }
 
 body.hc-admin-pilotage-page .hc-command-grid--pilotage .hc-command-panel{
-  min-height: 164px;
+  min-height: 142px;
+}
+
+body.hc-page-admin .hc-admin-wrap--request-detail .hc-volunteer-tablewrap{
+  max-width: 920px;
+}
+
+body.hc-page-admin .hc-admin-wrap--request-detail .hc-volunteer-table{
+  min-width: 680px;
+}
+
+body.hc-page-admin .hc-admin-wrap--request-detail .hc-volunteer-table :is(th, td):first-child{
+  width: 34%;
 }
 
 body.hc-admin-pilotage-page .hc-pilotage-sectionhead{
@@ -22735,6 +22746,25 @@ body.hc-page-admin .hc-revenue-page .hc-revenue-detail-label small {
 .hc-founder-growth a,
 .hc-revenue-details a {
   color: var(--hc-admin-accent);
+}
+
+
+/* Pilotage - compact empty action queue */
+body.hc-admin-pilotage-page .hc-admin-table-shell > .hc-empty-state {
+  min-height: 0 !important;
+  max-width: none;
+  margin: 12px 20px 16px !important;
+  padding: 14px 18px !important;
+}
+
+/* Pilotage - let a single summary card use the full row */
+body.hc-admin-pilotage-page .hc-pilotage-summary-grid > :only-child {
+  grid-column: 1 / -1;
+}
+
+/* Pilotage - preserve semantic DOM order */
+body.hc-admin-pilotage-page .hc-admin-wrap > * {
+  order: 0 !important;
 }
 
 /* HELPCHAIN ADMIN SURFACE SYSTEM — END */

@@ -5,7 +5,7 @@
 {% block admin_workspace_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/hc-unified-maps.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/maps-live-states.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-audience-map.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-audience-map.css', v='20261022-ui-polish') }}">
   <link
     rel="stylesheet"
     href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}"
@@ -14,11 +14,16 @@
 
 {% block admin_content %}
 {% macro audience_metric_meta(meta) -%}
+  {% set confidence_labels = {'high': 'élevée', 'medium': 'moyenne', 'low': 'faible'} %}
+  {% set metric_explanation = meta.explain or 'En attente de données analytiques suffisantes.' %}
+  {% if metric_explanation == 'Counts are derived from analytics event rows and user behavior locations in the selected 7-day window.' %}
+    {% set metric_explanation = 'Calcul fondé sur les événements analytiques et les localisations observées sur les 7 derniers jours.' %}
+  {% endif %}
   <div class="hc-kpi__context">
-    Updated: {{ meta.last_updated.strftime('%Y-%m-%d %H:%M:%S UTC') if meta.last_updated else 'Waiting for analytics data' }}
-    · Confidence: {{ meta.confidence or 'low' }}
+    Mise à jour : {{ meta.last_updated.strftime('%Y-%m-%d %H:%M:%S UTC') if meta.last_updated else 'En attente de données analytiques' }}
+    · Fiabilité : {{ confidence_labels.get(meta.confidence, meta.confidence or 'faible') }}
   </div>
-  <div class="hc-kpi__context">{{ meta.explain or 'Waiting for sufficient analytics data.' }}</div>
+  <div class="hc-kpi__context">{{ metric_explanation }}</div>
   {% if analytics_developer_mode %}
     <div class="hc-kpi__context">
       Metric: {{ meta.metric_key or 'Unavailable' }}
@@ -42,7 +47,7 @@
       <div>
         <div class="hc-admin-kicker">Audience & signaux territoriaux</div>
         <h1 class="hc-admin-title mb-1">Carte d'interet - France</h1>
-        <div class="hc-muted">Vue analytique des signaux territoriaux, des pages consultees et des zones utiles au pilotage.</div>
+        <div class="hc-muted">Vue analytique des signaux territoriaux, des pages consultées et des zones utiles au pilotage.</div>
       </div>
       <span class="badge text-bg-light border">7 derniers jours</span>
     </div>
@@ -50,13 +55,13 @@
 
   <div class="hc-kpis mb-3">
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Visiteurs 24h <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
+      <div class="hc-kpi__label">Visiteurs 24h <span class="audience-data-tag audience-data-tag--raw">Signal en direct</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.visitors_24h }}</div>
       <div class="hc-kpi__context">sessions ou IP distinctes</div>
       {{ audience_metric_meta(audience.kpi_meta) }}
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Visiteurs 7 jours <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
+      <div class="hc-kpi__label">Visiteurs 7 jours <span class="audience-data-tag audience-data-tag--raw">Signal en direct</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.visitors_7d }}</div>
       <div class="hc-kpi__context">audience recente</div>
       {{ audience_metric_meta(audience.kpi_meta) }}
@@ -68,13 +73,13 @@
       {{ audience_metric_meta(audience.kpi_meta) }}
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Pages cles vues <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
+      <div class="hc-kpi__label">Pages clés vues <span class="audience-data-tag audience-data-tag--raw">Signal en direct</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.key_pages }}</div>
       <div class="hc-kpi__context">parcours institutionnels</div>
       {{ audience_metric_meta(audience.kpi_meta) }}
     </div>
     <div class="hc-kpi">
-      <div class="hc-kpi__label">Parcours observes <span class="audience-data-tag audience-data-tag--raw">Signal live</span></div>
+      <div class="hc-kpi__label">Parcours observés <span class="audience-data-tag audience-data-tag--raw">Signal en direct</span></div>
       <div class="hc-kpi__value">{{ audience.kpis.intent_signals }}</div>
       <div class="hc-kpi__context">vues sur pages a intention</div>
       {{ audience_metric_meta(audience.kpi_meta) }}
@@ -91,16 +96,16 @@
     <div class="hc-card__section hc-card__section--header">
       <div>
         <strong>Radar des signaux</strong>
-        <div class="hc-muted small">Sessions anonymes classees par signaux d'interet institutionnel.</div>
+        <div class="hc-muted small">Sessions anonymes classées par signaux d’intérêt institutionnel.</div>
       </div>
       <span class="badge text-bg-light border">Analyse territoriale</span>
     </div>
     <div class="p-3">
       <div class="audience-radar-list" id="audienceRevenueRadar" aria-live="polite"></div>
       <div class="audience-empty-state d-none" id="audienceRevenueRadarEmpty">
-        <div class="hc-empty-state">
-          <div class="hc-empty-state__title">Pas encore assez de signaux consolides.</div>
-          <div class="hc-empty-state__text">Le radar se renforce avec le trafic reel.</div>
+        <div class="hc-empty-state audience-module-empty">
+          <div class="hc-empty-state__title">Pas encore assez de signaux consolidés.</div>
+          <div class="hc-empty-state__text">Le radar se renforce avec le trafic réel.</div>
         </div>
       </div>
     </div>
@@ -135,17 +140,23 @@
     <div class="hc-audience-map-embedded-main">
       <div class="hc-card hc-admin-table-shell">
         <div class="hc-card__section hc-card__section--header">
-          <strong>Pages les plus consultees</strong>
-          <span class="hc-muted small">Lecture operationnelle des pages a intention.</span>
+          <strong>Pages les plus consultées</strong>
+          <span class="hc-muted small">Lecture opérationnelle des pages à intention.</span>
         </div>
         <div class="table-responsive hc-admin-tablewrap">
-          <table class="table table-hover align-middle hc-admin-table mb-0">
+          <table class="table table-hover align-middle hc-admin-table hc-audience-pages-table mb-0">
+            <colgroup>
+              <col class="hc-audience-pages-table__page">
+              <col class="hc-audience-pages-table__views">
+              <col class="hc-audience-pages-table__reading">
+              <col class="hc-audience-pages-table__weight">
+            </colgroup>
             <thead>
               <tr>
                 <th>Page</th>
-                <th class="text-end">Vues <span class="audience-data-tag audience-data-tag--raw">Signal live</span></th>
+                <th class="text-end">Vues</th>
                 <th>Lecture</th>
-                <th>Poids opérationnel <span class="audience-data-tag audience-data-tag--estimated">Analyse territoriale</span></th>
+                <th>Poids opérationnel</th>
               </tr>
             </thead>
             <tbody>
@@ -216,7 +227,7 @@
           <div class="audience-side-module">
             <div class="audience-module-header">
               <h2 class="h6 mb-0">Signaux en direct</h2>
-              <span class="audience-data-tag audience-data-tag--raw">Signal live</span>
+              <span class="audience-data-tag audience-data-tag--raw">Signal en direct</span>
             </div>
             <div class="audience-signal-list" id="audienceLiveSignals" aria-live="polite"></div>
           </div>
@@ -251,7 +262,7 @@
     </div>
 
     <div class="col-12 col-xl-4">
-      <div class="hc-card h-100 hc-audience-intelligence-panel">
+      <div class="hc-card hc-audience-intelligence-panel">
         <div class="hc-card__section hc-card__section--header">
           <strong>Signaux territoriaux</strong>
           <span class="hc-muted small">Villes, départements et régions détectés.</span>
@@ -259,36 +270,36 @@
         <div class="p-3">
           <div class="hc-audience-detailCard mb-3" id="audienceMapDetailCard">
             <div class="hc-audience-detailCard__eyebrow">Ville active</div>
-            <h2 class="hc-audience-detailCard__title" id="audienceMapDetailCity">No territory identified yet.</h2>
+            <h2 class="hc-audience-detailCard__title" id="audienceMapDetailCity">Aucun territoire identifié pour le moment.</h2>
             <div class="hc-audience-detailGrid audience-sidebar-kpis">
               <div class="hc-audience-detailMetric audience-kpi-card">
                 <span class="hc-audience-detailMetric__label">Signaux observés <span class="audience-data-tag audience-data-tag--estimated">Analyse territoriale</span></span>
-                <strong id="audienceMapDetailDemand">No qualified audience signals detected yet.</strong>
+                <strong id="audienceMapDetailDemand">Aucun signal d’audience qualifié détecté pour le moment.</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
                 <span class="hc-audience-detailMetric__label">Structures</span>
-                <strong id="audienceMapDetailStructures">No organization structure data linked.</strong>
+                <strong id="audienceMapDetailStructures">Aucune structure associée.</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
                 <span class="hc-audience-detailMetric__label">Département</span>
-                <strong id="audienceMapDetailDepartment">No territory identified yet.</strong>
+                <strong id="audienceMapDetailDepartment">Aucun territoire identifié pour le moment.</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
                 <span class="hc-audience-detailMetric__label">Priorite <span class="audience-data-tag audience-data-tag--estimated">Analyse territoriale</span></span>
-                <strong id="audienceMapDetailPriority">No priority recommendation available.</strong>
+                <strong id="audienceMapDetailPriority">Aucune priorité recommandée.</strong>
               </div>
               <div class="hc-audience-detailMetric audience-kpi-card">
                 <span class="hc-audience-detailMetric__label">Intensité territoriale <span class="audience-data-tag audience-data-tag--estimated">Analyse territoriale</span></span>
-                <strong id="audienceMapDetailIntensity">Waiting for sufficient analytics data.</strong>
+                <strong id="audienceMapDetailIntensity">En attente de données analytiques suffisantes.</strong>
               </div>
             </div>
             <div class="hc-audience-detailLine">
               <span class="hc-audience-detailLine__label">Recommandation opérationnelle</span>
-              <p id="audienceMapDetailRecommendation" class="hc-audience-detailRecommendation mb-0">No priority recommendation available.</p>
+              <p id="audienceMapDetailRecommendation" class="hc-audience-detailRecommendation mb-0">Aucune priorité recommandée.</p>
             </div>
             <div class="hc-audience-detailLine">
               <span class="hc-audience-detailLine__label">Action suggérée</span>
-              <p id="audienceMapDetailAction" class="hc-audience-detailRecommendation mb-0">Continue monitoring.</p>
+              <p id="audienceMapDetailAction" class="hc-audience-detailRecommendation mb-0">Poursuivre le suivi.</p>
             </div>
           </div>
 
@@ -312,11 +323,11 @@
 <section class="hc-admin-card hc-live-intelligence-card">
   <div class="hc-admin-card__header">
     <div>
-      <div class="hc-section-eyebrow">INTELLIGENCE LIVE</div>
+      <div class="hc-section-eyebrow">ANALYSE EN DIRECT</div>
       <h2>Sessions qualifiées</h2>
       <p>Parcours récents, niveau d'intention et signaux utiles pour prioriser l'action territoriale.</p>
     </div>
-    <span class="hc-pill">Live ? 30s</span>
+    <span class="hc-pill">Direct · 30 s</span>
   </div>
 
   <div id="hc-high-intent-sessions">
@@ -326,7 +337,7 @@
           </div>
 
           <div class="audience-sidebar-footer mt-3">
-            <span class="hc-muted small">Dernière mise à jour : {{ audience.last_updated.strftime('%Y-%m-%d %H:%M:%S UTC') if audience.last_updated else 'Waiting for analytics data' }}</span>
+            <span class="hc-muted small">Dernière mise à jour : {{ audience.last_updated.strftime('%Y-%m-%d %H:%M:%S UTC') if audience.last_updated else 'En attente de données analytiques' }}</span>
           </div>
         </div>
       </div>
@@ -362,7 +373,7 @@
     src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"
   ></script>
   <script src="{{ url_for('static', filename='js/shared/maps-live-state-manager.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/pages/admin-audience-map.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/admin-audience-map.js', v='20261022-ui-polish') }}"></script>
 
 
 

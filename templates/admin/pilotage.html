@@ -28,7 +28,6 @@
       <div class="hc-pilotage-hero__chips">
         <span class="hc-chip hc-chip--neg"><span class="hc-chip__dot"></span>{{ critical_count or 0 }} critiques</span>
         <span class="hc-chip hc-chip--neg"><span class="hc-chip__dot"></span>{{ no_owner_count or 0 }} sans responsable</span>
-        <span class="hc-chip"><span class="hc-chip__dot"></span>{{ not_seen_72h_count or 0 }} sans action 72 h</span>
         <span class="hc-chip"><span class="hc-chip__dot"></span>{{ manager_review_today_count or 0 }} revues à cadrer</span>
       </div>
       {% if institutional_universe %}
@@ -120,36 +119,6 @@
     </section>
   {% endif %}
 
-  <div class="hc-pilotage-summary-grid mb-3">
-    <section class="hc-pilotage-card">
-      <div class="hc-pilotage-sectionhead">
-        <div>
-          <div class="hc-pilotage-sectionhead__kicker">Risque</div>
-          <h3>Indicateurs de risque</h3>
-        </div>
-      </div>
-      <ul class="hc-pilotage-statlist mb-0">
-        <li><span>Situations critiques</span><strong>{{ critical_count or 0 }}</strong></li>
-        <li><span>Situations à surveiller</span><strong>{{ attention_count or 0 }}</strong></li>
-        <li><span>Situations standard</span><strong>{{ standard_count or 0 }}</strong></li>
-      </ul>
-    </section>
-
-    <section class="hc-pilotage-card">
-      <div class="hc-pilotage-sectionhead">
-        <div>
-          <div class="hc-pilotage-sectionhead__kicker">Exécution</div>
-          <h3>Alertes opérationnelles</h3>
-        </div>
-      </div>
-      <ul class="hc-pilotage-statlist mb-0">
-        <li><span>Situations sans responsable</span><strong>{{ no_owner_count or 0 }}</strong></li>
-        <li><span>Situations sans action depuis 72 heures</span><strong>{{ not_seen_72h_count or 0 }}</strong></li>
-        <li><span>Situations critiques sans responsable</span><strong>{{ critical_no_owner_count or 0 }}</strong></li>
-      </ul>
-    </section>
-  </div>
-
   <section class="hc-pilotage-card hc-admin-table-shell mb-3">
     <div class="hc-card__header hc-admin-table-toolbar">
       <div>
@@ -159,6 +128,7 @@
       </div>
       <div class="hc-pilotage-table__meta">{{ priority_items|length }} dossier{% if priority_items|length != 1 %}s{% endif %} dans la vue prioritaire</div>
     </div>
+    {% if priority_items %}
     <div class="table-responsive hc-admin-tablewrap">
       <table class="table table-sm align-middle hc-admin-table hc-pilotage-table mb-0">
         <thead>
@@ -194,19 +164,16 @@
                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=item.id) }}">Voir les détails</a>
               </td>
             </tr>
-          {% else %}
-            <tr>
-              <td colspan="7" class="py-4">
-                <div class="hc-empty-state">
-                  <div class="hc-empty-state__title">Aucune situation prioritaire</div>
-                  <div class="hc-empty-state__text">Les indicateurs ne signalent pas de dossier à reprendre immédiatement.</div>
-                </div>
-              </td>
-            </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+    {% else %}
+    <div class="hc-empty-state mx-3 my-3 py-3">
+      <div class="hc-empty-state__title">Aucune situation prioritaire</div>
+      <div class="hc-empty-state__text">Les indicateurs ne signalent pas de dossier à reprendre immédiatement.</div>
+    </div>
+    {% endif %}
   </section>
 
   <div class="hc-pilotage-summary-grid">
