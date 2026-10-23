@@ -262,6 +262,27 @@ def test_structure_level_admin_is_scoped_in_admin_requests(client, session):
     assert "out-of-scope-invariant-request" not in html
 
 
+def test_deactivated_admin_loses_access_with_existing_session(client, session):
+    structure = _default_structure(session)
+    admin = _make_admin(
+        session,
+        username="deactivated_admin_invariant",
+        email="deactivated_admin_invariant@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    _set_mfa_ready_session(client, session, admin)
+
+    initial_response = client.get("/admin/requests", follow_redirects=False)
+    assert initial_response.status_code == 200
+
+    admin.is_active = False
+    session.commit()
+
+    stale_session_response = client.get("/admin/requests", follow_redirects=False)
+    assert stale_session_response.status_code in (302, 303, 401, 403)
+
+
 def test_session_actor_resolution_matches_structure_admin_session(app, session):
     structure = _make_structure(
         session,
