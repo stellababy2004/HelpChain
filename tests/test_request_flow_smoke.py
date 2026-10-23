@@ -256,8 +256,8 @@ def test_public_request_to_resolved_case_lifecycle(
         name="Lifecycle Professional",
         email="lifecycle-professional@test.local",
         actor_type="field_referent",
-        availability="unavailable",
-        is_active=False,
+        availability="available",
+        is_active=True,
     )
     session.add(intervenant)
     session.flush()

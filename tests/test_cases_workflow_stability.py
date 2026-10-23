@@ -123,8 +123,8 @@ def _make_intervenant(session, *, structure_id: int, name: str, email: str):
         name=name,
         email=email,
         actor_type="field_referent",
-        availability="unavailable",
-        is_active=False,
+        availability="available",
+        is_active=True,
     )
     session.add(row)
     session.commit()
@@ -414,9 +414,10 @@ def test_active_case_still_accepts_direct_operational_mutations(app, session):
         role="ops",
         structure_id=structure.id,
     )
-    lead = _make_professional_lead(
+    lead, _intervenant = _make_converted_professional_lead(
         session,
-        full_name="Active Write Lead",
+        structure_id=structure.id,
+        name="Active Write Lead",
         email="active-write-lead@test.local",
     )
     req = _make_request(
@@ -782,9 +783,10 @@ def test_assigning_professional_upserts_canonical_case_participant(app, session)
         role="ops",
         structure_id=structure.id,
     )
-    lead = _make_professional_lead(
+    lead, _intervenant = _make_converted_professional_lead(
         session,
-        full_name="Assigned Lead",
+        structure_id=structure.id,
+        name="Assigned Lead",
         email="assigned-lead@test.local",
     )
     req = _make_request(session, title="professional assignment", user_id=user.id, structure_id=structure.id)
@@ -819,6 +821,243 @@ def test_assigning_professional_upserts_canonical_case_participant(app, session)
     assert participant_rows[0].professional_lead_id == lead.id
     assert participant_rows[0].role == "primary_professional"
     assert participant_rows[0].status == "active"
+
+
+@pytest.mark.parametrize(
+    ("availability", "is_active"),
+    (("available", False), ("unavailable", True)),
+)
+def test_assigning_ineligible_linked_intervenant_is_rejected(
+    app, session, availability, is_active
+):
+    from backend.helpchain_backend.src.models import CaseParticipant
+    from backend.models import Assignment, Intervenant
+
+    structure = _make_structure(
+        session,
+        name="Professional Eligibility Scope",
+        slug=f"professional-eligibility-{availability}-{is_active}",
+    )
+    user = _make_user(
+        session,
+        username="eligibility_requester",
+        email=f"eligibility-requester-{availability}-{is_active}@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="eligibility_ops",
+        email=f"eligibility-ops-{availability}-{is_active}@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    intervenant = Intervenant(
+        structure_id=structure.id,
+        name="Ineligible Professional",
+        email=f"ineligible-{availability}-{is_active}@test.local",
+        actor_type="field_referent",
+        availability=availability,
+        is_active=is_active,
+    )
+    session.add(intervenant)
+    session.flush()
+    lead = _make_professional_lead(
+        session,
+        full_name="Ineligible Professional",
+        email=f"ineligible-lead-{availability}-{is_active}@test.local",
+    )
+    lead.intervenant_id = intervenant.id
+    req = _make_request(
+        session,
+        title="ineligible professional assignment",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(session, request_id=req.id, structure_id=structure.id)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    assert response.status_code == 409
+    assert case_row.assigned_professional_lead_id is None
+    assert CaseParticipant.query.filter_by(case_id=case_row.id).count() == 0
+    assert Assignment.query.filter_by(request_id=req.id).count() == 0
+
+
+def test_assigning_cross_tenant_linked_intervenant_is_rejected(app, session):
+    from backend.helpchain_backend.src.models import CaseParticipant
+    from backend.models import Assignment, Intervenant
+
+    structure = _make_structure(session, name="Assignment Tenant A", slug="assignment-tenant-a")
+    foreign_structure = _make_structure(
+        session, name="Assignment Tenant B", slug="assignment-tenant-b"
+    )
+    user = _make_user(
+        session,
+        username="assignment_tenant_requester",
+        email="assignment-tenant-requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="assignment_tenant_ops",
+        email="assignment-tenant-ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    intervenant = Intervenant(
+        structure_id=foreign_structure.id,
+        name="Foreign Professional",
+        email="foreign-professional@test.local",
+        actor_type="field_referent",
+        availability="available",
+        is_active=True,
+    )
+    session.add(intervenant)
+    session.flush()
+    lead = _make_professional_lead(
+        session, full_name="Foreign Professional", email="foreign-lead@test.local"
+    )
+    lead.intervenant_id = intervenant.id
+    req = _make_request(
+        session,
+        title="cross tenant professional assignment",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(session, request_id=req.id, structure_id=structure.id)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    assert response.status_code == 409
+    assert case_row.assigned_professional_lead_id is None
+    assert CaseParticipant.query.filter_by(case_id=case_row.id).count() == 0
+    assert Assignment.query.filter_by(request_id=req.id).count() == 0
+
+
+def test_assigning_professional_with_invalid_linked_intervenant_is_rejected(
+    app, session
+):
+    from backend.helpchain_backend.src.models import CaseParticipant
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session, name="Invalid Professional Link", slug="invalid-professional-link"
+    )
+    user = _make_user(
+        session,
+        username="invalid_link_requester",
+        email="invalid-link-requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="invalid_link_ops",
+        email="invalid-link-ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead = _make_professional_lead(
+        session, full_name="Broken Professional", email="broken-professional@test.local"
+    )
+    req = _make_request(
+        session,
+        title="invalid professional link",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(session, request_id=req.id, structure_id=structure.id)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    assert response.status_code == 409
+    assert case_row.assigned_professional_lead_id is None
+    assert CaseParticipant.query.filter_by(case_id=case_row.id).count() == 0
+    assert Assignment.query.filter_by(request_id=req.id).count() == 0
+
+
+def test_assigning_valid_professional_synchronizes_case_and_operational_assignment(
+    app, session
+):
+    from backend.helpchain_backend.src.models import CaseParticipant
+    from backend.models import Assignment
+
+    structure = _make_structure(
+        session, name="Valid Professional Scope", slug="valid-professional-scope"
+    )
+    user = _make_user(
+        session,
+        username="valid_professional_requester",
+        email="valid-professional-requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="valid_professional_ops",
+        email="valid-professional-ops@test.local",
+        role="ops",
+        structure_id=structure.id,
+    )
+    lead, intervenant = _make_converted_professional_lead(
+        session,
+        structure_id=structure.id,
+        name="Valid Professional",
+        email="valid-professional@test.local",
+    )
+    req = _make_request(
+        session,
+        title="valid professional assignment",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(session, request_id=req.id, structure_id=structure.id)
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, admin)
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+
+    session.refresh(case_row)
+    participant = CaseParticipant.query.filter_by(case_id=case_row.id).one()
+    assignment = Assignment.query.filter_by(
+        request_id=req.id,
+        intervenant_id=intervenant.id,
+        structure_id=structure.id,
+    ).one()
+    assert response.status_code == 303
+    assert case_row.assigned_professional_lead_id == lead.id
+    assert participant.participant_type == "professional_lead"
+    assert participant.professional_lead_id == lead.id
+    assert participant.role == "primary_professional"
+    assert participant.status == "active"
+    assert assignment.status == "active"
 
 
 def test_assigning_converted_lead_creates_operational_assignment(app, session):
@@ -1442,9 +1681,10 @@ def test_case_detail_renders_professional_participant_name_not_unknown(app, sess
         role="ops",
         structure_id=structure.id,
     )
-    lead = _make_professional_lead(
+    lead, _intervenant = _make_converted_professional_lead(
         session,
-        full_name="Rendered Lead",
+        structure_id=structure.id,
+        name="Rendered Lead",
         email="rendered-lead@test.local",
     )
     req = _make_request(session, title="participant render", user_id=user.id, structure_id=structure.id)

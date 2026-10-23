@@ -355,6 +355,24 @@ def _intervenant_for_professional_lead_id(
     return db.session.get(Intervenant, int(intervenant_id))
 
 
+def _require_eligible_professional_lead(
+    req: Request | None,
+    professional_lead_id: int | None,
+) -> Intervenant:
+    intervenant = _intervenant_for_professional_lead_id(professional_lead_id)
+    if (
+        req is None
+        or intervenant is None
+        or not getattr(intervenant, "is_active", False)
+        or (getattr(intervenant, "availability", "") or "").strip().lower()
+        != "available"
+        or getattr(intervenant, "structure_id", None)
+        != getattr(req, "structure_id", None)
+    ):
+        abort(409, description="Selected professional is not eligible for this case.")
+    return intervenant
+
+
 def _case_operational_assignment_query(req: Request, intervenant: Intervenant):
     query = Assignment.query.filter_by(
         request_id=req.id,
@@ -398,9 +416,7 @@ def _ensure_case_operational_assignment_for_lead(
 ) -> Assignment | None:
     if req is None or professional_lead_id is None:
         return None
-    intervenant = _intervenant_for_professional_lead_id(professional_lead_id)
-    if intervenant is None:
-        return None
+    intervenant = _require_eligible_professional_lead(req, professional_lead_id)
 
     active_assignment = _case_active_operational_assignment_query(
         req, intervenant
@@ -926,6 +942,8 @@ def admin_case_assign_professional(case_id: int):
             url_for("admin.admin_case_detail", case_id=case_row.id),
             code=303,
         )
+    if lead_id is not None:
+        _require_eligible_professional_lead(req, lead_id)
 
     old_lead_id = case_row.assigned_professional_lead_id
     if old_lead_id != lead_id:
