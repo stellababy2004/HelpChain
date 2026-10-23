@@ -389,6 +389,7 @@ def test_submit_request_renders_unchecked_privacy_consent_checkbox(client):
     body = response.get_data(as_text=True)
     assert 'id="privacyConsent"' in body
     assert 'class="hc-rgpd-checkbox"' in body
+    assert "v=20261023-rgpd" in body
     assert 'name="privacy_consent"' in body
     assert 'type="checkbox"' in body
     assert 'value="1"' in body
@@ -413,6 +414,44 @@ def test_submit_request_missing_privacy_consent_does_not_create_preview(client, 
     assert b"request_preview" not in response.data
     with client.session_transaction() as session:
         assert "request_draft" not in session
+
+
+def test_submit_request_confirm_rejects_draft_without_validated_consent(client):
+    with client.session_transaction() as session:
+        session["request_draft"] = {
+            "email": "unvalidated@example.org",
+            "category": "admin_help",
+            "draft_nonce": "old-draft",
+        }
+
+    response = client.post("/submit_request/confirm", follow_redirects=False)
+
+    assert response.status_code in (302, 303)
+    assert response.headers["Location"].endswith("/submit_request")
+
+
+def test_new_unconsented_submission_cannot_reuse_validated_draft(client, monkeypatch):
+    monkeypatch.setitem(client.application.config, "TESTING", False)
+    valid_payload = {
+        "name": "Pilot User",
+        "email": "draft-reuse@example.org",
+        "category": "admin_help",
+        "urgency": "normal",
+        "title": "Administrative support",
+        "description": "I need help with an administrative situation.",
+        "privacy_consent": "1",
+    }
+    preview = client.post("/submit_request", data=valid_payload)
+    assert preview.status_code == 200
+
+    unconsented_payload = dict(valid_payload)
+    unconsented_payload.pop("privacy_consent")
+    rejected = client.post("/submit_request", data=unconsented_payload)
+    assert rejected.status_code == 400
+
+    confirm = client.post("/submit_request/confirm", follow_redirects=False)
+    assert confirm.status_code in (302, 303)
+    assert confirm.headers["Location"].endswith("/submit_request")
 
 
 def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch, caplog):
@@ -466,6 +505,9 @@ def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, m
     assert token_row.token_hash
     assert len(token_row.token_hash) == 64
     assert token_row.email == "request.magic@test.local"
+    with client.session_transaction() as browser_session:
+        assert "request_draft" not in browser_session
+        assert "request_draft_consent" not in browser_session
     assert token_row.invalidated_at is None
     assert len(sent) == 1
     magic_url = sent[0][3]["magic_link_url"]

@@ -289,12 +289,15 @@
                 id="privacyConsent"
                 name="privacy_consent"
                 value="1"
+                data-required-message="{{ _('Veuillez accepter la Politique de confidentialité (RGPD) pour continuer.') }}"
                 {% if request.form.get('privacy_consent') == '1' %}checked{% endif %}
                 required
               >
               <label class="form-check-label" for="privacyConsent">
                 {{ _("Je confirme avoir pris connaissance de la Politique de confidentialité (RGPD).") }}
               </label>
+
+              <div id="privacyConsentClientError" class="text-danger mt-2" role="alert" hidden></div>
 
               {% if form_errors and form_errors.get('privacy_consent') %}
                 <div class="text-danger mt-2" role="alert">
@@ -328,5 +331,5 @@
 
 {% block scripts %}
   {{ super() }}
-  <script src="{{ url_for('static', filename='js/pages/submit_request.js', v='20260310') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/pages/submit_request.js', v='20261023-rgpd') }}" defer></script>
 {% endblock %}

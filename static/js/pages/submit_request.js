@@ -109,6 +109,28 @@
       });
     });
 
+    form.addEventListener("submit", (event) => {
+      const consent = form.querySelector("#privacyConsent");
+      if (!consent || consent.checked) return;
+      event.preventDefault();
+      const error = form.querySelector("#privacyConsentClientError");
+      if (error) {
+        error.textContent = consent.dataset.requiredMessage || consent.validationMessage;
+        error.hidden = false;
+      }
+      consent.setAttribute("aria-invalid", "true");
+      consent.focus({ preventScroll: false });
+    });
+
+    const consent = form.querySelector("#privacyConsent");
+    if (consent) {
+      consent.addEventListener("change", () => {
+        consent.removeAttribute("aria-invalid");
+        const error = form.querySelector("#privacyConsentClientError");
+        if (error) error.hidden = true;
+      });
+    }
+
     const firstInvalid = form.querySelector(".is-invalid");
 
     if (firstInvalid) {

@@ -3790,7 +3790,7 @@ def validate_submit_request_form(form):
     MAX_PHONE_LEN = 32
     MAX_EMAIL_LEN = 254
 
-    if consent != "1" and not current_app.config.get("TESTING", False):
+    if consent != "1":
         errors["privacy_consent"] = _(
             "Veuillez accepter la Politique de confidentialité (RGPD) pour continuer."
         )
@@ -3909,6 +3909,9 @@ def submit_request():
     session["request_entrypoint"] = entrypoint
 
     if request.method == "POST":
+        # A new initial submission must never inherit an older validated draft.
+        session.pop("request_draft", None)
+        session.pop("request_draft_consent", None)
         if intake_mode == "closed":
             flash(
                 _(
@@ -3989,6 +3992,7 @@ def submit_request():
                 else _("Help request")
             )
 
+        draft_nonce = secrets.token_urlsafe(24)
         session["request_draft"] = {
             "name": cleaned["name"],
             "phone": cleaned["phone"],
@@ -4006,6 +4010,11 @@ def submit_request():
             # Frontend anti-bot timing (optional, can be missing)
             "started_at": cleaned["started_at"],
             "entrypoint": entrypoint,
+            "draft_nonce": draft_nonce,
+        }
+        session["request_draft_consent"] = {
+            "draft_nonce": draft_nonce,
+            "validated": True,
         }
 
         if current_app.config.get("TESTING", False):
@@ -4104,7 +4113,15 @@ def submit_request():
 @main_bp.post("/submit_request/confirm")
 def submit_request_confirm():
     draft = session.get("request_draft")
-    if not draft:
+    consent_marker = session.get("request_draft_consent") or {}
+    if (
+        not draft
+        or not isinstance(consent_marker, dict)
+        or consent_marker.get("validated") is not True
+        or consent_marker.get("draft_nonce") != draft.get("draft_nonce")
+    ):
+        session.pop("request_draft", None)
+        session.pop("request_draft_consent", None)
         flash(_("Session expired. Please submit the request again."), "error")
         return redirect(url_for("main.submit_request"))
     if _public_intake_mode() == "closed":
@@ -4355,6 +4372,7 @@ def submit_request_confirm():
             current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
 
         session.pop("request_draft", None)
+        session.pop("request_draft_consent", None)
         entrypoint = (
             (request.form.get("entrypoint") or "").strip().lower()
             or (draft.get("entrypoint") or "").strip().lower()

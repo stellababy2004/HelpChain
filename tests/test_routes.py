@@ -129,7 +129,7 @@ class TestRoutes:
                 "category": "orientation",
                 "location": "Ð¡Ð¾Ñ„Ð¸Ñ",
                 "description": "J’ai besoin d’aide pour une orientation administrative.",
-                "privacy_consent": "on",
+                "privacy_consent": "1",
             },
             follow_redirects=True,
         )
