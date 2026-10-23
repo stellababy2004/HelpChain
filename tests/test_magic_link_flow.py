@@ -382,6 +382,38 @@ def test_submit_request_missing_privacy_consent_shows_visible_error(client, monk
     )
 
 
+def test_submit_request_renders_unchecked_privacy_consent_checkbox(client):
+    response = client.get("/submit_request")
+
+    assert response.status_code == 200
+    body = response.get_data(as_text=True)
+    assert 'id="privacyConsent"' in body
+    assert 'name="privacy_consent"' in body
+    assert 'type="checkbox"' in body
+    assert 'value="1"' in body
+    assert "required" in body
+    assert 'id="privacyConsent" checked' not in body
+
+
+def test_submit_request_missing_privacy_consent_does_not_create_preview(client, monkeypatch):
+    monkeypatch.setitem(client.application.config, "TESTING", False)
+    payload = {
+        "name": "Pilot User",
+        "email": "pilot-preview@example.org",
+        "category": "admin_help",
+        "urgency": "normal",
+        "title": "Administrative support",
+        "description": "I need help with an administrative situation.",
+    }
+
+    response = client.post("/submit_request", data=payload)
+
+    assert response.status_code == 400
+    assert b"request_preview" not in response.data
+    with client.session_transaction() as session:
+        assert "request_draft" not in session
+
+
 def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, monkeypatch, caplog):
     caplog.set_level("INFO")
     _reset_magic_link_rate_limits()

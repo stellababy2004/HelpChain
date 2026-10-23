@@ -3,6 +3,28 @@ body.hc-page-submit-request .hc-wrap {
   max-width: 980px;
 }
 
+/* Keep the required consent control visible even when global checkbox styles
+   use hidden/replaced-control patterns. */
+body.hc-page-submit-request #privacyConsent.form-check-input {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  inset: auto !important;
+  float: none !important;
+  flex: 0 0 auto;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  margin: 0.2rem 0.55rem 0 0 !important;
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+}
+
+body.hc-page-submit-request #privacyConsent.form-check-input + .form-check-label {
+  display: inline-block;
+  vertical-align: top;
+}
+
 body.hc-page-submit-request .hc-sr-hero {
   padding: 28px 0 10px;
   text-align: center;
