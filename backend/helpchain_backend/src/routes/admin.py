@@ -5006,22 +5006,12 @@ def admin_required(view_func):
 def operator_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        if not session.get("admin_logged_in"):
+        if not (
+            current_user.is_authenticated
+            and getattr(current_user, "is_admin", False)
+        ):
             return _redirect_protected_login("admin.ops_login")
         if isinstance(current_user._get_current_object(), AdminUser) and not current_user.is_active:
-            abort(403)
-
-        if not (
-            current_user.is_authenticated and getattr(current_user, "is_admin", False)
-        ):
-            session_role = (session.get("role") or "").strip().lower()
-            if session.get("is_admin") or session.get("admin_logged_in"):
-                if session_role in {"ops", "readonly", "admin", "superadmin"}:
-                    return view_func(*args, **kwargs)
-            _audit_denied_action(
-                required_roles={"ops", "readonly", "admin", "superadmin"},
-                actor_role=session_role or None,
-            )
             abort(403)
         role = _admin_role_value()
         if role is None or role not in {"ops", "readonly", "admin", "superadmin"}:
