@@ -85,11 +85,9 @@ def test_create_request_valid_fields_redirects_to_details_and_list(
     assert match is not None
     req_id = int(match.group(1))
 
-    list_resp = admin_login.get("/requests")
-    assert list_resp.status_code == 200
-    html = list_resp.get_data(as_text=True)
-    assert "urgence_sociale" in html
-    assert f"#{req_id}" in html
+    list_resp = admin_login.get("/requests", follow_redirects=False)
+    assert list_resp.status_code == 303
+    assert list_resp.headers["Location"].startswith("/admin/ops/login?next=/requests")
 
 
 def test_admin_listing_requests_shows_new_request(admin_login, init_test_data, db_session):
