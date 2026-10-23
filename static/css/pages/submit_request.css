@@ -3,24 +3,18 @@ body.hc-page-submit-request .hc-wrap {
   max-width: 980px;
 }
 
-/* Keep the required consent control visible even when global checkbox styles
-   use hidden/replaced-control patterns. */
-body.hc-page-submit-request #privacyConsent.form-check-input {
+/* Keep this consent control native: Bootstrap's .form-check-input replaces
+   the native checkbox appearance with a background-image control. */
+body.hc-page-submit-request #privacyConsent.hc-rgpd-checkbox {
   display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: relative !important;
-  inset: auto !important;
-  float: none !important;
   flex: 0 0 auto;
-  width: 1.15rem !important;
-  height: 1.15rem !important;
+  width: 1.15rem;
+  height: 1.15rem;
   margin: 0.2rem 0.55rem 0 0 !important;
-  appearance: auto !important;
-  -webkit-appearance: checkbox !important;
+  accent-color: #2563eb;
 }
 
-body.hc-page-submit-request #privacyConsent.form-check-input + .form-check-label {
+body.hc-page-submit-request #privacyConsent.hc-rgpd-checkbox + .form-check-label {
   display: inline-block;
   vertical-align: top;
 }

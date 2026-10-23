@@ -388,6 +388,7 @@ def test_submit_request_renders_unchecked_privacy_consent_checkbox(client):
     assert response.status_code == 200
     body = response.get_data(as_text=True)
     assert 'id="privacyConsent"' in body
+    assert 'class="hc-rgpd-checkbox"' in body
     assert 'name="privacy_consent"' in body
     assert 'type="checkbox"' in body
     assert 'value="1"' in body
