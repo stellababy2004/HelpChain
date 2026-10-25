@@ -68,6 +68,26 @@ def test_municipality_gets_territorial_modules():
     assert "cases" in modules
 
 
+def test_canonical_organization_types_recommend_different_module_sets():
+    municipality_modules = adaptive_modules(structure("municipality"))
+    association_modules = adaptive_modules(structure("association"))
+
+    assert "pilotage" in municipality_modules
+    assert "maps" in municipality_modules
+    assert "mobilisation" in association_modules
+    assert "notifications" in association_modules
+    assert "pilotage" not in association_modules
+
+
+def test_module_enabled_matches_derived_configuration_without_capability_persistence():
+    item = structure("association")
+
+    assert item.capabilities_json is None
+    assert module_enabled(item, "mobilisation")
+    assert module_enabled(item, "notifications")
+    assert not module_enabled(item, "platform")
+
+
 def test_configured_capabilities_override_type_defaults():
     item = structure(
         "school",

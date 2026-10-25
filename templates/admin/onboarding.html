@@ -117,6 +117,16 @@
                 </select>
               </div>
               <div class="col-12">
+                <label class="form-label" for="organization_type">Type d'organisation</label>
+                <select class="form-select" id="organization_type" name="organization_type" required>
+                  <option value="">SÃ©lectionner</option>
+                  {% for type_key, type_definition in onboarding_organization_types.items() %}
+                    <option value="{{ type_key }}" {% if structure_data.get('organization_type') == type_key or (onboarding_structure and onboarding_structure.organization_type == type_key) %}selected{% endif %}>{{ type_definition.get('label', type_key) }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text">Ce choix détermine le profil adaptatif et la configuration par défaut de votre espace.</div>
+              </div>
+              <div class="col-12">
                 <label class="form-label" for="main_need">Besoin principal</label>
                 <select class="form-select" id="main_need" name="main_need">
                   <option value="">Sélectionner</option>
@@ -188,6 +198,14 @@
         <div class="hc-onboarding-panel hc-onboarding-panel--complete">
           <div class="hc-onboarding-summaryGrid">
             <article class="hc-onboarding-summaryCard">
+              <h2>Profil adaptatif</h2>
+              <p>{{ onboarding_organization_profile.get('label') or 'Configuration de base' }}</p>
+              <p>{{ current_user.email or current_user.username }}</p>
+              {% if onboarding_recommended_modules %}
+                <p>{{ onboarding_recommended_modules|join(', ') }}</p>
+              {% endif %}
+            </article>
+            <article class="hc-onboarding-summaryCard">
               <h2>Accès sécurisé</h2>
               <p>Mot de passe renouvelé et accès administrateur prêt.</p>
             </article>
@@ -206,6 +224,8 @@
               </p>
             </article>
           </div>
+          <p class="small text-muted">Invitations : {% if invite_data.get('sent') %}envoyees{% elif invite_data.get('skipped') %}ignorees{% else %}aucune invitation{% endif %}.</p>
+          <a class="btn btn-outline-secondary hc-onboarding-ghostLink" href="{{ url_for('admin.admin_onboarding', edit='structure_setup') }}">Modifier la structure</a>
           {% if first_request.get('fallback_url') %}
             <a class="btn btn-outline-secondary hc-onboarding-ghostLink" href="{{ first_request.get('fallback_url') }}">Ouvrir la création de demande</a>
           {% endif %}

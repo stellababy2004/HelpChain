@@ -148,7 +148,8 @@ from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
-from ..services.adaptive_experience import module_enabled
+from ..services.adaptive_experience import MODULE_REGISTRY, adaptive_modules, module_enabled
+from ..services.enterprise_structure_intelligence import ORGANIZATION_TYPES, organization_type_definition
 from ..services.demo_data import (
     get_demo_case_signals,
     get_demo_cases,
@@ -6291,8 +6292,21 @@ def admin_onboarding():
     structure = _admin_onboarding_safe_structure()
     payload = _admin_onboarding_load_data()
     current_step = _admin_onboarding_step()
+    if current_step == "complete" and request.args.get("edit") == "structure_setup":
+        current_step = "structure_setup"
     _admin_onboarding_touch_started(current_user)
     db.session.commit()
+
+    organization_profile = organization_type_definition(structure) if structure else {}
+    recommended_modules = (
+        [
+            MODULE_REGISTRY[module]["label"]
+            for module in adaptive_modules(structure)
+            if module in MODULE_REGISTRY and module not in {"home", "calendar"}
+        ]
+        if structure
+        else []
+    )
 
     return render_template(
         "admin/onboarding.html",
@@ -6300,6 +6314,9 @@ def admin_onboarding():
         onboarding_progress=ONBOARDING_PROGRESS.get(current_step, 20),
         onboarding_data=payload,
         onboarding_structure=structure,
+        onboarding_organization_types=ORGANIZATION_TYPES,
+        onboarding_organization_profile=organization_profile,
+        onboarding_recommended_modules=recommended_modules,
         onboarding_team_sizes=ONBOARDING_TEAM_SIZE_OPTIONS,
         onboarding_main_needs=ONBOARDING_MAIN_NEED_OPTIONS,
         onboarding_plan_url=_admin_onboarding_plan_url(),
@@ -6346,6 +6363,7 @@ def admin_onboarding_step():
         city = (request.form.get("city") or "").strip()
         team_size = (request.form.get("team_size") or "").strip()
         main_need = (request.form.get("main_need") or "").strip().lower()
+        organization_type = (request.form.get("organization_type") or "").strip().lower()
         if not structure_name:
             flash("Le nom de la structure est requis.", "warning")
             return redirect(url_for("admin.admin_onboarding"), code=303)
@@ -6355,13 +6373,18 @@ def admin_onboarding_step():
         if main_need and main_need not in ONBOARDING_MAIN_NEED_OPTIONS:
             flash("Le besoin principal selectionne est invalide.", "warning")
             return redirect(url_for("admin.admin_onboarding"), code=303)
+        if organization_type not in ORGANIZATION_TYPES:
+            flash("Le type d'organisation selectionne est invalide.", "warning")
+            return redirect(url_for("admin.admin_onboarding"), code=303)
         if structure is not None:
             structure.name = structure_name
+            structure.organization_type = organization_type
         payload["structure_setup"] = {
             "name": structure_name,
             "city": city,
             "team_size": team_size,
             "main_need": main_need,
+            "organization_type": organization_type,
         }
         _admin_onboarding_save_data(current_user, payload)
         _admin_onboarding_set_step(current_user, "invite_team")

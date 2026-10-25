@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import pytest
+
 
 def _login_admin(client, admin_user):
     with client.session_transaction() as sess:
@@ -157,3 +160,147 @@ def test_onboarding_complete_sets_completed_at(client, session):
     session.refresh(admin)
     assert response.status_code == 302 or response.status_code == 303
     assert admin.onboarding_completed_at is not None
+
+
+def test_onboarding_completion_review_shows_canonical_workspace_summary(client, session):
+    structure = _make_structure(session, name="Review Structure", slug="review-structure")
+    structure.city = "Paris"
+    structure.organization_type = "ccas"
+    admin = _make_admin(
+        session,
+        username="review_admin",
+        email="review-admin@test.local",
+        structure_id=structure.id,
+        onboarding_step="complete",
+    )
+    admin.onboarding_data_json = json.dumps(
+        {"structure_setup": {"name": "Review Structure", "city": "Paris"}, "team_invites": {"sent": True}}
+    )
+    session.commit()
+    _login_admin(client, admin)
+
+    response = client.get("/admin/onboarding")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Review Structure" in html
+    assert "Paris" in html
+    assert "CCAS" in html
+    assert "Demandes" in html
+    assert "social_support" not in html
+    assert "review-admin@test.local" in html
+    assert "envoyees" in html
+    assert "edit=structure_setup" in html
+
+
+def test_onboarding_completion_review_can_edit_structure_setup(client, session):
+    structure = _make_structure(session, name="Editable Structure", slug="editable-structure")
+    admin = _make_admin(
+        session,
+        username="editable_admin",
+        email="editable-admin@test.local",
+        structure_id=structure.id,
+        onboarding_step="complete",
+    )
+    _login_admin(client, admin)
+
+    response = client.get("/admin/onboarding?edit=structure_setup")
+
+    assert response.status_code == 200
+    assert b'name="organization_type"' in response.data
+    session.refresh(admin)
+    assert admin.onboarding_step == "complete"
+
+
+def _post_structure_setup(client, *, organization_type):
+    return client.post(
+        "/admin/onboarding/step",
+        data={
+            "step": "structure_setup",
+            "structure_name": "Structure Type Test",
+            "city": "Paris",
+            "team_size": "1-5",
+            "main_need": "suivi dossiers",
+            "organization_type": organization_type,
+        },
+        follow_redirects=False,
+    )
+
+
+def test_onboarding_persists_canonical_organization_type(client, session):
+    from backend.helpchain_backend.src.services.adaptive_experience import (
+        adaptive_modules,
+        module_enabled,
+        organization_capabilities,
+    )
+
+    structure = _make_structure(session, name="Type Persist", slug="type-persist")
+    admin = _make_admin(
+        session,
+        username="type_persist_admin",
+        email="type-persist@test.local",
+        structure_id=structure.id,
+        onboarding_step="structure_setup",
+    )
+    _login_admin(client, admin)
+
+    response = _post_structure_setup(client, organization_type="ccas")
+
+    session.refresh(structure)
+    assert response.status_code in (302, 303)
+    assert structure.organization_type == "ccas"
+    assert organization_capabilities(structure) == (
+        "social_support",
+        "emergency_assistance",
+    )
+    modules = adaptive_modules(structure)
+    assert "cases" in modules
+    assert "referrals" in modules
+    assert module_enabled(structure, "cases")
+    assert module_enabled(structure, "referrals")
+    assert not module_enabled(structure, "platform")
+
+
+@pytest.mark.parametrize("organization_type", ["", "unsupported_type"])
+def test_onboarding_rejects_missing_or_unknown_organization_type(
+    client, session, organization_type
+):
+    structure = _make_structure(
+        session,
+        name=f"Type Invalid {organization_type or 'missing'}",
+        slug=f"type-invalid-{organization_type or 'missing'}",
+    )
+    admin = _make_admin(
+        session,
+        username=f"type_invalid_{organization_type or 'missing'}",
+        email=f"type-invalid-{organization_type or 'missing'}@test.local",
+        structure_id=structure.id,
+        onboarding_step="structure_setup",
+    )
+    _login_admin(client, admin)
+
+    response = _post_structure_setup(client, organization_type=organization_type)
+
+    session.refresh(structure)
+    assert response.status_code in (302, 303)
+    assert response.headers.get("Location", "").endswith("/admin/onboarding")
+    assert structure.organization_type in (None, "")
+
+
+def test_onboarding_structure_setup_with_type_continues_existing_flow(client, session):
+    structure = _make_structure(session, name="Flow Type", slug="flow-type")
+    admin = _make_admin(
+        session,
+        username="flow_type_admin",
+        email="flow-type@test.local",
+        structure_id=structure.id,
+        onboarding_step="structure_setup",
+    )
+    _login_admin(client, admin)
+
+    response = _post_structure_setup(client, organization_type="association")
+
+    session.refresh(admin)
+    assert response.status_code in (302, 303)
+    assert response.headers.get("Location", "").endswith("/admin/onboarding")
+    assert admin.onboarding_step == "invite_team"
