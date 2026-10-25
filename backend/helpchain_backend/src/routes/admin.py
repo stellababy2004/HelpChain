@@ -148,6 +148,7 @@ from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
+from ..services.adaptive_experience import module_enabled
 from ..services.demo_data import (
     get_demo_case_signals,
     get_demo_cases,
@@ -1783,6 +1784,20 @@ def _cases_enabled() -> bool:
         and _table_exists("case_events")
         and _table_exists("case_participants")
     )
+
+
+def _cases_capability_enabled() -> bool:
+    """Return whether the current tenant exposes the canonical Case module."""
+    if _is_global_admin():
+        return True
+    structure = db.session.get(Structure, _current_structure_id())
+    return bool(structure and module_enabled(structure, "cases"))
+
+
+def _require_cases_capability() -> None:
+    """Fail closed for direct Case URLs when the module is unavailable."""
+    if not _cases_capability_enabled():
+        abort(404)
 
 
 def _as_aware_utc(dt_val: datetime | None) -> datetime | None:
@@ -10359,6 +10374,7 @@ def _notification_bucket_label(bucket: str) -> str:
 
 
 def _render_cases_list():
+    _require_cases_capability()
     if current_app.config.get("DEMO_MODE"):
         demo = get_demo_payload(current_app.config.get("DEMO_SCENARIO"))
         case_kpis = demo["cases_kpis"]

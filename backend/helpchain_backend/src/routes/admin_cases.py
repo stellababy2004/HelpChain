@@ -43,6 +43,7 @@ from .admin import (
     _is_global_admin,
     _now_utc,
     _professional_lead_list_query,
+    _require_cases_capability,
     _render_cases_list,
     _scope_requests,
     admin_bp,
@@ -307,6 +308,7 @@ def _get_scoped_case_or_404(
     *,
     require_writable: bool = False,
 ) -> tuple[Case, Request]:
+    _require_cases_capability()
     case_row = db.session.get(Case, int(case_id))
     if not case_row:
         abort(404)
@@ -656,6 +658,7 @@ def admin_cases_list():
 @admin_role_required("readonly", "ops", "admin", "superadmin")
 def admin_case_detail(case_id: int):
     admin_required_404()
+    _require_cases_capability()
     if not _cases_enabled():
         flash("Case system tables are not available yet. Run migrations first.", "warning")
         return redirect(url_for("admin.admin_requests"), code=303)

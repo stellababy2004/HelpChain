@@ -19,6 +19,7 @@ from backend.helpchain_backend.src.services.pilotage_territorial_maps import (
 from backend.helpchain_backend.src.services.risk_engine import compute_case_risk
 from .admin import (
     _current_structure_id,
+    _require_cases_capability,
     _is_global_admin,
     _scope_requests,
     admin_required,
@@ -381,6 +382,7 @@ def admin_risk_map_api():
 @admin_role_required("readonly", "ops", "admin", "superadmin")
 def admin_cases_map_api():
     admin_required_404()
+    _require_cases_capability()
     scoped_request_ids = _scope_requests(Request.query.with_entities(Request.id)).subquery()
     visible_case_ids = {
         int(case_id)
@@ -418,4 +420,5 @@ def admin_cases_map_api():
 @admin_required
 def admin_cases_map_page():
     admin_required_404()
+    _require_cases_capability()
     return render_template("admin_cases_map.html")

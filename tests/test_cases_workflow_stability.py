@@ -19,10 +19,22 @@ def _login_admin(client, admin_user):
         sess["admin_logged_in"] = True
 
 
-def _make_structure(session, *, name: str, slug: str):
+def _make_structure(
+    session,
+    *,
+    name: str,
+    slug: str,
+    capabilities: list[str] | None = None,
+):
     from backend.models import Structure
 
-    row = Structure(name=name, slug=slug)
+    row = Structure(
+        name=name,
+        slug=slug,
+        capabilities_json=json.dumps(
+            capabilities if capabilities is not None else ["case_management"]
+        ),
+    )
     session.add(row)
     session.commit()
     return row
@@ -157,6 +169,30 @@ def _make_converted_professional_lead(
 def test_cases_require_authentication(client):
     resp = client.get("/admin/cases")
     assert resp.status_code in {302, 303, 403, 404}
+
+
+def test_case_module_capability_controls_ui_and_direct_urls(app, session):
+    structure = _make_structure(
+        session,
+        name="No Case Module",
+        slug="no-case-module",
+        capabilities=["volunteer_coordination"],
+    )
+    admin = _make_admin(
+        session,
+        username="no_case_module_admin",
+        email="no-case-module-admin@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    assert client.get("/admin/cases").status_code == 404
+
+    admin.role = "ops"
+    session.commit()
+    assert client.get("/ops/cases").status_code == 404
 
 
 def test_readonly_can_view_but_cannot_mutate_case(app, session):
