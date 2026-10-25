@@ -641,7 +641,7 @@ html body.hc-page-home #product .hc-home-premium__trust-strip {
 
 html body.hc-page-home .hc-home-premium__platform-showcase {
   width: min(calc(100% - 40px), 1440px);
-  margin: 36px auto 56px;
+  margin: 20px auto 42px;
   padding: clamp(30px, 3.5vw, 50px);
 }
 
@@ -659,6 +659,19 @@ html body.hc-page-home .hc-home-premium__platform-browser {
 
 html body.hc-page-home .hc-home-premium__platform-browser img {
   width: 100%;
+}
+
+/* Public homepage screenshot: crop the presentation-only asset naturally in
+   its existing overflow viewport; the shared application navigation is untouched. */
+html body.hc-page-home .hc-home-premium__platform-browser img,
+html body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-img--public-ops {
+  width: 118% !important;
+  max-width: none !important;
+  margin-left: -18% !important;
+}
+
+html body.hc-page-home .hc-home-premium__platform-showcase + .hc-home-premium__section--product {
+  padding-top: clamp(24px, 3vw, 42px) !important;
 }
 
 html body.hc-page-home .hc-home-premium__platform-outcomes {
