@@ -98,6 +98,59 @@
     </div>
   </section>
 
+  <section class="hc-pilotage-card mb-3">
+    <div class="hc-pilotage-sectionhead">
+      <div>
+        <div class="hc-pilotage-sectionhead__kicker">Quality Signals</div>
+        <h3>Situations demandant une attention opérationnelle</h3>
+      </div>
+      <div class="hc-pilotage-sectionhead__text">Signaux déterministes, en lecture seule, sans score individuel.</div>
+    </div>
+    <div class="hc-pilotage-kpi-grid">
+      <article class="hc-pilotage-kpi-card hc-pilotage-kpi-card--secondary">
+        <div class="hc-pilotage-kpi-card__label">Normal</div>
+        <div class="hc-pilotage-kpi-card__value">{{ quality_signal_counts.normal or 0 }}</div>
+      </article>
+      <article class="hc-pilotage-kpi-card hc-pilotage-kpi-card--secondary">
+        <div class="hc-pilotage-kpi-card__label">Attention</div>
+        <div class="hc-pilotage-kpi-card__value">{{ quality_signal_counts.attention or 0 }}</div>
+      </article>
+      <article class="hc-pilotage-kpi-card hc-pilotage-kpi-card--secondary">
+        <div class="hc-pilotage-kpi-card__label">Follow-up needed</div>
+        <div class="hc-pilotage-kpi-card__value">{{ quality_signal_counts.follow_up_needed or 0 }}</div>
+      </article>
+      <article class="hc-pilotage-kpi-card hc-pilotage-kpi-card--primary">
+        <div class="hc-pilotage-kpi-card__label">High attention</div>
+        <div class="hc-pilotage-kpi-card__value">{{ quality_signal_counts.high_attention or 0 }}</div>
+      </article>
+    </div>
+    {% if quality_signal_items %}
+      <div class="table-responsive mt-3">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr><th>Identifiant</th><th>Dossier</th><th>Signaux</th><th>Pourquoi</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for item in quality_signal_items %}
+              <tr>
+                <td>#{{ item.id }}</td>
+                <td>{{ item.title }}</td>
+                <td>{{ item.signals|join(', ') }}</td>
+                <td>{{ item.reasons|join('. ') }}</td>
+                <td><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.admin_request_details', req_id=item.id) }}">Voir</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="hc-empty-state mt-3 py-3">
+        <div class="hc-empty-state__title">Aucun signal d’attention</div>
+        <div class="hc-empty-state__text">Les situations ouvertes ne présentent pas de signal opérationnel calculable.</div>
+      </div>
+    {% endif %}
+  </section>
+
   {% if institutional_kpis %}
     <section class="hc-pilotage-card mb-3">
       <div class="hc-pilotage-sectionhead">

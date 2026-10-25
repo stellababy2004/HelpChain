@@ -268,6 +268,7 @@ from ..services.request_sla import (
     get_request_last_meaningful_activity,
     request_dashboard_actionable_filter,
 )
+from ..services.quality_signals import compute_quality_signals
 from ..services.event_bus import (
     publish as publish_admin_stream_event,
     subscribe as subscribe_admin_stream,
@@ -9597,6 +9598,8 @@ def admin_pilotage():
             standard_count=pilotage.get("standard_count", 0),
             no_owner_count=pilotage.get("no_owner_count", 0),
             not_seen_72h_count=pilotage.get("not_seen_72h_count", 0),
+            quality_signal_counts=pilotage.get("quality_signal_counts", {}),
+            quality_signal_items=pilotage.get("quality_signal_items", []),
             critical_no_owner_count=pilotage.get("critical_without_owner_count", 0),
             critical_without_owner_count=pilotage.get("critical_without_owner_count", 0),
             assign_immediately_count=pilotage.get("assign_immediately_count", 0),
@@ -9678,6 +9681,39 @@ def admin_pilotage():
         .filter(activity_expr <= stale_threshold)
         .count()
     )
+
+    quality_signal_counts = {
+        "normal": 0,
+        "attention": 0,
+        "follow_up_needed": 0,
+        "high_attention": 0,
+    }
+    quality_signal_items = []
+    quality_rows = base_query.outerjoin(
+        activity_sq, activity_sq.c.request_id == Request.id
+    ).with_entities(Request, activity_sq.c.last_activity_at).all()
+    quality_now = _to_utc_naive(_now_utc())
+    for request_obj, last_activity_at in quality_rows:
+        signal_result = compute_quality_signals(
+            request_obj,
+            now=quality_now,
+            last_activity_at=last_activity_at,
+            overdue=bool(_sla_overdue_hours_by_kind(request_obj, now=quality_now)),
+        )
+        level = str(signal_result["level"])
+        quality_signal_counts[level] = quality_signal_counts.get(level, 0) + 1
+        if level == "normal":
+            continue
+        quality_signal_items.append(
+            {
+                "id": request_obj.id,
+                "title": request_obj.title or f"Demande #{request_obj.id}",
+                "level": level,
+                "signals": signal_result["signals"],
+                "reasons": signal_result["reasons"],
+            }
+        )
+    quality_signal_items = quality_signal_items[:12]
 
     rec_counts = {
         "assign_immediately": 0,
@@ -9931,6 +9967,8 @@ def admin_pilotage():
         standard_count=standard_count,
         no_owner_count=no_owner_count,
         not_seen_72h_count=not_seen_72h_count,
+        quality_signal_counts=quality_signal_counts,
+        quality_signal_items=quality_signal_items,
         critical_no_owner_count=critical_no_owner_count,
         critical_without_owner_count=critical_no_owner_count,
         assign_immediately_count=assign_immediately_count,
