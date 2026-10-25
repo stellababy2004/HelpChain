@@ -12,7 +12,6 @@ from ..statuses import request_terminal_status_read_values
 from .request_sla import DEFAULT_ESCALATION_THRESHOLD_HOURS
 
 
-
 def compute_quality_signals(
     request_obj,
     *,
