@@ -1845,6 +1845,7 @@ def admin_request_refer(req_id: int):
 @admin_required
 @admin_role_required("ops", "admin", "superadmin")
 def admin_request_refer_submit(req_id: int):
+    _require_adaptive_module("referrals")
     admin_required_404()
     from .admin_requests import _scope_requests
 

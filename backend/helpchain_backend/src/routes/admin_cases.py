@@ -729,7 +729,11 @@ def admin_case_detail(case_id: int):
         .limit(300)
         .all()
     )
-    professionals = _case_detail_professional_leads()
+    professionals = (
+        _case_detail_professional_leads()
+        if _adaptive_module_enabled("professionals")
+        else []
+    )
 
     return render_template(
         "admin/case_detail.html",

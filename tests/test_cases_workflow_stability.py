@@ -234,6 +234,44 @@ def test_professional_case_action_denied_when_professionals_module_disabled(app,
     assert response.status_code == 404
 
 
+def test_case_detail_hides_professional_suggestions_when_module_disabled(app, session):
+    structure = _make_structure(
+        session,
+        name="Disabled Professional Suggestions",
+        slug="disabled-professional-suggestions",
+        capabilities=["public_case_intake"],
+    )
+    user = _make_user(
+        session,
+        username="disabled_suggestions_requester",
+        email="disabled-suggestions-requester@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="disabled_suggestions_admin",
+        email="disabled-suggestions-admin@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    req = _make_request(
+        session,
+        title="disabled professional suggestions",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(session, request_id=req.id, structure_id=structure.id)
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    response = client.get(f"/admin/cases/{case_row.id}")
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "disabled professional suggestions" in html
+    assert "suggested-professionals" not in html
+
+
 def test_readonly_can_view_but_cannot_mutate_case(app, session):
     structure = _make_structure(session, name="Read Only Scope", slug="readonly-scope")
     user = _make_user(

@@ -37,6 +37,7 @@ def make_request_with_volunteer(session, admin_login):
 
     def _make() -> tuple[Request, Volunteer]:
         structure = session.query(Structure).filter_by(slug="default").first()
+        structure.capabilities_json = '["case_coordination", "volunteer_coordination"]'
         suffix = uuid4().hex[:8]
 
         user = User(
@@ -149,3 +150,21 @@ def test_bulk_nudge_selected_volunteers_respects_cooldown(
     # cooldown should suppress additional nudge side-effects
     assert notif_count_after_second == notif_count_after_first
     assert acts_after_second == acts_after_first
+
+
+@pytest.mark.parametrize("endpoint", ["unassign_volunteer", "nudge"])
+def test_mobilisation_disabled_fails_closed_for_direct_volunteer_actions(
+    admin_login, db_session, make_request_with_volunteer, endpoint
+):
+    req, _volunteer = make_request_with_volunteer()
+    structure = db_session.query(Structure).filter_by(id=req.structure_id).one()
+    structure.capabilities_json = '["case_coordination"]'
+    db_session.commit()
+
+    response = admin_login.post(
+        f"/admin/requests/{req.id}/{endpoint}",
+        data={},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 404

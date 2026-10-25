@@ -125,6 +125,32 @@ def test_referrals_module_disabled_fails_closed_for_direct_partner_route(app, se
     assert response.status_code == 404
 
 
+def test_referrals_module_disabled_blocks_referral_submission_with_scoped_request(
+    app, session
+):
+    ctx = _seed_referral_context()
+    ctx["a"].capabilities_json = '["public_case_intake"]'
+    db.session.commit()
+    _login_client = app.test_client()
+    _login(_login_client, app, ctx["admin_a"])
+
+    before_referrals = CaseReferral.query.count()
+    before_activity = ReferralActivity.query.count()
+    response = _login_client.post(
+        f"/admin/requests/{ctx['request'].id}/refer",
+        data={
+            "to_structure_id": str(ctx["b"].id),
+            "reason": "Coordination test",
+            "message": "Should be rejected",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 404
+    assert CaseReferral.query.count() == before_referrals
+    assert ReferralActivity.query.count() == before_activity
+
+
 def _send_referral(client, app, ctx):
     _login(client, app, ctx["admin_a"])
     response = client.post(
