@@ -46,6 +46,25 @@ def test_stale_unassigned_request_is_high_attention():
     assert "possible_followup_break" in result["signals"]
 
 
+def test_possible_followup_break_requires_both_inactivity_and_no_owner():
+    now = datetime(2026, 10, 25, tzinfo=UTC)
+    stale_owned = compute_quality_signals(
+        _request(owner_id=10),
+        now=now,
+        last_activity_at=now - timedelta(hours=73),
+    )
+    recent_unassigned = compute_quality_signals(
+        _request(owner_id=None),
+        now=now,
+        last_activity_at=now - timedelta(hours=1),
+    )
+
+    assert "no_recent_activity" in stale_owned["signals"]
+    assert "possible_followup_break" not in stale_owned["signals"]
+    assert recent_unassigned["signals"] == ["unassigned"]
+    assert "possible_followup_break" not in recent_unassigned["signals"]
+
+
 def test_overdue_request_is_high_attention():
     result = compute_quality_signals(
         _request(), now=datetime(2026, 10, 25, tzinfo=UTC), overdue=True
