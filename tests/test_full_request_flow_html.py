@@ -1,44 +1,27 @@
 import re
+from uuid import uuid4
 
 import pytest
 
-from backend.models import AdminAuditEvent, AdminUser, SocialRequest, SocialRequestEvent, User
+from backend.models import AdminAuditEvent, SocialRequest, SocialRequestEvent, User
+from tests.test_master_e2e_operational import _admin, _real_admin_login
 
 pytestmark = pytest.mark.mixed_transition
 
 
-def _admin_id_from_client(client) -> int:
-    with client.session_transaction() as sess:
-        val = (
-            sess.get("admin_user_id")
-            or sess.get("admin_id")
-            or sess.get("user_id")
-            or sess.get("_user_id")
-        )
-    return int(val)
-
-
-def _set_admin_role(session, client, role: str) -> None:
-    admin_id = _admin_id_from_client(client)
-    admin = session.get(AdminUser, admin_id)
-    admin.role = role
-    session.commit()
-
-
 @pytest.fixture
-def admin_login(authenticated_admin_client, db_session):
-    _set_admin_role(db_session, authenticated_admin_client, "superadmin")
-    admin_id = _admin_id_from_client(authenticated_admin_client)
-    with authenticated_admin_client.session_transaction() as sess:
-        sess["_user_id"] = str(admin_id)
-        sess["user_id"] = admin_id
-        sess["admin_id"] = admin_id
-        sess["admin_user_id"] = admin_id
-        sess["role"] = "superadmin"
-        sess["is_admin"] = True
-        sess["admin_logged_in"] = True
-        sess["is_authenticated"] = True
-    return authenticated_admin_client
+def admin_login(app, db_session, init_test_data):
+    structure = init_test_data["structure"]
+    admin = _admin(
+        db_session,
+        username=f"full-flow-admin-{uuid4().hex[:8]}",
+        role="superadmin",
+        structure_id=None,
+    )
+    db_session.commit()
+    client = app.test_client()
+    _real_admin_login(client, admin)
+    return client
 
 
 def test_full_social_request_flow_html(

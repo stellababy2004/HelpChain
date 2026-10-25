@@ -60,6 +60,7 @@ def test_emergency_email_sent_once(client, real_app):
             category="emergency",
             problem="Test emergency situation",
             urgency="critical",
+            privacy_consent="1",
         )
         resp1 = client.post("/submit_request", data=data, follow_redirects=True)
         assert resp1.status_code == 200

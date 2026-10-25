@@ -1,12 +1,24 @@
 import pytest
+from uuid import uuid4
+
+from tests.test_master_e2e_operational import _admin, _real_admin_login
 
 pytestmark = pytest.mark.compat_social_request
 
 
-def test_social_requests_pages(client, authenticated_admin_client, init_test_data, db_session):
+def test_social_requests_pages(client, app, init_test_data, db_session):
     from backend.models import SocialRequest, SocialRequestEvent, User
 
     structure = init_test_data["structure"]
+    admin = _admin(
+        db_session,
+        username=f"social-pages-admin-{uuid4().hex[:8]}",
+        role="admin",
+        structure_id=structure.id,
+    )
+    db_session.commit()
+    authenticated_admin_client = app.test_client()
+    _real_admin_login(authenticated_admin_client, admin)
 
     r = client.get("/requests/new")
     assert r.status_code == 200
