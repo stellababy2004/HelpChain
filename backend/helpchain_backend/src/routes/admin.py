@@ -1788,16 +1788,25 @@ def _cases_enabled() -> bool:
 
 def _cases_capability_enabled() -> bool:
     """Return whether the current tenant exposes the canonical Case module."""
+    return _adaptive_module_enabled("cases")
+
+
+def _adaptive_module_enabled(module: str) -> bool:
+    """Resolve module availability through the canonical adaptive model."""
     if _is_global_admin():
         return True
     structure = db.session.get(Structure, _current_structure_id())
-    return bool(structure and module_enabled(structure, "cases"))
+    return bool(structure and module_enabled(structure, module))
+
+
+def _require_adaptive_module(module: str) -> None:
+    if not _adaptive_module_enabled(module):
+        abort(404)
 
 
 def _require_cases_capability() -> None:
     """Fail closed for direct Case URLs when the module is unavailable."""
-    if not _cases_capability_enabled():
-        abort(404)
+    _require_adaptive_module("cases")
 
 
 def _as_aware_utc(dt_val: datetime | None) -> datetime | None:
@@ -2873,6 +2882,7 @@ def _require_global_admin() -> None:
 
 
 def _require_professional_lead_access() -> None:
+    _require_adaptive_module("professionals")
     # ProfessionalLead is intentionally platform-global. Keep operationally
     # scoped admins out of the CRM surface while preserving founder access.
     actor = resolve_current_admin_actor()
@@ -8766,6 +8776,7 @@ def admin_relay_event_detail(event_id: int):
 @admin_required
 def admin_intervenants():
     admin_required_404()
+    _require_adaptive_module("professionals")
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -8860,6 +8871,7 @@ def admin_intervenants():
 @admin_required
 def admin_intervenant_detail(intervenant_id: int):
     admin_required_404()
+    _require_adaptive_module("professionals")
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -8897,6 +8909,7 @@ def admin_intervenant_detail(intervenant_id: int):
 @admin_required
 def admin_structure_intervenant_detail(structure_id: int, intervenant_id: int):
     admin_required_404()
+    _require_adaptive_module("professionals")
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))
@@ -8940,6 +8953,7 @@ def admin_structure_intervenant_detail(structure_id: int, intervenant_id: int):
 @admin_required
 def admin_intervenants_new():
     admin_required_404()
+    _require_adaptive_module("professionals")
     if not current_user.is_admin:
         flash(_("Access denied."), "error")
         return redirect(url_for("main.index"))

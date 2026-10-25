@@ -89,6 +89,7 @@ from .admin import (
     _cases_enabled,
     _compute_case_signals,
     _current_structure_id,
+    _require_adaptive_module,
     _is_global_admin,
     _lock_expired,
     _locked_by_other,
@@ -2585,6 +2586,7 @@ def admin_request_unassign(req_id: int):
 @admin_required
 @admin_role_required("ops", "admin", "superadmin")
 def admin_assign_volunteer(req_id: int, volunteer_id: int):
+    _require_adaptive_module("mobilisation")
     admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
@@ -2620,6 +2622,7 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
 @admin_required
 @admin_role_required("ops", "admin", "superadmin")
 def admin_unassign_volunteer(req_id: int):
+    _require_adaptive_module("mobilisation")
     admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):
@@ -2643,6 +2646,7 @@ def admin_unassign_volunteer(req_id: int):
 @admin_required
 @admin_role_required("ops", "superadmin")
 def admin_request_nudge(req_id: int):
+    _require_adaptive_module("mobilisation")
     admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
     if not can_edit_request(req, current_user):

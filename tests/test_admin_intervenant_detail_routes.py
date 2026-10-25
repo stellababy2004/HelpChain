@@ -40,8 +40,9 @@ def test_intervenant_detail_routes_registered(app):
 def _seed_intervenant_route_data(session):
     from backend.models import AdminUser, Intervenant, Structure
 
-    structure_a = Structure(name="Structure A", slug="structure-a")
-    structure_b = Structure(name="Structure B", slug="structure-b")
+    capabilities = '["case_coordination", "volunteer_coordination"]'
+    structure_a = Structure(name="Structure A", slug="structure-a", capabilities_json=capabilities)
+    structure_b = Structure(name="Structure B", slug="structure-b", capabilities_json=capabilities)
     session.add_all([structure_a, structure_b])
     session.flush()
 
@@ -80,6 +81,18 @@ def _seed_intervenant_route_data(session):
     session.commit()
 
     return structure_a, structure_b, intervenant_a, intervenant_b, superadmin, structure_admin
+
+
+def test_professional_admin_module_disabled_fails_closed(app, session):
+    structure, _other, _target, _other_target, _superadmin, admin = _seed_intervenant_route_data(session)
+    structure.capabilities_json = '["public_case_intake"]'
+    session.commit()
+    client = app.test_client()
+    _login_admin(client, app, admin)
+
+    response = client.get("/admin/intervenants")
+
+    assert response.status_code == 404
 
 
 def _seed_request(session, structure, title="Coordination active"):

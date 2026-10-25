@@ -42,7 +42,9 @@ from .admin import (
     _current_structure_id,
     _is_global_admin,
     _now_utc,
+    _adaptive_module_enabled,
     _professional_lead_list_query,
+    _require_adaptive_module,
     _require_cases_capability,
     _render_cases_list,
     _scope_requests,
@@ -407,6 +409,12 @@ def _remove_case_operational_assignment_for_lead(
     assignments = _case_active_operational_assignment_query(req, intervenant).all()
     for assignment in assignments:
         assignment.status = "removed"
+    case_row = Case.query.filter(Case.request_id == req.id).first()
+    if case_row is not None:
+        CaseParticipant.query.filter(
+            CaseParticipant.case_id == case_row.id,
+            CaseParticipant.professional_lead_id == int(professional_lead_id),
+        ).update({CaseParticipant.status: "inactive"}, synchronize_session="fetch")
     return len(assignments)
 
 
@@ -577,6 +585,7 @@ def _build_case_participant_cards(participants: list[CaseParticipant]) -> list[d
 
 
 def _case_detail_professional_leads() -> list[ProfessionalLead]:
+    _require_adaptive_module("professionals")
     return (
         _professional_lead_list_query(eligible_professional_leads_query())
         .order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
@@ -595,6 +604,8 @@ def _upsert_case_participant(
     external_name: str | None = None,
     status: str = "active",
 ) -> CaseParticipant:
+    if professional_lead_id is not None:
+        _require_adaptive_module("professionals")
     participant_type, user_id, admin_user_id, professional_lead_id, external_name = (
         _normalize_case_participant_payload(
             participant_type,
@@ -666,11 +677,15 @@ def admin_case_detail(case_id: int):
     case_row, req = _get_scoped_case_or_404(case_id)
     risk_ai_suggestion = _build_risk_ai_suggestion(req)
     operational_blockages = _build_operational_blockages(req, case_row)
-    suggested_professionals = suggest_professional_leads_for_case(
-        case_row,
-        req,
-        limit=8,
-        include_intervenant_fallback=False,
+    suggested_professionals = (
+        suggest_professional_leads_for_case(
+            case_row,
+            req,
+            limit=8,
+            include_intervenant_fallback=False,
+        )
+        if _adaptive_module_enabled("professionals")
+        else []
     )
     events = (
         CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
@@ -920,6 +935,7 @@ def admin_case_assign_owner(case_id: int):
 @admin_role_required("ops", "admin", "superadmin")
 def admin_case_assign_professional(case_id: int):
     admin_required_404()
+    _require_adaptive_module("professionals")
     case_row, req = _get_scoped_case_or_404(case_id, require_writable=True)
     lead_raw = (
         request.form.get("assigned_professional_lead_id")
@@ -1040,6 +1056,7 @@ def admin_case_add_participant(case_id: int):
         except Exception:
             lead_id = None
     if lead_id is not None:
+        _require_adaptive_module("professionals")
         participant_type = "professional_lead"
 
     selected_user = db.session.get(User, user_id) if user_id is not None else None

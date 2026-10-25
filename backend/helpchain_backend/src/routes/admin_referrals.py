@@ -23,6 +23,7 @@ from ..models import (
 )
 from .admin import (
     _current_structure_id,
+    _require_adaptive_module,
     _table_exists,
     admin_bp,
     admin_required,
@@ -70,6 +71,7 @@ STALE_ACTIVITY_WINDOW = timedelta(days=10)
 
 
 def _admin_structure_id() -> int | None:
+    _require_adaptive_module("referrals")
     admin = _referral_admin_user()
     value = getattr(admin, "structure_id", None)
     if value is not None:

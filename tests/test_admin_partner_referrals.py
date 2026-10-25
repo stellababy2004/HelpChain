@@ -50,9 +50,10 @@ def _login(client, app, admin: AdminUser) -> None:
 
 
 def _seed_referral_context(active_connection: bool = True):
-    a = Structure(name="Structure A", slug="structure-a", status="active")
-    b = Structure(name="Structure B", slug="structure-b", status="active")
-    c = Structure(name="Structure C", slug="structure-c", status="active")
+    capabilities = '["case_coordination"]'
+    a = Structure(name="Structure A", slug="structure-a", status="active", capabilities_json=capabilities)
+    b = Structure(name="Structure B", slug="structure-b", status="active", capabilities_json=capabilities)
+    c = Structure(name="Structure C", slug="structure-c", status="active", capabilities_json=capabilities)
     db.session.add_all([a, b, c])
     db.session.flush()
 
@@ -110,6 +111,18 @@ def _seed_referral_context(active_connection: bool = True):
         "superadmin": superadmin,
         "request": source_request,
     }
+
+
+def test_referrals_module_disabled_fails_closed_for_direct_partner_route(app, session):
+    ctx = _seed_referral_context()
+    ctx["a"].capabilities_json = '["public_case_intake"]'
+    db.session.commit()
+    client = app.test_client()
+    _login(client, app, ctx["admin_a"])
+
+    response = client.get("/admin/referrals")
+
+    assert response.status_code == 404
 
 
 def _send_referral(client, app, ctx):

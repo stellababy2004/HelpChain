@@ -33,7 +33,13 @@ from ..models import (
 )
 from ..security_logging import log_security_event
 from ..services.case_lifecycle import require_case_operationally_writable
-from .admin import admin_required, admin_required_404, admin_role_required, _is_global_admin
+from .admin import (
+    _is_global_admin,
+    _require_adaptive_module,
+    admin_required,
+    admin_required_404,
+    admin_role_required,
+)
 from ..security.api_authz import require_api_auth, require_roles
 
 api_bp = Blueprint("api", __name__)
@@ -585,6 +591,7 @@ def notification_test():
 @admin_role_required("ops", "superadmin")
 def invite_structure_to_case(case_id: int):
     admin_required_404()
+    _require_adaptive_module("referrals")
     payload = request.get_json(silent=True) or {}
     structure_id_raw = payload.get("structure_id")
     role_raw = (payload.get("role") or "viewer").strip().lower()

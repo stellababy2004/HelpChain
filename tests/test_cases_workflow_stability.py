@@ -195,6 +195,45 @@ def test_case_module_capability_controls_ui_and_direct_urls(app, session):
     assert client.get("/ops/cases").status_code == 404
 
 
+def test_professional_case_action_denied_when_professionals_module_disabled(app, session):
+    structure = _make_structure(
+        session,
+        name="Cases Without Professionals",
+        slug="cases-without-professionals",
+        capabilities=["public_case_intake"],
+    )
+    user = _make_user(
+        session,
+        username="cases_without_professionals_user",
+        email="cases-without-professionals-user@test.local",
+        structure_id=structure.id,
+    )
+    admin = _make_admin(
+        session,
+        username="cases_without_professionals_admin",
+        email="cases-without-professionals-admin@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    req = _make_request(
+        session,
+        title="professional module disabled",
+        user_id=user.id,
+        structure_id=structure.id,
+    )
+    case_row = _make_case(session, request_id=req.id, structure_id=structure.id)
+    client = app.test_client()
+    _login_admin(client, admin)
+
+    response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": "1"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 404
+
+
 def test_readonly_can_view_but_cannot_mutate_case(app, session):
     structure = _make_structure(session, name="Read Only Scope", slug="readonly-scope")
     user = _make_user(
@@ -1233,6 +1272,7 @@ def test_assigning_same_converted_lead_does_not_duplicate_assignment(app, sessio
 
 def test_reassigning_converted_lead_removes_old_and_creates_new_assignment(app, session):
     from backend.models import Assignment
+    from backend.helpchain_backend.src.models import CaseParticipant
 
     structure = _make_structure(
         session,
@@ -1322,10 +1362,22 @@ def test_reassigning_converted_lead_removes_old_and_creates_new_assignment(app, 
     assert old_assignment.status == "removed"
     assert new_assignment.status == "active"
     assert case_row.assigned_professional_lead_id == second_lead.id
+    old_participant = CaseParticipant.query.filter_by(
+        case_id=case_row.id, professional_lead_id=first_lead.id
+    ).one()
+    new_participant = CaseParticipant.query.filter_by(
+        case_id=case_row.id, professional_lead_id=second_lead.id
+    ).one()
+    assert old_participant.status == "inactive"
+    assert new_participant.status == "active"
+    assert CaseParticipant.query.filter_by(
+        case_id=case_row.id, professional_lead_id=second_lead.id
+    ).count() == 1
 
 
 def test_unassigning_converted_lead_removes_operational_assignment(app, session):
     from backend.models import Assignment
+    from backend.helpchain_backend.src.models import CaseParticipant
 
     structure = _make_structure(
         session,
@@ -1395,6 +1447,22 @@ def test_unassigning_converted_lead_removes_operational_assignment(app, session)
     assert unassign_response.status_code == 303
     assert assignment.status == "removed"
     assert case_row.assigned_professional_lead_id is None
+    participant = CaseParticipant.query.filter_by(
+        case_id=case_row.id, professional_lead_id=lead.id
+    ).one()
+    assert participant.status == "inactive"
+
+    reactivate_response = client.post(
+        f"/admin/cases/{case_row.id}/assign-professional",
+        data={"assigned_professional_lead_id": str(lead.id)},
+        follow_redirects=False,
+    )
+    session.refresh(participant)
+    assert reactivate_response.status_code == 303
+    assert participant.status == "active"
+    assert CaseParticipant.query.filter_by(
+        case_id=case_row.id, professional_lead_id=lead.id
+    ).count() == 1
 
 
 def test_resolving_case_removes_only_linked_operational_assignment(app, session):

@@ -6,6 +6,7 @@ import pytest
 
 from tests.test_admin_intervenant_detail_routes import (
     _login_admin,
+    _seed_request,
     _seed_intervenant_route_data,
 )
 
@@ -78,6 +79,18 @@ def test_admin_can_create_genuine_volunteer_actor(membership, session):
     assert actor.actor_type == "volunteer"
     assert actor.structure_id == membership.structure.id
     assert actor.legacy_volunteer_id is None
+
+
+def test_mobilisation_module_disabled_fails_closed_for_volunteer_assignment(membership, session):
+    membership.structure.capabilities_json = '["case_coordination"]'
+    request = _seed_request(session, membership.structure, title="Mobilisation disabled")
+
+    response = membership.client.post(
+        f"/admin/requests/{request.id}/assign_volunteer/{membership.volunteer.id}",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 404
 
 
 @pytest.mark.parametrize("scoped", [True, False])
