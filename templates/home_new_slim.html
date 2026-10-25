@@ -97,6 +97,55 @@
       flex: 0 0 auto;
     }
 
+    body.hc-page-home .hc-home-premium__hosting {
+      padding-top: 56px;
+      padding-bottom: 56px;
+    }
+
+    body.hc-page-home .hc-home-premium__hosting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    body.hc-page-home .hc-home-premium__hosting-card {
+      height: 100%;
+      padding: 22px;
+      border: 1px solid rgba(16, 36, 59, 0.1);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 14px 38px rgba(14, 27, 48, 0.06);
+    }
+
+    body.hc-page-home .hc-home-premium__hosting-card h3 {
+      margin: 0 0 8px;
+      color: #10233f;
+      font-size: 1.05rem;
+    }
+
+    body.hc-page-home .hc-home-premium__hosting-card p,
+    body.hc-page-home .hc-home-premium__hosting-note {
+      margin: 0;
+      color: rgba(16, 35, 63, 0.74);
+      line-height: 1.55;
+    }
+
+    body.hc-page-home .hc-home-premium__hosting-note {
+      margin-top: 18px;
+      font-size: 0.92rem;
+    }
+
+    body.hc-page-home .hc-home-premium__hosting-cta {
+      margin-top: 22px;
+    }
+
+    @media (max-width: 767.98px) {
+      body.hc-page-home .hc-home-premium__hosting-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     /* Desktop navigation: override legacy wrapping and !important spacing. */
     @media (min-width: 992px) {
       body.hc-page-home .hc-home-premium__nav-inner {
@@ -2657,6 +2706,36 @@
 
     </div>
   </section>
+
+<section class="hc-home-premium__section hc-home-premium__hosting" id="hebergement" aria-labelledby="hc-home-hosting-title">
+  <div class="hc-home-premium__section-inner">
+    <div class="hc-home-premium__section-head">
+      <p class="hc-home-premium__section-kicker">{{ _('HÉBERGEMENT & EXIGENCES') }}</p>
+      <h2 id="hc-home-hosting-title">{{ _('Hébergement adapté à votre organisation') }}</h2>
+      <p>{{ _('HelpChain est disponible en mode cloud. Selon les contraintes techniques, de sécurité et d’hébergement de votre organisation, un déploiement dans un environnement dédié ou dans une infrastructure contrôlée par votre organisation peut également être étudié.') }}</p>
+    </div>
+
+    <div class="hc-home-premium__hosting-grid">
+      <article class="hc-home-premium__hosting-card">
+        <h3>{{ _('Cloud') }}</h3>
+        <p>{{ _('Mise en service simplifiée dans un environnement administré.') }}</p>
+      </article>
+      <article class="hc-home-premium__hosting-card">
+        <h3>{{ _('Environnement dédié') }}</h3>
+        <p>{{ _('Un environnement dédié peut être étudié selon les exigences spécifiques de votre organisation.') }}</p>
+      </article>
+      <article class="hc-home-premium__hosting-card">
+        <h3>{{ _('Infrastructure de votre organisation') }}</h3>
+        <p>{{ _('Un déploiement accompagné dans une infrastructure contrôlée par votre organisation peut être envisagé après validation technique.') }}</p>
+      </article>
+    </div>
+
+    <p class="hc-home-premium__hosting-note">{{ _('Les services externes optionnels et les flux de données sont configurés selon l’environnement de déploiement retenu.') }}</p>
+    <div class="hc-home-premium__hosting-cta">
+      <a class="hc-btn hc-btn--secondary btn btn-secondary" href="{{ url_for('main.contact') }}">{{ _('Discuter de vos exigences d’hébergement') }}</a>
+    </div>
+  </div>
+</section>
 
 <section class="hc-home-premium__section hc-home-premium__section--cta" aria-labelledby="hc-home-final-title">
     <div class="hc-home-premium__cta-card">
