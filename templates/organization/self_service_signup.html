@@ -1,0 +1,11 @@
+<form method="post" action="{{ url_for('main.self_service_workspace_signup') }}">
+  <input name="organization_name" required value="{{ form_data.get('organization_name', '') }}">
+  <input name="contact_name" required value="{{ form_data.get('contact_name', '') }}">
+  <input name="email" type="email" required value="{{ form_data.get('email', '') }}">
+  <input name="password" type="password" required>
+  <select name="organization_type" required>
+    <option value="">Choisir</option>
+    {% for value in organization_types %}<option value="{{ value }}">{{ value }}</option>{% endfor %}
+  </select>
+  <button type="submit">Créer mon workspace</button>
+</form>

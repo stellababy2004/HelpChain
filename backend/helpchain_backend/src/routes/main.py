@@ -57,6 +57,7 @@ from ..models import (
     AdminAuditEvent,
     Notification,
     OrganizationAccessRequest,
+    AdminUser,
     ProfessionalLead,
     Request,
     RequestActivity,
@@ -100,6 +101,15 @@ from ..services.prospect_auto_capture import (
     attach_session_intelligence_to_professional_lead,
     summarize_session_intelligence,
 )
+from ..services.organization_self_service import (
+    PURPOSE as ORGANIZATION_SIGNUP_PURPOSE,
+    TTL_MINUTES as ORGANIZATION_SIGNUP_TTL_MINUTES,
+    create_pending_signup,
+    duplicate_reason,
+    validate_signup,
+    verify_and_provision,
+)
+from ..services.enterprise_structure_intelligence import ORGANIZATION_TYPES
 
 from ..services.telemetry_policy import (
     classify_public_telemetry_request,
@@ -5186,6 +5196,53 @@ def demander_acces():
         "success",
     )
     return redirect(url_for("main.demander_acces", envoye="1"), code=303)
+
+
+@main_bp.route("/creer-workspace", methods=["GET", "POST"])
+@limiter.limit("3 per hour", methods=["POST"])
+def self_service_workspace_signup():
+    choices = tuple(ORGANIZATION_TYPES)
+    if request.method == "GET":
+        return render_template("organization/self_service_signup.html", form_data={}, organization_types=choices)
+    form_data = {key: (request.form.get(key) or "").strip() for key in ("organization_name", "contact_name", "email", "organization_type")}
+    password = request.form.get("password") or ""
+    errors = validate_signup(
+        organization_name=form_data["organization_name"],
+        email=form_data["email"],
+        password=password,
+        organization_type=form_data["organization_type"],
+    )
+    if not errors:
+        reason = duplicate_reason(form_data["organization_name"], form_data["email"])
+        if reason:
+            errors["email"] = "Un compte ou une demande existe déjà pour ces informations."
+    if errors:
+        for message in errors.values():
+            flash(message, "danger")
+        return render_template("organization/self_service_signup.html", form_data=form_data, organization_types=choices, errors=errors), 400
+    row, raw_token = create_pending_signup(**form_data, password=password)
+    db.session.commit()
+    log_security_event("organization_signup", actor_type="anonymous", email_hash=_sha256_hex(form_data["email"]), meta={"signup_id": row.id, "purpose": ORGANIZATION_SIGNUP_PURPOSE})
+    if current_app.config.get("TESTING", False):
+        session["test_organization_signup_token"] = raw_token
+    else:
+        from backend.mail_service import send_notification_email
+        send_notification_email(form_data["email"], "emails/organization_signup_verification.html", {"verification_url": url_for("main.self_service_workspace_verify", token=raw_token, _external=True), "ttl_minutes": ORGANIZATION_SIGNUP_TTL_MINUTES})
+    return render_template("organization/self_service_signup_sent.html", email=form_data["email"]), 200
+
+
+@main_bp.get("/creer-workspace/verify/<token>")
+def self_service_workspace_verify(token: str):
+    try:
+        structure, admin = verify_and_provision(token)
+        db.session.commit()
+    except ValueError:
+        db.session.rollback()
+        return render_template("organization/self_service_verification_invalid.html"), 400
+    log_security_event("organization_signup_verified", actor_type="admin", actor_id=admin.id, meta={"structure_id": structure.id})
+    log_security_event("organization_structure_provisioned", actor_type="admin", actor_id=admin.id, meta={"structure_id": structure.id})
+    log_security_event("organization_admin_provisioned", actor_type="admin", actor_id=admin.id, meta={"structure_id": structure.id, "role": "admin"})
+    return redirect(url_for("admin.admin_login_legacy", next=url_for("admin.admin_onboarding")), code=303)
 
 
 @main_bp.route("/success_stories")

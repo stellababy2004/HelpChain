@@ -46,6 +46,7 @@ from .guardrail_counter import GuardrailCounter  # noqa: F401
 from .magic_link_token import MagicLinkToken  # noqa: F401
 from .notification import Notification  # noqa: F401
 from .organization_access_request import OrganizationAccessRequest  # noqa: F401
+from .pending_organization_signup import PendingOrganizationSignup  # noqa: F401
 from .import_batch import ImportBatch  # noqa: F401
 from .metric_registry import MetricDefinition, MetricRun  # noqa: F401
 from .professional_lead import ProfessionalLead  # noqa: F401
@@ -101,6 +102,7 @@ __all__ = [
     "RelayEvent",
     "ReferralActivity",
     "OrganizationAccessRequest",
+    "PendingOrganizationSignup",
     "ImportBatch",
     "MetricDefinition",
     "MetricRun",
