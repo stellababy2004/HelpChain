@@ -2861,6 +2861,80 @@ html body.hc-page-home .hc-product-demo__audit time {
   }
 }
 
+/* Final responsive polish: keep the approved layout stable at tablet widths
+   without changing the homepage structure or mobile navigation contract. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  html body.hc-page-home .hc-home-premium__nav-inner {
+    gap: 8px !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__brand-text {
+    font-size: 0.94rem;
+  }
+
+  html body.hc-page-home .hc-home-premium__menu a {
+    padding-inline: 0.34rem !important;
+    font-size: 0.84rem;
+  }
+
+  html body.hc-page-home .hc-home-premium__nav-actions .btn {
+    padding-inline: 0.72rem !important;
+    font-size: 0.84rem;
+  }
+
+  html body.hc-page-home .hc-home-premium__hero-grid {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr) !important;
+    padding: 20px !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  html body.hc-page-home .hc-home-premium__hero {
+    padding-block: 2.75rem !important;
+  }
+
+  html body.hc-page-home .hc-home-premium__product-row,
+  html body.hc-page-home .hc-home-premium__product-row--reverse,
+  html body.hc-page-home .hc-home-premium__product-row--security {
+    gap: 1.75rem;
+  }
+
+  html body.hc-page-home .hc-product-demo {
+    min-height: 0;
+    padding: 1rem;
+  }
+
+  html body.hc-page-home .hc-home-premium__section--product,
+  html body.hc-page-home .hc-home-premium__hosting,
+  html body.hc-page-home .hc-home-premium__section--cta {
+    padding-block: 3.75rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  html body.hc-page-home .hc-home-premium__product-row,
+  html body.hc-page-home .hc-home-premium__product-row--reverse,
+  html body.hc-page-home .hc-home-premium__product-row--security {
+    gap: 1.5rem;
+  }
+
+  html body.hc-page-home .hc-product-demo {
+    min-height: 0;
+    padding: 0.9rem;
+  }
+
+  html body.hc-page-home .hc-home-premium__section--product,
+  html body.hc-page-home .hc-home-premium__hosting,
+  html body.hc-page-home .hc-home-premium__section--cta {
+    padding-block: 3rem;
+  }
+
+  html body.hc-page-home .hc-footer .hc-footer__meta,
+  html body.hc-page-home .hc-footer .hc-footer__link {
+    line-height: 1.55;
+  }
+}
+
 /* Premium polish: preserve the existing homepage structure while reducing
    surface noise and keeping the narrative hierarchy calm. */
 html body.hc-page-home {
