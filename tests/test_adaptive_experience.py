@@ -1,6 +1,8 @@
 import json
 from types import SimpleNamespace
 
+import pytest
+
 from backend.helpchain_backend.src.services.adaptive_experience import (
     CCAS_DASHBOARD_PROFILE,
     GENERIC_DASHBOARD_PROFILE,
@@ -8,9 +10,11 @@ from backend.helpchain_backend.src.services.adaptive_experience import (
     SCHOOL_DASHBOARD_PROFILE,
     adaptive_modules,
     module_enabled,
+    modules_for_capabilities,
     organization_capabilities,
     resolve_dashboard_profile,
 )
+from backend.helpchain_backend.src.services.enterprise_structure_intelligence import ORGANIZATION_TYPES
 
 
 def structure(org_type=None, capabilities=None):
@@ -22,6 +26,30 @@ def structure(org_type=None, capabilities=None):
             else None
         ),
     )
+
+
+@pytest.mark.parametrize("organization_type", sorted(ORGANIZATION_TYPES))
+def test_each_canonical_organization_type_uses_its_default_module_profile(organization_type):
+    item = structure(organization_type)
+    expected_capabilities = tuple(ORGANIZATION_TYPES[organization_type]["default_capabilities"])
+
+    assert organization_capabilities(item) == expected_capabilities
+    assert adaptive_modules(item) == modules_for_capabilities(expected_capabilities)
+
+
+def test_invalid_organization_type_fails_closed_to_base_modules():
+    item = structure("not-a-canonical-organization-type")
+
+    assert organization_capabilities(item) == ()
+    assert adaptive_modules(item) == ("home", "calendar")
+
+
+def test_module_enabled_matches_adaptive_configuration():
+    item = structure("ccas")
+
+    for module in adaptive_modules(item):
+        assert module_enabled(item, module)
+    assert not module_enabled(item, "not-a-module")
 
 
 def test_school_uses_existing_default_capabilities():

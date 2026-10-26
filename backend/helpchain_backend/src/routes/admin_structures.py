@@ -53,6 +53,7 @@ from ..services.enterprise_structure_intelligence import (
     build_enterprise_structure_dashboard,
     serialize_json_list,
 )
+from ..services.adaptive_experience import CAPABILITY_MODULES
 from ..services.prospect_auto_capture import (
     append_audience_context_to_notes,
     extract_audience_context,
@@ -993,6 +994,10 @@ def admin_structure_workspace_update(structure_id: int):
         errors["organization_type"] = "Type d'organisation invalide."
     if risk_level and risk_level not in SERVICE_RISK_VALUES:
         errors["risk_level"] = "Niveau de risque invalide."
+    capabilities = _textarea_lines(request.form.get("capabilities"))
+    unknown_capabilities = [key for key in capabilities if key not in CAPABILITY_MODULES]
+    if unknown_capabilities:
+        errors["capabilities"] = "Capacité inconnue."
 
     if errors:
         for msg in errors.values():
@@ -1017,7 +1022,7 @@ def admin_structure_workspace_update(structure_id: int):
     structure.territory = _normalize_optional_text(request.form.get("territory"), max_length=255)
     structure.risk_level = risk_level or None
     structure.departments_json = serialize_json_list(_textarea_lines(request.form.get("departments")))
-    structure.capabilities_json = serialize_json_list(_textarea_lines(request.form.get("capabilities")))
+    structure.capabilities_json = serialize_json_list(capabilities)
     structure.languages_json = serialize_json_list(_textarea_lines(request.form.get("languages")))
     structure.priority_domains_json = serialize_json_list(_textarea_lines(request.form.get("priority_domains")))
     structure.accepted_case_types_json = serialize_json_list(

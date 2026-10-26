@@ -9,8 +9,15 @@ def _ensure_structure(session, structure_id: int, name: str, slug: str):
 
     structure = session.get(Structure, structure_id)
     if structure:
+        structure.capabilities_json = '["case_management"]'
+        session.commit()
         return structure
-    structure = Structure(id=structure_id, name=name, slug=slug)
+    structure = Structure(
+        id=structure_id,
+        name=name,
+        slug=slug,
+        capabilities_json='["case_management"]',
+    )
     session.add(structure)
     session.commit()
     return structure

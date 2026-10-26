@@ -39,7 +39,11 @@ def _login_admin(client, app, admin_user: AdminUser) -> None:
 
 
 def _make_structure(session, *, name: str, slug: str) -> Structure:
-    row = Structure(name=name, slug=slug)
+    row = Structure(
+        name=name,
+        slug=slug,
+        capabilities_json='["case_management"]',
+    )
     session.add(row)
     session.flush()
     return row

@@ -2322,6 +2322,32 @@ def test_structure_workspace_update_persists_enterprise_fields(client, session):
     assert st.capabilities_json is not None
 
 
+def test_structure_workspace_update_rejects_unknown_capabilities(client, session):
+    st = _make_structure(session, name="Capability Validation", slug="capability-validation")
+    st.capabilities_json = '["social_support"]'
+    session.commit()
+    admin = _make_admin(
+        session,
+        username="capability_validation_admin",
+        email="capability_validation_admin@test.local",
+        role="superadmin",
+    )
+    _login_admin(client, admin)
+
+    resp = client.post(
+        f"/admin/structures/{st.id}/workspace",
+        data={
+            "organization_type": "ccas",
+            "capabilities": "social_support\nunknown_capability",
+        },
+        follow_redirects=False,
+    )
+
+    assert resp.status_code == 303
+    session.refresh(st)
+    assert st.capabilities_json == '["social_support"]'
+
+
 def test_structure_contact_create_persists_preferred_communication(client, session):
     from backend.models import StructureContact
 
