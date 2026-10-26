@@ -119,7 +119,7 @@
               <div class="col-12">
                 <label class="form-label" for="organization_type">Type d'organisation</label>
                 <select class="form-select" id="organization_type" name="organization_type" required>
-                  <option value="">SÃ©lectionner</option>
+                  <option value="">Sélectionner</option>
                   {% for type_key, type_definition in onboarding_organization_types.items() %}
                     <option value="{{ type_key }}" {% if structure_data.get('organization_type') == type_key or (onboarding_structure and onboarding_structure.organization_type == type_key) %}selected{% endif %}>{{ type_definition.get('label', type_key) }}</option>
                   {% endfor %}
