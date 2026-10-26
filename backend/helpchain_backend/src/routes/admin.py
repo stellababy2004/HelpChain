@@ -6393,7 +6393,7 @@ def admin_onboarding_step():
 
     if step == "invite_team":
         invite_action = (request.form.get("invite_action") or "send").strip().lower()
-        emails: list[str] = []
+        invitations: list[dict[str, str]] = []
         for idx in range(1, 4):
             raw_email = (request.form.get(f"invite_email_{idx}") or "").strip().lower()
             if not raw_email:
@@ -6401,11 +6401,37 @@ def admin_onboarding_step():
             if not _ONBOARDING_EMAIL_RE.match(raw_email):
                 flash("Au moins une adresse e-mail est invalide.", "warning")
                 return redirect(url_for("admin.admin_onboarding"), code=303)
-            emails.append(raw_email)
+            role = (request.form.get(f"invite_role_{idx}") or "readonly").strip().lower()
+            if role not in {"readonly", "ops"}:
+                flash("Le rôle sélectionné n'est pas autorisé pour l'onboarding.", "warning")
+                return redirect(url_for("admin.admin_onboarding"), code=303)
+            invitations.append({"email": raw_email, "role": role})
+
+        invitation_errors: list[str] = []
+        if invite_action == "send" and invitations and structure is not None:
+            for item in invitations[:3]:
+                try:
+                    create_admin_team_invitation(
+                        structure_id=structure.id,
+                        invited_by_admin_id=current_user.id,
+                        email=item["email"],
+                        role=item["role"],
+                    )
+                except (InvitationEmailAlreadyUsed, InvitationAlreadyPending, InvitationRoleNotAllowed, ValueError) as exc:
+                    invitation_errors.append(f"{item['email']}:{exc}")
+            if invitation_errors and len(invitation_errors) == len(invitations):
+                db.session.rollback()
+                flash("Aucune invitation n'a pu être préparée.", "warning")
+                return redirect(url_for("admin.admin_onboarding"), code=303)
+
+        emails = [item["email"] for item in invitations]
         payload["team_invites"] = {
             "emails": emails[:3],
-            "sent": invite_action == "send" and bool(emails),
+            "roles": {item["email"]: item["role"] for item in invitations[:3]},
+            "sent": False,
+            "prepared": invite_action == "send" and bool(emails) and not invitation_errors,
             "skipped": invite_action == "skip",
+            "errors": invitation_errors,
         }
         _admin_onboarding_save_data(current_user, payload)
         _admin_onboarding_set_step(current_user, "first_win")

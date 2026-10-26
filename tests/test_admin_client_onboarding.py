@@ -304,3 +304,42 @@ def test_onboarding_structure_setup_with_type_continues_existing_flow(client, se
     assert response.status_code in (302, 303)
     assert response.headers.get("Location", "").endswith("/admin/onboarding")
     assert admin.onboarding_step == "invite_team"
+
+
+def test_onboarding_prepares_role_scoped_invitations_without_sending_email(client, session, monkeypatch):
+    from backend.models import AdminUserInvitation
+    import backend.mail_service as mail_service
+
+    sent = []
+    monkeypatch.setattr(mail_service, "send_notification_email", lambda *args, **kwargs: sent.append(args))
+
+    structure = _make_structure(session, name="Invite Roles", slug="invite-roles")
+    admin = _make_admin(
+        session,
+        username="invite_roles_admin",
+        email="invite-roles-admin@test.local",
+        structure_id=structure.id,
+        onboarding_step="invite_team",
+    )
+    _login_admin(client, admin)
+
+    response = client.post(
+        "/admin/onboarding/step",
+        data={
+            "step": "invite_team",
+            "invite_action": "send",
+            "invite_email_1": "ops-member@test.local",
+            "invite_role_1": "ops",
+            "invite_email_2": "readonly-member@test.local",
+            "invite_role_2": "readonly",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code in (302, 303)
+    invitations = AdminUserInvitation.query.filter_by(structure_id=structure.id).order_by(AdminUserInvitation.email).all()
+    assert [(row.email, row.role) for row in invitations] == [
+        ("ops-member@test.local", "ops"),
+        ("readonly-member@test.local", "readonly"),
+    ]
+    assert sent == []

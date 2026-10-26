@@ -152,6 +152,13 @@
                 <div class="col-12">
                   <label class="form-label" for="invite_email_{{ idx }}">Adresse e-mail {{ idx }}</label>
                   <input class="form-control" id="invite_email_{{ idx }}" name="invite_email_{{ idx }}" type="email" value="{{ (invite_data.get('emails') or [])[idx - 1] if (invite_data.get('emails') or [])|length >= idx else '' }}">
+                  <label class="form-label mt-2" for="invite_role_{{ idx }}">Rôle initial</label>
+                  {% set invite_email = (invite_data.get('emails') or [])[idx - 1] if (invite_data.get('emails') or [])|length >= idx else '' %}
+                  {% set invite_role = (invite_data.get('roles') or {}).get(invite_email, 'readonly') %}
+                  <select class="form-select" id="invite_role_{{ idx }}" name="invite_role_{{ idx }}">
+                    <option value="readonly" {% if invite_role == 'readonly' %}selected{% endif %}>Lecture seule</option>
+                    <option value="ops" {% if invite_role == 'ops' %}selected{% endif %}>Opérations</option>
+                  </select>
                 </div>
               {% endfor %}
             </div>
