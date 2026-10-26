@@ -162,6 +162,46 @@ def test_onboarding_complete_sets_completed_at(client, session):
     assert admin.onboarding_completed_at is not None
 
 
+@pytest.mark.parametrize("role", ["readonly", "ops"])
+@pytest.mark.parametrize("endpoint", ["/admin/onboarding/step", "/admin/onboarding/complete"])
+def test_limited_roles_cannot_mutate_onboarding(client, session, role, endpoint):
+    structure = _make_structure(session, name=f"Onboarding Guard {role}", slug=f"onboarding-guard-{role}")
+    admin = _make_admin(
+        session,
+        username=f"onboarding_guard_{role}",
+        email=f"onboarding-guard-{role}@test.local",
+        role=role,
+        structure_id=structure.id,
+        onboarding_step="complete",
+    )
+    _login_admin(client, admin)
+
+    data = {"step": "welcome"} if endpoint.endswith("/step") else {}
+    response = client.post(endpoint, data=data, follow_redirects=False)
+
+    assert response.status_code == 403
+    session.refresh(admin)
+    assert admin.onboarding_completed_at is None
+    assert admin.onboarding_step == "complete"
+
+
+def test_global_superadmin_keeps_onboarding_mutation_access(client, session):
+    admin = _make_admin(
+        session,
+        username="onboarding_global_superadmin",
+        email="onboarding-global-superadmin@test.local",
+        role="superadmin",
+        structure_id=None,
+        onboarding_step="complete",
+    )
+    _login_admin(client, admin)
+
+    response = client.post("/admin/onboarding/complete", data={}, follow_redirects=False)
+
+    assert response.status_code in (302, 303)
+    assert "/admin/onboarding" not in (response.headers.get("Location") or "")
+
+
 def test_onboarding_completion_review_shows_canonical_workspace_summary(client, session):
     structure = _make_structure(session, name="Review Structure", slug="review-structure")
     structure.city = "Paris"

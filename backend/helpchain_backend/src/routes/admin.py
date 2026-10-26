@@ -2869,6 +2869,23 @@ def _require_team_management_access():
 
     return actor
 
+
+def _require_onboarding_mutation_access() -> None:
+    """Allow onboarding writes only for organization/global administrators."""
+    actor = resolve_current_admin_actor()
+    allowed = actor.role == "admin" and actor.structure_id is not None
+    allowed = allowed or (
+        actor.role == "superadmin"
+        and (actor.is_platform_global or actor.is_structure_attached)
+    )
+    if allowed:
+        return
+    _audit_denied_action(
+        required_roles={"organization_admin", "global_admin"},
+        actor_role=actor.role,
+    )
+    abort(403)
+
 def _require_global_admin() -> None:
     # Platform-wide admin pages are gated by the canonical superadmin role.
     # Some dev/bootstrap setups attach that account to a default structure for
@@ -6329,6 +6346,7 @@ def admin_onboarding():
 @admin_required
 def admin_onboarding_step():
     admin_required_404()
+    _require_onboarding_mutation_access()
     if not _admin_onboarding_required():
         return redirect(_default_admin_workspace_url(), code=303)
 
@@ -6478,6 +6496,7 @@ def admin_onboarding_step():
 @admin_required
 def admin_onboarding_complete():
     admin_required_404()
+    _require_onboarding_mutation_access()
     if not _admin_onboarding_required():
         return redirect(_default_admin_workspace_url(), code=303)
     _admin_onboarding_set_step(current_user, "complete")
