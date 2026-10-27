@@ -32,6 +32,7 @@ Git cannot prove live Render settings, branch protection, deployed environment v
 
 - [System Architecture](02-architecture/system-architecture.md) — current repository-defined application and production architecture; not proof of live provider state.
 - [Tenant Model](02-architecture/tenant-model.md) — current structure boundary and platform-global invariant, verified against repository implementation.
+- [Adaptive Module Contract](02-architecture/adaptive-module-contract.md) — explains module-gated route availability, the intentional `404` versus `403` distinction, and the fixture rules for `cases` and `professionals`.
 - [Auth and Access Model](06-auth-and-access-model.md) — current login, account, MFA, role and session behavior.
 - [RBAC Matrix](06-security/rbac-matrix.md) — current role and tenant-scope behavior; route guards and tests remain definitive.
 
