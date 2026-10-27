@@ -6265,7 +6265,7 @@ def analyse_relances_perdues():
 @main_bp.get("/pourquoi-helpchain")
 @main_bp.get("/pourquoi_helpchain")
 def pourquoi_helpchain():
-    return render_template("pourquoi_helpchain.html")
+    return render_template("pourquoi_helpchain_redesign.html")
 
 
 @main_bp.get("/vision-europeenne")
