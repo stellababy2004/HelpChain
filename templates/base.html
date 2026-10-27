@@ -81,11 +81,10 @@
     <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image()|striptags|trim }}{% endblock %}">
     <meta name="twitter:image:alt" content="{% block twitter_image_alt %}{{ self.og_image_alt()|striptags|trim }}{% endblock %}">
 
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icons/hc-favicon.svg') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/icon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/icon-16x16.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <link rel="icon" href="{{ url_for('static', filename='icons/helpchain-logo.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/helpchain-logo-32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/helpchain-logo-16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='icons/helpchain-logo-180.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 
     <title>{% block title %}HelpChain — Plateforme de coordination opérationnelle{% endblock %}</title>
@@ -798,7 +797,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
           {% if not is_any_logged_in and not is_ops_shell and not is_admin_shell %}
-          <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark hc-logo" alt="HelpChain">
+          <img src="{{ url_for('static', filename='img/helpchain-logo-circular-cropped.png') }}" class="hc-brand-mark hc-logo" alt="HelpChain">
           {% endif %}
           <span class="hc-brand">
             <span class="hc-brand-title">HelpChain</span>
@@ -1380,7 +1379,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
       aria-expanded="false"
     >
       <span class="hc-a11y-fab__icon" aria-hidden="true">
-        <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-a11y-fab__logo" alt="">
+        <img src="{{ url_for('static', filename='img/helpchain-logo-circular-cropped.png') }}" class="hc-a11y-fab__logo" alt="">
       </span>
     </button>
 
@@ -1412,7 +1411,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             </button>
 
             <div class="hc-a11y-topbar__brand" aria-hidden="true">
-              <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark hc-logo" alt="">
+              <img src="{{ url_for('static', filename='img/helpchain-logo-circular-cropped.png') }}" class="hc-brand-mark hc-logo" alt="">
               <span class="hc-a11y-topbar__brand-text">{{ _('HelpChain') }}</span>
             </div>
 

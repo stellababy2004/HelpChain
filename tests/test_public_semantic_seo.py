@@ -75,6 +75,28 @@ def test_public_pages_have_semantic_seo_basics(client, app):
         for block in json_ld_blocks:
             assert "@context" in block
 
+        organization = next(
+            block for block in json_ld_blocks if block.get("@type") == "Organization"
+        )
+        assert organization["logo"].endswith(
+            "/static/icons/helpchain-logo-512.png"
+        ), path
+        assert organization["location"] == {
+            "@type": "Place",
+            "name": "Boulogne-Billancourt, Paris Region, France",
+        }, path
+        assert 'rel="icon" href="/static/icons/helpchain-logo.ico"' in html, path
+        assert (
+            'rel="icon" type="image/png" sizes="32x32" '
+            'href="/static/icons/helpchain-logo-32.png"'
+        ) in html, path
+        manifest = json.loads(client.get("/static/manifest.json").get_data(as_text=True))
+        assert [icon["src"] for icon in manifest["icons"]] == [
+            "/static/icons/helpchain-logo-144.png",
+            "/static/icons/helpchain-logo-192.png",
+            "/static/icons/helpchain-logo-512.png",
+        ], path
+
 
 def test_inner_public_pages_expose_breadcrumb_semantics(client):
     for path in PUBLIC_PAGES[1:]:

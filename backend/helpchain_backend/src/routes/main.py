@@ -258,7 +258,7 @@ def _public_structured_data() -> list[dict[str, object]]:
         "@id": organization_id,
         "name": "HelpChain",
         "url": homepage_url,
-        "logo": url_for("static", filename="icons/icon-512x512.png", _external=True),
+        "logo": url_for("static", filename="icons/helpchain-logo-512.png", _external=True),
         "description": _(
             "HelpChain est une plateforme SaaS de coordination operationnelle pour les collectivites, CCAS et leurs partenaires."
         ),
