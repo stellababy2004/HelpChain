@@ -56,6 +56,7 @@ def _admin(
 def _public_intake_structure(session, *, name: str) -> Structure:
     structure = session.query(Structure).filter_by(slug="default").first()
     assert structure is not None
+    structure.capabilities_json = '["case_management"]'
     if not session.query(StructureCoverageArea).filter_by(
         structure_id=structure.id,
         area_type="city",

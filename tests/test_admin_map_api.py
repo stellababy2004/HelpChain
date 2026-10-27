@@ -18,9 +18,15 @@ def test_admin_cases_map_api_returns_json(client, app):
     with app.app_context():
         structure = Structure.query.filter_by(slug="default").first()
         if not structure:
-            structure = Structure(name="Default", slug="default")
+            structure = Structure(
+                name="Default",
+                slug="default",
+                capabilities_json='["case_management"]',
+            )
             db.session.add(structure)
             db.session.flush()
+        else:
+            structure.capabilities_json = '["case_management"]'
 
         admin = AdminUser(
             username="map_admin",
@@ -28,6 +34,7 @@ def test_admin_cases_map_api_returns_json(client, app):
             password_hash="x",
             role="admin",
             is_active=True,
+            structure_id=structure.id,
         )
         requester = User(
             username="map_req_user",

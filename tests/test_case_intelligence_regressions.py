@@ -7,7 +7,9 @@ from backend.helpchain_backend.src.services.case_assistant import (
 )
 
 
-NOW = datetime(2026, 10, 25, 12, 0, tzinfo=UTC)
+# Keep the fixture aligned with the production helper's live UTC clock so the
+# "normal" branch remains recent instead of becoming stale as time passes.
+NOW = datetime.now(UTC)
 
 
 def _case(**overrides):

@@ -50,6 +50,7 @@ def public_intake_destination(app, session):
         name="Smoke CCAS Boulogne-Billancourt",
         slug="smoke-ccas-boulogne",
         status="active",
+        capabilities_json='["case_management"]',
     )
     session.add(structure)
     session.flush()
@@ -203,7 +204,7 @@ def test_public_request_to_resolved_case_lifecycle(
         password_hash="x",
         role="superadmin",
         is_active=True,
-        structure_id=None,
+        structure_id=public_intake_destination.id,
     )
     session.add(admin)
     session.commit()
@@ -232,13 +233,14 @@ def test_public_request_to_resolved_case_lifecycle(
         admin_session["admin_id"] = admin.id
         admin_session["admin_user_id"] = admin.id
         admin_session["role"] = admin.role
+        admin_session["structure_id"] = public_intake_destination.id
         admin_session["is_authenticated"] = True
         admin_session["is_admin"] = True
         admin_session["admin_logged_in"] = True
 
     g.pop("_login_user", None)
-    assert admin_client.get("/admin/cases").status_code == 200
     g.structure_id = public_intake_destination.id
+    assert admin_client.get("/admin/cases").status_code == 200
     open_response = admin_client.post(
         f"/admin/requests/{request_row.id}/open-case",
         follow_redirects=False,
