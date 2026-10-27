@@ -265,11 +265,7 @@ def _public_structured_data() -> list[dict[str, object]]:
         "email": "contact@helpchain.live",
         "location": {
             "@type": "Place",
-            "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "Boulogne-Billancourt",
-                "addressCountry": "FR",
-            },
+            "name": "Boulogne-Billancourt, Paris Region, France",
         },
         "areaServed": france_area,
         "knowsAbout": operational_keywords,
