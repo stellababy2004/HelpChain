@@ -849,10 +849,10 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
           {% set ep = request.endpoint or '' %}
           {% set produit_active = ep.startswith('main.comment_ca_marche') or ep.startswith('main.offre') %}
           {% set secteurs_active = ep.startswith('main.pour_les_structures') or ep.startswith('main.professionnels') or ep.startswith('main.collectivites_associations') %}
-          {% set securite_active = ep.startswith('main.securite') or ep.startswith('main.architecture') or ep.startswith('main.gouvernance') %}
+          {% set securite_active = ep.startswith('main.securite') or ep.startswith('main.gouvernance') %}
           {% set deploiement_active = ep.startswith('main.deploiement') %}
           {% set tarifs_active = ep.startswith('main.tarifs') %}
-          {% set ressources_active = ep.startswith('main.cas_usage') or ep.startswith('main.pilotage_indicateurs') or ep.startswith('main.simulation_operationnelle') or ep.startswith('main.partenariats') or ep.startswith('main.faq') or ep.startswith('main.pourquoi_helpchain') or ep.startswith('main.vision_europeenne') %}
+          {% set ressources_active = ep.startswith('main.architecture') or ep.startswith('main.cas_usage') or ep.startswith('main.pilotage_indicateurs') or ep.startswith('main.simulation_operationnelle') or ep.startswith('main.partenariats') or ep.startswith('main.faq') or ep.startswith('main.pourquoi_helpchain') or ep.startswith('main.vision_europeenne') %}
           {% set analyses_active = ep.startswith('main.analyse_fragmentation') or ep.startswith('main.analyse_relances_perdues') %}
           {% if is_ops_shell %}
           <ul class="navbar-nav ms-auto">

@@ -6281,7 +6281,7 @@ def securite():
 
 @main_bp.get("/architecture")
 def architecture():
-    return render_template("architecture.html")
+    return render_template("architecture_redesign.html")
 
 
 @main_bp.get("/mentions-legales")
