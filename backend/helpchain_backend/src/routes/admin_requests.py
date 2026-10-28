@@ -611,9 +611,9 @@ def admin_request_archive(req_id: int):
 @admin_role_required("superadmin", "admin", "ops")
 def admin_requests():
     admin_required_404()
-    if _admin_role_value() not in {"superadmin", "admin"}:
+    if _admin_role_value() not in {"superadmin", "admin", "ops"}:
         _audit_denied_action(
-            required_roles={"superadmin", "admin"},
+            required_roles={"superadmin", "admin", "ops"},
             actor_role=_admin_role_value(),
         )
         abort(403)
