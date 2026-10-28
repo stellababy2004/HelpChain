@@ -9,6 +9,10 @@ from backend.models import NotificationJob, current_structure, utc_now
 
 logger = logging.getLogger(__name__)
 
+# Operational notifications are only actionable for 24 hours. Older queued
+# jobs remain available for audit, but must never be delivered by the processor.
+NOTIFICATION_MAX_AGE = timedelta(hours=24)
+
 
 def _safe_json_dumps(payload: dict | None) -> str | None:
     if payload is None:
@@ -346,9 +350,12 @@ def process_pending_notifications(limit: int = 50) -> dict:
         "[NOTIFY] queue processor running; scanning due notification jobs"
     )
     now = utc_now()
+    stale_cutoff = now - NOTIFICATION_MAX_AGE
     jobs = (
         NotificationJob.query.filter(
             NotificationJob.status.in_(("pending", "retry")),
+            NotificationJob.created_at.is_not(None),
+            NotificationJob.created_at >= stale_cutoff,
             (NotificationJob.next_retry_at == None)  # noqa: E711
             | (NotificationJob.next_retry_at <= now),
         )
