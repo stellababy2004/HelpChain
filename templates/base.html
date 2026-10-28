@@ -1974,6 +1974,17 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
     </footer>
     {% endblock %}
     <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
+    <aside id="hcInstallPrompt" class="hc-install-prompt" hidden aria-labelledby="hcInstallTitle">
+      <button type="button" class="hc-install-prompt__close" id="hcInstallClose" aria-label="{{ _('Close') }}">&times;</button>
+      <div class="hc-install-prompt__brand" aria-hidden="true">
+        <img src="{{ url_for('static', filename='icons/helpchain-logo-192.png') }}" alt="">
+      </div>
+      <div class="hc-install-prompt__copy">
+        <strong id="hcInstallTitle">{{ _('Installer HelpChain') }}</strong>
+        <span id="hcInstallText">{{ _('Ouvrez HelpChain plus rapidement comme une application, sans rechercher le site à chaque fois.') }}</span>
+      </div>
+      <button type="button" class="hc-install-prompt__action" id="hcInstallAction">{{ _('Installer') }}</button>
+    </aside>
     {% if not disable_a11y %}
     <div
       id="hcA11ySelectionAudioToolbar"
@@ -2008,6 +2019,49 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
     <script src="{{ url_for('static', filename='js/admin-top-nav.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/lead-capture.js') }}?v=5" defer></script>
     <script src="{{ url_for('static', filename='js/hc-server-indicator.js') }}" defer></script>
+    <script>
+      (() => {
+        let deferredInstallPrompt = null;
+        const promptEl = document.getElementById("hcInstallPrompt");
+        const actionEl = document.getElementById("hcInstallAction");
+        const closeEl = document.getElementById("hcInstallClose");
+        const textEl = document.getElementById("hcInstallText");
+        const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+        const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+        }
+
+        const closePrompt = () => {
+          if (promptEl) promptEl.hidden = true;
+        };
+
+        window.addEventListener("beforeinstallprompt", (event) => {
+          event.preventDefault();
+          deferredInstallPrompt = event;
+          if (promptEl && !standalone) promptEl.hidden = false;
+        });
+
+        if (isIos && !standalone && promptEl && textEl) {
+          window.setTimeout(() => {
+            textEl.textContent = "{{ _('Dans Safari, utilisez Partager puis Ajouter à l’écran d’accueil pour installer HelpChain.') }}";
+            promptEl.hidden = false;
+            if (actionEl) actionEl.textContent = "{{ _('Voir comment') }}";
+          }, 1200);
+        }
+
+        actionEl?.addEventListener("click", async () => {
+          if (!deferredInstallPrompt) return;
+          deferredInstallPrompt.prompt();
+          await deferredInstallPrompt.userChoice;
+          deferredInstallPrompt = null;
+          closePrompt();
+        });
+        closeEl?.addEventListener("click", closePrompt);
+        window.addEventListener("appinstalled", closePrompt);
+      })();
+    </script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
