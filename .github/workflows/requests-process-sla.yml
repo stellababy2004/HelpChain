@@ -1,8 +1,7 @@
 name: Requests SLA Processor
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"
+  # Temporarily disabled during Neon quota recovery; manual runs remain available.
   workflow_dispatch:
 
 jobs:

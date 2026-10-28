@@ -1,8 +1,7 @@
 name: Backup Postgres to S3
 
 on:
-  schedule:
-    - cron: "17 3 * * *"
+  # Temporarily disabled during Neon quota recovery; manual runs remain available.
   workflow_dispatch:
 
 permissions:

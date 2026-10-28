@@ -1,9 +1,7 @@
 ﻿name: Weekly operational reports
 
 on:
-  schedule:
-    # Every Monday at 07:00 UTC / 08:00 Paris winter time
-    - cron: "0 7 * * 1"
+  # Temporarily disabled during Neon quota recovery; manual runs remain available.
   workflow_dispatch:
 
 jobs:

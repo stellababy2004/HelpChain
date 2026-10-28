@@ -1,9 +1,12 @@
 name: Notifications Processor
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"
+  # Temporarily disabled during Neon quota recovery; manual runs remain available.
   workflow_dispatch:
+
+concurrency:
+  group: notifications-process
+  cancel-in-progress: false
 
 jobs:
   run-notifications:

@@ -2,9 +2,7 @@ name: DB Backup to S3 (Neon Postgres)
 
 on:
   workflow_dispatch:
-  schedule:
-    # Daily backup at 02:05 UTC
-    - cron: "5 2 * * *"
+  # Temporarily disabled during Neon quota recovery; manual runs remain available.
 
 permissions:
   contents: read

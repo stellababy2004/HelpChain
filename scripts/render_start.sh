@@ -10,10 +10,6 @@ fi
 echo "=== RENDER START ==="
 echo "[HC] render_start.sh running"
 echo "[HC] ENVIRONMENT=production"
-echo "[HC] Applying database migrations..."
-"$PY" -m flask --app run:app db upgrade --directory migrations
-echo "[HC] flask db upgrade completed successfully"
-
 echo "[HC] Ensuring production admin user from Render env vars on the production database..."
 "$PY" backend/scripts/ensure_render_admin.py
 echo "[HC] ensure_render_admin completed successfully for production"
