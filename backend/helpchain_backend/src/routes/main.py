@@ -5731,7 +5731,7 @@ def contact():
         if is_demo:
             current_app.logger.info("Demo auto-reply attempt started")
             try:
-                _send_demo_email(
+                auto_reply_ok = _send_demo_email(
                     recipient=(form_data.get("email") or "").strip(),
                     subject="Votre demande de démonstration HelpChain a bien été reçue",
                     body=(
@@ -5774,7 +5774,10 @@ def contact():
                         "</html>"
                     ),
                 )
-                current_app.logger.info("Demo auto-reply sent successfully")
+                if auto_reply_ok:
+                    current_app.logger.info("Demo auto-reply sent successfully")
+                else:
+                    current_app.logger.warning("Demo auto-reply delivery failed | lead_id=%s", lead.id)
             except Exception:
                 current_app.logger.exception("Demo auto-reply failed")
     except Exception as exc:
