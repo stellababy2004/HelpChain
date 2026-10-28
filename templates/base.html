@@ -1974,6 +1974,11 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
     </footer>
     {% endblock %}
     <div id="hc-toast" class="hc-toast" aria-live="polite" aria-atomic="true"></div>
+    <style>
+      .hc-install-prompt{position:fixed;right:22px;bottom:92px;z-index:2200;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;width:min(390px,calc(100vw - 32px));padding:14px 16px;border:1px solid rgba(147,197,253,.42);border-radius:18px;background:rgba(255,255,255,.97);color:#17345f;box-shadow:0 18px 48px rgba(15,35,65,.2)}
+      .hc-install-prompt[hidden]{display:none}.hc-install-prompt__brand{width:42px;height:42px}.hc-install-prompt__brand img{width:100%;height:100%;object-fit:contain}.hc-install-prompt__copy{display:grid;gap:3px;min-width:0}.hc-install-prompt__copy span{color:#526b8d;font-size:13px;line-height:1.35}.hc-install-prompt__action{border:0;border-radius:10px;padding:9px 12px;background:#17345f;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap}.hc-install-prompt__close{position:absolute;top:4px;right:8px;border:0;background:transparent;color:#7c8da6;font-size:20px;line-height:1;cursor:pointer}
+      @media(max-width:575.98px){.hc-install-prompt{right:16px;bottom:82px}.hc-install-prompt__action{grid-column:2/-1;justify-self:start}}
+    </style>
     <aside id="hcInstallPrompt" class="hc-install-prompt" hidden aria-labelledby="hcInstallTitle">
       <button type="button" class="hc-install-prompt__close" id="hcInstallClose" aria-label="{{ _('Close') }}">&times;</button>
       <div class="hc-install-prompt__brand" aria-hidden="true">
