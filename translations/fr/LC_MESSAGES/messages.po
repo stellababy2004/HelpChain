@@ -11187,3 +11187,12 @@ msgstr "en cours"
 
 msgid "Charge opérationnelle modérée"
 msgstr "Charge opérationnelle modérée"
+
+msgid "Demande de démonstration"
+msgstr "Demande de démonstration"
+
+msgid "Durée : 20 minutes"
+msgstr "Durée : 20 minutes"
+
+msgid "Votre demande a bien été enregistrée, mais une erreur technique a empêché la notification de notre équipe. Inutile de soumettre à nouveau le formulaire ; vous pouvez nous contacter directement."
+msgstr "Votre demande a bien été enregistrée, mais une erreur technique a empêché la notification de notre équipe. Inutile de soumettre à nouveau le formulaire ; vous pouvez nous contacter directement."
