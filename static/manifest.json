@@ -3,7 +3,7 @@
   "name": "HelpChain — Plateforme SaaS de coordination opérationnelle",
   "short_name": "HelpChain",
   "description": "HelpChain est une plateforme SaaS de coordination opérationnelle pour les collectivités, CCAS et leurs partenaires.",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1976d2",
