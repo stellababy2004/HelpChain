@@ -1738,6 +1738,16 @@ def logout():
     return resp
 
 
+@main_bp.route("/app", methods=["GET"])
+def app_entry():
+    """Open the installed app at the authenticated operational entry point."""
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+    return redirect(
+        url_for("admin.admin_login", next=url_for("main.dashboard"))
+    )
+
+
 @main_bp.route("/dashboard", methods=["GET"])
 @login_required
 def dashboard():
