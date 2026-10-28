@@ -1234,6 +1234,31 @@ def create_app(config_object=None) -> Flask:
 
         return render_template("errors/403.html", role=role), 403
 
+    @app.errorhandler(409)
+    def conflict(e):
+        """Give operators a safe way back from an invalid operational action."""
+        return (
+            """<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Action impossible - HelpChain</title>
+  <style>
+    body{margin:0;padding:48px 24px;background:#f4f8fc;color:#17345f;font-family:Arial,sans-serif}
+    main{max-width:680px;margin:8vh auto;padding:36px;border:1px solid #d7e3f1;border-radius:20px;background:#fff;box-shadow:0 16px 40px rgba(23,52,95,.12)}
+    h1{margin-top:0;font-size:32px} p{font-size:18px;line-height:1.55;color:#526b8d}
+    button{border:0;border-radius:10px;padding:12px 20px;background:#17345f;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body><main>
+  <h1>Action impossible</h1>
+  <p>Le professionnel sélectionné n’est pas disponible pour cette demande ou n’appartient pas à la même structure. Aucun changement n’a été enregistré.</p>
+  <button type="button" onclick="history.length > 1 ? history.back() : location.href='/dashboard'">Retour</button>
+</main></body></html>""",
+            409,
+        )
+
     @app.errorhandler(404)
     def not_found(e):
         # Keep privacy semantics (404) but give volunteers a human fallback page.
