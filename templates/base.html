@@ -797,7 +797,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
         <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ safe_url_for('main.index') }}">
           {% if not is_any_logged_in and not is_ops_shell and not is_admin_shell %}
-          <img src="{{ url_for('static', filename='img/hc-logo-mark.svg') }}" class="hc-brand-mark hc-logo" alt="HelpChain">
+          <img src="{{ url_for('static', filename='img/helpchain-logo-circular-cropped.png') }}" class="hc-brand-mark hc-logo" alt="HelpChain">
           {% endif %}
           <span class="hc-brand">
             <span class="hc-brand-title">HelpChain</span>
