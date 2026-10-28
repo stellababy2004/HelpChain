@@ -608,7 +608,7 @@ def admin_request_archive(req_id: int):
 @admin_bp.get("/requests")
 @login_required
 @admin_required
-@admin_role_required("superadmin", "admin")
+@admin_role_required("superadmin", "admin", "ops")
 def admin_requests():
     admin_required_404()
     if _admin_role_value() not in {"superadmin", "admin"}:
@@ -976,12 +976,12 @@ def admin_requests():
 
 @admin_bp.route("/requests/new", methods=["GET", "POST"])
 @admin_required
-@admin_role_required("superadmin")
+@admin_role_required("superadmin", "ops")
 def admin_request_new():
     admin_required_404()
-    if _admin_role_value() != "superadmin":
+    if _admin_role_value() not in {"superadmin", "ops"}:
         _audit_denied_action(
-            required_roles={"superadmin", "admin"},
+            required_roles={"superadmin", "ops"},
             actor_role=_admin_role_value(),
         )
         abort(403)
