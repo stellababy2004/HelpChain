@@ -5088,7 +5088,8 @@ def professionnels_pilote():
         flash(
             _(
                 "Votre demande a bien été enregistrée, mais une erreur technique a empêché "
-                "la notification de notre équipe. Merci de réessayer dans quelques instants."
+                "la notification de notre équipe. Votre demande est enregistrée ; "
+                "inutile de la soumettre à nouveau. Vous pouvez nous contacter directement."
             ),
             "warning",
         )
