@@ -1425,3 +1425,73 @@ body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-pag
     transition: none !important;
   }
 }
+
+
+/* HC INSTITUTIONAL DESIGN CONTRACT v1
+   Shared visual language across marketing pages; operational views excluded.
+   The path allowlist prevents changes to authenticated/admin UI. */
+body:is([data-hc-page="/"],[data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) {
+  --hc-public-page: #F4F8FC;
+  --hc-v3-soft: #F4F8FC;
+  --hc-v3-surface: #FFFFFF;
+  --hc-v3-ink: #10233F;
+  --hc-v3-muted: #526B88;
+  --hc-v3-line: #D6E2EF;
+  background: #F4F8FC;
+  color: #344F70;
+}
+body:is([data-hc-page="/"],[data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) > nav.hc-public-nav-root {
+  position: relative !important;
+  top: auto !important;
+  inset-inline: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  min-height: 76px !important;
+  z-index: 100 !important;
+  background: #FFFFFF !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: 1px solid #D4E0EC !important;
+  box-shadow: 0 2px 12px rgba(16,35,63,.055) !important;
+}
+body:is([data-hc-page="/"],[data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) > nav.hc-public-nav-root :is(.nav-link:not(.hc-nav-cta),.hc-nav-mega__trigger) {
+  color: #243B53 !important;
+  opacity: 1 !important;
+}
+body:is([data-hc-page="/"],[data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) > nav.hc-public-nav-root :is(.nav-link:not(.hc-nav-cta),.hc-nav-mega__trigger):hover {
+  color: #1D4E89 !important;
+  background: #EAF1F8 !important;
+}
+body:is([data-hc-page="/"],[data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) main {
+  margin-top: 0 !important;
+}
+body:is([data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) main :is(h1,.hc-doc-intro__title,.hc-hero__title) {
+  font-size: clamp(2.15rem, 3.55vw, 3.8rem) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -.04em !important;
+  font-weight: 780 !important;
+  color: #10233F !important;
+  text-wrap: balance;
+}
+body:is([data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) main :is(.hc-hero__subtitle,.hc-hero__intro,.hc-doc-intro__lead,.hc-trust-page__lead,.hc-offre__lead) {
+  font-size: clamp(1.05rem, 1.3vw, 1.23rem) !important;
+  line-height: 1.65 !important;
+  color: #344F70 !important;
+}
+body:is([data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) main :is(.public-page-hero,.hc-doc-intro,.hc-hero,.hc-trust-page__hero,.hc-offre__hero) {
+  padding-top: clamp(2rem, 4vw, 3.5rem) !important;
+  padding-bottom: clamp(2rem, 4vw, 3.5rem) !important;
+}
+body:is([data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) main :is(.hc-hero,.hc-doc-intro,.public-page-hero,.hc-offre__hero,.hc-trust-page__hero) {
+  background-image: none !important;
+}
+body:is([data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"],[data-hc-page="/offre"],[data-hc-page="/pourquoi_helpchain"],[data-hc-page="/vision_europeenne"]) main :is(.hc-card,.hc-trust-card,.hc-step-card,.hc-offre__card,.hc-doc-intro,.public-page-hero) {
+  border-color: #D6E2EF !important;
+  box-shadow: 0 10px 28px rgba(16,35,63,.055) !important;
+}
+@media (max-width: 767px) {
+  body:is([data-hc-page="/demo"],[data-hc-page="/pour-les-structures"],[data-hc-page="/securite"],[data-hc-page="/deploiement"],[data-hc-page="/tarifs"],[data-hc-page="/architecture"],[data-hc-page="/simulation-operationnelle"]) main :is(h1,.hc-doc-intro__title,.hc-hero__title) {
+    font-size: clamp(2rem, 7.2vw, 2.8rem) !important;
+  }
+}
