@@ -5,7 +5,7 @@
 {% block og_title %}{{ _('HelpChain | Plateforme de coordination opérationnelle pour environnements institutionnels') }}{% endblock %}
 {% block og_description %}{{ _('Infrastructure numérique conçue en France pour le pilotage, la coordination multi-acteurs, la traçabilité et la continuité opérationnelle.') }}{% endblock %}
 {% block twitter_description %}{{ _('Infrastructure numérique conçue en France pour le pilotage, la coordination multi-acteurs, la traçabilité et la continuité opérationnelle.') }}{% endblock %}
-{% set disable_nav_chrome = true %}
+{% set disable_nav_chrome = false %}
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block extra_css %}
@@ -2250,6 +2250,39 @@
     }
   </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home-hero-canonical.css') }}">
+  <style>
+    /* Homepage must not suppress or cover the canonical navigation. */
+    body.hc-page-home > nav.hc-public-nav-root.hc-navbar {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: relative !important;
+      top: auto !important;
+      z-index: 20 !important;
+      transform: none !important;
+      margin-top: 0 !important;
+      background: #FFFFFF !important;
+      background-image: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: 0 2px 12px rgba(16, 35, 63, .055) !important;
+      border-bottom: 1px solid #D4E0EC !important;
+    }
+    body.hc-page-home > nav.hc-public-nav-root .nav-link,
+    body.hc-page-home > nav.hc-public-nav-root .hc-nav-mega__trigger {
+      color: #243B53 !important;
+      opacity: 1 !important;
+    }
+    body.hc-page-home > nav.hc-public-nav-root .nav-link:hover,
+    body.hc-page-home > nav.hc-public-nav-root .hc-nav-mega__trigger:hover {
+      color: #1D4E89 !important;
+      background: #EAF1F8 !important;
+    }
+    body.hc-page-home .hc-home-premium {
+      position: relative;
+      z-index: 0;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -2259,6 +2292,7 @@
   {'city': 'Nantes', 'type': 'Coordination terrain', 'priority': 'Priorité normale', 'status': 'Assigné'}
 ] %}
 <main class="hc-home-premium">
+  {% if disable_nav_chrome %}
   <header class="hc-home-premium__nav" aria-label="{{ _('Navigation homepage') }}">
     <div class="hc-home-premium__nav-inner">
       <a class="hc-home-premium__brand" href="{{ safe_url_for('main.index') }}">
@@ -2308,6 +2342,7 @@
       </div>
     </div>
   </header>
+  {% endif %}
 
 <section class="hc-home-premium__hero" aria-labelledby="hc-home-hero-title">
   <div class="hc-home-premium__hero-grid">

@@ -8690,8 +8690,9 @@ body.hc-page-home .public-final-cta .hc-home__cta-final-card p {
 /* =========================================================
    Premium institutional homepage
    ========================================================= */
+/* Homepage uses the same canonical public navigation as other public pages. */
 body.hc-page-home .hc-public-nav-root {
-  display: none;
+  display: flex;
 }
 
 body.hc-page-home {
@@ -11736,7 +11737,7 @@ body.hc-page-home .hc-home-premium__hero-grid{
 
 body.hc-page-home .hc-home-premium,
 body.hc-page-home .hc-home-premium__hero{
-  padding-top: 52px !important;
+  padding-top: 0 !important;
   padding-bottom: 28px !important;
 }
 
