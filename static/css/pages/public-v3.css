@@ -1266,3 +1266,89 @@ header nav a:hover,
   -webkit-text-fill-color: #2563eb !important;
   text-decoration-color: #2563eb !important;
 }
+
+/* HelpChain public UI palette — consolidated final layer.
+   Scoped to institutional public pages: do not recolor operational status UI. */
+:root {
+  --hc-public-navy: #12345A;
+  --hc-public-heading: #10233F;
+  --hc-public-text: #344F70;
+  --hc-public-muted: #526B88;
+  --hc-public-link: #1D4E89;
+  --hc-public-accent: #2563EB;
+  --hc-public-page: #F4F8FC;
+  --hc-public-section: #EAF2FA;
+  --hc-public-border: #D6E2EF;
+}
+body.hc-page-home,
+body:not(.hc-admin-page):not(.hc-page-admin):not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not([data-hc-page^="/professional"]):not([data-hc-page^="/volunteer"]) {
+  --hc-bg: var(--hc-public-page);
+  --hc-text: var(--hc-public-text);
+  --hc-text-muted: var(--hc-public-muted);
+  --hc-accent: var(--hc-public-navy);
+  --hc-accent-hover: var(--hc-public-link);
+  --hc-border: var(--hc-public-border);
+}
+body.hc-page-home,
+body.hc-page-home .hc-home-premium {
+  background-color: var(--hc-public-page);
+}
+body.hc-page-home .hc-home-premium h1,
+body.hc-page-home .hc-home-premium h2,
+body.hc-page-home .hc-home-premium h3 {
+  color: var(--hc-public-heading);
+}
+body.hc-page-home .hc-home-premium__hero-copy .hc-home-premium__lead {
+  color: var(--hc-public-text);
+}
+body.hc-page-home .hc-home-premium__hero-actions .btn-primary,
+body.hc-page-home .hc-home-premium__hero-actions .hc-btn--primary {
+  background: var(--hc-public-navy);
+  border-color: var(--hc-public-navy);
+  color: #FFFFFF;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+body.hc-page-home .hc-home-premium__hero-actions .btn-primary:hover,
+body.hc-page-home .hc-home-premium__hero-actions .hc-btn--primary:hover {
+  background: var(--hc-public-link);
+  border-color: var(--hc-public-link);
+  transform: translateY(-2px);
+}
+body .hc-public-nav-root.hc-navbar,
+body .hc-public-nav-root.hc-navbar.is-scrolled {
+  background: #FFFFFF;
+  border-bottom: 1px solid #D4E0EC;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+body .hc-public-nav-root .nav-link,
+body .hc-public-nav-root .hc-nav-mega__trigger {
+  color: #243B53;
+  text-decoration: none;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+body .hc-public-nav-root .nav-link:hover,
+body .hc-public-nav-root .hc-nav-mega__trigger:hover,
+body .hc-public-nav-root .nav-link:focus-visible,
+body .hc-public-nav-root .hc-nav-mega__trigger:focus-visible {
+  background: #EAF1F8;
+  color: #1D4E89;
+  text-decoration: none;
+}
+body .hc-public-nav-root .nav-link.active,
+body .hc-public-nav-root .hc-nav-mega.is-active > .hc-nav-mega__trigger {
+  background: #EAF1F8;
+  color: #1D4E89;
+}
+body .hc-public-nav-root :is(a, button):focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body .hc-public-nav-root .nav-link,
+  body .hc-public-nav-root .hc-nav-mega__trigger,
+  body.hc-page-home .hc-home-premium__hero-actions .btn {
+    transition: none;
+    transform: none;
+  }
+}
