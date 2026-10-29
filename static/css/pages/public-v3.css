@@ -1379,3 +1379,49 @@ body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-pag
   color: #1D4E89 !important;
   background: #EAF1F8 !important;
 }
+
+/* Public typography and surface rhythm, independent of the operational UI. */
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not([data-hc-page^="/professional"]):not([data-hc-page^="/volunteer"]):not(.hc-admin-page):not(.hc-page-admin) {
+  --hc-v3-ink: #10233F;
+  --hc-v3-muted: #526B88;
+  --hc-v3-soft: #F4F8FC;
+  --hc-v3-surface: #FFFFFF;
+  --hc-v3-line: #D6E2EF;
+  --hc-v3-line-strong: #D4E0EC;
+  --hc-v3-shadow: 0 18px 42px rgba(16,35,63,.08);
+  --hc-v3-shadow-soft: 0 8px 24px rgba(16,35,63,.055);
+}
+body.hc-page-home .hc-home-premium__hero,
+body.hc-page-home .hc-home-premium__section {
+  color: #344F70;
+}
+body.hc-page-home .hc-home-premium__hero-copy h1 {
+  color: #10233F !important;
+}
+body.hc-page-home .hc-home-premium__lead,
+body.hc-page-home .hc-home-premium__hero-copy p {
+  color: #344F70;
+}
+body.hc-page-home .hc-home-premium__section h2 {
+  color: #10233F;
+}
+body.hc-page-home .hc-home-premium__section :is(.hc-home-premium__card, .hc-home-premium__platform-card, .hc-home-premium__workflow-card) {
+  border-color: #D6E2EF;
+}
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-cta {
+  background: #12345A !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+  border-color: #12345A !important;
+  box-shadow: none !important;
+  transition: background-color 180ms ease, border-color 180ms ease !important;
+}
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-cta:hover {
+  background: #1D4ED8 !important;
+  border-color: #1D4ED8 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  body:not([data-hc-page^="/admin"]) .hc-public-nav-root .hc-nav-cta {
+    transition: none !important;
+  }
+}
