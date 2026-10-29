@@ -2250,6 +2250,25 @@
     }
   </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home-hero-canonical.css') }}">
+  <style>
+    /* Homepage must not suppress or cover the canonical navigation. */
+    body.hc-page-home > nav.hc-public-nav-root.hc-navbar {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 2000 !important;
+      transform: none !important;
+      margin-top: 0 !important;
+      background: #fff !important;
+      border-bottom: 1px solid #D4E0EC !important;
+    }
+    body.hc-page-home .hc-home-premium {
+      position: relative;
+      z-index: 0;
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
