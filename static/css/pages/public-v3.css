@@ -1352,3 +1352,34 @@ body .hc-public-nav-root :is(a, button):focus-visible {
     transform: none;
   }
 }
+
+/* Public layout correction: navigation occupies its own row, never the hero.
+   Keep these overrides scoped to unauthenticated institutional pages. */
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > nav.hc-public-nav-root.hc-navbar {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  z-index: 1200 !important;
+  background: #FFFFFF !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 10px rgba(16,35,63,.06) !important;
+  border-bottom: 1px solid #D4E0EC !important;
+}
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > .hc-main-content,
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > main.hc-main-content {
+  margin-top: 0 !important;
+}
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > nav.hc-public-nav-root .nav-link:not(.hc-nav-cta),
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > nav.hc-public-nav-root .hc-nav-mega__trigger {
+  color: #243B53 !important;
+  opacity: 1 !important;
+}
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > nav.hc-public-nav-root .nav-link:not(.hc-nav-cta):hover,
+body:not([data-hc-page^="/admin"]):not([data-hc-page^="/ops"]):not(.hc-admin-page):not(.hc-page-admin) > nav.hc-public-nav-root .hc-nav-mega__trigger:hover {
+  color: #1D4E89 !important;
+  background: #EAF1F8 !important;
+}
