@@ -11736,7 +11736,7 @@ body.hc-page-home .hc-home-premium__hero-grid{
 
 body.hc-page-home .hc-home-premium,
 body.hc-page-home .hc-home-premium__hero{
-  padding-top: 52px !important;
+  padding-top: 0 !important;
   padding-bottom: 28px !important;
 }
 
