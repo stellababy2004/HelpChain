@@ -5,7 +5,7 @@
 {% block og_title %}{{ _('HelpChain | Plateforme de coordination opérationnelle pour environnements institutionnels') }}{% endblock %}
 {% block og_description %}{{ _('Infrastructure numérique conçue en France pour le pilotage, la coordination multi-acteurs, la traçabilité et la continuité opérationnelle.') }}{% endblock %}
 {% block twitter_description %}{{ _('Infrastructure numérique conçue en France pour le pilotage, la coordination multi-acteurs, la traçabilité et la continuité opérationnelle.') }}{% endblock %}
-{% set disable_nav_chrome = true %}
+{% set disable_nav_chrome = false %}
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block extra_css %}
@@ -2259,6 +2259,7 @@
   {'city': 'Nantes', 'type': 'Coordination terrain', 'priority': 'Priorité normale', 'status': 'Assigné'}
 ] %}
 <main class="hc-home-premium">
+  {% if disable_nav_chrome %}
   <header class="hc-home-premium__nav" aria-label="{{ _('Navigation homepage') }}">
     <div class="hc-home-premium__nav-inner">
       <a class="hc-home-premium__brand" href="{{ safe_url_for('main.index') }}">
@@ -2308,6 +2309,7 @@
       </div>
     </div>
   </header>
+  {% endif %}
 
 <section class="hc-home-premium__hero" aria-labelledby="hc-home-hero-title">
   <div class="hc-home-premium__hero-grid">
