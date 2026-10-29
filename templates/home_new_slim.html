@@ -2256,13 +2256,27 @@
       display: flex !important;
       visibility: visible !important;
       opacity: 1 !important;
-      position: sticky !important;
-      top: 0 !important;
-      z-index: 2000 !important;
+      position: relative !important;
+      top: auto !important;
+      z-index: 20 !important;
       transform: none !important;
       margin-top: 0 !important;
-      background: #fff !important;
+      background: #FFFFFF !important;
+      background-image: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: 0 2px 12px rgba(16, 35, 63, .055) !important;
       border-bottom: 1px solid #D4E0EC !important;
+    }
+    body.hc-page-home > nav.hc-public-nav-root .nav-link,
+    body.hc-page-home > nav.hc-public-nav-root .hc-nav-mega__trigger {
+      color: #243B53 !important;
+      opacity: 1 !important;
+    }
+    body.hc-page-home > nav.hc-public-nav-root .nav-link:hover,
+    body.hc-page-home > nav.hc-public-nav-root .hc-nav-mega__trigger:hover {
+      color: #1D4E89 !important;
+      background: #EAF1F8 !important;
     }
     body.hc-page-home .hc-home-premium {
       position: relative;
