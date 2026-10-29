@@ -9,6 +9,23 @@
 {% block extra_css %}
   {{ super() }}
   <style>
+    /* Keep the demo hero clear of the fixed/sticky public navigation. */
+    body.hc-page-demo .hc-trust-page__hero {
+      padding-top: clamp(7.5rem, 10vw, 9rem);
+    }
+    body.hc-page-demo .hc-trust-page__hero-copy h1 {
+      font-size: clamp(2.7rem, 4.5vw, 4.5rem);
+      line-height: 1.05;
+    }
+    @media (max-width: 767px) {
+      body.hc-page-demo .hc-trust-page__hero {
+        padding-top: 6rem;
+      }
+      body.hc-page-demo .hc-trust-page__hero-copy h1 {
+        font-size: clamp(2.15rem, 8vw, 3rem);
+      }
+    }
+
     .hc-intake {
       padding: 30px 0 44px;
     }
@@ -592,7 +609,7 @@
                 <strong>{{ _('Un échange court, ciblé et sans engagement') }}</strong>
               </div>
               <ul class="hc-trust-page__panel-list">
-                <li><strong>{{ _('30 minutes') }}</strong><span>{{ _('Un format resserré pour comprendre le cadre, les usages et le niveau d’adéquation.') }}</span></li>
+                <li><strong>{{ _('20 minutes') }}</strong><span>{{ _('Un format resserré pour comprendre le cadre, les usages et le niveau d’adéquation.') }}</span></li>
                 <li><strong>{{ _('Réponse sous 24h') }}</strong><span>{{ _('Nous revenons vers vous rapidement pour organiser le bon échange.') }}</span></li>
                 <li><strong>{{ _('Sans engagement') }}</strong><span>{{ _('La démonstration sert d’abord à vérifier si un pilote réaliste a du sens.') }}</span></li>
               </ul>
