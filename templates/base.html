@@ -791,7 +791,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
       if ((request.endpoint or '') in hc_institutional_public_eps and not is_any_logged_in)
       else hc_languages_all
     ) %}
-    {% if not disable_nav_chrome %}
+    {% if not disable_nav_chrome or request.endpoint == 'main.index' %}
     <nav class="navbar hc-navbar hc-nav navbar-expand-lg hc-navbar--glass hc-public-nav-root" data-hc-public-nav data-hc-nav-debug="public-switch-v3">
       <div class="container-fluid px-4 px-xl-5">
         <!-- DEBUG: endpoint={{ request.endpoint }} path={{ request.path }} minimal_page={{ minimal_page }} hide_full_nav={{ hide_full_nav }} -->
