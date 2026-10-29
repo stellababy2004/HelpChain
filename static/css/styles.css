@@ -8690,8 +8690,9 @@ body.hc-page-home .public-final-cta .hc-home__cta-final-card p {
 /* =========================================================
    Premium institutional homepage
    ========================================================= */
+/* Homepage uses the same canonical public navigation as other public pages. */
 body.hc-page-home .hc-public-nav-root {
-  display: none;
+  display: flex;
 }
 
 body.hc-page-home {
