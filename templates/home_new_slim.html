@@ -460,12 +460,11 @@
 
     body.hc-page-home .hc-home-premium__shot-img--hero {
       display: block;
-      width: 112%;
-      max-width: none;
+      width: 100%;
+      max-width: 100%;
       height: auto;
-      margin-left: -4%;
-      margin-top: -0.6%;
-      transform: scale(1.01);
+      margin: 0;
+      transform: none;
       transform-origin: center top;
     }
 
@@ -1170,7 +1169,7 @@
 
     body.hc-page-home .hc-home-premium__shot-img {
       image-rendering: auto;
-      filter: contrast(1.02) brightness(1.01);
+      filter: none;
     }
 
     body.hc-page-home :is(
@@ -2354,10 +2353,10 @@
         </div>
         <img
           class="hc-home-premium__shot-img hc-home-premium__shot-img--hero hc-home-premium__shot-img--public-ops"
-          src="{{ url_for('static', filename='img/platform/helpchain-platform-08.png') }}?v=20260523-hero-ops"
+          src="{{ url_for('static', filename='img/product/ops-workspace-home-horizontal-dpr2.png') }}?v=20261029-ops-home-horizontal-dpr2"
           alt="{{ _('Interface de pilotage HelpChain') }}"
-          width="1481"
-          height="1062"
+          width="2640"
+          height="1650"
           loading="eager"
           decoding="async"
           fetchpriority="high"
@@ -2392,7 +2391,7 @@
       </div>
 
       <img
-        src="{{ url_for('static', filename='img/platform/helpchain-platform-08.png') }}"
+        src="{{ url_for('static', filename='img/product/ops-workspace-dpr2.png') }}?v=20261029-ops-dpr2"
         alt="{{ _('Vue d’ensemble du workspace opérationnel HelpChain') }}"
         loading="lazy"
       >

@@ -11982,10 +11982,9 @@ body.hc-page-home .hc-home-premium__shot-img {
 }
 
 body.hc-page-home .hc-home-premium__shot-img--hero {
-  aspect-ratio: 1876 / 836;
   width: 100%;
   height: auto;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center top;
 }
 
@@ -12698,10 +12697,10 @@ body:not([data-hc-page^="/admin"]) .hc-public-nav-root .nav-link[href*="login"] 
 
 /* === Homepage product screenshot polish === */
 body.hc-page-home .hc-home-premium__shot-img {
-  filter: contrast(1.05) saturate(1.03) brightness(1.01);
+  filter: none;
   image-rendering: auto;
   backface-visibility: hidden;
-  transform: translateZ(0);
+  transform: none;
 }
 
 body.hc-page-home .hc-home-premium__shot-card {
@@ -12711,10 +12710,7 @@ body.hc-page-home .hc-home-premium__shot-card {
 
 /* === Screenshot visibility boost === */
 body.hc-page-home .hc-home-premium__shot-img {
-  filter:
-    contrast(1.12)
-    saturate(1.08)
-    brightness(1.015);
+  filter: none;
 }
 
 body.hc-page-home .hc-home-premium__shot-card {
@@ -12748,7 +12744,7 @@ body.hc-page-home .hc-home-premium__preview {
 }
 
 body.hc-page-home .hc-home-premium__shot-card {
-  transform: translateY(-10px);
+  transform: none;
 }
 
 
@@ -12767,17 +12763,13 @@ body.hc-page-home .hc-home-premium__shot-card {
 }
 
 body.hc-page-home .hc-home-premium__shot-img {
-  filter:
-    contrast(1.16)
-    saturate(1.12)
-    brightness(0.98)
-    sharpen(0.2);
+  filter: none;
 }
 
 
 /* === Final screenshot polish === */
 body.hc-page-home .hc-home-premium__shot-card {
-  transform: translateY(-2px);
+  transform: none;
 }
 
 body.hc-page-home .hc-home-premium__shot-card::after {
@@ -13582,7 +13574,23 @@ body.hc-page-home .hc-home-premium__shot-bar {
 
 body.hc-page-home .hc-home-premium__shot-img {
   opacity: 1 !important;
-  filter: contrast(1.13) saturate(1.08) brightness(0.995) !important;
+  filter: none !important;
+}
+
+/* The DPR2 operational capture is portrait-oriented; preserve its full readable frame. */
+body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-img {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  height: auto !important;
+  object-fit: contain !important;
+  object-position: center top !important;
+}
+
+html body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-img--public-ops {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
 }
 
 @media (max-width: 767.98px) {

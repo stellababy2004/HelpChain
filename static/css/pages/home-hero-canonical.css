@@ -661,13 +661,14 @@ html body.hc-page-home .hc-home-premium__platform-browser img {
   width: 100%;
 }
 
-/* Public homepage screenshot: crop the presentation-only asset naturally in
-   its existing overflow viewport; the shared application navigation is untouched. */
-html body.hc-page-home .hc-home-premium__platform-browser img,
-html body.hc-page-home .hc-home-premium__shot-card--hero .hc-home-premium__shot-img--public-ops {
-  width: 118% !important;
-  max-width: none !important;
-  margin-left: -18% !important;
+/* Keep the full homepage workspace preview inside its presentation frame. */
+html body.hc-page-home .hc-home-premium__platform-browser img {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  object-fit: contain !important;
+  object-position: center top !important;
+  transform: none !important;
 }
 
 html body.hc-page-home .hc-home-premium__platform-showcase + .hc-home-premium__section--product {
