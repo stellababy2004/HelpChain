@@ -8,6 +8,44 @@
 
 {% block content %}
 <div class="container hc-doc-page public-page-shell">
+  <header class="hc-doc-intro public-page-hero public-page-hero--trust">
+    <h1 class="hc-doc-intro__title">{{ _("Questions fréquentes") }}</h1>
+    <p class="hc-doc-intro__lead">{{ _("Vous souhaitez comprendre comment HelpChain peut s’intégrer au travail de votre équipe ? Retrouvez ici les réponses aux principales questions sur son utilisation, les accès et le démarrage d’un pilote.") }}</p>
+  </header>
+
+  <section class="hc-faq-list" aria-label="{{ _('Questions fréquentes') }}">
+    <details class="hc-faq-item" open><summary>{{ _("Qu’est-ce que HelpChain ?") }}</summary><div class="hc-faq-item__answer">
+      <p>{{ _("HelpChain est une plateforme de coordination pour les collectivités, les CCAS, les associations, les établissements et les professionnels qui accompagnent des situations sociales.") }}</p>
+      <p>{{ _("Elle aide les équipes à savoir qui prend en charge une situation, quelles actions ont été réalisées et quelle est la prochaine étape. Les demandes, les responsabilités et l’historique du suivi sont regroupés dans un même espace.") }}</p>
+    </div></details>
+    <details class="hc-faq-item"><summary>{{ _("À qui s’adresse HelpChain ?") }}</summary><div class="hc-faq-item__answer">
+      <p>{{ _("HelpChain s’adresse aux organisations qui doivent coordonner plusieurs personnes, équipes ou partenaires autour d’une même situation :") }}</p>
+      <ul><li>{{ _("collectivités et CCAS") }}</li><li>{{ _("associations et structures d’accompagnement") }}</li><li>{{ _("établissements") }}</li><li>{{ _("réseaux de partenaires et organisations multi-sites") }}</li></ul>
+      <p>{{ _("Les accès sont attribués aux utilisateurs autorisés selon leur rôle et leur structure.") }}</p>
+    </div></details>
+    <details class="hc-faq-item"><summary>{{ _("HelpChain remplace-t-il notre logiciel métier ?") }}</summary><div class="hc-faq-item__answer">
+      <p>{{ _("HelpChain apporte un espace de coordination complémentaire à vos outils métiers. Il permet de rendre visibles les responsabilités, les actions et les prochaines étapes lorsque plusieurs acteurs interviennent.") }}</p>
+      <p>{{ _("Le pilote sert à définir les informations utiles à partager et à limiter les doubles saisies. Les éventuels besoins d’intégration avec vos outils doivent être étudiés avant tout engagement.") }}</p>
+    </div></details>
+    <details class="hc-faq-item"><summary>{{ _("Peut-on commencer avec une seule équipe ?") }}</summary><div class="hc-faq-item__answer">
+      <p>{{ _("Oui. Le pilote peut commencer avec une seule structure, une équipe et un nombre limité de situations.") }}</p>
+      <p>{{ _("Ce périmètre permet de vérifier l’utilité de la plateforme dans votre travail quotidien avant d’envisager une ouverture à d’autres équipes ou partenaires.") }}</p>
+    </div></details>
+    <details class="hc-faq-item"><summary>{{ _("Comment se déroule un pilote ?") }}</summary><div class="hc-faq-item__answer">
+      <p>{{ _("Le démarrage suit trois étapes :") }}</p><ul><li><strong>{{ _("Cadrage") }}</strong> : {{ _("définir votre besoin, l’équipe concernée et les situations à suivre") }}</li><li><strong>{{ _("Mise en place") }}</strong> : {{ _("préparer les accès et accompagner les premiers utilisateurs") }}</li><li><strong>{{ _("Premier bilan") }}</strong> : {{ _("examiner les usages, identifier les ajustements nécessaires et décider de la suite") }}</li></ul>
+      <p>{{ _("Le calendrier, l’accompagnement et les critères de réussite sont convenus ensemble avant le démarrage.") }}</p><a class="btn btn-outline-primary" href="{{ url_for('main.deploiement') }}">{{ _("Découvrir le déploiement") }}</a>
+    </div></details>
+    <details class="hc-faq-item"><summary>{{ _("Qui peut consulter ou modifier une situation ?") }}</summary><div class="hc-faq-item__answer"><p>{{ _("Les possibilités de consultation et de modification dépendent des droits attribués à chaque utilisateur, de sa structure et du périmètre auquel il est autorisé à accéder.") }}</p><p>{{ _("L’ouverture d’un compte ne donne pas automatiquement accès à toutes les situations. Les rôles et les accès nécessaires sont définis lors de la mise en place du pilote.") }}</p></div></details>
+    <details class="hc-faq-item"><summary>{{ _("Comment fonctionne la coordination entre deux structures ?") }}</summary><div class="hc-faq-item__answer"><p>{{ _("HelpChain permet d’organiser un relais vers une structure partenaire et d’en suivre les étapes.") }}</p><p>{{ _("Le partage doit rester limité au périmètre autorisé. Les responsabilités, les conditions d’accès et les modalités de validation du relais sont précisées lors du cadrage avec les structures concernées.") }}</p></div></details>
+    <details class="hc-faq-item"><summary>{{ _("Comment HelpChain protège-t-il les données personnelles ?") }}</summary><div class="hc-faq-item__answer"><p>{{ _("HelpChain intègre des mécanismes de contrôle des accès par rôle et par structure, ainsi qu’une journalisation des actions.") }}</p><p>{{ _("Le périmètre des données à utiliser, les durées de conservation et les responsabilités de chaque organisation doivent être définis avant le démarrage. Les équipes sont invitées à ne renseigner que les informations nécessaires au suivi.") }}</p><p><a href="{{ url_for('main.securite') }}">{{ _("Sécurité de la plateforme") }}</a> · <a href="{{ url_for('main.confidentialite') }}">{{ _("Politique de confidentialité") }}</a></p></div></details>
+    <details class="hc-faq-item"><summary>{{ _("Faut-il installer un logiciel ?") }}</summary><div class="hc-faq-item__answer"><p>{{ _("Non. HelpChain s’utilise depuis un navigateur web, sans installation spécifique sur les postes des utilisateurs.") }}</p><p>{{ _("Les éventuelles exigences techniques propres à votre organisation sont examinées avant la mise en place du pilote.") }}</p></div></details>
+    <details class="hc-faq-item"><summary>{{ _("Quel est le coût et que comprend l’offre ?") }}</summary><div class="hc-faq-item__answer"><p>{{ _("Le périmètre et les conditions financières sont précisés avant tout engagement : équipes concernées, fonctionnalités retenues, accompagnement et modalités d’hébergement.") }}</p><p><a href="{{ url_for('main.offre') }}">{{ _("Consulter l’offre") }}</a> · <a href="{{ url_for('main.contact') }}">{{ _("Nous contacter") }}</a></p></div></details>
+    <details class="hc-faq-item"><summary>{{ _("Qui assure le développement et le support ?") }}</summary><div class="hc-faq-item__answer"><p>{{ _("Le développement et la maintenance sont assurés dans le cadre du projet HelpChain. Pour une question sur la plateforme ou une demande d’assistance, vous pouvez écrire à contact@helpchain.live.") }}</p><p>{{ _("Les modalités d’accompagnement pendant le pilote sont définies avec votre structure avant le démarrage.") }}</p></div></details>
+  </section>
+  <section class="hc-faq-cta" aria-labelledby="hc-faq-cta-title"><h2 id="hc-faq-cta-title">{{ _("Vous avez une autre question ?") }}</h2><p>{{ _("Présentez-nous votre organisation et votre besoin de coordination. Nous pourrons préciser ensemble si un pilote HelpChain est adapté.") }}</p><a class="btn btn-primary" href="/demo">{{ _("Échanger sur un pilote") }}</a> <a href="mailto:contact@helpchain.live">contact@helpchain.live</a></section>
+</div>
+{% if false %}
+<div class="container hc-doc-page public-page-shell">
 
   <header class="hc-doc-intro public-page-hero public-page-hero--trust">
     <p class="hc-doc-intro__label">{{ _("Documentation") }}</p>
@@ -71,4 +109,5 @@
   </div></section>
 
 </div>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Success stories | HelpChain') }}{% endblock %}
+{% block meta_description %}{{ _('Découvrez comment HelpChain aide les organisations à rendre leurs suivis plus clairs, leurs relais plus fluides et leur coordination plus traçable.') }}{% endblock %}
+{% block body_class %}hc-page-pro hc-page-success-stories{% endblock %}
+
+{% block extra_css %}
+<style>
+  .hc-stories-page { padding: clamp(2.5rem, 6vw, 5.5rem) 0 5rem; }
+  .hc-stories-hero, .hc-story-card, .hc-stories-cta {
+    border: 1px solid var(--hc-public-border, rgba(171, 191, 213, .78));
+    border-radius: 24px;
+    background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(239,247,252,.94));
+    box-shadow: var(--hc-public-shadow, 0 18px 38px rgba(23,50,79,.08));
+  }
+  .hc-stories-hero { padding: clamp(1.5rem, 4vw, 3.5rem); }
+  .hc-stories-eyebrow { color: var(--hc-ocean-700, #2f5e84); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .hc-stories-hero h1 { max-width: 14ch; margin: .8rem 0 1rem; color: var(--hc-ocean-900, #15314d); font-size: clamp(2.25rem, 5vw, 4.5rem); line-height: .98; letter-spacing: -.055em; }
+  .hc-stories-hero p { max-width: 62ch; margin: 0; color: var(--hc-text-muted, #526780); font-size: 1.08rem; line-height: 1.7; }
+  .hc-stories-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+  .hc-story-card { min-height: 100%; padding: 1.5rem; }
+  .hc-story-card__tag { color: var(--hc-teal, #0f766e); font-size: .76rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .hc-story-card h2 { margin: .7rem 0 .8rem; color: var(--hc-ocean-900, #15314d); font-size: 1.35rem; line-height: 1.15; }
+  .hc-story-card p { margin: 0; color: var(--hc-text-muted, #526780); line-height: 1.65; }
+  .hc-stories-cta { margin-top: 1rem; padding: clamp(1.4rem, 3vw, 2.4rem); }
+  .hc-stories-cta h2 { margin: 0 0 .6rem; color: var(--hc-ocean-900, #15314d); }
+  .hc-stories-cta p { max-width: 60ch; color: var(--hc-text-muted, #526780); }
+  @media (max-width: 767.98px) { .hc-stories-grid { grid-template-columns: 1fr; } .hc-stories-hero h1 { max-width: 16ch; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<main id="main-content" class="hc-stories-page">
+  <div class="container">
+    <section class="hc-stories-hero" aria-labelledby="stories-title">
+      <div class="hc-stories-eyebrow">{{ _('Success stories') }}</div>
+      <h1 id="stories-title">{{ _('La coordination devient concrète.') }}</h1>
+      <p>{{ _('Les organisations ne cherchent pas un outil de plus. Elles cherchent un fil de suivi partagé, des responsabilités visibles et une manière simple de reprendre une situation sans perdre le contexte.') }}</p>
+    </section>
+
+    <section class="hc-stories-grid" aria-label="{{ _('État des publications') }}">
+      <article class="hc-story-card">
+        <div class="hc-story-card__tag">{{ _('Publication') }}</div>
+        <h2>{{ _('Aucune histoire client publiée') }}</h2>
+        <p>{{ _('HelpChain ne publie pas de cas client, de citation ou de résultat sans validation explicite. Cette page sera complétée uniquement avec des retours autorisés et vérifiables.') }}</p>
+      </article>
+      <article class="hc-story-card">
+        <div class="hc-story-card__tag">{{ _('Transparence') }}</div>
+        <h2>{{ _('Des informations vérifiables uniquement') }}</h2>
+        <p>{{ _('Les contenus publics distinguent les fonctionnalités de la plateforme, les scénarios de démonstration et les expériences réellement documentées.') }}</p>
+      </article>
+      <article class="hc-story-card">
+        <div class="hc-story-card__tag">{{ _('Démonstration') }}</div>
+        <h2>{{ _('Voir le produit sur votre périmètre') }}</h2>
+        <p>{{ _('Une démonstration ou un pilote permet d’évaluer HelpChain sur vos flux, vos équipes et vos règles de coordination, sans présenter de résultat non vérifié.') }}</p>
+      </article>
+    </section>
+
+    <section class="hc-stories-cta" aria-labelledby="stories-cta-title">
+      <h2 id="stories-cta-title">{{ _('Parlons de votre situation réelle.') }}</h2>
+      <p>{{ _('Un pilote court permet de partir d’un périmètre concret, d’impliquer les bonnes équipes et de mesurer rapidement ce que HelpChain change dans votre coordination.') }}</p>
+      <a class="btn btn-primary" href="{{ url_for('main.contact') }}">{{ _('Demander un pilote') }}</a>
+    </section>
+  </div>
+</main>
+{% endblock %}

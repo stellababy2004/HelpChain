@@ -1335,25 +1335,25 @@ main {
 }
 
 /* === E30.6: Hard-attach nav styling (failsafe) === */
-header, header nav, nav {
+.hc-navbar, .hc-nav, nav.main-nav, .hc-home-premium__nav {
   background: rgba(244, 246, 251, 0.92);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--hc-border);
 }
 
-header nav, nav {
+.hc-navbar, .hc-nav, nav.main-nav, .hc-home-premium__nav {
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
-header nav a, nav a {
+.hc-navbar a, .hc-nav a, nav.main-nav a, .hc-home-premium__nav a {
   color: rgba(15, 23, 42, 0.82);
   font-weight: 600;
   text-decoration: none;
 }
 
-header nav a:hover, nav a:hover {
+.hc-navbar a:hover, .hc-nav a:hover, nav.main-nav a:hover, .hc-home-premium__nav a:hover {
   color: rgba(2, 132, 199, 0.95);
 }
 
@@ -8675,4 +8675,151 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-f
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-footer__link,
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-footer__meta-nav {
   color: #4f6780;
+}
+
+/* === Layout contract: one navigation offset per page ===
+   Bootstrap fixed-top navbars must not be converted to sticky by the
+   generic nav polish above. Flow/sticky navs reserve their own space;
+   workspace pages reserve space for the shell bar separately. */
+.navbar.fixed-top {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+}
+
+body.hc-page-home {
+  padding-top: 0;
+}
+
+body.hc-page-admin .hc-admin-workspace__content,
+body[data-hc-page^="/ops"] .hc-admin-workspace__content {
+  padding-top: 24px;
+}
+
+@media (max-width: 992px) {
+  body.hc-page-admin .hc-admin-workspace__content,
+  body[data-hc-page^="/ops"] .hc-admin-workspace__content {
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  body.hc-page-admin .hc-admin-workspace__content,
+  body[data-hc-page^="/ops"] .hc-admin-workspace__content {
+    padding-top: 16px;
+  }
+}
+
+/* === Global visual refinement: restrained HelpChain palette === */
+:root {
+  --hc-bg: #f6f9fc;
+  --hc-surface: #ffffff;
+  --hc-surface-soft: #eaf1f8;
+  --hc-border: #d4e0ec;
+  --hc-text: #243b53;
+  --hc-text-muted: #526780;
+  --hc-accent: #1d4e89;
+  --hc-accent-hover: #163d6b;
+  --hc-primary: #1d4e89;
+  --hc-primary-soft: #eaf1f8;
+  --hc-focus: #3273c5;
+}
+
+body {
+  background: var(--hc-bg);
+  color: var(--hc-text);
+}
+
+body :is(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--hc-focus);
+  outline-offset: 2px;
+}
+
+body :is(a, button, .hc-card, .card, .hc-story, .impact-card) {
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+body :is(.hc-navbar, .main-nav, .navbar, .hc-nav) {
+  background: #ffffff;
+  border-bottom: 1px solid var(--hc-border);
+  backdrop-filter: none;
+}
+
+body :is(.hc-navbar, .main-nav, .navbar, .hc-nav) :is(a, .nav-link) {
+  color: var(--hc-text);
+}
+
+body :is(.hc-navbar, .main-nav, .navbar, .hc-nav) :is(a, .nav-link):hover,
+body :is(.hc-navbar, .main-nav, .navbar, .hc-nav) :is(a, .nav-link).active,
+body :is(.hc-navbar, .main-nav, .navbar, .hc-nav) :is(a, .nav-link)[aria-current="page"] {
+  background: var(--hc-primary-soft);
+  color: var(--hc-accent);
+}
+
+body :is(.dropdown-menu, .dropdown-menu-modern, .hc-nav-dd__menu) {
+  background: #ffffff;
+  border: 1px solid var(--hc-border);
+  opacity: 1;
+}
+
+body :is(.dropdown-menu, .dropdown-menu-modern, .hc-nav-dd__menu) :is(a, .dropdown-item):hover,
+body :is(.dropdown-menu, .dropdown-menu-modern, .hc-nav-dd__menu) :is(a, .dropdown-item):focus-visible {
+  background: #f1f6fc;
+  color: var(--hc-accent);
+}
+
+body :is(.hc-card, .card, .hc-story, .impact-card) {
+  background: #ffffff;
+  border-color: var(--hc-border);
+}
+
+body :is(.hc-card, .card, .hc-story, .impact-card):hover {
+  background: #f1f6fc;
+  border-color: var(--hc-focus);
+}
+
+body :is(a, .hc-linkbtn) {
+  color: #3273c5;
+}
+
+body :is(a, .hc-linkbtn):hover {
+  color: var(--hc-accent);
+}
+
+body :is(.btn-primary, .hc-btn--primary, .hc-btn-primary) {
+  background: var(--hc-accent);
+  border-color: var(--hc-accent);
+  color: #ffffff;
+}
+
+body :is(.btn-primary, .hc-btn--primary, .hc-btn-primary):hover {
+  background: var(--hc-accent-hover);
+  border-color: var(--hc-accent-hover);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+body :is(.btn-secondary, .hc-btn--ghost, .hc-btn-secondary) {
+  background: #ffffff;
+  border-color: var(--hc-border);
+  color: var(--hc-accent);
+}
+
+body :is(.btn-secondary, .hc-btn--ghost, .hc-btn-secondary):hover {
+  background: var(--hc-primary-soft);
+  border-color: var(--hc-focus);
+  color: var(--hc-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body :is(a, button, input, select, textarea, .hc-card, .card, .hc-story, .impact-card) {
+    transition: none;
+  }
 }

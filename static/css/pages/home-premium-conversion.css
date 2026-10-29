@@ -671,10 +671,6 @@ body.hc-page-home .hc-main-content > .hc-home-premium {
   margin-top: 0 !important;
 }
 
-body.hc-page-home .hc-public-nav-root {
-  display: none !important;
-}
-
 body.hc-page-home .hc-home-premium__nav {
   position: sticky;
   top: 0;

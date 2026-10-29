@@ -25,7 +25,7 @@ body.hc-page-home {
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar,
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar.is-scrolled,
 body.hc-page-home .main-nav.hc-public-nav-root {
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 1220;
   min-height: 88px;
@@ -131,15 +131,16 @@ body.hc-page-home .main-nav.hc-public-nav-root .hc-nav-mega.is-open > .hc-nav-me
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega--analyses > .hc-nav-mega__trigger,
 body.hc-page-home .main-nav.hc-public-nav-root .hc-nav-mega--analyses > .hc-nav-mega__trigger {
-  min-height: 44px;
-  padding-inline: 0.62rem !important;
+  min-height: 46px;
+  padding: 0.72rem 1rem;
   border-color: transparent;
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
-  color: rgba(49, 71, 96, 0.88);
-  font-size: 0.91rem;
-  font-weight: 680;
-  letter-spacing: 0.005em;
+  color: rgba(43, 64, 89, 0.88);
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: normal;
   box-shadow: none;
 }
 
@@ -1075,6 +1076,43 @@ body.hc-page-offre .hc-offre__hero-panel :is(.card, .hc-card, [class*="item"], [
   -webkit-backdrop-filter: blur(14px);
 }
 
+/* Public navigation contract: both mega menus share one trigger and panel geometry. */
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__trigger,
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega--analyses > .hc-nav-mega__trigger {
+  min-height: 46px;
+  padding: 0.72rem 1rem !important;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: normal;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__panel {
+  width: min(900px, calc(100vw - 2.6rem));
+  min-width: min(900px, calc(100vw - 2.6rem));
+  padding: 1.05rem 1.1rem !important;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__grid {
+  grid-template-columns: minmax(248px, 0.86fr) minmax(0, 1.14fr);
+  gap: 1rem 1.2rem;
+  align-items: start;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__feature,
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega--analyses .hc-nav-mega__feature {
+  max-width: 24.5rem;
+  padding: 1rem 1rem 1.02rem;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) {
+  scroll-padding-top: var(--hc-nav-h, 88px);
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) [id] {
+  scroll-margin-top: var(--hc-nav-h, 88px);
+}
+
 .hc-nav-mega__panel::after {
   content: '';
   position: absolute;
@@ -1265,4 +1303,115 @@ header nav a:hover,
   color: #2563eb !important;
   -webkit-text-fill-color: #2563eb !important;
   text-decoration-color: #2563eb !important;
+}
+/* Final shared visual contract for the standalone homepage navigation. */
+body.hc-page-home .hc-home-premium__nav {
+  background: #FFFFFF !important;
+  border-bottom-color: #D4E0EC !important;
+  backdrop-filter: none;
+}
+
+body.hc-page-home .hc-home-premium__nav .hc-home-premium__menu a {
+  background: transparent !important;
+  color: #243B53 !important;
+  text-decoration: none !important;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+body.hc-page-home .hc-home-premium__nav .hc-home-premium__menu a:hover,
+body.hc-page-home .hc-home-premium__nav .hc-home-premium__menu a:focus-visible,
+body.hc-page-home .hc-home-premium__nav .hc-home-premium__menu a[aria-current="page"] {
+  background: #EAF1F8 !important;
+  color: #1D4E89 !important;
+}
+/* FAQ public page */
+.hc-faq-list {
+  max-width: 860px;
+  margin: 2rem auto 0;
+}
+
+.hc-faq-item {
+  border-top: 1px solid #dbe5ef;
+  padding: 1.15rem 0;
+}
+
+.hc-faq-item:last-child { border-bottom: 1px solid #dbe5ef; }
+
+.hc-faq-item summary {
+  color: #102d50;
+  cursor: pointer;
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  font-weight: 700;
+  list-style: none;
+  padding-right: 2.5rem;
+  position: relative;
+}
+
+.hc-faq-item summary::-webkit-details-marker { display: none; }
+.hc-faq-item summary::after {
+  color: #2167a8;
+  content: "+";
+  font-size: 1.5rem;
+  font-weight: 400;
+  position: absolute;
+  right: .25rem;
+  top: -.25rem;
+}
+.hc-faq-item[open] summary::after { content: "−"; }
+.hc-faq-item summary:focus-visible { outline: 3px solid rgba(33,103,168,.28); outline-offset: 5px; }
+.hc-faq-item__answer { color: #405b78; line-height: 1.75; padding: 1rem 2.5rem 0 0; }
+.hc-faq-item__answer p:last-child { margin-bottom: 0; }
+.hc-faq-item__answer li { margin-bottom: .35rem; }
+.hc-faq-cta { background: #f3f7fb; border: 1px solid #dbe5ef; border-radius: 18px; margin: 3rem auto 2rem; max-width: 860px; padding: clamp(1.5rem, 4vw, 2.5rem); }
+.hc-faq-cta h2 { color: #102d50; }
+.hc-faq-cta p { color: #405b78; max-width: 650px; }
+.hc-faq-cta__actions { align-items: center; display: flex; flex-wrap: wrap; gap: 1rem; }
+
+.hc-terms-page .hc-doc-intro__meta { color: #607895; font-size: .92rem; font-weight: 650; margin: 0 0 1rem; }
+.hc-terms-page .hc-doc-intro > p:not(.hc-doc-intro__lead) { color: #405b78; max-width: 62rem; }
+.hc-terms-reading { max-width: 760px; margin: 2.5rem auto 0; }
+.hc-terms-reading section { border-top: 1px solid #dbe5ef; padding: 2rem 0; }
+.hc-terms-reading section:last-child { border-bottom: 1px solid #dbe5ef; }
+.hc-terms-accordion { border-top: 1px solid #dbe5ef; padding: 0; }
+.hc-terms-accordion:last-child { border-bottom: 1px solid #dbe5ef; }
+.hc-terms-accordion summary { color: #102d50; cursor: pointer; font-size: clamp(1.1rem, 1.8vw, 1.35rem); font-weight: 700; list-style: none; padding: 1.35rem 2.5rem 1.35rem 0; position: relative; }
+.hc-terms-accordion summary::-webkit-details-marker { display: none; }
+.hc-terms-accordion summary::after { color: #2167a8; content: "+"; font-size: 1.5rem; font-weight: 400; position: absolute; right: .25rem; top: 1.05rem; }
+.hc-terms-accordion[open] summary::after { content: "−"; }
+.hc-terms-accordion summary:focus-visible { outline: 3px solid rgba(33,103,168,.28); outline-offset: 4px; }
+.hc-terms-accordion > p, .hc-terms-accordion > ul, .hc-terms-accordion > a { display: block; }
+.hc-terms-accordion > p, .hc-terms-accordion > ul { margin-top: 0; }
+.hc-terms-accordion > p:last-child, .hc-terms-accordion > ul:last-child { margin-bottom: 2rem; }
+.hc-terms-reading h2 { color: #102d50; font-size: clamp(1.2rem, 2vw, 1.5rem); margin: 0 0 1rem; }
+.hc-terms-reading p, .hc-terms-reading li { color: #405b78; line-height: 1.78; }
+.hc-terms-reading li { margin-bottom: .45rem; }
+.hc-terms-reading a { color: #175b9e; font-weight: 650; }
+
+@media (max-width: 600px) {
+  .hc-faq-list { margin-top: 1.25rem; }
+  .hc-faq-item { padding: 1rem 0; }
+  .hc-faq-item__answer { padding-right: .25rem; }
+  .hc-faq-cta { margin-top: 2rem; }
+}
+
+/* Final shared public-nav contract, after responsive rules. */
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__trigger,
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega--analyses > .hc-nav-mega__trigger {
+  min-height: 46px;
+  padding: 0.72rem 1rem;
+  font-size: 0.98rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: normal;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__panel {
+  width: min(900px, calc(100vw - 2.6rem));
+  min-width: min(900px, calc(100vw - 2.6rem));
+  padding: 1.05rem 1.1rem;
+}
+
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root .hc-nav-mega__grid {
+  grid-template-columns: minmax(248px, 0.86fr) minmax(0, 1.14fr);
+  gap: 1rem 1.2rem;
 }

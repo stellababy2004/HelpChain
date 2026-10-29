@@ -5,7 +5,7 @@
 {% block og_title %}{{ _('HelpChain | Plateforme de coordination opérationnelle pour environnements institutionnels') }}{% endblock %}
 {% block og_description %}{{ _('Infrastructure numérique conçue en France pour le pilotage, la coordination multi-acteurs, la traçabilité et la continuité opérationnelle.') }}{% endblock %}
 {% block twitter_description %}{{ _('Infrastructure numérique conçue en France pour le pilotage, la coordination multi-acteurs, la traçabilité et la continuité opérationnelle.') }}{% endblock %}
-{% set disable_nav_chrome = true %}
+{% set disable_nav_chrome = false %}
 {% block body_class %}hc-page-home{% endblock %}
 
 {% block extra_css %}
@@ -21,9 +21,9 @@
       z-index: 60;
       padding-top: 4px !important;
       padding-bottom: 4px !important;
-      background: rgba(251, 252, 254, 0.96) !important;
-      border-bottom: 1px solid rgba(203, 213, 225, 0.9) !important;
-      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05) !important;
+      background: #FFFFFF !important;
+      border-bottom: 1px solid #D4E0EC !important;
+      box-shadow: 0 8px 22px rgba(16, 42, 67, 0.06) !important;
     }
 
     body.hc-page-home .hc-home-premium__nav-inner {
@@ -75,6 +75,15 @@
       line-height: 1.1;
       white-space: nowrap;
       flex: 0 1 auto;
+      color: #243B53;
+      text-decoration: none;
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    }
+
+    body.hc-page-home .hc-home-premium__menu a:hover,
+    body.hc-page-home .hc-home-premium__menu a:focus-visible {
+      background: #EAF1F8;
+      color: #1D4E89;
     }
 
     body.hc-page-home .hc-home-premium__nav-actions {
@@ -2259,6 +2268,7 @@
   {'city': 'Nantes', 'type': 'Coordination terrain', 'priority': 'Priorité normale', 'status': 'Assigné'}
 ] %}
 <main class="hc-home-premium">
+  {% if false %}
   <header class="hc-home-premium__nav" aria-label="{{ _('Navigation homepage') }}">
     <div class="hc-home-premium__nav-inner">
       <a class="hc-home-premium__brand" href="{{ safe_url_for('main.index') }}">
@@ -2308,6 +2318,7 @@
       </div>
     </div>
   </header>
+  {% endif %}
 
 <section class="hc-home-premium__hero" aria-labelledby="hc-home-hero-title">
   <div class="hc-home-premium__hero-grid">

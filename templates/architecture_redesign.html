@@ -8,6 +8,32 @@
 <style>
 .hc-architecture-page{--ink:#14284f;--blue:#2d62a7}.hc-architecture-hero{padding:clamp(3.5rem,8vw,7rem) clamp(1.2rem,4vw,3rem);text-align:center;background:radial-gradient(circle at 50% 0%,rgba(105,199,232,.2),transparent 52%),linear-gradient(135deg,#f5faff,#fff);border:1px solid rgba(103,155,202,.2);border-radius:28px}.hc-architecture-hero__eyebrow,.hc-architecture-section__eyebrow{margin:0 0 .7rem;color:var(--blue);font-size:.75rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.hc-architecture-hero h1{margin:0;color:var(--ink);font-size:clamp(2.3rem,5vw,4.6rem);letter-spacing:-.055em}.hc-architecture-hero__lead{max-width:700px;margin:1.2rem auto 0;color:#52647e;font-size:clamp(1rem,1.8vw,1.2rem);line-height:1.7}.hc-architecture-section{margin-top:clamp(3rem,7vw,6rem)}.hc-architecture-section__heading{margin-bottom:1.5rem;color:var(--ink);font-weight:750;letter-spacing:-.03em}.hc-architecture-flow{display:grid;grid-template-columns:repeat(5,1fr);padding:1.5rem 0}.hc-architecture-flow__stage{position:relative;padding:1.35rem 1rem;text-align:center}.hc-architecture-flow__stage:not(:last-child)::after{content:'';position:absolute;top:2.2rem;left:calc(50% + 2rem);width:calc(100% - 4rem);border-top:1px solid rgba(67,126,190,.3)}.hc-architecture-flow__stage:not(:last-child)::before{content:'→';position:absolute;z-index:1;top:1.55rem;right:-.25rem;color:var(--blue);font-size:1.25rem;background:#fff}.hc-architecture-flow__icon{display:grid;place-items:center;width:3.1rem;height:3.1rem;margin:0 auto 1rem;color:#fff;background:linear-gradient(145deg,#4a91c5,#315a9c);border-radius:14px;box-shadow:0 10px 22px rgba(48,91,151,.16)}.hc-architecture-flow h3{margin:0 0 .4rem;color:var(--ink);font-size:1rem}.hc-architecture-flow p{margin:0;color:#687890;font-size:.88rem;line-height:1.5}.hc-architecture-layers{display:grid;gap:.75rem;max-width:820px;margin:auto}.hc-architecture-layer{padding:1.25rem 1.5rem;text-align:center;background:rgba(255,255,255,.84);border:1px solid rgba(92,143,192,.2);border-radius:18px;box-shadow:0 12px 30px rgba(39,79,125,.06)}.hc-architecture-layer--core{background:linear-gradient(135deg,rgba(231,247,255,.9),rgba(246,242,255,.9));border-color:rgba(72,132,193,.34)}.hc-architecture-layer strong{display:block;color:var(--ink);font-size:.82rem;letter-spacing:.11em}.hc-architecture-layer span{display:block;margin-top:.45rem;color:#687890;font-size:.92rem}.hc-architecture-layer__connector{margin:-.15rem auto;color:var(--blue);font-size:1.3rem}.hc-architecture-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}.hc-architecture-card{height:100%;padding:1.5rem;background:rgba(255,255,255,.82);border:1px solid rgba(92,143,192,.18);border-radius:18px}.hc-architecture-card h3{color:var(--ink);font-size:1.05rem}.hc-architecture-card p{margin:0;color:#61718a;line-height:1.65}.hc-architecture-positioning{padding:clamp(1.7rem,4vw,3rem);background:linear-gradient(135deg,#14284f,#235a87);border-radius:24px;color:#fff}.hc-architecture-positioning h2,.hc-architecture-positioning p{color:#fff}.hc-architecture-cta{text-align:center}@media(max-width:767.98px){.hc-architecture-flow{grid-template-columns:1fr;padding:.5rem 0}.hc-architecture-flow__stage{display:grid;grid-template-columns:3.1rem 1fr;gap:.8rem;text-align:left;align-items:center;padding:1rem}.hc-architecture-flow__icon{grid-row:span 2;margin:0}.hc-architecture-flow__stage:not(:last-child)::after{top:4.1rem;left:2.55rem;width:1px;height:calc(100% - 1.2rem);border-top:0;border-left:1px solid rgba(67,126,190,.3)}.hc-architecture-flow__stage:not(:last-child)::before{content:'↓';top:auto;bottom:-.45rem;left:2.2rem;right:auto}.hc-architecture-cards{grid-template-columns:1fr}}
 </style>
+<style>
+/* Architecture: match the shared institutional palette and compact hero. */
+body[data-hc-page="/architecture"] .hc-architecture-page { --ink:#10233F; --blue:#2563EB; }
+body[data-hc-page="/architecture"] .hc-architecture-hero {
+  padding: clamp(2.25rem,4vw,3.5rem) clamp(1.2rem,3vw,2.75rem);
+  min-height: 0;
+  background: #FFFFFF;
+  background-image: none;
+  border-color: #D6E2EF;
+  box-shadow: 0 10px 28px rgba(16,35,63,.055);
+}
+body[data-hc-page="/architecture"] .hc-architecture-hero h1 {
+  font-size: clamp(2.15rem,3.55vw,3.8rem);
+  line-height: 1.12;
+  letter-spacing: -.04em;
+}
+body[data-hc-page="/architecture"] .hc-architecture-hero__lead { color:#344F70; }
+body[data-hc-page="/architecture"] .hc-architecture-section { margin-top:clamp(2.25rem,4vw,3.75rem); }
+body[data-hc-page="/architecture"] .hc-architecture-card,
+body[data-hc-page="/architecture"] .hc-architecture-layer {
+  background: #FFFFFF;
+  background-image: none;
+  border-color: #D6E2EF;
+}
+body[data-hc-page="/architecture"] .hc-architecture-flow__icon { background:#12345A; }
+</style>
 {% endblock %}
 {% block content %}
 <main class="container hc-architecture-page public-page-shell py-4 py-lg-5">

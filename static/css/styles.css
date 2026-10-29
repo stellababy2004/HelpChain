@@ -30,7 +30,6 @@
     margin-bottom: 0.7em;
   }
 }
-
 @media (max-width: 480px) {
   .table thead th,
   .table tbody td {
@@ -8690,10 +8689,6 @@ body.hc-page-home .public-final-cta .hc-home__cta-final-card p {
 /* =========================================================
    Premium institutional homepage
    ========================================================= */
-body.hc-page-home .hc-public-nav-root {
-  display: none;
-}
-
 body.hc-page-home {
   background: var(--hc-bg);
   color: var(--hc-text);
@@ -11736,7 +11731,7 @@ body.hc-page-home .hc-home-premium__hero-grid{
 
 body.hc-page-home .hc-home-premium,
 body.hc-page-home .hc-home-premium__hero{
-  padding-top: 52px !important;
+  padding-top: 0 !important;
   padding-bottom: 28px !important;
 }
 
@@ -13761,26 +13756,26 @@ body.hc-page-home .hc-a11y-fab::before {
 /* === Public navigation stabilization layer === */
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin),
 body.hc-page-home {
-  --hc-nav-surface: rgba(249, 252, 255, 0.96);
-  --hc-nav-surface-scrolled: rgba(255, 255, 255, 0.98);
-  --hc-nav-border: rgba(166, 184, 207, 0.42);
-  --hc-nav-divider: rgba(181, 198, 219, 0.46);
-  --hc-nav-shadow: 0 10px 30px rgba(15, 35, 62, 0.045);
-  --hc-nav-shadow-scrolled: 0 12px 32px rgba(15, 35, 62, 0.06);
-  --hc-nav-item-hover: rgba(238, 244, 251, 0.82);
-  --hc-nav-item-active: rgba(232, 240, 250, 0.9);
-  --hc-nav-item-ring: inset 0 0 0 1px rgba(174, 194, 218, 0.38);
-  --hc-nav-item-active-ring: inset 0 0 0 1px rgba(151, 177, 208, 0.46);
-  --hc-nav-text: rgba(16, 35, 63, 0.74);
-  --hc-nav-text-strong: #10233f;
-  --hc-nav-text-active: #0f2748;
-  --hc-nav-cta-bg: linear-gradient(180deg, #1f4f9d 0%, #183f7d 100%);
-  --hc-nav-cta-bg-hover: linear-gradient(180deg, #245aaa 0%, #1f4f9d 100%);
-  --hc-nav-cta-border: rgba(24, 63, 125, 0.92);
-  --hc-nav-cta-border-hover: rgba(31, 79, 157, 0.96);
-  --hc-nav-cta-shadow: 0 10px 22px rgba(24, 63, 125, 0.17);
-  --hc-nav-cta-shadow-hover: 0 12px 26px rgba(24, 63, 125, 0.2);
-  --hc-nav-logo-shadow: drop-shadow(0 5px 10px rgba(15, 35, 62, 0.08));
+  --hc-nav-surface: #ffffff;
+  --hc-nav-surface-scrolled: #ffffff;
+  --hc-nav-border: #d4e0ec;
+  --hc-nav-divider: #d4e0ec;
+  --hc-nav-shadow: 0 8px 22px rgba(16, 42, 67, 0.06);
+  --hc-nav-shadow-scrolled: 0 8px 22px rgba(16, 42, 67, 0.08);
+  --hc-nav-item-hover: #eaf1f8;
+  --hc-nav-item-active: #eaf1f8;
+  --hc-nav-item-ring: inset 0 0 0 1px #d4e0ec;
+  --hc-nav-item-active-ring: inset 0 0 0 1px #3273c5;
+  --hc-nav-text: #243b53;
+  --hc-nav-text-strong: #1d4e89;
+  --hc-nav-text-active: #1d4e89;
+  --hc-nav-cta-bg: #1d4e89;
+  --hc-nav-cta-bg-hover: #163d6b;
+  --hc-nav-cta-border: #1d4e89;
+  --hc-nav-cta-border-hover: #163d6b;
+  --hc-nav-cta-shadow: 0 8px 18px rgba(16, 42, 67, 0.12);
+  --hc-nav-cta-shadow-hover: 0 10px 22px rgba(16, 42, 67, 0.16);
+  --hc-nav-logo-shadow: none;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar,
@@ -14073,6 +14068,56 @@ body.hc-page-home .hc-home-premium__nav-actions .btn-primary:hover {
     width: 22px !important;
     height: 22px !important;
   }
+}
+
+/* PWA install invitation */
+.hc-install-prompt {
+  position: fixed;
+  right: 22px;
+  bottom: 92px;
+  z-index: 2200;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(390px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border: 1px solid rgba(147, 197, 253, 0.42);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.97);
+  color: #17345f;
+  box-shadow: 0 18px 48px rgba(15, 35, 65, 0.2);
+}
+
+.hc-install-prompt[hidden] { display: none; }
+.hc-install-prompt__brand { width: 42px; height: 42px; }
+.hc-install-prompt__brand img { width: 100%; height: 100%; object-fit: contain; }
+.hc-install-prompt__copy { display: grid; gap: 3px; min-width: 0; }
+.hc-install-prompt__copy span { color: #526b8d; font-size: 13px; line-height: 1.35; }
+.hc-install-prompt__action {
+  border: 0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: #17345f;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.hc-install-prompt__close {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  border: 0;
+  background: transparent;
+  color: #7c8da6;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+@media (max-width: 575.98px) {
+  .hc-install-prompt { right: 16px; bottom: 82px; }
+  .hc-install-prompt__action { grid-column: 2 / -1; justify-self: start; }
 }
 
 /* HelpChain public intake: RGPD consent checkbox */
