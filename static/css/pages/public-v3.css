@@ -581,9 +581,9 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-doc-intro__title, .hc-hero h1, .hc-hero__title, .hc-trust-page__hero-copy h1, .hc-offre__hero-copy h1, .hc-home__hero-title) {
   max-width: 980px;
   color: var(--hc-v3-ink);
-  font-size: clamp(3.1rem, 6vw, 6rem);
-  line-height: 0.94;
-  letter-spacing: -0.06em;
+  font-size: clamp(2.3rem, 3.65vw, 3.85rem);
+  line-height: 1.12;
+  letter-spacing: -0.042em;
   font-weight: 850;
   text-wrap: balance;
 }
@@ -596,7 +596,7 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-section, .hc-trust-page__section, .hc-offre__section, .hc-home__section) {
-  padding-block: clamp(4.5rem, 7vw, 7rem);
+  padding-block: clamp(3rem, 5vw, 5rem);
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-section--contrast, .hc-trust-page__section--soft, .hc-trust-page__section--cta-light) {
@@ -612,7 +612,7 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-section-title, .hc-section-head h2, .hc-section__head h2, .hc-offre__section-head h2, .hc-trust-page__section-head h2, .hc-offre__final h2, .hc-trust-page__cta-card h2) {
   color: var(--hc-v3-ink);
-  font-size: clamp(2.15rem, 4vw, 4rem);
+  font-size: clamp(1.9rem, 3vw, 3.15rem);
   line-height: 1;
   letter-spacing: -0.045em;
   font-weight: 820;
@@ -966,7 +966,7 @@ body.hc-page-trust .hc-trust-page__panel-card {
   }
 
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-doc-intro__title, .hc-hero h1, .hc-hero__title, .hc-trust-page__hero-copy h1, .hc-offre__hero-copy h1, .hc-home__hero-title) {
-    font-size: clamp(2.45rem, 15vw, 4rem);
+    font-size: clamp(2rem, 7.5vw, 3.25rem);
   }
 
   body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.hc-section, .hc-trust-page__section, .hc-offre__section, .hc-home__section) {
