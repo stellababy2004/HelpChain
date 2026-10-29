@@ -11196,3 +11196,9 @@ msgstr "Durée : 20 minutes"
 
 msgid "Votre demande a bien été enregistrée, mais une erreur technique a empêché la notification de notre équipe. Inutile de soumettre à nouveau le formulaire ; vous pouvez nous contacter directement."
 msgstr "Votre demande a bien été enregistrée, mais une erreur technique a empêché la notification de notre équipe. Inutile de soumettre à nouveau le formulaire ; vous pouvez nous contacter directement."
+
+msgid "20 minutes"
+msgstr "20 minutes"
+
+msgid "Un format resserré pour comprendre le cadre, les usages et le niveau d’adéquation."
+msgstr "Un format resserré pour comprendre le cadre, les usages et le niveau d’adéquation."
