@@ -638,3 +638,81 @@ body.hc-page-offre .hc-offre__card.hc-offre__card--featured {
     border-width: 2px;
   }
 }
+
+body.hc-page-tarifs .hc-offre__grid--offers {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.hc-page-tarifs .hc-offre__hero {
+  display: block;
+}
+
+body.hc-page-tarifs .hc-offre__hero-copy {
+  max-width: 920px;
+  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3.5rem);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.hc-page-tarifs .hc-offre__coordination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  padding: 1.75rem 1.95rem;
+  border: 1px solid rgba(170, 191, 213, 0.7);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 12px 28px rgba(23, 50, 79, 0.05);
+}
+
+body.hc-page-tarifs .hc-offre__coordination h3 {
+  margin: 0.65rem 0 0.75rem;
+  color: var(--hc-offre-ink);
+  font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+}
+
+body.hc-page-tarifs .hc-offre__coordination p {
+  max-width: 70ch;
+  margin: 0;
+  color: var(--hc-offre-muted);
+  line-height: 1.65;
+}
+
+body.hc-page-tarifs .hc-offre__coordination .hc-offre__buyer {
+  margin-bottom: 0.75rem;
+}
+
+body.hc-page-tarifs .hc-offre__notes {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.75rem;
+  padding: 0 0.25rem;
+  color: var(--hc-offre-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+body.hc-page-tarifs .hc-offre__notes p {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  body.hc-page-tarifs .hc-offre__grid--offers {
+    grid-template-columns: 1fr;
+  }
+
+  body.hc-page-tarifs .hc-offre__coordination {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.35rem;
+  }
+
+  body.hc-page-tarifs .hc-offre__coordination .hc-offre__btn {
+    width: 100%;
+  }
+}

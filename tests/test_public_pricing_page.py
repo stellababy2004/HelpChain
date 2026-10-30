@@ -15,16 +15,17 @@ def test_public_pricing_page_renders_expected_offer_content(client):
     assert response.status_code == 200
     html = response.get_data(as_text=True)
 
-    assert "Une coordination plus simple. Un tarif adapté à votre organisation." in html
-    assert "HelpChain centralise les demandes, les affectations, le suivi" in html
-    assert "À partir de 300 € / mois" in html
-    assert "STRUCTURE" in html
-    assert "À partir de 300 €/mois" in html
-    assert "COORDINATION AVANCÉE" in html
-    assert "À partir de 500 €/mois" in html
-    assert "RÉSEAU / MULTI-STRUCTURES" in html
+    assert "Une offre claire pour démarrer avec HelpChain" in html
+    assert "Découvrez la plateforme, évaluez-la sur un périmètre concret" in html
+    assert "Pilote accompagné" in html
+    assert "250 € pour 30 jours" in html
+    assert "Paiement unique" in html
+    assert "Structure" in html
+    assert "300 € / mois" in html
+    assert "Jusqu’à 5 utilisateurs nominatifs" in html
+    assert "Coordination entre structures" in html
     assert "Sur devis" in html
-    assert "Pilote de 30 jours — à partir de 250 €" in html
+    assert "Une démonstration gratuite pour découvrir la plateforme" in html
 
 
 def test_public_pricing_pilot_cta_points_to_demo_and_uses_cta_event(client):
@@ -36,7 +37,7 @@ def test_public_pricing_pilot_cta_points_to_demo_and_uses_cta_event(client):
     assert cta is not None
     assert cta["data-hc-event"].startswith("cta_")
     assert cta.get("data-hc-cta") == "pricing_pilot"
-    assert "Demander un pilote" in cta.get_text(" ", strip=True)
+    assert "Préparer un pilote" in cta.get_text(" ", strip=True)
 
 
 def test_public_navigation_contains_pricing_link(client):
