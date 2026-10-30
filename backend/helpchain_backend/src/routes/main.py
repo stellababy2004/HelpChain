@@ -43,7 +43,7 @@ try:
 except Exception:  # pragma: no cover - keep runtime optional
     Redis = None
 
-from ..authz import can_view_request
+from ..authz import can_view_request, can_volunteer_access_request
 from backend.core.tenant import current_structure_id
 from ..constants.categories import (
     REQUEST_CATEGORY_CODES,
@@ -3323,7 +3323,7 @@ def volunteer_request_details(req_id: int):
     except Exception:
         pass
 
-    if not can_view_request(volunteer, req, db):
+    if not can_volunteer_access_request(volunteer, req, db):
         abort(404)
 
     vi = (
@@ -3525,7 +3525,7 @@ def volunteer_can_help(req_id: int):
         return redirect(url_for("main.become_volunteer", next=request.path))
 
     req = Request.query.filter(Request.id == req_id).first_or_404()
-    if not can_view_request(volunteer, req, db):
+    if not can_volunteer_access_request(volunteer, req, db):
         abort(404)
 
     _upsert_volunteer_action(req, volunteer, "CAN_HELP")
@@ -3544,7 +3544,7 @@ def volunteer_cant_help(req_id: int):
         return redirect(url_for("main.become_volunteer", next=request.path))
 
     req = Request.query.filter(Request.id == req_id).first_or_404()
-    if not can_view_request(volunteer, req, db):
+    if not can_volunteer_access_request(volunteer, req, db):
         abort(404)
 
     _upsert_volunteer_action(req, volunteer, "CANT_HELP")

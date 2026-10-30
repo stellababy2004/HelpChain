@@ -354,7 +354,7 @@ class TestVolunteerIntegration:
     ):
         """Empty volunteer dashboard should render guidance without demo requests."""
         from backend.helpchain_backend.src.routes import main as main_routes
-        from backend.models import Request
+        from backend.models import Request, VolunteerStructureMembership
 
         monkeypatch.setattr(
             main_routes,
@@ -383,13 +383,22 @@ class TestVolunteerIntegration:
         linked_intervenant,
     ):
         """Regression: interest grants access to request details."""
-        from backend.models import Request
+        from backend.models import Request, VolunteerStructureMembership
         from backend.helpchain_backend.src.models.volunteer_interest import (
             VolunteerInterest,
         )
 
         client = authenticated_volunteer_client
         volunteer = init_test_data["volunteer"]
+
+        session.add(
+            VolunteerStructureMembership(
+                volunteer_id=volunteer.id,
+                structure_id=linked_intervenant.structure_id,
+                status="approved",
+            )
+        )
+        session.commit()
 
         req = Request(
             title="Volunteer flow regression test",
@@ -414,10 +423,11 @@ class TestVolunteerIntegration:
         assert interest is not None
         assert interest.status == "pending"
 
+        # Pending interest alone does not grant viewing; explicit approval does.
         response = client.get(f"/volunteer/requests/{req.id}")
-        assert response.status_code == 200
-
-        # An existing interest continues to grant viewing after discovery ends.
+        assert response.status_code == 404
+        interest.status = "approved"
+        session.commit()
         req.status = "in_progress"
         session.commit()
         assert client.get(f"/volunteer/requests/{req.id}").status_code == 200
@@ -434,7 +444,7 @@ class TestVolunteerIntegration:
         self, authenticated_volunteer_client, init_test_data, session
     ):
         """Assigned volunteer must not be blocked by legacy default tenant scope."""
-        from backend.models import Request, Structure
+        from backend.models import Request, Structure, VolunteerStructureMembership
 
         volunteer = init_test_data["volunteer"]
 
@@ -456,6 +466,17 @@ class TestVolunteerIntegration:
         session.commit()
 
         response = authenticated_volunteer_client.get(f"/volunteer/requests/{req.id}")
+        assert response.status_code == 404
+
+        session.add(
+            VolunteerStructureMembership(
+                volunteer_id=volunteer.id,
+                structure_id=other_structure.id,
+                status="approved",
+            )
+        )
+        session.commit()
+        response = authenticated_volunteer_client.get(f"/volunteer/requests/{req.id}")
 
         assert response.status_code == 200
 
@@ -471,7 +492,7 @@ class TestVolunteerIntegration:
         action_path,
     ):
         """Assigned volunteer can signal on a request from another structure."""
-        from backend.models import Request, Structure
+        from backend.models import Request, Structure, VolunteerStructureMembership
 
         volunteer = init_test_data["volunteer"]
 
@@ -492,6 +513,20 @@ class TestVolunteerIntegration:
         session.add(req)
         session.commit()
 
+        response = authenticated_volunteer_client.post(
+            f"/volunteer/requests/{req.id}/{action_path}",
+            follow_redirects=False,
+        )
+        assert response.status_code == 404
+
+        session.add(
+            VolunteerStructureMembership(
+                volunteer_id=volunteer.id,
+                structure_id=other_structure.id,
+                status="approved",
+            )
+        )
+        session.commit()
         response = authenticated_volunteer_client.post(
             f"/volunteer/requests/{req.id}/{action_path}",
             follow_redirects=False,

@@ -85,3 +85,64 @@ def can_view_request(user, req, db):
     )
 
     return approved_interest_exists
+
+
+def can_volunteer_access_request(volunteer, req, db) -> bool:
+    """Strict, membership-aware authorization for a volunteer request.
+
+    This guard is intentionally not wired into routes yet.  It fails closed
+    unless the volunteer identity, its optional user account, the request's
+    tenant, an approved membership, and a request-specific permission are all
+    present.  Membership status is queried on every call, so an open session
+    does not survive suspension or revocation.
+    """
+    if not volunteer or not req or not getattr(volunteer, "id", None):
+        return False
+    session = getattr(db, "session", db)
+    if not bool(getattr(volunteer, "is_active", False)):
+        return False
+
+    user_id = getattr(volunteer, "user_id", None)
+    if user_id is not None:
+        from .models import User
+
+        account = session.get(User, user_id)
+        if account is None or not bool(getattr(account, "is_active", False)):
+            return False
+
+    structure_id = getattr(req, "structure_id", None)
+    if structure_id is None:
+        return False
+
+    from backend.models import VolunteerStructureMembership
+
+    membership_exists = (
+        session.query(VolunteerStructureMembership.id)
+        .filter_by(
+            volunteer_id=volunteer.id,
+            structure_id=structure_id,
+            status="approved",
+        )
+        .first()
+        is not None
+    )
+    if not membership_exists:
+        return False
+
+    assigned = getattr(req, "assigned_volunteer_id", None) == volunteer.id
+    if assigned:
+        return True
+
+    from .models.volunteer_interest import VolunteerInterest
+
+    approved_interest_exists = (
+        session.query(VolunteerInterest.id)
+        .filter_by(
+            request_id=req.id,
+            volunteer_id=volunteer.id,
+            status="approved",
+        )
+        .first()
+        is not None
+    )
+    return approved_interest_exists

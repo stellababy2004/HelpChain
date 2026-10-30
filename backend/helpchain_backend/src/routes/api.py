@@ -13,7 +13,11 @@ from werkzeug.security import check_password_hash
 
 from backend.ai_service import ai_service
 
-from ..admin_actor import resolve_bearer_admin_actor, resolve_current_admin_actor
+from ..admin_actor import (
+    BearerActorResolutionError,
+    resolve_bearer_admin_actor,
+    resolve_current_admin_actor,
+)
 from ..admin_policies import can_mutate_request
 from ..controllers.helpchain_controller import HelpChainController
 from ..extensions import csrf
@@ -29,6 +33,7 @@ from ..models import (
     RequestLog,
     RequestMetric,
     Structure,
+    User,
     db,
 )
 from ..security_logging import log_security_event
@@ -45,6 +50,25 @@ from ..security.api_authz import require_api_auth, require_roles
 api_bp = Blueprint("api", __name__)
 controller = HelpChainController()
 csrf.exempt(api_bp)
+
+
+def _protect_session_mutation() -> None:
+    """Re-enable CSRF for browser-session mutations on the exempt API blueprint."""
+    authorization = (request.headers.get("Authorization") or "").strip().lower()
+    if authorization.startswith("bearer "):
+        return
+    if current_app.config.get("WTF_CSRF_ENABLED", True):
+        csrf.protect()
+
+
+def _require_authenticated_admin():
+    try:
+        actor = resolve_current_admin_actor()
+    except BearerActorResolutionError as exc:
+        return None, (jsonify({"error": "Unauthorized"}), exc.status_code)
+    if not actor.is_authenticated or not actor.is_admin:
+        return None, (jsonify({"error": "Forbidden"}), 403)
+    return actor, None
 
 
 def _api_admin_scope():
@@ -521,6 +545,10 @@ def notification_subscribe():
 
 @api_bp.route("/notification/unsubscribe", methods=["POST"])
 def notification_unsubscribe():
+    _protect_session_mutation()
+    _actor, denied = _require_authenticated_admin()
+    if denied:
+        return denied
     data = request.get_json(silent=True) or {}
     endpoint = data.get("endpoint")
 
@@ -539,6 +567,10 @@ def notification_unsubscribe():
 
 @api_bp.route("/notification/test", methods=["POST"])
 def notification_test():
+    _protect_session_mutation()
+    _actor, denied = _require_authenticated_admin()
+    if denied:
+        return denied
     data = request.get_json(silent=True) or {}
     endpoint = data.get("endpoint")
 
@@ -590,6 +622,7 @@ def notification_test():
 @admin_required
 @admin_role_required("ops", "superadmin")
 def invite_structure_to_case(case_id: int):
+    _protect_session_mutation()
     admin_required_404()
     _require_adaptive_module("referrals")
     payload = request.get_json(silent=True) or {}
@@ -702,11 +735,17 @@ def create_help():
 
 @api_bp.route("/help/<int:help_id>/approve", methods=["POST"])
 def approve_help(help_id):
+    _protect_session_mutation()
+    actor, denied = _require_authenticated_admin()
+    if denied:
+        return denied
+    target_request = db.session.get(Request, help_id)
+    if not can_mutate_request(actor, target_request):
+        return jsonify({"error": "Not found"}), 404
     payload = request.get_json(silent=True) or {}
-    admin = payload.get("admin")
     note = payload.get("note")
     try:
-        res = controller.approve_request(help_id, admin, note=note)
+        res = controller.approve_request(help_id, actor.raw_admin, note=note)
         return jsonify(res), 200
     except AttributeError:
         return jsonify({"error": "approve_request not implemented"}), 501
@@ -716,11 +755,17 @@ def approve_help(help_id):
 
 @api_bp.route("/help/<int:help_id>/reject", methods=["POST"])
 def reject_help(help_id):
+    _protect_session_mutation()
+    actor, denied = _require_authenticated_admin()
+    if denied:
+        return denied
+    target_request = db.session.get(Request, help_id)
+    if not can_mutate_request(actor, target_request):
+        return jsonify({"error": "Not found"}), 404
     payload = request.get_json(silent=True) or {}
-    admin = payload.get("admin")
     reason = payload.get("reason")
     try:
-        res = controller.reject_request(help_id, admin, reason=reason)
+        res = controller.reject_request(help_id, actor.raw_admin, reason=reason)
         return jsonify(res), 200
     except AttributeError:
         return jsonify({"error": "reject_request not implemented"}), 501
@@ -853,9 +898,13 @@ def change_status():
     if request.method == "OPTIONS":
         response = jsonify({})
         response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type, X-CSRFToken, Authorization"
+        )
         response.headers.add("Access-Control-Allow-Methods", "POST")
         return response
+
+    _protect_session_mutation()
 
     try:
         data = request.get_json(silent=True) or {}
@@ -906,7 +955,9 @@ def change_status():
 
         response = jsonify({"success": True})
         response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type, X-CSRFToken, Authorization"
+        )
         response.headers.add("Access-Control-Allow-Methods", "POST")
         return response
     except PermissionError:
@@ -923,9 +974,13 @@ def delete_request():
     if request.method == "OPTIONS":
         response = jsonify({})
         response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type, X-CSRFToken, Authorization"
+        )
         response.headers.add("Access-Control-Allow-Methods", "POST")
         return response
+
+    _protect_session_mutation()
 
     try:
         data = request.get_json(silent=True) or {}
@@ -970,7 +1025,9 @@ def delete_request():
 
         response = jsonify({"success": True})
         response.headers.add("Access-Control-Allow-Origin", "*")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type, X-CSRFToken, Authorization"
+        )
         response.headers.add("Access-Control-Allow-Methods", "POST")
         return response
     except PermissionError:
@@ -1014,9 +1071,21 @@ def get_nearby_volunteers():
 
         from ..models import Volunteer
 
-        volunteers = Volunteer.query.filter(
+        actor = resolve_bearer_admin_actor()
+        volunteer_query = db.session.query(Volunteer).filter(
             Volunteer.latitude.isnot(None), Volunteer.longitude.isnot(None)
-        ).all()
+        )
+        if not actor.is_platform_global:
+            structure_id = actor.tenant_scope_id
+            if structure_id is None:
+                return jsonify({"error": "Forbidden"}), 403
+            # A nullable Volunteer.user_id is not sufficient proof of tenant
+            # ownership. Unlinked volunteers remain invisible to tenant admins.
+            volunteer_query = volunteer_query.join(
+                User, Volunteer.user_id == User.id
+            ).filter(User.structure_id == int(structure_id))
+
+        volunteers = volunteer_query.all()
 
         nearby = []
         for vol in volunteers:
@@ -1061,11 +1130,15 @@ def get_nearby_volunteers():
 @api_bp.route("/volunteers/<int:volunteer_id>/location", methods=["PUT"])
 def update_volunteer_location(volunteer_id):
     try:
-        if not (
-            getattr(g, "api_is_admin", False)
-            or getattr(current_user, "is_authenticated", False)
-            or session.get("volunteer_logged_in")
-        ):
+        authorization = (request.headers.get("Authorization") or "").strip()
+        if authorization.lower().startswith("bearer "):
+            actor = resolve_current_admin_actor()
+            if not actor.is_authenticated or not actor.is_platform_global:
+                return jsonify({"error": "Forbidden"}), 403
+        elif session.get("volunteer_logged_in"):
+            if session.get("volunteer_id") != volunteer_id:
+                return jsonify({"error": "Forbidden"}), 403
+        else:
             return jsonify({"error": "Unauthorized"}), 401
 
         data = request.get_json(silent=True) or {}
@@ -1103,6 +1176,8 @@ def update_volunteer_location(volunteer_id):
             200,
         )
 
+    except BearerActorResolutionError as e:
+        return jsonify({"error": "Unauthorized"}), e.status_code
     except ValueError:
         return jsonify({"error": "Invalid coordinates"}), 400
     except Exception as e:

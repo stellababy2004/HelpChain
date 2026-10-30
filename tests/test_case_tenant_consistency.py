@@ -373,6 +373,31 @@ def test_case_collaborator_invite_is_controlled_by_case_owner_scope(app, session
     assert denied.status_code == 403
 
 
+def test_case_collaborator_invite_requires_csrf_for_browser_session(app, session):
+    seeded = _seed_case_scope(session)
+    client = app.test_client()
+    _login_admin(client, app, seeded["ops_a"])
+    app.config["WTF_CSRF_ENABLED"] = True
+
+    denied = client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    )
+    assert denied.status_code == 400
+
+    from flask_wtf.csrf import generate_csrf
+
+    with client:
+        client.get("/")
+        token = generate_csrf()
+        allowed = client.post(
+            f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+            json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+            headers={"X-CSRFToken": token},
+        )
+    assert allowed.status_code == 200
+
+
 def test_closed_case_rejects_collaborator_invitation(app, session):
     seeded = _seed_case_scope(session)
     seeded["visible_case"].status = "closed"

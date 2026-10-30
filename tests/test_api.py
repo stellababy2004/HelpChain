@@ -240,7 +240,16 @@ from datetime import UTC, datetime, timedelta
 
 from backend.helpchain_backend.src.jwt_utils import encode_access_token
 from backend.helpchain_backend.src.routes import api as api_routes
-from backend.models import AdminUser, Request, SecurityEvent, Structure, User, utc_now
+from backend.models import (
+    AdminUser,
+    Request,
+    SecurityEvent,
+    Structure,
+    User,
+    Volunteer,
+    NotificationSubscription,
+    utc_now,
+)
 
 
 def _login_admin(client, app, admin_user: AdminUser) -> None:
@@ -449,6 +458,117 @@ def test_legacy_admin_change_status_requires_admin_session(client):
     )
 
     assert response.status_code == 403
+
+
+def test_help_approval_requires_admin_authentication(client):
+    response = client.post("/api/help/1/approve", json={"admin": "forged"})
+    assert response.status_code in (401, 403)
+
+
+def test_help_approval_is_tenant_scoped(app, session):
+    structure_a, structure_b, admin_a, req_a, req_b = _seed_admin_api_scope(
+        session, prefix="help_approval_scope"
+    )
+    client = app.test_client()
+    _login_admin(client, app, admin_a)
+
+    own = client.post(f"/api/help/{req_a.id}/approve", json={})
+    other = client.post(f"/api/help/{req_b.id}/approve", json={})
+
+    assert own.status_code == 200
+    assert other.status_code == 404
+
+
+def test_notification_test_and_unsubscribe_require_admin(client):
+    assert client.post("/api/notification/test", json={}).status_code in (401, 403)
+    assert client.post(
+        "/api/notification/unsubscribe", json={"endpoint": "https://push.invalid/x"}
+    ).status_code in (401, 403)
+
+
+def test_volunteer_location_idor_is_executable(app, session):
+    owner = Volunteer(name="owner", email="owner@test.local")
+    target = Volunteer(name="target", email="target@test.local")
+    session.add_all([owner, target])
+    session.commit()
+    client = app.test_client()
+    with client.session_transaction() as flask_session:
+        flask_session["volunteer_logged_in"] = True
+        flask_session["volunteer_id"] = owner.id
+
+    response = client.put(
+        f"/api/volunteers/{target.id}/location",
+        json={"latitude": 42.1, "longitude": 23.2},
+    )
+    assert response.status_code == 403
+    session.refresh(target)
+    assert target.latitude is None
+    assert target.longitude is None
+
+
+def test_nearby_volunteers_is_scoped_to_admin_structure(app, session):
+    structure_a = _make_structure(session, name="Nearby A", slug="nearby-a")
+    structure_b = _make_structure(session, name="Nearby B", slug="nearby-b")
+    admin_a = _make_admin(
+        session,
+        username="nearby-admin-a",
+        email="nearby-admin-a@test.local",
+        role="admin",
+        structure_id=structure_a.id,
+    )
+    user_a = _make_user(
+        session,
+        username="nearby-user-a",
+        email="nearby-user-a@test.local",
+        structure_id=structure_a.id,
+    )
+    user_b = _make_user(
+        session,
+        username="nearby-user-b",
+        email="nearby-user-b@test.local",
+        structure_id=structure_b.id,
+    )
+    session.add_all(
+        [
+            Volunteer(name="A", user_id=user_a.id, latitude=48.85, longitude=2.35),
+            Volunteer(name="B", user_id=user_b.id, latitude=48.85, longitude=2.35),
+            Volunteer(name="Unlinked", latitude=48.85, longitude=2.35),
+        ]
+    )
+    session.commit()
+    with app.app_context():
+        token = encode_access_token(admin_a.id)
+
+    response = app.test_client().get(
+        "/api/volunteers/nearby?lat=48.85&lng=2.35&radius=5",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    names = {row["name"] for row in response.get_json()["volunteers"]}
+    assert names == {"A"}
+
+
+def test_nearby_volunteers_rejects_disabled_admin(app, session):
+    structure = _make_structure(session, name="Disabled Nearby", slug="disabled-nearby")
+    admin = _make_admin(
+        session,
+        username="disabled-nearby-admin",
+        email="disabled-nearby-admin@test.local",
+        role="admin",
+        structure_id=structure.id,
+    )
+    session.commit()
+    with app.app_context():
+        token = encode_access_token(admin.id)
+    admin.is_active = False
+    session.commit()
+
+    response = app.test_client().get(
+        "/api/volunteers/nearby?lat=48.85&lng=2.35&radius=5",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code in (401, 403)
 
 
 def test_legacy_admin_change_status_stays_tenant_scoped(app, session):

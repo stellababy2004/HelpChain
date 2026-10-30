@@ -569,6 +569,53 @@ class Volunteer(db.Model):
             self.achievements = ""
 
 
+class VolunteerStructureMembership(db.Model):
+    """Explicit, independently approved volunteer-to-structure membership."""
+
+    __tablename__ = "volunteer_structure_memberships"
+
+    id = Column(Integer, primary_key=True)
+    volunteer_id = Column(Integer, ForeignKey("volunteers.id"), nullable=False, index=True)
+    structure_id = Column(Integer, ForeignKey("structures.id"), nullable=False, index=True)
+    status = Column(String(16), nullable=False, default="pending", server_default="pending", index=True)
+
+    requested_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    approved_by_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    approved_at = Column(DateTime, nullable=True)
+    suspended_by_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    suspended_at = Column(DateTime, nullable=True)
+    revoked_by_admin_id = Column(Integer, ForeignKey("admin_users.id"), nullable=True, index=True)
+    revoked_at = Column(DateTime, nullable=True)
+    decision_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=utc_now, index=True)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+
+    volunteer = relationship("Volunteer", foreign_keys=[volunteer_id], lazy="joined")
+    structure = relationship("Structure", foreign_keys=[structure_id], lazy="joined")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "volunteer_id",
+            "structure_id",
+            name="uq_volunteer_structure_membership",
+        ),
+        db.CheckConstraint(
+            "status IN ('pending', 'approved', 'suspended', 'revoked')",
+            name="ck_volunteer_structure_membership_status",
+        ),
+        Index(
+            "ix_volunteer_structure_membership_structure_status",
+            "structure_id",
+            "status",
+        ),
+        Index(
+            "ix_volunteer_structure_membership_volunteer_status",
+            "volunteer_id",
+            "status",
+        ),
+    )
+
+
 class Intervenant(db.Model):
     """Canonical actor model (Phase C migration)."""
 

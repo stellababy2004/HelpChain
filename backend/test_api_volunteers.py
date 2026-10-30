@@ -157,6 +157,10 @@ class TestVolunteerAPI:
             db.session.commit()
             vol_id = vol.id
 
+            with self.client.session_transaction() as flask_session:
+                flask_session["volunteer_logged_in"] = True
+                flask_session["volunteer_id"] = vol_id
+
             # Update location
             update_data = {
                 "latitude": 42.6977,
@@ -181,6 +185,28 @@ class TestVolunteerAPI:
             assert updated_vol.longitude == 23.3219
             assert updated_vol.location == "София"
 
+    def test_update_volunteer_location_rejects_other_volunteer_session(self):
+        """A volunteer session cannot update another volunteer by ID."""
+        with self.app.app_context():
+            owner = Volunteer(name="Owner", email="owner@example.com")
+            target = Volunteer(name="Target", email="target@example.com")
+            db.session.add_all([owner, target])
+            db.session.commit()
+
+            with self.client.session_transaction() as flask_session:
+                flask_session["volunteer_logged_in"] = True
+                flask_session["volunteer_id"] = owner.id
+
+            response = self.client.put(
+                f"/api/volunteers/{target.id}/location",
+                json={"latitude": 42.6977, "longitude": 23.3219},
+            )
+
+            assert response.status_code == 403
+            unchanged = db.session.get(Volunteer, target.id)
+            assert unchanged.latitude is None
+            assert unchanged.longitude is None
+
     def test_update_volunteer_location_partial_data(self):
         """Test update location with only coordinates (no location string)."""
         with self.app.app_context():
@@ -196,6 +222,9 @@ class TestVolunteerAPI:
 
             # Update only coordinates
             update_data = {"latitude": 42.5, "longitude": 25.6}
+            with self.client.session_transaction() as flask_session:
+                flask_session["volunteer_logged_in"] = True
+                flask_session["volunteer_id"] = vol_id
             response = self.client.put(
                 f"/api/volunteers/{vol_id}/location", json=update_data
             )
