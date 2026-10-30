@@ -27,12 +27,26 @@ def _link_identity(data, session, active=True):
     session.commit()
 
 
+def _approve_identity_membership(data, session):
+    from backend.models import VolunteerStructureMembership
+
+    session.add(
+        VolunteerStructureMembership(
+            volunteer_id=data.volunteer.id,
+            structure_id=data.structure.id,
+            status="approved",
+        )
+    )
+    session.commit()
+
+
 @pytest.mark.parametrize("role", ["admin", "superadmin"])
 @pytest.mark.parametrize("active_link", [True, False])
 def test_own_structure_identity_edit_is_permitted(
     membership, session, app, role, active_link
 ):
     data = membership
+    _approve_identity_membership(data, session)
     _link_identity(data, session, active_link)
     data.admin.role = role
     session.commit()
@@ -65,6 +79,7 @@ def test_identity_edit_rejects_unauthorized_admin(
     from backend.models import Intervenant
 
     data = membership
+    _approve_identity_membership(data, session)
     _link_identity(data, session)
     if restriction in {"cross_tenant", "attached_superadmin_cross_tenant"}:
         data.admin.structure_id = data.other_structure.id
@@ -90,17 +105,36 @@ def test_identity_edit_rejects_unauthorized_admin(
     session.commit()
     original = (data.volunteer.name, data.volunteer.email)
     _login_admin(data.client, app, data.admin)
-    expected_status = 404 if restriction == "inactive_admin" else 403
+    # Tenant scope is deliberately opaque.  The legacy Intervenant link is
+    # not required for this route: it edits Volunteer identity fields and the
+    # approved VolunteerStructureMembership is the authorization boundary.
+    expected_status = (
+        404
+        if restriction
+        in {
+            "cross_tenant",
+            "attached_superadmin_cross_tenant",
+            "no_structure",
+            "inactive_admin",
+        }
+        else 302
+        if restriction in {"unlinked", "ambiguous"}
+        else 403
+    )
     assert (
         data.client.post(_identity_path(data), data=_identity_payload()).status_code
         == expected_status
     )
     session.refresh(data.volunteer)
-    assert (data.volunteer.name, data.volunteer.email) == original
+    if expected_status == 302:
+        assert data.volunteer.email == _identity_payload()["email"]
+    else:
+        assert (data.volunteer.name, data.volunteer.email) == original
 
 
 def test_global_superadmin_can_edit_unlinked_identity(membership, session, app):
     data = membership
+    _approve_identity_membership(data, session)
     _login_admin(data.client, app, data.global_admin)
     assert (
         data.client.post(_identity_path(data), data=_identity_payload()).status_code

@@ -1,4 +1,5 @@
 from datetime import timedelta
+import os
 from pathlib import Path
 import tempfile
 
@@ -19,9 +20,15 @@ def _sqlite_db_path(app) -> Path | None:
 def _set_test_env(monkeypatch):
     # pytest's managed basetemp is ACL-locked on this Windows workstation;
     # keep each test database isolated without relying on its cleanup hook.
-    tmp_root = Path(tempfile.mkdtemp(prefix="hc-pytest-db-", dir=str(Path.cwd())))
-    test_db_path = tmp_root / "test.sqlite"
-    test_db_uri = f"sqlite:///{test_db_path.as_posix()}"
+    # Allow the runner to select a known-writable local root on Windows.
+    db_root = Path(os.environ.get("HC_PYTEST_DB_ROOT") or Path.cwd())
+    db_root.mkdir(parents=True, exist_ok=True)
+    fd, temp_name = tempfile.mkstemp(prefix="hc-pytest-db-", suffix=".sqlite", dir=str(db_root))
+    os.close(fd)
+    Path(temp_name).unlink()
+    test_db_path = Path(temp_name)
+    tmp_root = test_db_path.parent
+    test_db_uri = f"sqlite:///{test_db_path.resolve().as_posix()}"
 
     monkeypatch.setenv("HC_ENV", "test")
     monkeypatch.setenv("HELPCHAIN_TESTING", "1")
@@ -54,7 +61,7 @@ def app():
     from backend.helpchain_backend.src import app as app_module
 
     app_module = importlib.reload(app_module)
-    test_db_uri = f"sqlite:///{os.environ['HC_DB_PATH'].replace('\\', '/')}"
+    test_db_uri = f"sqlite:///{Path(os.environ['HC_DB_PATH']).resolve().as_posix()}"
     app_config.Config.SQLALCHEMY_DATABASE_URI = test_db_uri
     if hasattr(app_config, "DevConfig"):
         app_config.DevConfig.SQLALCHEMY_DATABASE_URI = test_db_uri
