@@ -43,7 +43,11 @@ try:
 except Exception:  # pragma: no cover - keep runtime optional
     Redis = None
 
-from ..authz import can_view_request, can_volunteer_access_request
+from ..authz import (
+    can_view_request,
+    can_volunteer_access_request,
+    can_volunteer_discover_request,
+)
 from backend.core.tenant import current_structure_id
 from ..constants.categories import (
     REQUEST_CATEGORY_CODES,
@@ -3284,8 +3288,11 @@ def volunteer_request_seen(req_id: int):
     volunteer = _current_volunteer()
     if not volunteer:
         return jsonify({"ok": False}), 401
+    req = db.session.get(Request, req_id)
+    if not can_volunteer_discover_request(volunteer, req, db):
+        abort(404)
     try:
-        match_mark_seen(volunteer.id, req_id)
+        match_mark_seen(volunteer.id, req_id, structure_id=req.structure_id)
         return jsonify({"ok": True}), 200
     except Exception:
         current_app.logger.exception("Failed to mark seen req_id=%s", req_id)
@@ -3300,8 +3307,13 @@ def volunteer_request_dismiss(req_id: int):
     volunteer = _current_volunteer()
     if not volunteer:
         return jsonify({"ok": False}), 401
+    req = db.session.get(Request, req_id)
+    if not can_volunteer_discover_request(volunteer, req, db):
+        abort(404)
     try:
-        match_dismiss_for(volunteer.id, req_id, hours=48)
+        match_dismiss_for(
+            volunteer.id, req_id, hours=48, structure_id=req.structure_id
+        )
         return jsonify({"ok": True, "dismiss_hours": 48}), 200
     except Exception:
         current_app.logger.exception("Failed to dismiss req_id=%s", req_id)
@@ -3439,8 +3451,7 @@ def volunteer_help(req_id: int):
     current_app.logger.info("VOL_HELP req_id=%s", req_id)
 
     req = Request.query.filter(Request.id == req_id).first_or_404()
-    is_assigned = getattr(req, "assigned_volunteer_id", None) == volunteer.id
-    if not (is_assigned or can_express_interest(volunteer, req)):
+    if not can_volunteer_discover_request(volunteer, req, db):
         abort(404)
 
     interest = VolunteerInterest.query.filter_by(

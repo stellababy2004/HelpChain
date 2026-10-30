@@ -146,3 +146,51 @@ def can_volunteer_access_request(volunteer, req, db) -> bool:
         is not None
     )
     return approved_interest_exists
+
+
+def can_volunteer_discover_request(volunteer, req, db) -> bool:
+    """Authorize the minimum visibility needed to discover a request.
+
+    Discovery is intentionally narrower than request viewing: it requires a
+    current approved membership and an open, non-archived, non-deleted,
+    unassigned request, but does not require an approved interest yet.
+    """
+    if not volunteer or not req or not getattr(volunteer, "id", None):
+        return False
+    session = getattr(db, "session", db)
+    if not bool(getattr(volunteer, "is_active", False)):
+        return False
+
+    user_id = getattr(volunteer, "user_id", None)
+    if user_id is not None:
+        from .models import User
+
+        account = session.get(User, user_id)
+        if account is None or not bool(getattr(account, "is_active", False)):
+            return False
+
+    structure_id = getattr(req, "structure_id", None)
+    if structure_id is None:
+        return False
+
+    from backend.models import VolunteerStructureMembership
+
+    approved = (
+        session.query(VolunteerStructureMembership.id)
+        .filter_by(
+            volunteer_id=volunteer.id,
+            structure_id=structure_id,
+            status="approved",
+        )
+        .first()
+        is not None
+    )
+    if not approved:
+        return False
+
+    return bool(
+        (getattr(req, "status", "") or "").lower() == "open"
+        and getattr(req, "assigned_volunteer_id", None) is None
+        and not bool(getattr(req, "is_archived", False))
+        and getattr(req, "deleted_at", None) is None
+    )

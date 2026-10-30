@@ -395,7 +395,7 @@ def test_link_and_audit_roll_back_together(membership, session):
 
 
 def test_admin_link_grants_only_canonical_structure_access(membership, session, app):
-    from backend.models import Request
+    from backend.models import Request, VolunteerStructureMembership
     from backend.helpchain_backend.src.services.matching_v1 import _MATCH_CACHE
 
     data = membership
@@ -418,6 +418,13 @@ def test_admin_link_grants_only_canonical_structure_access(membership, session, 
         structure_id=data.other_structure.id,
     )
     session.add_all([own, other])
+    session.add(
+        VolunteerStructureMembership(
+            volunteer_id=data.volunteer.id,
+            structure_id=data.structure.id,
+            status="approved",
+        )
+    )
     session.commit()
     assert data.client.post(_path(data), data=_payload(data)).status_code == 303
     client = app.test_client()

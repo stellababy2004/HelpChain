@@ -32,7 +32,7 @@ def test_smart_match_action_agrees_with_help(
     discovery,
     monkeypatch,
 ):
-    from backend.models import Request
+    from backend.models import Request, VolunteerStructureMembership
     from backend.helpchain_backend.src.services.matching_v1 import (
         _MATCH_CACHE,
         get_matched_requests_v1,
@@ -44,6 +44,13 @@ def test_smart_match_action_agrees_with_help(
     volunteer.availability = "weekends"
     volunteer.is_active = True
     volunteer.volunteer_onboarded = True
+    session.add(
+        VolunteerStructureMembership(
+            volunteer_id=volunteer.id,
+            structure_id=linked_intervenant.structure_id,
+            status="approved",
+        )
+    )
     req = Request(
         title="documents logement transport",
         description="Volunteer match",
@@ -564,4 +571,4 @@ class TestVolunteerIntegration:
             follow_redirects=False,
         )
 
-        assert response.status_code == 303
+        assert response.status_code == 404
