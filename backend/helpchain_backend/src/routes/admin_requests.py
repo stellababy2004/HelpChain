@@ -44,6 +44,7 @@ from ..models import (
     VolunteerRequestState,
     utc_now,
 )
+from backend.models import VolunteerStructureMembership
 from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_lifecycle import (
@@ -2038,7 +2039,19 @@ def admin_request_details(req_id: int):
     def _norm_city(val: str) -> str:
         return (val or "").strip().lower()
 
-    vols = Volunteer.query.filter_by(is_active=True).all()
+    vols = (
+        Volunteer.query.join(
+            VolunteerStructureMembership,
+            VolunteerStructureMembership.volunteer_id == Volunteer.id,
+        )
+        .filter(
+            Volunteer.is_active.is_(True),
+            VolunteerStructureMembership.structure_id == req.structure_id,
+            VolunteerStructureMembership.status == "approved",
+        )
+        .distinct()
+        .all()
+    )
     matched_volunteers = [
         v for v in vols if _norm_city(getattr(v, "location", None)) == req_city
     ]
@@ -2589,6 +2602,21 @@ def admin_assign_volunteer(req_id: int, volunteer_id: int):
     _require_adaptive_module("mobilisation")
     admin_required_404()
     req = _scope_requests(Request.query).filter(Request.id == req_id).first_or_404()
+    volunteer = (
+        Volunteer.query.join(
+            VolunteerStructureMembership,
+            VolunteerStructureMembership.volunteer_id == Volunteer.id,
+        )
+        .filter(
+            Volunteer.id == volunteer_id,
+            Volunteer.is_active.is_(True),
+            VolunteerStructureMembership.structure_id == req.structure_id,
+            VolunteerStructureMembership.status == "approved",
+        )
+        .first()
+    )
+    if volunteer is None:
+        abort(404)
     if not can_edit_request(req, current_user):
         abort(403)
     if _is_request_locked(req):

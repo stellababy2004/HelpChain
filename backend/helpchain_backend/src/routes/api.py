@@ -1070,6 +1070,7 @@ def get_nearby_volunteers():
             return R * c
 
         from ..models import Volunteer
+        from backend.models import VolunteerStructureMembership
 
         actor = resolve_bearer_admin_actor()
         volunteer_query = db.session.query(Volunteer).filter(
@@ -1082,8 +1083,12 @@ def get_nearby_volunteers():
             # A nullable Volunteer.user_id is not sufficient proof of tenant
             # ownership. Unlinked volunteers remain invisible to tenant admins.
             volunteer_query = volunteer_query.join(
-                User, Volunteer.user_id == User.id
-            ).filter(User.structure_id == int(structure_id))
+                VolunteerStructureMembership,
+                VolunteerStructureMembership.volunteer_id == Volunteer.id,
+            ).filter(
+                VolunteerStructureMembership.structure_id == int(structure_id),
+                VolunteerStructureMembership.status == "approved",
+            )
 
         volunteers = volunteer_query.all()
 

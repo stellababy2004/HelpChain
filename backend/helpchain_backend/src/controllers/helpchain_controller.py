@@ -33,9 +33,9 @@ except Exception:
         MODELS_AVAILABLE = False
 
 try:
-    from backend.models import AuditLog
+    from backend.models import SecurityEvent
 except Exception:
-    AuditLog = None
+    SecurityEvent = None
 
 
 class HelpChainController:
@@ -62,13 +62,13 @@ class HelpChainController:
     def approve_request(self, help_id, admin_user, note=None):
         # ... изпълни логиката за одобрение (update status, save)
         # записваме audit запис
-        log = AuditLog(
-            action="approve",
+        log = SecurityEvent(
+            event_type="help_request.approve",
+            actor_type="admin",
             actor_id=getattr(admin_user, "id", None),
-            actor_name=getattr(admin_user, "username", None),
-            target_type="help_request",
-            target_id=help_id,
-            details={"note": note} if note else None,
+            route="/api/help/<id>/approve",
+            method="POST",
+            meta={"target_type": "help_request", "target_id": help_id, "note": note},
         )
         db.session.add(log)
         db.session.commit()
@@ -77,13 +77,13 @@ class HelpChainController:
 
     def reject_request(self, help_id, admin_user, reason=None):
         # ... reject logic ...
-        log = AuditLog(
-            action="reject",
+        log = SecurityEvent(
+            event_type="help_request.reject",
+            actor_type="admin",
             actor_id=getattr(admin_user, "id", None),
-            actor_name=getattr(admin_user, "username", None),
-            target_type="help_request",
-            target_id=help_id,
-            details={"reason": reason} if reason else None,
+            route="/api/help/<id>/reject",
+            method="POST",
+            meta={"target_type": "help_request", "target_id": help_id, "reason": reason},
         )
         db.session.add(log)
         db.session.commit()

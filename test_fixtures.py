@@ -1,5 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
+import tempfile
 
 import pytest
 from sqlalchemy import inspect as sa_inspect
@@ -15,8 +16,10 @@ def _sqlite_db_path(app) -> Path | None:
 
 
 @pytest.fixture(autouse=True)
-def _set_test_env(monkeypatch, tmp_path_factory):
-    tmp_root = tmp_path_factory.mktemp("hc-pytest-db")
+def _set_test_env(monkeypatch):
+    # pytest's managed basetemp is ACL-locked on this Windows workstation;
+    # keep each test database isolated without relying on its cleanup hook.
+    tmp_root = Path(tempfile.mkdtemp(prefix="hc-pytest-db-", dir=str(Path.cwd())))
     test_db_path = tmp_root / "test.sqlite"
     test_db_uri = f"sqlite:///{test_db_path.as_posix()}"
 

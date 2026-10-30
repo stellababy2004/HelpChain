@@ -81,6 +81,27 @@ def test_admin_can_create_genuine_volunteer_actor(membership, session):
     assert actor.legacy_volunteer_id is None
 
 
+def test_structure_admin_cannot_read_foreign_volunteer_profile_or_api(membership, session):
+    from backend.models import Volunteer, VolunteerStructureMembership
+
+    foreign = Volunteer(name="Foreign volunteer", email="foreign@example.test")
+    session.add(foreign)
+    session.flush()
+    session.add(
+        VolunteerStructureMembership(
+            volunteer_id=foreign.id,
+            structure_id=membership.other_structure.id,
+            status="approved",
+        )
+    )
+    session.commit()
+
+    profile = membership.client.get(f"/admin/admin_volunteers/{foreign.id}")
+    api = membership.client.get(f"/admin/api/volunteers/{foreign.id}")
+    assert profile.status_code == 404
+    assert api.status_code == 404
+
+
 def test_mobilisation_module_disabled_fails_closed_for_volunteer_assignment(membership, session):
     membership.structure.capabilities_json = '["case_coordination"]'
     request = _seed_request(session, membership.structure, title="Mobilisation disabled")

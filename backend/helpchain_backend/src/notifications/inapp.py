@@ -3,10 +3,36 @@ from datetime import datetime, timedelta, timezone
 from backend.core.tenant import current_structure_id
 from backend.extensions import db
 from ..models import VolunteerRequestState
-from backend.models import Notification, RequestActivity
+from backend.models import Notification, Request, RequestActivity, VolunteerStructureMembership
 from flask import url_for
 
 NUDGE_COOLDOWN_HOURS = 6
+
+
+def _notification_is_authorized(notification, volunteer_id: int) -> bool:
+    """Require a current approved membership for request notifications.
+
+    Notifications without a request remain owner-only; they carry no tenant
+    resource to authorize and are never used to grant request access.
+    """
+    if not notification or getattr(notification, "volunteer_id", None) != volunteer_id:
+        return False
+    request_id = getattr(notification, "request_id", None)
+    if request_id is None:
+        return True
+    req = db.session.get(Request, request_id)
+    if req is None or req.structure_id is None:
+        return False
+    return (
+        db.session.query(VolunteerStructureMembership.id)
+        .filter_by(
+            volunteer_id=volunteer_id,
+            structure_id=req.structure_id,
+            status="approved",
+        )
+        .first()
+        is not None
+    )
 
 
 def touch_request_state_notified(
@@ -194,7 +220,7 @@ def mark_notification_opened(
     n = Notification.query.filter(
         owner_col == volunteer_id, Notification.id == notif_id
     ).first()
-    if not n:
+    if not n or not _notification_is_authorized(n, volunteer_id):
         raise LookupError("Notification not found")
 
     ts = datetime.now(timezone.utc).replace(tzinfo=None)

@@ -212,10 +212,17 @@ class TestAPIRoutes:
         # ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐ²Ð°Ð¼Ðµ Ñ‡Ðµ ÑÐµÑÐ¸ÑÑ‚Ð° Ðµ Ð¸Ð·Ñ‡Ð¸ÑÑ‚ÐµÐ½Ð° Ð² ÑÐ»ÐµÐ´Ð²Ð°Ñ‰Ð¸Ñ‚Ðµ Ñ‚ÐµÑÑ‚Ð¾Ð²Ðµ
 
     def test_update_volunteer_settings_authenticated(
-        self, authenticated_volunteer_client
+        self, authenticated_volunteer_client, session, init_test_data
     ):
         """Ð¢ÐµÑÑ‚ Ð·Ð° update volunteer settings ÐºÐ°Ñ‚Ð¾ Ð»Ð¾Ð³Ð½Ð°Ñ‚ Ð¿Ð¾Ñ‚Ñ€ÐµÐ±Ð¸Ñ‚ÐµÐ»"""
         client = authenticated_volunteer_client
+        from backend.models import VolunteerStructureMembership
+        session.add(VolunteerStructureMembership(
+            volunteer_id=init_test_data["volunteer"].id,
+            structure_id=init_test_data["structure"].id,
+            status="approved",
+        ))
+        session.commit()
         response = client.post(
             "/update_volunteer_settings", json={"setting1": "value1"}
         )
@@ -258,9 +265,18 @@ class TestProtectedRoutes:
 
         assert response.status_code == 302  # Redirect to login
 
-    def test_volunteer_dashboard_authenticated(self, authenticated_volunteer_client):
+    def test_volunteer_dashboard_authenticated(
+        self, authenticated_volunteer_client, session, init_test_data
+    ):
         """Ð¢ÐµÑÑ‚ Ð·Ð° volunteer dashboard ÐºÐ°Ñ‚Ð¾ Ð»Ð¾Ð³Ð½Ð°Ñ‚ volunteer"""
         client = authenticated_volunteer_client
+        from backend.models import VolunteerStructureMembership
+        session.add(VolunteerStructureMembership(
+            volunteer_id=init_test_data["volunteer"].id,
+            structure_id=init_test_data["structure"].id,
+            status="approved",
+        ))
+        session.commit()
         response = client.get("/volunteer_dashboard")
 
         assert response.status_code == 200

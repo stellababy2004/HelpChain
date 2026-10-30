@@ -94,6 +94,7 @@ from ..services.matching_v1 import dismiss_for as match_dismiss_for
 from ..services.matching_v1 import (
     can_express_interest,
     get_matched_requests_v1,
+    volunteer_approved_structure_ids,
     volunteer_authorized_structure_id,
 )
 from ..services.public_intake_routing import resolve_public_intake_destination
@@ -2911,10 +2912,15 @@ def volunteer_dashboard():
 
     just_logged_in = session.pop("just_logged_in", None)
 
-    volunteer_structure_id = volunteer_authorized_structure_id(volunteer)
+    approved_structure_ids = volunteer_approved_structure_ids(volunteer)
     open_requests = (
-        Request.query.filter_by(structure_id=volunteer_structure_id, status="open").all()
-        if volunteer_structure_id is not None else []
+        Request.query.filter(Request.structure_id.in_(approved_structure_ids))
+        .filter_by(status="open")
+        .filter(Request.is_archived.is_(False), Request.deleted_at.is_(None))
+        .filter(Request.assigned_volunteer_id.is_(None))
+        .all()
+        if approved_structure_ids
+        else []
     )
 
     my_interest_req_ids = set(
@@ -3048,8 +3054,8 @@ def volunteer_dashboard():
     my_interests = (
         db.session.query(VolunteerInterest, Request)
         .join(Request, Request.id == VolunteerInterest.request_id)
-        # Existing interests grant personal access independently of new discovery.
         .filter(VolunteerInterest.volunteer_id == volunteer.id)
+        .filter(Request.structure_id.in_(approved_structure_ids))
         .order_by(VolunteerInterest.created_at.desc())
         .limit(30)
         .all()
@@ -3112,16 +3118,22 @@ def volunteer_dashboard():
     )
     my_actions_by_req_id = {rid: act for rid, act in actions}
 
+    authorized_request_ids = db.session.query(Request.id).filter(
+        Request.structure_id.in_(approved_structure_ids)
+    )
+    authorized_notifications = Notification.query.filter(
+        Notification.volunteer_id == volunteer.id,
+        (Notification.request_id.is_(None))
+        | Notification.request_id.in_(authorized_request_ids),
+    )
     unread_match_notifications = (
-        Notification.query.filter_by(
-            volunteer_id=volunteer.id, is_read=False, type="new_match"
+        authorized_notifications.filter(
+            Notification.is_read.is_(False), Notification.type == "new_match"
         )
         .order_by(Notification.created_at.desc())
         .all()
     )
-    unread_count = Notification.query.filter_by(
-        volunteer_id=volunteer.id, is_read=False
-    ).count()
+    unread_count = authorized_notifications.filter(Notification.is_read.is_(False)).count()
     match_count = int(len(unread_match_notifications or []))
 
     # --- In-app notifications (V2.2.A) ---
@@ -3588,14 +3600,26 @@ def volunteer_notifications():
     )
     if owner_col is None:
         abort(500)
-    notifs = (
-        Notification.query.filter(owner_col == volunteer.id)
-        .order_by(Notification.created_at.desc())
-        .limit(50)
-        .all()
+    from backend.models import VolunteerStructureMembership
+
+    authorized_request_ids = (
+        db.session.query(Request.id)
+        .join(
+            VolunteerStructureMembership,
+            VolunteerStructureMembership.structure_id == Request.structure_id,
+        )
+        .filter(
+            VolunteerStructureMembership.volunteer_id == volunteer.id,
+            VolunteerStructureMembership.status == "approved",
+        )
+        .subquery()
     )
-    unread_count = Notification.query.filter(
-        owner_col == volunteer.id,
+    notification_scope = Notification.query.filter(owner_col == volunteer.id).filter(
+        (Notification.request_id.is_(None))
+        | Notification.request_id.in_(authorized_request_ids)
+    )
+    notifs = notification_scope.order_by(Notification.created_at.desc()).limit(50).all()
+    unread_count = notification_scope.filter(
         Notification.is_read == False,  # noqa: E712
     ).count()
 
@@ -4826,6 +4850,11 @@ def volunteer_logout_legacy():
 def update_volunteer_settings_legacy():
     if not session.get("volunteer_logged_in"):
         return jsonify({"success": False, "error": "unauthorized"}), 401
+    volunteer = db.session.get(Volunteer, session.get("volunteer_id"))
+    if not volunteer or not getattr(volunteer, "is_active", False):
+        return jsonify({"success": False, "error": "forbidden"}), 403
+    if not volunteer_approved_structure_ids(volunteer):
+        return jsonify({"success": False, "error": "forbidden"}), 403
     return jsonify({"success": True}), 200
 
 
@@ -4833,11 +4862,11 @@ def update_volunteer_settings_legacy():
 def volunteer_dashboard_legacy():
     if not session.get("volunteer_logged_in"):
         return redirect(url_for("main.volunteer_login"))
-    volunteer = None
-    try:
-        volunteer = db.session.get(Volunteer, session.get("volunteer_id"))
-    except Exception:
-        volunteer = None
+    volunteer = db.session.get(Volunteer, session.get("volunteer_id"))
+    if not volunteer or not getattr(volunteer, "is_active", False):
+        return redirect(url_for("main.volunteer_login"))
+    if not volunteer_approved_structure_ids(volunteer):
+        return jsonify({"error": "forbidden"}), 403
     return render_template("volunteer_dashboard_legacy.html", volunteer=volunteer), 200
 
 

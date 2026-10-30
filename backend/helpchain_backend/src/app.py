@@ -39,6 +39,35 @@ _DOTENV_CANDIDATES = (
 PARIS_TZ = ZoneInfo("Europe/Paris")
 
 
+def _validate_production_secret_config(app: Flask, env_name: str) -> None:
+    """Fail closed when production would use development or missing signing keys."""
+    production_signal = (
+        env_name in {"prod", "production"}
+        or os.getenv("PRODUCTION", "").lower() in {"1", "true", "yes"}
+        or os.getenv("RENDER", "").lower() in {"1", "true", "yes"}
+        or bool(os.getenv("RENDER_SERVICE_ID"))
+        or bool(os.getenv("RENDER_EXTERNAL_HOSTNAME"))
+    )
+    if not production_signal or app.config.get("TESTING"):
+        return
+
+    unsafe_values = {"", "dev-only-change-me", "dev-secret-change-me"}
+    missing_or_unsafe = []
+    keys_to_validate = ["SECRET_KEY"]
+    if app.config.get("JWT_SECRET_KEY") != app.config.get("SECRET_KEY"):
+        keys_to_validate.append("JWT_SECRET_KEY")
+    for key in keys_to_validate:
+        value = str(app.config.get(key) or "").strip()
+        normalized = value.lower()
+        if normalized in unsafe_values or normalized.startswith("replace-with-") or len(value) < 32:
+            missing_or_unsafe.append(key)
+    if missing_or_unsafe:
+        raise RuntimeError(
+            "Production startup refused: required signing keys are missing or unsafe "
+            f"({', '.join(missing_or_unsafe)})."
+        )
+
+
 def _load_runtime_dotenv(*, override: bool = False) -> list[str]:
     loaded_paths: list[str] = []
     for candidate in _DOTENV_CANDIDATES:
@@ -497,6 +526,8 @@ def create_app(config_object=None) -> Flask:
             app.config.from_object(_Cfg)
     except Exception:
         pass
+
+    _validate_production_secret_config(app, env_name)
 
     app.config["DEMO_MODE"] = (
         str(app.config.get("DEMO_MODE", os.getenv("DEMO_MODE", "false"))).lower()
@@ -1441,13 +1472,34 @@ def create_app(config_object=None) -> Flask:
                 }
 
             try:
-                from backend.models import Notification
+                from backend.models import (
+                    Notification,
+                    Request,
+                    VolunteerStructureMembership,
+                )
             except ModuleNotFoundError:
-                from models import Notification
+                from models import Notification, Request, VolunteerStructureMembership
 
-            cnt = Notification.query.filter_by(volunteer_id=vid, is_read=False).count()
+            authorized_request_ids = (
+                db.session.query(Request.id)
+                .join(
+                    VolunteerStructureMembership,
+                    VolunteerStructureMembership.structure_id == Request.structure_id,
+                )
+                .filter(
+                    VolunteerStructureMembership.volunteer_id == vid,
+                    VolunteerStructureMembership.status == "approved",
+                )
+                .subquery()
+            )
+            notification_scope = Notification.query.filter(
+                Notification.volunteer_id == vid,
+                (Notification.request_id.is_(None))
+                | Notification.request_id.in_(authorized_request_ids),
+            )
+            cnt = notification_scope.filter(Notification.is_read == False).count()
             preview_rows = (
-                Notification.query.filter_by(volunteer_id=vid)
+                notification_scope
                 .order_by(Notification.created_at.desc())
                 .limit(10)
                 .all()

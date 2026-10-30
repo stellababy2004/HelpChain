@@ -507,6 +507,8 @@ def test_volunteer_location_idor_is_executable(app, session):
 
 
 def test_nearby_volunteers_is_scoped_to_admin_structure(app, session):
+    from backend.models import VolunteerStructureMembership
+
     structure_a = _make_structure(session, name="Nearby A", slug="nearby-a")
     structure_b = _make_structure(session, name="Nearby B", slug="nearby-b")
     admin_a = _make_admin(
@@ -533,6 +535,19 @@ def test_nearby_volunteers_is_scoped_to_admin_structure(app, session):
             Volunteer(name="A", user_id=user_a.id, latitude=48.85, longitude=2.35),
             Volunteer(name="B", user_id=user_b.id, latitude=48.85, longitude=2.35),
             Volunteer(name="Unlinked", latitude=48.85, longitude=2.35),
+        ]
+    )
+    session.commit()
+    volunteer_a = Volunteer.query.filter_by(name="A").one()
+    volunteer_b = Volunteer.query.filter_by(name="B").one()
+    session.add_all(
+        [
+            VolunteerStructureMembership(
+                volunteer_id=volunteer_a.id, structure_id=structure_a.id, status="approved"
+            ),
+            VolunteerStructureMembership(
+                volunteer_id=volunteer_b.id, structure_id=structure_b.id, status="approved"
+            ),
         ]
     )
     session.commit()

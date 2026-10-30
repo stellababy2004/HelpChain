@@ -108,6 +108,7 @@ from ..models import (
     current_structure,
     utc_now,
 )
+from backend.models import VolunteerStructureMembership
 
 INTEGRATION_CONNECTOR_STATUS_CHOICES = ("active", "paused", "revoked")
 INTEGRATION_CONNECTOR_ALLOWED_FIELDS = (
@@ -2947,6 +2948,20 @@ def _scope_requests(query):
     """Sprint-1 tenant guard for request queries."""
     tenant_filter = _structure_scope_filter()
     return _apply_tenant_filter(query, tenant_filter)
+
+
+def _scope_volunteers(query):
+    """Limit organization-admin volunteer queries to approved memberships."""
+    if _is_global_admin():
+        return query
+    structure_id = _current_structure_id()
+    return query.join(
+        VolunteerStructureMembership,
+        VolunteerStructureMembership.volunteer_id == Volunteer.id,
+    ).filter(
+        VolunteerStructureMembership.structure_id == structure_id,
+        VolunteerStructureMembership.status == "approved",
+    ).distinct()
 
 
 def _request_kpi_base_query(*entities):
@@ -6557,7 +6572,7 @@ def api_volunteers():
     if not current_app.config.get("TESTING", False):
         if not getattr(current_user, "is_admin", False):
             return jsonify({"error": "Unauthorized"}), 403
-    volunteers = Volunteer.query.all()
+    volunteers = _scope_volunteers(Volunteer.query).all()
     data = [
         {
             "id": v.id,
@@ -6583,7 +6598,7 @@ def volunteer_detail(id):
         return redirect(url_for("main.index"))
     from flask import abort
 
-    volunteer = db.session.get(Volunteer, id)
+    volunteer = _scope_volunteers(Volunteer.query).filter(Volunteer.id == id).first()
     if not volunteer:
         abort(404)
     return render_template("volunteer_detail.html", volunteer=volunteer)
@@ -6593,7 +6608,7 @@ def volunteer_detail(id):
 @admin_required
 def admin_volunteer_api(vol_id: int):
     admin_required_404()
-    volunteer = db.session.get(Volunteer, vol_id)
+    volunteer = _scope_volunteers(Volunteer.query).filter(Volunteer.id == vol_id).first()
     if not volunteer:
         abort(404)
     req_id_raw = (request.args.get("req_id") or "").strip()
@@ -9405,7 +9420,7 @@ def delete_volunteer(id):
 
     from flask import abort
 
-    volunteer = db.session.get(Volunteer, id)
+    volunteer = _scope_volunteers(Volunteer.query).filter(Volunteer.id == id).first()
     if not volunteer:
         abort(404)
     db.session.delete(volunteer)
@@ -9429,20 +9444,13 @@ def edit_volunteer(id):
     if not actor.is_authenticated or actor.role not in {"admin", "superadmin"}:
         abort(403)
 
-    volunteer = db.session.get(Volunteer, id)
+    volunteer = _scope_volunteers(Volunteer.query).filter(Volunteer.id == id).first()
     if not volunteer:
         abort(404)
 
     if not actor.is_platform_global:
         # Ownership survives inactivity. Missing/ambiguous links confer no scope.
-        memberships = db.session.query(Intervenant.structure_id).filter(
-            Intervenant.legacy_volunteer_id == volunteer.id
-        ).limit(2).all()
-        if (
-            actor.structure_id is None
-            or len(memberships) != 1
-            or memberships[0][0] != actor.structure_id
-        ):
+        if not _scope_volunteers(Volunteer.query).filter(Volunteer.id == id).first():
             abort(403)
 
     import logging

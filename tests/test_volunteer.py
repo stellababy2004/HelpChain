@@ -97,7 +97,7 @@ def test_smart_match_action_agrees_with_help(
 def test_smart_match_cache_rechecks_eligibility(
     authenticated_volunteer_client, init_test_data, session, linked_intervenant, change
 ):
-    from backend.models import Intervenant, Request
+    from backend.models import Intervenant, Request, VolunteerStructureMembership
     from backend.helpchain_backend.src.services.matching_v1 import (
         _MATCH_CACHE,
         get_matched_requests_v1,
@@ -107,6 +107,13 @@ def test_smart_match_cache_rechecks_eligibility(
     volunteer.location = "Paris"
     volunteer.availability = "weekends"
     volunteer.is_active = True
+    session.add(
+        VolunteerStructureMembership(
+            volunteer_id=volunteer.id,
+            structure_id=linked_intervenant.structure_id,
+            status="approved",
+        )
+    )
     req = Request(
         title="Cached match",
         city="Paris",
@@ -140,14 +147,15 @@ def test_smart_match_cache_rechecks_eligibility(
             )
         )
     session.commit()
-    assert req.id not in {
+    expected_match = change not in {"closed", "request_moved"}
+    assert (req.id in {
         r.id for r, _, _ in get_matched_requests_v1(volunteer, min_percent=0)
-    }
+    }) == expected_match
     assert (
         authenticated_volunteer_client.post(
             f"/volunteer/requests/{req.id}/help"
         ).status_code
-        == 404
+        == (303 if expected_match and req.status == "open" else 404)
     )
 
 
@@ -280,9 +288,17 @@ def test_unrelated_request_is_not_actionable(
 class TestVolunteerIntegration:
     """Integration Ñ‚ÐµÑÑ‚Ð¾Ð²Ðµ Ð·Ð° volunteer Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¾Ð½Ð°Ð»Ð½Ð¾ÑÑ‚"""
 
-    def test_volunteer_login_flow(self, client, init_test_data):
+    def test_volunteer_login_flow(self, client, init_test_data, session):
         """Ð¢ÐµÑÑ‚ Ð·Ð° volunteer login Ð¿Ñ€Ð¾Ñ†ÐµÑ"""
+        from backend.models import VolunteerStructureMembership
+
         volunteer = init_test_data["volunteer"]
+        session.add(VolunteerStructureMembership(
+            volunteer_id=volunteer.id,
+            structure_id=init_test_data["structure"].id,
+            status="approved",
+        ))
+        session.commit()
 
         # Test login via session
         with client.session_transaction() as sess:
@@ -306,9 +322,17 @@ class TestVolunteerIntegration:
         assert "latitude" in data and "longitude" in data
 
     def test_volunteer_dashboard_content(
-        self, authenticated_volunteer_client, init_test_data
+        self, authenticated_volunteer_client, init_test_data, session
     ):
         """Ð¢ÐµÑÑ‚ Ð·Ð° ÑÑŠÐ´ÑŠÑ€Ð¶Ð°Ð½Ð¸ÐµÑ‚Ð¾ Ð½Ð° volunteer dashboard"""
+        from backend.models import VolunteerStructureMembership
+
+        session.add(VolunteerStructureMembership(
+            volunteer_id=init_test_data["volunteer"].id,
+            structure_id=init_test_data["structure"].id,
+            status="approved",
+        ))
+        session.commit()
         client = authenticated_volunteer_client
 
         response = client.get("/volunteer_dashboard")
@@ -357,11 +381,18 @@ class TestVolunteerIntegration:
         assert response.status_code in [302, 403, 401]
 
     def test_volunteer_dashboard_empty_state_has_no_fabricated_requests(
-        self, authenticated_volunteer_client, monkeypatch
+        self, authenticated_volunteer_client, monkeypatch, init_test_data, session
     ):
         """Empty volunteer dashboard should render guidance without demo requests."""
         from backend.helpchain_backend.src.routes import main as main_routes
         from backend.models import Request, VolunteerStructureMembership
+
+        session.add(VolunteerStructureMembership(
+            volunteer_id=init_test_data["volunteer"].id,
+            structure_id=init_test_data["structure"].id,
+            status="approved",
+        ))
+        session.commit()
 
         monkeypatch.setattr(
             main_routes,

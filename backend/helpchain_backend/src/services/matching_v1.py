@@ -5,13 +5,8 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from backend.core.tenant import current_structure_id
-from ..models import (
-    Intervenant,
-    Request,
-    Volunteer,
-    VolunteerMatchFeedback,
-    db,
-)
+from ..models import Intervenant, Request, User, Volunteer, VolunteerMatchFeedback, db
+from backend.models import VolunteerStructureMembership
 from flask import current_app
 from sqlalchemy import or_
 from sqlalchemy.exc import DatabaseError, OperationalError
@@ -329,6 +324,29 @@ def volunteer_authorized_structure_id(volunteer: Volunteer) -> int | None:
     return actors[0].structure_id
 
 
+def volunteer_approved_structure_ids(volunteer: Volunteer) -> set[int]:
+    """Return only structures with a current approved volunteer membership."""
+    if not volunteer or not getattr(volunteer, "id", None) or not getattr(volunteer, "is_active", False):
+        return set()
+    linked_user_id = getattr(volunteer, "user_id", None)
+    if linked_user_id is not None:
+        linked_user = db.session.get(User, linked_user_id)
+        if linked_user is None or not getattr(linked_user, "is_active", False):
+            return set()
+    return {
+        int(structure_id)
+        for (structure_id,) in db.session.query(
+            VolunteerStructureMembership.structure_id
+        )
+        .filter(
+            VolunteerStructureMembership.volunteer_id == volunteer.id,
+            VolunteerStructureMembership.status == "approved",
+        )
+        .all()
+        if structure_id is not None
+    }
+
+
 def _request_accepts_interest(req: Request, structure_id: int | None) -> bool:
     """Shared request eligibility against explicitly resolved actor membership."""
     return bool(
@@ -343,7 +361,11 @@ def _request_accepts_interest(req: Request, structure_id: int | None) -> bool:
 
 
 def can_express_interest(volunteer: Volunteer, req: Request) -> bool:
-    return _request_accepts_interest(req, volunteer_authorized_structure_id(volunteer))
+    return bool(
+        req
+        and req.structure_id in volunteer_approved_structure_ids(volunteer)
+        and _request_accepts_interest(req, req.structure_id)
+    )
 
 
 def get_matched_requests_v1(
@@ -355,8 +377,8 @@ def get_matched_requests_v1(
     max_text_chars: int = 800,
     cache_ttl_sec: int = 90,
 ) -> list[tuple[Request, int, dict]]:
-    structure_id = volunteer_authorized_structure_id(volunteer)
-    if structure_id is None:
+    structure_ids = volunteer_approved_structure_ids(volunteer)
+    if not structure_ids:
         return []
     now_ts = time.time()
     key = _cache_key(
@@ -367,7 +389,7 @@ def get_matched_requests_v1(
         near=near,
         max_text_chars=max_text_chars,
     )
-    key = f"structure:{structure_id}|{key}"
+    key = f"structures:{','.join(str(sid) for sid in sorted(structure_ids))}|{key}"
     cached = _MATCH_CACHE.get(key)
     if cached and cached[0] > now_ts:
         req_ids = [rid for rid, _, _ in cached[1]]
@@ -378,14 +400,18 @@ def get_matched_requests_v1(
         hydrated: list[tuple[Request, int, dict]] = []
         for rid, pct, breakdown in cached[1]:
             r = by_id.get(rid)
-            if r is not None and _request_accepts_interest(r, structure_id):
+            if (
+                r is not None
+                and r.structure_id in structure_ids
+                and _request_accepts_interest(r, r.structure_id)
+            ):
                 hydrated.append((r, pct, dict(breakdown or {})))
         if hydrated:
             return hydrated[: int(limit)]
 
     q = Request.query.filter(Request.deleted_at.is_(None)).filter(
         Request.is_archived.is_(False)
-    ).filter(Request.structure_id == structure_id)
+    ).filter(Request.structure_id.in_(structure_ids))
     now = _now()
     dismiss_filter_applied = False
     try:
@@ -430,7 +456,7 @@ def get_matched_requests_v1(
         if dismiss_filter_applied:
             q_fallback = Request.query.filter(Request.deleted_at.is_(None)).filter(
                 Request.is_archived.is_(False)
-            ).filter(Request.structure_id == structure_id)
+            ).filter(Request.structure_id.in_(structure_ids))
             if vloc:
                 like = f"%{vloc}%"
                 conditions = []
@@ -454,7 +480,9 @@ def get_matched_requests_v1(
     results: list[tuple[Request, int, dict]] = []
     prio_norm = _norm(prio) or "all"
     for req in candidates:
-        if not _request_accepts_interest(req, structure_id):
+        if req.structure_id not in structure_ids or not _request_accepts_interest(
+            req, req.structure_id
+        ):
             continue
         s_loc = _score_location(getattr(volunteer, "location", "") or "", req)
         s_sk = _score_skills(volunteer, req, max_text_chars=max_text_chars)
