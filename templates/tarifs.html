@@ -17,9 +17,9 @@
     <div class="hc-offre__shell hc-offre__hero">
       <div class="hc-offre__hero-copy">
         <span class="hc-offre__eyebrow">{{ _("Tarifs HelpChain") }}</span>
-        <h1>{{ _("Une offre claire pour démarrer avec HelpChain") }}</h1>
+        <h1>{{ _("Une coordination plus simple. Un tarif adapté à votre organisation.") }}</h1>
         <p class="hc-offre__lead">
-          {{ _("Découvrez la plateforme, évaluez-la sur un périmètre concret, puis choisissez un accompagnement adapté à votre structure.") }}
+          {{ _("Choisissez le périmètre qui correspond à votre structure, à votre équipe et à votre besoin de coordination.") }}
         </p>
         <div class="hc-offre__actions">
           <a href="/demo" class="hc-offre__btn hc-offre__btn--primary" data-hc-event="cta_pricing_demo" data-hc-cta="pricing_demo" data-hc-intent="demo">{{ _("Demander une démonstration") }}</a>
@@ -33,58 +33,62 @@
     <div class="hc-offre__shell">
       <div class="hc-offre__section-head">
         <span class="hc-offre__eyebrow">{{ _("Offres") }}</span>
-        <h2>{{ _("Choisissez le cadre adapté à votre structure") }}</h2>
+        <h2>{{ _("Trois niveaux pour clarifier votre coordination") }}</h2>
       </div>
 
       <div class="hc-offre__grid hc-offre__grid--offers">
         <article class="hc-offre__card">
-          <div class="hc-offre__card-label">{{ _("Évaluation") }}</div>
-          <h3>{{ _("Pilote accompagné") }}</h3>
-          <p class="hc-offre__buyer">{{ _("250 € pour 30 jours") }}</p>
-          <p>{{ _("Paiement unique") }}</p>
-          <p>{{ _("Évaluez HelpChain dans votre structure sur un périmètre défini ensemble.") }}</p>
-          <ul class="hc-offre__list">
-            <li><i aria-hidden="true">✓</i><span>{{ _("Une structure") }}</span></li>
-            <li><i aria-hidden="true">✓</i><span>{{ _("Jusqu’à 5 utilisateurs nominatifs") }}</span></li>
-            <li><i aria-hidden="true">✓</i><span>{{ _("Une séance de prise en main") }}</span></li>
-            <li><i aria-hidden="true">✓</i><span>{{ _("Un échange de bilan en fin de pilote") }}</span></li>
-          </ul>
-          <div class="hc-offre__card-cta">
-            <a href="/demo" class="hc-offre__btn hc-offre__btn--primary" data-hc-event="cta_pricing_pilot" data-hc-cta="pricing_pilot" data-hc-intent="pilot">{{ _("Préparer un pilote") }}</a>
-          </div>
-        </article>
-
-        <article class="hc-offre__card">
-          <div class="hc-offre__card-label">{{ _("Organisation") }}</div>
+          <div class="hc-offre__card-label">{{ _("Pour une structure") }}</div>
           <h3>{{ _("Structure") }}</h3>
-          <p class="hc-offre__buyer">{{ _("300 € / mois") }}</p>
-          <p>{{ _("Un espace de travail pour organiser les situations et faciliter le suivi quotidien de votre équipe.") }}</p>
+          <p class="hc-offre__buyer">{{ _("À partir de 300 €/mois") }}</p>
+          <p>{{ _("Pour centraliser les demandes, les responsabilités et le suivi quotidien dans une organisation.") }}</p>
           <ul class="hc-offre__list">
-            <li><i aria-hidden="true">✓</i><span>{{ _("Une structure") }}</span></li>
-            <li><i aria-hidden="true">✓</i><span>{{ _("Jusqu’à 5 utilisateurs nominatifs") }}</span></li>
             <li><i aria-hidden="true">✓</i><span>{{ _("Suivi des situations et des responsables") }}</span></li>
             <li><i aria-hidden="true">✓</i><span>{{ _("Historique des actions") }}</span></li>
             <li><i aria-hidden="true">✓</i><span>{{ _("Indicateurs de suivi") }}</span></li>
-            <li><i aria-hidden="true">✓</i><span>{{ _("Assistance standard par e-mail") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Accès par rôles") }}</span></li>
           </ul>
           <div class="hc-offre__card-cta">
             <a href="{{ url_for('main.contact') }}" class="hc-offre__btn hc-offre__btn--secondary" data-hc-event="cta_pricing_contact" data-hc-cta="pricing_contact" data-hc-intent="outreach">{{ _("Échanger sur mon besoin") }}</a>
           </div>
         </article>
+
+        <article class="hc-offre__card hc-offre__card--featured">
+          <div class="hc-offre__card-label">{{ _("Pour une coordination étendue") }}</div>
+          <h3>{{ _("Coordination avancée") }}</h3>
+          <p class="hc-offre__buyer">{{ _("À partir de 500 €/mois") }}</p>
+          <p>{{ _("Pour une organisation avec davantage de participants et des besoins de coordination plus structurés.") }}</p>
+          <ul class="hc-offre__list">
+            <li><i aria-hidden="true">✓</i><span>{{ _("Multi-utilisateurs") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Gestion des demandes et de leur suivi") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Suivi des situations et des responsables") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Notifications opérationnelles liées au suivi") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Pilotage de l’activité") }}</span></li>
+          </ul>
+          <div class="hc-offre__card-cta">
+            <a href="/demo" class="hc-offre__btn hc-offre__btn--primary" data-hc-event="cta_pricing_demo" data-hc-cta="pricing_demo" data-hc-intent="demo">{{ _("Demander une démonstration") }}</a>
+          </div>
+        </article>
+
+        <article class="hc-offre__card">
+          <div class="hc-offre__card-label">{{ _("Pour un réseau territorial") }}</div>
+          <h3>{{ _("Réseau / multi-structures") }}</h3>
+          <p class="hc-offre__buyer">{{ _("Sur devis") }}</p>
+          <p>{{ _("Pour les réseaux d’organisations, fédérations et partenaires territoriaux qui doivent coordonner plusieurs structures.") }}</p>
+          <ul class="hc-offre__list">
+            <li><i aria-hidden="true">✓</i><span>{{ _("Déploiement multi-structures") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Gouvernance adaptée au périmètre") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Suivi et pilotage des organisations") }}</span></li>
+            <li><i aria-hidden="true">✓</i><span>{{ _("Accompagnement du déploiement") }}</span></li>
+          </ul>
+          <div class="hc-offre__card-cta">
+            <a href="{{ url_for('main.contact') }}" class="hc-offre__btn hc-offre__btn--secondary" data-hc-event="cta_pricing_project" data-hc-cta="pricing_project" data-hc-intent="outreach">{{ _("Discuter de mon projet") }}</a>
+          </div>
+        </article>
       </div>
 
-      <article class="hc-offre__coordination">
-        <div>
-          <div class="hc-offre__card-label">{{ _("Coordination") }}</div>
-          <h3>{{ _("Coordination entre structures") }}</h3>
-          <p class="hc-offre__buyer">{{ _("Sur devis") }}</p>
-          <p>{{ _("Vous souhaitez coordonner plusieurs organisations ? Définissons ensemble les structures participantes, les utilisateurs concernés et l’accompagnement nécessaire.") }}</p>
-        </div>
-        <a href="{{ url_for('main.contact') }}" class="hc-offre__btn hc-offre__btn--secondary" data-hc-event="cta_pricing_project" data-hc-cta="pricing_project" data-hc-intent="outreach">{{ _("Discuter de mon projet") }}</a>
-      </article>
-
       <div class="hc-offre__notes" aria-label="{{ _("Précisions sur les offres") }}">
-        <p>{{ _("Une démonstration gratuite pour découvrir la plateforme. Un pilote accompagné pour l’évaluer dans votre contexte.") }}</p>
+        <p>{{ _("Une démonstration pour découvrir la plateforme et cadrer le bon périmètre de coordination.") }}</p>
         <p>{{ _("Les migrations de données, développements spécifiques et formations complémentaires font l’objet d’un accord séparé.") }}</p>
         <p>{{ _("Le périmètre et les conditions applicables sont précisés dans la proposition commerciale avant tout engagement.") }}</p>
       </div>

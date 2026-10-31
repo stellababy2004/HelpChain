@@ -640,7 +640,9 @@ body.hc-page-offre .hc-offre__card.hc-offre__card--featured {
 }
 
 body.hc-page-tarifs .hc-offre__grid--offers {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 1.35rem;
 }
 
 body.hc-page-tarifs .hc-offre__hero {
@@ -649,11 +651,36 @@ body.hc-page-tarifs .hc-offre__hero {
 
 body.hc-page-tarifs .hc-offre__hero-copy {
   max-width: 920px;
-  padding: clamp(2rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3.5rem);
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 4vw, 3.5rem);
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
+}
+
+body.hc-page-tarifs .hc-offre__hero-copy h1 {
+  max-width: 18ch;
+  margin: 0.85rem 0 0.9rem;
+  font-size: clamp(2.2rem, 3.3vw, 3rem);
+  line-height: 1.04;
+}
+
+body.hc-page-tarifs .hc-offre > .hc-offre__section:first-child {
+  padding-bottom: clamp(1rem, 2vw, 1.5rem);
+}
+
+body.hc-page-tarifs .hc-offre > .hc-offre__section:nth-child(2) {
+  padding-top: clamp(1rem, 2vw, 1.5rem);
+}
+
+body.hc-page-tarifs .hc-offre__card {
+  display: flex;
+  flex-direction: column;
+}
+
+body.hc-page-tarifs .hc-offre__card-cta {
+  margin-top: auto;
+  padding-top: 1.25rem;
 }
 
 body.hc-page-tarifs .hc-offre__coordination {
@@ -714,5 +741,11 @@ body.hc-page-tarifs .hc-offre__notes p {
 
   body.hc-page-tarifs .hc-offre__coordination .hc-offre__btn {
     width: 100%;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1050px) {
+  body.hc-page-tarifs .hc-offre__grid--offers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
