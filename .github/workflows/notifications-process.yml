@@ -23,6 +23,7 @@ jobs:
       MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
       MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
       MAIL_DEFAULT_SENDER: ${{ secrets.MAIL_DEFAULT_SENDER }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       MFA_ENABLED: ${{ secrets.MFA_ENABLED }}
       TRUST_PROXY_HEADERS: ${{ secrets.TRUST_PROXY_HEADERS }}
 
