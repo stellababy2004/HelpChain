@@ -9678,6 +9678,124 @@ def admin_sla_breakdown():
     )
 
 
+def _pilotage_quality_reason_label(reason: str) -> str:
+    """Return a French UI label without changing the canonical signal reason."""
+    labels = {
+        "No operational owner is assigned": "Aucun responsable opérationnel n’est assigné",
+        "An existing HelpChain SLA/deadline is overdue": "Une échéance ou un SLA HelpChain existant est dépassé",
+        "No recent activity and no operational owner": "Aucune activité récente et aucun responsable opérationnel",
+    }
+    if reason in labels:
+        return labels[reason]
+    match = re.fullmatch(r"No meaningful activity for at least (\d+) hours", reason or "")
+    if match:
+        return f"Aucune activité significative depuis au moins {match.group(1)} heures"
+    return reason
+
+
+def _build_pilotage_required_actions(quality_signal_items, *, priority_items=()):
+    """Build a read-only, permission-scoped action summary for pilotage."""
+    actions = []
+    actor = resolve_current_admin_actor()
+
+    if actor.has_founder_global_access and _table_exists("organization_access_requests"):
+        access_rows = (
+            OrganizationAccessRequest.query.filter(
+                func.lower(func.coalesce(OrganizationAccessRequest.status, "new")).in_(
+                    ("new", "pending", "review")
+                )
+            )
+            .order_by(OrganizationAccessRequest.created_at.asc())
+            .limit(5)
+            .all()
+        )
+        for row in access_rows:
+            actions.append(
+                {
+                    "kind": "organization_request",
+                    "priority": "high",
+                    "reason": "Demande d’accès organisation à examiner",
+                    "label": row.organization_name or f"Demande #{row.id}",
+                    "url": url_for(
+                        "admin.admin_organization_access_request_detail",
+                        req_id=row.id,
+                    ),
+                }
+            )
+
+    if actor.role == "admin" and actor.structure_id is not None:
+        try:
+            invitation_rows = (
+                AdminUserInvitation.query.filter(
+                    AdminUserInvitation.structure_id == actor.structure_id,
+                    AdminUserInvitation.accepted_at.is_(None),
+                    AdminUserInvitation.revoked_at.is_(None),
+                    AdminUserInvitation.expires_at > utc_now(),
+                )
+                .order_by(AdminUserInvitation.created_at.asc())
+                .limit(5)
+                .all()
+            )
+        except Exception:
+            invitation_rows = []
+        for invitation in invitation_rows:
+            actions.append(
+                {
+                    "kind": "team_invitation",
+                    "priority": "medium",
+                    "reason": "Invitation d’équipe encore en attente",
+                    "label": invitation.email,
+                    "url": url_for("admin.admin_team"),
+                }
+            )
+
+    try:
+        failed_jobs = (
+            _scoped_notification_jobs_query()
+            .filter(NotificationJob.status.in_(("failed", "dead_letter")))
+            .order_by(NotificationJob.created_at.asc())
+            .limit(5)
+            .all()
+        )
+    except Exception:
+        failed_jobs = []
+    for job in failed_jobs:
+        actions.append(
+            {
+                "kind": "notification",
+                "priority": "high",
+                "reason": "Notification en échec nécessitant un diagnostic",
+                "label": job.subject or job.channel or f"Notification #{job.id}",
+                "url": url_for("admin.admin_notifications_list", status="failed"),
+            }
+        )
+
+    priority_request_ids = {
+        item.get("id") for item in priority_items if item.get("id") is not None
+    }
+    for item in quality_signal_items:
+        if item.get("level") != "high_attention":
+            continue
+        if item.get("id") in priority_request_ids:
+            continue
+        reasons = item.get("reasons") or []
+        actions.append(
+            {
+                "kind": "quality_signal",
+                "priority": "critical",
+                "reason": ". ".join(
+                    _pilotage_quality_reason_label(reason) for reason in reasons
+                ) or "Quality Signal critique",
+                "label": item.get("title") or f"Demande #{item.get('id')}",
+                "url": url_for("admin.admin_request_details", req_id=item["id"]),
+            }
+        )
+
+    priority_rank = {"critical": 0, "high": 1, "medium": 2}
+    actions.sort(key=lambda item: (priority_rank.get(item["priority"], 9), item["label"]))
+    return actions[:12]
+
+
 @admin_bp.get("/pilotage")
 @admin_required
 @admin_role_required("readonly", "ops", "superadmin", "admin")
@@ -9697,6 +9815,7 @@ def admin_pilotage():
             not_seen_72h_count=pilotage.get("not_seen_72h_count", 0),
             quality_signal_counts=pilotage.get("quality_signal_counts", {}),
             quality_signal_items=pilotage.get("quality_signal_items", []),
+            required_actions=[],
             critical_no_owner_count=pilotage.get("critical_without_owner_count", 0),
             critical_without_owner_count=pilotage.get("critical_without_owner_count", 0),
             assign_immediately_count=pilotage.get("assign_immediately_count", 0),
@@ -9945,6 +10064,21 @@ def admin_pilotage():
         )
     )
     priority_items = priority_items[:5]
+    priority_request_ids = {
+        item.get("id") for item in priority_items if item.get("id") is not None
+    }
+    quality_signal_items_display = [
+        item
+        for item in quality_signal_items
+        if not (
+            item.get("level") == "high_attention"
+            and item.get("id") in priority_request_ids
+        )
+    ]
+    required_actions = _build_pilotage_required_actions(
+        quality_signal_items,
+        priority_items=priority_items,
+    )
 
     now = datetime.now(UTC).replace(tzinfo=None)
     day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -10065,7 +10199,8 @@ def admin_pilotage():
         no_owner_count=no_owner_count,
         not_seen_72h_count=not_seen_72h_count,
         quality_signal_counts=quality_signal_counts,
-        quality_signal_items=quality_signal_items,
+        quality_signal_items=quality_signal_items_display,
+        required_actions=required_actions,
         critical_no_owner_count=critical_no_owner_count,
         critical_without_owner_count=critical_no_owner_count,
         assign_immediately_count=assign_immediately_count,

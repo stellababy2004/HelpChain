@@ -98,6 +98,40 @@
     </div>
   </section>
 
+  <section class="hc-pilotage-card mb-3" aria-labelledby="required-actions-title">
+      <div class="hc-pilotage-sectionhead">
+        <div>
+          <div class="hc-pilotage-sectionhead__kicker">Actions requises</div>
+          <h3 id="required-actions-title">Interventions nécessitant votre attention</h3>
+        </div>
+        <div class="hc-pilotage-sectionhead__text">Lecture seule · liens vers les écrans autorisés</div>
+      </div>
+      {% if required_actions %}
+        <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr><th>Priorité</th><th>Signal</th><th>Raison</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for action in required_actions %}
+              <tr>
+                <td><span class="hc-row-bucket {% if action.priority == 'critical' %}hc-row-bucket--critical{% elif action.priority == 'high' %}hc-row-bucket--warning{% else %}hc-row-bucket--active{% endif %}">{{ action.priority|capitalize }}</span></td>
+                <td>{{ action.label }}</td>
+                <td>{{ action.reason }}</td>
+                <td><a class="btn btn-outline-secondary btn-sm" href="{{ action.url }}">Ouvrir</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      {% else %}
+        <div class="hc-empty-state mt-3 py-3">
+          <div class="hc-empty-state__title">Aucune action requise</div>
+          <div class="hc-empty-state__text">Aucun signal nécessitant une intervention n’est actuellement détecté.</div>
+        </div>
+      {% endif %}
+    </section>
+
   <section class="hc-pilotage-card mb-3">
     <div class="hc-pilotage-sectionhead">
       <div>
