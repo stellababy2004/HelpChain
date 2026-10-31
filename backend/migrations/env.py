@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from logging.config import fileConfig
+import os
 
 from alembic import context
 from flask import current_app
@@ -62,9 +63,14 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         metadata = get_metadata()
-        # Compatibility for repositories where migration scripts are missing:
-        # ensure baseline tables exist for integration tests.
-        metadata.create_all(bind=connection)
+        # Do not create application tables implicitly during Alembic runs.
+        # Legacy/local callers may opt in explicitly, but strict migration
+        # tests and production deployments must rely on migration history.
+        allow_metadata_bootstrap = os.getenv(
+            "ALEMBIC_ALLOW_METADATA_CREATE_ALL", ""
+        ).strip().lower() in {"1", "true", "yes"}
+        if allow_metadata_bootstrap:
+            metadata.create_all(bind=connection)
         context.configure(
             connection=connection,
             target_metadata=metadata,

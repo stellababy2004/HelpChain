@@ -723,15 +723,22 @@ def create_app(config_object=None) -> Flask:
     from backend.system_guard import ensure_default_structure
     from backend.system_checks import check_database_integrity
 
+    migration_mode = os.getenv("HC_MIGRATION_MODE", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     with app.app_context():
         maybe_self_heal_local_sqlite(app, db)
 
         if (
             not app.config.get("TESTING", False)
+            and not migration_mode
             and app.config.get("HC_AUTO_HEAL_DEFAULT_STRUCTURE", True)
         ):
             ensure_default_structure()
-        if not app.config.get("TESTING", False):
+        if not app.config.get("TESTING", False) and not migration_mode:
             check_database_integrity()
 
     # Mail (Flask-Mail): used by backend.tasks.send_email_task via backend.mail_service
