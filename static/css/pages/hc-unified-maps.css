@@ -338,6 +338,112 @@ body.hc-admin-professionals-map-page .hc-risk-map-popup__item span {
   }
 }
 
+/* Shared contract for the three primary map pages.
+   Page-specific classes remain responsible for data-specific accents. */
+.hc-map-page.hc-map-unified {
+  --hc-map-unified-radius: 20px;
+  --hc-map-unified-line: rgba(154, 174, 198, 0.72);
+  --hc-map-unified-shadow: 0 16px 34px rgba(13, 31, 51, 0.08);
+  --hc-map-unified-muted: rgba(15, 39, 64, 0.64);
+}
+
+.hc-map-page.hc-map-unified :where(
+  .hc-risk-map-toolbar-card,
+  .hc-admin-headerCard,
+  .hc-risk-map-card,
+  .hc-map-stage,
+  .hc-admin-table-shell
+) {
+  border: 1px solid var(--hc-map-unified-line);
+  border-radius: var(--hc-map-unified-radius);
+  box-shadow: var(--hc-map-unified-shadow);
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-toolbar-card, .hc-admin-headerCard) {
+  padding: 1rem;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-kpis, .hc-kpis) {
+  gap: 0.7rem;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-kpi, .hc-kpi) {
+  min-height: 7.2rem;
+  border: 1px solid var(--hc-map-unified-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 22px rgba(15, 39, 64, 0.045);
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-kpi__label, .hc-kpi__label) {
+  color: var(--hc-map-text);
+  font-size: 0.72rem;
+  font-weight: 760;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-kpi__hint, .hc-kpi__context, .hc-section-subtitle, .hc-muted) {
+  color: var(--hc-map-unified-muted);
+}
+
+.hc-map-page.hc-map-unified :where(.hc-map-stage, .hc-risk-map-card) {
+  overflow: hidden;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-map-surface, .hc-risk-map-shell, .hc-audience-mapFrame, .audience-map-shell) {
+  border-radius: var(--hc-map-unified-radius);
+}
+
+.hc-map-page.hc-map-unified :where(.hc-map-legend, .hc-risk-map-legend, .audience-map-legend) {
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 14px 28px rgba(9, 16, 29, 0.16);
+}
+
+.hc-map-page.hc-map-unified :where(.form-select, .form-control, .hc-command-toggle) {
+  border-color: var(--hc-map-unified-line);
+  border-radius: 9px;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-legend__item, .audience-data-tag, .audience-inline-tag, .badge) {
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-popup, .audience-map-popup, .leaflet-popup-content) {
+  color: var(--hc-map-text);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-actionstrip, .hc-map-action-bar) {
+  border-radius: 14px;
+  border-color: var(--hc-map-unified-line);
+}
+
+.hc-map-page.hc-map-unified :where(.hc-risk-map-actionstrip__actions .btn, .btn-sm) {
+  min-height: 2.1rem;
+  border-radius: 9px;
+  font-weight: 700;
+}
+
+.hc-map-page.hc-map-unified :where(.leaflet-popup-content-wrapper, .hc-audience-detailCard, .hc-audience-detailMetric) {
+  border: 1px solid var(--hc-map-unified-line);
+  border-radius: 14px;
+  box-shadow: 0 14px 30px rgba(15, 39, 64, 0.12);
+}
+
+@media (max-width: 991.98px) {
+  .hc-map-page.hc-map-unified :where(.hc-risk-map-toolbar-card, .hc-admin-headerCard, .hc-risk-map-card, .hc-map-stage) {
+    border-radius: 16px;
+  }
+
+  .hc-map-page.hc-map-unified :where(.hc-risk-map-kpi, .hc-kpi) {
+    min-height: 6.4rem;
+  }
+}
+
 /* Operational Cohesion Layer V2
    Shared spatial rhythm and HUD language for all territorial map layers. */
 .hc-map-page {
