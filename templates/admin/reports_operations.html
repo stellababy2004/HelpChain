@@ -227,9 +227,10 @@
     <div class="hc-report-disclosure__body">
       <div class="hc-report-trend-grid">
         <article class="hc-card hc-card-pad hc-report-trend">
-          <div class="hc-report-trend__label">Situations ouvertes</div>
+          <div class="hc-report-trend__label">Situations actuellement ouvertes</div>
           <div class="hc-report-trend__value">{{ report.trends.open_requests.current }}</div>
           <div class="hc-report-trend__delta hc-report-trend__delta--{{ report.trends.open_requests.semantic }}">{{ report.trends.open_requests.label }}</div>
+          <div class="hc-muted small">Ensemble des situations encore ouvertes à la date du rapport, quelle que soit leur date de création.</div>
           <div class="hc-muted small">{{ report.trends.open_requests.previous }} sur la période précédente</div>
         </article>
 
@@ -242,7 +243,7 @@
 
         <article class="hc-card hc-card-pad hc-report-trend">
           <div class="hc-report-trend__label">Temps moyen de résolution</div>
-          <div class="hc-report-trend__value">{{ report.trends.avg_resolution_hours.current }}h</div>
+          <div class="hc-report-trend__value">{{ report.trends.avg_resolution_hours.current ~ 'h' if report.trends.avg_resolution_hours.current is not none else 'Non disponible' }}</div>
           <div class="hc-report-trend__delta hc-report-trend__delta--{{ report.trends.avg_resolution_hours.semantic }}">{{ report.trends.avg_resolution_hours.label }}</div>
           <div class="hc-muted small">{{ report.trends.avg_resolution_hours.previous }}h sur la période précédente</div>
         </article>
@@ -258,7 +259,7 @@
       <div class="row g-3 mt-1">
         <div class="col-lg-6">
           <article class="hc-card hc-card-pad h-100">
-            <div class="hc-muted small">Nouvelles demandes</div>
+            <div class="hc-muted small">Nouvelles demandes sur la période</div>
             <div class="d-flex justify-content-between align-items-end gap-2">
               <div class="hc-kpi__value">{{ report.trends.new_requests.current }}</div>
               <span class="hc-report-badge hc-report-badge--{{ 'stable' if report.trends.new_requests.semantic == 'neutral' else 'moderate' if report.trends.new_requests.semantic == 'positive' else 'high' }}">
@@ -266,6 +267,7 @@
               </span>
             </div>
             <div class="hc-muted small mt-1">Période précédente : {{ report.trends.new_requests.previous }}</div>
+            <div class="hc-muted small mt-1">Demandes créées pendant la période sélectionnée.</div>
             <svg viewBox="0 0 220 52" role="img" aria-label="Évolution des demandes créées" class="w-100 mt-3 hc-report-sparkline hc-report-sparkline--pressure" height="52">
               <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                 points="{{ report.timeline_charts.created }}" />
@@ -491,8 +493,8 @@
     <summary>
       <div>
         <div class="hc-admin-kicker mb-1">Situations incluses</div>
-        <h2 class="hc-section-title mb-1">Demandes du rapport</h2>
-        <p class="hc-muted mb-0">Liste des demandes incluses dans la période sélectionnée.</p>
+        <h2 class="hc-section-title mb-1">Détail des demandes créées sur la période</h2>
+        <p class="hc-muted mb-0">Ce tableau présente les demandes créées pendant la période sélectionnée. Il ne représente pas nécessairement toutes les situations actuellement ouvertes.</p>
       </div>
       <span class="badge rounded-pill text-bg-light border">{{ report['items']|length }} éléments</span>
     </summary>

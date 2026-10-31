@@ -15925,7 +15925,7 @@ def _build_operational_report_pdf_response(report: dict):
     from reportlab.lib.units import mm
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     def _register_pdf_font(font_name: str, candidates: list[str]) -> str:
         for candidate in candidates:
@@ -16036,6 +16036,7 @@ def _build_operational_report_pdf_response(report: dict):
         leading=16,
         textColor=colors.HexColor("#10243d"),
         spaceAfter=6,
+        keepWithNext=1,
     ))
     styles.add(ParagraphStyle(
         name="OpsKicker",
@@ -16045,6 +16046,7 @@ def _build_operational_report_pdf_response(report: dict):
         leading=10,
         textColor=colors.HexColor("#60748d"),
         spaceAfter=3,
+        keepWithNext=1,
     ))
     styles.add(ParagraphStyle(
         name="OpsBody",
@@ -16136,6 +16138,13 @@ def _build_operational_report_pdf_response(report: dict):
     story.append(Paragraph("Synthèse exécutive", styles["OpsSection"]))
     story.append(Paragraph(_pdf_text(report["executive_summary"]), styles["OpsBody"]))
     story.append(Paragraph(
+        _pdf_text(
+            f"Nouvelles demandes sur la période : {report['requests'].get('new', 0)}. "
+            "Demandes créées pendant la période sélectionnée."
+        ),
+        styles["OpsMeta"],
+    ))
+    story.append(Paragraph(
         f"Niveau: {_pdf_esc(_ops_report_clean_text(report['operational_severity']['label']))} - {_pdf_esc(_ops_report_clean_text(report['operational_severity']['message']))}",
         styles["OpsMeta"],
     ))
@@ -16172,7 +16181,7 @@ def _build_operational_report_pdf_response(report: dict):
         ))
         story.append(Spacer(1, 2 * mm))
 
-    story.append(Spacer(1, 4 * mm))
+    story.append(PageBreak())
     story.append(Paragraph("PRESSION TERRITORIALE", styles["OpsKicker"]))
     story.append(Paragraph("Zones sous tension", styles["OpsSection"]))
     story.append(Paragraph(_pdf_text(report["territorial_pressure"]["summary"]), styles["OpsBody"]))
@@ -16256,7 +16265,14 @@ def _build_operational_report_pdf_response(report: dict):
     ))
 
     story.append(Spacer(1, 5 * mm))
-    story.append(Paragraph("Situations incluses dans le rapport", styles["OpsSection"]))
+    story.append(Paragraph("Détail des demandes créées sur la période", styles["OpsSection"]))
+    story.append(Paragraph(
+        _pdf_text(
+            "Ce tableau présente les demandes créées pendant la période sélectionnée. "
+            "Il ne représente pas nécessairement toutes les situations actuellement ouvertes."
+        ),
+        styles["OpsMeta"],
+    ))
 
     rows = [["ID", "Titre", "Ville", "Statut", "Priorité", "Créée le"]]
     for item in report["items"][:80]:
@@ -16445,8 +16461,15 @@ def _ops_report_labelize(value, mapping: dict[str, str]) -> str:
 
 
 def _ops_report_clean_text(value: str) -> str:
+    text = str(value or "")
+    try:
+        repaired = text.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        repaired = text
+    if "�" not in repaired and repaired != text:
+        text = repaired
     return (
-        str(value or "")
+        text
         .replace(" a ", " à ")
         .replace("Aucune evolution", "Aucune évolution")
         .replace("Analyse automatique", "Analyse automatique")

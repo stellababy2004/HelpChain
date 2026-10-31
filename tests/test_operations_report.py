@@ -232,7 +232,75 @@ def test_report_ignores_negative_or_invalid_resolution_durations(app, db_session
     with app.app_context():
         report = build_operational_report(days=30)
 
-    assert report["sla"]["avg_resolution_hours"] >= 0
+    assert report["sla"]["avg_resolution_hours"] is None
+
+
+def test_operations_report_resolution_average_uses_resolution_period(app, db_schema):
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=UTC)
+
+    with app.app_context():
+        structure = _make_structure("Resolution Period")
+        _make_request(
+            structure_id=structure.id,
+            title="resolved in period",
+            status="done",
+            created_at=now - timedelta(days=2),
+            completed_at=now - timedelta(days=1),
+        )
+        _make_request(
+            structure_id=structure.id,
+            title="resolved outside period",
+            status="done",
+            created_at=now - timedelta(days=40),
+            completed_at=now - timedelta(days=30),
+        )
+
+        report = build_operational_report(structure_id=structure.id, days=7, now=now)
+
+        assert report["requests"]["resolved"] == 1
+        assert report["sla"]["avg_resolution_hours"] == 24.0
+
+
+def test_operations_report_snapshot_marks_missing_resolution_average_unavailable(app, db_schema):
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=UTC)
+
+    with app.app_context():
+        structure = _make_structure("No Resolution")
+        _make_request(
+            structure_id=structure.id,
+            title="open only",
+            status="open",
+            created_at=now - timedelta(days=1),
+        )
+
+        report = build_operational_report(structure_id=structure.id, days=7, now=now)
+
+        assert report["sla"]["avg_resolution_hours"] is None
+        resolution_card = next(
+            item for item in report["executive_snapshot"]
+            if item["key"] == "avg_resolution_hours"
+        )
+        assert resolution_card["value"] == "Non disponible"
+
+
+def test_operations_report_labels_stock_and_period_activity(app, db_schema):
+    now = datetime(2026, 5, 17, 12, 0, tzinfo=UTC)
+
+    with app.app_context():
+        structure = _make_structure("Indicator Labels")
+        _make_request(
+            structure_id=structure.id,
+            title="period request",
+            status="open",
+            created_at=now - timedelta(days=1),
+        )
+
+        report = build_operational_report(structure_id=structure.id, days=7, now=now)
+
+        open_card = next(item for item in report["executive_snapshot"] if item["key"] == "open_requests")
+        assert open_card["label"] == "Situations actuellement ouvertes"
+        assert "quelle que soit leur date de création" in open_card["summary"]
+        assert report["requests"]["new"] == 1
 
 
 def test_operations_report_priority_actions_and_territorial_pressure(app, db_schema):

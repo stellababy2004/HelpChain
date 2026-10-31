@@ -132,7 +132,7 @@ def _duration_hours(start: datetime | None, end: datetime | None) -> float | Non
     return seconds / 3600.0
 
 
-def _avg_duration_hours(rows, start_attr: str, end_attr: str) -> float:
+def _avg_duration_hours(rows, start_attr: str, end_attr: str) -> float | None:
     values = []
     for row in rows:
         value = _duration_hours(
@@ -143,7 +143,7 @@ def _avg_duration_hours(rows, start_attr: str, end_attr: str) -> float:
             values.append(value)
 
     if not values:
-        return 0.0
+        return None
 
     return round(sum(values) / len(values), 2)
 
@@ -523,8 +523,10 @@ def _build_snapshot_metric(
     is_hours: bool = False,
     precision: int = 0,
 ) -> dict:
-    if is_hours:
-        display_value = f"{float(current_value or 0):.{precision}f}h"
+    if current_value is None:
+        display_value = "Non disponible"
+    elif is_hours:
+        display_value = f"{float(current_value):.{precision}f}h"
     elif unit:
         display_value = f"{float(current_value or 0):.{precision}f}{unit}"
     elif precision > 0:
@@ -849,6 +851,15 @@ def _build_executive_summary(metrics):
         else "Le taux d'assignation nécessite une attention opérationnelle."
     )
 
+    if metrics.get("avg_resolution_hours") is None:
+        return (
+            f"Le pilotage montre une {activity_label} avec "
+            f"{open_requests} situations ouvertes, dont {unassigned} non assignees. "
+            "La periode presente aucune resolution valide sur la periode "
+            "(moyenne: Non disponible). "
+            f"{stale} situations necessitent une relance. {assignment_label}"
+        )
+
     return (
         f"Le pilotage montre une {activity_label} avec "
         f"{open_requests} situations ouvertes, dont {unassigned} non assignées. "
@@ -1134,12 +1145,13 @@ def _build_operational_conclusion(metrics: dict, recommendations: list[dict], te
 
     open_requests = int(metrics.get("open_requests", 0) or 0)
     avg_resolution = float(metrics.get("avg_resolution_hours", 0.0) or 0.0)
+    resolution_text = "Non disponible" if metrics.get("avg_resolution_hours") is None else f"{avg_resolution:.1f}h"
     unassigned = int(metrics.get("unassigned_requests", 0) or 0)
 
     summary = (
         f"La structure presente actuellement {open_requests} situation(s) ouvertes "
         f"avec un niveau de stabilite {_stability_label(stability_key).lower()}. "
-        f"Le delai moyen de resolution s'etablit a {avg_resolution:.1f}h et "
+        f"Le delai moyen de resolution s'etablit a {resolution_text} et "
         f"{unassigned} situation(s) demeurent sans assignation."
     )
 
@@ -1224,7 +1236,12 @@ def build_operational_report(
     )
 
     avg_assignment_hours = _avg_duration_hours(assignment_rows, "created_at", "owned_at")
-    avg_resolution_hours = _avg_duration_hours(resolved_rows, "created_at", "completed_at")
+    resolved_period_rows = (
+        resolved_base.filter(Request.completed_at >= period.start, Request.completed_at <= period.end)
+        .filter(Request.created_at.isnot(None))
+        .all()
+    )
+    avg_resolution_hours = _avg_duration_hours(resolved_period_rows, "created_at", "completed_at")
 
     assignment_rate = 0.0
     if open_count > 0:
@@ -1415,11 +1432,11 @@ def build_operational_report(
     executive_snapshot = [
         _build_snapshot_metric(
             key="open_requests",
-            label="Situations ouvertes",
+            label="Situations actuellement ouvertes",
             current_value=open_count,
             previous_value=previous_open_count,
             severity="critical" if open_count >= 25 else "high" if open_count >= 12 else "moderate" if open_count >= 6 else "stable",
-            summary="Volume actuellement en suivi actif.",
+            summary="Ensemble des situations encore ouvertes à la date du rapport, quelle que soit leur date de création.",
         ),
         _build_snapshot_metric(
             key="unassigned_requests",
@@ -1442,7 +1459,7 @@ def build_operational_report(
             label="Temps moyen de resolution",
             current_value=avg_resolution_hours,
             previous_value=previous_avg_resolution_hours,
-            severity="critical" if avg_resolution_hours >= 96 else "high" if avg_resolution_hours >= 72 else "moderate" if avg_resolution_hours >= 36 else "stable",
+            severity="stable" if avg_resolution_hours is None else "critical" if avg_resolution_hours >= 96 else "high" if avg_resolution_hours >= 72 else "moderate" if avg_resolution_hours >= 36 else "stable",
             summary="Delai moyen observe sur les sorties de file.",
             is_hours=True,
             precision=1,
