@@ -29,6 +29,7 @@
     {% set is_referrals_active = current_path.startswith('/admin/referrals') or (current_path.startswith('/admin/requests') and current_path.endswith('/refer')) %}
     {% set is_leads_active = current_path.startswith('/admin/professional-leads') %}
     {% set admin_role = (current_user.role or '')|lower %}
+    {% set can_access_reports = admin_role in ('admin', 'ops', 'readonly', 'read-only', 'superadmin', 'super_admin', 'super-admin') %}
     {% set can_access_professional_leads = adaptive_global_admin %}
     {% set can_access_global_analytics = adaptive_global_admin %}
     {% set is_revenue_active = current_path.startswith('/admin/revenue') %}
@@ -94,7 +95,7 @@
                 {% if adaptive_global_admin or adaptive_module_enabled('pilotage') %}
                   <a class="hc-admin-shellnav__link {{ 'is-active' if is_pilotage_dashboard_active else '' }}" href="{{ url_for('admin.admin_pilotage') }}" {% if is_pilotage_dashboard_active %}aria-current="page"{% endif %}>{{ _('Pilotage opérationnel') }}</a>
                 {% endif %}
-                {% if adaptive_global_admin or adaptive_module_enabled('reports') %}
+                {% if can_access_reports %}
                   <a class="hc-admin-shellnav__link {{ 'is-active' if is_reports_active else '' }}" href="{{ url_for('admin.admin_operations_report') }}" {% if is_reports_active %}aria-current="page"{% endif %}>{{ _('Rapports') }}</a>
                 {% endif %}
                 {% if can_access_global_analytics %}

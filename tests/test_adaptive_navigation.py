@@ -69,12 +69,29 @@ def test_navigation_uses_adaptive_guards():
         "referrals",
         "notifications",
         "pilotage",
-        "reports",
         "connectors",
         "security",
         "platform",
     ):
         assert f"adaptive_module_enabled('{module}')" in source
+
+
+def test_reports_navigation_matches_report_route_roles_even_when_module_is_inactive():
+    source = TEMPLATE.read_text(encoding="utf-8")
+
+    assert "can_access_reports = admin_role in" in source
+    for role in ("admin", "ops", "readonly", "read-only", "superadmin"):
+        assert f"'{role}'" in source
+    assert "{% if can_access_reports %}" in source
+    assert "url_for('admin.admin_operations_report')" in source
+
+
+def test_reports_navigation_does_not_grant_access_to_unlisted_roles():
+    source = TEMPLATE.read_text(encoding="utf-8")
+
+    reports_guard = source[source.index("can_access_reports ="):source.index("can_access_professional_leads")]
+    assert "structure_admin" not in reports_guard
+    assert "member" not in reports_guard
 
 
 def test_founder_tools_remain_global_only():
