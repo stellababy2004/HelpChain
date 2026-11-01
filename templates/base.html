@@ -9,10 +9,10 @@
     <meta name="description" content="{% block meta_description %}{{ _('HelpChain est une plateforme de coordination opérationnelle conçue comme une infrastructure de continuité opérationnelle pour les organisations.') }}{% endblock %}">
     <meta name="robots" content="index,follow">
     <meta name="application-name" content="HelpChain">
-    <meta name="author" content="HelpChain">
+    <meta name="author" content="HelpChain Live">
     <meta name="apple-mobile-web-app-title" content="HelpChain">
 
-    <meta property="og:site_name" content="HelpChain">
+    <meta property="og:site_name" content="HelpChain Live">
     <meta property="og:title" content="{% block og_title %}{{ self.title()|striptags|trim }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ self.meta_description()|striptags|trim }}{% endblock %}">
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
@@ -81,6 +81,8 @@
     <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image()|striptags|trim }}{% endblock %}">
     <meta name="twitter:image:alt" content="{% block twitter_image_alt %}{{ self.og_image_alt()|striptags|trim }}{% endblock %}">
 
+    <link rel="icon" type="image/png" sizes="48x48" href="{{ url_for('static', filename='icons/helpchain-logo-48.png') }}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{{ url_for('static', filename='icons/helpchain-logo-512.png') }}">
     <link rel="icon" href="{{ url_for('static', filename='icons/helpchain-logo.ico') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='icons/helpchain-logo-32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='icons/helpchain-logo-16.png') }}">

@@ -85,10 +85,9 @@ def test_public_pages_have_semantic_seo_basics(client, app):
             "@type": "Place",
             "name": "Boulogne-Billancourt, Paris Region, France",
         }, path
-        assert 'rel="icon" href="/static/icons/helpchain-logo.ico"' in html, path
         assert (
-            'rel="icon" type="image/png" sizes="32x32" '
-            'href="/static/icons/helpchain-logo-32.png"'
+            'rel="icon" type="image/png" sizes="48x48" '
+            'href="/static/icons/helpchain-logo-48.png"'
         ) in html, path
         manifest = json.loads(client.get("/static/manifest.json").get_data(as_text=True))
         assert [icon["src"] for icon in manifest["icons"]] == [

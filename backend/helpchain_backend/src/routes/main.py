@@ -256,7 +256,7 @@ def _public_structured_data() -> list[dict[str, object]]:
         "@context": "https://schema.org",
         "@type": "Organization",
         "@id": organization_id,
-        "name": "HelpChain",
+        "name": "HelpChain Live",
         "url": homepage_url,
         "logo": url_for("static", filename="icons/helpchain-logo-512.png", _external=True),
         "description": _(
@@ -275,7 +275,7 @@ def _public_structured_data() -> list[dict[str, object]]:
         "@type": "WebSite",
         "@id": website_id,
         "url": homepage_url,
-        "name": "HelpChain",
+        "name": "HelpChain Live",
         "inLanguage": locale_code,
         "publisher": {"@id": organization_id},
         "about": {"@id": software_id},
