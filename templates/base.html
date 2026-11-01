@@ -1307,6 +1307,9 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if mobile_ep.startswith('main.volunteer_login') else '' }}" href="{{ url_for('main.volunteer_login') }}" {% if mobile_ep.startswith('main.volunteer_login') %}aria-current="page"{% endif %}>{{ _('Connexion') }}</a>
           </li>
+          <li class="hc-mobile-nav__item" id="hcMobileInstallItem" hidden>
+            <a href="#hcInstallPrompt" data-hc-install-link="1">{{ _('Installer HelpChain') }}</a>
+          </li>
           <li class="hc-mobile-nav__item hc-mobile-nav__item--cta">
             <a class="hc-public-nav-demo-cta" href="/demo">{{ _('Accès pilote') }}</a>
           </li>
@@ -1969,6 +1972,8 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
                 aria-controls="hcA11yDrawer"
               >{{ _('Accessibilité') }}</a>
               {% endif %}
+              <span class="hc-footer__meta-dot" id="hcFooterInstallSeparator" hidden aria-hidden="true">·</span>
+              <a class="hc-footer__link" id="hcFooterInstallLink" href="#hcInstallPrompt" data-hc-install-link="1" hidden>{{ _('Installer HelpChain') }}</a>
             </nav>
           </div>
         </div>
@@ -1988,7 +1993,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
       </div>
       <div class="hc-install-prompt__copy">
         <strong id="hcInstallTitle">{{ _('Installer HelpChain') }}</strong>
-        <span id="hcInstallText">{{ _('Ouvrez HelpChain plus rapidement comme une application, sans rechercher le site à chaque fois.') }}</span>
+        <span id="hcInstallText" data-ios-message="{{ _('Dans Safari, utilisez Partager puis Ajouter à l’écran d’accueil pour installer HelpChain.') }}">{{ _('Ouvrez HelpChain plus rapidement comme une application, sans rechercher le site à chaque fois.') }}</span>
       </div>
       <button type="button" class="hc-install-prompt__action" id="hcInstallAction">{{ _('Installer') }}</button>
     </aside>
@@ -2027,49 +2032,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
     <script src="{{ url_for('static', filename='js/admin-top-nav.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/lead-capture.js') }}?v=5" defer></script>
     <script src="{{ url_for('static', filename='js/hc-server-indicator.js') }}" defer></script>
-    <script>
-      (() => {
-        let deferredInstallPrompt = null;
-        const promptEl = document.getElementById("hcInstallPrompt");
-        const actionEl = document.getElementById("hcInstallAction");
-        const closeEl = document.getElementById("hcInstallClose");
-        const textEl = document.getElementById("hcInstallText");
-        const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-        const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
-        }
-
-        const closePrompt = () => {
-          if (promptEl) promptEl.hidden = true;
-        };
-
-        window.addEventListener("beforeinstallprompt", (event) => {
-          event.preventDefault();
-          deferredInstallPrompt = event;
-          if (promptEl && !standalone) promptEl.hidden = false;
-        });
-
-        if (isIos && !standalone && promptEl && textEl) {
-          window.setTimeout(() => {
-            textEl.textContent = "{{ _('Dans Safari, utilisez Partager puis Ajouter à l’écran d’accueil pour installer HelpChain.') }}";
-            promptEl.hidden = false;
-            if (actionEl) actionEl.textContent = "{{ _('Voir comment') }}";
-          }, 1200);
-        }
-
-        actionEl?.addEventListener("click", async () => {
-          if (!deferredInstallPrompt) return;
-          deferredInstallPrompt.prompt();
-          await deferredInstallPrompt.userChoice;
-          deferredInstallPrompt = null;
-          closePrompt();
-        });
-        closeEl?.addEventListener("click", closePrompt);
-        window.addEventListener("appinstalled", closePrompt);
-      })();
-    </script>
+    <script src="{{ url_for('static', filename='js/pwa-install-prompt.js') }}" defer></script>
     {% block scripts %}{% endblock %}
     {% if not minimal_page %}
     <script src="{{ url_for('static', filename='js/kpi.js') }}"></script>
