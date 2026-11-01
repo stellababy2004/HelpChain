@@ -2504,6 +2504,10 @@
         </div>
         <img
           class="hc-home-premium__shot-img hc-home-premium__shot-img--hero hc-home-premium__shot-img--public-ops"
+          data-hc-lightbox
+          role="button"
+          tabindex="0"
+          aria-label="{{ _('Agrandir le tableau de bord') }}"
           src="{{ url_for('static', filename='img/product/ops-workspace-home-horizontal-dpr2.png') }}?v=20261029-ops-home-horizontal-dpr2"
           alt="{{ _('Interface de pilotage HelpChain') }}"
           width="2640"
@@ -2513,7 +2517,11 @@
           fetchpriority="high"
         >
       </div>
-
+      <div class="hc-home-reporting-expand hc-home-hero-expand">
+        <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-hc-lightbox-open data-hc-lightbox-target=".hc-home-premium__shot-img--hero" aria-haspopup="dialog">
+          {{ _('Agrandir le tableau de bord') }}
+        </button>
+      </div>
     </aside>
   </div>
 </section>
@@ -2543,32 +2551,19 @@
     </p>
     <figure class="hc-home-reporting-preview">
       <img
+        data-hc-lightbox
         src="{{ url_for('static', filename='img/helpchain-reporting-demo-preview.png') }}"
         alt="Aperçu du rapport opérationnel HelpChain présentant une synthèse exécutive et des indicateurs de pilotage"
         loading="lazy"
         decoding="async"
       >
-      <figcaption>{{ _('Aperçu du rapport opérationnel — données de démonstration') }}</figcaption>
+      <figcaption>{{ _('Exemple de rapport — données fictives de démonstration, non actualisées') }}</figcaption>
     </figure>
     <div class="hc-home-reporting-expand">
-      <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-reporting-preview-open aria-haspopup="dialog">
+      <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-hc-lightbox-open data-hc-lightbox-target=".hc-home-reporting-preview img" aria-haspopup="dialog">
         {{ _('Agrandir le rapport') }}
       </button>
     </div>
-    <dialog id="hc-reporting-preview-dialog" class="hc-home-reporting-dialog" data-reporting-preview-dialog aria-labelledby="hc-reporting-dialog-title">
-      <div class="hc-home-reporting-dialog__head">
-        <h2 class="hc-home-reporting-dialog__title" id="hc-reporting-dialog-title">{{ _('Aperçu du rapport opérationnel') }}</h2>
-        <button class="hc-home-reporting-dialog__close" type="button" data-reporting-preview-close aria-label="{{ _('Fermer l’aperçu du rapport') }}">&times;</button>
-      </div>
-      <div class="hc-home-reporting-dialog__body">
-        <img
-          src="{{ url_for('static', filename='img/helpchain-reporting-demo-preview.png') }}"
-          alt="Aperçu complet du rapport opérationnel HelpChain, avec synthèse exécutive et indicateurs de pilotage"
-          loading="lazy"
-          decoding="async"
-        >
-      </div>
-    </dialog>
   </section>
 
 <section class="hc-home-premium__platform-showcase"
@@ -2970,5 +2965,4 @@
   </section>
 </main>
 <script src="{{ url_for('static', filename='js/home-mobile-nav.js') }}?v=20260729-1"></script>
-<script src="{{ url_for('static', filename='js/home-reporting-preview.js') }}" defer></script>
 {% endblock %}
