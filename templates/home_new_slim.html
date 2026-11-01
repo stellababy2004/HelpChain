@@ -11,6 +11,157 @@
 {% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home-premium-conversion.css') }}">
   <style>
+    body.hc-page-home .hc-home-premium__section-link a.hc-btn--primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0.78rem 1.28rem;
+      border: 1px solid rgba(8, 28, 49, 0.34) !important;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #12345a 0%, #0d2845 100%) !important;
+      color: #ffffff !important;
+      font-weight: 780;
+      text-decoration: none !important;
+      box-shadow: 0 12px 28px rgba(9, 30, 55, 0.15), 0 2px 6px rgba(9, 30, 55, 0.08);
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    body.hc-page-home .hc-home-premium__section-link a.hc-btn--primary:hover {
+      border-color: rgba(7, 25, 43, 0.42) !important;
+      background: linear-gradient(180deg, #153b66 0%, #0f2d4d 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 16px 34px rgba(9, 30, 55, 0.18), 0 4px 10px rgba(9, 30, 55, 0.1);
+      transform: translateY(-1px);
+    }
+
+    body.hc-page-home .hc-home-reporting-preview {
+      margin: 28px 0 0;
+      padding: 14px;
+      border: 1px solid rgba(203, 213, 225, 0.92);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+      position: relative;
+      overflow: hidden;
+      max-height: 550px;
+    }
+
+    body.hc-page-home .hc-home-reporting-preview img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+    }
+
+    body.hc-page-home .hc-home-reporting-preview::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      left: 14px;
+      height: 84px;
+      pointer-events: none;
+      border-radius: 0 0 14px 14px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.96));
+    }
+
+    body.hc-page-home .hc-home-reporting-preview figcaption {
+      margin: 12px 4px 0;
+      color: #5e728a;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    body.hc-page-home .hc-home-reporting-expand {
+      display: flex;
+      justify-content: center;
+      margin: 14px 0 0;
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog {
+      width: min(92vw, 1080px);
+      max-width: 1080px;
+      max-height: 92vh;
+      padding: 0;
+      border: 0;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog::backdrop {
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog.is-open {
+      display: block;
+      position: fixed;
+      top: 4vh;
+      left: 50%;
+      z-index: 1000;
+      transform: translateX(-50%);
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog__title {
+      margin: 0;
+      color: #0f2744;
+      font-size: 1rem;
+      font-weight: 760;
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog__close {
+      border: 0;
+      background: transparent;
+      color: #17395f;
+      cursor: pointer;
+      font-size: 1.5rem;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog__body {
+      max-height: calc(92vh - 58px);
+      overflow: auto;
+      padding: 14px;
+    }
+
+    body.hc-page-home .hc-home-reporting-dialog__body img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+    }
+
+    @media (max-width: 767.98px) {
+      body.hc-page-home .hc-home-reporting-preview {
+        max-height: 390px;
+        padding: 10px;
+        border-radius: 18px;
+      }
+
+      body.hc-page-home .hc-home-reporting-preview::after {
+        right: 10px;
+        bottom: 10px;
+        left: 10px;
+      }
+
+      body.hc-page-home .hc-home-reporting-dialog {
+        width: 94vw;
+        border-radius: 16px;
+      }
+    }
+
     body.hc-page-home {
       padding-top: 0 !important;
     }
@@ -2367,6 +2518,59 @@
   </div>
 </section>
 
+  <section id="hc-home-reporting" class="hc-home-premium__section hc-home-premium__section--product" aria-labelledby="hc-home-reporting-title">
+    <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
+      <p>{{ _('PILOTAGE OPÉRATIONNEL') }}</p>
+      <h2 id="hc-home-reporting-title">{{ _('Pilotez votre activité avec une vision claire') }}</h2>
+      <p>{{ _('Suivez vos demandes, identifiez les situations prioritaires et appuyez vos décisions sur des indicateurs opérationnels fiables.') }}</p>
+    </div>
+    <div class="hc-home-premium__platform-outcomes" aria-label="{{ _('Bénéfices des rapports opérationnels') }}">
+      <article>
+        <strong>{{ _('Visibilité opérationnelle') }}</strong>
+        <span>{{ _('Visualisez les demandes en cours, les affectations et les situations nécessitant une attention particulière.') }}</span>
+      </article>
+      <article>
+        <strong>{{ _('Anticipation des risques') }}</strong>
+        <span>{{ _('Repérez les retards de suivi, les situations critiques et les tensions de capacité.') }}</span>
+      </article>
+      <article>
+        <strong>{{ _('Rapports professionnels') }}</strong>
+        <span>{{ _('Consultez vos indicateurs et exportez vos rapports en PDF, Excel ou CSV.') }}</span>
+      </article>
+    </div>
+    <p class="hc-home-premium__section-link">
+      <a class="hc-btn hc-btn--primary btn btn-primary" href="{{ url_for('main.pour_les_structures') }}">{{ _('Découvrir le pilotage pour les structures') }} <span aria-hidden="true">→</span></a>
+    </p>
+    <figure class="hc-home-reporting-preview">
+      <img
+        src="{{ url_for('static', filename='img/helpchain-reporting-demo-preview.png') }}"
+        alt="Aperçu du rapport opérationnel HelpChain présentant une synthèse exécutive et des indicateurs de pilotage"
+        loading="lazy"
+        decoding="async"
+      >
+      <figcaption>{{ _('Aperçu du rapport opérationnel — données de démonstration') }}</figcaption>
+    </figure>
+    <div class="hc-home-reporting-expand">
+      <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-reporting-preview-open aria-haspopup="dialog">
+        {{ _('Agrandir le rapport') }}
+      </button>
+    </div>
+    <dialog id="hc-reporting-preview-dialog" class="hc-home-reporting-dialog" data-reporting-preview-dialog aria-labelledby="hc-reporting-dialog-title">
+      <div class="hc-home-reporting-dialog__head">
+        <h2 class="hc-home-reporting-dialog__title" id="hc-reporting-dialog-title">{{ _('Aperçu du rapport opérationnel') }}</h2>
+        <button class="hc-home-reporting-dialog__close" type="button" data-reporting-preview-close aria-label="{{ _('Fermer l’aperçu du rapport') }}">&times;</button>
+      </div>
+      <div class="hc-home-reporting-dialog__body">
+        <img
+          src="{{ url_for('static', filename='img/helpchain-reporting-demo-preview.png') }}"
+          alt="Aperçu complet du rapport opérationnel HelpChain, avec synthèse exécutive et indicateurs de pilotage"
+          loading="lazy"
+          decoding="async"
+        >
+      </div>
+    </dialog>
+  </section>
+
 <section class="hc-home-premium__platform-showcase"
          aria-labelledby="hc-platform-showcase-title">
   <div class="hc-home-premium__platform-showcaseHead">
@@ -2766,4 +2970,5 @@
   </section>
 </main>
 <script src="{{ url_for('static', filename='js/home-mobile-nav.js') }}?v=20260729-1"></script>
+<script src="{{ url_for('static', filename='js/home-reporting-preview.js') }}" defer></script>
 {% endblock %}
