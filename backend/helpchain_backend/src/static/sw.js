@@ -9,5 +9,11 @@ self.addEventListener("activate", (event) => {
 
 // Network-first: don't break the site if cache is empty
 self.addEventListener("fetch", (event) => {
-  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+  event.respondWith(
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then((cached) =>
+        cached || new Response("", { status: 503, statusText: "Offline" })
+      )
+    )
+  );
 });
