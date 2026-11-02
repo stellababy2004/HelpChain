@@ -26,12 +26,10 @@
     }
   }
 
-  if (isDismissed()) return;
-
   const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
 
-  function showCapture() {
-    if (isDismissed()) return;
+  function showCapture(force) {
+    if (!force && isDismissed()) return;
     if (document.querySelector(".hc-lead-capture")) return;
 
     const box = document.createElement("div");
@@ -111,7 +109,8 @@
           })
         });
 
-        if (!response.ok) throw new Error("Lead capture failed: " + response.status);
+        const result = await response.json().catch(function () { return {}; });
+        if (!response.ok || !result.ok) throw new Error("Lead capture failed: " + response.status);
 
         localStorage.setItem("hc_lead_email", email);
         persistDismissal();
@@ -124,12 +123,16 @@
           </div>
 
           <div class="hc-lead-capture__actions">
-            <a class="hc-lead-capture__primary" href="/contact">
+            <a class="hc-lead-capture__primary hc-btn hc-btn--primary" href="/contact#intake-form">
               Finaliser en 30 secondes
             </a>
           </div>
         `;
 
+        box.querySelector(".hc-lead-capture__title").textContent =
+          "Votre adresse e-mail a bien été enregistrée.";
+        box.querySelector(".hc-lead-capture__text").textContent =
+          "Vous pouvez maintenant préciser votre besoin pour préparer un échange adapté à votre organisation.";
         console.log("HC_LEAD_CAPTURED", email);
       } catch (error) {
         console.error("HC_LEAD_CAPTURE_API_FAILED", error);
@@ -146,7 +149,7 @@
     const trigger = event.target.closest('a[data-hc-intent="pilot"], a[href="/demo"]');
     if (!trigger) return;
     event.preventDefault();
-    showCapture();
+    showCapture(true);
   });
 
   // Make function globally available for debug/testing.

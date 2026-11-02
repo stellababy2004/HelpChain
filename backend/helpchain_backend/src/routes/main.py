@@ -5257,6 +5257,51 @@ def success_stories():
     return render_template("success_stories.html")
 
 
+@main_bp.post("/api/lead-capture")
+@csrf.exempt
+@limiter.limit("5 per hour", methods=["POST"])
+def lead_capture_api():
+    """Persist the explicit first-step email in the existing CRM lead table."""
+    payload = request.get_json(silent=True) or {}
+    email = (payload.get("email") or "").strip().lower()
+    if not email or len(email) > 255 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+        return jsonify({"ok": False, "error": "invalid_email"}), 400
+
+    if not _table_exists("professional_leads"):
+        current_app.logger.error("[LEAD-CAPTURE] professional_leads table missing")
+        return jsonify({"ok": False, "error": "service_unavailable"}), 503
+
+    try:
+        existing = (
+            ProfessionalLead.query.filter(func.lower(ProfessionalLead.email) == email)
+            .order_by(ProfessionalLead.id.desc())
+            .first()
+        )
+        if existing is None:
+            existing = ProfessionalLead(
+                email=email,
+                profession="lead_capture",
+                source="lead_capture",
+                status="new",
+                locale=((session.get("lang") or str(babel_get_locale() or "")).strip() or None),
+                ip=_client_ip(),
+                user_agent=((request.headers.get("User-Agent") or "")[:255] or None),
+                created_at=datetime.now(UTC),
+            )
+            db.session.add(existing)
+        else:
+            existing.source = existing.source or "lead_capture"
+            if not existing.status:
+                existing.status = "new"
+        db.session.commit()
+        session["lead_capture_email"] = email
+        return jsonify({"ok": True, "lead_id": existing.id}), 200
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("[LEAD-CAPTURE] save failed")
+        return jsonify({"ok": False, "error": "save_failed"}), 500
+
+
 @main_bp.route("/demo", methods=["GET", "POST"])
 @main_bp.route("/contact", methods=["GET", "POST"])
 def contact():
@@ -5266,11 +5311,12 @@ def contact():
     if request.method == "GET":
         _capture_inbound_lead_source()
         submitted = request.args.get("sent") == "1"
+        prefilled_email = "" if is_demo else (session.pop("lead_capture_email", "") or "")
         return render_template(
             "contact.html",
             submitted=submitted,
             is_demo=is_demo,
-            form_data={},
+            form_data={"email": prefilled_email},
             form_errors={},
             notification_failed=False,
             screened_acknowledged=False,
