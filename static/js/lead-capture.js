@@ -29,8 +29,6 @@
   if (isDismissed()) return;
 
   const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
-  const triggerDelay = 8000;
-  const scrollThreshold = 0.55;
 
   function showCapture() {
     if (isDismissed()) return;
@@ -144,26 +142,8 @@
     });
   }
 
-  // Desktop keeps the existing intent signal. Mobile opens only from an explicit
-  // pilot CTA so the prompt never covers the page while someone is reading.
-  if (!isMobileViewport) setTimeout(showCapture, triggerDelay);
-
-  let maxScroll = 0;
-  window.addEventListener("scroll", function () {
-    if (isMobileViewport) return;
-    if (isDismissed()) return;
-
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    if (docHeight <= 0) return;
-
-    maxScroll = Math.max(maxScroll, scrollTop / docHeight);
-    if (maxScroll > scrollThreshold) showCapture();
-  });
-
   document.addEventListener("click", function (event) {
-    if (!isMobileViewport) return;
-      const trigger = event.target.closest('a[data-hc-intent="pilot"], a[href="/demo"]');
+    const trigger = event.target.closest('a[data-hc-intent="pilot"], a[href="/demo"]');
     if (!trigger) return;
     event.preventDefault();
     showCapture();
