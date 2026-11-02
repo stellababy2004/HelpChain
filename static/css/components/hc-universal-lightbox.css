@@ -23,9 +23,11 @@
   padding: 10px 14px 10px 18px;
 }
 
-.hc-universal-lightbox__title {
+.hc-universal-lightbox__title,
+.hc-universal-lightbox__description,
+.hc-universal-lightbox figcaption {
   margin: 0;
-  color: #fff;
+  color: #f8fafc;
   font-size: 1rem;
   line-height: 1.3;
 }
