@@ -1,0 +1,21 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Accès temporaire généré{% endblock %}
+{% block admin_content %}
+<main class="container py-4" aria-labelledby="temporary-access-title">
+  <div class="card shadow-sm p-4 mx-auto" style="max-width: 720px;">
+    <h1 id="temporary-access-title" class="h3">Accès temporaire généré</h1>
+    <p class="text-muted">L’ancien accès du compte ci-dessous a été invalidé.</p>
+    <dl class="row">
+      <dt class="col-sm-4">Compte</dt><dd class="col-sm-8">{{ target.username }} — {{ target.email }}</dd>
+      <dt class="col-sm-4">Organisation</dt><dd class="col-sm-8">{{ organization.name if organization else "Compte plateforme" }}</dd>
+    </dl>
+    <div class="alert alert-warning" role="alert">
+      <strong>Affichez cette valeur une seule fois.</strong> À remettre uniquement au titulaire vérifié via le canal préalablement validé ({{ delivery_channel_label }}). Validité : 30 minutes. Changement obligatoire à la prochaine connexion.
+    </div>
+    <label for="temporary-password" class="form-label">Mot de passe temporaire</label>
+    <output id="temporary-password" class="d-block p-3 bg-light border rounded font-monospace" aria-live="polite">{{ temporary_password }}</output>
+    <p class="small text-muted mt-3 mb-0">Ce mot de passe n’est pas envoyé par email et ne sera pas récupérable après cette page.</p>
+    <p class="mt-4 mb-0"><a class="btn btn-primary" href="{{ request.referrer or '/' }}">Retour à l’espace d’administration</a></p>
+  </div>
+</main>
+{% endblock %}

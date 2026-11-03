@@ -67,6 +67,8 @@ def test_admin_analytics_empty_state_uses_real_data_only(app):
 
 def test_analytics_stream_has_no_sample_events(authenticated_admin_client):
     """Production analytics stream must not fall back to fabricated events."""
+    with authenticated_admin_client.session_transaction() as browser:
+        browser["lang"] = "fr"
     response = authenticated_admin_client.get("/analytics/stream")
 
     assert response.status_code == 200

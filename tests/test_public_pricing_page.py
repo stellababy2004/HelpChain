@@ -90,3 +90,25 @@ def test_public_pricing_cta_event_is_accepted_by_existing_events_endpoint(client
     assert event.page_url == "/tarifs"
     assert event.event_category == "conversion"
     assert event.event_action == "click"
+
+
+def test_public_home_promotes_operational_reporting_without_admin_surface(client):
+    response = client.get("/", headers=PUBLIC_HEADERS)
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Pilotez votre activité avec une vision claire" in html
+    assert "Visibilité opérationnelle" in html
+    assert "Anticipation des risques" in html
+    assert "Rapports professionnels" in html
+    assert "/pour-les-structures" in html
+
+
+def test_public_structures_page_explains_reporting_scope_and_exports(client):
+    response = client.get("/pour-les-structures", headers=PUBLIC_HEADERS)
+
+    assert response.status_code == 200
+    html = response.get_data(as_text=True)
+    assert "Des rapports pour mieux coordonner et décider" in html
+    assert "Chaque organisation accède aux données de son propre périmètre" in html
+    assert "exports PDF, Excel et CSV" in html

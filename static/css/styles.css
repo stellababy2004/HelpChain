@@ -1,4 +1,4 @@
-﻿/* Responsive Ð¿Ð¾Ð´Ð¾Ð±Ñ€ÐµÐ½Ð¸Ñ Ð·Ð° Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ð¸ Ð¸ Ñ„Ð¾Ñ€Ð¼Ð¸ */
+/* Responsive Ð¿Ð¾Ð´Ð¾Ð±Ñ€ÐµÐ½Ð¸Ñ Ð·Ð° Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ð¸ Ð¸ Ñ„Ð¾Ñ€Ð¼Ð¸ */
 @media (max-width: 768px) {
   .table thead th,
   .table tbody td {
@@ -3126,6 +3126,10 @@ body.hc-page-home .hc-home__card h3 i {
 .hc-form-msg{ padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,.08); background: rgba(255,255,255,.85); color: rgba(0,0,0,.72); }
 .hc-form-msg.is-ok{ border-color: rgba(25,135,84,.25); background: rgba(25,135,84,.08); color: rgba(25,135,84,.95); }
 /* Accessibility baseline */
+.skip-link.visually-hidden-focusable {
+  position: absolute;
+}
+
 .skip-link.visually-hidden-focusable:focus {
   position: absolute;
   top: 0.5rem;
@@ -14140,4 +14144,74 @@ body.hc-page-home .hc-home-premium__nav-actions .btn-primary:hover {
   margin: 0.2rem 0.55rem 0 0;
   appearance: auto;
   -webkit-appearance: checkbox;
+}
+
+
+/* HelpChain accessibility drawer: scoped visibility and sticky header */
+.hc-a11y-drawer__header {
+  position: sticky;
+  top: -14px;
+  z-index: 5;
+  background: #f4f7fb;
+}
+
+.hc-a11y-drawer #hcA11ySystem {
+  color: #14385f;
+  border-color: #64748b;
+  background: #ffffff;
+}
+
+.hc-a11y-drawer #hcA11ySystem:hover {
+  color: #ffffff;
+  background: #14385f;
+  border-color: #14385f;
+}
+
+.hc-a11y-drawer #hcA11ySystem:focus-visible {
+  outline: 3px solid #0d5c92;
+  outline-offset: 3px;
+}
+
+
+/* HC A11Y FINAL PANEL POLISH 20261103 */
+
+/* Keep the drawer scrollable without changing its structure. */
+.hc-a11y-drawer__panel {
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* Slightly tighten the header and tab spacing. */
+.hc-a11y-drawer__header {
+  margin-bottom: 8px;
+}
+
+.hc-a11y-tabs {
+  margin-bottom: 8px;
+}
+
+/* Improve readability of the selected language. */
+.hc-a11y-langitem--screen.is-active {
+  background: #dcecff;
+  color: #17365c;
+  border-color: #82add8;
+}
+
+.hc-a11y-langitem--screen.is-active .hc-lang-flag,
+.hc-a11y-langitem--screen.is-active .hc-lang-name,
+.hc-a11y-langitem--screen.is-active .hc-lang-note,
+.hc-a11y-langitem--screen.is-active .hc-lang-check {
+  color: #17365c;
+}
+
+/* Make keyboard focus visible on the light language cards. */
+.hc-a11y-langitem--screen:focus-visible {
+  outline: 3px solid #17649a;
+  outline-offset: 2px;
+}
+
+
+/* HC A11Y PANE SPACING FIX 20261103 */
+.hc-a11y-drawer .hc-a11y-panes > .hc-a11y-pane:not([hidden]) {
+  padding-top: 0;
 }

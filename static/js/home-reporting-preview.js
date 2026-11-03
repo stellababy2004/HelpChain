@@ -1,11 +1,11 @@
 (function () {
   "use strict";
 
-  function initReportingPreview() {
-    var dialog = document.getElementById("hc-reporting-preview-dialog");
-    var openButton = document.querySelector("[data-reporting-preview-open]");
-    var closeButton = document.querySelector("[data-reporting-preview-close]");
-    if (!dialog || !openButton || !closeButton || dialog.dataset.bound === "true") {
+  function initPreview(config) {
+    var dialog = document.querySelector(config.dialog);
+    var openButtons = document.querySelectorAll(config.openButton);
+    var closeButton = document.querySelector(config.closeButton);
+    if (!dialog || !openButtons.length || !closeButton || dialog.dataset.bound === "true") {
       return;
     }
 
@@ -32,7 +32,15 @@
       }
     }
 
-    openButton.addEventListener("click", openDialog);
+    openButtons.forEach(function (openButton) {
+      openButton.addEventListener("click", openDialog);
+      openButton.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDialog();
+        }
+      });
+    });
     closeButton.addEventListener("click", closeDialog);
     dialog.addEventListener("keydown", function (event) {
       if (event.key === "Escape") {
@@ -52,9 +60,22 @@
     });
   }
 
+  function initPreviews() {
+    initPreview({
+      dialog: "[data-reporting-preview-dialog]",
+      openButton: "[data-reporting-preview-open]",
+      closeButton: "[data-reporting-preview-close]"
+    });
+    initPreview({
+      dialog: "[data-hero-preview-dialog]",
+      openButton: "[data-hero-preview-open]",
+      closeButton: "[data-hero-preview-close]"
+    });
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initReportingPreview, { once: true });
+    document.addEventListener("DOMContentLoaded", initPreviews, { once: true });
   } else {
-    initReportingPreview();
+    initPreviews();
   }
 })();

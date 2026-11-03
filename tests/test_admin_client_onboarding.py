@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 import pytest
 
 
@@ -36,6 +37,7 @@ def _make_admin(
     role="admin",
     structure_id=None,
     must_change_password=False,
+    temporary_password_expires_at=None,
     onboarding_step=None,
     onboarding_completed_at=None,
 ):
@@ -49,6 +51,7 @@ def _make_admin(
         is_active=True,
         structure_id=structure_id,
         must_change_password=must_change_password,
+        temporary_password_expires_at=temporary_password_expires_at,
         onboarding_step=onboarding_step,
         onboarding_completed_at=onboarding_completed_at,
     )
@@ -112,6 +115,83 @@ def test_superadmin_not_trapped_in_client_onboarding(client, session):
 
     assert response.status_code == 302 or response.status_code == 303
     assert "/admin/onboarding" not in (response.headers.get("Location") or "")
+
+
+def test_global_superadmin_with_temporary_password_is_sent_to_change_password(client, session):
+    admin = _make_admin(
+        session,
+        username="global_superadmin_change",
+        email="global_superadmin_change@test.local",
+        role="superadmin",
+        structure_id=None,
+        must_change_password=True,
+        onboarding_step="welcome",
+    )
+    _login_admin(client, admin)
+
+    response = client.get("/admin/", follow_redirects=False)
+
+    assert response.status_code in (302, 303)
+    assert response.headers["Location"].endswith("/admin/change-password")
+
+
+def test_expired_temporary_password_cannot_open_change_password_directly(client, session):
+    from backend.models import utc_now
+
+    admin = _make_admin(
+        session,
+        username="global_superadmin_expired",
+        email="global_superadmin_expired@test.local",
+        role="superadmin",
+        structure_id=None,
+        must_change_password=True,
+        temporary_password_expires_at=utc_now() - timedelta(minutes=1),
+    )
+    _login_admin(client, admin)
+
+    response = client.get("/admin/change-password", follow_redirects=False)
+
+    assert response.status_code in (302, 303)
+    assert response.headers["Location"].endswith("/admin/login")
+    with client.session_transaction() as browser:
+        assert "admin_logged_in" not in browser
+    session.refresh(admin)
+    assert admin.must_change_password is True
+    assert admin.temporary_password_expires_at is not None
+
+
+def test_global_superadmin_password_change_clears_temporary_access_flags(client, session):
+    from backend.models import utc_now
+
+    admin = _make_admin(
+        session,
+        username="global_superadmin_password",
+        email="global_superadmin_password@test.local",
+        role="superadmin",
+        structure_id=None,
+        must_change_password=True,
+        temporary_password_expires_at=utc_now() + timedelta(minutes=10),
+    )
+    admin.set_password("TemporaryPass123")
+    session.commit()
+    _login_admin(client, admin)
+
+    response = client.post(
+        "/admin/change-password",
+        data={
+            "current_password": "TemporaryPass123",
+            "new_password": "PermanentPass123",
+            "confirm_password": "PermanentPass123",
+        },
+        follow_redirects=False,
+    )
+
+    assert response.status_code in (302, 303)
+    assert response.headers["Location"].endswith("/admin/change-password")
+    session.refresh(admin)
+    assert admin.must_change_password is False
+    assert admin.temporary_password_expires_at is None
+    assert admin.check_password("PermanentPass123") is True
 
 
 def test_password_change_step_validates_confirmation_mismatch(client, session):

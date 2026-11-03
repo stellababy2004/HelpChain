@@ -32,4 +32,6 @@ def test_website_analytics_migration_preserves_unassigned_history(monkeypatch):
 
 
 def test_website_analytics_revision_is_the_single_head():
-    assert ScriptDirectory("migrations").get_heads() == ["20261026_1200"]
+    assert ScriptDirectory("migrations").get_heads() == [
+        "20261102_1200_admin_temporary_access"
+    ]

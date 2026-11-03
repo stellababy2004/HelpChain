@@ -143,17 +143,44 @@
       border-radius: 12px;
     }
 
+    @media (max-width: 768px) {
+      body.hc-page-home .hc-home-premium__section-link a.hc-btn--primary {
+        width: auto;
+        max-width: 100%;
+        min-height: 44px;
+        padding: 0.55rem 0.85rem;
+        font-size: 0.88rem;
+        line-height: 1.25;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        text-align: center;
+      }
+    }
+
     @media (max-width: 767.98px) {
       body.hc-page-home .hc-home-reporting-preview {
-        max-height: 390px;
+        max-height: none;
         padding: 10px;
         border-radius: 18px;
+        overflow: visible;
       }
 
       body.hc-page-home .hc-home-reporting-preview::after {
-        right: 10px;
-        bottom: 10px;
-        left: 10px;
+        display: none;
+      }
+
+      body.hc-page-home .hc-home-reporting-preview figcaption {
+        position: relative;
+        z-index: 1;
+        margin: 10px 0 0;
+        padding: 9px 10px;
+        border: 1px solid rgba(36, 62, 99, 0.14);
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #243e63;
+        font-size: 0.86rem;
+        line-height: 1.4;
+        text-align: left;
       }
 
       body.hc-page-home .hc-home-reporting-dialog {
@@ -363,6 +390,7 @@
     body.hc-page-home .hc-home-premium__hero {
       padding-top: 22px !important;
       padding-bottom: 18px !important;
+      background: var(--hc-public-page-gradient);
     }
 
     body.hc-page-home .hc-home-premium__hero-grid {
@@ -376,10 +404,8 @@
       padding: clamp(22px, 1.75vw, 28px);
       border: 1px solid rgba(16, 36, 59, 0.12);
       border-radius: clamp(28px, 3vw, 38px);
-      background:
-        radial-gradient(circle at top right, rgba(31, 138, 131, 0.1), transparent 30%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.985), rgba(241, 247, 253, 0.96));
-      box-shadow: 0 24px 56px rgba(15, 23, 42, 0.07);
+      background: transparent;
+      box-shadow: none;
       overflow: hidden;
       position: relative;
     }
@@ -978,7 +1004,6 @@
     }
 
     body.hc-page-home :is(
-      .hc-a11y-fab,
       .hc-a11y-widget,
       .hc-floating-help,
       .hc-floating-action,
@@ -2475,10 +2500,10 @@
     <div class="hc-home-premium__hero-copy">
       <p class="hc-home-premium__eyebrow">{{ _('POUR LES COLLECTIVITÉS, CCAS ET ACTEURS DE L’ACCOMPAGNEMENT SOCIAL') }}</p>
 
-      <h1 id="hc-home-hero-title">{{ _('Quand plusieurs structures accompagnent une même situation, qui fait quoi ?') }}</h1>
+      <h1 id="hc-home-hero-title">{{ _('Plusieurs structures, un seul suivi partagé.') }}</h1>
 
       <p class="hc-home-premium__lead">
-        {{ _('HelpChain permet aux collectivités, CCAS, associations et professionnels de coordonner le suivi d’une situation, de savoir qui intervient, qui fait quoi et où en est l’accompagnement — sans se perdre entre emails, appels et fichiers Excel.') }}
+        {{ _('HelpChain Live aide les collectivités, CCAS et associations à coordonner les interventions, suivre les demandes et savoir qui fait quoi — sans multiplier les emails, appels et fichiers Excel.') }}
       </p>
 
       <div class="hc-home-premium__hero-support" aria-label="{{ _('Actions et repères pilote') }}">
@@ -2825,36 +2850,36 @@
 <section class="hc-home-premium__section hc-home-premium__section--case-study-teaser" aria-labelledby="hc-home-case-study-title">
     <div class="hc-case-study hc-case-study--teaser">
       <p class="hc-case-study__eyebrow">DÉMARRAGE PILOTE</p>
-      <h2 id="hc-home-case-study-title" class="hc-case-study__title">Testez HelpChain sur une situation réelle.</h2>
+      <h2 id="hc-home-case-study-title" class="hc-case-study__title">{{ _('Testez HelpChain sur une situation réelle.') }}</h2>
       <p class="hc-case-study__intro">
-        Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Le pilote permet de vérifier rapidement si HelpChain répond à votre manière de travailler.
+        {{ _('Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Le pilote permet de vérifier rapidement si HelpChain répond à votre manière de travailler.') }}
       </p>
       <div class="hc-case-study__timeline hc-case-study__timeline--compact">
         <article class="hc-case-study__item">
           <p class="hc-case-study__day">Jour 1</p>
           <div class="hc-case-study__card">
             <h3>Réunion de cadrage</h3>
-            <p>Choix du périmètre, de l’équipe et des premières situations à suivre.</p>
+            <p>{{ _('Choix du périmètre, de l’équipe et des premières situations à suivre.') }}</p>
           </div>
         </article>
         <article class="hc-case-study__item">
           <p class="hc-case-study__day">Jour 5</p>
           <div class="hc-case-study__card">
-            <h3>Ajout des équipes habilitées</h3>
-            <p>Ouverture des accès utiles selon le rôle et la structure de chaque personne.</p>
+            <h3>{{ _('Ajout des équipes habilitées') }}</h3>
+            <p>{{ _('Ouverture des accès utiles selon le rôle et la structure de chaque personne.') }}</p>
           </div>
         </article>
         <article class="hc-case-study__item">
           <p class="hc-case-study__day">Jour 14</p>
           <div class="hc-case-study__card">
-            <h3>Suivi actif et premier bilan</h3>
-            <p>Relecture du suivi, ajustements ciblés et décision sur la suite du pilote.</p>
+            <h3>{{ _('Suivi actif et premier bilan') }}</h3>
+            <p>{{ _('Relecture du suivi, ajustements ciblés et décision sur la suite du pilote.') }}</p>
           </div>
         </article>
       </div>
       <div class="hc-case-study__actions">
-        <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">Demander un pilote</a>
-        <a class="hc-btn hc-btn--ghost btn btn-secondary" href="{{ url_for('main.deploiement') }}">Voir le déploiement sur 14 jours</a>
+        <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _("Demander un pilote") }}</a>
+        <a class="hc-btn hc-btn--ghost btn btn-secondary" href="{{ url_for('main.deploiement') }}">{{ _('Voir le déploiement sur 14 jours') }}</a>
       </div>
     </div>
   </section>

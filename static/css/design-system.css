@@ -8498,10 +8498,20 @@ body.hc-page-home {
     0 18px 42px rgba(19, 42, 67, 0.08),
     0 3px 10px rgba(15, 23, 42, 0.04);
   --hc-border-soft: rgba(122, 151, 177, 0.2);
+  /* UX 07 — public page atmosphere and comparable card surfaces. */
+  --hc-public-page-gradient:
+    radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.08), transparent 34%),
+    linear-gradient(180deg, #B9D5F5 0%, #D3E5FA 35%, #EDF5FE 72%, #FFFFFF 100%);
+  --hc-shadow-card: 0 14px 34px rgba(23, 49, 84, 0.08);
+  --hc-shadow-card-hover: 0 18px 42px rgba(23, 49, 84, 0.12);
+  --hc-shadow-dialog: 0 28px 80px rgba(15, 23, 42, 0.28);
+  --hc-radius-control: 12px;
+  --hc-radius-card: 18px;
+  --hc-radius-panel: 24px;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) {
-  background: var(--hc-gradient-page);
+  background: var(--hc-public-page-gradient);
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root.hc-navbar {
@@ -8573,13 +8583,13 @@ body.hc-page-trust .hc-trust-page__reassurance,
 body.hc-page-trust .hc-trust-page__cta-card,
 body.hc-page-trust .hc-reality-proof__chip {
   border-color: var(--hc-border-soft);
-  background: var(--hc-gradient-card);
-  box-shadow: var(--hc-shadow-soft);
+  background: #ffffff;
+  box-shadow: var(--hc-shadow-card);
 }
 
 body.hc-page-trust .hc-trust-page__section--soft,
 body.hc-page-trust .hc-trust-page__section--cta-strong {
-  background: linear-gradient(180deg, rgba(248, 251, 255, 0.72), rgba(239, 245, 250, 0.38));
+  background: transparent;
 }
 
 body.hc-page-trust .hc-trust-page__eyebrow,
@@ -8602,49 +8612,28 @@ body.hc-page-trust :is(.hc-trust-page__card, .hc-trust-page__panel-card, .hc-tru
   overflow: hidden;
 }
 
-body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.public-page-hero, .public-card, .public-card-soft, .public-card-elevated, .public-card-trust, .public-page-shell > section.card .card-body)::after,
-body.hc-page-trust :is(.hc-trust-page__card, .hc-trust-page__panel-card, .hc-trust-page__timeline-step, .hc-trust-page__reassurance, .hc-trust-page__cta-card)::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0) 22%),
-    radial-gradient(circle at top right, rgba(95, 135, 170, 0.08), transparent 28%);
-}
-
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .public-page-hero {
   border-color: rgba(161, 184, 208, 0.86);
-  background:
-    radial-gradient(circle at top right, rgba(108, 146, 186, 0.16), transparent 26%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(238, 246, 252, 0.98) 58%, rgba(247, 250, 253, 0.98));
-  box-shadow:
-    0 22px 48px rgba(23, 50, 79, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: transparent;
+  box-shadow: none;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.public-card, .public-card-soft, .public-card-elevated, .public-card-trust, .public-page-shell > section.card .card-body) {
   border-color: rgba(171, 191, 213, 0.78);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.985), rgba(241, 247, 252, 0.95));
-  box-shadow:
-    0 18px 38px rgba(23, 50, 79, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  background: #ffffff;
+  box-shadow: var(--hc-shadow-card);
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .public-page-shell > section.card:nth-of-type(odd):not(.public-cta-card) .card-body,
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .public-card-soft,
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .public-card-trust {
-  background:
-    linear-gradient(180deg, rgba(247, 251, 255, 0.99), rgba(239, 246, 252, 0.95));
+  background: #ffffff;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .public-page-shell > section.card .card-body:hover,
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) :is(.public-card, .public-card-soft, .public-card-elevated, .public-card-trust):hover {
   border-color: rgba(118, 149, 179, 0.68);
-  box-shadow:
-    0 24px 46px rgba(23, 50, 79, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  box-shadow: var(--hc-shadow-card-hover);
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-footer.hc-footer-institutional {
@@ -8823,3 +8812,4 @@ body :is(.btn-secondary, .hc-btn--ghost, .hc-btn-secondary):hover {
     transition: none;
   }
 }
+

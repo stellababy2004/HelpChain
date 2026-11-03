@@ -1,6 +1,8 @@
 ﻿from __future__ import annotations
 
 import json
+import ipaddress
+import logging
 import os
 import threading
 from datetime import UTC, datetime
@@ -168,7 +170,14 @@ def _install_slow_sql_logger(app: Flask) -> None:
 
 
 def _locale_selector():
-    # HelpChain UI is French-only.
+    """Use the language selected by the visitor."""
+    from flask import session
+
+    selected = str(session.get("lang") or "").strip().lower()
+
+    if selected in ("fr", "bg", "en"):
+        return selected
+
     return "fr"
 
 
@@ -269,7 +278,17 @@ def add_security_headers(app: Flask):
             if turnstile_origin not in frame_src:
                 frame_src.append(turnstile_origin)
 
-        # CSP enforce policy
+        # CSP enforce policy. Local development is also used from phones over
+        # plain HTTP on the LAN; upgrade-insecure-requests would make Safari
+        # retry relative CSS/JS/images over HTTPS, where the dev server has no
+        # TLS endpoint. Keep the directive for production and HTTPS requests.
+        request_host = (request.host or "").split(":", 1)[0].strip("[]").lower()
+        try:
+            is_private_lan_host = ipaddress.ip_address(request_host).is_private
+        except ValueError:
+            is_private_lan_host = request_host in {"localhost", "127.0.0.1"}
+        is_local_http = not request.is_secure and (is_dev_csp or is_private_lan_host)
+        csp_upgrade = "" if is_local_http else "upgrade-insecure-requests"
         csp_enforce = (
             "default-src 'self'; " + f"script-src {' '.join(script_src)}; "
             "script-src-attr 'none'; "
@@ -282,7 +301,7 @@ def add_security_headers(app: Flask):
             "form-action 'self'; "
             "base-uri 'self'; "
             "object-src 'none'; "
-            "upgrade-insecure-requests"
+            + csp_upgrade
         )
         resp.headers["Content-Security-Policy"] = csp_enforce
 
@@ -468,6 +487,29 @@ def create_app(config_object=None) -> Flask:
         template_folder=root_templates,
         static_folder=root_static,
     )
+
+    trace_log_path = os.getenv("HC_LOCAL_TRACE_LOG", "").strip()
+    if trace_log_path and not app.extensions.get("hc_local_trace_logging"):
+        trace_handler = logging.FileHandler(trace_log_path, encoding="utf-8")
+        trace_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s"))
+        trace_handler.setLevel(logging.INFO)
+        app.logger.addHandler(trace_handler)
+        app.logger.setLevel(logging.INFO)
+        werkzeug_logger = logging.getLogger("werkzeug")
+        werkzeug_logger.addHandler(trace_handler)
+        werkzeug_logger.setLevel(logging.INFO)
+
+        @app.after_request
+        def _log_local_request(response):
+            app.logger.info(
+                "LOCAL_HTTP method=%s path=%s status=%s",
+                request.method,
+                request.path,
+                response.status_code,
+            )
+            return response
+
+        app.extensions["hc_local_trace_logging"] = True
     try:
         from backend.core.tenant import current_structure_id
     except ModuleNotFoundError:

@@ -2445,6 +2445,9 @@ def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
 
 
 def _default_admin_landing_url(user: AdminUser | None = None) -> str:
+    target = user if user is not None else current_user
+    if _is_global_superadmin(target) and bool(getattr(target, "must_change_password", False)):
+        return url_for("admin.admin_change_password")
     if _admin_onboarding_required(user):
         return url_for("admin.admin_onboarding")
     return _default_admin_workspace_url(user)
@@ -2483,7 +2486,7 @@ def _admin_onboarding_required(user: AdminUser | None = None) -> bool:
         return False
     if not getattr(target, "is_admin", False):
         return False
-    if getattr(target, "structure_id", None) is None:
+    if _is_global_superadmin(target):
         return False
     if not _admin_onboarding_columns_available():
         return False
@@ -2493,6 +2496,40 @@ def _admin_onboarding_required(user: AdminUser | None = None) -> bool:
     must_change_password = bool(getattr(target, "must_change_password", False))
     started_at = getattr(target, "onboarding_started_at", None)
     return bool(step or must_change_password or started_at)
+
+
+def _is_global_superadmin(user: AdminUser | None = None) -> bool:
+    target = user if user is not None else current_user
+    role = _normalize_admin_role_value(getattr(target, "role", None))
+    return role == "superadmin" and getattr(target, "structure_id", None) is None
+
+
+def _temporary_admin_password_expired(user: AdminUser | None = None) -> bool:
+    target = user if user is not None else current_user
+    expires_at = getattr(target, "temporary_password_expires_at", None)
+    if not expires_at:
+        return False
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    now = _utc_now()
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    return expires_at <= now
+
+
+def _generate_temporary_admin_password() -> str:
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
+    required = [secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ"), secrets.choice("abcdefghijkmnopqrstuvwxyz"), secrets.choice("23456789")]
+    required.extend(secrets.choice(alphabet) for _ in range(21))
+    secrets.SystemRandom().shuffle(required)
+    return "".join(required)
+
+
+TEMPORARY_ACCESS_CHANNELS = {
+    "direct": "Remise directe au titulaire vérifié",
+    "phone": "Téléphone préalablement vérifié",
+    "secure": "Canal sécurisé préalablement validé",
+}
 
 
 def _admin_onboarding_step(user: AdminUser | None = None) -> str:
@@ -2727,6 +2764,7 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     # only after MFA succeeds when MFA is required.
     session.clear()  # mitigate session fixation
     login_user(user, remember=False)
+    session["admin_auth_version"] = int(getattr(user, "auth_version", 1) or 1)
     session["pending_admin_user_id"] = int(user.id)
     session["admin_password_verified"] = True
     current_app.logger.warning(
@@ -5042,6 +5080,24 @@ def admin_required(view_func):
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
             abort(404)
+        if bool(getattr(current_user, "must_change_password", False)) and _temporary_admin_password_expired(current_user):
+            logout_user()
+            session.clear()
+            return redirect(url_for("admin.admin_login_legacy"), code=303)
+        if bool(getattr(current_user, "must_change_password", False)) and request.endpoint not in {
+            "admin.admin_onboarding",
+            "admin.admin_onboarding_step",
+            "admin.admin_change_password",
+            "admin.admin_logout",
+        }:
+            if request.path.startswith("/api/") or request.is_json:
+                return jsonify({"error": "password_change_required"}), 403
+            destination = (
+                "admin.admin_change_password"
+                if _is_global_superadmin(current_user)
+                else "admin.admin_onboarding"
+            )
+            return redirect(url_for(destination), code=303)
         return view_func(*args, **kwargs)
 
     return wrapper
@@ -5804,6 +5860,14 @@ def enforce_admin_onboarding():
         return None
     if not session.get("admin_logged_in"):
         return None
+    if current_user.is_authenticated:
+        expected_version = int(getattr(current_user, "auth_version", 1) or 1)
+        session_version = session.get("admin_auth_version")
+        if session_version is not None and int(session_version) != expected_version:
+            logout_user()
+            session.clear()
+            flash("Votre session administrateur a été renouvelée. Veuillez vous reconnecter.", "warning")
+            return redirect(url_for("admin.admin_login_legacy"), code=303)
     if not _admin_onboarding_required():
         return None
     return redirect(url_for("admin.admin_onboarding"), code=303)
@@ -6066,6 +6130,86 @@ def superadmin_user_reset_mfa(member_id):
         request.referrer or _default_admin_landing_url(actor),
         code=303,
     )
+
+
+@admin_bp.post("/platform/users/<int:member_id>/temporary-access")
+@admin_role_required("superadmin")
+@require_admin_fresh_auth(minutes=10)
+@require_fresh_mfa
+def superadmin_user_temporary_access(member_id):
+    """Generate a one-time, short-lived password for a non-superadmin admin."""
+    actor = current_user
+    if _admin_role_value() != "superadmin" or member_id == getattr(actor, "id", None):
+        abort(403)
+
+    member = AdminUser.query.filter_by(id=member_id, is_active=True).first_or_404()
+    if _is_superadmin_role(getattr(member, "role", None)):
+        abort(403)
+    reason = (request.form.get("reason") or "").strip()
+    nonce = (request.form.get("operation_nonce") or "").strip()
+    identity_confirmed = request.form.get("identity_confirmed") == "on"
+    delivery_channel = (request.form.get("delivery_channel") or "").strip()
+    if len(reason) < 10 or len(reason) > 500:
+        flash("Une raison brève et précise est requise.", "warning")
+        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+    if not identity_confirmed or delivery_channel not in TEMPORARY_ACCESS_CHANNELS:
+        flash("Confirmez l’identité et le canal de remise préalablement validé.", "warning")
+        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+    if not nonce or nonce != session.get("temporary_access_nonce"):
+        abort(400)
+
+    from ..services.admin_access_reset import invalidate_access_resets
+
+    temporary_password = _generate_temporary_admin_password()
+    issued_at = _utc_now()
+    expires_at = issued_at + timedelta(minutes=30)
+    try:
+        member.set_password(temporary_password)
+        member.must_change_password = True
+        member.temporary_password_expires_at = expires_at
+        member.auth_version = int(getattr(member, "auth_version", 1) or 1) + 1
+        invalidate_access_resets(member.email)
+        db.session.add(
+            AdminAuditEvent(
+                admin_user_id=int(actor.id),
+                admin_username=actor.username,
+                action="SUPERADMIN_TEMPORARY_ACCESS_GENERATED",
+                target_type="AdminUser",
+                target_id=int(member.id),
+                ip=_client_ip(),
+                user_agent=(request.headers.get("User-Agent") or "")[:256],
+                payload={
+                    "reason": reason,
+                    "identity_verified_by_actor": True,
+                    "delivery_channel": delivery_channel,
+                    "structure_id": member.structure_id,
+                    "expires_at": expires_at.isoformat(),
+                    "result": "success",
+                },
+            )
+        )
+        db.session.commit()
+        session.pop("temporary_access_nonce", None)
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Temporary admin access generation failed")
+        flash("Impossible de générer l’accès temporaire.", "danger")
+        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+
+    response = make_response(
+        render_template(
+            "admin/temporary_access.html",
+            target=member,
+            organization=db.session.get(Structure, member.structure_id)
+            if member.structure_id
+            else None,
+            temporary_password=temporary_password,
+            expires_at=expires_at,
+            delivery_channel_label=TEMPORARY_ACCESS_CHANNELS[delivery_channel],
+        )
+    )
+    response.headers["Cache-Control"] = "no-store, private"
+    return response
 
 
 @admin_bp.post("/team/invite")
@@ -6372,6 +6516,8 @@ def admin_onboarding_step():
                 flash(str(exc), "warning")
                 return redirect(url_for("admin.admin_onboarding"), code=303)
             current_user.must_change_password = False
+            current_user.temporary_password_expires_at = None
+            session["admin_auth_version"] = int(getattr(current_user, "auth_version", 1) or 1)
         _admin_onboarding_set_step(current_user, "structure_setup")
         db.session.commit()
         return redirect(url_for("admin.admin_onboarding"), code=303)
@@ -6704,6 +6850,11 @@ def admin_ops_login():
 def admin_change_password():
     user = current_user
 
+    if bool(getattr(user, "must_change_password", False)) and _temporary_admin_password_expired(user):
+        logout_user()
+        session.clear()
+        return redirect(url_for("admin.admin_login_legacy"), code=303)
+
     if request.method == "POST":
         current_password = request.form.get("current_password", "")
         new_password = request.form.get("new_password", "")
@@ -6716,6 +6867,9 @@ def admin_change_password():
         else:
             try:
                 user.set_password(new_password)
+                user.must_change_password = False
+                user.temporary_password_expires_at = None
+                session["admin_auth_version"] = int(getattr(user, "auth_version", 1) or 1)
 
                 from ..services.admin_access_reset import invalidate_access_resets
                 invalidate_access_resets(user.email)
@@ -6870,6 +7024,18 @@ def admin_login_legacy():
                 extra_payload={"reason": "invalid_credentials"},
             )
             flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "danger")
+            return redirect(url_for("admin.admin_login_legacy", next=next_url))
+        if bool(getattr(user, "must_change_password", False)) and _temporary_admin_password_expired(user):
+            _log_admin_attempt(username=username_norm, ip=ip, success=False)
+            _audit_admin_auth_event(
+                "admin_login_failure",
+                route_context="login",
+                attempted_identifier=username_norm,
+                user=user,
+                next_url=next_url,
+                extra_payload={"reason": "temporary_password_expired"},
+            )
+            flash("Cet accès temporaire a expiré. Demandez une nouvelle récupération.", "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
         _log_admin_attempt(username=username_norm, ip=ip, success=True)
         _audit_admin_auth_event(

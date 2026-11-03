@@ -1,6 +1,8 @@
-(function () {
+function initPublicNav() {
   var navRoots = document.querySelectorAll("[data-hc-public-nav]");
   if (!navRoots.length) return;
+  if (document.documentElement.hasAttribute("data-hc-public-nav-ready")) return;
+  document.documentElement.setAttribute("data-hc-public-nav-ready", "true");
 
   var openRoot = null;
 
@@ -21,7 +23,10 @@
     var panel = root.querySelector("[data-hc-mega-panel]");
     root.classList.add("is-open");
     if (trigger) trigger.setAttribute("aria-expanded", "true");
-    if (panel) panel.hidden = false;
+    if (panel) {
+      panel.hidden = false;
+      panel.removeAttribute("hidden");
+    }
     openRoot = root;
   }
 
@@ -50,34 +55,25 @@
       }
 
       panel.hidden = true;
+      panel.setAttribute("hidden", "hidden");
       trigger.setAttribute("aria-expanded", "false");
 
-      trigger.addEventListener("click", function (event) {
+      trigger.addEventListener("keydown", function (event) {
+        if (event.key !== "Enter" && event.key !== " ") return;
         event.preventDefault();
-        cancelPendingClose();
-        if (megaRoot.classList.contains("is-open")) closeMega(megaRoot);
-        else openMega(megaRoot);
+        trigger.click();
       });
 
-      trigger.addEventListener("focus", function () {
-        cancelPendingClose();
-        openMega(megaRoot);
-      });
+    });
 
-      megaRoot.addEventListener("pointerenter", function () {
-        cancelPendingClose();
-        openMega(megaRoot);
-      });
-
-      megaRoot.addEventListener("pointerleave", function () {
-        scheduleClose();
-      });
-
-      megaRoot.addEventListener("focusout", function () {
-        window.setTimeout(function () {
-          if (!containsFocus(megaRoot)) closeMega(megaRoot);
-        }, 0);
-      });
+    navRoot.addEventListener("click", function (event) {
+      var trigger = event.target.closest("[data-hc-mega-trigger]");
+      if (!trigger || !navRoot.contains(trigger)) return;
+      var megaRoot = trigger.closest("[data-hc-mega]");
+      if (!megaRoot) return;
+      event.preventDefault();
+      if (megaRoot.classList.contains("is-open")) closeMega(megaRoot);
+      else openMega(megaRoot);
     });
   });
 
@@ -100,4 +96,11 @@
       closeMega(openRoot);
     }
   });
-})();
+
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPublicNav, { once: true });
+} else {
+  initPublicNav();
+}

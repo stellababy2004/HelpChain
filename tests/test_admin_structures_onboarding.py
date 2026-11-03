@@ -25,6 +25,33 @@ def _cancel_url(structure, invitation):
     return f"/admin/structures/{structure.id}/bootstrap-admin/{invitation.id}/revoke"
 
 
+@pytest.mark.parametrize("with_first_admin", [False, True])
+def test_structure_detail_renders_with_or_without_first_admin(client, session, with_first_admin):
+    structure = _make_structure(
+        session,
+        name=f"Detail render {'with' if with_first_admin else 'without'} admin",
+        slug=f"detail-render-{with_first_admin}",
+    )
+    actor = _make_admin(
+        session,
+        username=f"detail-render-actor-{with_first_admin}",
+        email=f"detail-render-actor-{with_first_admin}@test.local",
+        role="superadmin",
+    )
+    if with_first_admin:
+        _make_admin(
+            session,
+            username=f"detail-render-target-{with_first_admin}",
+            email=f"detail-render-target-{with_first_admin}@test.local",
+            role="admin",
+            structure_id=structure.id,
+        )
+    session.commit()
+    _login_admin(client, actor)
+    response = client.get(f"/admin/structures/{structure.id}")
+    assert response.status_code == 200
+
+
 def test_bootstrap_cancel_and_reinvite(client, session, monkeypatch):
     from backend.models import AdminAuditEvent, AdminUserInvitation
 

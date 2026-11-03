@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -13,7 +14,5 @@ def pytest_configure(config):
     if getattr(config.option, "basetemp", None):
         basetemp = Path(str(config.option.basetemp))
     else:
-        runtime_root = Path(__file__).resolve().parent / ".pytest-runtime"
-        runtime_root.mkdir(parents=True, exist_ok=True)
-        basetemp = runtime_root / f"run-{run_id}"
+        basetemp = Path(tempfile.gettempdir()) / f"helpchain-pytest-run-{run_id}"
         config.option.basetemp = str(basetemp)

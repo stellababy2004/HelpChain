@@ -4,11 +4,8 @@ body.hc-page-simulation-operationnelle {
   --hc-simop-line: rgba(20, 42, 69, 0.1);
   --hc-simop-surface: rgba(255, 255, 255, 0.88);
   --hc-simop-soft: rgba(35, 73, 122, 0.05);
-  --hc-simop-shadow: 0 24px 68px rgba(13, 29, 53, 0.08);
-  background:
-    radial-gradient(circle at top left, rgba(24, 63, 112, 0.13), transparent 28%),
-    radial-gradient(circle at top right, rgba(84, 128, 180, 0.09), transparent 24%),
-    linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%);
+  --hc-simop-shadow: var(--hc-shadow-card);
+  background: var(--hc-public-page-gradient);
 }
 
 body.hc-page-simulation-operationnelle .hc-trust-page__hero,
@@ -17,7 +14,7 @@ body.hc-page-simulation-operationnelle .hc-trust-page__section {
 }
 
 body.hc-page-simulation-operationnelle .hc-trust-page__hero {
-  padding-top: clamp(5rem, 8vw, 6.75rem);
+  padding-top: clamp(3rem, 5vw, 4.25rem);
   padding-bottom: clamp(2.5rem, 4vw, 3.75rem);
 }
 
@@ -221,12 +218,8 @@ body.hc-page-simulation-operationnelle .hc-simop__queue-card {
   padding: clamp(1.45rem, 2.4vw, 1.9rem);
   border: 1px solid rgba(20, 55, 95, 0.1);
   border-radius: 24px;
-  background:
-    linear-gradient(180deg, rgba(248, 251, 255, 0.88), rgba(255, 255, 255, 0.96)),
-    rgba(255, 255, 255, 0.94);
-  box-shadow:
-    0 18px 40px rgba(15, 35, 70, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  background: #ffffff;
+  box-shadow: var(--hc-shadow-card);
 }
 
 body.hc-page-simulation-operationnelle .hc-simop__queue-head {

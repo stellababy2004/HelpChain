@@ -872,7 +872,7 @@ msgstr "Тема переключения"
 #: templates/volunteer_dashboard.html:244
 #: templates/volunteer_dashboard.html:710
 msgid "Close"
-msgstr ""
+msgstr "Закрыть"
 
 #: templates/base.html:489
 msgid "Accessibility settings"
@@ -880,141 +880,141 @@ msgstr ""
 
 #: templates/base.html:513
 msgid "Accessibility menu"
-msgstr ""
+msgstr "Меню специальных возможностей"
 
 #: templates/base.html:528 templates/base.html:529
 msgid "Toggle accessibility settings"
-msgstr ""
+msgstr "Открыть или закрыть настройки доступности"
 
 #: templates/base.html:539
 msgid "Accessibility"
-msgstr ""
+msgstr "Доступность"
 
 #: templates/base.html:541
 msgid "Adjust readability and motion. Settings are saved on this device."
-msgstr ""
+msgstr "Настройте удобство чтения и анимацию. Настройки сохраняются на этом устройстве."
 
 #: templates/base.html:552 templates/base.html:556
 msgid "No options enabled"
-msgstr ""
+msgstr "Нет включённых параметров"
 
 #: templates/base.html:553
 msgid "1 option enabled"
-msgstr ""
+msgstr "Включён 1 параметр"
 
 #: templates/base.html:554
 #, python-brace-format
 msgid "{count} options enabled"
-msgstr ""
+msgstr "Включено параметров: {count}"
 
 #: templates/base.html:555
 msgid "Accessibility paused"
-msgstr ""
+msgstr "Специальные возможности приостановлены"
 
 #: templates/base.html:560 templates/base.html:563
 msgid "Following system"
-msgstr ""
+msgstr "По настройкам системы"
 
 #: templates/base.html:561
 msgid "Power off"
-msgstr ""
+msgstr "Выключить"
 
 #: templates/base.html:566
 msgid "Accessibility sections"
-msgstr ""
+msgstr "Разделы специальных возможностей"
 
 #: templates/base.html:569
 msgid "Display"
-msgstr ""
+msgstr "Отображение"
 
 #: templates/base.html:573
 msgid "Navigation"
-msgstr ""
+msgstr "Навигация"
 
 #: templates/base.html:583 templates/base.html:845 templates/base.html:864
 #: templates/base.html:938
 msgid "Translations"
-msgstr ""
+msgstr "Переводы"
 
 #: templates/base.html:587
 msgid "Audio"
-msgstr ""
+msgstr "Аудио"
 
 #: templates/base.html:591
 msgid "Motor"
-msgstr ""
+msgstr "Управление"
 
 #: templates/base.html:595
 msgid "Eco"
-msgstr ""
+msgstr "Экорежим"
 
 #: templates/base.html:599
 msgid "More"
-msgstr ""
+msgstr "Ещё"
 
 #: templates/base.html:606
 msgid "Display & reading"
-msgstr ""
+msgstr "Отображение и чтение"
 
 #: templates/base.html:607
 msgid "Improve readability and visual comfort"
-msgstr ""
+msgstr "Улучшите читаемость и зрительный комфорт"
 
 #: templates/base.html:613
 msgid "High contrast"
-msgstr ""
+msgstr "Высокая контрастность"
 
 #: templates/base.html:614
 msgid "Increase visual contrast across the interface"
-msgstr ""
+msgstr "Увеличьте контрастность интерфейса"
 
 #: templates/base.html:622 templates/base.html:625
 msgid "Text size"
-msgstr ""
+msgstr "Размер текста"
 
 #: templates/base.html:623
 msgid "Choose a comfortable reading size"
-msgstr ""
+msgstr "Выберите удобный размер текста"
 
 #: templates/base.html:626 templates/base.html:762
 msgid "Normal"
-msgstr ""
+msgstr "Обычный"
 
 #: templates/base.html:627
 msgid "Large"
-msgstr ""
+msgstr "Крупный"
 
 #: templates/base.html:628
 msgid "Extra large"
-msgstr ""
+msgstr "Очень крупный"
 
 #: templates/base.html:636
 msgid "Dyslexia-friendly font"
-msgstr ""
+msgstr "Шрифт, удобный при дислексии"
 
 #: templates/base.html:637
 msgid "Use a clearer fallback font stack with increased spacing"
-msgstr ""
+msgstr "Использовать более разборчивые шрифты с увеличенными интервалами"
 
 #: templates/base.html:646
 msgid "Navigation comfort"
-msgstr ""
+msgstr "Удобство навигации"
 
 #: templates/base.html:647
 msgid "Reduce distraction and simplify movement across pages"
-msgstr ""
+msgstr "Уменьшите отвлекающие элементы и упростите переходы между страницами"
 
 #: templates/base.html:650
 msgid "Navigation profiles"
-msgstr ""
+msgstr "Профили навигации"
 
 #: templates/base.html:654
 msgid "Reading comfort"
-msgstr ""
+msgstr "Комфортное чтение"
 
 #: templates/base.html:655
 msgid "Larger text with cleaner reading spacing"
-msgstr ""
+msgstr "Увеличенный текст и удобные интервалы для чтения"
 
 #: templates/base.html:657 templates/base.html:664 templates/base.html:671
 #: templates/dashboard_helper.html:43 templates/pilot_dashboard.html:36
@@ -1023,111 +1023,111 @@ msgstr "Открыть"
 
 #: templates/base.html:662
 msgid "High contrast and larger text for central vision comfort"
-msgstr ""
+msgstr "Высокая контрастность и крупный текст для комфорта центрального зрения"
 
 #: templates/base.html:669
 msgid "Extra-large text and simplified visuals for easier reading"
-msgstr ""
+msgstr "Очень крупный текст и упрощённое оформление для удобного чтения"
 
 #: templates/base.html:676
 msgid "Visual presets"
-msgstr ""
+msgstr "Готовые настройки отображения"
 
 #: templates/base.html:679
 msgid "Balanced"
-msgstr ""
+msgstr "Сбалансированный"
 
 #: templates/base.html:680
 msgid "Keep a clean look without changing text size"
-msgstr ""
+msgstr "Сохранить лаконичный вид без изменения размера текста"
 
 #: templates/base.html:683
 msgid "Focus mode"
-msgstr ""
+msgstr "Режим концентрации"
 
 #: templates/base.html:684
 msgid "Reduce motion and visual noise"
-msgstr ""
+msgstr "Уменьшить анимацию и визуальные отвлекающие элементы"
 
 #: templates/base.html:687
 msgid "High visibility"
-msgstr ""
+msgstr "Повышенная видимость"
 
 #: templates/base.html:688
 msgid "High contrast + bigger text"
-msgstr ""
+msgstr "Высокая контрастность и крупный текст"
 
 #: templates/base.html:696
 msgid "Reduce motion"
-msgstr ""
+msgstr "Уменьшить анимацию"
 
 #: templates/base.html:697
 msgid "Limit animations and transitions"
-msgstr ""
+msgstr "Ограничить анимацию и переходы"
 
 #: templates/base.html:706
 msgid "Simplified mode"
-msgstr ""
+msgstr "Упрощённый режим"
 
 #: templates/base.html:707
 msgid "Hide decorative elements and reduce visual noise"
-msgstr ""
+msgstr "Скрыть декоративные элементы и уменьшить визуальный шум"
 
 #: templates/base.html:716
 msgid "Audio support"
-msgstr ""
+msgstr "Звуковая поддержка"
 
 #: templates/base.html:717
 msgid "Read content aloud and tune voice feedback for better accessibility"
-msgstr ""
+msgstr "Озвучивайте содержимое и настраивайте голосовые подсказки"
 
 #: templates/base.html:724 templates/base.html:727
 msgid ""
 "Uses your browser or device voice. Availability depends on browser "
 "support."
-msgstr ""
+msgstr "Используется голос браузера или устройства. Доступность зависит от браузера."
 
 #: templates/base.html:725
 msgid "Speech playback is not available in this browser."
-msgstr ""
+msgstr "В этом браузере озвучивание недоступно."
 
 #: templates/base.html:733
 msgid "Read aloud"
-msgstr ""
+msgstr "Чтение вслух"
 
 #: templates/base.html:734
 msgid "Enable speech playback for reading content"
-msgstr ""
+msgstr "Включить озвучивание содержимого"
 
 #: templates/base.html:741
 msgid ""
 "Turn on Read aloud, close the menu, and select text on the page. Play / "
 "Stop will appear."
-msgstr ""
+msgstr "Включите чтение вслух, закройте меню и выделите текст на странице. Появятся кнопки воспроизведения и остановки."
 
 #: templates/base.html:748
 msgid "Voice guidance"
-msgstr ""
+msgstr "Голосовые подсказки"
 
 #: templates/base.html:749
 msgid "Allow short spoken confirmations for key actions (future)"
-msgstr ""
+msgstr "Короткие голосовые подтверждения основных действий (в разработке)"
 
 #: templates/base.html:757 templates/base.html:760
 msgid "Speech rate"
-msgstr ""
+msgstr "Скорость речи"
 
 #: templates/base.html:758
 msgid "Choose a comfortable reading speed"
-msgstr ""
+msgstr "Выберите удобную скорость чтения"
 
 #: templates/base.html:761
 msgid "Slow"
-msgstr ""
+msgstr "Медленно"
 
 #: templates/base.html:763
 msgid "Fast"
-msgstr ""
+msgstr "Быстро"
 
 #: templates/base.html:770
 #, fuzzy
@@ -1136,35 +1136,35 @@ msgstr "Домой"
 
 #: templates/base.html:771
 msgid "Adjust speech playback volume"
-msgstr ""
+msgstr "Настройте громкость озвучивания"
 
 #: templates/base.html:774
 msgid "Speech volume"
-msgstr ""
+msgstr "Громкость речи"
 
 #: templates/base.html:782 templates/base.html:785
 msgid "Voice"
-msgstr ""
+msgstr "Голос"
 
 #: templates/base.html:783
 msgid "Choose a browser voice when available"
-msgstr ""
+msgstr "Выберите голос браузера, если доступен"
 
 #: templates/base.html:786
 msgid "Default voice"
-msgstr ""
+msgstr "Голос по умолчанию"
 
 #: templates/base.html:793
 msgid "Voice test"
-msgstr ""
+msgstr "Проверка голоса"
 
 #: templates/base.html:794
 msgid "Try the selected voice and settings before saving"
-msgstr ""
+msgstr "Проверьте выбранный голос и настройки перед сохранением"
 
 #: templates/base.html:801
 msgid "Accessibility voice test. This is a preview of your audio settings."
-msgstr ""
+msgstr "Проверка голосовых настроек доступности. Это предварительное прослушивание."
 
 #: templates/base.html:803
 #, fuzzy
@@ -1173,73 +1173,73 @@ msgstr "Условия обслуживания"
 
 #: templates/base.html:806 templates/base.html:1060
 msgid "Stop"
-msgstr ""
+msgstr "Остановить"
 
 #: templates/base.html:815
 msgid "Highlight while reading"
-msgstr ""
+msgstr "Подсветка при чтении"
 
 #: templates/base.html:816
 msgid "Highlight the current paragraph or block during page reading"
-msgstr ""
+msgstr "Подсвечивать текущий абзац или блок при чтении страницы"
 
 #: templates/base.html:825
 msgid "Auto-read on page load"
-msgstr ""
+msgstr "Авточтение при загрузке страницы"
 
 #: templates/base.html:826
 msgid "Start reading automatically when supported (future)"
-msgstr ""
+msgstr "Автоматически начинать чтение при наличии поддержки (в разработке)"
 
 #: templates/base.html:835
 msgid "Motor assistance"
-msgstr ""
+msgstr "Помощь при управлении"
 
 #: templates/base.html:836
 msgid "Placeholder section for click targets, dwell, and keyboard assistance"
-msgstr ""
+msgstr "Раздел для будущих настроек областей нажатия, задержки и управления с клавиатуры"
 
 #: templates/base.html:839
 msgid ""
 "Coming soon: larger touch targets, click delay settings, and keyboard "
 "navigation helpers."
-msgstr ""
+msgstr "Скоро: увеличенные области нажатия, настройка задержки клика и помощь при навигации с клавиатуры."
 
 #: templates/base.html:846 templates/base.html:868
 msgid "Choose the interface language"
-msgstr ""
+msgstr "Выберите язык интерфейса"
 
 #: templates/base.html:879
 msgid "Eco display"
-msgstr ""
+msgstr "Экономичное отображение"
 
 #: templates/base.html:880
 msgid "Lighter pages for faster display and lower data/energy use"
-msgstr ""
+msgstr "Упрощённые страницы для быстрой загрузки и экономии трафика и энергии"
 
 #: templates/base.html:886
 msgid "Eco mode"
-msgstr ""
+msgstr "Экорежим"
 
 #: templates/base.html:887
 msgid ""
 "Lighter pages with reduced visual effects to improve speed and lower "
 "data/energy use"
-msgstr ""
+msgstr "Упрощённые страницы с меньшим количеством эффектов для быстрой работы и экономии трафика и энергии"
 
 #: templates/base.html:896
 msgid "More options"
-msgstr ""
+msgstr "Дополнительные настройки"
 
 #: templates/base.html:897
 msgid "This section is ready for future accessibility modules"
-msgstr ""
+msgstr "Этот раздел предназначен для будущих функций доступности"
 
 #: templates/base.html:900
 msgid ""
 "You can add more grouped settings here later (audio, keyboard help, "
 "reading profiles, etc.)."
-msgstr ""
+msgstr "Позже здесь можно добавить другие группы настроек: звук, помощь с клавиатурой, профили чтения и другие."
 
 #: templates/base.html:907
 msgid "Reset only this section"
@@ -1251,7 +1251,7 @@ msgstr ""
 
 #: templates/base.html:913
 msgid "Restore system defaults"
-msgstr ""
+msgstr "Восстановить системные настройки"
 
 #: templates/base.html:916
 msgid "Save as my profile"
@@ -1259,11 +1259,11 @@ msgstr ""
 
 #: templates/base.html:919
 msgid "Done"
-msgstr ""
+msgstr "Готово"
 
 #: templates/base.html:923
 msgid "Shortcut: Alt + A"
-msgstr ""
+msgstr "Сочетание клавиш: Alt + A"
 
 #: templates/base.html:933 templates/base.html:972
 #: templates/pilot_dashboard.html:21
@@ -1272,7 +1272,7 @@ msgstr "Назад"
 
 #: templates/base.html:939
 msgid "Select language"
-msgstr ""
+msgstr "Выбрать язык"
 
 #: templates/base.html:978
 msgid "Profile details"
@@ -3765,7 +3765,7 @@ msgstr ""
 
 #: templates/professionnels_pilote.html:82
 msgid "Retour"
-msgstr ""
+msgstr "Назад"
 
 #: templates/professionnels_pilote.html:86
 msgid "Données minimales"
@@ -5487,7 +5487,7 @@ msgstr ""
 
 #: templates/admin/requests.html:504
 msgid "Ouvrir"
-msgstr ""
+msgstr "Открыть"
 
 #: templates/admin/requests.html:518
 #, fuzzy
@@ -6224,3 +6224,18 @@ msgstr ""
 #~ msgid "🟢 НОВО"
 #~ msgstr ""
 
+
+msgid "AMD"
+msgstr "Возрастная макулярная дегенерация"
+
+msgid "Presbyopia"
+msgstr "Пресбиопия"
+
+msgid "Réinitialiser uniquement cette section"
+msgstr "Сбросить только этот раздел"
+
+msgid "Réinitialiser"
+msgstr "Сбросить"
+
+msgid "Enregistrer comme mon profil"
+msgstr "Сохранить как мой профиль"

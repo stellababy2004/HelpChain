@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import re
+import secrets
 from types import SimpleNamespace
 from datetime import datetime, timedelta
 
@@ -764,6 +765,8 @@ def admin_structure_detail(structure_id: int):
             .order_by(AdminUser.username.asc())
             .all()
         )
+    temporary_access_nonce = secrets.token_urlsafe(24)
+    session["temporary_access_nonce"] = temporary_access_nonce
     can_bootstrap_first_admin = (
         actor.is_authenticated
         and actor.role == "superadmin"
@@ -797,6 +800,7 @@ def admin_structure_detail(structure_id: int):
             "admin/structure_enterprise_dashboard.html",
             structure=structure,
             structure_admins=structure_admins,
+            temporary_access_nonce=temporary_access_nonce,
             enterprise=intelligence,
             public_intake_ready=public_intake_ready,
             public_intake_guidance=public_intake_guidance,

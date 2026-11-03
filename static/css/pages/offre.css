@@ -6,10 +6,7 @@ body.hc-page-offre {
   --hc-offre-shadow: 0 24px 80px rgba(13, 27, 46, 0.08);
   --hc-offre-primary: #163d72;
   --hc-offre-accent: #16766f;
-  background:
-    radial-gradient(circle at top left, rgba(22, 61, 114, 0.14), transparent 30%),
-    radial-gradient(circle at top right, rgba(22, 118, 111, 0.1), transparent 24%),
-    linear-gradient(180deg, #f6f8fc 0%, #eef3f9 100%);
+  background: var(--hc-public-page-gradient);
   color: var(--hc-offre-ink);
 }
 
@@ -160,33 +157,6 @@ body.hc-page-offre .hc-offre__hero-panel {
   position: relative;
 }
 
-body.hc-page-offre .hc-offre__hero-panel::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 28px 28px 0 0;
-  background: linear-gradient(90deg, #1d4ed8, #60a5fa);
-  pointer-events: none;
-  opacity: 0.72;
-}
-
-body.hc-page-offre .hc-offre__hero-panel::before {
-  content: "";
-  position: absolute;
-  top: -12%;
-  right: -10%;
-  width: 160px;
-  height: 135px;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(30, 76, 140, 0.08) 0%, rgba(30, 76, 140, 0.025) 52%, transparent 74%);
-  filter: blur(22px);
-  pointer-events: none;
-  opacity: 0.55;
-}
-
 body.hc-page-offre .hc-offre__panel-label {
   display: inline-flex;
   align-items: center;
@@ -335,9 +305,9 @@ body.hc-page-offre .hc-offre__badge {
 body.hc-page-offre .hc-offre__adoption-note {
   margin-top: -0.35rem;
   padding: 0.4rem 0.78rem;
-  border: 1px solid rgba(22, 118, 111, 0.18);
-  background: rgba(22, 118, 111, 0.055);
-  color: #285b59;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  background: rgba(37, 99, 235, 0.055);
+  color: #2d5b93;
 }
 
 body.hc-page-offre .hc-offre__card-label {
@@ -578,7 +548,7 @@ body.hc-page-offre .hc-reality-proof__chip {
 }
 
 body.hc-page-offre {
-  background: var(--hc-gradient-page);
+  background: var(--hc-public-page-gradient);
 }
 
 body.hc-page-offre :is(.hc-offre__hero-copy, .hc-offre__hero-panel, .hc-offre__card, .hc-offre__trust-band, .hc-offre__faq-item, .hc-offre__final) {
@@ -591,9 +561,7 @@ body.hc-page-offre :is(.hc-offre__hero-copy, .hc-offre__hero-panel, .hc-offre__c
 body.hc-page-offre .hc-offre__hero-copy,
 body.hc-page-offre .hc-offre__hero-panel,
 body.hc-page-offre .hc-offre__final {
-  background:
-    var(--hc-gradient-header),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 248, 252, 0.94));
+  background: #ffffff;
 }
 
 body.hc-page-offre .hc-offre__trust-item,
@@ -649,6 +617,10 @@ body.hc-page-tarifs .hc-offre__hero {
   display: block;
 }
 
+body.hc-page-tarifs .hc-offre {
+  padding-top: 0;
+}
+
 body.hc-page-tarifs .hc-offre__hero-copy {
   max-width: 920px;
   padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 4vw, 3.5rem);
@@ -666,6 +638,7 @@ body.hc-page-tarifs .hc-offre__hero-copy h1 {
 }
 
 body.hc-page-tarifs .hc-offre > .hc-offre__section:first-child {
+  padding-top: clamp(0.75rem, 1.5vw, 1.25rem);
   padding-bottom: clamp(1rem, 2vw, 1.5rem);
 }
 

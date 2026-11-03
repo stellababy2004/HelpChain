@@ -116,6 +116,10 @@ class AdminUser(db.Model, UserMixin):
     must_change_password = db.Column(
         db.Boolean, nullable=False, default=False, server_default=db.false()
     )
+    auth_version = db.Column(
+        db.Integer, nullable=False, default=1, server_default="1"
+    )
+    temporary_password_expires_at = db.Column(db.DateTime(timezone=True), nullable=True)
     onboarding_started_at = db.Column(db.DateTime(timezone=True), nullable=True)
     onboarding_completed_at = db.Column(db.DateTime(timezone=True), nullable=True)
     onboarding_step = db.Column(db.String(32), nullable=True)

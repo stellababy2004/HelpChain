@@ -116,6 +116,36 @@
                 </form>
 
                 <form method="POST"
+                      action="{{ url_for('admin.superadmin_user_temporary_access', member_id=u.id) }}"
+                      class="m-0">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="hidden" name="operation_nonce" value="{{ temporary_access_nonce }}">
+                  <label class="visually-hidden" for="temporary-reason-{{ u.id }}">Motif de la récupération</label>
+                  <input id="temporary-reason-{{ u.id }}" name="reason" class="form-control form-control-sm mb-2"
+                         minlength="10" maxlength="500" required
+                         placeholder="Motif de la récupération">
+                  <select name="delivery_channel" class="form-select form-select-sm mb-2" required>
+                    <option value="">Canal de remise préalablement validé</option>
+                    <option value="direct">Remise directe au titulaire vérifié</option>
+                    <option value="phone">Téléphone préalablement vérifié</option>
+                    <option value="secure">Canal sécurisé préalablement validé</option>
+                  </select>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="identity_confirmed"
+                           id="identity-confirmed-{{ u.id }}" required>
+                    <label class="form-check-label small" for="identity-confirmed-{{ u.id }}">
+                      J’ai vérifié l’identité du titulaire du compte et le canal de remise du mot de passe temporaire.
+                    </label>
+                  </div>
+                  <button class="btn btn-outline-primary btn-sm"
+                          type="submit"
+                          data-action="confirmSubmit"
+                          data-confirm="L’ancien accès sera invalidé. Générer un accès valable 30 minutes, affiché une seule fois, avec changement de mot de passe obligatoire ?">
+                    Générer un accès temporaire
+                  </button>
+                </form>
+
+                <form method="POST"
                       action="{{ url_for('admin.superadmin_user_reset_mfa', member_id=u.id) }}"
                       class="m-0">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
