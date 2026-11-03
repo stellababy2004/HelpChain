@@ -1435,3 +1435,10 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-p
     min-height: 44px;
   }
 }
+
+/* Keep the public navigation above the ambient background layer. */
+body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-public-nav-root {
+  position: relative;
+  z-index: 2001 !important;
+  pointer-events: auto;
+}
