@@ -16466,7 +16466,7 @@ def _ops_report_clean_text(value: str) -> str:
         repaired = text.encode("latin-1").decode("utf-8")
     except (UnicodeEncodeError, UnicodeDecodeError):
         repaired = text
-    if "�" not in repaired and repaired != text:
+    if chr(0xFFFD) not in repaired and repaired != text:
         text = repaired
     return (
         text
