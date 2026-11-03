@@ -55,7 +55,6 @@ _load_runtime_dotenv()
 SUPPORTED_LOCALES = (
     "fr",
     "en",
-    "de",
     "bg",
 )
 DEFAULT_LOCALE = "fr"

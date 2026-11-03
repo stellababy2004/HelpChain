@@ -344,7 +344,7 @@ def _table_exists(table_name: str) -> bool:
 
 
 def _allowed_locales() -> set[str]:
-    configured = current_app.config.get("SUPPORTED_LOCALES") or ("fr", "en", "de", "bg")
+    configured = current_app.config.get("SUPPORTED_LOCALES") or ("fr", "en", "bg")
     return {str(x).strip().lower() for x in configured if str(x).strip()}
 
 

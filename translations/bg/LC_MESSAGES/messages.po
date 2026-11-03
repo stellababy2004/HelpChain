@@ -1,4 +1,22 @@
 # Bulgarian translations for PROJECT.
+
+msgid "UTILISATEURS & ÉQUIPES"
+msgstr "ПОТРЕБИТЕЛИ И ЕКИПИ"
+
+msgid "COORDINATION HELPCHAIN"
+msgstr "КООРДИНАЦИЯ ЧРЕЗ HELPCHAIN"
+
+msgid "Gouvernance & accès"
+msgstr "Управление и достъп"
+
+msgid "Sécurité & traçabilité"
+msgstr "Сигурност и проследимост"
+
+msgid "Continuité & évolution"
+msgstr "Непрекъснатост и развитие"
+
+msgid "STRUCTURES & PARTENAIRES AUTORISÉS"
+msgstr "ОРГАНИЗАЦИИ И УПЪЛНОМОЩЕНИ ПАРТНЬОРИ"
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
@@ -17,6 +35,33 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+msgid "Présentation HelpChain"
+msgstr "Представяне на HelpChain"
+
+msgid "Présentation"
+msgstr "Представяне"
+
+msgid "Collectivités et ressources"
+msgstr "Местни власти и ресурси"
+
+msgid "Ressources"
+msgstr "Ресурси"
+
+msgid "Demander un accès"
+msgstr "Заявете достъп"
+
+msgid "Déploiement territorial"
+msgstr "Териториално внедряване"
+
+msgid "Cadre et conformité"
+msgstr "Рамка и съответствие"
+
+msgid "Contact & coopération"
+msgstr "Контакти и сътрудничество"
+
+msgid "Accessibilité"
+msgstr "Достъпност"
 
 #: 404.html:8
 msgid "Page not found."
@@ -4326,7 +4371,7 @@ msgstr ""
 
 #: deploiement.html:26 deploiement.html:162
 msgid "Voir le parcours de lancement"
-msgstr "????? ???? ?? ??????????"
+msgstr "Вижте пътя за стартиране"
 
 #: deploiement.html:29
 msgid "Pas de migration brutale"

@@ -18,7 +18,7 @@
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:url" content="{% block og_url %}{{ seo_canonical_url or request.base_url }}{% endblock %}">
     <meta property="og:locale" content="{{ (seo_locale or 'fr-FR')|replace('-', '_') }}">
-    {% for _og_alt_locale in ['en_US', 'de_DE', 'bg_BG'] %}
+    {% for _og_alt_locale in ['bg_BG', 'en_US'] %}
     <meta property="og:locale:alternate" content="{{ _og_alt_locale }}">
     {% endfor %}
     <link rel="canonical" href="{% block canonical_url %}{{ seo_canonical_url or request.base_url }}{% endblock %}">
@@ -64,7 +64,7 @@
       {% elif _seo_ep == 'main.become_volunteer' %}
         {% set _hreflang_next = url_for('main.become_volunteer') %}
       {% endif %}
-      {% for _lang in ['fr', 'en', 'de', 'bg'] %}
+      {% for _lang in ['fr', 'bg', 'en'] %}
     <link rel="alternate" hreflang="{{ _lang }}" href="{{ url_for('main.set_lang', locale=_lang, next=_hreflang_next, _external=True) }}">
       {% endfor %}
     <link rel="alternate" hreflang="x-default" href="{{ url_for('main.set_lang', locale='fr', next=_hreflang_next, _external=True) }}">
@@ -757,7 +757,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
     {% set hc_languages_all = [
       {'code': 'fr', 'name': 'Français', 'flag': ''},
       {'code': 'bg', 'name': 'Български', 'flag': ''},
-      {'code': 'en', 'name': 'English', 'flag': ''}
+      {'code': 'en', 'name': 'English', 'flag': ''},
     ] %}
     {% set hc_institutional_public_eps = [
       'main.index',
@@ -1917,7 +1917,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             <nav class="hc-footer__group" aria-label="{{ _('Collectivités et ressources') }}">
               <h3 class="hc-footer__title">{{ _('Ressources') }}</h3>
               <a class="hc-footer__link" href="{{ url_for('main.pour_les_structures') }}">{{ _('Pour les structures') }}</a>
-              <a class="hc-footer__link" href="{{ url_for('main.demander_acces') }}">{{ _('Demander un acces') }}</a>
+              <a class="hc-footer__link" href="{{ url_for('main.demander_acces') }}">{{ _('Demander un accès') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.architecture') }}">{{ _('Architecture de coordination') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.pilotage_indicateurs') }}">{{ _('Pilotage & indicateurs') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.simulation_operationnelle') }}">{{ _('Simulation opérationnelle') }}</a>
@@ -1925,7 +1925,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             </nav>
 
             <nav class="hc-footer__group" aria-label="{{ _('Cadre et conformité') }}">
-              <h3 class="hc-footer__title">CADRE &amp; CONFORMITÉ</h3>
+              <h3 class="hc-footer__title">{{ _('Cadre et conformité') }}</h3>
               <a class="hc-footer__link" href="{{ url_for('main.faq') }}">{{ _('Questions fréquentes') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.contact') }}">{{ _('Contact & coopération') }}</a>
               <a class="hc-footer__link" href="{{ url_for('main.securite') }}">{{ _('Sécurité & conformité') }}</a>

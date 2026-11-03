@@ -1,4 +1,22 @@
 # English translations for PROJECT.
+
+msgid "UTILISATEURS & ÉQUIPES"
+msgstr "USERS & TEAMS"
+
+msgid "COORDINATION HELPCHAIN"
+msgstr "HELPCHAIN COORDINATION"
+
+msgid "Gouvernance & accès"
+msgstr "Governance & access"
+
+msgid "Sécurité & traçabilité"
+msgstr "Security & traceability"
+
+msgid "Continuité & évolution"
+msgstr "Continuity & evolution"
+
+msgid "STRUCTURES & PARTENAIRES AUTORISÉS"
+msgstr "ORGANIZATIONS & AUTHORIZED PARTNERS"
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
@@ -17,6 +35,33 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+msgid "Présentation HelpChain"
+msgstr "About HelpChain"
+
+msgid "Présentation"
+msgstr "Overview"
+
+msgid "Collectivités et ressources"
+msgstr "Local authorities and resources"
+
+msgid "Ressources"
+msgstr "Resources"
+
+msgid "Demander un accès"
+msgstr "Request access"
+
+msgid "Déploiement territorial"
+msgstr "Territorial deployment"
+
+msgid "Cadre et conformité"
+msgstr "Framework & compliance"
+
+msgid "Contact & coopération"
+msgstr "Contact & cooperation"
+
+msgid "Accessibilité"
+msgstr "Accessibility"
 
 #: 404.html:8
 msgid "Page not found."

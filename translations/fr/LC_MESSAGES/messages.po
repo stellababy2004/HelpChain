@@ -1,4 +1,22 @@
 # French translations for PROJECT.
+
+msgid "UTILISATEURS & ÉQUIPES"
+msgstr "UTILISATEURS & ÉQUIPES"
+
+msgid "COORDINATION HELPCHAIN"
+msgstr "COORDINATION HELPCHAIN"
+
+msgid "Gouvernance & accès"
+msgstr "Gouvernance & accès"
+
+msgid "Sécurité & traçabilité"
+msgstr "Sécurité & traçabilité"
+
+msgid "Continuité & évolution"
+msgstr "Continuité & évolution"
+
+msgid "STRUCTURES & PARTENAIRES AUTORISÉS"
+msgstr "STRUCTURES & PARTENAIRES AUTORISÉS"
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
@@ -17,6 +35,33 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+msgid "Présentation HelpChain"
+msgstr "Présentation HelpChain"
+
+msgid "Présentation"
+msgstr "Présentation"
+
+msgid "Collectivités et ressources"
+msgstr "Collectivités et ressources"
+
+msgid "Ressources"
+msgstr "Ressources"
+
+msgid "Demander un accès"
+msgstr "Demander un accès"
+
+msgid "Déploiement territorial"
+msgstr "Déploiement territorial"
+
+msgid "Cadre et conformité"
+msgstr "Cadre et conformité"
+
+msgid "Contact & coopération"
+msgstr "Contact & coopération"
+
+msgid "Accessibilité"
+msgstr "Accessibilité"
 
 #: 404.html:8
 #, fuzzy
