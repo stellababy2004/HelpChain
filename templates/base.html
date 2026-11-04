@@ -7,7 +7,7 @@
 
     <!-- Step 13 - SEO & Social preview -->
     <meta name="description" content="{% block meta_description %}{{ _('HelpChain est une plateforme de coordination opérationnelle conçue comme une infrastructure de continuité opérationnelle pour les organisations.') }}{% endblock %}">
-    <meta name="robots" content="index,follow">
+    <meta name="robots" content="{% if request.path == '/admin' or request.path.startswith('/admin/') or request.path.startswith('/ops/') %}noindex,nofollow{% else %}index,follow{% endif %}">
     <meta name="application-name" content="HelpChain">
     <meta name="author" content="HelpChain Live">
     <meta name="apple-mobile-web-app-title" content="HelpChain">

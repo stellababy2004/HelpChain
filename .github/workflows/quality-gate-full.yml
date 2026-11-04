@@ -91,6 +91,14 @@ jobs:
           DATABASE_URL: sqlite:///quality_gate.db
           SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
         run: python -c "from backend.appy import app; from backend.extensions import db; app.app_context().push(); db.create_all()"
+      - name: Seed isolated admin browser fixture
+        env:
+          RENDER: "true"
+          DATABASE_URL: sqlite:///quality_gate.db
+          SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
+          PUBLIC_BASE_URL: http://127.0.0.1:5000
+          HC_DEMO_ADMIN_PASSWORD: Change-me-local-admin-1
+        run: python scripts/seed_local_demo.py
       - name: Start isolated local server
         env:
           RENDER: "true"
@@ -108,6 +116,14 @@ jobs:
         env:
           HELPCHAIN_BASE_URL: http://127.0.0.1:5000
         run: pytest -q -m browser tests/test_public_mobile_nav_playwright.py
+      - name: Test admin maps with real Chromium
+        env:
+          HELPCHAIN_BASE_URL: http://127.0.0.1:5000
+          HC_QA_ADMIN_USERNAME: admin
+          HC_QA_ADMIN_PASSWORD: Change-me-local-admin-1
+          HC_QA_MOCK_TILES: "true"
+          HC_QA_REPORT_DIR: reports/visual-audit/admin-maps
+        run: pytest -q -m browser tests/test_admin_maps_playwright.py
 
       - name: Upload visual reports, screenshots and traces
         if: always()

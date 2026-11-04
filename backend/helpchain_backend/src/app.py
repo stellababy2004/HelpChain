@@ -195,6 +195,8 @@ def add_security_headers(app: Flask):
         # Baseline hardening
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
         resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        if request.path == "/admin" or request.path.startswith(("/admin/", "/ops/")):
+            resp.headers["X-Robots-Tag"] = "noindex, nofollow"
         resp.headers["Permissions-Policy"] = (
             "geolocation=(), microphone=(), camera=(), payment=(), usb=(), fullscreen=(self)"
         )
