@@ -628,6 +628,25 @@ def create_app(config_object=None) -> Flask:
         "JWT_SECRET_KEY", os.getenv("JWT_SECRET_KEY", app.config.get("SECRET_KEY"))
     )
 
+    # Fail closed for explicit production deployments. Never use a development
+    # session-signing key in production, even when it is supplied via env.
+    if env_name in ("prod", "production"):
+        production_secret = app.config.get("SECRET_KEY")
+        if (
+            not isinstance(production_secret, str)
+            or len(production_secret) < 32
+            or production_secret.strip() != production_secret
+            or production_secret.lower() in {
+                "dev-only-change-me",
+                "changeme",
+                "change-me",
+                "secret",
+            }
+        ):
+            raise RuntimeError(
+                "Production SECRET_KEY must be a non-placeholder value of at least 32 characters"
+            )
+
     _init_sentry_if_configured(app, env_name=env_name)
 
     # Trust proxy headers only when explicitly enabled for reverse-proxy deployments.
