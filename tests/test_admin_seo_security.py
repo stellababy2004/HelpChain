@@ -10,7 +10,9 @@ def test_admin_and_ops_responses_are_noindex(client):
         assert response.headers.get("X-Robots-Tag") == "noindex, nofollow", path
         if response.status_code == 200:
             html = response.get_data(as_text=True)
-            assert re.search(r'<meta[^>]+name="robots"[^>]+content="noindex,nofollow"', html), path
+            assert re.search(
+                r'<meta[^>]+name="robots"[^>]+content="noindex,nofollow"', html
+            ), path
 
 
 def test_sitemap_contains_no_admin_or_ops_urls(client):
