@@ -29,7 +29,7 @@ def _make_superadmin(session):
 def test_demander_acces_get_returns_200(client):
     resp = client.get("/demander-acces")
     assert resp.status_code == 200
-    assert b"Demander un acces" in resp.data
+    assert "Demander un accès" in resp.get_data(as_text=True)
 
 
 def test_demander_acces_valid_post_creates_new_request(client, app):

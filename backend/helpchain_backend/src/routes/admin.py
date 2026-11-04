@@ -4444,6 +4444,10 @@ def admin_required_404():
 def _supported_locales() -> list[str]:
     configured = current_app.config.get("SUPPORTED_LOCALES") or ("fr", "en", "de", "bg")
     locales = [str(x).strip().lower() for x in configured if str(x).strip()]
+    # Keep the admin translation catalogue able to manage German overrides even
+    # when German is not enabled as a public navigation locale.
+    if "de" not in locales:
+        locales.append("de")
     return sorted(set(locales))
 
 
