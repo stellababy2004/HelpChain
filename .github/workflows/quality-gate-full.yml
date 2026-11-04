@@ -1,0 +1,119 @@
+name: HelpChain Quality Gate Full
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-full-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest_full:
+    name: FULL pytest (${{ matrix.group }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: spine
+            marker: "spine"
+          - group: shared-platform
+            marker: "shared_platform"
+          - group: compatibility
+            marker: "compat_social_request or mixed_transition"
+          - group: unmarked
+            marker: "not spine and not shared_platform and not compat_social_request and not mixed_transition"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev-minimal.txt
+      - name: Run pytest partition
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: |
+          mkdir -p test-artifacts
+          pytest -q -m "${{ matrix.marker }}" \
+            --junitxml="test-artifacts/pytest-${{ matrix.group }}.xml" \
+            --basetemp="$RUNNER_TEMP/helpchain-pytest-${{ matrix.group }}"
+      - name: Upload pytest report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.group }}
+          path: test-artifacts/
+          if-no-files-found: warn
+
+  visual_full:
+    name: FULL visual audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies and Chromium
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev-minimal.txt playwright
+          python -m playwright install --with-deps chromium
+      - name: Prepare isolated quality-gate database
+        env:
+          RENDER: "true"
+          DATABASE_URL: sqlite:///quality_gate.db
+          SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
+        run: python -c "from backend.appy import app; from backend.extensions import db; app.app_context().push(); db.create_all()"
+      - name: Start isolated local server
+        env:
+          RENDER: "true"
+          DATABASE_URL: sqlite:///quality_gate.db
+          SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
+          PORT: "5000"
+        run: |
+          nohup python run.py > quality-gate-server.log 2>&1 &
+          for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:5000/ >/dev/null && exit 0; sleep 1; done
+          cat quality-gate-server.log
+          exit 1
+      - name: Run complete visual audit
+        run: python scripts/public_visual_audit.py --mode full --traces --base-url http://127.0.0.1:5000
+      - name: Upload visual reports, screenshots and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-full
+          path: |
+            reports/visual-audit/
+            quality-gate-server.log
+          if-no-files-found: warn
+
+  quality_gate_final:
+    name: Quality Gate / Final
+    if: always()
+    needs: [pytest_full, visual_full]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all FULL checks to pass
+        env:
+          PYTEST_RESULT: ${{ needs.pytest_full.result }}
+          VISUAL_RESULT: ${{ needs.visual_full.result }}
+        run: |
+          echo "pytest_full=$PYTEST_RESULT"
+          echo "visual_full=$VISUAL_RESULT"
+          test "$PYTEST_RESULT" = success
+          test "$VISUAL_RESULT" = success

@@ -17,12 +17,14 @@
       '</div>' +
       '<div class="hc-universal-lightbox__body">' +
       '<img class="hc-universal-lightbox__image" alt="">' +
+      '<p class="hc-universal-lightbox__caption" aria-live="polite"></p>' +
       '</div>';
     document.body.appendChild(dialog);
 
     var closeButton = dialog.querySelector(".hc-universal-lightbox__close");
     var body = dialog.querySelector(".hc-universal-lightbox__body");
     var image = dialog.querySelector(".hc-universal-lightbox__image");
+    var caption = dialog.querySelector(".hc-universal-lightbox__caption");
     var lastFocused = null;
     var previousOverflow = "";
     var scale = 1;
@@ -53,6 +55,7 @@
       image.alt = sourceAlt;
       dialog.querySelector(".hc-universal-lightbox__title").textContent =
         source.getAttribute("data-hc-lightbox-title") || sourceAlt;
+      caption.textContent = source.getAttribute("data-hc-lightbox-caption") || "";
       resetTransform();
       previousOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";

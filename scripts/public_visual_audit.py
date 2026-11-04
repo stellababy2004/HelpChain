@@ -26,10 +26,16 @@ DEFAULT_BASE_URL = "http://127.0.0.1:5000"
 REPORT_ROOT = ROOT / "reports" / "visual-audit"
 LOCALES = ("fr", "bg", "en")
 VIEWPORTS = {
-    "desktop": (1440, 900),
+    "small-mobile": (360, 740),
+    "large-mobile": (430, 932),
+    "laptop": (1366, 768),
     "tablet": (768, 1024),
     "mobile": (390, 844),
+    "large-desktop": (1920, 1080),
 }
+FAST_ROUTES = ("/", "/comment_ca_marche", "/securite")
+FAST_LOCALES = ("fr",)
+FAST_VIEWPORTS = ("small-mobile", "mobile", "large-desktop")
 PUBLIC_ROUTES = (
     "/",
     "/about",
@@ -142,6 +148,30 @@ def check_layout(check: Check, page) -> None:
         check.add("WARNING", "viewport", f"Visible elements extend beyond the viewport: {metrics['outside'][:3]}")
 
 
+def check_mobile_content_gap(check: Check, page) -> None:
+    if page.viewport_size["width"] > 768 or check.route not in ("/", "/comment_ca_marche"):
+        return
+    metrics = page.evaluate("""() => {
+      const header = document.querySelector('.hc-public-nav-root');
+      const main = document.querySelector('#main-content');
+      const hiddenSheet = document.querySelector('#hcLangSheet');
+      if (!header || !main) return null;
+      const h = header.getBoundingClientRect();
+      const m = main.getBoundingClientRect();
+      const s = hiddenSheet && hiddenSheet.getBoundingClientRect();
+      return {gap: m.top - h.bottom, header: h, main: m, sheet: s,
+        sheetPosition: hiddenSheet ? getComputedStyle(hiddenSheet).position : null,
+        sheetVisibility: hiddenSheet ? getComputedStyle(hiddenSheet).visibility : null};
+    }""")
+    if not metrics:
+        check.add("FAIL", "layout", "Could not measure mobile header/main geometry.")
+        return
+    if metrics["gap"] > 96:
+        check.add("FAIL", "layout", f"Excessive mobile header-to-content gap: {metrics['gap']:.1f}px.")
+    if metrics["sheetPosition"] != "fixed" or metrics["sheetVisibility"] != "hidden":
+        check.add("FAIL", "layout", "Hidden language sheet participates in mobile page flow.")
+
+
 def check_content(check: Check, page) -> None:
     text = visible_text(page)
     if CORRUPTION_RE.search(text):
@@ -176,11 +206,13 @@ def check_resources(check: Check, page, failed_requests: list[str]) -> None:
             check.add("WARNING", "image", "Could not inspect one image element.")
 
 
-def check_mobile_menu(check: Check, page) -> None:
+def check_mobile_menu(check: Check, page, screenshot_dir: Path, take_screenshots: bool) -> None:
     toggle = page.locator("#hcMobileNavToggle")
     if not toggle.count():
         return
     try:
+        if take_screenshots:
+            page.screenshot(path=str(screenshot_dir / "mobile-menu-before.png"), full_page=False)
         toggle.click()
         menu = page.locator("#hcMobileNav, .hc-mobile-nav").first
         page.wait_for_function(
@@ -188,9 +220,37 @@ def check_mobile_menu(check: Check, page) -> None:
                 || document.getElementById('hcMobileNav')?.classList.contains('is-open')""",
             timeout=2000,
         )
-        opened = menu.is_visible() or toggle.get_attribute("aria-expanded") == "true" or page.locator("body.hc-mobile-nav-open").count() > 0
+        panel = page.locator(".hc-mobile-nav__panel").first
+        opened = panel.is_visible() and toggle.get_attribute("aria-expanded") == "true" and page.locator("body.hc-mobile-nav-open").count() > 0
+        if opened:
+            page.wait_for_timeout(250)
         if not opened:
-            check.add("WARNING", "mobile-menu", "Mobile navigation did not expose a detectable open state; review manually.")
+            check.add("FAIL", "mobile-menu", "Mobile navigation did not expose a consistent open state.")
+        if opened:
+            geometry = panel.evaluate("""el => {
+              const panelRect = el.getBoundingClientRect();
+              const links = [...el.querySelectorAll('a[href]')].map(link => {
+                const r = link.getBoundingClientRect();
+                return {left:r.left, right:r.right, top:r.top, bottom:r.bottom,
+                  width:r.width, height:r.height, visible:getComputedStyle(link).visibility !== 'hidden'};
+              });
+              const ancestors = el.parentElement ? [el.parentElement, ...el.parentElement.children] : [];
+              const clipped = ancestors
+                .filter(node => node && node !== el)
+                .some(node => { const s=getComputedStyle(node), r=node.getBoundingClientRect();
+                  return ['hidden','clip'].includes(s.overflow) && (panelRect.right > r.right + 1 || panelRect.bottom > r.bottom + 1); });
+              return {panel:panelRect, links, clipped,
+                css:{position:getComputedStyle(el).position,height:getComputedStyle(el).height,width:getComputedStyle(el).width}};
+            }""")
+            if geometry["css"]["position"] != "absolute" or geometry["panel"]["width"] < 240 or geometry["panel"]["height"] < 300:
+                check.add("FAIL", "mobile-menu", f"Opened menu has unusable geometry: {geometry}")
+            if geometry["clipped"]:
+                check.add("FAIL", "mobile-menu", "Opened menu is clipped by an ancestor container.")
+            visible_links = [link for link in geometry["links"] if link["visible"] and link["width"] > 0 and link["height"] > 0]
+            if len(visible_links) < 3 or any(link["left"] < 0 or link["right"] > page.viewport_size["width"] or link["top"] < 0 or link["bottom"] > page.viewport_size["height"] for link in visible_links[:3]):
+                check.add("FAIL", "mobile-menu", f"Opened menu navigation links are not visibly inside the viewport: {geometry['links'][:3]} viewport={page.viewport_size}.")
+            if take_screenshots:
+                page.screenshot(path=str(screenshot_dir / "mobile-menu-open.png"), full_page=False)
         page.keyboard.press("Escape")
         try:
             page.wait_for_function(
@@ -200,8 +260,8 @@ def check_mobile_menu(check: Check, page) -> None:
             )
         except PlaywrightError:
             pass
-        if menu.is_visible() and toggle.get_attribute("aria-expanded") == "true":
-            check.add("WARNING", "mobile-menu", "Escape did not close mobile navigation.")
+        if toggle.get_attribute("aria-expanded") == "true" or page.locator("body.hc-mobile-nav-open").count() > 0:
+            check.add("FAIL", "mobile-menu", "Escape did not close mobile navigation.")
     except PlaywrightError as exc:
         check.add("WARNING", "mobile-menu", f"Mobile menu interaction could not be completed: {exc}")
 
@@ -223,12 +283,25 @@ def check_lightbox(check: Check, page, screenshot_dir: Path) -> None:
             box = image.bounding_box()
             if not box or box["width"] < 80 or box["height"] < 80:
                 check.add("WARNING", "lightbox", "Lightbox image is unusually small; review manually.")
-            if page.viewport_size["width"] <= 768 and dialog.locator(".hc-universal-lightbox__body").evaluate("el => el.scrollHeight > el.clientHeight"):
-                check.add("WARNING", "lightbox", "Mobile lightbox requires internal scrolling; review image framing.")
+            if page.viewport_size["width"] <= 768:
+                body = dialog.locator(".hc-universal-lightbox__body").first
+                scrollable = body.evaluate("el => el.scrollHeight >= el.clientHeight && el.scrollWidth >= el.clientWidth")
+                if not scrollable:
+                    check.add("FAIL", "lightbox", "Mobile lightbox body does not expose a scrollable viewing area.")
+        caption = dialog.locator(".hc-universal-lightbox__caption").first
+        source_has_caption = page.locator("[data-hc-lightbox-caption]").count() > 0
+        if page.viewport_size["width"] <= 768 and source_has_caption and (not caption.count() or not caption.is_visible()):
+            check.add("FAIL", "lightbox", "Mobile lightbox caption is not visible.")
+        close_button = dialog.locator(".hc-universal-lightbox__close").first
+        if not close_button.is_visible():
+            check.add("FAIL", "lightbox", "Lightbox close button is not visible.")
         dialog.screenshot(path=str(screenshot_dir / "lightbox.png"))
         page.keyboard.press("Escape")
+        page.wait_for_timeout(250)
         if dialog.is_visible():
             check.add("FAIL", "lightbox", "Escape did not close the lightbox.")
+        if page.evaluate("() => document.body.style.overflow") == "hidden":
+            check.add("FAIL", "lightbox", "Page scroll was not restored after closing the lightbox.")
     except PlaywrightError as exc:
         check.add("WARNING", "lightbox", f"Lightbox interaction could not be completed: {exc}")
 
@@ -255,12 +328,29 @@ def render_report(checks: list[Check], output: Path, base_url: str, blocked: str
     <table><thead><tr><th>Route</th><th>Locale</th><th>Viewport</th><th>Status</th><th>Findings and recommended correction</th><th>Screenshot</th></tr></thead><tbody>{''.join(rows)}</tbody></table>"""
     output.write_text(document, encoding="utf-8")
     (output.with_suffix(".json")).write_text(json.dumps({"base_url": base_url, "counts": counts}, indent=2), encoding="utf-8")
+    markdown = [
+        "# HelpChain quality report",
+        "",
+        f"- Base URL: `{base_url}`",
+        f"- Checks: {len(checks)}",
+        f"- PASS: {counts['PASS']} / FAIL: {counts['FAIL']} / WARNING: {counts['WARNING']}",
+    ]
+    if blocked:
+        markdown.extend(["", f"- BLOCKED: {blocked}"])
+    markdown.extend(["", "| Route | Locale | Viewport | Status | Findings |", "|---|---|---|---|---|"])
+    for check in checks:
+        findings = "; ".join(f"[{f.severity}] {f.category}: {f.message}" for f in check.findings) or "None"
+        markdown.append(f"| `{check.route}` | {check.locale} | {check.viewport} | {check.status} | {findings} |")
+    output.with_suffix(".md").write_text("\n".join(markdown) + "\n", encoding="utf-8")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--output-dir", type=Path, default=REPORT_ROOT)
+    parser.add_argument("--mode", choices=("fast", "full"), default="full")
+    parser.add_argument("--no-screenshots", action="store_true")
+    parser.add_argument("--traces", action="store_true")
     parser.add_argument("--route", action="append", choices=PUBLIC_ROUTES, help="Limit the audit to one or more public routes.")
     parser.add_argument("--locale", action="append", choices=LOCALES, help="Limit the audit to one or more locales.")
     parser.add_argument("--viewport", action="append", choices=tuple(VIEWPORTS), help="Limit the audit to one or more viewport names.")
@@ -274,9 +364,13 @@ def main() -> int:
                 parser.error(f"Invalid --case {value!r}; expected ROUTE,LOCALE,VIEWPORT")
             cases.append((parts[0], parts[1], parts[2]))
     else:
-        routes = tuple(args.route or PUBLIC_ROUTES)
-        locales = tuple(args.locale or LOCALES)
-        viewports = tuple(args.viewport or VIEWPORTS)
+        if args.mode == "fast":
+            default_routes, default_locales, default_viewports = FAST_ROUTES, FAST_LOCALES, FAST_VIEWPORTS
+        else:
+            default_routes, default_locales, default_viewports = PUBLIC_ROUTES, LOCALES, tuple(VIEWPORTS)
+        routes = tuple(args.route or default_routes)
+        locales = tuple(args.locale or default_locales)
+        viewports = tuple(args.viewport or default_viewports)
         cases = [(route, locale, viewport_name) for route in routes for locale in locales for viewport_name in viewports]
     args.output_dir.mkdir(parents=True, exist_ok=True)
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
@@ -292,8 +386,10 @@ def main() -> int:
                         check = Check(route, locale, viewport_name, width, height, "")
                         shot_dir = screenshot_root / safe_name(route) / locale / viewport_name
                         shot_dir.mkdir(parents=True, exist_ok=True)
-                        check.screenshot = str(shot_dir.relative_to(args.output_dir)).replace("\\", "/") + "/page.png"
+                        check.screenshot = "" if args.no_screenshots else str(shot_dir.relative_to(args.output_dir)).replace("\\", "/") + "/page.png"
                         context = browser.new_context(viewport={"width": width, "height": height}, locale=locale, ignore_https_errors=True)
+                        if args.traces:
+                            context.tracing.start(screenshots=True, snapshots=True, sources=True)
                         page = context.new_page()
                         errors: list[str] = []
                         failed_requests: list[str] = []
@@ -309,16 +405,20 @@ def main() -> int:
                                 check.add("FAIL", "http", f"HTTP status: {response.status if response else 'no response'}")
                             check_content(check, page)
                             check_layout(check, page)
+                            check_mobile_content_gap(check, page)
                             check_resources(check, page, failed_requests)
                             if errors:
                                 check.add("FAIL", "javascript", "JavaScript errors: " + " | ".join(errors[:5]))
-                            if viewport_name == "mobile":
-                                check_mobile_menu(check, page)
+                            if width <= 768:
+                                check_mobile_menu(check, page, shot_dir, not args.no_screenshots)
                             check_lightbox(check, page, shot_dir)
-                            page.screenshot(path=str(shot_dir / "page.png"), full_page=True)
+                            if not args.no_screenshots:
+                                page.screenshot(path=str(shot_dir / "page.png"), full_page=True)
                         except PlaywrightError as exc:
                             check.add("FAIL", "navigation", str(exc))
                         finally:
+                            if args.traces:
+                                context.tracing.stop(path=str(shot_dir / "trace.zip"))
                             context.close()
                         checks.append(check)
             browser.close()

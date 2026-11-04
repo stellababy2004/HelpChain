@@ -56,6 +56,7 @@ html body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin)
 
 .hc-universal-lightbox__body {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: calc(94vh - 42px);
@@ -63,8 +64,10 @@ html body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin)
   max-height: calc(94vh - 42px);
   padding: 0 10px 10px;
   overflow: hidden;
+  overflow-x: auto;
+  overflow-y: auto;
   overscroll-behavior: contain;
-  touch-action: none;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 .hc-universal-lightbox__image {
@@ -78,6 +81,20 @@ html body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin)
   user-select: none;
   -webkit-user-drag: none;
   will-change: transform;
+}
+
+.hc-universal-lightbox__caption {
+  flex: 0 0 auto;
+  width: 100%;
+  margin: 8px 0 0;
+  color: rgba(248, 250, 252, 0.78);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.hc-universal-lightbox__caption:empty {
+  display: none;
 }
 
 [data-hc-lightbox] {
@@ -102,9 +119,15 @@ html body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin)
   }
 
   .hc-universal-lightbox__body {
-    height: calc(94vh - 38px);
-    max-height: calc(94vh - 38px);
+    height: calc(94vh - 76px);
+    max-height: calc(94vh - 76px);
     padding: 0 6px 6px;
+    justify-content: flex-start;
+    overflow: auto;
+  }
+
+  .hc-universal-lightbox__image {
+    flex: 0 0 auto;
   }
 }
 

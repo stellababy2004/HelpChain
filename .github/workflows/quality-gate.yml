@@ -1,0 +1,61 @@
+name: HelpChain Quality Gate (manual compatibility)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-quality-gate:
+    name: Responsive and publication gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install application and browser test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev-minimal.txt
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Prepare isolated quality-gate database
+        env:
+          RENDER: "true"
+          DATABASE_URL: sqlite:///quality_gate.db
+          SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
+        run: |
+          python -c "from backend.appy import app; from backend.extensions import db; app.app_context().push(); db.create_all()"
+
+      - name: Start isolated local server
+        env:
+          RENDER: "true"
+          DATABASE_URL: sqlite:///quality_gate.db
+          SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
+          PORT: "5000"
+        run: |
+          nohup python run.py > quality-gate-server.log 2>&1 &
+          for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:5000/ >/dev/null && exit 0; sleep 1; done
+          cat quality-gate-server.log
+          exit 1
+
+      - name: Run mandatory FULL quality gate
+        run: python scripts/predeploy_check.py --mode full --base-url http://127.0.0.1:5000
+
+      - name: Upload quality-gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: helpchain-quality-gate
+          path: |
+            reports/visual-audit/
+            quality-gate-server.log
+          if-no-files-found: warn
