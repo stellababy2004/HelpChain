@@ -53,7 +53,40 @@ jobs:
           FILE="backup_${TIMESTAMP}_${GITHUB_SHA}.sql"
           /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" > "$FILE"
           gzip "$FILE"
-          echo "BACKUP_FILE=$FILE.gz" >> "$GITHUB_ENV"
+          BACKUP_FILE="$FILE.gz"
+          sha256sum "$BACKUP_FILE" > "$BACKUP_FILE.sha256"
+          export BACKUP_FILE
+          python - <<'PY'
+          import datetime
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          backup = Path(os.environ["BACKUP_FILE"])
+          sha256 = hashlib.sha256(backup.read_bytes()).hexdigest()
+          manifest = {
+              "backup_file": backup.name,
+              "sha256": sha256,
+              "size_bytes": backup.stat().st_size,
+              "generated_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "git_sha": os.environ["GITHUB_SHA"],
+              "s3_key_backup": f"postgres/{backup.name}",
+              "s3_key_checksum": f"postgres/{backup.name}.sha256",
+              "s3_key_manifest": f"postgres/{backup.name}.manifest.json",
+          }
+          Path(f"{backup}.manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+          PY
+          echo "BACKUP_FILE=$BACKUP_FILE" >> "$GITHUB_ENV"
+
+      - name: Validate backup set locally before upload
+        run: |
+          python scripts/validate_backup_set.py \
+            --backup "$BACKUP_FILE" \
+            --checksum "$BACKUP_FILE.sha256" \
+            --manifest "$BACKUP_FILE.manifest.json" \
+            --expected-repository "$GITHUB_REPOSITORY"
 
       - name: Upload to S3
         env:
@@ -62,6 +95,8 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           aws s3 cp "$BACKUP_FILE" "s3://$S3_BUCKET/postgres/$BACKUP_FILE" --region "$AWS_REGION"
+          aws s3 cp "$BACKUP_FILE.sha256" "s3://$S3_BUCKET/postgres/$BACKUP_FILE.sha256" --region "$AWS_REGION"
+          aws s3 cp "$BACKUP_FILE.manifest.json" "s3://$S3_BUCKET/postgres/$BACKUP_FILE.manifest.json" --region "$AWS_REGION"
 
       - name: Done
         run: |
