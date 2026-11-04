@@ -3,10 +3,10 @@ import os
 import pytest
 from playwright.sync_api import expect, sync_playwright
 
-
 BASE_URL = os.environ.get("HELPCHAIN_BASE_URL", "http://127.0.0.1:5000")
 
 
+@pytest.mark.browser
 @pytest.mark.parametrize("route", ["/", "/comment_ca_marche"])
 def test_mobile_navigation_real_pointer_click_and_navigation(route):
     with sync_playwright() as playwright:

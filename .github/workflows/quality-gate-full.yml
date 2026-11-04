@@ -39,13 +39,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev-minimal.txt
+          pip install -r requirements-dev-minimal.txt playwright
       - name: Run pytest partition
         env:
           PYTHONDONTWRITEBYTECODE: "1"
         run: |
           mkdir -p test-artifacts
-          pytest -q -m "${{ matrix.marker }}" \
+          pytest -q -m "(${{ matrix.marker }}) and not browser" \
             --junitxml="test-artifacts/pytest-${{ matrix.group }}.xml" \
             --basetemp="$RUNNER_TEMP/helpchain-pytest-${{ matrix.group }}"
       - name: Upload pytest report
@@ -92,6 +92,11 @@ jobs:
           exit 1
       - name: Run complete visual audit
         run: python scripts/public_visual_audit.py --mode full --traces --base-url http://127.0.0.1:5000
+      - name: Test mobile navigation with real Chromium
+        env:
+          HELPCHAIN_BASE_URL: http://127.0.0.1:5000
+        run: pytest -q -m browser tests/test_public_mobile_nav_playwright.py
+
       - name: Upload visual reports, screenshots and traces
         if: always()
         uses: actions/upload-artifact@v4
