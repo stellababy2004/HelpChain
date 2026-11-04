@@ -82,10 +82,10 @@ jobs:
 
       - name: Validate backup set locally before upload
         run: |
-          python scripts/validate_backup_set.py \\
-            --backup "$BACKUP_FILE" \\
-            --checksum "$BACKUP_FILE.sha256" \\
-            --manifest "$BACKUP_FILE.manifest.json" \\
+          python scripts/validate_backup_set.py \
+            --backup "$BACKUP_FILE" \
+            --checksum "$BACKUP_FILE.sha256" \
+            --manifest "$BACKUP_FILE.manifest.json" \
             --expected-repository "$GITHUB_REPOSITORY"
 
       - name: Upload to S3
