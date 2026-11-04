@@ -11,15 +11,14 @@ import argparse
 import html
 import json
 import re
-from urllib.request import Request, urlopen
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.request import Request, urlopen
 
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import sync_playwright
-
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BASE_URL = "http://127.0.0.1:5000"
