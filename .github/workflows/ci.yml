@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -199,10 +199,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev-minimal.txt playwright
 
-      - name: Compile French translations
+      - name: Compile translations (BG, EN, FR)
         run: |
-          python -m babel.messages.frontend compile -d translations -l fr
-          test -s translations/fr/LC_MESSAGES/messages.mo
+          for lang in bg en fr; do python -m babel.messages.frontend compile -d translations -l "$lang" || exit 1; done
+          test -s translations/bg/LC_MESSAGES/messages.mo && test -s translations/en/LC_MESSAGES/messages.mo && test -s translations/fr/LC_MESSAGES/messages.mo
 
       - name: Pytest
         env:

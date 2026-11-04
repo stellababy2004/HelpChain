@@ -40,6 +40,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev-minimal.txt playwright
+      - name: Compile translations (BG, EN, FR)
+        run: |
+          for lang in bg en fr; do
+            python -m babel.messages.frontend compile -d translations -l "$lang" || exit 1
+            test -s "translations/$lang/LC_MESSAGES/messages.mo" || exit 1
+          done
       - name: Run pytest partition
         env:
           PYTHONDONTWRITEBYTECODE: "1"
@@ -73,6 +79,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev-minimal.txt playwright
           python -m playwright install --with-deps chromium
+      - name: Compile translations (BG, EN, FR)
+        run: |
+          for lang in bg en fr; do
+            python -m babel.messages.frontend compile -d translations -l "$lang" || exit 1
+            test -s "translations/$lang/LC_MESSAGES/messages.mo" || exit 1
+          done
       - name: Prepare isolated quality-gate database
         env:
           RENDER: "true"
