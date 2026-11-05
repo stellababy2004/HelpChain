@@ -56,7 +56,7 @@ jobs:
             --basetemp="$RUNNER_TEMP/helpchain-pytest-${{ matrix.group }}"
       - name: Upload pytest report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: pytest-${{ matrix.group }}
           path: test-artifacts/
@@ -105,6 +105,7 @@ jobs:
           DATABASE_URL: sqlite:///quality_gate.db
           SQLALCHEMY_DATABASE_URI: sqlite:///quality_gate.db
           PORT: "5000"
+          REQUIRE_ADMIN_MFA: "false"
         run: |
           nohup python run.py > quality-gate-server.log 2>&1 &
           for i in $(seq 1 30); do curl --fail --silent http://127.0.0.1:5000/ >/dev/null && exit 0; sleep 1; done
@@ -125,9 +126,32 @@ jobs:
           HC_QA_REPORT_DIR: reports/visual-audit/admin-maps
         run: pytest -q -m browser tests/test_admin_maps_playwright.py
 
+      - name: Publish admin map diagnostics
+        if: always()
+        run: |
+          for file in \
+            reports/visual-audit/admin-maps/professionals-failure.json \
+            reports/visual-audit/admin-maps/risk-failure.json \
+            reports/visual-audit/admin-maps/command-failure.json; do
+            if [ -f "$file" ]; then
+              echo "=== $file ==="
+              jq -r '"route=\(.route) failure=\(.failure)"' "$file"
+            else
+              echo "Missing diagnostic: $file"
+            fi
+          done
+
+      - name: Upload admin map diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: admin-map-diagnostics
+          path: reports/visual-audit/admin-maps/*-failure.json
+          if-no-files-found: warn
+
       - name: Upload visual reports, screenshots and traces
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: visual-full
           path: |

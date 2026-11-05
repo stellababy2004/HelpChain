@@ -428,6 +428,17 @@ def main() -> int:
     print(f"REPORT={report}")
     print(f"CHECKS={len(checks)}")
     print(f"PASS={sum(c.status == 'PASS' for c in checks)} FAIL={sum(c.status == 'FAIL' for c in checks)} WARNING={sum(c.status == 'WARNING' for c in checks)}")
+    for check in checks:
+        for finding in check.findings:
+            if finding.severity == "FAIL":
+                print(
+                    "FAIL "
+                    f"route={check.route} "
+                    f"locale={check.locale} "
+                    f"viewport={check.viewport} "
+                    f"category={finding.category} "
+                    f"message={finding.message}"
+                )
     if blocked:
         print(f"BLOCKED={blocked}")
     if blocked:
