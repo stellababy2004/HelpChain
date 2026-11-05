@@ -117,10 +117,24 @@ jobs:
           workflow="$(jq -r '.name // empty' "$run_json")"
           sha="$(jq -r '.head_sha // empty' "$run_json")"
           run_date="$(jq -r '.created_at // empty' "$run_json")"
+          run_status="$(jq -r '.status // empty' "$run_json")"
           conclusion="$(jq -r '.conclusion // empty' "$run_json")"
           html_url="$(jq -r '.html_url // empty' "$run_json")"
 
-          if [[ -z "$workflow" || -z "$sha" || -z "$run_date" || -z "$html_url" ]]; then
+          case "$workflow" in
+            CI|"HelpChain Quality Gate Full") ;;
+            *)
+              echo "::error::Run ${run_id} belongs to an unsupported workflow"
+              exit 1
+              ;;
+          esac
+
+          if [[ "$run_status" != "completed" ]]; then
+            echo "::error::Run ${run_id} is not completed"
+            exit 1
+          fi
+
+          if [[ -z "$sha" || -z "$run_date" || -z "$html_url" ]]; then
             echo "::error::GitHub run metadata is incomplete"
             exit 1
           fi
@@ -162,14 +176,45 @@ jobs:
             exit 0
           fi
 
-          # Re-query immediately before create to close the check-then-create race
-          # if a duplicate event was accepted while the first query was running.
+          # Re-query immediately before create to close the check-then-create race.
           existing_json="$(notion_request POST "${NOTION_API}/data_sources/${NOTION_DATA_SOURCE_ID}/query" "$(<"$query_json")")"
           page_id="$(jq -r '.results[0].id // empty' <<<"$existing_json")"
           if [[ -n "$page_id" ]]; then
             notion_request PATCH "${NOTION_API}/pages/${page_id}" "$(<"$page_json")" >/dev/null
             echo "Updated Notion record for run ${run_id}"
-          else
-            notion_request POST "${NOTION_API}/pages" "$(jq --arg ds "$NOTION_DATA_SOURCE_ID" '.parent={data_source_id:$ds}' "$page_json")" >/dev/null
-            echo "Created Notion record for run ${run_id}"
+            exit 0
           fi
+
+          # Page creation is intentionally a single attempt. Retrying POST after
+          # a timeout/5xx could create a duplicate if Notion accepted the first
+          # request but the response was lost.
+          create_response="$(mktemp)"
+          create_status="$(curl -sS --fail-with-body -o "$create_response" -w '%{http_code}' \
+            -X POST "${NOTION_API}/pages" \
+            -H "Authorization: Bearer ${NOTION_API_TOKEN}" \
+            -H "Notion-Version: ${NOTION_VERSION}" \
+            -H 'Content-Type: application/json' \
+            --data "$(jq --arg ds "$NOTION_DATA_SOURCE_ID" '.parent={data_source_id:$ds}' "$page_json")" || true)"
+
+          if [[ "$create_status" =~ ^2[0-9][0-9]$ ]]; then
+            rm -f "$create_response"
+            echo "Created Notion record for run ${run_id}"
+            exit 0
+          fi
+
+          rm -f "$create_response"
+          if [[ "$create_status" == "429" || "$create_status" =~ ^5[0-9][0-9]$ || "$create_status" == "000" ]]; then
+            # The create outcome is unknown. Query first; never blindly POST again.
+            existing_json="$(notion_request POST "${NOTION_API}/data_sources/${NOTION_DATA_SOURCE_ID}/query" "$(<"$query_json")")"
+            page_id="$(jq -r '.results[0].id // empty' <<<"$existing_json")"
+            if [[ -n "$page_id" ]]; then
+              notion_request PATCH "${NOTION_API}/pages/${page_id}" "$(<"$page_json")" >/dev/null
+              echo "Updated Notion record for run ${run_id} after uncertain create response"
+              exit 0
+            fi
+            echo "::error::Notion create outcome is unknown and Run ID was not found on re-check"
+            exit 1
+          fi
+
+          echo "::error::Notion page create failed with HTTP ${create_status}"
+          exit 1
