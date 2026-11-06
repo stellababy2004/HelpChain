@@ -29,6 +29,8 @@ def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="CI i18n guard for new untranslated keys and new hardcoded template text.")
     ap.add_argument("--base-ref", default="origin/main", help="Git base ref for diff (default: origin/main).")
     ap.add_argument("--fr-po", default="translations/fr/LC_MESSAGES/messages.po")
+    ap.add_argument("--en-po", default="translations/en/LC_MESSAGES/messages.po")
+    ap.add_argument("--bg-po", default="translations/bg/LC_MESSAGES/messages.po")
     ap.add_argument("--show", type=int, default=80, help="Max violations to print per section.")
     return ap.parse_args()
 
@@ -108,6 +110,32 @@ def load_fr_translated_msgids(po_path: Path) -> set[str]:
         if str(e.msgstr or "").strip():
             translated.add(str(e.msgid))
     return translated
+
+
+def load_translated_msgids(po_path: Path) -> set[str]:
+    """Return non-empty, non-identity translations from one gettext catalog."""
+    if not po_path.exists():
+        return set()
+    po = polib.pofile(str(po_path))
+    return {
+        str(entry.msgid)
+        for entry in po
+        if not entry.obsolete and entry.msgid and str(entry.msgstr or "").strip()
+        and str(entry.msgstr).strip() != str(entry.msgid)
+    }
+
+
+def missing_new_msgids(
+    occurrences: dict[str, list[tuple[str, int]]],
+    catalogs: dict[str, set[str]],
+) -> dict[str, list[tuple[str, list[tuple[str, int]]]]]:
+    """Find missing translations only for msgids introduced by the current diff."""
+    missing: dict[str, list[tuple[str, list[tuple[str, int]]]]] = {}
+    for msgid, refs in sorted(occurrences.items(), key=lambda item: item[0]):
+        for locale, translated in catalogs.items():
+            if msgid not in translated:
+                missing.setdefault(locale, []).append((msgid, refs))
+    return missing
 
 
 def _is_visible_chunk(s: str) -> bool:
@@ -230,8 +258,12 @@ def main() -> int:
         if rows:
             added_by_file[fp] = rows
 
-    # Rule 1: new _("...") keys must have FR msgstr
-    fr_translated = load_fr_translated_msgids(Path(args.fr_po))
+    # Rule 1: new _() keys must have FR, EN and BG msgstr values.
+    translated_by_locale = {
+        "FR": load_translated_msgids(Path(args.fr_po)),
+        "EN": load_translated_msgids(Path(args.en_po)),
+        "BG": load_translated_msgids(Path(args.bg_po)),
+    }
     new_msgid_occurrences: dict[str, list[tuple[str, int]]] = {}
 
     for fp, rows in added_by_file.items():
@@ -242,10 +274,7 @@ def main() -> int:
                     continue
                 new_msgid_occurrences.setdefault(msgid, []).append((fp, row.line_no))
 
-    missing_fr: list[tuple[str, list[tuple[str, int]]]] = []
-    for msgid, refs in sorted(new_msgid_occurrences.items(), key=lambda x: x[0]):
-        if msgid not in fr_translated:
-            missing_fr.append((msgid, refs))
+    missing_by_locale = missing_new_msgids(new_msgid_occurrences, translated_by_locale)
 
     # Rule 2: new hardcoded visible text in templates (not wrapped)
     hardcoded: list[tuple[str, int, str]] = []
@@ -261,18 +290,20 @@ def main() -> int:
     print("i18n CI guard")
     print(f"base_ref: {base_ref}")
 
-    if missing_fr:
-        failed = True
-        print(f"\nERROR: New _() keys missing FR msgstr ({len(missing_fr)})")
-        for msgid, refs in missing_fr[: args.show]:
-            where = ", ".join(f"{f}:{ln}" for f, ln in refs[:4])
-            if len(refs) > 4:
-                where += f", +{len(refs) - 4} more"
-            print(f"- {msgid} [{where}]")
-        if len(missing_fr) > args.show:
-            print(f"... +{len(missing_fr) - args.show} more")
-    else:
-        print("\nOK: No new _() keys without FR msgstr.")
+    for locale in ("FR", "EN", "BG"):
+        missing = missing_by_locale.get(locale, [])
+        if missing:
+            failed = True
+            print(f"\nERROR: New _() keys missing {locale} msgstr ({len(missing)})")
+            for msgid, refs in missing[: args.show]:
+                where = ", ".join(f"{f}:{ln}" for f, ln in refs[:4])
+                if len(refs) > 4:
+                    where += f", +{len(refs) - 4} more"
+                print(f"- {msgid} [{where}]")
+            if len(missing) > args.show:
+                print(f"... +{len(missing) - args.show} more")
+        else:
+            print(f"\nOK: No new _() keys without {locale} msgstr.")
 
     if hardcoded:
         failed = True

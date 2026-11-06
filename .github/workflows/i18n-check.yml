@@ -10,6 +10,7 @@ on:
       - "templates/**"
       - "translations/**"
       - "scripts/check_translations.py"
+      - "scripts/i18n_ci_guard.py"
 
 jobs:
   i18n-check:
@@ -38,13 +39,15 @@ jobs:
             --templates-dir templates \
             --translations-dir translations \
             --fail-locales fr \
-            --warn-locales en,de,bg
+            --warn-locales en,bg
 
       - name: Run i18n CI guard
         run: |
           python scripts/i18n_ci_guard.py \
             --base-ref origin/main \
-            --fr-po translations/fr/LC_MESSAGES/messages.po
+            --fr-po translations/fr/LC_MESSAGES/messages.po \
+            --en-po translations/en/LC_MESSAGES/messages.po \
+            --bg-po translations/bg/LC_MESSAGES/messages.po
 
 
 
