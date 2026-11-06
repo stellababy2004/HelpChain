@@ -887,7 +887,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
                     <a class="hc-nav-mega__link" href="{{ url_for('main.simulation_operationnelle') }}"><strong>{{ _('Simulation opérationnelle') }}</strong><span>{{ _('Voir comment une situation reste visible, relançable et suivie dans le temps.') }}</span></a>
                     <a class="hc-nav-mega__link" href="{{ url_for('main.deploiement') }}"><strong>{{ _('Déploiement') }}</strong><span>{{ _('Mise en place progressive, gouvernance opérationnelle et continuité institutionnelle.') }}</span></a>
                     <a class="hc-nav-mega__link" href="{{ url_for('main.offre') }}"><strong>{{ _('Cadres de déploiement') }}</strong><span>{{ _('Cadres pilote, professionnel et institutionnel pour structurer l’adoption.') }}</span></a>
-                    <a class="hc-nav-mega__link" href="{{ url_for('main.pour_les_structures') }}"><strong>{{ _('Structures') }}</strong><span>{{ _('Infrastructure de coordination pour CCAS, collectivités et structures multi-acteurs.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.pour_les_structures') }}"><strong>{{ _('Réseaux & fédérations') }}</strong><span>{{ _('Coordination opérationnelle pour réseaux associatifs, fédérations et acteurs territoriaux.') }}</span></a>
                     <a class="hc-nav-mega__link" href="{{ url_for('main.professionnels') }}"><strong>{{ _('Professionnels') }}</strong><span>{{ _('Espace de suivi habilité pour acteurs responsables de la continuité.') }}</span></a>
                   </div>
                 </div>
@@ -895,7 +895,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if secteurs_active else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if secteurs_active %}aria-current="page"{% endif %}>
-                <span class="hc-navlabel">{{ _('Structures') }}</span>
+                <span class="hc-navlabel">{{ _('Réseaux & fédérations') }}</span>
               </a>
             </li>
             <li class="nav-item">
@@ -910,7 +910,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>
-                <span class="hc-navlabel">{{ _('Tarifs') }}</span>
+                <span class="hc-navlabel">{{ _('Offres') }}</span>
               </a>
             </li>
             <li class="nav-item">
@@ -962,7 +962,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
                     <a class="hc-nav-mega__link" href="{{ url_for('main.simulation_operationnelle') }}"><strong>{{ _('Simulation opérationnelle') }}</strong><span>{{ _('Voir comment une situation reste visible, relançable et suivie dans le temps.') }}</span></a>
                     <a class="hc-nav-mega__link" href="{{ url_for('main.deploiement') }}"><strong>{{ _('Déploiement') }}</strong><span>{{ _('Mise en place progressive, gouvernance opérationnelle et continuité institutionnelle.') }}</span></a>
                     <a class="hc-nav-mega__link" href="{{ url_for('main.offre') }}"><strong>{{ _('Cadres de déploiement') }}</strong><span>{{ _('Cadres pilote, professionnel et institutionnel pour structurer l’adoption.') }}</span></a>
-                    <a class="hc-nav-mega__link" href="{{ url_for('main.pour_les_structures') }}"><strong>{{ _('Structures') }}</strong><span>{{ _('Infrastructure de coordination pour CCAS, collectivités et structures multi-acteurs.') }}</span></a>
+                    <a class="hc-nav-mega__link" href="{{ url_for('main.pour_les_structures') }}"><strong>{{ _('Réseaux & fédérations') }}</strong><span>{{ _('Coordination opérationnelle pour réseaux associatifs, fédérations et acteurs territoriaux.') }}</span></a>
                     <a class="hc-nav-mega__link" href="{{ url_for('main.professionnels') }}"><strong>{{ _('Professionnels') }}</strong><span>{{ _('Espace de suivi habilité pour acteurs responsables de la continuité.') }}</span></a>
                   </div>
                 </div>
@@ -970,7 +970,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if secteurs_active else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if secteurs_active %}aria-current="page"{% endif %}>
-                {{ _('Structures') }}
+                {{ _('Réseaux & fédérations') }}
               </a>
             </li>
             <li class="nav-item">
@@ -985,7 +985,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             </li>
             <li class="nav-item">
               <a class="nav-link {{ 'active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>
-                {{ _('Tarifs') }}
+                {{ _('Offres') }}
               </a>
             </li>
             <li class="nav-item">
@@ -1267,7 +1267,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             <a class="{{ 'is-active' if produit_active else '' }}" href="{{ url_for('main.comment_ca_marche') }}" {% if produit_active %}aria-current="page"{% endif %}>{{ _('Coordination') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if secteurs_active else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if secteurs_active %}aria-current="page"{% endif %}>{{ _('Structures') }}</a>
+            <a class="{{ 'is-active' if secteurs_active else '' }}" href="{{ url_for('main.pour_les_structures') }}" {% if secteurs_active %}aria-current="page"{% endif %}>{{ _('Réseaux & fédérations') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if securite_active else '' }}" href="{{ url_for('main.securite') }}" {% if securite_active %}aria-current="page"{% endif %}>{{ _('Sécurité') }}</a>
@@ -1276,7 +1276,7 @@ href="{{ url_for('static', filename='css/components/hc-unified-maps.css') }}">
             <a class="{{ 'is-active' if deploiement_active else '' }}" href="{{ url_for('main.deploiement') }}" {% if deploiement_active %}aria-current="page"{% endif %}>{{ _('Déploiement') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
-            <a class="{{ 'is-active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>{{ _('Tarifs') }}</a>
+            <a class="{{ 'is-active' if tarifs_active else '' }}" href="{{ url_for('main.tarifs') }}" {% if tarifs_active %}aria-current="page"{% endif %}>{{ _('Offres') }}</a>
           </li>
           <li class="hc-mobile-nav__item">
             <a class="{{ 'is-active' if ressources_active else '' }}" href="{{ url_for('main.architecture') }}" {% if ressources_active %}aria-current="page"{% endif %}>{{ _('Architecture') }}</a>

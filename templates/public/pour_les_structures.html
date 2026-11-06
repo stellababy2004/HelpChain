@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Structures | Infrastructure de coordination opérationnelle HelpChain') }}{% endblock %}
-{% block meta_description %}{{ _('Infrastructure de coordination opérationnelle pour les CCAS, collectivités, associations et réseaux de professionnels avec suivi, orientation, pilotage et continuité inter-structures.') }}{% endblock %}
-{% block og_title %}{{ _('Structures | Infrastructure de coordination opérationnelle HelpChain') }}{% endblock %}
+{% block title %}{{ _('Réseaux & fédérations | HelpChain') }}{% endblock %}
+{% block meta_description %}{{ _('Plateforme de coordination opérationnelle pour les réseaux associatifs, fédérations, collectivités et organisations partenaires.') }}{% endblock %}
+{% block og_title %}{{ _('Réseaux & fédérations | HelpChain') }}{% endblock %}
 {% block body_class %}hc-page-structures{% endblock %}
 {% block head %}
   {{ super() }}
@@ -329,21 +329,21 @@
 <main class="hc-institutional">
   <section class="hc-hero">
     <div class="hc-container">
-      <p class="hc-hero__eyebrow">{{ _('Coordination opérationnelle des structures territoriales') }}</p>
-      <h1>{{ _('Moins de dispersion. Plus de lisibilité. Un cadre commun pour piloter les demandes sociales.') }}</h1>
+      <p class="hc-hero__eyebrow">{{ _('POUR LES RÉSEAUX ASSOCIATIFS, FÉDÉRATIONS ET ACTEURS TERRITORIAUX') }}</p>
+      <h1>{{ _('Coordonnez plusieurs organisations dans un seul suivi partagé.') }}</h1>
       <p class="hc-hero__intro">
-        {{ _('HelpChain structure la réception, l’orientation, l’attribution et le suivi des demandes dans un environnement lisible, traçable et adapté aux structures publiques, associatives et territoriales.') }}
+        {{ _('HelpChain permet aux réseaux d’associations, fédérations et coordinations territoriales de suivre les demandes, répartir les responsabilités et assurer la continuité des actions entre structures indépendantes.') }}
       </p>
 
       <div class="hc-dossier-note">
         <div class="hc-dossier-note__title">{{ _('Pensé pour') }}</div>
         <p class="hc-dossier-note__text">
-          {{ _('Structures publiques et sociales opérant en France') }}
+          {{ _('Chaque organisation conserve son espace et ses droits d’accès.') }}
         </p>
       </div>
       <div class="hc-cta-row">
-        <a href="/demo" class="hc-btn hc-btn--primary" data-hc-event="structure_deployment_interest" data-hc-cta="hero_pilot_access" data-hc-intent="deployment">{{ _('Demander un accès pilote') }}</a>
-        <a href="#hc-structures-workflow" class="hc-btn hc-btn--ghost" data-hc-event="structure_operating_model_review_requested" data-hc-cta="hero_operating_model" data-hc-intent="institutional_fit">{{ _('Voir le cadre de fonctionnement') }}</a>
+        <a href="/demo" class="hc-btn hc-btn--primary" data-hc-event="structure_deployment_interest" data-hc-cta="hero_pilot_access" data-hc-intent="deployment">{{ _('Découvrir HelpChain pour mon réseau') }}</a>
+        <a href="{{ url_for('main.comment_ca_marche') }}" class="hc-btn hc-btn--ghost" data-hc-event="structure_operating_model_review_requested" data-hc-cta="hero_operating_model" data-hc-intent="institutional_fit">{{ _('Voir comment ça fonctionne') }}</a>
       </div>
       <ul class="hc-audience-row" aria-label="{{ _('Publics concernés') }}">
         <li class="hc-audience-pill">{{ _('CCAS') }}</li>

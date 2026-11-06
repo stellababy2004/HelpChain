@@ -112,16 +112,22 @@ def load_fr_translated_msgids(po_path: Path) -> set[str]:
     return translated
 
 
-def load_translated_msgids(po_path: Path) -> set[str]:
+def load_translated_msgids(
+    po_path: Path, *, allow_identity: set[str] | None = None
+) -> set[str]:
     """Return non-empty, non-identity translations from one gettext catalog."""
     if not po_path.exists():
         return set()
     po = polib.pofile(str(po_path))
+    allow_identity = allow_identity or set()
     return {
         str(entry.msgid)
         for entry in po
         if not entry.obsolete and entry.msgid and str(entry.msgstr or "").strip()
-        and str(entry.msgstr).strip() != str(entry.msgid)
+        and (
+            str(entry.msgstr).strip() != str(entry.msgid)
+            or str(entry.msgid) in allow_identity
+        )
     }
 
 
@@ -260,8 +266,11 @@ def main() -> int:
 
     # Rule 1: new _() keys must have FR, EN and BG msgstr values.
     translated_by_locale = {
-        "FR": load_translated_msgids(Path(args.fr_po)),
-        "EN": load_translated_msgids(Path(args.en_po)),
+        # FR is the source language: an explicit msgstr identical to msgid is valid.
+        "FR": load_fr_translated_msgids(Path(args.fr_po)),
+        "EN": load_translated_msgids(
+            Path(args.en_po), allow_identity={"Coordination"}
+        ),
         "BG": load_translated_msgids(Path(args.bg_po)),
     }
     new_msgid_occurrences: dict[str, list[tuple[str, int]]] = {}
