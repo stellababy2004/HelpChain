@@ -137,7 +137,12 @@ def _can_view_referral(referral: CaseReferral) -> bool:
         return False
     if structure_id == referral.from_structure_id:
         return True
-    return structure_id == referral.to_structure_id and _active_referral_connection(referral) is not None
+    connection = _active_referral_connection(referral)
+    return bool(
+        structure_id == referral.to_structure_id
+        and connection is not None
+        and _connection_allows(connection, "can_receive_referrals")
+    )
 
 
 def _active_referral_connection(referral: CaseReferral) -> OrganizationConnection | None:
@@ -157,6 +162,15 @@ def _active_referral_connection(referral: CaseReferral) -> OrganizationConnectio
     )
 
 
+def _connection_allows(connection: OrganizationConnection | None, permission: str) -> bool:
+    """Fail closed for missing, malformed, or non-boolean connection permissions."""
+    permissions = getattr(connection, "permissions_json", None)
+    if not isinstance(permissions, dict):
+        return False
+    value = permissions.get(permission)
+    return type(value) is bool and value
+
+
 def _require_referral_access(referral: CaseReferral) -> None:
     if not _can_view_referral(referral):
         abort(403)
@@ -164,7 +178,13 @@ def _require_referral_access(referral: CaseReferral) -> None:
 
 def _can_accept_or_refuse(referral: CaseReferral) -> bool:
     structure_id = _admin_structure_id()
-    return bool(structure_id and structure_id == referral.to_structure_id)
+    connection = _active_referral_connection(referral)
+    return bool(
+        structure_id
+        and structure_id == referral.to_structure_id
+        and connection is not None
+        and _connection_allows(connection, "can_receive_referrals")
+    )
 
 
 def _can_update_operational_status(referral: CaseReferral) -> bool:
@@ -1813,6 +1833,8 @@ def admin_referral_public_note(referral_id: int):
     if _effective_operational_status(referral) in {"refused", "cancelled", "completed"}:
         flash("Orientation déjà traitée.", "info")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
+    if not _connection_allows(_active_referral_connection(referral), "can_comment"):
+        abort(403)
     note = (request.form.get("public_status_note") or "").strip()
     if not note:
         flash("Note publique vide.", "warning")
@@ -1908,7 +1930,7 @@ def admin_request_refer_submit(req_id: int):
             ),
         ).first()
     )
-    if not connection:
+    if not connection or not _connection_allows(connection, "can_send_referrals"):
         flash("Structure destinataire non autorisée pour les orientations partenaires.", "warning")
         return redirect(url_for("admin.admin_request_refer", req_id=source_request.id))
 

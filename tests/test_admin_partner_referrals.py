@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
+
 from backend.models import (
     AdminUser,
     CaseReferral,
@@ -95,6 +97,11 @@ def _seed_referral_context(active_connection: bool = True):
                 target_structure_id=b.id,
                 status="active",
                 connection_type="referral",
+                permissions_json={
+                    "can_send_referrals": True,
+                    "can_receive_referrals": True,
+                    "can_comment": False,
+                },
                 created_by_admin_id=superadmin.id,
                 created_at=utc_now(),
                 accepted_at=utc_now(),
@@ -168,6 +175,110 @@ def _send_referral(client, app, ctx):
     )
     assert response.status_code == 303
     return CaseReferral.query.order_by(CaseReferral.id.desc()).first()
+
+
+@pytest.mark.parametrize("permissions", [
+    {"can_send_referrals": False},
+    {},
+    {"can_send_referrals": "yes"},
+])
+def test_send_referral_fails_closed_for_connection_permission_values(client, app, permissions):
+    ctx = _seed_referral_context()
+    connection = OrganizationConnection.query.one()
+    connection.permissions_json = permissions
+    db.session.commit()
+    _login(client, app, ctx["admin_a"])
+
+    response = client.post(
+        f"/admin/requests/{ctx['request'].id}/refer",
+        data={"to_structure_id": str(ctx["b"].id), "reason": "Permission test"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert CaseReferral.query.count() == 0
+
+
+def test_permission_checks_follow_reversed_connection_direction(client, app):
+    ctx = _seed_referral_context()
+    connection = OrganizationConnection.query.one()
+    connection.source_structure_id = ctx["b"].id
+    connection.target_structure_id = ctx["a"].id
+    connection.permissions_json = {"can_send_referrals": False, "can_receive_referrals": True}
+    db.session.commit()
+
+    _login(client, app, ctx["admin_a"])
+    response = client.post(
+        f"/admin/requests/{ctx['request'].id}/refer",
+        data={"to_structure_id": str(ctx["b"].id), "reason": "Reversed permission test"},
+        follow_redirects=False,
+    )
+    assert response.status_code == 302
+    assert CaseReferral.query.count() == 0
+
+
+@pytest.mark.parametrize("permissions", [
+    {"can_receive_referrals": False},
+    {},
+    {"can_receive_referrals": 1},
+])
+def test_target_view_accept_and_refuse_fail_closed_for_receive_permission(client, app, permissions):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    connection = OrganizationConnection.query.one()
+    connection.permissions_json = {"can_send_referrals": True, **permissions}
+    db.session.commit()
+    _login(client, app, ctx["admin_b"])
+
+    assert client.get(f"/admin/referrals/{referral.id}").status_code == 403
+    assert client.post(f"/admin/referrals/{referral.id}/accept").status_code == 403
+    assert client.post(f"/admin/referrals/{referral.id}/refuse").status_code == 403
+
+
+@pytest.mark.parametrize("permissions", [
+    {"can_comment": False},
+    {},
+    {"can_comment": "true"},
+])
+def test_public_note_fails_closed_for_comment_permission(client, app, permissions):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    connection = OrganizationConnection.query.one()
+    connection.permissions_json = {"can_receive_referrals": True, **permissions}
+    db.session.commit()
+    _login(client, app, ctx["admin_b"])
+
+    response = client.post(
+        f"/admin/referrals/{referral.id}/public-note",
+        data={"public_status_note": "Should be denied"},
+        follow_redirects=False,
+    )
+    assert response.status_code == 403
+
+
+def test_permission_change_applies_without_new_login(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    connection = OrganizationConnection.query.one()
+    connection.permissions_json = {"can_receive_referrals": True, "can_comment": True}
+    db.session.commit()
+    _login(client, app, ctx["admin_b"])
+
+    allowed = client.post(
+        f"/admin/referrals/{referral.id}/public-note",
+        data={"public_status_note": "Allowed before change"},
+        follow_redirects=False,
+    )
+    assert allowed.status_code == 303
+
+    connection.permissions_json = {"can_receive_referrals": True, "can_comment": False}
+    db.session.commit()
+    denied = client.post(
+        f"/admin/referrals/{referral.id}/public-note",
+        data={"public_status_note": "Denied after change"},
+        follow_redirects=False,
+    )
+    assert denied.status_code == 403
 
 
 def _create_partner_connection(client, app, ctx):
@@ -583,6 +694,9 @@ def test_public_status_visible_without_private_request_fields(client, app):
 def test_receiving_structure_can_add_public_note(client, app):
     ctx = _seed_referral_context()
     referral = _send_referral(client, app, ctx)
+    connection = OrganizationConnection.query.one()
+    connection.permissions_json = {"can_receive_referrals": True, "can_comment": True}
+    db.session.commit()
     b_client = app.test_client()
     _login(b_client, app, ctx["admin_b"])
     b_client.post(f"/admin/referrals/{referral.id}/accept")
