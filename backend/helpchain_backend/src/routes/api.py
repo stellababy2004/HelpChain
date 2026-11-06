@@ -22,6 +22,7 @@ from ..models import (
     Case,
     CaseCollaborator,
     CaseEvent,
+    OrganizationConnection,
     IntegrationConnector,
     NotificationSubscription,
     RelayEvent,
@@ -39,12 +40,14 @@ from .admin import (
     admin_required,
     admin_required_404,
     admin_role_required,
+    audit_admin_action,
 )
 from ..security.api_authz import require_api_auth, require_roles
 
 api_bp = Blueprint("api", __name__)
 controller = HelpChainController()
 csrf.exempt(api_bp)
+COLLABORATOR_ACTIVE_ROLES = frozenset({"viewer"})
 
 
 def _api_admin_scope():
@@ -595,6 +598,8 @@ def invite_structure_to_case(case_id: int):
     payload = request.get_json(silent=True) or {}
     structure_id_raw = payload.get("structure_id")
     role_raw = (payload.get("role") or "viewer").strip().lower()
+    if role_raw not in COLLABORATOR_ACTIVE_ROLES:
+        return jsonify({"error": "unsupported collaborator role"}), 400
 
     try:
         structure_id = int(structure_id_raw)
@@ -629,14 +634,52 @@ def invite_structure_to_case(case_id: int):
     structure = db.session.get(Structure, structure_id)
     if not structure:
         return jsonify({"error": "structure not found"}), 404
+    active_connection = _is_global_admin() or OrganizationConnection.query.filter(
+        OrganizationConnection.status == "active",
+        OrganizationConnection.connection_type == "referral",
+        or_(
+            (OrganizationConnection.source_structure_id == case_row.structure_id)
+            & (OrganizationConnection.target_structure_id == structure_id),
+            (OrganizationConnection.source_structure_id == structure_id)
+            & (OrganizationConnection.target_structure_id == case_row.structure_id),
+        ),
+    ).first()
 
     existing = (
         CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
         .filter(CaseCollaborator.structure_id == structure_id)
         .first()
     )
-    if existing:
+    if existing and active_connection:
         existing.role = role_raw or existing.role
+    elif existing and not active_connection:
+        existing.role = "pending_viewer"
+        db.session.add(
+            CaseEvent(
+                case_id=case_row.id,
+                actor_user_id=getattr(current_user, "id", None),
+                event_type="structure_invitation_pending",
+                message=f"Structure invitation pending active connection: {structure.name}",
+                visibility="internal",
+            )
+        )
+    elif not active_connection:
+        db.session.add(
+            CaseCollaborator(
+                case_id=case_row.id,
+                structure_id=structure_id,
+                role="pending_viewer",
+            )
+        )
+        db.session.add(
+            CaseEvent(
+                case_id=case_row.id,
+                actor_user_id=getattr(current_user, "id", None),
+                event_type="structure_invitation_pending",
+                message=f"Structure invitation pending active connection: {structure.name}",
+                visibility="internal",
+            )
+        )
     else:
         db.session.add(
             CaseCollaborator(
@@ -655,6 +698,49 @@ def invite_structure_to_case(case_id: int):
             )
         )
     db.session.commit()
+    return jsonify({"ok": True}), 200
+
+
+@api_bp.post("/cases/<int:case_id>/collaborators/<int:structure_id>/revoke")
+@admin_required
+@admin_role_required("ops", "superadmin")
+def revoke_case_collaborator(case_id: int, structure_id: int):
+    admin_required_404()
+    _require_adaptive_module("referrals")
+    case_row = db.session.get(Case, int(case_id))
+    if not case_row:
+        return jsonify({"error": "case not found"}), 404
+    if not _is_global_admin() and getattr(current_user, "structure_id", None) != case_row.structure_id:
+        return jsonify({"error": "forbidden"}), 403
+    require_case_operationally_writable(case_row)
+    collaborator = (
+        CaseCollaborator.query.filter_by(case_id=case_row.id, structure_id=int(structure_id)).first()
+    )
+    if not collaborator:
+        return jsonify({"error": "collaborator not found"}), 404
+    db.session.delete(collaborator)
+    db.session.add(
+        CaseEvent(
+            case_id=case_row.id,
+            actor_user_id=getattr(current_user, "id", None),
+            event_type="structure_collaborator_revoked",
+            message=f"Structure collaborator revoked: {structure_id}",
+            visibility="internal",
+        )
+    )
+    try:
+        audit_admin_action(
+            action="case.collaborator_revoke",
+            target_type="Case",
+            target_id=case_row.id,
+            payload={"structure_id": int(structure_id)},
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     return jsonify({"ok": True}), 200
 
 

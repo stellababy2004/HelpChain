@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from flask import abort, current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import or_
+from sqlalchemy import and_, exists, or_
 from sqlalchemy.orm import joinedload
 
 from backend.extensions import db
@@ -133,9 +133,27 @@ def _can_view_referral(referral: CaseReferral) -> bool:
     if _global_superadmin_without_structure():
         return True
     structure_id = _admin_structure_id()
-    return bool(
-        structure_id
-        and structure_id in {referral.from_structure_id, referral.to_structure_id}
+    if not structure_id:
+        return False
+    if structure_id == referral.from_structure_id:
+        return True
+    return structure_id == referral.to_structure_id and _active_referral_connection(referral) is not None
+
+
+def _active_referral_connection(referral: CaseReferral) -> OrganizationConnection | None:
+    return (
+        OrganizationConnection.query.filter(
+            OrganizationConnection.status == "active",
+            OrganizationConnection.connection_type == "referral",
+            or_(
+                (OrganizationConnection.source_structure_id == referral.from_structure_id)
+                & (OrganizationConnection.target_structure_id == referral.to_structure_id),
+                (OrganizationConnection.source_structure_id == referral.to_structure_id)
+                & (OrganizationConnection.target_structure_id == referral.from_structure_id),
+            ),
+        )
+        .order_by(OrganizationConnection.id.desc())
+        .first()
     )
 
 
@@ -840,10 +858,24 @@ def _referral_query():
     structure_id = _admin_structure_id()
     if not structure_id:
         return query.filter(False)
+    active_connection = exists().where(
+        OrganizationConnection.status == "active",
+        OrganizationConnection.connection_type == "referral",
+        or_(
+            and_(
+                OrganizationConnection.source_structure_id == CaseReferral.from_structure_id,
+                OrganizationConnection.target_structure_id == CaseReferral.to_structure_id,
+            ),
+            and_(
+                OrganizationConnection.source_structure_id == CaseReferral.to_structure_id,
+                OrganizationConnection.target_structure_id == CaseReferral.from_structure_id,
+            ),
+        ),
+    )
     return query.filter(
         or_(
             CaseReferral.from_structure_id == structure_id,
-            CaseReferral.to_structure_id == structure_id,
+            and_(CaseReferral.to_structure_id == structure_id, active_connection),
         )
     )
 

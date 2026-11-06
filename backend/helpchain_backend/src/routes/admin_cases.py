@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user
 from sqlalchemy import func, inspect, or_
 from sqlalchemy.orm import joinedload
@@ -17,12 +18,15 @@ from ..models import (
     CaseCollaborator,
     CaseEvent,
     CaseParticipant,
+    OrganizationConnection,
     ProfessionalLead,
     Intervenant,
     Request,
     Structure,
     User,
 )
+
+COLLABORATOR_ACTIVE_ROLES = frozenset({"viewer"})
 from ..services.case_matching import (
     eligible_professional_leads_query,
     suggest_professional_leads_for_case,
@@ -305,6 +309,40 @@ def build_case_copilot(case, request, events=None, assignments=None):
     }
 
 
+def _collaborator_request_projection(req: Request) -> SimpleNamespace:
+    return SimpleNamespace(
+        id=req.id,
+        title=req.title,
+        category=req.category,
+        structure_id=req.structure_id,
+        structure=req.structure,
+    )
+
+
+def _active_case_collaborator(case_row: Case, structure_id: int):
+    collaborator = (
+        CaseCollaborator.query.filter_by(case_id=case_row.id, structure_id=int(structure_id)).first()
+    )
+    if not collaborator:
+        return None
+    if (collaborator.role or "").strip().lower() not in COLLABORATOR_ACTIVE_ROLES:
+        return None
+    return (
+        collaborator
+        if OrganizationConnection.query.filter(
+            OrganizationConnection.status == "active",
+            OrganizationConnection.connection_type == "referral",
+            or_(
+                (OrganizationConnection.source_structure_id == case_row.structure_id)
+                & (OrganizationConnection.target_structure_id == int(structure_id)),
+                (OrganizationConnection.source_structure_id == int(structure_id))
+                & (OrganizationConnection.target_structure_id == case_row.structure_id),
+            ),
+        ).first()
+        else None
+    )
+
+
 def _get_scoped_case_or_404(
     case_id: int,
     *,
@@ -315,21 +353,27 @@ def _get_scoped_case_or_404(
     if not case_row:
         abort(404)
     sid = _current_structure_id()
-    if sid and case_row.structure_id != sid and not _is_global_admin():
-        collaborator = (
-            CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
-            .filter(CaseCollaborator.structure_id == sid)
-            .first()
-        )
+    admin_user_id = session.get("admin_user_id") or session.get("admin_id")
+    if admin_user_id is not None:
+        admin_user = db.session.get(AdminUser, int(admin_user_id))
+        if admin_user is not None:
+            sid = getattr(admin_user, "structure_id", sid)
+    foreign_collaborator = bool(sid and case_row.structure_id != sid and not _is_global_admin())
+    if foreign_collaborator:
+        collaborator = _active_case_collaborator(case_row, sid)
         if not collaborator:
             abort(404)
         req = db.session.get(Request, case_row.request_id)
+        if req:
+            req = _collaborator_request_projection(req)
     else:
         req = _scope_requests(Request.query).filter(Request.id == case_row.request_id).first()
     if not req:
         abort(404)
     if getattr(case_row, "structure_id", None) != getattr(req, "structure_id", None):
         abort(404)
+    if require_writable and foreign_collaborator:
+        abort(403)
     if require_writable:
         require_case_operationally_writable(case_row)
     return case_row, req
@@ -675,8 +719,19 @@ def admin_case_detail(case_id: int):
         return redirect(url_for("admin.admin_requests"), code=303)
 
     case_row, req = _get_scoped_case_or_404(case_id)
-    risk_ai_suggestion = _build_risk_ai_suggestion(req)
-    operational_blockages = _build_operational_blockages(req, case_row)
+    viewer_structure_id = _current_structure_id()
+    admin_user_id = session.get("admin_user_id") or session.get("admin_id")
+    if admin_user_id is not None:
+        admin_user = db.session.get(AdminUser, int(admin_user_id))
+        if admin_user is not None:
+            viewer_structure_id = getattr(admin_user, "structure_id", viewer_structure_id)
+    collaborator_view = (
+        not _is_global_admin()
+        and viewer_structure_id
+        and case_row.structure_id != viewer_structure_id
+    )
+    risk_ai_suggestion = None if collaborator_view else _build_risk_ai_suggestion(req)
+    operational_blockages = [] if collaborator_view else _build_operational_blockages(req, case_row)
     suggested_professionals = (
         suggest_professional_leads_for_case(
             case_row,
@@ -684,12 +739,13 @@ def admin_case_detail(case_id: int):
             limit=8,
             include_intervenant_fallback=False,
         )
-        if _adaptive_module_enabled("professionals")
+        if _adaptive_module_enabled("professionals") and not collaborator_view
         else []
     )
     events = (
         CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
         .order_by(CaseEvent.created_at.desc(), CaseEvent.id.desc())
+        .filter(CaseEvent.visibility != "internal" if collaborator_view else True)
         .limit(200)
         .all()
     )
@@ -703,13 +759,14 @@ def admin_case_detail(case_id: int):
         )
         .filter(CaseEvent.message.isnot(None))
         .order_by(CaseEvent.created_at.desc(), CaseEvent.id.desc())
+        .filter(False if collaborator_view else True)
         .limit(20)
         .all()
     )
-    case_copilot = build_case_copilot(case_row, req, events=events, assignments=None)
+    case_copilot = None if collaborator_view else build_case_copilot(case_row, req, events=events, assignments=None)
     grouped_events = _group_events_by_day(events)
    
-    participants = _load_case_detail_participants(case_row.id)
+    participants = [] if collaborator_view else _load_case_detail_participants(case_row.id)
     participant_cards = _build_case_participant_cards(participants)
     collaborators = (
         CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
@@ -718,20 +775,20 @@ def admin_case_detail(case_id: int):
         .order_by(Structure.name.asc())
         .all()
     )
-    owners = _owner_query_for_current_scope().all()
+    owners = [] if collaborator_view else _owner_query_for_current_scope().all()
     legacy_users_query = User.query.with_entities(User.id, User.username, User.email)
     if not _is_global_admin():
         legacy_users_query = legacy_users_query.filter(
             User.structure_id == getattr(case_row, "structure_id", None)
         )
-    legacy_users = (
+    legacy_users = [] if collaborator_view else (
         legacy_users_query.order_by(User.username.asc())
         .limit(300)
         .all()
     )
     professionals = (
         _case_detail_professional_leads()
-        if _adaptive_module_enabled("professionals")
+        if _adaptive_module_enabled("professionals") and not collaborator_view
         else []
     )
 

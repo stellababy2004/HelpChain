@@ -5,8 +5,8 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from backend.extensions import db
-from backend.helpchain_backend.src.models import Case, CaseCollaborator, CaseParticipant
-from backend.models import AdminUser, Request, Structure, User, utc_now
+from backend.helpchain_backend.src.models import Case, CaseCollaborator, CaseEvent, CaseParticipant
+from backend.models import AdminAuditEvent, AdminUser, OrganizationConnection, Request, Structure, User, utc_now
 
 pytestmark = pytest.mark.spine
 
@@ -371,6 +371,158 @@ def test_case_collaborator_invite_is_controlled_by_case_owner_scope(app, session
         json={"structure_id": seeded["structure_c"].id, "role": "viewer"},
     )
     assert denied.status_code == 403
+
+
+def test_case_collaborator_invite_without_connection_is_pending_and_denied(app, session):
+    seeded = _seed_case_scope(session)
+    owner_client = app.test_client()
+    _login_admin(owner_client, app, seeded["ops_a"])
+
+    invited = owner_client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    )
+    assert invited.status_code == 200
+    collaborator = CaseCollaborator.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        structure_id=seeded["structure_b"].id,
+    ).one()
+    assert collaborator.role == "pending_viewer"
+
+    foreign_client = app.test_client()
+    _login_admin(foreign_client, app, seeded["admin_b"])
+    assert foreign_client.get(f"/admin/cases/{seeded['visible_case'].id}").status_code == 404
+    assert foreign_client.post(
+        f"/admin/cases/{seeded['visible_case'].id}/coordination-note",
+        data={"message": "synthetic unauthorized note"},
+    ).status_code == 404
+
+
+def test_pending_collaborator_stays_denied_after_connection_activation(app, session):
+    seeded = _seed_case_scope(session)
+    owner_client = app.test_client()
+    _login_admin(owner_client, app, seeded["ops_a"])
+    assert owner_client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    ).status_code == 200
+
+    session.add(
+        OrganizationConnection(
+            source_structure_id=seeded["structure_a"].id,
+            target_structure_id=seeded["structure_b"].id,
+            status="active",
+            connection_type="referral",
+        )
+    )
+    session.commit()
+    foreign_client = app.test_client()
+    _login_admin(foreign_client, app, seeded["admin_b"])
+    assert foreign_client.get(f"/admin/cases/{seeded['visible_case'].id}").status_code == 404
+
+
+def test_unknown_collaborator_role_is_rejected(app, session):
+    seeded = _seed_case_scope(session)
+    session.add(
+        OrganizationConnection(
+            source_structure_id=seeded["structure_a"].id,
+            target_structure_id=seeded["structure_b"].id,
+            status="active",
+            connection_type="referral",
+        )
+    )
+    session.add(
+        CaseCollaborator(
+            case_id=seeded["visible_case"].id,
+            structure_id=seeded["structure_b"].id,
+            role="owner_override",
+        )
+    )
+    session.commit()
+
+    client = app.test_client()
+    _login_admin(client, app, seeded["admin_b"])
+    response = client.get(f"/admin/cases/{seeded['visible_case'].id}")
+    assert response.status_code == 404
+    assert b"SYNTHETIC-SECRET" not in response.data
+
+def test_collaborator_revoke_rolls_back_when_audit_commit_fails(app, session, monkeypatch):
+    seeded = _seed_case_scope(session)
+    owner_client = app.test_client()
+    _login_admin(owner_client, app, seeded["ops_a"])
+    session.add(
+        OrganizationConnection(
+            source_structure_id=seeded["structure_a"].id,
+            target_structure_id=seeded["structure_b"].id,
+            status="active",
+            connection_type="referral",
+        )
+    )
+    session.commit()
+    assert owner_client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    ).status_code == 200
+    original_commit = db.session.commit
+
+    def fail_final_commit():
+        raise RuntimeError("synthetic AdminAuditEvent commit failure")
+
+    monkeypatch.setattr(db.session, "commit", fail_final_commit)
+
+    with pytest.raises(RuntimeError, match="synthetic AdminAuditEvent commit failure"):
+        owner_client.post(
+            f"/api/cases/{seeded['visible_case'].id}/collaborators/{seeded['structure_b'].id}/revoke"
+        )
+    monkeypatch.setattr(db.session, "commit", original_commit)
+    assert CaseCollaborator.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        structure_id=seeded["structure_b"].id,
+    ).first() is not None
+    assert CaseEvent.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        event_type="structure_collaborator_revoked",
+    ).first() is None
+    assert AdminAuditEvent.query.filter_by(
+        action="case.collaborator_revoke",
+        target_id=seeded["visible_case"].id,
+    ).first() is None
+
+
+def test_collaborator_revoke_persists_collaborator_event_and_audit(app, session):
+    seeded = _seed_case_scope(session)
+    owner_client = app.test_client()
+    _login_admin(owner_client, app, seeded["ops_a"])
+    session.add(
+        OrganizationConnection(
+            source_structure_id=seeded["structure_a"].id,
+            target_structure_id=seeded["structure_b"].id,
+            status="active",
+            connection_type="referral",
+        )
+    )
+    session.commit()
+    assert owner_client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    ).status_code == 200
+
+    response = owner_client.post(
+        f"/api/cases/{seeded['visible_case'].id}/collaborators/{seeded['structure_b'].id}/revoke"
+    )
+    assert response.status_code == 200
+    assert CaseCollaborator.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        structure_id=seeded["structure_b"].id,
+    ).first() is None
+    assert CaseEvent.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        event_type="structure_collaborator_revoked",
+    ).count() == 1
+    assert AdminAuditEvent.query.filter_by(
+        action="case.collaborator_revoke",
+        target_id=seeded["visible_case"].id,
+    ).count() == 1
 
 
 def test_closed_case_rejects_collaborator_invitation(app, session):

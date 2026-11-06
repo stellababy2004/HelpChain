@@ -2838,7 +2838,13 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
 
 
 def audit_admin_action(
-    action: str, target_type: str, target_id: int, payload: dict | None = None
+    action: str,
+    target_type: str,
+    target_id: int,
+    payload: dict | None = None,
+    *,
+    commit: bool = True,
+    raise_on_error: bool = False,
 ) -> None:
     try:
         ip = _client_ip()
@@ -2865,10 +2871,13 @@ def audit_admin_action(
                 payload=payload,
             )
         )
-        db.session.commit()
+        if commit:
+            db.session.commit()
     except Exception:
         db.session.rollback()
         current_app.logger.exception("ADMIN_AUDIT: failed to write audit event")
+        if raise_on_error:
+            raise
 
 
 def _current_structure_id() -> int:

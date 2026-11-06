@@ -6,7 +6,8 @@ from html import unescape
 import pytest
 from flask.testing import FlaskClient
 
-from backend.models import AdminAuditEvent, CaseReferral, ReferralActivity, Request, db
+from backend.models import AdminAuditEvent, CaseReferral, OrganizationConnection, ReferralActivity, Request, db
+from backend.helpchain_backend.src.routes.admin_cases import _collaborator_request_projection
 from backend.helpchain_backend.src.routes import admin_referrals as routes
 from tests.test_admin_partner_referrals import _admin, _login, _seed_referral_context, _send_referral
 
@@ -26,6 +27,67 @@ def fresh_request_app_context(monkeypatch):
 
 def _html(response):
     return unescape(response.get_data(as_text=True))
+
+
+def test_collaborator_projection_excludes_sensitive_request_fields():
+    class SyntheticRequest:
+        id = 7
+        title = "Synthetic shared title"
+        category = "food"
+        structure_id = 1
+        structure = None
+        description = "SYNTHETIC-SECRET-DESCRIPTION"
+        message = "SYNTHETIC-SECRET-MESSAGE"
+        risk_level = "high"
+
+    projected = _collaborator_request_projection(SyntheticRequest())
+    assert projected.title == "Synthetic shared title"
+    assert not hasattr(projected, "description")
+    assert not hasattr(projected, "message")
+    assert not hasattr(projected, "risk_level")
+
+
+def test_revoked_connection_denies_existing_referral_read_and_mutation(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    connection = OrganizationConnection.query.one()
+    connection.status = "revoked"
+    db.session.commit()
+
+    _login(client, app, ctx["admin_b"])
+    assert client.get(f"/admin/referrals/{referral.id}").status_code == 403
+    assert client.post(f"/admin/referrals/{referral.id}/accept").status_code == 403
+
+
+def test_revoked_connection_hides_partner_lists_but_preserves_source_control(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    connection = OrganizationConnection.query.one()
+    connection.status = "revoked"
+    db.session.commit()
+
+    _login(client, app, ctx["admin_b"])
+    for path in ("/admin/referrals", "/admin/referrals/received", "/admin/referrals/sent"):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert referral.reason not in _html(response)
+        assert f">#{referral.id}<" not in _html(response)
+    with client:
+        client.get("/admin/referrals")
+        assert routes._scope_for_direction("received").count() == 0
+        assert routes._scope_for_direction("sent").count() == 0
+
+    _login(client, app, ctx["admin_a"])
+    sent = client.get("/admin/referrals/sent")
+    assert sent.status_code == 200
+    assert referral.reason in _html(sent)
+    with client:
+        client.get("/admin/referrals/sent")
+        assert routes._scope_for_direction("sent").count() == 1
+        assert routes._scope_for_direction("received").count() == 0
+    assert client.post(f"/admin/referrals/{referral.id}/cancel").status_code == 303
+    db.session.refresh(referral)
+    assert referral.status == "cancelled"
 
 
 def test_structure_bound_superadmin_cannot_read_unrelated_referrals(client, app):
