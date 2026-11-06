@@ -11,6 +11,7 @@ from sqlalchemy import func, inspect, or_
 from sqlalchemy.orm import joinedload
 
 from backend.extensions import db
+
 from ..models import (
     AdminUser,
     Assignment,
@@ -18,27 +19,28 @@ from ..models import (
     CaseCollaborator,
     CaseEvent,
     CaseParticipant,
+    Intervenant,
     OrganizationConnection,
     ProfessionalLead,
-    Intervenant,
     Request,
     Structure,
     User,
 )
 
 COLLABORATOR_ACTIVE_ROLES = frozenset({"viewer"})
+from ..services.case_lifecycle import require_case_operationally_writable
 from ..services.case_matching import (
     eligible_professional_leads_query,
     suggest_professional_leads_for_case,
 )
-from ..services.case_lifecycle import require_case_operationally_writable
 from ..services.risk_alerts import evaluate_case_alerts
 from ..services.risk_engine import update_case_risk
 from .admin import (
-    CATEGORY_CASE_STATUSES,
     CASE_PARTICIPANT_ROLES,
     CASE_PARTICIPANT_TYPES,
     CASE_PRIORITIES,
+    CATEGORY_CASE_STATUSES,
+    _adaptive_module_enabled,
     _append_case_event,
     _build_operational_blockages,
     _build_risk_ai_suggestion,
@@ -46,17 +48,17 @@ from .admin import (
     _current_structure_id,
     _is_global_admin,
     _now_utc,
-    _adaptive_module_enabled,
     _professional_lead_list_query,
+    _render_cases_list,
     _require_adaptive_module,
     _require_cases_capability,
-    _render_cases_list,
     _scope_requests,
     admin_bp,
     admin_required,
     admin_required_404,
     admin_role_required,
 )
+
 
 def _group_events_by_day(events):
     groups = defaultdict(list)
@@ -80,6 +82,7 @@ def _group_events_by_day(events):
         groups[key].append(ev)
 
     return dict(groups)
+
 
 # Legacy participant type labels that still resolve through the generic
 # `User` model (`users.id`). These names are historical and must not be
@@ -196,7 +199,9 @@ def build_case_copilot(case, request, events=None, assignments=None):
     )
     latest_event_at = None
     if events:
-        latest_event_at = _first_dt(*(getattr(ev, "created_at", None) for ev in events[:5]))
+        latest_event_at = _first_dt(
+            *(getattr(ev, "created_at", None) for ev in events[:5])
+        )
     last_activity_at = _first_dt(
         getattr(case, "last_activity_at", None),
         getattr(case, "updated_at", None),
@@ -205,7 +210,9 @@ def build_case_copilot(case, request, events=None, assignments=None):
     )
 
     case_status = getattr(case, "status", None) or getattr(request, "status", None)
-    case_priority = getattr(case, "priority", None) or getattr(request, "priority", None)
+    case_priority = getattr(case, "priority", None) or getattr(
+        request, "priority", None
+    )
     risk_score = getattr(case, "risk_score", None)
     if risk_score is None:
         risk_score = getattr(request, "risk_score", None)
@@ -272,7 +279,9 @@ def build_case_copilot(case, request, events=None, assignments=None):
         recommended_action = "Attribuer un référent aujourd'hui."
     elif inactivity_hours is not None and inactivity_hours > 72:
         recommended_action = "Relancer le dossier et confirmer la prochaine étape."
-    elif priority_key in {"critical", "urgent", "high"} or (risk_score_value is not None and risk_score_value >= 80):
+    elif priority_key in {"critical", "urgent", "high"} or (
+        risk_score_value is not None and risk_score_value >= 80
+    ):
         recommended_action = "Traiter en priorité et vérifier les besoins immédiats."
     elif status_key in {"done", "closed", "resolved"}:
         recommended_action = "Conserver l'historique et vérifier la clôture."
@@ -285,7 +294,9 @@ def build_case_copilot(case, request, events=None, assignments=None):
         summary_points.append(f"Dossier ouvert depuis {opened_age}.")
     summary_points.append(f"Statut actuel : {_status_label(case_status)}.")
     summary_points.append(f"Priorité : {_priority_label(case_priority)}.")
-    summary_points.append(f"Responsable : {'attribué' if owner_assigned else 'non attribué'}.")
+    summary_points.append(
+        f"Responsable : {'attribué' if owner_assigned else 'non attribué'}."
+    )
     last_activity_age = _human_elapsed(last_activity_at, now=now)
     if last_activity_age:
         summary_points.append(f"Dernière activité : il y a {last_activity_age}.")
@@ -320,9 +331,9 @@ def _collaborator_request_projection(req: Request) -> SimpleNamespace:
 
 
 def _active_case_collaborator(case_row: Case, structure_id: int):
-    collaborator = (
-        CaseCollaborator.query.filter_by(case_id=case_row.id, structure_id=int(structure_id)).first()
-    )
+    collaborator = CaseCollaborator.query.filter_by(
+        case_id=case_row.id, structure_id=int(structure_id)
+    ).first()
     if not collaborator:
         return None
     if (collaborator.role or "").strip().lower() not in COLLABORATOR_ACTIVE_ROLES:
@@ -358,7 +369,9 @@ def _get_scoped_case_or_404(
         admin_user = db.session.get(AdminUser, int(admin_user_id))
         if admin_user is not None:
             sid = getattr(admin_user, "structure_id", sid)
-    foreign_collaborator = bool(sid and case_row.structure_id != sid and not _is_global_admin())
+    foreign_collaborator = bool(
+        sid and case_row.structure_id != sid and not _is_global_admin()
+    )
     if foreign_collaborator:
         collaborator = _active_case_collaborator(case_row, sid)
         if not collaborator:
@@ -367,7 +380,11 @@ def _get_scoped_case_or_404(
         if req:
             req = _collaborator_request_projection(req)
     else:
-        req = _scope_requests(Request.query).filter(Request.id == case_row.request_id).first()
+        req = (
+            _scope_requests(Request.query)
+            .filter(Request.id == case_row.request_id)
+            .first()
+        )
     if not req:
         abort(404)
     if getattr(case_row, "structure_id", None) != getattr(req, "structure_id", None):
@@ -581,13 +598,17 @@ def resolve_professional_participant_display_name(participant: CaseParticipant) 
     return f"Intervenant #{lead_id}"
 
 
-def _build_case_participant_cards(participants: list[CaseParticipant]) -> list[dict[str, object]]:
+def _build_case_participant_cards(
+    participants: list[CaseParticipant],
+) -> list[dict[str, object]]:
     cards = []
     for participant in participants:
         admin_user = getattr(participant, "admin_user", None)
         legacy_user = getattr(participant, "user", None)
         participant_state = inspect(participant)
-        has_professional_identity = bool(getattr(participant, "professional_lead_id", None)) or (
+        has_professional_identity = bool(
+            getattr(participant, "professional_lead_id", None)
+        ) or (
             "professional_lead" not in participant_state.unloaded
             and getattr(participant, "professional_lead", None) is not None
         )
@@ -715,7 +736,9 @@ def admin_case_detail(case_id: int):
     admin_required_404()
     _require_cases_capability()
     if not _cases_enabled():
-        flash("Case system tables are not available yet. Run migrations first.", "warning")
+        flash(
+            "Case system tables are not available yet. Run migrations first.", "warning"
+        )
         return redirect(url_for("admin.admin_requests"), code=303)
 
     case_row, req = _get_scoped_case_or_404(case_id)
@@ -724,14 +747,18 @@ def admin_case_detail(case_id: int):
     if admin_user_id is not None:
         admin_user = db.session.get(AdminUser, int(admin_user_id))
         if admin_user is not None:
-            viewer_structure_id = getattr(admin_user, "structure_id", viewer_structure_id)
+            viewer_structure_id = getattr(
+                admin_user, "structure_id", viewer_structure_id
+            )
     collaborator_view = (
         not _is_global_admin()
         and viewer_structure_id
         and case_row.structure_id != viewer_structure_id
     )
     risk_ai_suggestion = None if collaborator_view else _build_risk_ai_suggestion(req)
-    operational_blockages = [] if collaborator_view else _build_operational_blockages(req, case_row)
+    operational_blockages = (
+        [] if collaborator_view else _build_operational_blockages(req, case_row)
+    )
     suggested_professionals = (
         suggest_professional_leads_for_case(
             case_row,
@@ -753,7 +780,9 @@ def admin_case_detail(case_id: int):
         CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
         .filter(
             or_(
-                CaseEvent.event_type.in_(("coordination_note", "comment", "internal_note")),
+                CaseEvent.event_type.in_(
+                    ("coordination_note", "comment", "internal_note")
+                ),
                 CaseEvent.visibility == "internal",
             )
         )
@@ -763,10 +792,16 @@ def admin_case_detail(case_id: int):
         .limit(20)
         .all()
     )
-    case_copilot = None if collaborator_view else build_case_copilot(case_row, req, events=events, assignments=None)
+    case_copilot = (
+        None
+        if collaborator_view
+        else build_case_copilot(case_row, req, events=events, assignments=None)
+    )
     grouped_events = _group_events_by_day(events)
-   
-    participants = [] if collaborator_view else _load_case_detail_participants(case_row.id)
+
+    participants = (
+        [] if collaborator_view else _load_case_detail_participants(case_row.id)
+    )
     participant_cards = _build_case_participant_cards(participants)
     collaborators = (
         CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
@@ -781,10 +816,10 @@ def admin_case_detail(case_id: int):
         legacy_users_query = legacy_users_query.filter(
             User.structure_id == getattr(case_row, "structure_id", None)
         )
-    legacy_users = [] if collaborator_view else (
-        legacy_users_query.order_by(User.username.asc())
-        .limit(300)
-        .all()
+    legacy_users = (
+        []
+        if collaborator_view
+        else (legacy_users_query.order_by(User.username.asc()).limit(300).all())
     )
     professionals = (
         _case_detail_professional_leads()
@@ -826,11 +861,17 @@ def admin_case_add_coordination_note(case_id: int):
     message = (request.form.get("message") or "").strip()
     if not message:
         flash("La note de coordination ne peut pas être vide.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     if len(message) > 1000:
-        flash("La note de coordination ne doit pas dépasser 1000 caractères.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        flash(
+            "La note de coordination ne doit pas dépasser 1000 caractères.", "warning"
+        )
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     created_at = _now_utc()
     case_row.last_activity_at = created_at
@@ -860,12 +901,16 @@ def admin_case_set_status(case_id: int):
     new_status = (request.form.get("status") or "").strip().lower()
     if new_status not in CATEGORY_CASE_STATUSES:
         flash("Invalid case status.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     old_status = (case_row.status or "").strip().lower()
     if not _case_status_transition_allowed(old_status, new_status):
         flash("Invalid case status transition.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     if old_status != new_status:
         now = _now_utc()
@@ -957,7 +1002,9 @@ def admin_case_assign_owner(case_id: int):
             owner_id = None
     if owner_id is not None and not _owner_allowed_for_current_scope(owner_id):
         flash("Selected owner does not exist.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     old_owner_id = case_row.owner_user_id
     if old_owner_id != owner_id:
@@ -1012,9 +1059,7 @@ def admin_case_assign_professional(case_id: int):
             lead_id = None
 
     selected_lead = (
-        db.session.get(ProfessionalLead, lead_id)
-        if lead_id is not None
-        else None
+        db.session.get(ProfessionalLead, lead_id) if lead_id is not None else None
     )
     if lead_id is not None and selected_lead is None:
         flash("Selected professional lead does not exist.", "warning")
@@ -1098,7 +1143,9 @@ def admin_case_add_participant(case_id: int):
 
     if participant_type not in CASE_PARTICIPANT_TYPES:
         flash("Invalid participant type.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
     if role not in CASE_PARTICIPANT_ROLES:
         role = "contributor"
     if participant_status not in {"active", "inactive"}:
@@ -1135,7 +1182,10 @@ def admin_case_add_participant(case_id: int):
             url_for("admin.admin_case_detail", case_id=case_row.id),
             code=303,
         )
-    if lead_id is not None and not (db.session.get(ProfessionalLead, lead_id) or db.session.get(Intervenant, lead_id)):
+    if lead_id is not None and not (
+        db.session.get(ProfessionalLead, lead_id)
+        or db.session.get(Intervenant, lead_id)
+    ):
         flash("Selected professional lead does not exist.", "warning")
         return redirect(
             url_for("admin.admin_case_detail", case_id=case_row.id),
@@ -1153,14 +1203,18 @@ def admin_case_add_participant(case_id: int):
     # are still backed by the generic `User` model (`users.id`), not by
     # the canonical `AdminUser` auth family.
     if participant_type in LEGACY_USER_PARTICIPANT_TYPES and not user_id:
-        flash("Selected legacy user-backed participant type requires user_id.", "warning")
+        flash(
+            "Selected legacy user-backed participant type requires user_id.", "warning"
+        )
         return redirect(
             url_for("admin.admin_case_detail", case_id=case_row.id),
             code=303,
         )
     if participant_type in {"association", "external_contact"} and not external_name:
         flash("External participant requires external name.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     _upsert_case_participant(
         case_id=case_row.id,
@@ -1210,7 +1264,9 @@ def admin_case_add_event(case_id: int):
         event_type = "note_added"
     if not message and not metadata:
         flash("Event is empty.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     case_row.last_activity_at = _now_utc()
     _append_case_event(
@@ -1226,7 +1282,8 @@ def admin_case_add_event(case_id: int):
     db.session.commit()
     flash("Case event added.", "success")
     return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
-    
+
+
 @admin_bp.post("/cases/<int:case_id>/priority")
 @admin_required
 @admin_role_required("ops", "admin", "superadmin")
@@ -1237,7 +1294,9 @@ def admin_case_set_priority(case_id: int):
 
     if new_priority not in CASE_PRIORITIES:
         flash("Invalid case priority.", "warning")
-        return redirect(url_for("admin.admin_case_detail", case_id=case_row.id), code=303)
+        return redirect(
+            url_for("admin.admin_case_detail", case_id=case_row.id), code=303
+        )
 
     old_priority = (case_row.priority or "").strip().lower()
 
