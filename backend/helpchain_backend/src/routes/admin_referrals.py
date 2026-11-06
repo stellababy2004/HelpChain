@@ -1787,15 +1787,21 @@ def admin_referral_mark_in_progress(referral_id: int):
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
     note = (request.form.get("public_status_note") or "").strip() or None
-    _set_referral_operational_status(referral, "in_progress", note=note)
-    _log_referral_activity(referral, "in_progress", {"public": True})
-    db.session.commit()
-    audit_admin_action(
-        action="referral.mark_in_progress",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={"public": True},
-    )
+    try:
+        _set_referral_operational_status(referral, "in_progress", note=note)
+        _log_referral_activity(referral, "in_progress", {"public": True})
+        audit_admin_action(
+            action="referral.mark_in_progress",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={"public": True},
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     flash("Orientation marquée comme prise en charge.", "success")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
@@ -1819,17 +1825,23 @@ def admin_referral_mark_completed(referral_id: int):
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
     note = (request.form.get("public_status_note") or "").strip() or None
-    _set_referral_operational_status(referral, "completed", note=note)
-    if note is None:
-        referral.public_status_note = None
-    _log_referral_activity(referral, "completed", {"public": True})
-    db.session.commit()
-    audit_admin_action(
-        action="referral.mark_completed",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={"public": True},
-    )
+    try:
+        _set_referral_operational_status(referral, "completed", note=note)
+        if note is None:
+            referral.public_status_note = None
+        _log_referral_activity(referral, "completed", {"public": True})
+        audit_admin_action(
+            action="referral.mark_completed",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={"public": True},
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     flash("Orientation clôturée.", "success")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 

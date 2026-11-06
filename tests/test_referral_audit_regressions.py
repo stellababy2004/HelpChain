@@ -279,6 +279,53 @@ def test_sequential_repeats_and_invalid_transitions_preserve_state(client, app):
         assert client.post(f"/admin/referrals/{referral.id}/{action}").status_code == 403
 
 
+def test_operational_status_audits_are_persisted(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    _login(client, app, ctx["admin_b"])
+    assert client.post(f"/admin/referrals/{referral.id}/accept").status_code == 303
+    assert client.post(f"/admin/referrals/{referral.id}/mark-in-progress").status_code == 303
+    assert client.post(f"/admin/referrals/{referral.id}/mark-completed").status_code == 303
+
+    assert AdminAuditEvent.query.filter_by(
+        action="referral.mark_in_progress", target_id=referral.id
+    ).count() == 1
+    assert AdminAuditEvent.query.filter_by(
+        action="referral.mark_completed", target_id=referral.id
+    ).count() == 1
+
+
+@pytest.mark.parametrize(
+    ("action", "expected_status"),
+    [("mark-in-progress", "accepted"), ("mark-completed", "in_progress")],
+)
+def test_operational_status_audit_failure_rolls_back(client, app, monkeypatch, action, expected_status):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+    _login(client, app, ctx["admin_b"])
+    assert client.post(f"/admin/referrals/{referral.id}/accept").status_code == 303
+    if action == "mark-completed":
+        assert client.post(f"/admin/referrals/{referral.id}/mark-in-progress").status_code == 303
+
+    def fail_audit(*args, **kwargs):
+        raise RuntimeError("synthetic operational audit failure")
+
+    monkeypatch.setattr(routes, "audit_admin_action", fail_audit)
+    with pytest.raises(RuntimeError, match="synthetic operational audit failure"):
+        client.post(f"/admin/referrals/{referral.id}/{action}")
+
+    db.session.refresh(referral)
+    assert referral.operational_status == expected_status
+    assert ReferralActivity.query.filter_by(
+        referral_id=referral.id,
+        action="in_progress" if action == "mark-in-progress" else "completed",
+    ).count() == 0
+    assert AdminAuditEvent.query.filter_by(
+        action="referral.mark_in_progress" if action == "mark-in-progress" else "referral.mark_completed",
+        target_id=referral.id,
+    ).count() == 0
+
+
 def test_referral_post_enforces_real_csrf_token(client, app):
     ctx = _seed_referral_context()
     referral = _send_referral(client, app, ctx)
