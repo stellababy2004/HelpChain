@@ -1688,18 +1688,20 @@ def admin_referral_accept(referral_id: int):
             "accepted",
             {"local_request_id": local_request.id},
         )
+        audit_admin_action(
+            action="referral.accept",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={"local_request_id": getattr(local_request, "id", None)},
+            commit=False,
+            raise_on_error=True,
+        )
         db.session.commit()
     except Exception:
         db.session.rollback()
         current_app.logger.exception("referral_accept_local_request_failed referral_id=%s", referral_id)
         flash("Impossible d’accepter l’orientation. Veuillez réessayer.", "danger")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral_id), code=303)
-    audit_admin_action(
-        action="referral.accept",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={"local_request_id": getattr(local_request, "id", None)},
-    )
     flash("Orientation acceptée.", "success")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
@@ -1717,16 +1719,22 @@ def admin_referral_refuse(referral_id: int):
     if referral.status not in REFERRAL_ACTIVE_STATUSES:
         flash("Orientation déjà traitée.", "info")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id))
-    referral.refusal_reason = (request.form.get("refusal_reason") or "").strip() or None
-    _set_referral_operational_status(referral, "refused", note=referral.refusal_reason)
-    _log_referral_activity(referral, "refused", {"reason": referral.refusal_reason})
-    db.session.commit()
-    audit_admin_action(
-        action="referral.refuse",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={"reason": referral.refusal_reason},
-    )
+    try:
+        referral.refusal_reason = (request.form.get("refusal_reason") or "").strip() or None
+        _set_referral_operational_status(referral, "refused", note=referral.refusal_reason)
+        _log_referral_activity(referral, "refused", {"reason": referral.refusal_reason})
+        audit_admin_action(
+            action="referral.refuse",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={"reason": referral.refusal_reason},
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     flash("Orientation refusée.", "warning")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
@@ -1741,15 +1749,21 @@ def admin_referral_cancel(referral_id: int):
     _require_referral_access(referral)
     if not _can_cancel(referral):
         abort(403)
-    _set_referral_operational_status(referral, "cancelled")
-    _log_referral_activity(referral, "cancelled")
-    db.session.commit()
-    audit_admin_action(
-        action="referral.cancel",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={},
-    )
+    try:
+        _set_referral_operational_status(referral, "cancelled")
+        _log_referral_activity(referral, "cancelled")
+        audit_admin_action(
+            action="referral.cancel",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={},
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     flash("Orientation annulée.", "info")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
@@ -1843,19 +1857,25 @@ def admin_referral_public_note(referral_id: int):
         flash("Note publique trop longue.", "warning")
         return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
-    _set_referral_operational_status(
-        referral,
-        _effective_operational_status(referral),
-        note=note,
-    )
-    _log_referral_activity(referral, "public_note", {"public": True})
-    db.session.commit()
-    audit_admin_action(
-        action="referral.public_note",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={"public": True},
-    )
+    try:
+        _set_referral_operational_status(
+            referral,
+            _effective_operational_status(referral),
+            note=note,
+        )
+        _log_referral_activity(referral, "public_note", {"public": True})
+        audit_admin_action(
+            action="referral.public_note",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={"public": True},
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     flash("Mise à jour publique enregistrée.", "success")
     return redirect(url_for("admin.admin_referral_detail", referral_id=referral.id), code=303)
 
@@ -1970,17 +1990,23 @@ def admin_request_refer_submit(req_id: int):
             created_at=utc_now(),
         )
     )
-    db.session.commit()
-    audit_admin_action(
-        action="referral.send",
-        target_type="CaseReferral",
-        target_id=referral.id,
-        payload={
-            "request_id": source_request.id,
-            "from_structure_id": int(source_structure_id),
-            "to_structure_id": target_structure_id,
-        },
-    )
+    try:
+        audit_admin_action(
+            action="referral.send",
+            target_type="CaseReferral",
+            target_id=referral.id,
+            payload={
+                "request_id": source_request.id,
+                "from_structure_id": int(source_structure_id),
+                "to_structure_id": target_structure_id,
+            },
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     flash("Orientation partenaire envoyée.", "success")
     next_url = (request.form.get("next") or "").strip()
     if next_url and is_safe_url(next_url):

@@ -697,7 +697,23 @@ def invite_structure_to_case(case_id: int):
                 visibility="internal",
             )
         )
-    db.session.commit()
+    try:
+        audit_admin_action(
+            action="case.collaborator_invite",
+            target_type="Case",
+            target_id=case_row.id,
+            payload={
+                "structure_id": structure_id,
+                "role": role_raw if active_connection else "pending_viewer",
+                "pending": not bool(active_connection),
+            },
+            commit=False,
+            raise_on_error=True,
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
     return jsonify({"ok": True}), 200
 
 

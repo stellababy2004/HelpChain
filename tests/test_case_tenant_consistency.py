@@ -6,6 +6,7 @@ import pytest
 
 from backend.extensions import db
 from backend.helpchain_backend.src.models import Case, CaseCollaborator, CaseEvent, CaseParticipant
+from backend.helpchain_backend.src.routes import api as api_routes
 from backend.models import AdminAuditEvent, AdminUser, OrganizationConnection, Request, Structure, User, utc_now
 
 pytestmark = pytest.mark.spine
@@ -371,6 +372,70 @@ def test_case_collaborator_invite_is_controlled_by_case_owner_scope(app, session
         json={"structure_id": seeded["structure_c"].id, "role": "viewer"},
     )
     assert denied.status_code == 403
+
+
+def test_case_collaborator_invite_writes_admin_audit_atomically(app, session):
+    seeded = _seed_case_scope(session)
+    session.add(
+        OrganizationConnection(
+            source_structure_id=seeded["structure_a"].id,
+            target_structure_id=seeded["structure_b"].id,
+            status="active",
+            connection_type="referral",
+        )
+    )
+    session.commit()
+    owner_client = app.test_client()
+    _login_admin(owner_client, app, seeded["ops_a"])
+
+    response = owner_client.post(
+        f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+        json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+    )
+
+    assert response.status_code == 200
+    assert AdminAuditEvent.query.filter_by(
+        action="case.collaborator_invite",
+        target_id=seeded["visible_case"].id,
+    ).count() == 1
+
+
+def test_case_collaborator_invite_audit_failure_rolls_back(app, session, monkeypatch):
+    seeded = _seed_case_scope(session)
+    session.add(
+        OrganizationConnection(
+            source_structure_id=seeded["structure_a"].id,
+            target_structure_id=seeded["structure_b"].id,
+            status="active",
+            connection_type="referral",
+        )
+    )
+    session.commit()
+    owner_client = app.test_client()
+    _login_admin(owner_client, app, seeded["ops_a"])
+
+    def fail_audit(*args, **kwargs):
+        raise RuntimeError("synthetic collaborator audit failure")
+
+    monkeypatch.setattr(api_routes, "audit_admin_action", fail_audit)
+    with pytest.raises(RuntimeError, match="synthetic collaborator audit failure"):
+        owner_client.post(
+            f"/api/cases/{seeded['visible_case'].id}/invite-structure",
+            json={"structure_id": seeded["structure_b"].id, "role": "viewer"},
+        )
+
+    assert CaseCollaborator.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        structure_id=seeded["structure_b"].id,
+    ).first() is None
+    assert CaseEvent.query.filter_by(
+        case_id=seeded["visible_case"].id,
+        event_type="structure_invited",
+    ).first() is None
+    assert AdminAuditEvent.query.filter_by(
+        action="case.collaborator_invite",
+        target_id=seeded["visible_case"].id,
+    ).first() is None
 
 
 def test_case_collaborator_invite_without_connection_is_pending_and_denied(app, session):

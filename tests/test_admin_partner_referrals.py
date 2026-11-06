@@ -6,6 +6,7 @@ import pytest
 
 from backend.models import (
     AdminUser,
+    AdminAuditEvent,
     CaseReferral,
     OrganizationConnection,
     ReferralActivity,
@@ -16,6 +17,7 @@ from backend.models import (
     default_referral_shared_scope,
     utc_now,
 )
+from backend.helpchain_backend.src.routes import admin_referrals as referral_routes
 
 
 def _admin(username: str, structure_id: int | None, role: str = "admin") -> AdminUser:
@@ -290,6 +292,56 @@ def _create_partner_connection(client, app, ctx):
     )
     assert response.status_code == 303
     return OrganizationConnection.query.order_by(OrganizationConnection.id.desc()).first()
+
+
+def test_referral_send_writes_admin_audit_atomically(client, app):
+    ctx = _seed_referral_context()
+    referral = _send_referral(client, app, ctx)
+
+    assert referral is not None
+    assert AdminAuditEvent.query.filter_by(
+        action="referral.send",
+        target_type="CaseReferral",
+        target_id=referral.id,
+    ).count() == 1
+
+
+def test_referral_send_audit_failure_rolls_back_mutation(client, app, monkeypatch):
+    ctx = _seed_referral_context()
+
+    def fail_audit(*args, **kwargs):
+        raise RuntimeError("synthetic referral audit failure")
+
+    monkeypatch.setattr(referral_routes, "audit_admin_action", fail_audit)
+    _login(client, app, ctx["admin_a"])
+
+    with pytest.raises(RuntimeError, match="synthetic referral audit failure"):
+        client.post(
+            f"/admin/requests/{ctx['request'].id}/refer",
+            data={"to_structure_id": str(ctx["b"].id), "reason": "Atomicity test"},
+            follow_redirects=False,
+        )
+
+    assert CaseReferral.query.count() == 0
+    assert ReferralActivity.query.count() == 0
+    assert AdminAuditEvent.query.filter_by(action="referral.send").count() == 0
+
+
+def test_denied_referral_send_creates_no_audit(client, app):
+    ctx = _seed_referral_context()
+    connection = OrganizationConnection.query.one()
+    connection.permissions_json = {"can_send_referrals": False, "can_receive_referrals": True}
+    db.session.commit()
+    _login(client, app, ctx["admin_a"])
+
+    response = client.post(
+        f"/admin/requests/{ctx['request'].id}/refer",
+        data={"to_structure_id": str(ctx["b"].id), "reason": "Denied audit test"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    assert AdminAuditEvent.query.filter_by(action="referral.send").count() == 0
 
 
 def _create_partner_connection_as_superadmin(client, app, ctx, *, source_structure_id=None, follow_redirects=False):
