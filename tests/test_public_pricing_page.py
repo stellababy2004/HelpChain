@@ -15,9 +15,9 @@ def test_public_pricing_page_renders_expected_offer_content(client):
     assert response.status_code == 200
     html = response.get_data(as_text=True)
 
-    assert "Une coordination plus simple." in html
-    assert "Tarifs HelpChain" in html
-    assert "Structure" in html
+    assert "Un cadre d’offre adapté à votre niveau de coordination opérationnelle" in html
+    assert "Offres HelpChain" in html
+    assert "Pour une structure" in html
     assert "300" in html
     assert "Coordination avancée" in html
     assert "500" in html
@@ -44,12 +44,12 @@ def test_public_navigation_contains_pricing_link(client):
     nav_links = [
         link
         for link in soup.select('[data-hc-public-nav] a[href="/tarifs"], #hcMobileNav a[href="/tarifs"]')
-        if "Tarifs" in link.get_text(" ", strip=True)
+        if "Offres" in link.get_text(" ", strip=True)
     ]
     nav_links.extend(
         link
         for link in soup.select('.hc-home-premium__nav a[href="/tarifs"]')
-        if "Tarifs" in link.get_text(" ", strip=True)
+        if "Offres" in link.get_text(" ", strip=True)
     )
 
     assert nav_links
