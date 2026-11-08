@@ -697,13 +697,13 @@
 
         <option value="">Priorit</option>
 
-        <option value="CRITICAL">Critical</option>
+        <option value="CRITICAL">{{ _('Critical') }}</option>
 
-        <option value="HIGH">High</option>
+        <option value="HIGH">{{ _('High') }}</option>
 
-        <option value="MEDIUM">Medium</option>
+        <option value="MEDIUM">{{ _('Medium') }}</option>
 
-        <option value="LOW">Low</option>
+        <option value="LOW">{{ _('Low') }}</option>
 
       </select>
 
@@ -981,13 +981,13 @@
 
       <option value="nudge">Nudge selected bénévoles</option>
 
-      <option value="status:pending">Set statut : Pending</option>
+      <option value="status:pending">Set statut : {{ _('Pending') }}</option>
 
-      <option value="status:in_progress">Set statut : In progress</option>
+      <option value="status:in_progress">Set statut : {{ _('In progress') }}</option>
 
-      <option value="status:done">Set statut : Done</option>
+      <option value="status:done">Set statut : {{ _('Done') }}</option>
 
-      <option value="status:rejected">Set statut : Rejected</option>
+      <option value="status:rejected">Set statut : {{ _('Rejected') }}</option>
 
     </select>
 
@@ -1408,7 +1408,12 @@
 
                         {% if eng %}
 
-                          <span class="hc-pill hc-pill--sla" title="{{ _('Engagement') }}">{{ _('Engagement') }}: {{ eng.label }} ({{ eng.score }})</span>
+                          {% set engagement_label = {
+                            'High': _('High'),
+                            'Medium': _('Medium'),
+                            'At risk': _('At risk')
+                          }.get(eng.label, eng.label) %}
+                          <span class="hc-pill hc-pill--sla" title="{{ _('Engagement bénévole') }}">{{ _('Engagement bénévole') }}: {{ engagement_label }} ({{ eng.score }})</span>
 
                         {% endif %}
 

@@ -100,7 +100,7 @@
             <th>ID</th>
             <th class="col-request">Demande</th>
             <th class="col-city">Ville</th>
-            <th>Priorité</th>
+            <th>Priorité demande</th>
             <th class="col-status">Statut</th>
             <th>Responsable</th>
             <th class="col-activity">Dernière activité</th>
@@ -150,16 +150,20 @@
               </td>
               <td class="small text-muted hc-ops-cell-city col-city">{{ r.city or '—' }}</td>
               <td class="hc-ops-cell-priority">
-                {% set ops_level = (ops_priority_levels.get(r.id) or 'normal') %}
-                {% if ops_level == 'critique' %}
+                {% set request_priority = (r.priority or 'standard')|lower %}
+                {% if request_priority in ['critical', 'urgent'] %}
                   <span class="badge text-bg-danger">Critique</span>
-                {% elif ops_level == 'élevé' %}
-                  <span class="badge text-bg-warning text-dark">Élevé</span>
+                {% elif request_priority == 'high' %}
+                  <span class="badge text-bg-warning text-dark">Élevée</span>
+                {% elif request_priority == 'medium' %}
+                  <span class="badge text-bg-secondary">Moyenne</span>
+                {% elif request_priority == 'low' %}
+                  <span class="badge text-bg-light border">Faible</span>
                 {% else %}
                   <span class="badge text-bg-secondary">Normal</span>
                 {% endif %}
               </td>
-              <td class="hc-ops-cell-status col-status"><span class="badge text-bg-light border">{{ r.status or '—' }}</span></td>
+              <td class="hc-ops-cell-status col-status"><span class="badge text-bg-light border">{{ status_meta(r.status).label if r.status else '—' }}</span></td>
               <td class="hc-ops-cell-owner">{% if r.owner %}{{ r.owner.username }}{% else %}—{% endif %}</td>
               <td class="hc-ops-cell-activity col-activity">
                 <div class="hc-elapsed hc-elapsed--{{ elapsed_tone(activity_ref) }}">{{ format_elapsed_compact(activity_ref) }}</div>

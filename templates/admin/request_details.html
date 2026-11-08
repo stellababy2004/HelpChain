@@ -1006,7 +1006,7 @@
             {% for e in volunteer_engagement %}
               <li>
                 <strong>{{ e.display }}</strong>
-                — Engagement: {{ e.label }} (score {{ e.score }})
+                — {{ _('Engagement bénévole') }}: {{ {'High': _('High'), 'Medium': _('Medium'), 'At risk': _('At risk')}.get(e.label, e.label) }} ({{ _('score') }} {{ e.score }})
               </li>
             {% endfor %}
           </ul>
