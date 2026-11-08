@@ -80,13 +80,24 @@
           </p>
         </div>
 
-        <img
-          data-hc-lightbox
-          src="{{ url_for('static', filename='img/product/pilotage-overview-composite.png') }}"
-          alt="{{ _('Vue consolidée du pilotage opérationnel HelpChain') }}"
-          class="img-fluid rounded-4 border"
-          loading="lazy"
-        >
+        <figure class="hc-pilotage-preview mb-0">
+          <img
+            data-hc-lightbox-open
+            data-hc-lightbox-target=".hc-pilotage-original"
+            src="{{ url_for('static', filename='img/product/helpchain-pilotage-b2b-demo.png') }}"
+            alt="{{ _('Illustration conceptuelle du pilotage opérationnel HelpChain') }}"
+            class="hc-pilotage-preview__image img-fluid rounded-4 border"
+            loading="lazy"
+          >
+          <figcaption>{{ _('Illustration conceptuelle — données fictives, interface non contractuelle.') }}</figcaption>
+          <img
+            data-hc-lightbox
+            class="hc-pilotage-original visually-hidden"
+            src="{{ url_for('static', filename='img/product/helpchain-pilotage-b2b-demo.png') }}"
+            alt="{{ _('Illustration conceptuelle du pilotage opérationnel HelpChain') }}"
+            loading="lazy"
+          >
+        </figure>
       </div>
     </div>
   </section>

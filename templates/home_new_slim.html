@@ -2533,14 +2533,15 @@
           role="button"
           tabindex="0"
           aria-label="{{ _('Agrandir le tableau de bord') }}"
-          src="{{ url_for('static', filename='img/product/ops-workspace-home-horizontal-dpr2.png') }}?v=20261029-ops-home-horizontal-dpr2"
-          alt="{{ _('Interface de pilotage HelpChain') }}"
-          width="2640"
-          height="1650"
+          src="{{ url_for('static', filename='img/product/helpchain-b2b-workspace-home.png') }}?v=20261108-b2b-workspace-home"
+          alt="{{ _('Centre de pilotage opérationnel HelpChain avec indicateurs et suivi d’une demande partenaire') }}"
+          width="1774"
+          height="887"
           loading="eager"
           decoding="async"
           fetchpriority="high"
         >
+        <p class="hc-home-premium__preview-note">{{ _('Capture d’écran de démonstration — données fictives.') }}</p>
       </div>
       <div class="hc-home-reporting-expand hc-home-hero-expand">
         <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-hc-lightbox-open data-hc-lightbox-target=".hc-home-premium__shot-img--hero" aria-haspopup="dialog">
@@ -2920,6 +2921,7 @@
                   <span><i></i>{{ _('0 anomalie critique') }}</span>
                   <span><i></i>{{ _('Journal actif') }}</span>
                 </div>
+                <p class="hc-home-premium__preview-note">{{ _('Données fictives à des fins de démonstration.') }}</p>
                 <div class="hc-product-demo__security-grid">
                   <section>
                     <p class="hc-product-demo__label">{{ _('ACCÈS PAR RÔLE') }}</p>
@@ -2928,7 +2930,7 @@
                   </section>
                   <section>
                     <p class="hc-product-demo__label">{{ _('JOURNAL D’AUDIT') }}</p>
-                    <div class="hc-product-demo__audit"><time>10:24</time><div><strong>{{ _('Dossier consulté') }}</strong><span>{{ _('Claire Martin · Paris') }}</span></div></div>
+                    <div class="hc-product-demo__audit"><time>10:24</time><div><strong>{{ _('Dossier consulté') }}</strong><span>{{ _('Association B · Périmètre autorisé') }}</span></div></div>
                     <div class="hc-product-demo__audit"><time>09:58</time><div><strong>{{ _('Accès partenaire validé') }}</strong><span>{{ _('admin_paris') }}</span></div></div>
                     <div class="hc-product-demo__audit"><time>09:31</time><div><strong>{{ _('Rôle mis à jour') }}</strong><span>{{ _('Journalisation enregistrée') }}</span></div></div>
                   </section>
