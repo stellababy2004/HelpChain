@@ -44,14 +44,74 @@
       box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
       position: relative;
       overflow: hidden;
-      max-height: 550px;
+      max-height: 430px;
     }
 
     body.hc-page-home .hc-home-reporting-preview img {
       display: block;
       width: 100%;
+      max-height: 390px;
       height: auto;
+      object-fit: contain;
+      object-position: center top;
       border-radius: 14px;
+    }
+
+    body.hc-page-home .hc-home-premium__platform-showcaseVisual .hc-home-premium__platform-browser {
+      overflow: hidden;
+    }
+
+    body.hc-page-home .hc-home-premium__platform-showcaseVisual .hc-home-premium__platform-browser > img {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      object-position: center top;
+    }
+
+    body.hc-page-home .hc-home-premium__platform-showcaseHead {
+      max-width: 900px;
+      margin: 0 0 22px;
+      text-align: left;
+    }
+
+    body.hc-page-home .hc-home-premium__platform-showcaseHead h2 {
+      max-width: 28ch;
+      margin: 6px 0 10px;
+      font-size: clamp(1.8rem, 2.6vw, 2.7rem);
+      line-height: 1.14;
+      letter-spacing: -0.035em;
+    }
+
+    body.hc-page-home .hc-home-premium__platform-showcaseHead > p:not(.hc-home-premium__section-kicker) {
+      max-width: 72ch;
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.62;
+    }
+
+    body.hc-page-home .hc-home-premium__platform-showcaseHead .hc-home-problem-conclusion {
+      margin-top: 8px;
+      color: #526273;
+      font-weight: 600;
+    }
+
+    body.hc-page-home .hc-home-premium__section--case-study-teaser .hc-case-study__item {
+      min-width: 0;
+    }
+
+    body.hc-page-home .hc-home-premium__section--case-study-teaser .hc-case-study__card {
+      min-height: 100%;
+      box-sizing: border-box;
+    }
+
+    body.hc-page-home #product .hc-home-premium__section-head--product {
+      gap: 6px;
+    }
+
+    body.hc-page-home #product .hc-home-premium__trust-strip {
+      margin-top: 1rem;
     }
 
     body.hc-page-home .hc-home-reporting-preview::after {
@@ -2451,7 +2511,7 @@
         <span class="hc-home-premium__brand-text">HelpChain</span>
       </a>
       <nav class="hc-home-premium__menu" aria-label="{{ _('Primary navigation') }}">
-        <a href="{{ url_for('main.comment_ca_marche') }}">{{ _('Coordination') }}</a>
+        <a href="/comment-ca-marche">{{ _('Coordination') }}</a>
         <a href="{{ url_for('main.pour_les_structures') }}">{{ _('Pour les structures') }}</a>
         <a href="{{ url_for('main.securite') }}">{{ _('Sécurité') }}</a>
         <a href="{{ url_for('main.deploiement') }}">{{ _('Déploiement') }}</a>
@@ -2481,7 +2541,7 @@
           <p class="hc-home-premium__mobile-panelTitle">HelpChain</p>
         </div>
         <ul class="hc-home-premium__mobile-list">
-          <li><a href="{{ url_for('main.comment_ca_marche') }}">{{ _('Coordination') }}</a></li>
+          <li><a href="/comment-ca-marche">{{ _('Coordination') }}</a></li>
           <li><a href="{{ url_for('main.pour_les_structures') }}">{{ _('Pour les structures') }}</a></li>
           <li><a href="{{ url_for('main.securite') }}">{{ _('Sécurité') }}</a></li>
           <li><a href="{{ url_for('main.deploiement') }}">{{ _('Déploiement') }}</a></li>
@@ -2498,25 +2558,25 @@
 <section class="hc-home-premium__hero" aria-labelledby="hc-home-hero-title">
   <div class="hc-home-premium__hero-grid">
     <div class="hc-home-premium__hero-copy">
-      <p class="hc-home-premium__eyebrow">{{ _('POUR LES COLLECTIVITÉS, CCAS ET ACTEURS DE L’ACCOMPAGNEMENT SOCIAL') }}</p>
+      <p class="hc-home-premium__eyebrow">{{ _('POUR LES RÉSEAUX, FÉDÉRATIONS ET ORGANISATIONS PARTENAIRES') }}</p>
 
       <h1 id="hc-home-hero-title">{{ _('Plusieurs structures, un seul suivi partagé.') }}</h1>
 
       <p class="hc-home-premium__lead">
-        {{ _('HelpChain Live aide les collectivités, CCAS et associations à coordonner les interventions, suivre les demandes et savoir qui fait quoi — sans multiplier les emails, appels et fichiers Excel.') }}
+        {{ _('Centralisez les demandes, coordonnez les interventions et gardez une visibilité sur chaque situation.') }}
       </p>
 
       <div class="hc-home-premium__hero-support" aria-label="{{ _('Actions et repères pilote') }}">
         <div class="hc-home-premium__hero-actions">
           <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo" data-hc-event="home_primary_cta">{{ _('Demander un pilote') }}</a>
-          <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}" data-hc-event="home_secondary_cta">{{ _('Voir comment ça marche') }}</a>
+          <a class="hc-btn hc-btn-outline btn btn-secondary" href="/comment-ca-marche" data-hc-event="home_secondary_cta">{{ _('Voir comment ça marche') }}</a>
         </div>
         <p class="hc-home-premium__hero-public-cta">
           <span>{{ _('Besoin d’aide ?') }}</span>
           <a class="hc-home-premium__hero-public-link" href="{{ url_for('main.orienter') }}">{{ _('Orienter une demande') }} <span aria-hidden="true">→</span></a>
         </p>
         <div class="hc-home-premium__hero-supportInline">
-          <p class="hc-home-premium__hero-supportMeta">{{ _('Pour les CCAS, collectivités, associations, établissements et réseaux qui travaillent avec plusieurs intervenants.') }}</p>
+          <p class="hc-home-premium__hero-supportMeta">{{ _('POUR LES ASSOCIATIONS, FÉDÉRATIONS ET RÉSEAUX TERRITORIAUX QUI COORDONNENT PLUSIEURS STRUCTURES.') }}</p>
         </div>
       </div>
     </div>
@@ -2552,46 +2612,6 @@
   </div>
 </section>
 
-  <section id="hc-home-reporting" class="hc-home-premium__section hc-home-premium__section--product" aria-labelledby="hc-home-reporting-title">
-    <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
-      <p>{{ _('PILOTAGE OPÉRATIONNEL') }}</p>
-      <h2 id="hc-home-reporting-title">{{ _('Pilotez votre activité avec une vision claire') }}</h2>
-      <p>{{ _('Suivez vos demandes, identifiez les situations prioritaires et appuyez vos décisions sur des indicateurs opérationnels fiables.') }}</p>
-    </div>
-    <div class="hc-home-premium__platform-outcomes" aria-label="{{ _('Bénéfices des rapports opérationnels') }}">
-      <article>
-        <strong>{{ _('Visibilité opérationnelle') }}</strong>
-        <span>{{ _('Visualisez les demandes en cours, les affectations et les situations nécessitant une attention particulière.') }}</span>
-      </article>
-      <article>
-        <strong>{{ _('Anticipation des risques') }}</strong>
-        <span>{{ _('Repérez les retards de suivi, les situations critiques et les tensions de capacité.') }}</span>
-      </article>
-      <article>
-        <strong>{{ _('Rapports professionnels') }}</strong>
-        <span>{{ _('Consultez vos indicateurs et exportez vos rapports en PDF, Excel ou CSV.') }}</span>
-      </article>
-    </div>
-    <p class="hc-home-premium__section-link">
-      <a class="hc-btn hc-btn--primary btn btn-primary" href="{{ url_for('main.pour_les_structures') }}">{{ _('Découvrir le pilotage pour les structures') }} <span aria-hidden="true">→</span></a>
-    </p>
-    <figure class="hc-home-reporting-preview">
-      <img
-        data-hc-lightbox
-        src="{{ url_for('static', filename='img/helpchain-reporting-demo-preview.png') }}"
-        alt="Aperçu du rapport opérationnel HelpChain présentant une synthèse exécutive et des indicateurs de pilotage"
-        loading="lazy"
-        decoding="async"
-      >
-      <figcaption>{{ _('Exemple de rapport — données fictives de démonstration, non actualisées') }}</figcaption>
-    </figure>
-    <div class="hc-home-reporting-expand">
-      <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-hc-lightbox-open data-hc-lightbox-target=".hc-home-reporting-preview img" aria-haspopup="dialog">
-        {{ _('Agrandir le rapport') }}
-      </button>
-    </div>
-  </section>
-
 <section class="hc-home-premium__platform-showcase"
          aria-labelledby="hc-platform-showcase-title">
   <div class="hc-home-premium__platform-showcaseHead">
@@ -2600,11 +2620,14 @@
     </p>
 
     <h2 id="hc-platform-showcase-title">
-      {{ _('Une situation passe souvent par plusieurs personnes et plusieurs structures.') }}
+      {{ _('Quand plusieurs organisations interviennent, le suivi se fragmente.') }}
     </h2>
 
     <p>
-      {{ _('Un appel au CCAS. Un email à une association. Un partenaire qui reprend le dossier. Une information transmise par téléphone.') }}
+      {{ _('Une demande arrive dans une structure. Un partenaire prend le relais. Les échanges se multiplient, mais les informations et les responsabilités restent dispersées.') }}
+    </p>
+    <p class="hc-home-problem-conclusion">
+      {{ _('Sans coordination commune, il devient difficile de savoir qui fait quoi et quelle est la prochaine étape.') }}
     </p>
   </div>
 
@@ -2616,17 +2639,10 @@
       </div>
 
       <img
-        src="{{ url_for('static', filename='img/product/ops-workspace-dpr2.png') }}?v=20261029-ops-dpr2"
-        alt="{{ _('Vue d’ensemble du workspace opérationnel HelpChain') }}"
+        src="{{ url_for('static', filename='img/product/helpchain-b2b-workspace-home.png') }}?v=20261108-b2b-workspace-home-problem"
+        alt="{{ _('Centre de pilotage opérationnel HelpChain utilisé comme illustration de coordination entre organisations') }}"
         loading="lazy"
       >
-    </div>
-    <div class="hc-home-premium__platform-outcomes hc-home-premium__platform-outcomes--problem"
-         aria-label="{{ _('Conséquence du suivi fragmenté') }}">
-      <article>
-        <strong>{{ _('Et très vite…') }}</strong>
-        <span>{{ _('Les responsabilités se dispersent, les actions déjà menées deviennent difficiles à retrouver et les prochaines étapes restent floues.') }}</span>
-      </article>
     </div>
   </div>
 </section>
@@ -2634,7 +2650,7 @@
   <section class="hc-home-premium__section hc-home-premium__section--product" id="product" aria-labelledby="hc-home-product-title">
     <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
       <p>{{ _('AVEC HELPCHAIN') }}</p>
-      <h2 id="hc-home-product-title">{{ _('Tout le monde retrouve le même fil de suivi.') }}</h2>
+      <h2 id="hc-home-product-title">{{ _('Chaque partenaire suit la même situation, selon ses droits d’accès.') }}</h2>
       <p>{{ _('Une situation est créée, un responsable est identifié, les actions sont suivies et les partenaires peuvent intervenir sans perdre le contexte.') }}</p>
     </div>
 
@@ -2651,9 +2667,9 @@
   <section class="hc-home-premium__section hc-home-premium__section--product" aria-labelledby="hc-home-intake-title">
     <div class="hc-home-premium__product-row hc-home-premium__product-row--intake">
       <div class="hc-home-premium__product-copy hc-home-premium__product-copy--intro">
-        <p class="hc-home-premium__section-kicker">{{ _('01 · UNE DEMANDE ARRIVE') }}</p>
-        <h2 id="hc-home-intake-title">{{ _('Une demande arrive. Elle ne se perd plus.') }}</h2>
-        <p>{{ _('Elle est enregistrée, attribuée à la bonne personne et suivie jusqu’à sa prise en charge.') }}</p>
+        <p class="hc-home-premium__section-kicker">{{ _('01 · LE RÉSEAU') }}</p>
+        <h2 id="hc-home-intake-title">{{ _('Plusieurs organisations. Une coordination commune.') }}</h2>
+        <p>{{ _('Une fédération coordonne trois organisations partenaires qui travaillent sur des situations communes, chacune dans son périmètre.') }}</p>
         <ul class="hc-home-premium__workflow-points">
           <li>{{ _('Les demandes sont regroupées au même endroit.') }}</li>
           <li>{{ _('Un responsable peut être identifié.') }}</li>
@@ -2675,17 +2691,17 @@
               <div class="hc-product-demo__request-main">
                 <div>
                   <p class="hc-product-demo__label">{{ _('Demande') }}</p>
-                  <h4>{{ _('Accompagnement logement · Paris 16') }}</h4>
-                  <p>{{ _('Orientation vers le service social') }}</p>
+                  <h4>{{ _('Coordination d’une campagne inter-associative') }}</h4>
+                  <p>{{ _('Une campagne commune à coordonner avec les organisations partenaires') }}</p>
                 </div>
                 <span class="hc-product-demo__priority">{{ _('Priorité élevée') }}</span>
               </div>
               <div class="hc-product-demo__meta-grid">
-                <div><span>{{ _('Responsable') }}</span><strong>{{ _('Claire Martin') }}</strong></div>
+                <div><span>{{ _('Organisation') }}</span><strong>{{ _('Réseau Horizon') }}</strong></div>
                 <div><span>{{ _('Dernière activité') }}</span><strong>{{ _('Aujourd’hui · 10:24') }}</strong></div>
               </div>
               <div class="hc-product-demo__next-action">
-                <div><span>{{ _('PROCHAINE ACTION') }}</span><strong>{{ _('Contacter le partenaire logement') }}</strong></div>
+                <div><span>{{ _('PROCHAINE ACTION') }}</span><strong>{{ _('Valider le calendrier avec les partenaires') }}</strong></div>
                 <span class="hc-product-demo__button">{{ _('Ouvrir') }}</span>
               </div>
             </div>
@@ -2717,8 +2733,8 @@
                 <span class="hc-product-demo__status">{{ _('Suivi actif') }}</span>
               </div>
               <div class="hc-product-demo__case-head">
-                <div><p class="hc-product-demo__label">{{ _('Situation') }}</p><h4>{{ _('Suivi logement · Boulogne-Billancourt') }}</h4></div>
-                <div class="hc-product-demo__owner"><span>{{ _('Responsable') }}</span><strong><i>CM</i>{{ _('Claire Martin') }}</strong></div>
+                <div><p class="hc-product-demo__label">{{ _('Situation partagée') }}</p><h4>{{ _('Coordination entre trois organisations') }}</h4></div>
+                <div class="hc-product-demo__owner"><span>{{ _('Coordination réseau') }}</span><strong><i>CR</i>{{ _('Fédération coordinatrice') }}</strong></div>
               </div>
               <div class="hc-product-demo__timeline" aria-label="{{ _('Historique récent') }}">
                 <article><i></i><div><strong>{{ _('Compte rendu ajouté') }}</strong><span>{{ _('Aujourd’hui · 09:42') }}</span></div></article>
@@ -2730,13 +2746,13 @@
         </div>
       </div>
       <div class="hc-home-premium__product-copy">
-        <p class="hc-home-premium__section-kicker">{{ _('02 · LE SUIVI') }}</p>
-        <h2 id="hc-home-case-title">{{ _('À tout moment, vous savez qui s’en occupe.') }}</h2>
-        <p>{{ _('Plus besoin de rechercher dans les emails ou de demander à plusieurs collègues où en est la situation.') }}</p>
+        <p class="hc-home-premium__section-kicker">{{ _('02 · LA COORDINATION') }}</p>
+        <h2 id="hc-home-case-title">{{ _('Chaque organisation sait ce qu’elle doit faire.') }}</h2>
+        <p>{{ _('La fédération répartit les responsabilités entre les organisations partenaires sans donner à chacune accès à des informations hors de son périmètre.') }}</p>
         <ul class="hc-home-premium__workflow-points">
-          <li>{{ _('Le responsable est visible.') }}</li>
-          <li>{{ _('Les actions restent dans l’historique.') }}</li>
-          <li>{{ _('Une autre personne peut reprendre le suivi sans repartir de zéro.') }}</li>
+          <li>{{ _('Chaque partenaire connaît ses responsabilités.') }}</li>
+          <li>{{ _('Les actions et les relais restent traçables.') }}</li>
+          <li>{{ _('La coordination se poursuit même lorsqu’un intervenant change.') }}</li>
         </ul>
       </div>
     </div>
@@ -2745,9 +2761,9 @@
   <section class="hc-home-premium__section hc-home-premium__section--product hc-home-premium__section--trust" aria-labelledby="hc-home-security-title">
     <div class="hc-home-premium__product-row hc-home-premium__product-row--security">
       <div class="hc-home-premium__product-copy">
-        <p class="hc-home-premium__section-kicker">{{ _('03 · LES PARTENAIRES') }}</p>
-        <h2 id="hc-home-security-title">{{ _('Une autre structure doit intervenir ? Faites-la entrer dans le suivi.') }}</h2>
-        <p>{{ _('HelpChain permet de coordonner le relais avec une structure partenaire tout en gardant un cadre clair sur ce que chacun peut voir et faire.') }}</p>
+        <p class="hc-home-premium__section-kicker">{{ _('03 · LE SUIVI') }}</p>
+        <h2 id="hc-home-security-title">{{ _('Un suivi partagé, sans perdre le contrôle.') }}</h2>
+        <p>{{ _('La chronologie rend visibles les étapes et les organisations responsables, dans les limites des droits accordés à chaque partenaire.') }}</p>
         <ul class="hc-home-premium__workflow-points">
           <li>{{ _('Le relais entre structures reste visible.') }}</li>
           <li>{{ _('Chaque organisation intervient dans son périmètre.') }}</li>
@@ -2767,20 +2783,60 @@
                 <span class="hc-product-demo__status hc-product-demo__status--pending">{{ _('Validation requise') }}</span>
               </div>
               <div class="hc-product-demo__relay-flow">
-                <article><span>01</span><i>HC</i><div><strong>{{ _('CCAS Paris 16') }}</strong><small>{{ _('Structure d’origine') }}</small></div></article>
+                <article><span>01</span><i>A</i><div><strong>{{ _('Association A') }}</strong><small>{{ _('Demande enregistrée') }}</small></div></article>
                 <div class="hc-product-demo__relay-line"><span>{{ _('Contexte transmis') }}</span></div>
-                <article><span>02</span><i>PL</i><div><strong>{{ _('Partenaire logement') }}</strong><small>{{ _('Périmètre autorisé') }}</small></div></article>
+                <article><span>02</span><i>B</i><div><strong>{{ _('Association B') }}</strong><small>{{ _('Action prise en charge') }}</small></div></article>
               </div>
               <div class="hc-product-demo__relay-checks">
-                <span>✓ {{ _('Responsable visible') }}</span>
-                <span>✓ {{ _('Historique conservé') }}</span>
-                <span>✓ {{ _('Accès limité au relais') }}</span>
+                <span>✓ {{ _('Partenaire sollicité') }}</span>
+                <span>✓ {{ _('Suivi actualisé') }}</span>
+                <span>✓ {{ _('Accès limité au périmètre autorisé') }}</span>
               </div>
               <div class="hc-product-demo__relay-action"><span>{{ _('En attente de validation partenaire') }}</span><strong>{{ _('Valider le relais') }}</strong></div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="hc-home-reporting" class="hc-home-premium__section hc-home-premium__section--product" aria-labelledby="hc-home-reporting-title">
+    <div class="hc-home-premium__section-head hc-home-premium__section-head--product">
+      <p>{{ _('04 · LE PILOTAGE') }}</p>
+      <h2 id="hc-home-reporting-title">{{ _('Une vision opérationnelle pour mieux coordonner le réseau.') }}</h2>
+      <p>{{ _('Suivez les priorités, les responsabilités et l’activité du réseau à partir des indicateurs opérationnels disponibles.') }}</p>
+    </div>
+    <div class="hc-home-premium__platform-outcomes" aria-label="{{ _('Bénéfices des rapports opérationnels') }}">
+      <article>
+        <strong>{{ _('Visibilité opérationnelle') }}</strong>
+        <span>{{ _('Visualisez les demandes en cours, les affectations et les situations nécessitant une attention particulière.') }}</span>
+      </article>
+      <article>
+        <strong>{{ _('Anticipation des risques') }}</strong>
+        <span>{{ _('Repérez les retards de suivi, les situations critiques et les tensions de capacité.') }}</span>
+      </article>
+      <article>
+        <strong>{{ _('Rapports professionnels') }}</strong>
+        <span>{{ _('Consultez vos indicateurs et exportez vos rapports en PDF, Excel ou CSV.') }}</span>
+      </article>
+    </div>
+    <p class="hc-home-premium__section-link">
+      <a class="hc-btn hc-btn--primary btn btn-primary" href="{{ url_for('main.pour_les_structures') }}">{{ _('Découvrir le pilotage du réseau') }} <span aria-hidden="true">→</span></a>
+    </p>
+    <figure class="hc-home-reporting-preview">
+      <img
+        data-hc-lightbox
+        src="{{ url_for('static', filename='img/helpchain-reporting-demo-preview.png') }}"
+        alt="Aperçu du rapport opérationnel HelpChain présentant une synthèse exécutive et des indicateurs de pilotage"
+        loading="lazy"
+        decoding="async"
+      >
+      <figcaption>{{ _('Exemple de rapport — données fictives à des fins de démonstration.') }}</figcaption>
+    </figure>
+    <div class="hc-home-reporting-expand">
+      <button class="hc-btn hc-btn-outline btn btn-secondary" type="button" data-hc-lightbox-open data-hc-lightbox-target=".hc-home-reporting-preview img" aria-haspopup="dialog">
+        {{ _('Agrandir le rapport') }}
+      </button>
     </div>
   </section>
 
@@ -2822,28 +2878,28 @@
   </div>
 
   <div class="hc-home-premium__audienceGrid">
-    <article>
+    <article style="border-color: rgba(37, 99, 235, 0.32); box-shadow: 0 12px 28px rgba(37, 99, 235, 0.10);">
       <span>01</span>
-      <h3>{{ _('Collectivités & CCAS') }}</h3>
-      <p>{{ _('Suivre les demandes, identifier les responsables et coordonner les relais avec les acteurs du territoire.') }}</p>
+      <h3>{{ _('Réseaux & fédérations') }}</h3>
+      <p>{{ _('Coordonner plusieurs organisations partenaires, répartir les responsabilités et suivre les actions dans un cadre partagé.') }}</p>
     </article>
 
     <article>
       <span>02</span>
-      <h3>{{ _('Associations') }}</h3>
-      <p>{{ _('Organiser les situations, les équipes et les partenaires sans disperser le suivi.') }}</p>
+      <h3>{{ _('Associations & partenaires') }}</h3>
+      <p>{{ _('Organiser les demandes, collaborer avec les partenaires et conserver un suivi clair des interventions.') }}</p>
     </article>
 
     <article>
       <span>03</span>
-      <h3>{{ _('Établissements') }}</h3>
-      <p>{{ _('Centraliser les demandes et coordonner les personnes qui doivent intervenir.') }}</p>
+      <h3>{{ _('Collectivités & CCAS') }}</h3>
+      <p>{{ _('Suivre les situations, coordonner les relais territoriaux et faciliter la coopération avec les associations.') }}</p>
     </article>
 
     <article>
       <span>04</span>
-      <h3>{{ _('Réseaux & structures multi-sites') }}</h3>
-      <p>{{ _('Garder une vision claire des situations et des relais entre plusieurs équipes ou sites.') }}</p>
+      <h3>{{ _('Établissements & structures multi-sites') }}</h3>
+      <p>{{ _('Centraliser les demandes et coordonner les équipes ou les sites selon leurs responsabilités.') }}</p>
     </article>
   </div>
 </section>
@@ -2851,9 +2907,9 @@
 <section class="hc-home-premium__section hc-home-premium__section--case-study-teaser" aria-labelledby="hc-home-case-study-title">
     <div class="hc-case-study hc-case-study--teaser">
       <p class="hc-case-study__eyebrow">DÉMARRAGE PILOTE</p>
-      <h2 id="hc-home-case-study-title" class="hc-case-study__title">{{ _('Testez HelpChain sur une situation réelle.') }}</h2>
+      <h2 id="hc-home-case-study-title" class="hc-case-study__title">{{ _('Découvrez HelpChain à travers un pilote encadré.') }}</h2>
       <p class="hc-case-study__intro">
-        {{ _('Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Le pilote permet de vérifier rapidement si HelpChain répond à votre manière de travailler.') }}
+        {{ _('Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Les données réelles ne sont utilisées qu’après les vérifications et autorisations nécessaires.') }}
       </p>
       <div class="hc-case-study__timeline hc-case-study__timeline--compact">
         <article class="hc-case-study__item">
@@ -2984,7 +3040,7 @@
       <div class="hc-home-premium__cta-actions">
         <div class="hc-home-premium__cta-buttons">
           <a class="hc-btn hc-btn--primary btn btn-primary" href="/demo">{{ _('Demander un pilote') }}</a>
-          <a class="hc-btn hc-btn-outline btn btn-secondary" href="{{ url_for('main.comment_ca_marche') }}">{{ _('Voir comment ça marche') }}</a>
+          <a class="hc-btn hc-btn-outline btn btn-secondary" href="/comment-ca-marche">{{ _('Voir comment ça marche') }}</a>
         </div>
         <p class="hc-home-premium__cta-note">{{ _('Échange orienté sur votre organisation · Périmètre pilote cadré · France / UE') }}</p>
       </div>

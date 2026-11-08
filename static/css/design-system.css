@@ -8015,7 +8015,7 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .publ
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-interstructure-feature {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(380px, 1.2fr);
+  grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.35fr);
   gap: clamp(1.25rem, 3vw, 2.4rem);
   align-items: center;
   margin-bottom: 1rem;
@@ -8107,7 +8107,7 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-m
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-interstructure-feature__visual {
   margin: 0;
-  padding: 0.55rem;
+  padding: 0.35rem;
   border: 1px solid rgba(166, 187, 211, 0.76);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.88);
@@ -8133,6 +8133,17 @@ body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .hc-i
   margin: 0.25rem 0 0;
   color: #60758d;
   font-size: 0.86rem;
+}
+
+body.hc-page-pilotage .hc-pilotage-preview__image {
+  display: block;
+  width: 100%;
+}
+
+body.hc-page-pilotage .hc-pilotage-preview figcaption {
+  margin-top: 0.55rem;
+  color: #60758d;
+  font-size: 0.85rem;
 }
 
 body:not([data-hc-page^="/admin"]):not(.hc-admin-page):not(.hc-page-admin) .public-cta-card .card-body {
