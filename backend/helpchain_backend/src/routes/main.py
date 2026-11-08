@@ -129,12 +129,22 @@ _PUBLIC_SEO_CANONICAL_ENDPOINTS: dict[str, str] = {
     "main.index": "main.index",
     "main.about": "main.about",
     "main.comment_ca_marche": "main.comment_ca_marche",
+    "main.cas_usage": "main.cas_usage",
+    "main.collectivites_associations": "main.collectivites_associations",
+    "main.conditions_utilisation": "main.conditions_utilisation",
     "main.deploiement": "main.deploiement",
     "main.offre": "main.offre",
     "main.tarifs": "main.tarifs",
     "main.securite": "main.securite",
     "main.professionnels": "main.professionnels",
     "main.pour_les_structures": "main.pour_les_structures",
+    "main.partenariats": "main.partenariats",
+    "main.pilotage_indicateurs": "main.pilotage_indicateurs",
+    "main.privacy": "main.privacy",
+    "main.pourquoi_helpchain": "main.pourquoi_helpchain",
+    "main.simulation_operationnelle": "main.simulation_operationnelle",
+    "main.terms": "main.terms",
+    "main.vision_europeenne": "main.vision_europeenne",
     "main.architecture": "main.architecture",
     "main.gouvernance": "main.gouvernance",
     "main.contact": "main.contact",
@@ -194,13 +204,36 @@ def _canonical_public_endpoint(endpoint: str | None) -> str | None:
 
 
 def _canonical_public_url(endpoint: str | None = None) -> str:
-    canonical_endpoint = _canonical_public_endpoint(endpoint or request.endpoint)
+    canonical_endpoint = _canonical_public_endpoint(
+        endpoint if endpoint is not None else request.endpoint
+    )
+    canonical_paths = {
+        "main.index": "/",
+        "main.comment_ca_marche": "/comment-ca-marche",
+        "main.cas_usage": "/cas-usage",
+        "main.collectivites_associations": "/collectivites-associations",
+        "main.conditions_utilisation": "/conditions-utilisation",
+        "main.legal": "/legal",
+        "main.pilotage_indicateurs": "/pilotage-indicateurs",
+        "main.pourquoi_helpchain": "/pourquoi-helpchain",
+        "main.partenariats": "/partenariats",
+        "main.privacy": "/confidentialite",
+        "main.terms": "/conditions-utilisation",
+        "main.vision_europeenne": "/vision-europeenne",
+    }
+    canonical_path = canonical_paths.get(canonical_endpoint or "")
+    base_url = (
+        current_app.config.get("PUBLIC_BASE_URL")
+        or request.url_root
+    ).rstrip("/")
+    if canonical_path:
+        return f"{base_url}{canonical_path}"
     if canonical_endpoint:
         try:
-            return url_for(canonical_endpoint, _external=True)
+            return f"{base_url}{url_for(canonical_endpoint, _external=False)}"
         except Exception:
             pass
-    return request.base_url
+    return f"{base_url}{request.path}"
 
 
 def _public_page_name(endpoint: str | None = None) -> str:

@@ -145,3 +145,27 @@ def test_robots_and_sitemap_public_routes(client):
         "https://helpchain.live/professionnels",
     ):
         assert path in sitemap_text
+
+
+def test_canonical_aliases_use_one_public_url(client):
+    for path in ("/legal", "/mentions-legales", "/mentions_legales"):
+        html = client.get(path).get_data(as_text=True)
+        assert 'href="https://helpchain.live/legal"' in html, path
+
+    for path in ("/contact", "/demo"):
+        html = client.get(path).get_data(as_text=True)
+        assert 'href="https://helpchain.live/contact"' in html, path
+
+
+def test_public_base_url_controls_https_canonical_and_og_urls(client, app):
+    app.config["PUBLIC_BASE_URL"] = "https://canonical.example"
+    html = client.get("/gouvernance").get_data(as_text=True)
+    assert 'href="https://canonical.example/gouvernance"' in html
+    assert 'property="og:url" content="https://canonical.example/gouvernance"' in html
+
+
+def test_sitemap_excludes_demo_and_includes_governance(client):
+    sitemap = client.get("/sitemap.xml").get_data(as_text=True)
+    assert "https://helpchain.live/contact" in sitemap
+    assert "https://helpchain.live/demo" not in sitemap
+    assert "https://helpchain.live/gouvernance" in sitemap

@@ -1,3 +1,17 @@
+{% set _canonical_aliases = {
+  '/comment_ca_marche': '/comment-ca-marche',
+  '/cas_usage': '/cas-usage',
+  '/collectivites_associations': '/collectivites-associations',
+  '/conditions_utilisation': '/conditions-utilisation',
+  '/mentions_legales': '/legal',
+  '/pilotage_indicateurs': '/pilotage-indicateurs',
+  '/pourquoi_helpchain': '/pourquoi-helpchain',
+  '/privacy': '/confidentialite',
+  '/terms': '/conditions-utilisation',
+  '/vision_europeenne': '/vision-europeenne'
+} %}
+{% set _canonical_path = _canonical_aliases.get(request.path, request.path) %}
+{% set _default_canonical_url = request.url_root.rstrip('/') ~ _canonical_path %}
 <!doctype html>
 <html lang="{{ get_locale() }}">
   <head>
@@ -16,12 +30,12 @@
     <meta property="og:title" content="{% block og_title %}{{ self.title()|striptags|trim }}{% endblock %}">
     <meta property="og:description" content="{% block og_description %}{{ self.meta_description()|striptags|trim }}{% endblock %}">
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
-    <meta property="og:url" content="{% block og_url %}{{ seo_canonical_url or request.base_url }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ seo_canonical_url or _default_canonical_url }}{% endblock %}">
     <meta property="og:locale" content="{{ (seo_locale or 'fr-FR')|replace('-', '_') }}">
     {% for _og_alt_locale in ['bg_BG', 'en_US'] %}
     <meta property="og:locale:alternate" content="{{ _og_alt_locale }}">
     {% endfor %}
-    <link rel="canonical" href="{% block canonical_url %}{{ seo_canonical_url or request.base_url }}{% endblock %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ seo_canonical_url or _default_canonical_url }}{% endblock %}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/lead-capture.css') }}">
     {% set _seo_ep = (request.endpoint or '') %}
     {% set _hreflang_public_eps = [
