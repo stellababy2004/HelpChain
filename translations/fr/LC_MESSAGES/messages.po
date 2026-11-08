@@ -119,6 +119,33 @@ msgstr "Demander un accès pilote"
 msgid "Cadre RGPD"
 msgstr "Cadre RGPD"
 
+msgid "High"
+msgstr "Élevé"
+
+msgid "Medium"
+msgstr "Moyen"
+
+msgid "Engagement bénévole"
+msgstr "Engagement bénévole"
+
+msgid "score"
+msgstr "score"
+
+msgid "Critical"
+msgstr "Critique"
+
+msgid "Low"
+msgstr "Faible"
+
+msgid "Pending"
+msgstr "En attente"
+
+msgid "Rejected"
+msgstr "Rejetée"
+
+msgid "Données fictives à des fins de démonstration."
+msgstr "Données fictives à des fins de démonstration."
+
 #: about.html:131 about.html:257
 msgid "Sécurité opérationnelle"
 msgstr "Sécurité opérationnelle"
@@ -847,16 +874,16 @@ msgstr "Pending"
 #: admin/requests.html:128 admin/requests.html:1274 admin/requests.html:1491
 #: admin_dashboard.html:14 requests/details.html:114
 msgid "In progress"
-msgstr "In progress"
+msgstr "En cours"
 
 #: admin/requests.html:130 admin/requests.html:1276 admin/requests.html:1493
 #: admin_dashboard.html:16
 msgid "Completed"
-msgstr "Completed"
+msgstr "Terminé"
 
 #: admin_dashboard.html:18
 msgid "Cancelled"
-msgstr "Cancelled"
+msgstr "Annulée"
 
 #: admin_dashboard.html:20
 msgid "Unknown"
@@ -1688,9 +1715,8 @@ msgstr ""
 
 #: base.html:1060 contact.html:1090 requests/details.html:8
 #: requests/new.html:10 tarifs.html:42
-#, fuzzy
 msgid "Structure"
-msgstr "Structurée"
+msgstr "Structure"
 
 #: base.html:1066
 msgid "Tableau structure"
@@ -1761,7 +1787,7 @@ msgstr "Notification"
 #: admin/requests.html:124 admin/requests.html:1272 admin/requests.html:1487
 #: base.html:1166 requests/details.html:108 volunteer_notifications.html:43
 msgid "New"
-msgstr "New"
+msgstr "Nouveau"
 
 #: base.html:1171
 msgid "Mark as seen & open"
@@ -5161,8 +5187,9 @@ msgstr ""
 
 #: home_new_slim.html:2585
 msgid ""
-"Exemple de rapport — données fictives de démonstration, non actualisées"
+"Exemple de rapport — données fictives à des fins de démonstration."
 msgstr ""
+"Exemple de rapport — données fictives à des fins de démonstration."
 
 #: home_new_slim.html:2589
 msgid "Agrandir le rapport"
@@ -5174,14 +5201,19 @@ msgstr ""
 
 #: home_new_slim.html:2602
 msgid ""
-"Une situation passe souvent par plusieurs personnes et plusieurs structures."
+"Quand plusieurs organisations interviennent, le suivi se fragmente."
 msgstr ""
+"Quand plusieurs organisations interviennent, le suivi se fragmente."
 
 #: home_new_slim.html:2606
 msgid ""
-"Un appel au CCAS. Un email à une association. Un partenaire qui reprend le "
-"dossier. Une information transmise par téléphone."
+"Une demande arrive dans une structure. Un partenaire prend le relais. Les "
+"échanges se multiplient, mais les informations et les responsabilités restent "
+"dispersées."
 msgstr ""
+"Une demande arrive dans une structure. Un partenaire prend le relais. Les "
+"échanges se multiplient, mais les informations et les responsabilités restent "
+"dispersées."
 
 #: home_new_slim.html:2614
 msgid "HelpChain · Un suivi partagé"
@@ -12596,7 +12628,7 @@ msgstr ""
 
 #: admin/requests.html:1489 requests/list.html:50
 msgid "Open"
-msgstr "Ouvrir"
+msgstr "Ouvert"
 
 #: admin/requests.html:1489
 msgid "Mark as open"
@@ -15360,7 +15392,7 @@ msgstr ""
 
 #: requests/operations.html:64
 msgid "At risk"
-msgstr ""
+msgstr "À risque"
 
 #: requests/operations.html:72
 msgid "Real-time activity"
@@ -20804,3 +20836,134 @@ msgstr "État de coordination"
 
 #~ msgid "Situations à traiter"
 #~ msgstr "Situations à traiter"
+
+msgid "POUR LES RÉSEAUX, FÉDÉRATIONS ET ORGANISATIONS PARTENAIRES"
+msgstr "POUR LES RÉSEAUX, FÉDÉRATIONS ET ORGANISATIONS PARTENAIRES"
+
+msgid "POUR LES ASSOCIATIONS, FÉDÉRATIONS ET RÉSEAUX TERRITORIAUX QUI COORDONNENT PLUSIEURS STRUCTURES."
+msgstr "POUR LES ASSOCIATIONS, FÉDÉRATIONS ET RÉSEAUX TERRITORIAUX QUI COORDONNENT PLUSIEURS STRUCTURES."
+
+msgid "Une offre adaptée à votre organisation"
+msgstr "Une offre adaptée à votre organisation"
+
+msgid "04 · LE PILOTAGE"
+msgstr "04 · LE PILOTAGE"
+msgid "Une vision opérationnelle pour mieux coordonner le réseau."
+msgstr "Une vision opérationnelle pour mieux coordonner le réseau."
+msgid "Suivez les priorités, les responsabilités et l’activité du réseau à partir des indicateurs opérationnels disponibles."
+msgstr "Suivez les priorités, les responsabilités et l’activité du réseau à partir des indicateurs opérationnels disponibles."
+msgid "01 · LE RÉSEAU"
+msgstr "01 · LE RÉSEAU"
+msgid "Plusieurs organisations. Une coordination commune."
+msgstr "Plusieurs organisations. Une coordination commune."
+msgid "Une fédération coordonne trois organisations partenaires qui travaillent sur des situations communes, chacune dans son périmètre."
+msgstr "Une fédération coordonne trois organisations partenaires qui travaillent sur des situations communes, chacune dans son périmètre."
+msgid "Demande de l’Association A"
+msgstr "Demande de l’Association A"
+msgid "Situation à coordonner avec les organisations partenaires"
+msgstr "Situation à coordonner avec les organisations partenaires"
+msgid "Organisation source"
+msgstr "Organisation source"
+msgid "Association A"
+msgstr "Association A"
+msgid "Situation partagée"
+msgstr "Situation partagée"
+msgid "Coordination entre trois organisations"
+msgstr "Coordination entre trois organisations"
+msgid "Coordination réseau"
+msgstr "Coordination réseau"
+msgid "Fédération coordinatrice"
+msgstr "Fédération coordinatrice"
+msgid "02 · LA COORDINATION"
+msgstr "02 · LA COORDINATION"
+msgid "Chaque organisation sait ce qu’elle doit faire."
+msgstr "Chaque organisation sait ce qu’elle doit faire."
+msgid "La fédération répartit les responsabilités entre les organisations partenaires sans donner à chacune accès à des informations hors de son périmètre."
+msgstr "La fédération répartit les responsabilités entre les organisations partenaires sans donner à chacune accès à des informations hors de son périmètre."
+msgid "03 · LE SUIVI"
+msgstr "03 · LE SUIVI"
+msgid "Un suivi partagé, sans perdre le contrôle."
+msgstr "Un suivi partagé, sans perdre le contrôle."
+msgid "La chronologie rend visibles les étapes et les organisations responsables, dans les limites des droits accordés à chaque partenaire."
+msgstr "La chronologie rend visibles les étapes et les organisations responsables, dans les limites des droits accordés à chaque partenaire."
+msgid "Association B"
+msgstr "Association B"
+msgid "Demande enregistrée"
+msgstr "Demande enregistrée"
+msgid "Action prise en charge"
+msgstr "Action prise en charge"
+msgid "Partenaire sollicité"
+msgstr "Partenaire sollicité"
+msgid "Suivi actualisé"
+msgstr "Suivi actualisé"
+msgid "Accès limité au périmètre autorisé"
+msgstr "Accès limité au périmètre autorisé"
+msgid "Association B · Périmètre autorisé"
+msgstr "Association B · Périmètre autorisé"
+
+msgid "Découvrez HelpChain à travers un pilote encadré."
+msgstr "Découvrez HelpChain à travers un pilote encadré."
+msgid "Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Les données réelles ne sont utilisées qu’après les vérifications et autorisations nécessaires."
+msgstr "Nous définissons ensemble un périmètre simple, une équipe et quelques situations à suivre. Les données réelles ne sont utilisées qu’après les vérifications et autorisations nécessaires."
+
+msgid "Centralisez les demandes, coordonnez les interventions et gardez une visibilité sur chaque situation."
+msgstr "Centralisez les demandes, coordonnez les interventions et gardez une visibilité sur chaque situation."
+msgid "Découvrir le pilotage du réseau"
+msgstr "Découvrir le pilotage du réseau"
+msgid "Chaque partenaire suit la même situation, selon ses droits d’accès."
+msgstr "Chaque partenaire suit la même situation, selon ses droits d’accès."
+
+msgid "Chaque partenaire connaît ses responsabilités."
+msgstr "Chaque partenaire connaît ses responsabilités."
+msgid "Les actions et les relais restent traçables."
+msgstr "Les actions et les relais restent traçables."
+msgid "La coordination se poursuit même lorsqu’un intervenant change."
+msgstr "La coordination se poursuit même lorsqu’un intervenant change."
+msgid "Exemple de pilotage opérationnel d’une structure — données fictives."
+msgstr "Exemple de pilotage opérationnel d’une structure — données fictives."
+msgid "Réseaux & fédérations"
+msgstr "Réseaux & fédérations"
+msgid "Coordonner plusieurs organisations partenaires, répartir les responsabilités et suivre les actions dans un cadre partagé."
+msgstr "Coordonner plusieurs organisations partenaires, répartir les responsabilités et suivre les actions dans un cadre partagé."
+msgid "Associations & partenaires"
+msgstr "Associations & partenaires"
+msgid "Organiser les demandes, collaborer avec les partenaires et conserver un suivi clair des interventions."
+msgstr "Organiser les demandes, collaborer avec les partenaires et conserver un suivi clair des interventions."
+msgid "Collectivités & CCAS"
+msgstr "Collectivités & CCAS"
+msgid "Suivre les situations, coordonner les relais territoriaux et faciliter la coopération avec les associations."
+msgstr "Suivre les situations, coordonner les relais territoriaux et faciliter la coopération avec les associations."
+msgid "Établissements & structures multi-sites"
+msgstr "Établissements & structures multi-sites"
+msgid "Centraliser les demandes et coordonner les équipes ou les sites selon leurs responsabilités."
+msgstr "Centraliser les demandes et coordonner les équipes ou les sites selon leurs responsabilités."
+
+msgid "Sans coordination commune, il devient difficile de savoir qui fait quoi et quelle est la prochaine étape."
+msgstr "Sans coordination commune, il devient difficile de savoir qui fait quoi et quelle est la prochaine étape."
+
+msgid "Infrastructure conçue pour la sécurité"
+msgstr "Infrastructure conçue pour la sécurité"
+
+msgid "Cadre de conformité RGPD"
+msgstr "Cadre de conformité RGPD"
+
+msgid "Nous cadrons un périmètre limité, configurons les rôles utiles, utilisons des données de démonstration ou des situations réelles uniquement après validation du cadre, puis réalisons un premier bilan avant toute extension."
+msgstr "Nous cadrons un périmètre limité, configurons les rôles utiles, utilisons des données de démonstration ou des situations réelles uniquement après validation du cadre, puis réalisons un premier bilan avant toute extension."
+
+msgid "Le lancement commence sur un périmètre limité : une équipe, quelques référents, des données de démonstration ou des situations réelles uniquement après validation du cadre, et des règles de suivi validées ensemble. L’objectif est de prouver la valeur sans rupture organisationnelle et sans relance invisible."
+msgstr "Le lancement commence sur un périmètre limité : une équipe, quelques référents, des données de démonstration ou des situations réelles uniquement après validation du cadre, et des règles de suivi validées ensemble. L’objectif est de prouver la valeur sans rupture organisationnelle et sans relance invisible."
+
+msgid "Suivi de situations de démonstration ou de situations réelles uniquement après validation du cadre technique, organisationnel et contractuel."
+msgstr "Suivi de situations de démonstration ou de situations réelles uniquement après validation du cadre technique, organisationnel et contractuel."
+
+msgid "Tester la coordination sur un périmètre maîtrisé, avec des situations réelles uniquement après validation technique, organisationnelle et contractuelle."
+msgstr "Tester la coordination sur un périmètre maîtrisé, avec des situations réelles uniquement après validation technique, organisationnelle et contractuelle."
+
+msgid "Infrastructure conçue pour la sécurité, avec contrôle des accès par rôles et traitement des données encadré selon les principes du RGPD."
+msgstr "Infrastructure conçue pour la sécurité, avec contrôle des accès par rôles et traitement des données encadré selon les principes du RGPD."
+
+msgid "Cadre d’hébergement européen"
+msgstr "Cadre d’hébergement européen"
+
+msgid "Cadre RGPD"
+msgstr "Cadre RGPD"

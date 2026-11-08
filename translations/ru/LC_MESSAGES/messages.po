@@ -1,4 +1,22 @@
 # Russian translations for PROJECT.
+
+msgid "UTILISATEURS & ÉQUIPES"
+msgstr "ПОЛЬЗОВАТЕЛИ И КОМАНДЫ"
+
+msgid "COORDINATION HELPCHAIN"
+msgstr "КООРДИНАЦИЯ HELPCHAIN"
+
+msgid "Gouvernance & accès"
+msgstr "Управление и доступ"
+
+msgid "Sécurité & traçabilité"
+msgstr "Безопасность и прослеживаемость"
+
+msgid "Continuité & évolution"
+msgstr "Непрерывность и развитие"
+
+msgid "STRUCTURES & PARTENAIRES AUTORISÉS"
+msgstr "ОРГАНИЗАЦИИ И УПОЛНОМОЧЕННЫЕ ПАРТНЁРЫ"
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
@@ -19,6 +37,33 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
+
+msgid "Présentation HelpChain"
+msgstr "Представление HelpChain"
+
+msgid "Présentation"
+msgstr "Представление"
+
+msgid "Collectivités et ressources"
+msgstr "Местные власти и ресурсы"
+
+msgid "Ressources"
+msgstr "Ресурсы"
+
+msgid "Demander un accès"
+msgstr "Запросить доступ"
+
+msgid "Déploiement territorial"
+msgstr "Территориальное внедрение"
+
+msgid "Cadre et conformité"
+msgstr "Нормативная база и соответствие"
+
+msgid "Contact & coopération"
+msgstr "Контакты и сотрудничество"
+
+msgid "Accessibilité"
+msgstr "Специальные возможности"
 
 #: backend/appy_with_analytics.py:619
 msgid "Доброволецът е добавен успешно!"
