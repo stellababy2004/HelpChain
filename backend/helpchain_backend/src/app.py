@@ -468,6 +468,31 @@ from backend.helpchain_backend.src.services.adaptive_experience import (
 )
 from backend.models import Structure
 
+
+_INSECURE_SECRET_KEYS = {
+    "dev-only-change-me",
+    "development",
+    "development-secret",
+    "test",
+    "testing",
+    "secret",
+}
+
+
+def _validate_production_security_config(app, env_name: str) -> None:
+    if env_name not in ("prod", "production"):
+        return
+
+    secret = str(app.config.get("SECRET_KEY") or "").strip()
+    if len(secret) < 32 or secret.lower() in _INSECURE_SECRET_KEYS:
+        raise RuntimeError("Production SECRET_KEY is missing or invalid")
+    flask_debug = os.getenv("FLASK_DEBUG", "").strip().lower()
+    if flask_debug in {"true", "1", "yes", "on"}:
+        raise RuntimeError("DEBUG must be disabled in production")
+    if bool(app.config.get("DEBUG")) or bool(app.debug):
+        raise RuntimeError("DEBUG must be disabled in production")
+
+
 def create_app(config_object=None) -> Flask:
     """
     Single source of truth for app factory.
@@ -541,6 +566,8 @@ def create_app(config_object=None) -> Flask:
     except Exception:
         pass
 
+    _validate_production_security_config(app, env_name)
+
     app.config["DEMO_MODE"] = (
         str(app.config.get("DEMO_MODE", os.getenv("DEMO_MODE", "false"))).lower()
         == "true"
@@ -600,7 +627,7 @@ def create_app(config_object=None) -> Flask:
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_PERMANENT"] = False
 
-    app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = env_name not in ("prod", "production")
     app.config.setdefault("SQLALCHEMY_TRACK_MODIFICATIONS", False)
     app.config.setdefault("BABEL_TRANSLATION_DIRECTORIES", root_translations)
     app.config.setdefault("SUPPORTED_LOCALES", list(SUPPORTED_LOCALES))
@@ -624,6 +651,7 @@ def create_app(config_object=None) -> Flask:
                 "SECRET_KEY missing. Using DEV fallback. Set SECRET_KEY via env/instance config."
             )
         app.config["SECRET_KEY"] = secret
+    _validate_production_security_config(app, env_name)
     app.config.setdefault(
         "JWT_SECRET_KEY", os.getenv("JWT_SECRET_KEY", app.config.get("SECRET_KEY"))
     )
