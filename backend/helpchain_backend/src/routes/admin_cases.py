@@ -29,7 +29,11 @@ from ..models import (
 
 COLLABORATOR_ACTIVE_ROLES = frozenset({"viewer"})
 COLLABORATOR_VISIBLE_EVENT_TYPES = frozenset(
-    {"structure_invited", "structure_invitation_pending", "structure_collaborator_revoked"}
+    {
+        "structure_invited",
+        "structure_invitation_pending",
+        "structure_collaborator_revoked",
+    }
 )
 from ..services.case_lifecycle import require_case_operationally_writable
 from ..services.case_matching import (
@@ -813,8 +817,7 @@ def admin_case_detail(case_id: int):
     collaborators = (
         []
         if collaborator_view
-        else
-        CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
+        else CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
         .join(Structure, CaseCollaborator.structure_id == Structure.id)
         .with_entities(Structure.name, CaseCollaborator.role)
         .order_by(Structure.name.asc())

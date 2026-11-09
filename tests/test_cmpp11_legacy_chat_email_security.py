@@ -10,9 +10,18 @@ def test_legacy_chat_blueprint_is_not_registered(app):
 
 
 def test_email_context_rejects_cross_tenant_and_internal_fields():
-    for key in ("structure_id", "tenant_id", "request_id", "case_id", "description", "risk_level"):
+    for key in (
+        "structure_id",
+        "tenant_id",
+        "request_id",
+        "case_id",
+        "description",
+        "risk_level",
+    ):
         try:
-            mail_service._validate_email_context("email_template.html", {key: "HC-CMPP-11-FOREIGN"})
+            mail_service._validate_email_context(
+                "email_template.html", {key: "HC-CMPP-11-FOREIGN"}
+            )
         except ValueError:
             pass
         else:
@@ -36,7 +45,10 @@ def test_email_context_keeps_legitimate_magic_link_fields():
         "ttl_minutes": 15,
         "ignore_line": "Ignorez ce message.",
     }
-    assert mail_service._validate_email_context("emails/magic_link.html", context) is context
+    assert (
+        mail_service._validate_email_context("emails/magic_link.html", context)
+        is context
+    )
 
 
 def test_email_context_rejects_unknown_template_and_keys():
