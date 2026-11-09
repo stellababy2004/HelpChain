@@ -147,7 +147,9 @@ def test_robots_and_sitemap_public_routes(client):
         assert path in sitemap_text
 
 
-def test_canonical_aliases_use_one_public_url(client):
+def test_canonical_aliases_use_one_public_url(client, app, monkeypatch):
+    monkeypatch.setitem(app.config, "PUBLIC_BASE_URL", "https://helpchain.live")
+
     for path in ("/legal", "/mentions-legales", "/mentions_legales"):
         html = client.get(path).get_data(as_text=True)
         assert 'href="https://helpchain.live/legal"' in html, path

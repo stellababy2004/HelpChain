@@ -21,28 +21,39 @@ def _extract_bulk_actions(html: str) -> list[str]:
     return re.findall(r"<option[^>]*>(.*?)</option>", block, flags=re.I)
 
 
+def _extract_bulk_action_values(html: str) -> list[str]:
+    m = re.search(
+        r'<select[^>]+id="hcBulkAction"[^>]*>(.*?)</select>',
+        html,
+        flags=re.S | re.I,
+    )
+    assert m, "Bulk action <select id='hcBulkAction'> not found in HTML"
+    block = m.group(1)
+    return re.findall(r'<option[^>]+value="([^"]*)"', block, flags=re.I)
+
+
 def test_bulk_actions_dropdown_has_expected_options(admin_login):
     r = admin_login.get("/admin/requests")
     assert r.status_code == 200
     html = r.get_data(as_text=True)
     assert 'id="hcBulkAction"' in html
 
-    options = [o.strip() for o in _extract_bulk_actions(html) if o.strip()]
+    option_values = _extract_bulk_action_values(html)
 
-    expected = [
-        "Action de coordination",
-        "Claim ownership (me)",
-        "Open selected",
-        "Copier les identifiants",
-        "Copier les liens",
-        "Nudge selected bénévoles",
-        "Set statut : Pending",
-        "Set statut : In progress",
-        "Set statut : Done",
-        "Set statut : Rejected",
+    expected_values = [
+        "",
+        "claim_me",
+        "open",
+        "copy_ids",
+        "copy_links",
+        "nudge",
+        "status:pending",
+        "status:in_progress",
+        "status:done",
+        "status:rejected",
     ]
 
-    for label in expected:
-        assert label in options or label.encode("utf-8").decode("latin-1") in options, f"Missing option: {label}"
+    for value in expected_values:
+        assert value in option_values, f"Missing option value: {value}"
 
-    assert set(options) >= set(expected)
+    assert set(option_values) >= set(expected_values)

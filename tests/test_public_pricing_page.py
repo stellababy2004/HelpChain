@@ -15,7 +15,7 @@ def test_public_pricing_page_renders_expected_offer_content(client):
     assert response.status_code == 200
     html = response.get_data(as_text=True)
 
-    assert "Un cadre d’offre adapté à votre niveau de coordination opérationnelle" in html
+    assert "Une offre adaptée à votre organisation" in html
     assert "Offres HelpChain" in html
     assert "Pour une structure" in html
     assert "300" in html
@@ -97,11 +97,12 @@ def test_public_home_promotes_operational_reporting_without_admin_surface(client
 
     assert response.status_code == 200
     html = response.get_data(as_text=True)
-    assert "Pilotez votre activité avec une vision claire" in html
+    assert "04 · LE PILOTAGE" in html
     assert "Visibilité opérationnelle" in html
-    assert "Anticipation des risques" in html
     assert "Rapports professionnels" in html
-    assert "/pour-les-structures" in html
+    assert "Découvrir le pilotage du réseau" in html
+    assert 'href="/pour-les-structures"' in html
+    assert "/admin/" not in html
 
 
 def test_public_structures_page_explains_reporting_scope_and_exports(client):
