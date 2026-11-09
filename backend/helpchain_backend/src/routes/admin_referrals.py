@@ -924,10 +924,15 @@ def _parse_shared_scope() -> dict:
 
 
 def _shared_summary(source_request: Request | None, referral: CaseReferral) -> str:
-    if referral.message:
-        return referral.message.strip()
-    # An empty shared summary must not silently expose the live source record.
-    return referral.reason or "Orientation partenaire sans résumé détaillé."
+    """Build a minimal, allowlisted operational summary for the target tenant."""
+    parts = ["Orientation partenaire"]
+    category = getattr(source_request, "category", None) if source_request else None
+    priority = getattr(source_request, "priority", None) if source_request else None
+    if category:
+        parts.append(f"Catégorie : {str(category).strip()[:64]}")
+    if priority:
+        parts.append(f"Priorité : {str(priority).strip()[:32]}")
+    return " — ".join(parts)
 
 
 def _safe_referral_username(referral_id: int) -> str:
@@ -965,12 +970,10 @@ def _create_local_request_from_referral(referral: CaseReferral) -> Request | Non
     scope = referral.shared_scope_json or default_referral_shared_scope()
     user = _ensure_referral_requester(referral)
     title = f"Orientation partenaire #{referral.id}"
-    if scope.get("share_summary") and source_request and getattr(source_request, "title", None):
-        title = f"Orientation partenaire - {source_request.title}"[:255]
 
     local_request = Request(
         title=title,
-        description=_shared_summary(source_request, referral) if scope.get("share_summary") else referral.reason,
+        description=_shared_summary(source_request, referral),
         message=(
             "Créée depuis une orientation partenaire. "
             f"Orientation #{referral.id} depuis structure #{referral.from_structure_id}."

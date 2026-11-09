@@ -7,7 +7,10 @@ import pytest
 from flask.testing import FlaskClient
 
 from backend.models import AdminAuditEvent, CaseReferral, OrganizationConnection, ReferralActivity, Request, db
-from backend.helpchain_backend.src.routes.admin_cases import _collaborator_request_projection
+from backend.helpchain_backend.src.routes.admin_cases import (
+    COLLABORATOR_VISIBLE_EVENT_TYPES,
+    _collaborator_request_projection,
+)
 from backend.helpchain_backend.src.routes import admin_referrals as routes
 from tests.test_admin_partner_referrals import _admin, _login, _seed_referral_context, _send_referral
 
@@ -41,10 +44,37 @@ def test_collaborator_projection_excludes_sensitive_request_fields():
         risk_level = "high"
 
     projected = _collaborator_request_projection(SyntheticRequest())
-    assert projected.title == "Synthetic shared title"
+    assert projected.title == "Orientation partenaire #7"
     assert not hasattr(projected, "description")
     assert not hasattr(projected, "message")
     assert not hasattr(projected, "risk_level")
+
+
+def test_collaborator_projection_uses_safe_title_and_allowlisted_fields():
+    class SyntheticRequest:
+        id = 19
+        title = "SENSITIVE ORIGINAL TITLE"
+        category = "housing"
+        structure_id = 3
+        structure = None
+        description = "SECRET-DESCRIPTION"
+        message = "SECRET-MESSAGE"
+        risk_level = "critical"
+        risk_score = 99
+
+    projected = _collaborator_request_projection(SyntheticRequest())
+    assert projected.title == "Orientation partenaire #19"
+    assert projected.category == "housing"
+    assert not hasattr(projected, "description")
+    assert not hasattr(projected, "message")
+    assert not hasattr(projected, "risk_level")
+    assert not hasattr(projected, "risk_score")
+
+
+def test_collaborator_event_allowlist_excludes_content_bearing_events():
+    assert "internal_note" not in COLLABORATOR_VISIBLE_EVENT_TYPES
+    assert "coordination_note" not in COLLABORATOR_VISIBLE_EVENT_TYPES
+    assert "structure_collaborator_revoked" in COLLABORATOR_VISIBLE_EVENT_TYPES
 
 
 def test_revoked_connection_denies_existing_referral_read_and_mutation(client, app):
@@ -157,7 +187,27 @@ def test_unchecked_summary_is_not_exposed_or_copied(client, app):
     assert b"SECRET-UNSHARED-SUMMARY" not in client.get(f"/admin/referrals/{referral.id}").data
     client.post(f"/admin/referrals/{referral.id}/accept")
     local = Request.query.filter_by(structure_id=ctx["b"].id).one()
-    assert local.description == "Only reason shared"
+    assert local.description == "Orientation partenaire — Catégorie : food — Priorité : high"
+
+
+def test_shared_summary_is_structured_and_never_copies_free_text(client, app):
+    ctx = _seed_referral_context()
+    _login(client, app, ctx["admin_a"])
+    response = client.post(
+        f"/admin/requests/{ctx['request'].id}/refer",
+        data={
+            "to_structure_id": ctx["b"].id,
+            "reason": "FREE-TEXT-SENSITIVE-REASON",
+            "message": "FREE-TEXT-SENSITIVE-MESSAGE",
+            "share_summary": "1",
+        },
+    )
+    assert response.status_code == 303
+    _login(client, app, ctx["admin_b"])
+    client.post(f"/admin/referrals/{CaseReferral.query.one().id}/accept")
+    local = Request.query.filter_by(structure_id=ctx["b"].id).one()
+    assert "FREE-TEXT-SENSITIVE" not in (local.description or "")
+    assert local.description.startswith("Orientation partenaire")
 
 
 def test_empty_explicit_summary_does_not_copy_live_source_description(client, app):
@@ -173,7 +223,7 @@ def test_empty_explicit_summary_does_not_copy_live_source_description(client, ap
     _login(client, app, ctx["admin_b"])
     client.post(f"/admin/referrals/{referral.id}/accept")
     local = Request.query.filter_by(structure_id=ctx["b"].id).one()
-    assert local.description == "Reason only"
+    assert local.description == "Orientation partenaire — Catégorie : food — Priorité : high"
 
 
 def test_existing_unshared_summary_is_hidden_without_rewriting_data(client, app):

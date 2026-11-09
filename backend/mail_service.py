@@ -42,6 +42,133 @@ _SENSITIVE_LOG_KEY_PARTS = (
     "access_key",
 )
 
+# Email templates must not receive tenant/object identifiers or internal case
+# fields by accident.  Legitimate workflow-specific fields remain allowed;
+# callers that need a new sensitive field must define a reviewed template
+# contract instead of passing it through the generic service.
+_EMAIL_CONTEXT_BLOCKED_KEYS = frozenset(
+    {
+        "case_id",
+        "request_id",
+        "referral_id",
+        "structure_id",
+        "tenant_id",
+        "organization_id",
+        "risk_level",
+        "risk_score",
+        "description",
+        "internal_note",
+        "coordination_note",
+        "case_events",
+        "participants",
+        "collaborators",
+    }
+)
+
+_EMAIL_CONTEXT_ALLOWLISTS = {
+    "emails/admin_access_reset.html": frozenset({"magic_link_url", "ttl_minutes"}),
+    "emails/admin_team_invitation.html": frozenset(
+        {"invitation_url", "role", "structure_name", "ttl_hours"}
+    ),
+    "emails/magic_link.html": frozenset(
+        {
+            "magic_link_url",
+            "ttl_minutes",
+            "intro_text",
+            "button_text",
+            "fallback_text",
+            "ignore_line",
+            "privacy_line",
+        }
+    ),
+    "emails/organization_signup_verification.html": frozenset(
+        {"verification_url", "ttl_minutes"}
+    ),
+    "emails/professional_lead_notify.html": frozenset(
+        {
+            "admin_url",
+            "availability",
+            "city",
+            "created_at",
+            "email",
+            "full_name",
+            "ip",
+            "lead_id",
+            "locale",
+            "message",
+            "organization",
+            "phone",
+            "profession",
+            "source",
+            "user_agent",
+        }
+    ),
+    "emails/demo_request_notify.html": frozenset(
+        {
+            "admin_url",
+            "created_at",
+            "email",
+            "full_name",
+            "message",
+            "organization",
+            "organization_size",
+            "phone",
+            "role_name",
+            "source",
+            "type_structure",
+        }
+    ),
+    "emails/weekly_operations_report.html": frozenset(
+        {"days", "item", "pdf_url", "report", "report_url", "structure_name"}
+    ),
+    # Legacy generic workflow. Its free-text keys are explicit and remain
+    # isolated to this reviewed legacy template until callers migrate.
+    "email_template.html": frozenset(
+        {
+            "notification_type",
+            "recipient_name",
+            "subject",
+            "content",
+            "message",
+            "action_url",
+            "chat_url",
+            "feedback_url",
+            "new_request_url",
+            "volunteer",
+            "task",
+        }
+    ),
+}
+
+
+def _validate_email_context(template: str, context: dict | None) -> dict:
+    """Reject accidental cross-tenant and internal object fields."""
+    if context is None:
+        return {}
+    if not isinstance(context, dict):
+        raise ValueError("Email context must be a mapping")
+    allowed = _EMAIL_CONTEXT_ALLOWLISTS.get((template or "").strip())
+    if allowed is None:
+        raise ValueError("Unknown email template")
+    unknown = set(context) - allowed
+    if unknown:
+        raise ValueError("Email context contains unknown fields")
+
+    def walk(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if str(key).strip().lower() in _EMAIL_CONTEXT_BLOCKED_KEYS:
+                    return True
+                if walk(child):
+                    return True
+        elif isinstance(value, (list, tuple, set)):
+            return any(walk(child) for child in value)
+        return False
+
+    if walk(context):
+        raise ValueError("Email context contains disallowed fields")
+    return context
+
 
 def _sanitize_for_log(value):
     """Return a single-line, control-character-safe log value."""
@@ -370,8 +497,7 @@ def send_notification_email(
             return True
 
         # Prepare context
-        if context is None:
-            context = {}
+        context = _validate_email_context(template, context)
 
         frontend_url = (current_app.config.get("FRONTEND_URL") or "").rstrip("/")
 

@@ -5267,7 +5267,19 @@ def self_service_workspace_signup():
         session["test_organization_signup_token"] = raw_token
     else:
         from backend.mail_service import send_notification_email
-        send_notification_email(form_data["email"], "emails/organization_signup_verification.html", {"verification_url": url_for("main.self_service_workspace_verify", token=raw_token, _external=True), "ttl_minutes": ORGANIZATION_SIGNUP_TTL_MINUTES})
+        send_notification_email(
+            form_data["email"],
+            "Confirmez la création de votre espace HelpChain",
+            "emails/organization_signup_verification.html",
+            {
+                "verification_url": url_for(
+                    "main.self_service_workspace_verify",
+                    token=raw_token,
+                    _external=True,
+                ),
+                "ttl_minutes": ORGANIZATION_SIGNUP_TTL_MINUTES,
+            },
+        )
     return render_template("organization/self_service_signup_sent.html", email=form_data["email"]), 200
 
 

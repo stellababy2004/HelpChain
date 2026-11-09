@@ -28,6 +28,9 @@ from ..models import (
 )
 
 COLLABORATOR_ACTIVE_ROLES = frozenset({"viewer"})
+COLLABORATOR_VISIBLE_EVENT_TYPES = frozenset(
+    {"structure_invited", "structure_invitation_pending", "structure_collaborator_revoked"}
+)
 from ..services.case_lifecycle import require_case_operationally_writable
 from ..services.case_matching import (
     eligible_professional_leads_query,
@@ -323,7 +326,7 @@ def build_case_copilot(case, request, events=None, assignments=None):
 def _collaborator_request_projection(req: Request) -> SimpleNamespace:
     return SimpleNamespace(
         id=req.id,
-        title=req.title,
+        title=f"Orientation partenaire #{req.id}",
         category=req.category,
         structure_id=req.structure_id,
         structure=req.structure,
@@ -772,7 +775,11 @@ def admin_case_detail(case_id: int):
     events = (
         CaseEvent.query.filter(CaseEvent.case_id == case_row.id)
         .order_by(CaseEvent.created_at.desc(), CaseEvent.id.desc())
-        .filter(CaseEvent.visibility != "internal" if collaborator_view else True)
+        .filter(
+            CaseEvent.event_type.in_(COLLABORATOR_VISIBLE_EVENT_TYPES)
+            if collaborator_view
+            else True
+        )
         .limit(200)
         .all()
     )
@@ -804,6 +811,9 @@ def admin_case_detail(case_id: int):
     )
     participant_cards = _build_case_participant_cards(participants)
     collaborators = (
+        []
+        if collaborator_view
+        else
         CaseCollaborator.query.filter(CaseCollaborator.case_id == case_row.id)
         .join(Structure, CaseCollaborator.structure_id == Structure.id)
         .with_entities(Structure.name, CaseCollaborator.role)
