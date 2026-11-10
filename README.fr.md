@@ -1,4 +1,4 @@
-# HelpChain — Infrastructure numérique de coordination pour le secteur social
+# HelpChain — Infrastructure de coordination inter-organisationnelle pour les réseaux et fédérations du secteur social
 
 **HelpChain** est une infrastructure numérique de coordination opérationnelle destinée aux organisations du secteur social, aux réseaux associatifs et aux services publics locaux en France.
 
