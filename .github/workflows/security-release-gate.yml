@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   report:
-    name: Security release gate report
+    name: Security release gate diagnostics (non-authoritative)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -159,7 +159,8 @@ jobs:
           {
             echo '## Security Release Gate'
             echo
-            echo 'Reporting mode: this job does not block merges.'
+            echo 'Diagnostic mode: this job is non-authoritative and does not issue the security verdict.'
+            echo 'Authoritative verdict source: Security Release Gate (trusted evaluator).'
             echo
             cat security-release-gate-summary.txt 2>/dev/null || echo 'INCOMPLETE: no report was produced.'
           } >> "$GITHUB_STEP_SUMMARY"
@@ -168,7 +169,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: security-release-gate-report
+          name: security-release-gate-diagnostics
           retention-days: 7
           path: |
             security-release-gate-report.json

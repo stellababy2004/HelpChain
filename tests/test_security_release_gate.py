@@ -440,6 +440,44 @@ def test_trusted_workflow_does_not_use_pull_request_target_or_pr_checkout():
     assert "github.event.pull_request.head.sha" not in workflow
 
 
+def test_reporting_workflow_is_explicitly_non_authoritative():
+    workflow = Path(".github/workflows/security-release-gate.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "Security release gate diagnostics (non-authoritative)" in workflow
+    assert "Diagnostic mode: this job is non-authoritative" in workflow
+    assert (
+        "Authoritative verdict source: Security Release Gate (trusted evaluator)."
+        in workflow
+    )
+    assert "name: security-release-gate-diagnostics" in workflow
+
+
+def test_trusted_workflow_runs_collector_and_evaluator():
+    workflow = Path(".github/workflows/security-release-gate-trusted.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "security_release_gate_collect.py collect-evidence" in workflow
+    assert "security_release_gate.py" in workflow
+    for scanner in (
+        "CodeQL Advanced Security",
+        "Trivy Security Scan",
+        "Security Scans (Bandit & pip-audit)",
+        "Secret Scan",
+    ):
+        assert scanner in workflow
+
+
+def test_trusted_workflow_requires_valid_collector_evidence():
+    workflow = Path(".github/workflows/security-release-gate-trusted.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "--scanner-findings .scanner-findings.json" in workflow
+    assert "--scan-status .security-scan-status.json" in workflow
+    assert "collector failed" in workflow
+    assert "report_valid" in workflow
+
+
 def test_missing_scanner_evidence_cannot_pass(tmp_path):
     (tmp_path / "scan-status.json").write_text(
         json.dumps(
