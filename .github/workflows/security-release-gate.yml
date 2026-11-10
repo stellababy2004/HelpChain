@@ -1,0 +1,176 @@
+name: Security Release Gate (reporting)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: "PR head commit SHA to inspect"
+        required: true
+        type: string
+      base_sha:
+        description: "Trusted base commit SHA containing the baseline"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  security-events: read
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: security-release-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    name: Security release gate report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c # v5
+        with:
+          python-version: "3.11"
+
+      - name: Audit API dependency manifest
+        shell: bash
+        run: |
+          set +e
+          python -m pip install --disable-pip-version-check pip-audit==2.10.1
+          install_status=$?
+          if [[ "$install_status" -eq 0 ]]; then
+            pip-audit --requirement api/requirements.txt --format json --output api-pip-audit.json --strict --progress-spinner off
+            audit_status=$?
+          else
+            audit_status=$install_status
+          fi
+          set -e
+          python scripts/security_release_gate_collect.py pip-audit --pages api-pip-audit.json --output .api-dependency-status.json --status-code "$audit_status"
+
+      - name: Archive API pip-audit report
+        if: always() && hashFiles('api-pip-audit.json') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pip-audit-api-json
+          path: api-pip-audit.json
+          retention-days: 7
+
+      - name: Resolve trusted PR SHAs and baseline
+        id: refs
+        env:
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          valid=true
+          for value in "$EVENT_HEAD_SHA" "$EVENT_BASE_SHA"; do
+            if ! [[ "$value" =~ ^[0-9a-fA-F]{40}$ ]]; then valid=false; fi
+          done
+          if [[ "$valid" == true ]] && git cat-file -e "$EVENT_BASE_SHA^{commit}" 2>/dev/null && git show "$EVENT_BASE_SHA:docs/security/security-release-gate-baseline.json" > trusted-baseline.json; then
+            echo "baseline_source=trusted-base-commit" >> "$GITHUB_OUTPUT"
+          else
+            printf '{"status":"INCOMPLETE","error":"trusted baseline is unavailable at the supplied base commit"}\n' > trusted-baseline.json
+            echo "baseline_source=unavailable" >> "$GITHUB_OUTPUT"
+          fi
+          echo "head_sha=$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$EVENT_BASE_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Collect current Code Scanning alerts
+        id: alerts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&ref=${HEAD_SHA}&per_page=100" \
+            > .security-alert-pages.json
+          api_status=$?
+          set -e
+          if [[ "$api_status" -eq 0 ]] && python scripts/security_release_gate_collect.py alerts --pages .security-alert-pages.json --output .security-alerts.json; then
+            export API_OK=true
+            echo "api_ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo '[]' > .security-alerts.json
+            export API_OK=false
+            echo "api_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+          python -c "import json, os; ok=os.environ.get('API_OK') == 'true'; json.dump([{'name':'github-code-scanning-api','status':'success' if ok else 'missing','report_present':ok,'report_valid':ok,'run_id':'code-scanning-api:'+os.environ.get('HEAD_SHA',''),'head_sha':os.environ.get('HEAD_SHA'),'event':'pull_request'}], open('.security-scan-status.json','w',encoding='utf-8'))"
+
+      - name: Collect required scanner run statuses
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${HEAD_SHA}&per_page=100" \
+            > .workflow-run-pages.json
+          runs_status=$?
+          set -e
+          if [[ "$runs_status" -ne 0 ]]; then
+            python -c "import json; json.dump([{'name':n,'status':'missing','report_present':False} for n in ['CodeQL Advanced Security','Trivy Security Scan','Security Scans (Bandit & pip-audit)','Secret Scan']], open('.required-scanner-status.json','w',encoding='utf-8'))"
+          else
+          python scripts/security_release_gate_collect.py runs --pages .workflow-run-pages.json --output .required-scanner-status.json --expected-head-sha "$HEAD_SHA"
+          fi
+          python scripts/security_release_gate_collect.py merge --api-status .security-scan-status.json --scanner-status .required-scanner-status.json --output .security-scan-status.json
+          python scripts/security_release_gate_collect.py merge --api-status .security-scan-status.json --scanner-status .api-dependency-status.json --output .security-scan-status.json
+
+      - name: Evaluate baseline
+        id: gate
+        env:
+          API_OK: ${{ steps.alerts.outputs.api_ok }}
+        shell: bash
+        run: |
+          args=(
+            --baseline trusted-baseline.json
+            --alerts .security-alerts.json
+            --scan-status .security-scan-status.json
+            --output security-release-gate-report.json
+            --repository "$GITHUB_REPOSITORY"
+            --head-sha "${{ steps.refs.outputs.head_sha }}"
+            --base-sha "${{ steps.refs.outputs.base_sha }}"
+          )
+          if [[ "$API_OK" == "true" ]]; then
+            args+=(--api-ok)
+          fi
+          set +e
+          python scripts/security_release_gate.py "${args[@]}" | tee security-release-gate-summary.txt
+          verdict_status=${PIPESTATUS[0]}
+          echo "technical_exit_code=$verdict_status" >> security-release-gate-summary.txt
+          exit "$verdict_status"
+
+      - name: Write job summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## Security Release Gate'
+            echo
+            echo 'Reporting mode: this job does not block merges.'
+            echo
+            cat security-release-gate-summary.txt 2>/dev/null || echo 'INCOMPLETE: no report was produced.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload JSON report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: security-release-gate-report
+          retention-days: 7
+          path: |
+            security-release-gate-report.json
+            .security-alerts.json
+            api-pip-audit.json

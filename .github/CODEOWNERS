@@ -1,0 +1,6 @@
+# Security-sensitive automation and policy require explicit owner review.
+/.github/CODEOWNERS @stellababy2004
+/.github/ @stellababy2004
+/scripts/security_release_gate*.py @stellababy2004
+/docs/security/ @stellababy2004
+/.gitleaks.toml @stellababy2004

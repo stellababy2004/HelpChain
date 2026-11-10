@@ -35,6 +35,14 @@ jobs:
         with:
           sarif_file: "trivy-iac-results.sarif"
 
+      - name: Archive Trivy IaC SARIF
+        if: always() && hashFiles('trivy-iac-results.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trivy-iac-sarif
+          path: trivy-iac-results.sarif
+          retention-days: 7
+
   trivy-repo:
     name: Trivy Repository Scan
     runs-on: ubuntu-latest
@@ -56,3 +64,11 @@ jobs:
         if: always()
         with:
           sarif_file: "trivy-repo-results.sarif"
+
+      - name: Archive Trivy repository SARIF
+        if: always() && hashFiles('trivy-repo-results.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trivy-repo-sarif
+          path: trivy-repo-results.sarif
+          retention-days: 7
