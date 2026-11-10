@@ -199,8 +199,30 @@ def check_resources(check: Check, page, failed_requests: list[str]) -> None:
         try:
             if not image.get_attribute("src") and not image.get_attribute("data-src"):
                 continue
-            if not image.evaluate("img => img.complete && img.naturalWidth > 0"):
-                check.add("FAIL", "image", f"Image failed to load: {image.get_attribute('src')}")
+            try:
+                image.evaluate("""img => {
+                img.loading = "eager";
+                img.setAttribute("loading", "eager");
+            }""")
+                image.evaluate("""img => new Promise(resolve => {
+                    if (img.complete) {
+                        resolve(img.naturalWidth > 0);
+                        return;
+                    }
+                    const timeout = setTimeout(() => resolve(false), 5000);
+                    img.addEventListener("load", () => {
+                        clearTimeout(timeout);
+                        resolve(img.naturalWidth > 0);
+                    }, {once: true});
+                    img.addEventListener("error", () => {
+                        clearTimeout(timeout);
+                        resolve(false);
+                    }, {once: true});
+                })""")
+                if not image.evaluate("img => img.complete && img.naturalWidth > 0"):
+                    check.add("FAIL", "image", f"Image failed to load: {image.get_attribute('src')}")
+            except PlaywrightError:
+                check.add("FAIL", "image", f"Image load timed out: {image.get_attribute('src')}")
         except PlaywrightError:
             check.add("WARNING", "image", "Could not inspect one image element.")
 
