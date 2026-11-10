@@ -114,12 +114,24 @@ def discover_run_artifact(
     run_attempt: int,
     artifact_name: str,
     repository: str,
+    expected_head_sha: str | None = None,
+    expected_event: str | None = None,
+    expected_workflow_id: int | None = None,
 ) -> dict[str, Any]:
     run = client.get(f"actions/runs/{run_id}")
     if run.get("id") != run_id or run.get("run_attempt") != run_attempt:
         raise GitHubApiError("workflow run identity mismatch")
     if run.get("repository", {}).get("full_name") != repository:
         raise GitHubApiError("workflow run repository mismatch")
+    if expected_head_sha is not None and run.get("head_sha") != expected_head_sha:
+        raise GitHubApiError("workflow run SHA mismatch")
+    if expected_event is not None and run.get("event") != expected_event:
+        raise GitHubApiError("workflow run event mismatch")
+    if (
+        expected_workflow_id is not None
+        and run.get("workflow_id") != expected_workflow_id
+    ):
+        raise GitHubApiError("workflow run workflow mismatch")
     artifacts = client.get_paginated(f"actions/runs/{run_id}/artifacts", "artifacts")
     matches = [item for item in artifacts if item.get("name") == artifact_name]
     if len(matches) != 1:
@@ -134,6 +146,7 @@ def discover_run_artifact(
         artifact_name=artifact_name,
         expected_head_sha=run.get("head_sha"),
         workflow_id=run.get("workflow_id"),
+        trusted_run=run,
     )
     if not metadata_check["valid"]:
         raise GitHubApiError("artifact metadata validation failed")
@@ -283,6 +296,9 @@ def collect_required_evidence(
                     run_attempt=run.get("run_attempt", 1),
                     artifact_name=artifact_name,
                     repository=repository,
+                    expected_head_sha=run.get("head_sha"),
+                    expected_event="pull_request",
+                    expected_workflow_id=run.get("workflow_id"),
                 )
                 result = download_and_validate_artifact(
                     client,
@@ -596,6 +612,7 @@ def validate_artifact_metadata(
     artifact_name: str,
     expected_head_sha: str | None = None,
     workflow_id: int | None = None,
+    trusted_run: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     errors = []
     if metadata.get("id") != artifact_id:
@@ -607,13 +624,25 @@ def validate_artifact_metadata(
     source = metadata.get("workflow_run", {})
     if source.get("id") != run_id:
         errors.append("artifact source run mismatch")
-    if source.get("run_attempt") != run_attempt:
+    source_attempt = source.get("run_attempt")
+    if source_attempt is None:
+        errors.append("artifact run attempt metadata unavailable")
+    elif source_attempt != run_attempt:
         errors.append("artifact run attempt mismatch")
-    if source.get("repository", {}).get("full_name") != repository:
+    source_repository = source.get("repository", {}).get("full_name")
+    if source_repository is None and trusted_run is not None:
+        source_repository = trusted_run.get("repository", {}).get("full_name")
+    if source_repository != repository:
         errors.append("artifact repository mismatch")
-    if expected_head_sha is not None and source.get("head_sha") != expected_head_sha:
+    source_sha = source.get("head_sha")
+    if source_sha is None and trusted_run is not None:
+        source_sha = trusted_run.get("head_sha")
+    if expected_head_sha is not None and source_sha != expected_head_sha:
         errors.append("artifact source SHA mismatch")
-    if workflow_id is not None and source.get("workflow_id") != workflow_id:
+    source_workflow = source.get("workflow_id")
+    if source_workflow is None and trusted_run is not None:
+        source_workflow = trusted_run.get("workflow_id")
+    if workflow_id is not None and source_workflow != workflow_id:
         errors.append("artifact source workflow mismatch")
     return {"valid": not errors, "errors": errors}
 
