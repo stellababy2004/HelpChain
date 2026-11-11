@@ -85,6 +85,15 @@ def scanner_evidence_is_complete(item: dict[str, Any], head_sha: str) -> bool:
             and item.get("head_sha") is None
             and item.get("event") is None
         )
+    if evidence_class == "code_scanning_api":
+        return (
+            common
+            and item.get("name") == "github-code-scanning-api"
+            and item.get("run_id") == f"code-scanning-api:{head_sha}"
+            and item.get("run_attempt") is None
+            and item.get("head_sha") == head_sha
+            and item.get("event") == "pull_request"
+        )
     if evidence_class not in {None, "workflow_artifact"}:
         return False
     return (

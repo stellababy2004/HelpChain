@@ -790,6 +790,64 @@ def test_local_dependency_check_with_workflow_provenance_is_incomplete(tmp_path)
     assert report["status"] == "INCOMPLETE"
 
 
+def test_code_scanning_api_evidence_with_exact_head_is_complete(tmp_path):
+    status_path = tmp_path / "scan-status.json"
+    status_path.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "github-code-scanning-api",
+                    "evidence_class": "code_scanning_api",
+                    "status": "success",
+                    "report_present": True,
+                    "report_valid": True,
+                    "run_id": "code-scanning-api:head123",
+                    "run_attempt": None,
+                    "head_sha": "head123",
+                    "event": "pull_request",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    report = run_gate(
+        tmp_path, BASELINE, [], "--api-ok", "--scan-status", str(status_path)
+    )
+    assert report["scanner_complete"] is True
+    assert report["status"] == "PASS"
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("run_id", "code-scanning-api:otherhead"),
+        ("run_attempt", 1),
+        ("head_sha", "otherhead"),
+        ("event", "workflow_dispatch"),
+    ],
+)
+def test_code_scanning_api_invalid_provenance_is_incomplete(tmp_path, field, value):
+    status = {
+        "name": "github-code-scanning-api",
+        "evidence_class": "code_scanning_api",
+        "status": "success",
+        "report_present": True,
+        "report_valid": True,
+        "run_id": "code-scanning-api:head123",
+        "run_attempt": None,
+        "head_sha": "head123",
+        "event": "pull_request",
+    }
+    status[field] = value
+    status_path = tmp_path / "scan-status.json"
+    status_path.write_text(json.dumps([status]), encoding="utf-8")
+    report = run_gate(
+        tmp_path, BASELINE, [], "--api-ok", "--scan-status", str(status_path)
+    )
+    assert report["scanner_complete"] is False
+    assert report["status"] == "INCOMPLETE"
+
+
 def test_trusted_workflow_does_not_use_pull_request_target_or_pr_checkout():
     workflow = Path(".github/workflows/security-release-gate-trusted.yml").read_text(
         encoding="utf-8"

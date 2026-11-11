@@ -99,7 +99,7 @@ jobs:
             > .security-alert-pages.json
           python scripts/security_release_gate_collect.py alerts \
             --pages .security-alert-pages.json --output .security-alerts.json
-          python -c "import json, os; json.dump([{'name':'github-code-scanning-api','status':'success','report_present':True,'report_valid':True,'run_id':'code-scanning-api:'+os.environ['HEAD_SHA'],'head_sha':os.environ['HEAD_SHA'],'event':'pull_request'}], open('.security-scan-status.json','w',encoding='utf-8'))"
+          python -c "import json, os; json.dump([{'name':'github-code-scanning-api','evidence_class':'code_scanning_api','status':'success','report_present':True,'report_valid':True,'run_id':'code-scanning-api:'+os.environ['HEAD_SHA'],'head_sha':os.environ['HEAD_SHA'],'event':'pull_request'}], open('.security-scan-status.json','w',encoding='utf-8'))"
 
       - name: Collect scanner evidence from exact workflow runs
         id: evidence
