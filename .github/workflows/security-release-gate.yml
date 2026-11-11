@@ -125,10 +125,10 @@ jobs:
               --output .required-scanner-status.json \
               --findings-output .scanner-findings.json
             evidence_status=$?
-            set -e
-            if [[ "$evidence_status" -eq 0 ]]; then
+            if [[ "$evidence_status" -eq 0 ]] && ! python -c "import json; s=json.load(open('.required-scanner-status.json',encoding='utf-8')); raise SystemExit(0 if any(x.get('status') in {'missing','incomplete'} for x in s) else 1)"; then
               break
             fi
+            set -e
             if [[ "$attempt" -lt 10 ]]; then
               sleep 30
             fi

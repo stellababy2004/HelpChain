@@ -31,10 +31,7 @@ EXPECTED_EVIDENCE = {
         ("pip-audit-runtime-baseline", "pip-audit"),
     ],
     "Security Release Gate (reporting)": [("pip-audit-api-json", "pip-audit")],
-    # gitleaks-action publishes its redacted SARIF report under this name.
-    # The action does not support arbitrary `args` inputs; provenance and
-    # report validation remain mandatory before findings reach the evaluator.
-    "Secret Scan": [("gitleaks-results.sarif", "Gitleaks")],
+    "Secret Scan": [("gitleaks-sanitized-json", "Gitleaks")],
 }
 
 EXPECTED_WORKFLOWS = (
@@ -631,6 +628,9 @@ def validate_artifact_metadata(
     if source.get("id") != run_id:
         errors.append("artifact source run mismatch")
     source_attempt = source.get("run_attempt")
+    trusted_run_id = trusted_run.get("id") if trusted_run else None
+    if source_attempt is None and trusted_run_id == run_id:
+        source_attempt = trusted_run.get("run_attempt")
     if source_attempt is None:
         errors.append("artifact run attempt metadata unavailable")
     elif source_attempt != run_attempt:

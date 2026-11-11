@@ -679,7 +679,7 @@ def test_artifact_metadata_must_match_source_run():
     )["valid"]
 
 
-def test_artifact_without_run_attempt_is_rejected_even_with_trusted_run():
+def test_artifact_without_run_attempt_uses_exact_trusted_run_attempt():
     metadata = {
         "id": 5,
         "name": "bandit.sarif",
@@ -706,6 +706,27 @@ def test_artifact_without_run_attempt_is_rejected_even_with_trusted_run():
         expected_head_sha="head123",
         workflow_id=20,
         trusted_run=trusted_run,
+    )
+    assert result["valid"] is True
+
+
+def test_artifact_without_run_attempt_is_rejected_without_trusted_run():
+    metadata = {
+        "id": 5,
+        "name": "bandit.sarif",
+        "expired": False,
+        "workflow_run": {
+            "id": 10,
+            "repository": {"full_name": "stellababy2004/HelpChain"},
+        },
+    }
+    result = validate_artifact_metadata(
+        metadata,
+        repository="stellababy2004/HelpChain",
+        run_id=10,
+        run_attempt=2,
+        artifact_id=5,
+        artifact_name="bandit.sarif",
     )
     assert result["valid"] is False
     assert "artifact run attempt metadata unavailable" in result["errors"]
