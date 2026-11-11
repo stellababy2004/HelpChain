@@ -69,6 +69,33 @@ def validate_baseline(baseline: dict[str, Any], repository: str) -> list[str]:
     return errors
 
 
+def scanner_evidence_is_complete(item: dict[str, Any], head_sha: str) -> bool:
+    common = (
+        item.get("status") == "success"
+        and item.get("report_present") is True
+        and item.get("report_valid") is True
+    )
+    evidence_class = item.get("evidence_class")
+    if evidence_class == "local_dependency_check":
+        return (
+            common
+            and item.get("name") == "pip-audit api/requirements.txt"
+            and item.get("run_id") is None
+            and item.get("run_attempt") is None
+            and item.get("head_sha") is None
+            and item.get("event") is None
+        )
+    if evidence_class not in {None, "workflow_artifact"}:
+        return False
+    return (
+        common
+        and item.get("run_id") is not None
+        and item.get("run_attempt") is not None
+        and item.get("head_sha") == head_sha
+        and item.get("event") in {"pull_request", "workflow_dispatch"}
+    )
+
+
 def evaluate(
     baseline: dict[str, Any],
     alerts: list[dict[str, Any]],
@@ -117,15 +144,7 @@ def evaluate(
         api_ok
         and not baseline_errors
         and not commit_errors
-        and all(
-            item.get("status") == "success"
-            and item.get("report_present") is True
-            and item.get("report_valid") is True
-            and item.get("run_id") is not None
-            and item.get("head_sha") == head_sha
-            and item.get("event") in {"pull_request", "workflow_dispatch"}
-            for item in scanner_status
-        )
+        and all(scanner_evidence_is_complete(item, head_sha) for item in scanner_status)
     )
     dependency_findings = sum(
         int(item.get("findings_count", 0) or 0) for item in scanner_status

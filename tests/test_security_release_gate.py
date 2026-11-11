@@ -53,6 +53,7 @@ def run_gate(tmp_path, baseline, alerts, *extra):
                         "report_present": True,
                         "report_valid": True,
                         "run_id": "codeql:head123",
+                        "run_attempt": 1,
                         "head_sha": "head123",
                         "event": "pull_request",
                     }
@@ -724,12 +725,10 @@ def test_dependency_findings_require_review(tmp_path):
             [
                 {
                     "name": "pip-audit api/requirements.txt",
+                    "evidence_class": "local_dependency_check",
                     "status": "success",
                     "report_present": True,
                     "report_valid": True,
-                    "run_id": "pip-audit:head123",
-                    "head_sha": "head123",
-                    "event": "pull_request",
                     "findings_count": 1,
                 }
             ]
@@ -738,6 +737,57 @@ def test_dependency_findings_require_review(tmp_path):
     )
     report = run_gate(tmp_path, BASELINE, [], "--api-ok")
     assert report["status"] == "REVIEW REQUIRED"
+
+
+def test_local_dependency_check_without_workflow_provenance_can_complete(tmp_path):
+    status_path = tmp_path / "scan-status.json"
+    status_path.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "pip-audit api/requirements.txt",
+                    "evidence_class": "local_dependency_check",
+                    "status": "success",
+                    "report_present": True,
+                    "report_valid": True,
+                    "findings_count": 0,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    report = run_gate(
+        tmp_path, BASELINE, [], "--api-ok", "--scan-status", str(status_path)
+    )
+    assert report["scanner_complete"] is True
+    assert report["status"] == "PASS"
+
+
+def test_local_dependency_check_with_workflow_provenance_is_incomplete(tmp_path):
+    status_path = tmp_path / "scan-status.json"
+    status_path.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "pip-audit api/requirements.txt",
+                    "evidence_class": "local_dependency_check",
+                    "status": "success",
+                    "report_present": True,
+                    "report_valid": True,
+                    "run_id": "fabricated-run",
+                    "head_sha": "head123",
+                    "event": "pull_request",
+                    "findings_count": 0,
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    report = run_gate(
+        tmp_path, BASELINE, [], "--api-ok", "--scan-status", str(status_path)
+    )
+    assert report["scanner_complete"] is False
+    assert report["status"] == "INCOMPLETE"
 
 
 def test_trusted_workflow_does_not_use_pull_request_target_or_pr_checkout():

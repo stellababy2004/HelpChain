@@ -387,6 +387,8 @@ def collect_required_evidence(
                         "reason": str(exc),
                     }
                 )
+    for status in statuses:
+        status.setdefault("evidence_class", "workflow_artifact")
     return {
         "statuses": statuses,
         "findings": findings,
@@ -849,6 +851,7 @@ def collect_pip_audit(report_path: Path, output_path: Path, status_code: int) ->
         )
         value = {
             "name": "pip-audit api/requirements.txt",
+            "evidence_class": "local_dependency_check",
             "status": "success" if status_code in (0, 1) else "failed",
             "report_present": True,
             "report_valid": True,
@@ -857,6 +860,7 @@ def collect_pip_audit(report_path: Path, output_path: Path, status_code: int) ->
     except (OSError, ValueError, json.JSONDecodeError):
         value = {
             "name": "pip-audit api/requirements.txt",
+            "evidence_class": "local_dependency_check",
             "status": "failed",
             "report_present": report_path.exists(),
             "report_valid": False,
