@@ -10,6 +10,9 @@ import pytest
 from scripts.security_release_gate_collect import (
     collect_required_evidence,
     collect_alerts,
+    collect_pip_audit,
+    deduplicate_findings,
+    extract_sarif_findings,
     validate_sarif,
     validate_artifact_metadata,
     validate_workflow_run,
@@ -814,6 +817,122 @@ def test_code_scanning_alerts_malformed_response_is_rejected(monkeypatch, payloa
         client.get_paginated("code-scanning/alerts?state=open", "alerts")
 
 
+def test_sarif_fingerprints_disambiguate_same_location_without_exposing_metadata():
+    report = {
+        "runs": [
+            {
+                "tool": {"driver": {"name": "Gitleaks"}},
+                "results": [
+                    {
+                        "ruleId": "secret-key-assignment",
+                        "level": "warning",
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {
+                                        "uri": "tests/test_sensitive_logging_remediation.py"
+                                    },
+                                    "region": {"startLine": 140},
+                                }
+                            }
+                        ],
+                        "fingerprints": {
+                            "commitSha": "a" * 40,
+                            "commitMessage": "opaque historical metadata",
+                        },
+                    },
+                    {
+                        "ruleId": "secret-key-assignment",
+                        "level": "warning",
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {
+                                        "uri": "tests/test_sensitive_logging_remediation.py"
+                                    },
+                                    "region": {"startLine": 140},
+                                }
+                            }
+                        ],
+                        "fingerprints": {
+                            "commitSha": "b" * 40,
+                            "commitMessage": "different opaque metadata",
+                        },
+                    },
+                ],
+            }
+        ]
+    }
+    findings = extract_sarif_findings(report, scanner="Gitleaks", head_sha="c" * 40)
+    assert findings[0]["historical_commit"] == "a" * 40
+    assert findings[1]["historical_commit"] == "b" * 40
+    assert findings[0]["identity"] == "secret-key-assignment:140"
+    assert findings[0]["evidence_fingerprint"].startswith("sha256:")
+    assert "opaque historical metadata" not in json.dumps(findings)
+    assert len(deduplicate_findings(findings)) == 2
+    assert len(deduplicate_findings(findings + [findings[0]])) == 2
+
+
+def test_local_pip_audit_findings_are_emitted_without_workflow_provenance(tmp_path):
+    report_path = tmp_path / "pip-audit.json"
+    status_path = tmp_path / "status.json"
+    findings_path = tmp_path / "findings.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "dependencies": [
+                    {
+                        "name": "Werkzeug",
+                        "vulns": [{"id": "CVE-1", "severity": "high"}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    collect_pip_audit(report_path, status_path, 1, findings_path)
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    findings = json.loads(findings_path.read_text(encoding="utf-8"))
+    assert status[0]["evidence_class"] == "local_dependency_check"
+    assert status[0]["findings_count"] == 1
+    assert findings[0]["package"] == "Werkzeug"
+    assert findings[0]["head_sha"] is None
+
+
+def test_local_dependency_findings_reconcile_without_count_mismatch(tmp_path):
+    findings = [
+        {
+            "scanner": "pip-audit",
+            "rule": "CVE-1",
+            "severity": "unclassified",
+            "package": "Werkzeug",
+        }
+    ]
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        status=[
+            {
+                "name": "pip-audit api/requirements.txt",
+                "evidence_class": "local_dependency_check",
+                "status": "success",
+                "report_present": True,
+                "report_valid": True,
+                "findings_count": 1,
+                "run_id": None,
+                "run_attempt": None,
+                "head_sha": None,
+                "event": None,
+            }
+        ],
+    )
+    assert report["scanner_complete"] is True
+    assert (
+        "scanner finding count does not match evidence counts"
+        not in report["disposition_errors"]
+    )
+
+
 def test_dependency_findings_require_review(tmp_path):
     (tmp_path / "scan-status.json").write_text(
         json.dumps(
@@ -944,6 +1063,18 @@ def test_same_location_with_changed_context_digest_is_not_authorized(tmp_path):
 def test_same_location_with_changed_gitleaks_commit_is_not_authorized(tmp_path):
     findings = reviewed_findings()
     findings[2]["historical_commit"] = "a" * 40
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_same_location_with_changed_gitleaks_fingerprint_is_not_authorized(tmp_path):
+    findings = reviewed_findings()
+    findings[2]["evidence_fingerprint"] = "sha256:" + "f" * 64
     report = run_disposition_gate(
         tmp_path,
         findings,
@@ -1227,6 +1358,21 @@ def test_sarif_identity_and_schema_are_validated():
     assert validate_sarif(valid, scanner="Trivy", head_sha="head123")["valid"]
     invalid = {"version": "2.1.0", "runs": []}
     assert not validate_sarif(invalid, scanner="Trivy", head_sha="head123")["valid"]
+
+
+def test_malformed_sarif_fingerprints_are_rejected():
+    malformed = {
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {"driver": {"name": "Gitleaks"}},
+                "results": [{"fingerprints": ["not-an-object"]}],
+            }
+        ],
+    }
+    result = validate_sarif(malformed, scanner="Gitleaks", head_sha="head123")
+    assert result["valid"] is False
+    assert "invalid SARIF fingerprints" in result["errors"]
 
 
 def test_artifact_metadata_must_match_source_run():

@@ -50,16 +50,28 @@ def finding_key(finding: dict[str, Any]) -> str | None:
     rule = finding.get("rule")
     path = normalize_finding_path(finding.get("path"))
     line = finding.get("line")
+    package = finding.get("package")
     if (
         not isinstance(scanner, str)
         or not isinstance(rule, str)
-        or path is None
-        or not isinstance(line, int)
-        or isinstance(line, bool)
-        or line < 1
+        or (path is None and not (scanner.lower() == "pip-audit" and package))
     ):
         return None
+    if path is None:
+        return f"{scanner.lower()}|{rule.lower()}|package:{str(package).lower()}"
+    if not isinstance(line, int) or isinstance(line, bool) or line < 1:
+        return None
     return f"{scanner.lower()}|{rule.lower()}|{path}|{line}"
+
+
+def finding_identity_key(finding: dict[str, Any]) -> str | None:
+    key = finding_key(finding)
+    if key is None:
+        return None
+    fingerprint = finding.get("evidence_fingerprint")
+    if isinstance(fingerprint, str) and fingerprint:
+        return f"{key}|{fingerprint}"
+    return key
 
 
 def finding_context_digest(finding: dict[str, Any]) -> str | None:
@@ -79,6 +91,13 @@ def finding_context_digest(finding: dict[str, Any]) -> str | None:
             return None
         context["historical_commit"] = historical_commit.lower()
         context["scanner_identity"] = finding.get("identity")
+        evidence_fingerprint = finding.get("evidence_fingerprint")
+        if evidence_fingerprint is not None:
+            if not isinstance(
+                evidence_fingerprint, str
+            ) or not SHA256_PATTERN.fullmatch(evidence_fingerprint):
+                return None
+            context["evidence_fingerprint"] = evidence_fingerprint
     else:
         try:
             source_lines = Path(path).read_text(encoding="utf-8").splitlines()
@@ -201,59 +220,62 @@ def apply_dispositions(
     seen: set[str] = set()
     for finding in findings:
         key = finding_key(finding)
+        identity_key = finding_identity_key(finding)
         entry = dispositions.get(key) if key else None
         severity = str(finding.get("severity", "unclassified")).lower()
         if key is None:
             unresolved.append(
                 {"finding_id": None, "reason": "unstable finding identity"}
             )
-        elif key in seen:
+        elif identity_key in seen:
             unresolved.append(
                 {"finding_id": key, "reason": "ambiguous duplicate finding"}
             )
-        elif entry is None:
-            unresolved.append({"finding_id": key, "reason": "no exact disposition"})
-        elif severity in BLOCKING_SEVERITIES:
-            unresolved.append(
-                {
-                    "finding_id": key,
-                    "reason": "blocking severity cannot be dispositioned",
-                }
-            )
         else:
-            context_digest = finding_context_digest(finding)
-            if context_digest is None:
+            seen.add(identity_key)
+            if entry is None:
+                unresolved.append({"finding_id": key, "reason": "no exact disposition"})
+            elif severity in BLOCKING_SEVERITIES:
                 unresolved.append(
                     {
                         "finding_id": key,
-                        "reason": "trustworthy finding context unavailable",
+                        "reason": "blocking severity cannot be dispositioned",
                     }
-                )
-            elif context_digest != entry.get("context_digest"):
-                unresolved.append(
-                    {"finding_id": key, "reason": "finding context changed"}
-                )
-            elif key.startswith("gitleaks|") and (
-                finding.get("historical_commit") != entry.get("historical_commit")
-                or finding.get("identity") != entry.get("identity")
-            ):
-                unresolved.append(
-                    {"finding_id": key, "reason": "historical evidence mismatch"}
-                )
-            elif severity != entry.get("expected_severity"):
-                unresolved.append(
-                    {"finding_id": key, "reason": "finding severity changed"}
                 )
             else:
-                recognized.append(
-                    {
-                        "finding_id": key,
-                        "disposition": entry["disposition"],
-                        "evidence_ref": entry["evidence_ref"],
-                    }
-                )
-                seen.add(key)
-    if len(findings) != len({finding_key(item) for item in findings}):
+                context_digest = finding_context_digest(finding)
+                if context_digest is None:
+                    unresolved.append(
+                        {
+                            "finding_id": key,
+                            "reason": "trustworthy finding context unavailable",
+                        }
+                    )
+                elif context_digest != entry.get("context_digest"):
+                    unresolved.append(
+                        {"finding_id": key, "reason": "finding context changed"}
+                    )
+                elif key.startswith("gitleaks|") and (
+                    finding.get("historical_commit") != entry.get("historical_commit")
+                    or finding.get("identity") != entry.get("identity")
+                ):
+                    unresolved.append(
+                        {"finding_id": key, "reason": "historical evidence mismatch"}
+                    )
+                elif severity != entry.get("expected_severity"):
+                    unresolved.append(
+                        {"finding_id": key, "reason": "finding severity changed"}
+                    )
+                else:
+                    recognized.append(
+                        {
+                            "finding_id": key,
+                            "disposition": entry["disposition"],
+                            "evidence_ref": entry["evidence_ref"],
+                        }
+                    )
+    identity_keys = [finding_identity_key(item) for item in findings]
+    if None in identity_keys or len(findings) != len(set(identity_keys)):
         errors.append("scanner finding identities are ambiguous")
     return recognized, unresolved, errors
 
