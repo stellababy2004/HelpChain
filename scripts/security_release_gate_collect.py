@@ -120,8 +120,15 @@ class GitHubClient:
         while True:
             separator = "&" if "?" in path else "?"
             payload = self.get(f"{path}{separator}per_page=100&page={page}")
-            values = payload.get(key)
-            if not isinstance(values, list):
+            if isinstance(payload, list) and key == "analyses":
+                values = payload
+            elif isinstance(payload, dict):
+                values = payload.get(key)
+            else:
+                values = None
+            if not isinstance(values, list) or not all(
+                isinstance(item, dict) for item in values
+            ):
                 raise GitHubApiError(f"invalid paginated response: {key}")
             items.extend(values)
             if len(values) < 100:

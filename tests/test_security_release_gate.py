@@ -588,6 +588,23 @@ def test_malformed_pagination_is_rejected(tmp_path):
         collect_alerts(pages, output)
 
 
+def test_codeql_analysis_top_level_list_is_accepted(monkeypatch):
+    from scripts.security_release_gate_collect import GitHubClient
+
+    analysis = {
+        "id": 1,
+        "commit_sha": "head123",
+        "workflow_run_id": 42,
+        "tool": {"name": "CodeQL"},
+    }
+    client = GitHubClient("token", "stellababy2004/HelpChain")
+    monkeypatch.setattr(client, "get", lambda path: [analysis])
+
+    assert client.get_paginated("code-scanning/analyses?ref=head123", "analyses") == [
+        analysis
+    ]
+
+
 def test_dependency_findings_require_review(tmp_path):
     (tmp_path / "scan-status.json").write_text(
         json.dumps(
