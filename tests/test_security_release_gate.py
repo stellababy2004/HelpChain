@@ -1,6 +1,7 @@
 import json
 import subprocess
 import sys
+import urllib.error
 import zipfile
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from scripts.security_release_gate_collect import (
     safe_zip_members,
     sanitize_gitleaks_report,
     GitHubApiError,
+    GitHubClient,
     select_latest_run,
 )
 
@@ -730,6 +732,30 @@ def test_artifact_without_run_attempt_is_rejected_without_trusted_run():
     )
     assert result["valid"] is False
     assert "artifact run attempt metadata unavailable" in result["errors"]
+
+
+@pytest.mark.parametrize("status", [403, 404, 429, 500])
+def test_artifact_download_http_errors_are_incomplete(monkeypatch, tmp_path, status):
+    error = urllib.error.HTTPError(
+        "https://api.github.com/repos/stellababy2004/HelpChain/actions/artifacts/5/zip",
+        status,
+        "artifact download failure",
+        hdrs=None,
+        fp=None,
+    )
+
+    def fail_download(*args, **kwargs):
+        raise error
+
+    monkeypatch.setattr(
+        "scripts.security_release_gate_collect.urllib.request.urlopen", fail_download
+    )
+    with pytest.raises(
+        GitHubApiError, match=rf"artifact download failed: HTTP {status}"
+    ):
+        GitHubClient("token", "stellababy2004/HelpChain").download_artifact(
+            5, tmp_path / "artifact.zip"
+        )
 
 
 def test_artifact_from_previous_run_attempt_is_rejected():

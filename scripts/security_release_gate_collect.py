@@ -31,7 +31,7 @@ EXPECTED_EVIDENCE = {
         ("pip-audit-runtime-baseline", "pip-audit"),
     ],
     "Security Release Gate (reporting)": [("pip-audit-api-json", "pip-audit")],
-    "Secret Scan": [("gitleaks-sanitized-json", "Gitleaks")],
+    "Secret Scan": [("gitleaks-results.sarif", "Gitleaks")],
 }
 
 EXPECTED_WORKFLOWS = (
@@ -91,7 +91,7 @@ class GitHubClient:
             f"https://api.github.com/repos/{self.repository}/actions/artifacts/{artifact_id}/zip",
             headers={
                 "Authorization": f"Bearer {self.token}",
-                "Accept": "application/vnd.github+json",
+                "Accept": "application/zip",
             },
         )
         try:
@@ -100,7 +100,11 @@ class GitHubClient:
                 destination.open("wb") as handle,
             ):
                 shutil.copyfileobj(response, handle, length=64 * 1024)
-        except (urllib.error.HTTPError, urllib.error.URLError, OSError) as exc:
+        except urllib.error.HTTPError as exc:
+            raise GitHubApiError(
+                f"artifact download failed: HTTP {exc.code} ({exc.reason})"
+            ) from exc
+        except (urllib.error.URLError, OSError) as exc:
             raise GitHubApiError(
                 f"artifact download failed: {type(exc).__name__}"
             ) from exc
