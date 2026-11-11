@@ -107,24 +107,27 @@ jobs:
           fi
           python -c "import json, os; ok=os.environ.get('API_OK') == 'true'; json.dump([{'name':'github-code-scanning-api','status':'success' if ok else 'missing','report_present':ok,'report_valid':ok,'run_id':'code-scanning-api:'+os.environ.get('HEAD_SHA',''),'head_sha':os.environ.get('HEAD_SHA'),'event':'pull_request'}], open('.security-scan-status.json','w',encoding='utf-8'))"
 
-      - name: Collect required scanner run statuses
+      - name: Collect scanner artifacts and provenance
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          BASE_SHA: ${{ steps.refs.outputs.base_sha }}
         shell: bash
         run: |
           set -uo pipefail
           set +e
-          gh api --paginate --slurp \
-            "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${HEAD_SHA}&per_page=100" \
-            > .workflow-run-pages.json
-          runs_status=$?
+          python scripts/security_release_gate_collect.py collect-evidence \
+            --token "$GH_TOKEN" --repository "$GITHUB_REPOSITORY" \
+            --head-sha "$HEAD_SHA" --base-sha "$BASE_SHA" \
+            --temp-root "$RUNNER_TEMP/security-release-gate-evidence" \
+            --output .required-scanner-status.json \
+            --findings-output .scanner-findings.json
+          evidence_status=$?
           set -e
-          if [[ "$runs_status" -ne 0 ]]; then
-            python -c "import json; json.dump([{'name':n,'status':'missing','report_present':False} for n in ['CodeQL Advanced Security','Trivy Security Scan','Security Scans (Bandit & pip-audit)','Secret Scan']], open('.required-scanner-status.json','w',encoding='utf-8'))"
-          else
-          python scripts/security_release_gate_collect.py runs --pages .workflow-run-pages.json --output .required-scanner-status.json --expected-head-sha "$HEAD_SHA"
+          if [[ ! -s .required-scanner-status.json ]]; then
+            python -c "import json; json.dump([{'name':'scanner-evidence-collection','status':'missing','report_present':False,'report_valid':False,'run_id':None,'head_sha':None,'event':None,'reason':'collector failed'}], open('.required-scanner-status.json','w',encoding='utf-8'))"
           fi
+          if [[ ! -s .scanner-findings.json ]]; then echo '[]' > .scanner-findings.json; fi
           python scripts/security_release_gate_collect.py merge --api-status .security-scan-status.json --scanner-status .required-scanner-status.json --output .security-scan-status.json
           python scripts/security_release_gate_collect.py merge --api-status .security-scan-status.json --scanner-status .api-dependency-status.json --output .security-scan-status.json
 
@@ -138,6 +141,7 @@ jobs:
             --baseline trusted-baseline.json
             --alerts .security-alerts.json
             --scan-status .security-scan-status.json
+            --scanner-findings .scanner-findings.json
             --output security-release-gate-report.json
             --repository "$GITHUB_REPOSITORY"
             --head-sha "${{ steps.refs.outputs.head_sha }}"

@@ -228,6 +228,22 @@ def test_ambiguous_latest_attempt_is_rejected():
         )
 
 
+def test_missing_run_attempt_is_rejected_without_defaulting_to_first_attempt():
+    with pytest.raises(
+        GitHubApiError, match="workflow run attempt metadata unavailable"
+    ):
+        select_latest_run(
+            [
+                {
+                    "id": 1,
+                    "status": "completed",
+                    "conclusion": "success",
+                    "updated_at": "2026-11-10T11:00:00Z",
+                }
+            ]
+        )
+
+
 def test_github_pagination_rejects_partial_shape():
     class PagingClient:
         def get(self, path):
@@ -343,6 +359,97 @@ def test_missing_sarif_report_is_incomplete(tmp_path):
         str(status_path),
     )
     assert report["status"] == "INCOMPLETE"
+
+
+def test_invalid_secret_scan_artifact_is_incomplete(tmp_path):
+    report_path = tmp_path / "gitleaks.json"
+    report_path.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "gitleaks-sanitized-json",
+                    "status": "failed",
+                    "report_present": True,
+                    "report_valid": False,
+                    "run_id": 42,
+                    "head_sha": "head123",
+                    "event": "pull_request",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    result = run_gate(
+        tmp_path,
+        BASELINE,
+        [],
+        "--api-ok",
+        "--scan-status",
+        str(report_path),
+    )
+    assert result["status"] == "INCOMPLETE"
+
+
+def test_valid_artifact_provenance_is_accepted():
+    result = validate_artifact_metadata(
+        {
+            "id": 9,
+            "name": "bandit-sarif",
+            "expired": False,
+            "workflow_run": {
+                "id": 42,
+                "run_attempt": 2,
+                "repository": {"full_name": "stellababy2004/HelpChain"},
+                "head_sha": "a" * 40,
+                "workflow_id": 7,
+            },
+        },
+        repository="stellababy2004/HelpChain",
+        run_id=42,
+        run_attempt=2,
+        artifact_id=9,
+        artifact_name="bandit-sarif",
+        expected_head_sha="a" * 40,
+        workflow_id=7,
+    )
+    assert result["valid"] is True
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("id", 10),
+        ("run_attempt", 1),
+        ("head_sha", "b" * 40),
+    ],
+)
+def test_wrong_artifact_provenance_is_rejected(field, value):
+    source = {
+        "id": 42,
+        "run_attempt": 2,
+        "repository": {"full_name": "stellababy2004/HelpChain"},
+        "head_sha": "a" * 40,
+        "workflow_id": 7,
+    }
+    if field in {"run_attempt", "head_sha"}:
+        source[field] = value
+    metadata = {
+        "id": value if field == "id" else 9,
+        "name": "bandit-sarif",
+        "expired": False,
+        "workflow_run": source,
+    }
+    result = validate_artifact_metadata(
+        metadata,
+        repository="stellababy2004/HelpChain",
+        run_id=42,
+        run_attempt=2,
+        artifact_id=9,
+        artifact_name="bandit-sarif",
+        expected_head_sha="a" * 40,
+        workflow_id=7,
+    )
+    assert result["valid"] is False
 
 
 def test_failed_scanner_is_incomplete(tmp_path):

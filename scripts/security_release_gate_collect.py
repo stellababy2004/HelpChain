@@ -38,7 +38,6 @@ EXPECTED_WORKFLOWS = (
     "CodeQL Advanced Security",
     "Trivy Security Scan",
     "Security Scans (Bandit & pip-audit)",
-    "Security Release Gate (reporting)",
     "Secret Scan",
 )
 
@@ -293,7 +292,7 @@ def collect_required_evidence(
                 artifact = discover_run_artifact(
                     client,
                     run_id=run["id"],
-                    run_attempt=run.get("run_attempt", 1),
+                    run_attempt=run["run_attempt"],
                     artifact_name=artifact_name,
                     repository=repository,
                     expected_head_sha=run.get("head_sha"),
@@ -314,7 +313,7 @@ def collect_required_evidence(
                         "report_present": True,
                         "report_valid": result.get("valid", False),
                         "run_id": run["id"],
-                        "run_attempt": run.get("run_attempt", 1),
+                        "run_attempt": run["run_attempt"],
                         "head_sha": head_sha,
                         "event": "pull_request",
                         "findings_count": result.get("findings_count", 0),
@@ -345,6 +344,10 @@ def select_latest_run(candidates: list[dict[str, Any]]) -> dict[str, Any] | None
     """Select the newest attempt; callers fail closed unless it succeeded."""
     if not candidates:
         return None
+    for candidate in candidates:
+        attempt = candidate.get("run_attempt")
+        if not isinstance(attempt, int) or isinstance(attempt, bool) or attempt < 1:
+            raise GitHubApiError("workflow run attempt metadata unavailable")
     ordered = sorted(
         candidates,
         key=lambda item: (
