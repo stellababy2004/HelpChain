@@ -367,7 +367,7 @@ def test_invalid_secret_scan_artifact_is_incomplete(tmp_path):
         json.dumps(
             [
                 {
-                    "name": "gitleaks-sanitized-json",
+                    "name": "gitleaks-results.sarif",
                     "status": "failed",
                     "report_present": True,
                     "report_valid": False,

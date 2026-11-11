@@ -31,7 +31,10 @@ EXPECTED_EVIDENCE = {
         ("pip-audit-runtime-baseline", "pip-audit"),
     ],
     "Security Release Gate (reporting)": [("pip-audit-api-json", "pip-audit")],
-    "Secret Scan": [("gitleaks-sanitized-json", "Gitleaks")],
+    # gitleaks-action publishes its redacted SARIF report under this name.
+    # The action does not support arbitrary `args` inputs; provenance and
+    # report validation remain mandatory before findings reach the evaluator.
+    "Secret Scan": [("gitleaks-results.sarif", "Gitleaks")],
 }
 
 EXPECTED_WORKFLOWS = (
