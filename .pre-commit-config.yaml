@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: helpchain-secret-guard
         name: HelpChain Secret Guard (staged)
-        entry: powershell -ExecutionPolicy Bypass -File .\scripts\scan_secrets.ps1 -StagedOnly
+        entry: powershell -ExecutionPolicy Bypass -File ./scripts/scan_secrets.ps1 -StagedOnly
         language: system
         pass_filenames: false
         stages: [pre-commit]
