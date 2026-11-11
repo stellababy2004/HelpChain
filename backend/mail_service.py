@@ -13,10 +13,10 @@ from datetime import UTC, datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 
+import requests
 from flask import current_app, has_request_context, render_template, request
 from flask_mail import Message
 from sqlalchemy.exc import SQLAlchemyError
-import requests
 
 from backend.core.tenant import current_structure_id
 from backend.helpchain_backend.src.models import EmailSendEvent, db
@@ -30,6 +30,24 @@ except ImportError:
     analytics_available = False
 
 logger = logging.getLogger(__name__)
+
+_SAFE_FALLBACK_PURPOSES = frozenset(
+    {
+        "generic",
+        "admin_status_update",
+        "admin_access_reset",
+        "admin_team_invitation",
+        "request",
+        "volunteer",
+        "volunteer_magic_link",
+        "request_magic_link",
+        "demo_request_internal",
+        "contact_exchange",
+        "daily_health_report",
+        "weekly_operations_report",
+        "organization_signup_verification",
+    }
+)
 
 _SENSITIVE_LOG_KEY_PARTS = (
     "password",
@@ -181,6 +199,13 @@ def _sanitize_for_log(value):
     return value
 
 
+def _fallback_log_purpose(purpose):
+    """Return only an allowlisted category for local fallback diagnostics."""
+    if isinstance(purpose, str) and purpose in _SAFE_FALLBACK_PURPOSES:
+        return purpose
+    return "generic"
+
+
 def _is_sensitive_log_key(key: str) -> bool:
     normalized = (key or "").strip().lower()
     return any(part in normalized for part in _SENSITIVE_LOG_KEY_PARTS)
@@ -229,7 +254,9 @@ def _log_mail_config_presence(*, purpose: str | None = None):
         "MAIL_PASSWORD_STATE": masked.get("MAIL_PASSWORD_STATE"),
         "MAIL_DEFAULT_SENDER": bool(masked.get("MAIL_DEFAULT_SENDER")),
     }
-    log_presence = {key: value for key, value in presence.items() if key != "MAIL_PASSWORD"}
+    log_presence = {
+        key: value for key, value in presence.items() if key != "MAIL_PASSWORD"
+    }
     logger.info(
         "SMTP config loaded%s | config=%s",
         f" | purpose={purpose}" if purpose else "",
@@ -280,10 +307,15 @@ def _log_email_event(
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.warning("EmailSendEvent logging failed: %s", e)
+        logger.warning(
+            "EmailSendEvent logging failed | error_type=%s", type(e).__name__
+        )
     except Exception as e:
         db.session.rollback()
-        logger.warning("EmailSendEvent logging unexpected error: %s", e)
+        logger.warning(
+            "EmailSendEvent logging unexpected error | error_type=%s",
+            type(e).__name__,
+        )
 
 
 def _recent_sent(email_h: str, purpose: str, minutes: int) -> bool:
@@ -301,7 +333,10 @@ def _recent_sent(email_h: str, purpose: str, minutes: int) -> bool:
         )
         return row is not None
     except Exception as e:
-        logger.warning("Email dedupe check failed; continuing send path: %s", e)
+        logger.warning(
+            "Email dedupe check failed; continuing send path | error_type=%s",
+            type(e).__name__,
+        )
         return False
 
 
@@ -317,7 +352,10 @@ def _count_sent(email_h: str, purpose: str, window_minutes: int) -> int:
             ).count()
         )
     except Exception as e:
-        logger.warning("Email rate-limit check failed; continuing send path: %s", e)
+        logger.warning(
+            "Email rate-limit check failed; continuing send path | error_type=%s",
+            type(e).__name__,
+        )
         return 0
 
 
@@ -366,9 +404,7 @@ def _send_via_resend(
         logger.error("Resend send failed: MAIL_DEFAULT_SENDER is missing")
         return False
 
-    api_base = (
-        os.getenv("RESEND_API_BASE_URL", "https://api.resend.com").rstrip("/")
-    )
+    api_base = os.getenv("RESEND_API_BASE_URL", "https://api.resend.com").rstrip("/")
     endpoint = f"{api_base}/emails"
     payload = {
         "from": f"{from_name} <{mail_sender}>",
@@ -394,12 +430,11 @@ def _send_via_resend(
         if resp.status_code in (200, 201, 202):
             return True
         logger.error(
-            "Resend send failed: status=%s body=%s",
+            "Resend send failed | status=%s | response_body_redacted=true",
             resp.status_code,
-            (resp.text or "")[:300],
         )
     except Exception as e:
-        logger.error("Resend request failed: %s", e)
+        logger.error("Resend request failed | error_type=%s", type(e).__name__)
     return False
 
 
@@ -442,10 +477,7 @@ def send_notification_email(
         try:
             recipient.encode("ascii")
         except UnicodeEncodeError:
-            logger.error(
-                "Recipient email must be ASCII for this SMTP server (no SMTPUTF8): %r",
-                recipient,
-            )
+            logger.error("Recipient email rejected: non_ascii_address")
             _log_email_event(
                 email_h=_email_hash(recipient),
                 purpose=purpose,
@@ -482,9 +514,10 @@ def send_notification_email(
         # Dev/test safety: allow mocking email delivery without touching SMTP.
         if os.environ.get("MAIL_MOCK", "").lower() in ("true", "1", "yes"):
             logger.info(
-                "[MAIL_MOCK] Email suppressed | to=%s | subject=%s | template=%s",
-                _sanitize_for_log(recipient),
-                _sanitize_for_log(subject),
+                "[MAIL_MOCK] Email suppressed | recipient_present=%s | "
+                "subject_length=%d | template=%s",
+                bool(recipient),
+                len(subject or ""),
                 _sanitize_for_log(template),
             )
             _log_email_event(
@@ -523,7 +556,10 @@ def send_notification_email(
         try:
             html_content = render_template(template, **context)
         except Exception as e:
-            logger.warning("Email template render failed (%s). Using fallback HTML.", e)
+            logger.warning(
+                "Email template render failed | error_type=%s | using fallback HTML",
+                type(e).__name__,
+            )
             html_content = _fallback_email_html(subject, context)
 
         # Generate unique message ID
@@ -541,10 +577,10 @@ def send_notification_email(
         broker = os.environ.get("CELERY_BROKER_URL") or os.environ.get("BROKER_URL")
         if broker:
             logger.info(
-                "Email broker configured but bypassed; using direct send | to=%s | subject=%s | purpose=%s",
-                _sanitize_for_log(recipient),
-                _sanitize_for_log(subject),
+                "Email broker configured but bypassed; using direct send | "
+                "purpose=%s | subject_length=%d",
                 _sanitize_for_log(purpose),
+                len(subject or ""),
             )
 
         # --- Direct SMTP ---
@@ -565,11 +601,7 @@ def send_notification_email(
         if purpose == "demo_request_internal":
             recipient = demo_target
             if _norm_email(mail_user) != demo_target:
-                logger.error(
-                    "Demo notification SMTP config invalid: MAIL_USERNAME must be %s, got %r",
-                    demo_target,
-                    mail_user,
-                )
+                logger.error("Demo notification SMTP config invalid: username_mismatch")
                 _log_email_event(
                     email_h=email_h,
                     purpose=purpose,
@@ -579,11 +611,7 @@ def send_notification_email(
                 )
                 return False
             if _norm_email(mail_sender) != demo_target:
-                logger.error(
-                    "Demo notification SMTP config invalid: MAIL_DEFAULT_SENDER must be %s, got %r",
-                    demo_target,
-                    mail_sender,
-                )
+                logger.error("Demo notification SMTP config invalid: sender_mismatch")
                 _log_email_event(
                     email_h=email_h,
                     purpose=purpose,
@@ -592,16 +620,12 @@ def send_notification_email(
                     structure_id=sid,
                 )
                 return False
-            logger.info(
-                "Demo notification SMTP routing | authenticated_account=%s | sender=%s | recipient=%s",
-                mail_user,
-                mail_sender,
-                recipient,
-            )
+            logger.info("Demo notification SMTP routing validated")
 
-        if not (
-            mail_server and mail_port and mail_user and mail_pass and mail_sender
-        ) and not resend_enabled:
+        if (
+            not (mail_server and mail_port and mail_user and mail_pass and mail_sender)
+            and not resend_enabled
+        ):
             missing = []
             if not mail_server:
                 missing.append("MAIL_SERVER")
@@ -664,9 +688,8 @@ def send_notification_email(
             reply_to=(reply_to or mail_user),
         ):
             logger.info(
-                "Email sent via Resend | to=%s | subject=%s",
-                _sanitize_for_log(recipient),
-                _sanitize_for_log(subject),
+                "Email sent via Resend | subject_length=%d",
+                len(subject or ""),
             )
             _log_email_event(
                 email_h=email_h,
@@ -688,34 +711,33 @@ def send_notification_email(
                 server.login(mail_user, mail_pass)
                 server.send_message(msg)
         except smtplib.SMTPAuthenticationError as smtp_auth_e:
-            logger.exception(
-                "Direct SMTP auth failed exactly: %r",
-                smtp_auth_e,
+            logger.error(
+                "Direct SMTP auth failed | error_type=%s", type(smtp_auth_e).__name__
             )
             _log_email_event(
                 email_h=email_h,
                 purpose=purpose,
                 outcome="failed",
-                reason=f"smtp_auth_error:{smtp_auth_e}",
+                reason="smtp_auth_error",
                 structure_id=sid,
             )
             return False
         except Exception as smtp_e:
-            logger.exception("Direct SMTP send failed: %s", smtp_e)
+            logger.error(
+                "Direct SMTP send failed | error_type=%s", type(smtp_e).__name__
+            )
             # Dev-friendly fallback: write to a local file for manual inspection.
             try:
                 with open("sent_emails.txt", "a", encoding="utf-8") as f:
                     f.write(f"\n--- {utc_now().isoformat()} ---\n")
-                    f.write(f"To: {recipient}\nSubject: {subject}\n\n")
-                    if magic_url or purpose == "admin_team_invitation":
-                        f.write("[Sensitive email body redacted]")
-                    else:
-                        if text_content:
-                            f.write(text_content + "\n\n")
-                        f.write(html_content)
-                    f.write("\n")
+                    f.write(
+                        f"recipient_present={bool(recipient)}\n"
+                        f"subject_length={len(subject or '')}\n"
+                        f"purpose={_fallback_log_purpose(purpose)}\n"
+                        "[Email body redacted]\n"
+                    )
             except Exception as e:
-                print("EMAIL ERROR:", str(e))
+                print("EMAIL ERROR: fallback_write_failed")
                 raise
             _log_email_event(
                 email_h=email_h,
@@ -731,26 +753,24 @@ def send_notification_email(
                 event_type="email_sent",
                 event_category="notification",
                 context={
-                    "recipient": recipient,
                     "template": template,
-                    "subject": subject,
-                    "message_id": message_id,
+                    "recipient_present": bool(recipient),
+                    "subject_length": len(subject or ""),
                 },
             )
 
         logger.info(
-            "Email sent successfully | to=%s | subject=%s",
-            _sanitize_for_log(recipient),
-            _sanitize_for_log(subject),
+            "Email sent successfully | subject_length=%d",
+            len(subject or ""),
         )
         _log_email_event(email_h=email_h, purpose=purpose, outcome="sent", reason=None)
         return True
 
     except Exception as e:
         logger.error(
-            "Failed to queue email to %s: %s",
-            _sanitize_for_log(recipient),
-            e,
+            "Failed to queue email | recipient_present=%s | error_type=%s",
+            bool(recipient),
+            type(e).__name__,
         )
         try:
             if recipient:
@@ -761,7 +781,7 @@ def send_notification_email(
                     reason="unexpected_error",
                 )
         except Exception as e:
-            print("EMAIL ERROR:", str(e))
+            print("EMAIL ERROR: failure_audit_failed")
             raise
 
         # Track failed email queuing
@@ -769,7 +789,11 @@ def send_notification_email(
             analytics_service.track_event(
                 event_type="email_queue_failed",
                 event_category="notification",
-                context={"recipient": recipient, "template": template, "error": str(e)},
+                context={
+                    "recipient_present": bool(recipient),
+                    "template": template,
+                    "error_type": type(e).__name__,
+                },
             )
 
         return False

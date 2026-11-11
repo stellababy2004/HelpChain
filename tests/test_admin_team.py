@@ -709,7 +709,7 @@ def test_admin_team_invitation_smtp_failure_redacts_email_diagnostic(client, mon
         call.args[0] for call in email_log().write.call_args_list
     )
 
-    assert "[Sensitive email body redacted]" in diagnostic
+    assert "[Email body redacted]" in diagnostic
     assert raw_token not in diagnostic + caplog.text
     assert invitation_url not in diagnostic + caplog.text
 
