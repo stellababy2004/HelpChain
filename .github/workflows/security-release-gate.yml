@@ -116,7 +116,7 @@ jobs:
         run: |
           set -uo pipefail
           evidence_status=1
-          for attempt in {1..10}; do
+          for attempt in {1..20}; do
             set +e
             python scripts/security_release_gate_collect.py collect-evidence \
               --token "$GH_TOKEN" --repository "$GITHUB_REPOSITORY" \
@@ -129,7 +129,7 @@ jobs:
               break
             fi
             set -e
-            if [[ "$attempt" -lt 10 ]]; then
+            if [[ "$attempt" -lt 20 ]]; then
               sleep 30
             fi
           done
