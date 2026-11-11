@@ -428,9 +428,6 @@ def collect_codeql_analysis(
     head_sha: str,
     repository: str,
 ) -> dict[str, Any]:
-    analyses = client.get_paginated(
-        f"code-scanning/analyses?ref={head_sha}", "analyses"
-    )
     pull_requests = run.get("pull_requests", [])
     if not isinstance(pull_requests, list) or len(pull_requests) != 1:
         return {
@@ -475,6 +472,9 @@ def collect_codeql_analysis(
             "findings": [],
         }
     merge_commit_sha = pr["merge_commit_sha"]
+    analyses = client.get_paginated(
+        f"code-scanning/analyses?ref={expected_ref}", "analyses"
+    )
     matches = [
         analysis
         for analysis in analyses

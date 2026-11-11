@@ -339,7 +339,7 @@ def test_codeql_ambiguous_analysis_is_incomplete():
     }
     client = FakeGitHubClient(
         {
-            f"code-scanning/analyses?ref={head_sha}": {
+            "code-scanning/analyses?ref=refs/pull/203/merge": {
                 "analyses": [
                     {
                         "id": 1,
@@ -397,7 +397,7 @@ def test_codeql_analysis_with_exact_pr_ref_and_sha_is_valid():
     }
     client = FakeGitHubClient(
         {
-            f"code-scanning/analyses?ref={head_sha}": {
+            "code-scanning/analyses?ref=refs/pull/203/merge": {
                 "analyses": [
                     {
                         "id": 3,
