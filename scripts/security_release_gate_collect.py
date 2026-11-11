@@ -46,6 +46,48 @@ class GitHubApiError(RuntimeError):
     pass
 
 
+class SafeArtifactRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Prevent forwarding GitHub credentials to another host."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        from urllib.parse import urlsplit
+
+        redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if redirected is None:
+            return None
+
+        original = urlsplit(req.full_url)
+        target = urlsplit(newurl)
+
+        if original.scheme.lower() != "https" or target.scheme.lower() != "https":
+            raise urllib.error.HTTPError(
+                req.full_url,
+                code,
+                "unsafe artifact redirect scheme",
+                headers,
+                fp,
+            )
+        if not target.hostname:
+            raise urllib.error.HTTPError(
+                req.full_url,
+                code,
+                "artifact redirect has no hostname",
+                headers,
+                fp,
+            )
+
+        if (original.hostname or "").lower() != (target.hostname or "").lower():
+            for key in list(redirected.headers):
+                if key.lower() in ("authorization", "proxy-authorization"):
+                    del redirected.headers[key]
+
+            for key in list(redirected.unredirected_hdrs):
+                if key.lower() in ("authorization", "proxy-authorization"):
+                    del redirected.unredirected_hdrs[key]
+
+        return redirected
+
+
 class GitHubClient:
     def __init__(self, token: str, repository: str):
         self.token = token
@@ -96,7 +138,9 @@ class GitHubClient:
         )
         try:
             with (
-                urllib.request.urlopen(request, timeout=60) as response,
+                urllib.request.build_opener(SafeArtifactRedirectHandler()).open(
+                    request, timeout=60
+                ) as response,
                 destination.open("wb") as handle,
             ):
                 shutil.copyfileobj(response, handle, length=64 * 1024)

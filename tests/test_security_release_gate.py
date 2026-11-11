@@ -105,6 +105,76 @@ class FakeGitHubClient:
         destination.write_bytes(self.artifact_zip.read_bytes())
 
 
+def test_artifact_redirect_does_not_forward_authorization_cross_host():
+    import urllib.request
+
+    from scripts.security_release_gate_collect import SafeArtifactRedirectHandler
+
+    handler = SafeArtifactRedirectHandler()
+    original = urllib.request.Request(
+        "https://api.github.com/repos/example/repo/actions/artifacts/1/zip",
+        headers={"Authorization": "Bearer test-token"},
+    )
+
+    redirected = handler.redirect_request(
+        original,
+        None,
+        302,
+        "Found",
+        {},
+        "https://artifact-storage.example.com/download",
+    )
+
+    assert redirected is not None
+    assert not redirected.has_header("Authorization")
+
+
+def test_artifact_redirect_preserves_authorization_same_host():
+    import urllib.request
+
+    from scripts.security_release_gate_collect import SafeArtifactRedirectHandler
+
+    handler = SafeArtifactRedirectHandler()
+    original = urllib.request.Request(
+        "https://api.github.com/repos/example/repo/actions/artifacts/1/zip",
+        headers={"Authorization": "Bearer test-token"},
+    )
+
+    redirected = handler.redirect_request(
+        original,
+        None,
+        302,
+        "Found",
+        {},
+        "https://api.github.com/another-path",
+    )
+
+    assert redirected is not None
+    assert redirected.has_header("Authorization")
+
+
+def test_artifact_redirect_rejects_http_downgrade():
+    import urllib.request
+
+    from scripts.security_release_gate_collect import SafeArtifactRedirectHandler
+
+    handler = SafeArtifactRedirectHandler()
+    original = urllib.request.Request(
+        "https://api.github.com/repos/example/repo/actions/artifacts/1/zip",
+        headers={"Authorization": "Bearer test-token"},
+    )
+
+    with pytest.raises(urllib.error.HTTPError, match="unsafe artifact redirect scheme"):
+        handler.redirect_request(
+            original,
+            None,
+            302,
+            "Found",
+            {},
+            "http://artifact-storage.example.com/download",
+        )
+
+
 def test_collector_downloads_validated_artifact_and_reaches_evidence_output(tmp_path):
     head_sha = "a" * 40
     report = {
@@ -744,11 +814,13 @@ def test_artifact_download_http_errors_are_incomplete(monkeypatch, tmp_path, sta
         fp=None,
     )
 
-    def fail_download(*args, **kwargs):
-        raise error
+    class FailingOpener:
+        def open(self, *args, **kwargs):
+            raise error
 
     monkeypatch.setattr(
-        "scripts.security_release_gate_collect.urllib.request.urlopen", fail_download
+        "scripts.security_release_gate_collect.urllib.request.build_opener",
+        lambda *handlers: FailingOpener(),
     )
     with pytest.raises(
         GitHubApiError, match=rf"artifact download failed: HTTP {status}"
@@ -799,6 +871,13 @@ def test_zip_path_traversal_is_rejected(tmp_path):
         safe_zip_members(archive)
 
 
+def test_invalid_zip_download_is_rejected(tmp_path):
+    archive = tmp_path / "invalid.zip"
+    archive.write_bytes(b"not-a-zip")
+    with pytest.raises(zipfile.BadZipFile):
+        safe_zip_members(archive)
+
+
 def test_artifact_download_uses_github_json_accept_header(monkeypatch, tmp_path):
     import io
     import urllib.request
@@ -814,11 +893,15 @@ def test_artifact_download_uses_github_json_accept_header(monkeypatch, tmp_path)
         def __exit__(self, exc_type, exc, tb):
             return False
 
-    def fake_urlopen(request, timeout):
-        captured["accept"] = request.get_header("Accept")
-        return FakeResponse()
+    class FakeOpener:
+        def open(self, request, timeout):
+            captured["accept"] = request.get_header("Accept")
+            return FakeResponse()
 
-    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+    def fake_build_opener(*handlers):
+        return FakeOpener()
+
+    monkeypatch.setattr(urllib.request, "build_opener", fake_build_opener)
 
     destination = tmp_path / "artifact.zip"
     GitHubClient("test-token", "owner/repo").download_artifact(123, destination)
