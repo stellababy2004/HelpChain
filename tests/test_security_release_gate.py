@@ -679,6 +679,45 @@ def test_codeql_analysis_top_level_list_is_accepted(monkeypatch):
     ]
 
 
+def test_code_scanning_alerts_top_level_list_is_accepted(monkeypatch):
+    alerts = [{"number": 1, "state": "open"}]
+    client = GitHubClient("token", "stellababy2004/HelpChain")
+    monkeypatch.setattr(client, "get", lambda path: alerts)
+
+    assert client.get_paginated("code-scanning/alerts?state=open", "alerts") == alerts
+
+
+def test_code_scanning_alerts_pagination_is_preserved(monkeypatch):
+    first_page = [{"number": index} for index in range(100)]
+    second_page = [{"number": 100}]
+    pages = {
+        "code-scanning/alerts?state=open&per_page=100&page=1": first_page,
+        "code-scanning/alerts?state=open&per_page=100&page=2": second_page,
+    }
+    client = GitHubClient("token", "stellababy2004/HelpChain")
+    monkeypatch.setattr(client, "get", pages.__getitem__)
+
+    assert client.get_paginated("code-scanning/alerts?state=open", "alerts") == (
+        first_page + second_page
+    )
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {"alerts": []},
+        {"message": "Not Found", "documentation_url": "https://docs.github.com"},
+        ["unexpected-shape"],
+    ],
+)
+def test_code_scanning_alerts_malformed_response_is_rejected(monkeypatch, payload):
+    client = GitHubClient("token", "stellababy2004/HelpChain")
+    monkeypatch.setattr(client, "get", lambda path: payload)
+
+    with pytest.raises(GitHubApiError, match="invalid paginated response: alerts"):
+        client.get_paginated("code-scanning/alerts?state=open", "alerts")
+
+
 def test_dependency_findings_require_review(tmp_path):
     (tmp_path / "scan-status.json").write_text(
         json.dumps(

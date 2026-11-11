@@ -120,9 +120,9 @@ class GitHubClient:
         while True:
             separator = "&" if "?" in path else "?"
             payload = self.get(f"{path}{separator}per_page=100&page={page}")
-            if isinstance(payload, list) and key == "analyses":
+            if isinstance(payload, list) and key in {"analyses", "alerts"}:
                 values = payload
-            elif isinstance(payload, dict):
+            elif isinstance(payload, dict) and key not in {"analyses", "alerts"}:
                 values = payload.get(key)
             else:
                 values = None
