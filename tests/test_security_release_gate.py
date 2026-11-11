@@ -330,7 +330,12 @@ def test_github_pagination_rejects_partial_shape():
 
 def test_codeql_ambiguous_analysis_is_incomplete():
     head_sha = "a" * 40
-    run = {"id": 42, "run_attempt": 1, "event": "pull_request"}
+    run = {
+        "id": 42,
+        "run_attempt": 1,
+        "event": "pull_request",
+        "pull_requests": [{"number": 203, "head": {"sha": head_sha}}],
+    }
     client = FakeGitHubClient(
         {
             f"code-scanning/analyses?ref={head_sha}": {
@@ -339,12 +344,20 @@ def test_codeql_ambiguous_analysis_is_incomplete():
                         "id": 1,
                         "workflow_run_id": 42,
                         "commit_sha": head_sha,
+                        "ref": "refs/pull/203/merge",
+                        "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+                        "category": "/language:python",
+                        "error": "",
                         "tool": {"name": "CodeQL"},
                     },
                     {
                         "id": 2,
                         "workflow_run_id": 42,
                         "commit_sha": head_sha,
+                        "ref": "refs/pull/203/merge",
+                        "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+                        "category": "/language:python",
+                        "error": "",
                         "tool": {"name": "CodeQL"},
                     },
                 ]
@@ -359,6 +372,43 @@ def test_codeql_ambiguous_analysis_is_incomplete():
     )
     assert result["status"]["status"] == "missing"
     assert result["status"]["report_valid"] is False
+
+
+def test_codeql_analysis_with_exact_pr_ref_and_sha_is_valid():
+    head_sha = "b" * 40
+    run = {
+        "id": 42,
+        "run_attempt": 1,
+        "event": "pull_request",
+        "pull_requests": [{"number": 203, "head": {"sha": head_sha}}],
+    }
+    client = FakeGitHubClient(
+        {
+            f"code-scanning/analyses?ref={head_sha}": {
+                "analyses": [
+                    {
+                        "id": 3,
+                        "commit_sha": head_sha,
+                        "ref": "refs/pull/203/merge",
+                        "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+                        "category": "/language:python",
+                        "error": "",
+                        "tool": {"name": "CodeQL"},
+                    }
+                ]
+            },
+            f"code-scanning/alerts?state=open&ref={head_sha}": {"alerts": []},
+        },
+        Path("missing.zip"),
+    )
+    from scripts.security_release_gate_collect import collect_codeql_analysis
+
+    result = collect_codeql_analysis(
+        client, run=run, head_sha=head_sha, repository="stellababy2004/HelpChain"
+    )
+    assert result["status"]["status"] == "success"
+    assert result["status"]["report_valid"] is True
+    assert result["status"]["analysis_id"] == 3
 
 
 def alert(number, severity="high", commit_sha="head123", state="open"):

@@ -431,12 +431,35 @@ def collect_codeql_analysis(
     analyses = client.get_paginated(
         f"code-scanning/analyses?ref={head_sha}", "analyses"
     )
+    pull_requests = run.get("pull_requests", [])
+    if not isinstance(pull_requests, list) or len(pull_requests) != 1:
+        return {
+            "status": {
+                "name": "CodeQL analysis",
+                "status": "missing",
+                "report_present": False,
+                "report_valid": False,
+                "run_id": run.get("id"),
+                "run_attempt": run.get("run_attempt"),
+                "head_sha": head_sha,
+                "event": run.get("event"),
+                "reason": "CodeQL PR provenance is missing or ambiguous",
+            },
+            "findings": [],
+        }
+    pr_number = pull_requests[0].get("number")
+    expected_ref = (
+        f"refs/pull/{pr_number}/merge" if isinstance(pr_number, int) else None
+    )
     matches = [
         analysis
         for analysis in analyses
         if analysis.get("commit_sha") == head_sha
-        and analysis.get("workflow_run_id") == run.get("id")
         and analysis.get("tool", {}).get("name") == "CodeQL"
+        and analysis.get("ref") == expected_ref
+        and str(analysis.get("analysis_key", "")).startswith(
+            ".github/workflows/codeql-analysis.yml:"
+        )
     ]
     if len(matches) != 1:
         return {
@@ -458,8 +481,10 @@ def collect_codeql_analysis(
         raise GitHubApiError("CodeQL analysis repository mismatch")
     if (
         not analysis.get("id")
+        or not analysis.get("analysis_key")
         or not analysis.get("category")
-        or analysis.get("analysis_status") != "complete"
+        or "error" not in analysis
+        or analysis.get("error") not in ("", None)
     ):
         raise GitHubApiError("CodeQL analysis metadata is incomplete")
     alerts = client.get_paginated(
@@ -493,6 +518,7 @@ def collect_codeql_analysis(
             "event": run.get("event"),
             "analysis_id": analysis.get("id"),
             "analysis_key": analysis.get("analysis_key"),
+            "ref": analysis.get("ref"),
             "findings_count": len(findings),
         },
         "findings": findings,
