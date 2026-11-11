@@ -91,7 +91,7 @@ class GitHubClient:
             f"https://api.github.com/repos/{self.repository}/actions/artifacts/{artifact_id}/zip",
             headers={
                 "Authorization": f"Bearer {self.token}",
-                "Accept": "application/zip",
+                "Accept": "application/vnd.github+json",
             },
         )
         try:

@@ -797,3 +797,31 @@ def test_zip_path_traversal_is_rejected(tmp_path):
         bundle.writestr("../escape.json", "{}")
     with pytest.raises(ValueError, match="path traversal"):
         safe_zip_members(archive)
+
+
+def test_artifact_download_uses_github_json_accept_header(monkeypatch, tmp_path):
+    import io
+    import urllib.request
+
+    from scripts.security_release_gate_collect import GitHubClient
+
+    captured = {}
+
+    class FakeResponse:
+        def __enter__(self):
+            return io.BytesIO(b"PK\\x03\\x04test")
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    def fake_urlopen(request, timeout):
+        captured["accept"] = request.get_header("Accept")
+        return FakeResponse()
+
+    monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
+
+    destination = tmp_path / "artifact.zip"
+    GitHubClient("test-token", "owner/repo").download_artifact(123, destination)
+
+    assert captured["accept"] == "application/vnd.github+json"
+    assert destination.read_bytes() == b"PK\\x03\\x04test"
