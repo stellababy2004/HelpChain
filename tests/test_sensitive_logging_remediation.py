@@ -1,4 +1,5 @@
 import logging
+import secrets
 import sys
 import types
 
@@ -137,7 +138,7 @@ def test_sms_outer_exception_logs_only_error_type(monkeypatch, caplog):
 def _mail_app():
     app = Flask(__name__)
     app.config.update(
-        SECRET_KEY="fixture-secret-key",
+        SECRET_KEY=secrets.token_urlsafe(32),
         MAIL_SERVER="smtp.fixture.test",
         MAIL_PORT=587,
         MAIL_USERNAME="fixture-user",
