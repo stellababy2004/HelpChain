@@ -451,10 +451,34 @@ def collect_codeql_analysis(
     expected_ref = (
         f"refs/pull/{pr_number}/merge" if isinstance(pr_number, int) else None
     )
+    pr = client.get(f"pulls/{pr_number}") if expected_ref else None
+    if (
+        not isinstance(pr, dict)
+        or pr.get("number") != pr_number
+        or pr.get("head", {}).get("sha") != head_sha
+        or pr.get("head", {}).get("repo", {}).get("full_name") != repository
+        or pr.get("base", {}).get("repo", {}).get("full_name") != repository
+        or not isinstance(pr.get("merge_commit_sha"), str)
+    ):
+        return {
+            "status": {
+                "name": "CodeQL analysis",
+                "status": "missing",
+                "report_present": False,
+                "report_valid": False,
+                "run_id": run.get("id"),
+                "run_attempt": run.get("run_attempt"),
+                "head_sha": head_sha,
+                "event": run.get("event"),
+                "reason": "CodeQL PR metadata is missing or mismatched",
+            },
+            "findings": [],
+        }
+    merge_commit_sha = pr["merge_commit_sha"]
     matches = [
         analysis
         for analysis in analyses
-        if analysis.get("commit_sha") == head_sha
+        if analysis.get("commit_sha") == merge_commit_sha
         and analysis.get("tool", {}).get("name") == "CodeQL"
         and analysis.get("ref") == expected_ref
         and str(analysis.get("analysis_key", "")).startswith(
@@ -519,6 +543,7 @@ def collect_codeql_analysis(
             "analysis_id": analysis.get("id"),
             "analysis_key": analysis.get("analysis_key"),
             "ref": analysis.get("ref"),
+            "merge_commit_sha": merge_commit_sha,
             "findings_count": len(findings),
         },
         "findings": findings,

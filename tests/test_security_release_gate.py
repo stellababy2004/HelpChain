@@ -330,6 +330,7 @@ def test_github_pagination_rejects_partial_shape():
 
 def test_codeql_ambiguous_analysis_is_incomplete():
     head_sha = "a" * 40
+    merge_sha = "c" * 40
     run = {
         "id": 42,
         "run_attempt": 1,
@@ -343,7 +344,7 @@ def test_codeql_ambiguous_analysis_is_incomplete():
                     {
                         "id": 1,
                         "workflow_run_id": 42,
-                        "commit_sha": head_sha,
+                        "commit_sha": merge_sha,
                         "ref": "refs/pull/203/merge",
                         "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
                         "category": "/language:python",
@@ -353,15 +354,26 @@ def test_codeql_ambiguous_analysis_is_incomplete():
                     {
                         "id": 2,
                         "workflow_run_id": 42,
-                        "commit_sha": head_sha,
+                        "commit_sha": merge_sha,
                         "ref": "refs/pull/203/merge",
                         "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
                         "category": "/language:python",
                         "error": "",
                         "tool": {"name": "CodeQL"},
                     },
-                ]
-            }
+                ],
+            },
+            "pulls/203": {
+                "number": 203,
+                "head": {
+                    "sha": head_sha,
+                    "repo": {"full_name": "stellababy2004/HelpChain"},
+                },
+                "base": {
+                    "repo": {"full_name": "stellababy2004/HelpChain"},
+                },
+                "merge_commit_sha": merge_sha,
+            },
         },
         Path("missing.zip"),
     )
@@ -376,6 +388,7 @@ def test_codeql_ambiguous_analysis_is_incomplete():
 
 def test_codeql_analysis_with_exact_pr_ref_and_sha_is_valid():
     head_sha = "b" * 40
+    merge_sha = "c" * 40
     run = {
         "id": 42,
         "run_attempt": 1,
@@ -388,7 +401,7 @@ def test_codeql_analysis_with_exact_pr_ref_and_sha_is_valid():
                 "analyses": [
                     {
                         "id": 3,
-                        "commit_sha": head_sha,
+                        "commit_sha": merge_sha,
                         "ref": "refs/pull/203/merge",
                         "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
                         "category": "/language:python",
@@ -398,6 +411,17 @@ def test_codeql_analysis_with_exact_pr_ref_and_sha_is_valid():
                 ]
             },
             f"code-scanning/alerts?state=open&ref={head_sha}": {"alerts": []},
+            "pulls/203": {
+                "number": 203,
+                "head": {
+                    "sha": head_sha,
+                    "repo": {"full_name": "stellababy2004/HelpChain"},
+                },
+                "base": {
+                    "repo": {"full_name": "stellababy2004/HelpChain"},
+                },
+                "merge_commit_sha": merge_sha,
+            },
         },
         Path("missing.zip"),
     )
