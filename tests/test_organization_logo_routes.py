@@ -13,7 +13,7 @@ def _switch_admin(client, app, admin):
     # The shared app context in test_fixtures.py retains Flask g across requests.
     for key in ("_current_admin_actor", "_session_admin_actor", "_bearer_admin_actor"):
         g.pop(key, None)
-    _switch_admin(client, app, admin)
+    _login(client, app, admin)
 
 
 def _png():
