@@ -20967,3 +20967,39 @@ msgstr "Cadre d’hébergement européen"
 
 msgid "Cadre RGPD"
 msgstr "Cadre RGPD"
+
+msgid "Identité de votre organisation"
+msgstr "Identité de votre organisation"
+
+msgid "Nom affiché de l'organisation"
+msgstr "Nom affiché de l'organisation"
+
+msgid "Le nom légal enregistré reste inchangé."
+msgstr "Le nom légal enregistré reste inchangé."
+
+msgid "Enregistrer le nom"
+msgstr "Enregistrer le nom"
+
+msgid "Choisissez un logo et vérifiez son aperçu avant de l’enregistrer."
+msgstr "Choisissez un logo et vérifiez son aperçu avant de l’enregistrer."
+
+msgid "Choisir un logo (PNG, JPG ou WebP)"
+msgstr "Choisir un logo (PNG, JPG ou WebP)"
+
+msgid "Maximum 2 Mo."
+msgstr "Maximum 2 Mo."
+
+msgid "Taille du logo"
+msgstr "Taille du logo"
+
+msgid "Glissez le logo pour le centrer dans le cadre."
+msgstr "Glissez le logo pour le centrer dans le cadre."
+
+msgid "Le déplacement dans l’aperçu n’est pas conservé après l’enregistrement."
+msgstr "Le déplacement dans l’aperçu n’est pas conservé après l’enregistrement."
+
+msgid "Enregistrer le logo"
+msgstr "Enregistrer le logo"
+
+msgid "Supprimer le logo"
+msgstr "Supprimer le logo"
