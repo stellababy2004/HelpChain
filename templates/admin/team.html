@@ -14,6 +14,82 @@
     </div>
   </div>
 
+  <section class="card mb-4" aria-labelledby="hc-org-branding-title">
+    <div class="card-header"><strong id="hc-org-branding-title">Identité de votre organisation</strong></div>
+    <div class="card-body">
+      <p class="mb-2">Nom de l'organisation : <strong>{{ current_user.structure.name if current_user.structure else '—' }}</strong></p>
+      <p class="text-muted small">Préparez votre logo ici. L'enregistrement sera activé après la mise en place du stockage sécurisé.</p>
+      <div class="row g-3 align-items-start">
+        <div class="col-md-4">
+          <label class="form-label" for="hc-org-logo-file">Choisir un logo (PNG, JPG ou WebP)</label>
+          <input class="form-control" id="hc-org-logo-file" type="file" accept="image/png,image/jpeg,image/webp">
+          <div class="form-text" id="hc-org-logo-error" role="status" aria-live="polite">Maximum 2 Mo.</div>
+        </div>
+        <div class="col-md-4">
+          <div style="width:144px;height:144px;max-width:100%;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center">
+            <img id="hc-org-logo-preview" alt="Aperçu du logo" hidden style="width:100%;height:100%;object-fit:contain">
+            <span id="hc-org-logo-placeholder" aria-hidden="true" style="font-size:48px">🏢</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="hc-org-logo-zoom">Taille du logo</label>
+          <input class="form-range" id="hc-org-logo-zoom" type="range" min="50" max="150" value="100" disabled>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hc-org-logo-reset" disabled>Réinitialiser</button>
+          <p class="small text-muted mt-2 mb-0">Aperçu uniquement — aucune image n'est envoyée au serveur.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    (() => {
+      const file = document.getElementById('hc-org-logo-file');
+      const img = document.getElementById('hc-org-logo-preview');
+      const placeholder = document.getElementById('hc-org-logo-placeholder');
+      const zoom = document.getElementById('hc-org-logo-zoom');
+      const reset = document.getElementById('hc-org-logo-reset');
+      const error = document.getElementById('hc-org-logo-error');
+      let objectUrl = null;
+      function clear() {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
+        img.removeAttribute('src');
+        img.hidden = true;
+        placeholder.hidden = false;
+        zoom.value = '100';
+        zoom.disabled = true;
+        reset.disabled = true;
+        img.style.transform = '';
+      }
+      file.addEventListener('change', () => {
+        clear();
+        const selected = file.files && file.files[0];
+        if (!selected) return;
+        if (!['image/png','image/jpeg','image/webp'].includes(selected.type) || selected.size > 2 * 1024 * 1024) {
+          error.textContent = 'Format non accepté ou fichier supérieur à 2 Mo.';
+          file.value = '';
+          return;
+        }
+        objectUrl = URL.createObjectURL(selected);
+        img.onload = () => {
+          img.hidden = false;
+          placeholder.hidden = true;
+          zoom.disabled = false;
+          reset.disabled = false;
+          error.textContent = 'Aperçu local prêt. Rien n’est enregistré.';
+        };
+        img.onerror = () => {
+          clear();
+          file.value = '';
+          error.textContent = 'Impossible de lire cette image.';
+        };
+        img.src = objectUrl;
+      });
+      zoom.addEventListener('input', () => { img.style.transform = 'scale(' + Number(zoom.value)/100 + ')'; });
+      reset.addEventListener('click', () => { zoom.value = '100'; img.style.transform = ''; });
+      window.addEventListener('pagehide', clear, {once:true});
+    })();
+  </script>
+
   <section class="card mb-4">
     <div class="card-header">
       <strong>Inviter un membre</strong>
