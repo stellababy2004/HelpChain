@@ -13,6 +13,11 @@ permissions:
   contents: read
   security-events: write
 
+# SHA-256 verified against the official release checksum and downloaded archive.
+env:
+  TRIVY_VERSION: "0.76.2"
+  TRIVY_SHA256: "bc0fc726e017b8927a62b2d3531d7a84ee01769daf5c99ed866dced54089fdbf"
+
 jobs:
   trivy-iac:
     name: Trivy IaC Scan
@@ -21,9 +26,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
+      - name: Install verified Trivy binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "x86_64" ]]
+          install_dir="$(mktemp -d "${RUNNER_TEMP}/trivy.XXXXXX")"
+          archive="${install_dir}/trivy.tar.gz"
+          curl --fail --silent --show-error --location \
+            --proto '=https' --proto-redir '=https' \
+            --retry 3 --retry-all-errors --connect-timeout 20 --max-time 120 \
+            --output "$archive" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          printf '%s  %s\n' "$TRIVY_SHA256" "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$install_dir" trivy
+          "${install_dir}/trivy" --version | grep -Fx "Version: ${TRIVY_VERSION}"
+          echo "$install_dir" >> "$GITHUB_PATH"
+
       - name: Run Trivy IaC Scanner
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
+          version: "v0.76.2"
+          skip-setup-trivy: true
           scan-type: "config"
           scan-ref: "."
           format: "sarif"
@@ -50,9 +74,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
+      - name: Install verified Trivy binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "x86_64" ]]
+          install_dir="$(mktemp -d "${RUNNER_TEMP}/trivy.XXXXXX")"
+          archive="${install_dir}/trivy.tar.gz"
+          curl --fail --silent --show-error --location \
+            --proto '=https' --proto-redir '=https' \
+            --retry 3 --retry-all-errors --connect-timeout 20 --max-time 120 \
+            --output "$archive" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          printf '%s  %s\n' "$TRIVY_SHA256" "$archive" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$install_dir" trivy
+          "${install_dir}/trivy" --version | grep -Fx "Version: ${TRIVY_VERSION}"
+          echo "$install_dir" >> "$GITHUB_PATH"
+
       - name: Run Trivy Repository Scanner
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8
         with:
+          version: "v0.76.2"
+          skip-setup-trivy: true
           scan-type: "fs"
           scan-ref: "."
           format: "sarif"
