@@ -43,7 +43,7 @@
       "path": "tests/test_sensitive_logging_remediation.py",
       "line": 140,
       "identity": "secret-key-assignment:140",
-      "context_digest": "sha256:2d20db097b031e6e218a07e7df6fe63236db4b7d62911c67191bba7c1f610858",
+      "context_digest": "sha256:c107547c99d7f3864bcb241b968bba67c1443b6b48a6d286787648d514304622",
       "expected_severity": "unclassified",
       "disposition": "OWNER_REVIEWED_HISTORICAL_TEST_FIXTURE",
       "historical_commit": "07fa68d170c91db30392b5322e756dbf09ef6529",

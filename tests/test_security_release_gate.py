@@ -152,6 +152,7 @@ def reviewed_findings():
             "path": "tests/test_sensitive_logging_remediation.py",
             "line": 140,
             "identity": "secret-key-assignment:140",
+            "evidence_fingerprint": "sha256:4e29053e3ded19f51d8fc3a02e8e9a5e809e2a56057601b42d0b8c7141959fa1",
             "historical_commit": "07fa68d170c91db30392b5322e756dbf09ef6529",
             "head_sha": "head123",
         },
