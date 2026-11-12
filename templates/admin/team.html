@@ -27,7 +27,7 @@
         </div>
         <div class="col-md-4">
           <div style="width:144px;height:144px;max-width:100%;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center">
-            <img id="hc-org-logo-preview" alt="Aperçu du logo" hidden style="width:100%;height:100%;object-fit:contain">
+            <img id="hc-org-logo-preview" alt="Aperçu du logo" hidden style="width:100%;height:100%;object-fit:contain;cursor:grab;touch-action:none">
             <span id="hc-org-logo-placeholder" aria-hidden="true" style="font-size:48px">🏢</span>
           </div>
         </div>
@@ -35,6 +35,7 @@
           <label class="form-label" for="hc-org-logo-zoom">Taille du logo</label>
           <input class="form-range" id="hc-org-logo-zoom" type="range" min="50" max="150" value="100" disabled>
           <button type="button" class="btn btn-outline-secondary btn-sm" id="hc-org-logo-reset" disabled>Réinitialiser</button>
+          <p class="small text-muted mt-2">Glissez le logo pour le centrer dans le cadre.</p>
           <p class="small text-muted mt-2 mb-0">Aperçu uniquement — aucune image n'est envoyée au serveur.</p>
         </div>
       </div>
@@ -49,6 +50,8 @@
       const reset = document.getElementById('hc-org-logo-reset');
       const error = document.getElementById('hc-org-logo-error');
       let objectUrl = null;
+      let offsetX = 0, offsetY = 0, drag = null;
+      const applyTransform = () => { img.style.transform = 'translate(' + offsetX + 'px,' + offsetY + 'px) scale(' + Number(zoom.value)/100 + ')'; };
       function clear() {
         if (objectUrl) URL.revokeObjectURL(objectUrl);
         objectUrl = null;
@@ -58,6 +61,7 @@
         zoom.value = '100';
         zoom.disabled = true;
         reset.disabled = true;
+        offsetX = 0; offsetY = 0; drag = null;
         img.style.transform = '';
       }
       file.addEventListener('change', () => {
@@ -84,8 +88,23 @@
         };
         img.src = objectUrl;
       });
-      zoom.addEventListener('input', () => { img.style.transform = 'scale(' + Number(zoom.value)/100 + ')'; });
-      reset.addEventListener('click', () => { zoom.value = '100'; img.style.transform = ''; });
+      zoom.addEventListener('input', applyTransform);
+      img.addEventListener('pointerdown', (event) => {
+        if (img.hidden) return;
+        drag = {x: event.clientX, y: event.clientY, startX: offsetX, startY: offsetY};
+        img.setPointerCapture(event.pointerId);
+        img.style.cursor = 'grabbing';
+      });
+      img.addEventListener('pointermove', (event) => {
+        if (!drag) return;
+        offsetX = Math.max(-144, Math.min(144, drag.startX + event.clientX - drag.x));
+        offsetY = Math.max(-144, Math.min(144, drag.startY + event.clientY - drag.y));
+        applyTransform();
+      });
+      const endDrag = () => { drag = null; img.style.cursor = 'grab'; };
+      img.addEventListener('pointerup', endDrag);
+      img.addEventListener('pointercancel', endDrag);
+      reset.addEventListener('click', () => { zoom.value = '100'; offsetX = 0; offsetY = 0; applyTransform(); });
       window.addEventListener('pagehide', clear, {once:true});
     })();
   </script>
