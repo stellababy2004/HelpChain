@@ -41,9 +41,12 @@ def test_organization_logo_lifecycle_and_tenant_isolation(client, app):
     assert own_logo.headers["Content-Type"].startswith("image/png")
     assert own_logo.headers["Cache-Control"] == "private, no-store"
 
-    _login(client, app, admin_b)
-    assert client.get("/admin/team/logo.png").status_code == 404
-    assert client.post("/admin/team/logo/delete").status_code == 303
+    # Use a separate browser session: Flask-Login may cache current_user
+    # in the active request context when a test reuses one client.
+    other_client = app.test_client()
+    _login(other_client, app, admin_b)
+    assert other_client.get("/admin/team/logo.png").status_code == 404
+    assert other_client.post("/admin/team/logo/delete").status_code == 303
     assert db.session.get(OrganizationLogo, first.id) is not None
 
     _login(client, app, admin_a)
