@@ -127,7 +127,11 @@ class GitHubClient:
             payload = self.get(f"{path}{separator}per_page=100&page={page}")
             if isinstance(payload, list) and key in {"analyses", "alerts", "pulls"}:
                 values = payload
-            elif isinstance(payload, dict) and key not in {"analyses", "alerts", "pulls"}:
+            elif isinstance(payload, dict) and key not in {
+                "analyses",
+                "alerts",
+                "pulls",
+            }:
                 values = payload.get(key)
             else:
                 values = None
@@ -304,11 +308,14 @@ def collect_required_evidence(
         candidates = [
             run
             for run in runs
-            if run.get("head_sha") == head_sha
-            and run.get("event") == "pull_request"
+            if run.get("head_sha") == head_sha and run.get("event") == "pull_request"
         ]
         run = select_latest_run(candidates)
-        if run and run.get("status") == "completed" and run.get("conclusion") == "success":
+        if (
+            run
+            and run.get("status") == "completed"
+            and run.get("conclusion") == "success"
+        ):
             identity = resolve_pr_identity(client, run)
             if identity["base_sha"] != base_sha:
                 raise GitHubApiError("scanner base SHA mismatch")
@@ -703,10 +710,13 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
     sha = run.get("head_sha", "")
     if not isinstance(sha, str) or not SHA1_PATTERN.fullmatch(sha):
         raise GitHubApiError("invalid scanned SHA")
-    if (run.get("event") != "pull_request"
-            or run.get("repository", {}).get("full_name") != client.repository
-            or run.get("head_repository", {}).get("full_name") != client.repository
-            or run.get("status") != "completed" or run.get("conclusion") != "success"):
+    if (
+        run.get("event") != "pull_request"
+        or run.get("repository", {}).get("full_name") != client.repository
+        or run.get("head_repository", {}).get("full_name") != client.repository
+        or run.get("status") != "completed"
+        or run.get("conclusion") != "success"
+    ):
         raise GitHubApiError("unsuccessful or mismatched upstream run")
     attached = run.get("pull_requests")
     if not isinstance(attached, list) or len(attached) > 1:
@@ -725,10 +735,12 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             raise GitHubApiError("PR number mismatch")
         head = pr.get("head", {}).get("sha", "")
         base = pr.get("base", {}).get("sha", "")
-        if (pr.get("head", {}).get("repo", {}).get("full_name") != client.repository
-                or pr.get("base", {}).get("repo", {}).get("full_name") != client.repository
-                or not SHA1_PATTERN.fullmatch(str(head))
-                or not SHA1_PATTERN.fullmatch(str(base))):
+        if (
+            pr.get("head", {}).get("repo", {}).get("full_name") != client.repository
+            or pr.get("base", {}).get("repo", {}).get("full_name") != client.repository
+            or not SHA1_PATTERN.fullmatch(str(head))
+            or not SHA1_PATTERN.fullmatch(str(base))
+        ):
             continue
         merged = pr.get("state") == "closed" and pr.get("merged") is True
         if pr.get("state") != "open" and not merged:
@@ -748,23 +760,41 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
         elif sha == pr.get("merge_commit_sha"):
             commit = client.get(f"commits/{sha}")
             parents = [item.get("sha") for item in commit.get("parents", [])]
-            if (commit.get("sha") != sha or len(parents) != 2
-                    or parents[1] != head or not SHA1_PATTERN.fullmatch(str(parents[0]))
-                    or parents[0] == head or (not merged and parents[0] != base)):
+            if (
+                commit.get("sha") != sha
+                or len(parents) != 2
+                or parents[1] != head
+                or not SHA1_PATTERN.fullmatch(str(parents[0]))
+                or parents[0] == head
+                or (not merged and parents[0] != base)
+            ):
                 continue
             scan_base = parents[0]
         else:
             continue
         validation = validate_workflow_run(
-            run, pr, repository=client.repository, workflow_id=run.get("workflow_id"),
-            run_id=run.get("id"), run_attempt=run.get("run_attempt"),
-            pr_number=number, head_sha=head, base_sha=scan_base,
-            scanned_sha=sha, scanned_commit=commit,
+            run,
+            pr,
+            repository=client.repository,
+            workflow_id=run.get("workflow_id"),
+            run_id=run.get("id"),
+            run_attempt=run.get("run_attempt"),
+            pr_number=number,
+            head_sha=head,
+            base_sha=scan_base,
+            scanned_sha=sha,
+            scanned_commit=commit,
         )
         if not validation["valid"]:
             continue
-        matches.append({"pr_number": number, "pr_head_sha": head,
-                        "scanned_sha": sha, "base_sha": scan_base})
+        matches.append(
+            {
+                "pr_number": number,
+                "pr_head_sha": head,
+                "scanned_sha": sha,
+                "base_sha": scan_base,
+            }
+        )
     if len(matches) != 1:
         raise GitHubApiError("missing, stale, or ambiguous PR identity")
     return matches[0]
@@ -808,14 +838,20 @@ def validate_workflow_run(
     if pr.get("head", {}).get("repo", {}).get("full_name") != repository:
         errors.append("head repository mismatch")
     if scanned_sha != head_sha:
-        parents = [item.get("sha") for item in (scanned_commit or {}).get("parents", [])]
-        if (pr.get("merge_commit_sha") != scanned_sha
-                or (scanned_commit or {}).get("sha") != scanned_sha
-                or parents != [base_sha, head_sha]):
+        parents = [
+            item.get("sha") for item in (scanned_commit or {}).get("parents", [])
+        ]
+        if (
+            pr.get("merge_commit_sha") != scanned_sha
+            or (scanned_commit or {}).get("sha") != scanned_sha
+            or parents != [base_sha, head_sha]
+        ):
             errors.append("scanned merge relationship mismatch")
     elif merged:
         errors.append("merged PR requires merge commit evidence")
-    if (not merged or scanned_sha == head_sha) and pr.get("base", {}).get("sha") != base_sha:
+    if (not merged or scanned_sha == head_sha) and pr.get("base", {}).get(
+        "sha"
+    ) != base_sha:
         errors.append("PR base SHA mismatch")
     if pr.get("head", {}).get("sha") != head_sha:
         errors.append("PR head SHA mismatch")
@@ -1083,9 +1119,12 @@ def main() -> int:
     if args.mode == "resolve-pr":
         client = GitHubClient(args.token, args.repository)
         run = client.get(f"actions/runs/{args.run_id}")
-        if (run.get("id") != args.run_id or run.get("run_attempt") != args.run_attempt
-                or run.get("workflow_id") != args.workflow_id
-                or run.get("head_sha") != args.head_sha):
+        if (
+            run.get("id") != args.run_id
+            or run.get("run_attempt") != args.run_attempt
+            or run.get("workflow_id") != args.workflow_id
+            or run.get("head_sha") != args.head_sha
+        ):
             raise GitHubApiError("upstream run identity mismatch")
         identity = resolve_pr_identity(client, run)
         write(args.output, identity)

@@ -1,4 +1,5 @@
 """Offline regression coverage for trusted PR identity and scan provenance."""
+
 import copy
 import importlib.util
 from pathlib import Path
@@ -6,7 +7,8 @@ import unittest
 from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location(
-    "gate_collect", Path(__file__).resolve().parents[1] / "scripts/security_release_gate_collect.py"
+    "gate_collect",
+    Path(__file__).resolve().parents[1] / "scripts/security_release_gate_collect.py",
 )
 gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
@@ -40,15 +42,26 @@ class Client:
 
 class TrustedIdentityTests(unittest.TestCase):
     def setUp(self):
-        self.run = {"id": 43246159695, "workflow_id": 12, "run_attempt": 1,
-                    "repository": {"full_name": REPO},
-                    "head_repository": {"full_name": REPO},
-                    "event": "pull_request", "status": "completed",
-                    "conclusion": "success", "head_sha": HEAD, "pull_requests": []}
-        self.pr = {"number": 214, "state": "open", "merged": False,
-                   "head": {"sha": HEAD, "repo": {"full_name": REPO}},
-                   "base": {"sha": BASE, "repo": {"full_name": REPO}},
-                   "merge_commit_sha": MERGE}
+        self.run = {
+            "id": 43246159695,
+            "workflow_id": 12,
+            "run_attempt": 1,
+            "repository": {"full_name": REPO},
+            "head_repository": {"full_name": REPO},
+            "event": "pull_request",
+            "status": "completed",
+            "conclusion": "success",
+            "head_sha": HEAD,
+            "pull_requests": [],
+        }
+        self.pr = {
+            "number": 214,
+            "state": "open",
+            "merged": False,
+            "head": {"sha": HEAD, "repo": {"full_name": REPO}},
+            "base": {"sha": BASE, "repo": {"full_name": REPO}},
+            "merge_commit_sha": MERGE,
+        }
         self.client = Client(self.run, self.pr)
 
     def resolve(self):
@@ -64,8 +77,15 @@ class TrustedIdentityTests(unittest.TestCase):
     def test_open_merge_commit(self):
         self.run["head_sha"] = MERGE
         identity = self.resolve()
-        self.assertEqual(identity, {"pr_number": 214, "pr_head_sha": HEAD,
-                                    "scanned_sha": MERGE, "base_sha": BASE})
+        self.assertEqual(
+            identity,
+            {
+                "pr_number": 214,
+                "pr_head_sha": HEAD,
+                "scanned_sha": MERGE,
+                "base_sha": BASE,
+            },
+        )
 
     def test_merged_pr_uses_first_parent_as_baseline(self):
         self.run["head_sha"] = MERGE
@@ -121,10 +141,15 @@ class TrustedIdentityTests(unittest.TestCase):
     def test_codeql_evidence_requires_actual_scanned_sha(self):
         self.run["head_sha"] = MERGE
         original = self.client.get_paginated
-        analysis = {"id": 99, "commit_sha": HEAD, "tool": {"name": "CodeQL"},
-                    "ref": "refs/pull/214/merge",
-                    "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
-                    "category": "python", "error": ""}
+        analysis = {
+            "id": 99,
+            "commit_sha": HEAD,
+            "tool": {"name": "CodeQL"},
+            "ref": "refs/pull/214/merge",
+            "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+            "category": "python",
+            "error": "",
+        }
 
         def pages(path, key):
             if key == "analyses":
@@ -164,12 +189,20 @@ class TrustedIdentityTests(unittest.TestCase):
             return original(path, key)
 
         self.client.get_paginated = pages
-        with patch.object(gate, "discover_run_artifact", return_value={"id": 99}) as discover:
-            with patch.object(gate, "download_and_validate_artifact",
-                              return_value={"valid": True, "findings": []}) as download:
+        with patch.object(
+            gate, "discover_run_artifact", return_value={"id": 99}
+        ) as discover:
+            with patch.object(
+                gate,
+                "download_and_validate_artifact",
+                return_value={"valid": True, "findings": []},
+            ) as download:
                 result = gate.collect_required_evidence(
-                    self.client, head_sha=MERGE, base_sha=BASE,
-                    repository=REPO, temp_root=Path("unused")
+                    self.client,
+                    head_sha=MERGE,
+                    base_sha=BASE,
+                    repository=REPO,
+                    temp_root=Path("unused"),
                 )
         self.assertEqual(discover.call_args.kwargs["expected_head_sha"], MERGE)
         self.assertEqual(download.call_args.kwargs["head_sha"], MERGE)
@@ -178,9 +211,12 @@ class TrustedIdentityTests(unittest.TestCase):
     def test_failed_latest_scanner_cannot_reuse_success(self):
         self.run["created_at"] = "2026-11-12T12:00:00Z"
         failed = copy.deepcopy(self.run)
-        failed.update(id=self.run["id"] + 1, conclusion="failure",
-                      created_at="2026-11-12T13:00:00Z",
-                      updated_at="2026-11-12T13:00:00Z")
+        failed.update(
+            id=self.run["id"] + 1,
+            conclusion="failure",
+            created_at="2026-11-12T13:00:00Z",
+            updated_at="2026-11-12T13:00:00Z",
+        )
 
         def pages(path, key):
             if key == "workflows":
@@ -192,8 +228,11 @@ class TrustedIdentityTests(unittest.TestCase):
         self.client.get_paginated = pages
         with patch.object(gate, "discover_run_artifact") as discover:
             result = gate.collect_required_evidence(
-                self.client, head_sha=HEAD, base_sha=BASE,
-                repository=REPO, temp_root=Path("unused")
+                self.client,
+                head_sha=HEAD,
+                base_sha=BASE,
+                repository=REPO,
+                temp_root=Path("unused"),
             )
         discover.assert_not_called()
         self.assertEqual(result["statuses"][-1]["status"], "incomplete")
@@ -202,16 +241,29 @@ class TrustedIdentityTests(unittest.TestCase):
     def test_validate_run_distinguishes_scanned_and_head(self):
         self.run["head_sha"] = MERGE
         result = gate.validate_workflow_run(
-            self.run, self.pr, repository=REPO, workflow_id=12,
-            run_id=43246159695, run_attempt=1, pr_number=214,
-            head_sha=HEAD, base_sha=BASE, scanned_sha=MERGE,
+            self.run,
+            self.pr,
+            repository=REPO,
+            workflow_id=12,
+            run_id=43246159695,
+            run_attempt=1,
+            pr_number=214,
+            head_sha=HEAD,
+            base_sha=BASE,
+            scanned_sha=MERGE,
             scanned_commit=self.client.commit,
         )
         self.assertTrue(result["valid"], result)
         result = gate.validate_workflow_run(
-            self.run, self.pr, repository=REPO, workflow_id=12,
-            run_id=43246159695, run_attempt=1, pr_number=214,
-            head_sha=HEAD, base_sha=BASE,
+            self.run,
+            self.pr,
+            repository=REPO,
+            workflow_id=12,
+            run_id=43246159695,
+            run_attempt=1,
+            pr_number=214,
+            head_sha=HEAD,
+            base_sha=BASE,
         )
         self.assertFalse(result["valid"])
 
