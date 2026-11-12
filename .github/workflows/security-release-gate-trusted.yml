@@ -24,6 +24,7 @@ permissions:
   security-events: read
   actions: read
   pull-requests: read
+  checks: write
 
 concurrency:
   group: security-release-gate-trusted-${{ github.event.workflow_run.head_sha || inputs.head_sha }}
@@ -128,6 +129,7 @@ jobs:
           echo "collector_exit_code=$evidence_status" >> "$GITHUB_OUTPUT"
 
       - name: Evaluate trusted verdict
+        id: verdict
         shell: bash
         run: |
           set +e
@@ -167,3 +169,34 @@ jobs:
           path: |
             security-release-gate-report.json
             security-release-gate-summary.txt
+
+      - name: Publish PR-head security check
+        if: always() && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          REPORT_STATUS: ${{ steps.verdict.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          conclusion="failure"
+          if [[ "$REPORT_STATUS" == "success" ]] && [[ -s security-release-gate-report.json ]]; then
+            conclusion="$(python -c "import json; print({'PASS':'success','FAIL':'failure','REVIEW REQUIRED':'failure','INCOMPLETE':'failure'}.get(json.load(open('security-release-gate-report.json', encoding='utf-8')).get('status'), 'failure'))")"
+          fi
+          existing_id="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs?check_name=Trusted%20security%20verdict" \
+            --jq '[.check_runs[] | select(.name == "Trusted security verdict" and .app.slug == "github-actions")][0].id // empty')"
+          check_path="repos/${GITHUB_REPOSITORY}/check-runs"
+          check_method='POST'
+          if [[ -n "$existing_id" ]]; then
+            check_path="${check_path}/${existing_id}"
+            check_method='PATCH'
+          fi
+          gh api "$check_path" \
+            --method "$check_method" \
+            -f name='Trusted security verdict' \
+            -f head_sha="$HEAD_SHA" \
+            -f status='completed' \
+            -f conclusion="$conclusion" \
+            -f details_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            -f 'output[title]=Trusted security verdict' \
+            -f "output[summary]=Published by the trusted evaluator for PR head ${HEAD_SHA}."

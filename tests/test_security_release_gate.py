@@ -10,6 +10,9 @@ import pytest
 from scripts.security_release_gate_collect import (
     collect_required_evidence,
     collect_alerts,
+    collect_pip_audit,
+    deduplicate_findings,
+    extract_sarif_findings,
     validate_sarif,
     validate_artifact_metadata,
     validate_workflow_run,
@@ -84,6 +87,85 @@ def run_gate(tmp_path, baseline, alerts, *extra):
         check=False,
     )
     return json.loads(output_path.read_text(encoding="utf-8"))
+
+
+def run_disposition_gate(tmp_path, findings, *, disposition_path=None, status=None):
+    status_path = tmp_path / "scan-status.json"
+    status_path.write_text(
+        json.dumps(
+            status
+            or [
+                {
+                    "name": "bandit-sarif",
+                    "evidence_class": "workflow_artifact",
+                    "status": "success",
+                    "report_present": True,
+                    "report_valid": True,
+                    "run_id": 42,
+                    "run_attempt": 1,
+                    "head_sha": "head123",
+                    "event": "pull_request",
+                    "findings_count": len(findings),
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    findings_path = tmp_path / "scanner-findings.json"
+    findings_path.write_text(json.dumps(findings), encoding="utf-8")
+    args = (
+        "--api-ok",
+        "--scan-status",
+        str(status_path),
+        "--scanner-findings",
+        str(findings_path),
+    )
+    if disposition_path is not None:
+        args += ("--dispositions", str(disposition_path))
+    return run_gate(tmp_path, BASELINE, [], *args)
+
+
+def reviewed_findings():
+    return [
+        {
+            "scanner": "Bandit",
+            "rule": "B104",
+            "severity": "unclassified",
+            "path": "backend/helpchain_backend/src/extensions.py",
+            "line": 23,
+            "identity": "bandit-b104-extensions-23",
+            "head_sha": "head123",
+        },
+        {
+            "scanner": "Bandit",
+            "rule": "B104",
+            "severity": "unclassified",
+            "path": "backend/helpchain_backend/src/routes/admin.py",
+            "line": 2148,
+            "identity": "bandit-b104-admin-2148",
+            "head_sha": "head123",
+        },
+        {
+            "scanner": "Gitleaks",
+            "rule": "secret-key-assignment",
+            "severity": "unclassified",
+            "path": "tests/test_sensitive_logging_remediation.py",
+            "line": 140,
+            "identity": "secret-key-assignment:140",
+            "historical_commit": "07fa68d170c91db30392b5322e756dbf09ef6529",
+            "head_sha": "head123",
+        },
+    ]
+
+
+def disposition_copy(tmp_path, mutate=None):
+    source = Path("docs/security/PR-203-FINDINGS-DISPOSITIONS-2026-11-11.json")
+    document = json.loads(source.read_text(encoding="utf-8"))
+    if mutate:
+        mutate(document)
+    path = tmp_path / "dispositions.json"
+    path.write_text(json.dumps(document), encoding="utf-8")
+    return path
 
 
 class FakeGitHubClient:
@@ -183,7 +265,20 @@ def test_collector_downloads_validated_artifact_and_reaches_evidence_output(tmp_
         "runs": [
             {
                 "tool": {"driver": {"name": "Trivy"}},
-                "results": [{"ruleId": "TRIVY-001", "level": "error", "locations": []}],
+                "results": [
+                    {
+                        "ruleId": "TRIVY-001",
+                        "level": "error",
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {"uri": "iac/main.tf"},
+                                    "region": {"startLine": 7},
+                                }
+                            }
+                        ],
+                    }
+                ],
             }
         ],
     }
@@ -242,6 +337,7 @@ def test_collector_downloads_validated_artifact_and_reaches_evidence_output(tmp_
     assert trivy["report_valid"] is True
     assert trivy["run_id"] == 42
     assert evidence["findings"][0]["rule"] == "TRIVY-001"
+    assert evidence["findings"][0]["line"] == 7
     assert evidence["findings"][0]["head_sha"] == head_sha
 
 
@@ -252,6 +348,7 @@ def test_gitleaks_sanitizer_excludes_secret_payload(tmp_path):
                 "RuleID": "generic-api-key",
                 "File": "config.py",
                 "StartLine": 4,
+                "Commit": "a" * 40,
                 "Secret": "DO-NOT-EXPORT",
             }
         ],
@@ -259,7 +356,8 @@ def test_gitleaks_sanitizer_excludes_secret_payload(tmp_path):
     )
     encoded = json.dumps(sanitized)
     assert "DO-NOT-EXPORT" not in encoded
-    assert "config.py" not in encoded
+    assert sanitized["findings"][0]["path"] == "config.py"
+    assert sanitized["findings"][0]["historical_commit"] == "a" * 40
     assert sanitized["findings"][0]["rule"] == "generic-api-key"
 
 
@@ -719,6 +817,122 @@ def test_code_scanning_alerts_malformed_response_is_rejected(monkeypatch, payloa
         client.get_paginated("code-scanning/alerts?state=open", "alerts")
 
 
+def test_sarif_fingerprints_disambiguate_same_location_without_exposing_metadata():
+    report = {
+        "runs": [
+            {
+                "tool": {"driver": {"name": "Gitleaks"}},
+                "results": [
+                    {
+                        "ruleId": "secret-key-assignment",
+                        "level": "warning",
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {
+                                        "uri": "tests/test_sensitive_logging_remediation.py"
+                                    },
+                                    "region": {"startLine": 140},
+                                }
+                            }
+                        ],
+                        "fingerprints": {
+                            "commitSha": "a" * 40,
+                            "commitMessage": "opaque historical metadata",
+                        },
+                    },
+                    {
+                        "ruleId": "secret-key-assignment",
+                        "level": "warning",
+                        "locations": [
+                            {
+                                "physicalLocation": {
+                                    "artifactLocation": {
+                                        "uri": "tests/test_sensitive_logging_remediation.py"
+                                    },
+                                    "region": {"startLine": 140},
+                                }
+                            }
+                        ],
+                        "fingerprints": {
+                            "commitSha": "b" * 40,
+                            "commitMessage": "different opaque metadata",
+                        },
+                    },
+                ],
+            }
+        ]
+    }
+    findings = extract_sarif_findings(report, scanner="Gitleaks", head_sha="c" * 40)
+    assert findings[0]["historical_commit"] == "a" * 40
+    assert findings[1]["historical_commit"] == "b" * 40
+    assert findings[0]["identity"] == "secret-key-assignment:140"
+    assert findings[0]["evidence_fingerprint"].startswith("sha256:")
+    assert "opaque historical metadata" not in json.dumps(findings)
+    assert len(deduplicate_findings(findings)) == 2
+    assert len(deduplicate_findings(findings + [findings[0]])) == 2
+
+
+def test_local_pip_audit_findings_are_emitted_without_workflow_provenance(tmp_path):
+    report_path = tmp_path / "pip-audit.json"
+    status_path = tmp_path / "status.json"
+    findings_path = tmp_path / "findings.json"
+    report_path.write_text(
+        json.dumps(
+            {
+                "dependencies": [
+                    {
+                        "name": "Werkzeug",
+                        "vulns": [{"id": "CVE-1", "severity": "high"}],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    collect_pip_audit(report_path, status_path, 1, findings_path)
+    status = json.loads(status_path.read_text(encoding="utf-8"))
+    findings = json.loads(findings_path.read_text(encoding="utf-8"))
+    assert status[0]["evidence_class"] == "local_dependency_check"
+    assert status[0]["findings_count"] == 1
+    assert findings[0]["package"] == "Werkzeug"
+    assert findings[0]["head_sha"] is None
+
+
+def test_local_dependency_findings_reconcile_without_count_mismatch(tmp_path):
+    findings = [
+        {
+            "scanner": "pip-audit",
+            "rule": "CVE-1",
+            "severity": "unclassified",
+            "package": "Werkzeug",
+        }
+    ]
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        status=[
+            {
+                "name": "pip-audit api/requirements.txt",
+                "evidence_class": "local_dependency_check",
+                "status": "success",
+                "report_present": True,
+                "report_valid": True,
+                "findings_count": 1,
+                "run_id": None,
+                "run_attempt": None,
+                "head_sha": None,
+                "event": None,
+            }
+        ],
+    )
+    assert report["scanner_complete"] is True
+    assert (
+        "scanner finding count does not match evidence counts"
+        not in report["disposition_errors"]
+    )
+
+
 def test_dependency_findings_require_review(tmp_path):
     (tmp_path / "scan-status.json").write_text(
         json.dumps(
@@ -737,6 +951,192 @@ def test_dependency_findings_require_review(tmp_path):
     )
     report = run_gate(tmp_path, BASELINE, [], "--api-ok")
     assert report["status"] == "REVIEW REQUIRED"
+
+
+def test_exact_owner_dispositions_recognize_findings_without_removing_evidence(
+    tmp_path,
+):
+    findings = reviewed_findings()
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] == "PASS"
+    assert report["recognized_disposition_count"] == 3
+    assert report["unresolved_dispositions"] == []
+    assert len(report["scanner_findings"]) == 3
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda finding: finding.update({"path": "backend/other.py"}),
+        lambda finding: finding.update({"rule": "B999"}),
+        lambda finding: finding.update({"line": 24}),
+        lambda finding: finding.update({"severity": "high"}),
+    ],
+)
+def test_new_or_changed_finding_is_not_authorized(tmp_path, mutation):
+    findings = reviewed_findings()
+    mutation(findings[0])
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] in {"REVIEW REQUIRED", "FAIL"}
+    assert report["recognized_disposition_count"] < 3
+
+
+def test_missing_owner_disposition_fails_closed(tmp_path):
+    report = run_disposition_gate(
+        tmp_path,
+        reviewed_findings(),
+        disposition_path=tmp_path / "missing.json",
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 0
+
+
+def test_unknown_scanner_rule_is_not_accepted(tmp_path):
+    findings = reviewed_findings()
+    findings[0]["rule"] = "B999"
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert any(
+        item["reason"] == "no exact disposition"
+        for item in report["unresolved_dispositions"]
+    )
+
+
+def test_historical_gitleaks_disposition_cannot_authorize_other_credential(tmp_path):
+    findings = reviewed_findings()
+    findings[2]["rule"] = "generic-api-key"
+    findings[2]["path"] = "config/settings.py"
+    findings[2]["line"] = 11
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_historical_gitleaks_commit_mismatch_fails_closed(tmp_path):
+    path = disposition_copy(
+        tmp_path,
+        lambda document: document["dispositions"][2].update(
+            {"historical_commit": "0" * 40}
+        ),
+    )
+    report = run_disposition_gate(
+        tmp_path,
+        reviewed_findings(),
+        disposition_path=path,
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_same_location_with_changed_context_digest_is_not_authorized(tmp_path):
+    path = disposition_copy(
+        tmp_path,
+        lambda document: document["dispositions"][0].update(
+            {"context_digest": "sha256:" + "0" * 64}
+        ),
+    )
+    report = run_disposition_gate(
+        tmp_path,
+        reviewed_findings(),
+        disposition_path=path,
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_same_location_with_changed_gitleaks_commit_is_not_authorized(tmp_path):
+    findings = reviewed_findings()
+    findings[2]["historical_commit"] = "a" * 40
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_same_location_with_changed_gitleaks_fingerprint_is_not_authorized(tmp_path):
+    findings = reviewed_findings()
+    findings[2]["evidence_fingerprint"] = "sha256:" + "f" * 64
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_invalid_or_expired_disposition_fails_closed(tmp_path):
+    path = disposition_copy(
+        tmp_path,
+        lambda document: document["dispositions"][0].update(
+            {"expires_on": "2020-01-01"}
+        ),
+    )
+    report = run_disposition_gate(
+        tmp_path,
+        reviewed_findings(),
+        disposition_path=path,
+    )
+    assert report["status"] == "REVIEW REQUIRED"
+    assert report["recognized_disposition_count"] == 2
+
+
+def test_scanner_completeness_remains_mandatory_with_valid_dispositions(tmp_path):
+    findings = reviewed_findings()
+    report = run_disposition_gate(
+        tmp_path,
+        findings,
+        disposition_path=disposition_copy(tmp_path),
+        status=[
+            {
+                "name": "bandit-sarif",
+                "evidence_class": "workflow_artifact",
+                "status": "missing",
+                "report_present": False,
+                "report_valid": False,
+                "findings_count": 3,
+            }
+        ],
+    )
+    assert report["status"] == "INCOMPLETE"
+    assert report["scanner_complete"] is False
+
+
+def test_baseline_validation_remains_mandatory_with_valid_dispositions(tmp_path):
+    report = run_disposition_gate(
+        tmp_path,
+        reviewed_findings(),
+        disposition_path=disposition_copy(tmp_path),
+    )
+    assert report["baseline_valid"] is True
+    invalid_dir = tmp_path / "invalid-baseline"
+    invalid_dir.mkdir()
+    invalid = run_gate(
+        invalid_dir,
+        {"source": "other"},
+        [],
+        "--api-ok",
+    )
+    assert invalid["status"] == "INCOMPLETE"
 
 
 def test_local_dependency_check_without_workflow_provenance_can_complete(tmp_path):
@@ -958,6 +1358,21 @@ def test_sarif_identity_and_schema_are_validated():
     assert validate_sarif(valid, scanner="Trivy", head_sha="head123")["valid"]
     invalid = {"version": "2.1.0", "runs": []}
     assert not validate_sarif(invalid, scanner="Trivy", head_sha="head123")["valid"]
+
+
+def test_malformed_sarif_fingerprints_are_rejected():
+    malformed = {
+        "version": "2.1.0",
+        "runs": [
+            {
+                "tool": {"driver": {"name": "Gitleaks"}},
+                "results": [{"fingerprints": ["not-an-object"]}],
+            }
+        ],
+    }
+    result = validate_sarif(malformed, scanner="Gitleaks", head_sha="head123")
+    assert result["valid"] is False
+    assert "invalid SARIF fingerprints" in result["errors"]
 
 
 def test_artifact_metadata_must_match_source_run():

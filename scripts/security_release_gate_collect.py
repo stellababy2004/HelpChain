@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import posixpath
+import re
 import shutil
 import tempfile
 import urllib.error
@@ -44,6 +46,9 @@ EXPECTED_WORKFLOWS = (
 
 class GitHubApiError(RuntimeError):
     pass
+
+
+SHA1_PATTERN = re.compile(r"^[0-9a-fA-F]{40}$")
 
 
 class SafeArtifactRedirectHandler(urllib.request.HTTPRedirectHandler):
@@ -227,9 +232,12 @@ def download_and_validate_artifact(
     report = read(report_path)
     if report_members[0].endswith(".sarif"):
         result = validate_sarif(report, scanner=scanner, head_sha=head_sha)
-        result["findings"] = extract_sarif_findings(
+        raw_findings = extract_sarif_findings(
             report, scanner=scanner, head_sha=head_sha
         )
+        result["raw_findings_count"] = len(raw_findings)
+        result["findings"] = deduplicate_findings(raw_findings)
+        result["findings_count"] = len(result["findings"])
     elif scanner == "Gitleaks":
         if (
             not isinstance(report, dict)
@@ -249,18 +257,16 @@ def download_and_validate_artifact(
     ):
         raise GitHubApiError("JSON report does not match pip-audit schema")
     else:
+        findings = deduplicate_findings(
+            extract_pip_audit_findings(report, scanner=scanner, head_sha=head_sha)
+        )
         result = {
             "valid": True,
-            "findings_count": sum(
-                len(item.get("vulns", []))
-                for item in report.get("dependencies", [])
-                if isinstance(item, dict)
-            ),
+            "findings_count": len(findings),
             "head_sha": head_sha,
-            "findings": extract_pip_audit_findings(
-                report, scanner=scanner, head_sha=head_sha
-            ),
+            "findings": findings,
         }
+        result["raw_findings_count"] = len(result["findings"])
     result["artifact_id"] = artifact["id"]
     result["artifact_name"] = artifact["name"]
     return result
@@ -372,6 +378,9 @@ def collect_required_evidence(
                         "head_sha": head_sha,
                         "event": "pull_request",
                         "findings_count": result.get("findings_count", 0),
+                        "raw_findings_count": result.get(
+                            "raw_findings_count", result.get("findings_count", 0)
+                        ),
                         "artifact_id": artifact["id"],
                     }
                 )
@@ -561,15 +570,32 @@ def sanitize_gitleaks_report(report: Any, *, head_sha: str) -> dict[str, Any]:
             raise ValueError("invalid Gitleaks finding")
         rule = item.get("RuleID") or item.get("ruleID")
         line = item.get("StartLine") or item.get("startLine")
-        if not rule:
+        path = item.get("File") or item.get("file")
+        historical_commit = item.get("Commit") or item.get("commit")
+        if (
+            not rule
+            or not isinstance(path, str)
+            or not path
+            or not isinstance(historical_commit, str)
+            or not SHA1_PATTERN.fullmatch(historical_commit)
+        ):
             raise ValueError("Gitleaks finding lacks safe identifying metadata")
+        normalized_path = posixpath.normpath(path.replace("\\", "/"))
+        if (
+            normalized_path in {".", ".."}
+            or normalized_path.startswith("../")
+            or normalized_path.startswith("/")
+        ):
+            raise ValueError("Gitleaks finding has an unsafe path")
         findings.append(
             {
                 "scanner": "Gitleaks",
                 "rule": str(rule),
                 "severity": "high",
+                "path": normalized_path,
                 "line": int(line) if isinstance(line, int) else None,
                 "identity": f"{rule}:{line}",
+                "historical_commit": historical_commit.lower(),
                 "head_sha": head_sha,
             }
         )
@@ -589,19 +615,86 @@ def extract_sarif_findings(
         tool = run.get("tool", {}).get("driver", {})
         for result in run.get("results", []):
             location = (result.get("locations") or [{}])[0].get("physicalLocation", {})
+            raw_fingerprints = result.get("fingerprints") or result.get(
+                "partialFingerprints"
+            )
+            evidence_fingerprint = None
+            fingerprint_commit = None
+            if isinstance(raw_fingerprints, dict) and raw_fingerprints:
+                encoded = json.dumps(
+                    raw_fingerprints, ensure_ascii=False, sort_keys=True
+                ).encode("utf-8")
+                evidence_fingerprint = "sha256:" + hashlib.sha256(encoded).hexdigest()
+                for key, value in raw_fingerprints.items():
+                    if str(key).lower() in {"commitsha", "commit_sha", "commit"}:
+                        if isinstance(value, str) and SHA1_PATTERN.fullmatch(value):
+                            fingerprint_commit = value.lower()
+                            break
+            properties = result.get("properties")
+            property_commit = (
+                properties.get("commit_sha") or properties.get("commit")
+                if isinstance(properties, dict)
+                else None
+            )
+            historical_commit = (
+                property_commit
+                if isinstance(property_commit, str)
+                and SHA1_PATTERN.fullmatch(property_commit)
+                else fingerprint_commit
+            )
+            rule = result.get("ruleId")
+            line = location.get("region", {}).get("startLine")
             findings.append(
                 {
                     "scanner": scanner,
-                    "rule": result.get("ruleId"),
+                    "rule": rule,
                     "severity": str(result.get("level", "unclassified")).lower(),
                     "path": location.get("artifactLocation", {}).get("uri"),
-                    "identity": result.get("fingerprints")
-                    or result.get("partialFingerprints"),
+                    "line": line,
+                    "identity": (
+                        f"{rule}:{line}"
+                        if scanner.lower() == "gitleaks"
+                        else evidence_fingerprint
+                    ),
+                    "evidence_fingerprint": evidence_fingerprint,
+                    "historical_commit": historical_commit,
                     "tool": tool.get("name"),
                     "head_sha": head_sha,
                 }
             )
     return findings
+
+
+def evidence_finding_key(finding: dict[str, Any]) -> str | None:
+    scanner = finding.get("scanner")
+    rule = finding.get("rule")
+    path = finding.get("path")
+    line = finding.get("line")
+    package = finding.get("package")
+    if not isinstance(scanner, str) or not isinstance(rule, str):
+        return None
+    if isinstance(path, str) and isinstance(line, int) and not isinstance(line, bool):
+        base = f"{scanner.lower()}|{rule.lower()}|{path}|{line}"
+    elif isinstance(package, str) and package:
+        base = f"{scanner.lower()}|{rule.lower()}|package:{package.lower()}"
+    else:
+        return None
+    fingerprint = finding.get("evidence_fingerprint")
+    if isinstance(fingerprint, str) and fingerprint:
+        return f"{base}|{fingerprint}"
+    return base
+
+
+def deduplicate_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    unique = []
+    seen = set()
+    for finding in findings:
+        key = evidence_finding_key(finding)
+        if key is None or key not in seen:
+            unique.append(finding)
+            if key is not None:
+                seen.add(key)
+    return unique
 
 
 def extract_pip_audit_findings(
@@ -705,6 +798,20 @@ def validate_sarif(
                 errors.append("invalid SARIF results")
             else:
                 finding_count += len(results)
+                for result in results:
+                    if not isinstance(result, dict):
+                        errors.append("invalid SARIF result")
+                        continue
+                    for fingerprint_key in ("fingerprints", "partialFingerprints"):
+                        fingerprints = result.get(fingerprint_key)
+                        if fingerprints is not None and (
+                            not isinstance(fingerprints, dict)
+                            or not all(
+                                isinstance(key, str) and isinstance(value, str)
+                                for key, value in fingerprints.items()
+                            )
+                        ):
+                            errors.append(f"invalid SARIF {fingerprint_key}")
     return {
         "valid": not errors,
         "errors": errors,
@@ -837,25 +944,29 @@ def collect_runs(pages_path: Path, output_path: Path, expected_head_sha: str) ->
     write(output_path, statuses)
 
 
-def collect_pip_audit(report_path: Path, output_path: Path, status_code: int) -> None:
+def collect_pip_audit(
+    report_path: Path,
+    output_path: Path,
+    status_code: int,
+    findings_output: Path | None = None,
+) -> None:
     try:
         report = read(report_path)
         if not isinstance(report, dict) or not isinstance(
             report.get("dependencies"), list
         ):
             raise ValueError("invalid pip-audit JSON")
-        findings_count = sum(
-            len(item.get("vulns", item.get("vulnerabilities", [])))
-            for item in report["dependencies"]
-            if isinstance(item, dict)
+        findings = extract_pip_audit_findings(
+            report, scanner="pip-audit", head_sha=None
         )
+        findings = deduplicate_findings(findings)
         value = {
             "name": "pip-audit api/requirements.txt",
             "evidence_class": "local_dependency_check",
             "status": "success" if status_code in (0, 1) else "failed",
             "report_present": True,
             "report_valid": True,
-            "findings_count": findings_count,
+            "findings_count": len(findings),
         }
     except (OSError, ValueError, json.JSONDecodeError):
         value = {
@@ -866,7 +977,10 @@ def collect_pip_audit(report_path: Path, output_path: Path, status_code: int) ->
             "report_valid": False,
             "findings_count": 0,
         }
+        findings = []
     write(output_path, [value])
+    if findings_output:
+        write(findings_output, findings)
 
 
 def main() -> int:
@@ -916,7 +1030,9 @@ def main() -> int:
     elif args.mode == "runs":
         collect_runs(args.pages, args.output, args.expected_head_sha)
     elif args.mode == "pip-audit":
-        collect_pip_audit(args.pages, args.output, args.status_code)
+        collect_pip_audit(
+            args.pages, args.output, args.status_code, args.findings_output
+        )
     elif args.mode == "validate-run":
         result = validate_workflow_run(
             read(args.run_json),

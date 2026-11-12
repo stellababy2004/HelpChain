@@ -52,7 +52,11 @@ jobs:
             audit_status=$install_status
           fi
           set -e
-          python scripts/security_release_gate_collect.py pip-audit --pages api-pip-audit.json --output .api-dependency-status.json --status-code "$audit_status"
+          python scripts/security_release_gate_collect.py pip-audit \
+            --pages api-pip-audit.json \
+            --output .api-dependency-status.json \
+            --findings-output .api-dependency-findings.json \
+            --status-code "$audit_status"
 
       - name: Archive API pip-audit report
         if: always() && hashFiles('api-pip-audit.json') != ''
@@ -137,6 +141,9 @@ jobs:
             python -c "import json; json.dump([{'name':'scanner-evidence-collection','status':'missing','report_present':False,'report_valid':False,'run_id':None,'head_sha':None,'event':None,'reason':'collector failed'}], open('.required-scanner-status.json','w',encoding='utf-8'))"
           fi
           if [[ ! -s .scanner-findings.json ]]; then echo '[]' > .scanner-findings.json; fi
+          if [[ -s .api-dependency-findings.json ]]; then
+            python -c "import json; p='.scanner-findings.json'; a=json.load(open(p,encoding='utf-8')); b=json.load(open('.api-dependency-findings.json',encoding='utf-8')); json.dump(a+b, open(p,'w',encoding='utf-8'))"
+          fi
           python scripts/security_release_gate_collect.py merge --api-status .security-scan-status.json --scanner-status .required-scanner-status.json --output .security-scan-status.json
           python scripts/security_release_gate_collect.py merge --api-status .security-scan-status.json --scanner-status .api-dependency-status.json --output .security-scan-status.json
 
