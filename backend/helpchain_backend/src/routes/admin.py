@@ -3571,6 +3571,24 @@ def inject_admin_category_helpers():
     }
 
 
+@admin_bp.app_context_processor
+def inject_organization_logo_status():
+    """Expose tenant-scoped logo availability for the admin workspace header."""
+    def has_organization_logo():
+        actor = resolve_current_admin_actor()
+        if (
+            not actor.is_authenticated
+            or actor.role != "admin"
+            or actor.structure_id is None
+        ):
+            return False
+        from backend.models import OrganizationLogo
+
+        return db.session.get(OrganizationLogo, actor.structure_id) is not None
+
+    return {"has_organization_logo": has_organization_logo}
+
+
 @admin_bp.before_request
 def require_admin_session():
     """
