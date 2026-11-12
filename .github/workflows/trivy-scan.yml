@@ -29,6 +29,14 @@ jobs:
           format: "sarif"
           output: "trivy-iac-results.sarif"
 
+      - name: Archive Trivy IaC SARIF for trusted gate
+        if: always() && hashFiles('trivy-iac-results.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trivy-iac-sarif
+          path: trivy-iac-results.sarif
+          retention-days: 7
+
       - name: Upload Trivy IaC SARIF
         uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
         if: always()
@@ -50,6 +58,14 @@ jobs:
           format: "sarif"
           output: "trivy-repo-results.sarif"
           skip-dirs: "node_modules,.git,.venv,venv,__pycache__,.pytest_cache"
+
+      - name: Archive Trivy Repository SARIF for trusted gate
+        if: always() && hashFiles('trivy-repo-results.sarif') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trivy-repo-sarif
+          path: trivy-repo-results.sarif
+          retention-days: 7
 
       - name: Upload Trivy Repo SARIF
         uses: github/codeql-action/upload-sarif@be1102e4461872bb6506cd26561a31b56671ace0
