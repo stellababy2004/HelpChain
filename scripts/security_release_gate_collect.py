@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timedelta
 import hashlib
 import json
 import os
@@ -42,6 +43,28 @@ EXPECTED_WORKFLOWS = (
     "Security Scans (Bandit & pip-audit)",
     "Secret Scan",
 )
+
+
+# Expected jobs are part of the trusted scanner contract, including matrix names.
+SCANNER_WORKFLOWS = {
+    "CodeQL Advanced Security": ("codeql-analysis.yml", {"Analyze (python)": ()}),
+    "Trivy Security Scan": (
+        "trivy-scan.yml",
+        {
+            "Trivy IaC Scan": ("trivy-iac-sarif",),
+            "Trivy Repository Scan": ("trivy-repo-sarif",),
+        },
+    ),
+    "Security Scans (Bandit & pip-audit)": (
+        "security-scans.yml",
+        {
+            "Bandit (SAST)": ("bandit-sarif",),
+            "pip-audit (Dependencies)": ("pip-audit-runtime-baseline",),
+        },
+    ),
+    "Secret Scan": ("secret-scan.yml", {"scan": ("gitleaks-results.sarif",)}),
+}
+CHECKOUT_ACTION = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
 
 
 class GitHubApiError(RuntimeError):
@@ -97,6 +120,7 @@ class GitHubClient:
     def __init__(self, token: str, repository: str):
         self.token = token
         self.repository = repository
+        self._job_logs: dict[str, str] = {}
 
     def get(self, path: str):
         request = urllib.request.Request(
@@ -118,6 +142,28 @@ class GitHubClient:
             raise GitHubApiError(
                 f"GitHub API request failed: {type(exc).__name__}"
             ) from exc
+
+    def get_text(self, path: str) -> str:
+        """Read completed job logs without forwarding credentials across redirects."""
+        if path not in self._job_logs:
+            request = urllib.request.Request(
+                f"https://api.github.com/repos/{self.repository}/{path}",
+                headers={
+                    "Authorization": f"Bearer {self.token}",
+                    "Accept": "application/vnd.github+json",
+                },
+            )
+            try:
+                with urllib.request.build_opener(SafeArtifactRedirectHandler()).open(
+                    request, timeout=60
+                ) as response:
+                    payload = response.read(20_000_001)
+                if len(payload) > 20_000_000:
+                    raise GitHubApiError("job log exceeds size limit")
+                self._job_logs[path] = payload.decode("utf-8-sig")
+            except (urllib.error.URLError, UnicodeError) as exc:
+                raise GitHubApiError("job log is unavailable or invalid") from exc
+        return self._job_logs[path]
 
     def get_paginated(self, path: str, key: str) -> list[dict[str, Any]]:
         items = []
@@ -170,6 +216,181 @@ class GitHubClient:
             ) from exc
 
 
+def api_time(value: str) -> datetime:
+    try:
+        result = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if result.tzinfo is None:
+            raise ValueError("missing timezone")
+        return result
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise GitHubApiError("missing or invalid provenance timestamp") from exc
+
+
+def during_job(timestamp: str, job: dict[str, Any]) -> bool:
+    # API step/job timestamps have second precision, whereas logs include fractions.
+    return (
+        api_time(job.get("started_at"))
+        <= api_time(timestamp)
+        < api_time(job.get("completed_at")) + timedelta(seconds=1)
+    )
+
+
+def checkout_provenance(
+    log: str,
+    job: dict[str, Any],
+    *,
+    repository: str,
+    pr_number: int,
+    artifact_names: tuple[str, ...],
+) -> dict[str, Any]:
+    lines = []
+    for line in log.splitlines():
+        timestamp, separator, message = line.partition(" ")
+        if not separator or not re.fullmatch(r"[0-9]{4}-[0-9T:.+-]+Z", timestamp):
+            # Scanner output can span unprefixed lines. Such lines cannot prove provenance.
+            timestamp, message = None, line
+        lines.append((timestamp, message))
+    starts = [
+        i
+        for i, (_, message) in enumerate(lines)
+        if message == f"##[group]Run {CHECKOUT_ACTION}"
+    ]
+    steps = [
+        step
+        for step in job.get("steps", [])
+        if step.get("name") in {"Checkout", "Checkout repository"}
+    ]
+    if (
+        len(starts) != 1
+        or len(steps) != 1
+        or steps[0].get("number") != 2
+        or steps[0].get("status") != "completed"
+        or steps[0].get("conclusion") != "success"
+    ):
+        raise GitHubApiError("missing or ambiguous pinned checkout step")
+    start = starts[0]
+    end = next(
+        (
+            i
+            for i in range(start + 1, len(lines))
+            if lines[i][1].startswith("##[group]Run ")
+        ),
+        len(lines),
+    )
+    section = lines[start:end]
+    if not all(during_job(timestamp, steps[0]) for timestamp, _ in section):
+        raise GitHubApiError("checkout log is outside the verified step")
+    if (
+        sum(message.strip() == f"repository: {repository}" for _, message in section)
+        != 1
+    ):
+        raise GitHubApiError("checkout repository mismatch")
+    refs = [
+        message.removeprefix("[command]/usr/bin/git checkout --progress --force ")
+        for _, message in section
+        if message.startswith("[command]/usr/bin/git checkout --progress --force ")
+    ]
+    commits = [
+        section[i + 1][1]
+        for i, (_, message) in enumerate(section[:-1])
+        if message == "[command]/usr/bin/git log -1 --format=%H"
+    ]
+    if len(refs) != 1 or len(commits) != 1 or not SHA1_PATTERN.fullmatch(commits[0]):
+        raise GitHubApiError("missing or ambiguous checkout commit/ref")
+    ref = refs[0].replace("refs/remotes/pull/", "refs/pull/")
+    if ref not in {
+        f"refs/pull/{pr_number}/merge",
+        f"refs/pull/{pr_number}/head",
+        commits[0],
+    }:
+        raise GitHubApiError("checkout PR ref mismatch")
+    artifacts = {}
+    for name in artifact_names:
+        pattern = re.compile(
+            rf"Artifact {re.escape(name)}\.zip successfully finalized\. Artifact ID ([0-9]+)$"
+        )
+        matches = [
+            int(match.group(1))
+            for timestamp, message in lines
+            if (match := pattern.fullmatch(message)) and during_job(timestamp, job)
+        ]
+        if len(matches) != 1:
+            raise GitHubApiError(f"missing or ambiguous artifact upload in job: {name}")
+        artifacts[name] = matches[0]
+    return {
+        "scanned_sha": commits[0],
+        "scanned_ref": ref,
+        "artifacts": artifacts,
+        "log_sha256": hashlib.sha256(log.encode("utf-8")).hexdigest(),
+    }
+
+
+def scanner_run_provenance(
+    client: GitHubClient, run: dict[str, Any], pr: dict[str, Any]
+) -> dict[str, Any]:
+    name = run.get("name")
+    if name not in SCANNER_WORKFLOWS:
+        raise GitHubApiError("unexpected scanner workflow")
+    filename, expected_jobs = SCANNER_WORKFLOWS[name]
+    path = f".github/workflows/{filename}"
+    workflow = client.get(f"actions/workflows/{run['workflow_id']}")
+    if (
+        workflow.get("id") != run["workflow_id"]
+        or workflow.get("name") != name
+        or workflow.get("path") != path
+        or run.get("path") != path
+        or run.get("head_branch") != pr.get("head", {}).get("ref")
+    ):
+        raise GitHubApiError("scanner workflow or PR branch mismatch")
+    current = client.get(f"actions/runs/{run['id']}")
+    for key in (
+        "id",
+        "workflow_id",
+        "run_attempt",
+        "head_sha",
+        "event",
+        "status",
+        "conclusion",
+    ):
+        if current.get(key) != run.get(key):
+            raise GitHubApiError(f"scanner run changed: {key}")
+    attempt = run.get("run_attempt")
+    if type(attempt) is not int or attempt < 1:
+        raise GitHubApiError("invalid scanner attempt")
+    jobs = client.get_paginated(
+        f"actions/runs/{run['id']}/attempts/{attempt}/jobs", "jobs"
+    )
+    if len(jobs) != len(expected_jobs) or {job.get("name") for job in jobs} != set(
+        expected_jobs
+    ):
+        raise GitHubApiError("missing or ambiguous scanner jobs")
+    observations = []
+    for job in jobs:
+        if (
+            job.get("run_id") != run["id"]
+            or job.get("run_attempt") != attempt
+            or job.get("head_sha") != run["head_sha"]
+            or job.get("run_url")
+            != f"https://api.github.com/repos/{client.repository}/actions/runs/{run['id']}"
+            or job.get("status") != "completed"
+            or job.get("conclusion") != "success"
+        ):
+            raise GitHubApiError("scanner job run/attempt identity mismatch")
+        proof = checkout_provenance(
+            client.get_text(f"actions/jobs/{job['id']}/logs"),
+            job,
+            repository=client.repository,
+            pr_number=pr["number"],
+            artifact_names=expected_jobs[job["name"]],
+        )
+        observations.append({**job, **proof})
+    scanned = {(job["scanned_sha"], job["scanned_ref"]) for job in observations}
+    if len(scanned) != 1:
+        raise GitHubApiError("scanner jobs checked out conflicting commits or refs")
+    sha, ref = scanned.pop()
+    return {"scanned_sha": sha, "scanned_ref": ref, "jobs": observations}
+
+
 def discover_run_artifact(
     client: GitHubClient,
     *,
@@ -180,6 +401,7 @@ def discover_run_artifact(
     expected_head_sha: str | None = None,
     expected_event: str | None = None,
     expected_workflow_id: int | None = None,
+    provenance: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     run = client.get(f"actions/runs/{run_id}")
     if run.get("id") != run_id or run.get("run_attempt") != run_attempt:
@@ -200,6 +422,18 @@ def discover_run_artifact(
     if len(matches) != 1:
         raise GitHubApiError("expected artifact missing or ambiguous")
     artifact = matches[0]
+    if provenance is not None:
+        producers = [
+            job
+            for job in provenance["jobs"]
+            if job["artifacts"].get(artifact_name) == artifact.get("id")
+        ]
+        if (
+            len(producers) != 1
+            or not during_job(artifact.get("created_at"), producers[0])
+            or not during_job(artifact.get("updated_at"), producers[0])
+        ):
+            raise GitHubApiError("artifact does not belong to the verified job attempt")
     metadata_check = validate_artifact_metadata(
         artifact,
         repository=repository,
@@ -226,6 +460,11 @@ def download_and_validate_artifact(
 ) -> dict[str, Any]:
     zip_path = temp_root / f"{artifact['id']}.zip"
     client.download_artifact(artifact["id"], zip_path)
+    digest = artifact.get("digest", "")
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest) or hashlib.sha256(
+        zip_path.read_bytes()
+    ).hexdigest() != digest.removeprefix("sha256:"):
+        raise GitHubApiError("artifact archive digest missing or mismatched")
     members = safe_zip_members(zip_path)
     report_members = [name for name in members if name.endswith((".sarif", ".json"))]
     if len(report_members) != 1:
@@ -283,15 +522,16 @@ def collect_required_evidence(
     base_sha: str,
     repository: str,
     temp_root: Path,
+    pr_head_sha: str | None = None,
 ) -> dict[str, Any]:
     workflows = client.get_paginated("actions/workflows", "workflows")
     statuses = []
     findings = []
     for workflow_name in EXPECTED_WORKFLOWS:
-        workflow = next(
-            (item for item in workflows if item.get("name") == workflow_name), None
-        )
-        if not workflow:
+        matching_workflows = [
+            item for item in workflows if item.get("name") == workflow_name
+        ]
+        if not matching_workflows:
             statuses.append(
                 {
                     "name": workflow_name,
@@ -301,24 +541,59 @@ def collect_required_evidence(
                 }
             )
             continue
-        runs = client.get_paginated(
-            f"actions/workflows/{workflow['id']}/runs?head_sha={head_sha}&event=pull_request",
-            "workflow_runs",
-        )
-        candidates = [
-            run
-            for run in runs
-            if run.get("head_sha") == head_sha and run.get("event") == "pull_request"
-        ]
-        run = select_latest_run(candidates)
+        if len(matching_workflows) != 1:
+            raise GitHubApiError(f"ambiguous workflow: {workflow_name}")
+        workflow = matching_workflows[0]
+        runs = {}
+        for metadata_sha in dict.fromkeys([pr_head_sha or head_sha, head_sha]):
+            for run in client.get_paginated(
+                f"actions/workflows/{workflow['id']}/runs?head_sha={metadata_sha}&event=pull_request",
+                "workflow_runs",
+            ):
+                if (
+                    run.get("head_sha") == metadata_sha
+                    and run.get("event") == "pull_request"
+                ):
+                    runs[run["id"]] = run
+        if not runs and pr_head_sha is None:
+            associated = client.get_paginated(f"commits/{head_sha}/pulls", "pulls")
+            prs = [client.get(f"pulls/{item['number']}") for item in associated]
+            matches = [
+                pr
+                for pr in prs
+                if head_sha
+                in {pr.get("head", {}).get("sha"), pr.get("merge_commit_sha")}
+                and pr.get("base", {}).get("repo", {}).get("full_name") == repository
+            ]
+            if len(matches) != 1:
+                raise GitHubApiError("missing or ambiguous scanner PR lookup")
+            metadata_sha = matches[0]["head"]["sha"]
+            for run in client.get_paginated(
+                f"actions/workflows/{workflow['id']}/runs?head_sha={metadata_sha}&event=pull_request",
+                "workflow_runs",
+            ):
+                if (
+                    run.get("head_sha") == metadata_sha
+                    and run.get("event") == "pull_request"
+                ):
+                    runs[run["id"]] = run
+        run = select_latest_run(list(runs.values()))
+        identity = None
         if (
             run
             and run.get("status") == "completed"
             and run.get("conclusion") == "success"
         ):
+            run = client.get(f"actions/runs/{run['id']}")
+            if run.get("workflow_id") != workflow["id"]:
+                raise GitHubApiError("scanner workflow ID mismatch")
             identity = resolve_pr_identity(client, run)
-            if identity["base_sha"] != base_sha:
-                raise GitHubApiError("scanner base SHA mismatch")
+            if (
+                identity["base_sha"] != base_sha
+                or identity["scanned_sha"] != head_sha
+                or (pr_head_sha is not None and identity["pr_head_sha"] != pr_head_sha)
+            ):
+                raise GitHubApiError("scanner PR/base/scanned SHA mismatch")
         if (
             not run
             or run.get("status") != "completed"
@@ -366,6 +641,7 @@ def collect_required_evidence(
                     expected_head_sha=run.get("head_sha"),
                     expected_event="pull_request",
                     expected_workflow_id=run.get("workflow_id"),
+                    provenance=identity,
                 )
                 result = download_and_validate_artifact(
                     client,
@@ -389,6 +665,10 @@ def collect_required_evidence(
                             "raw_findings_count", result.get("findings_count", 0)
                         ),
                         "artifact_id": artifact["id"],
+                        "workflow_run_head_sha": run["head_sha"],
+                        "pr_head_sha": identity["pr_head_sha"],
+                        "scanned_sha": head_sha,
+                        "ref": identity["scanned_ref"],
                     }
                 )
                 findings.extend(result.get("findings", []))
@@ -424,9 +704,10 @@ def select_latest_run(candidates: list[dict[str, Any]]) -> dict[str, Any] | None
     ordered = sorted(
         candidates,
         key=lambda item: (
+            item.get("created_at", item.get("updated_at", "")),
+            item.get("id", 0),
             int(item.get("run_attempt", 0) or 0),
             item.get("updated_at", ""),
-            item.get("id", 0),
         ),
         reverse=True,
     )
@@ -450,7 +731,7 @@ def collect_codeql_analysis(
     if identity["scanned_sha"] != head_sha or client.repository != repository:
         raise GitHubApiError("CodeQL scanned commit or repository mismatch")
     pr_number = identity["pr_number"]
-    expected_ref = f"refs/pull/{pr_number}/merge"
+    expected_ref = identity["scanned_ref"]
     pr = client.get(f"pulls/{pr_number}")
     if pr.get("head", {}).get("sha") != identity["pr_head_sha"]:
         raise GitHubApiError("PR head changed during collection")
@@ -458,15 +739,25 @@ def collect_codeql_analysis(
     analyses = client.get_paginated(
         f"code-scanning/analyses?ref={expected_ref}", "analyses"
     )
+    analysis_steps = [
+        step
+        for job in identity["jobs"]
+        for step in job.get("steps", [])
+        if step.get("name") == "Perform CodeQL Analysis"
+        and step.get("conclusion") == "success"
+    ]
+    if len(analysis_steps) != 1:
+        raise GitHubApiError("missing or ambiguous CodeQL analysis step")
     matches = [
         analysis
         for analysis in analyses
         if analysis.get("commit_sha") == scanned_sha
+        and during_job(analysis.get("created_at"), analysis_steps[0])
         and analysis.get("tool", {}).get("name") == "CodeQL"
         and analysis.get("ref") == expected_ref
-        and str(analysis.get("analysis_key", "")).startswith(
-            ".github/workflows/codeql-analysis.yml:"
-        )
+        and analysis.get("analysis_key")
+        == ".github/workflows/codeql-analysis.yml:analyze"
+        and analysis.get("category") == "/language:python"
     ]
     if len(matches) != 1:
         return {
@@ -500,6 +791,11 @@ def collect_codeql_analysis(
     findings = []
     for alert in alerts:
         instance = alert.get("most_recent_instance", {})
+        if (
+            instance.get("commit_sha") != head_sha
+            or instance.get("ref") != expected_ref
+        ):
+            raise GitHubApiError("CodeQL alert instance is stale or mismatched")
         findings.append(
             {
                 "scanner": "CodeQL",
@@ -528,6 +824,8 @@ def collect_codeql_analysis(
             "ref": analysis.get("ref"),
             "merge_commit_sha": pr.get("merge_commit_sha"),
             "scanned_sha": scanned_sha,
+            "workflow_run_head_sha": run["head_sha"],
+            "pr_head_sha": identity["pr_head_sha"],
             "findings_count": len(findings),
         },
         "findings": findings,
@@ -752,16 +1050,25 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
                 continue
             if not merged and snapshot_base is not None and snapshot_base != base:
                 continue
+        if sha not in {head, pr.get("merge_commit_sha")}:
+            continue
+        provenance = scanner_run_provenance(client, run, pr)
+        scanned_sha = provenance["scanned_sha"]
         commit = None
-        if sha == head:
-            if merged:
+        if scanned_sha == head:
+            if merged or provenance["scanned_ref"] not in {
+                head,
+                f"refs/pull/{number}/head",
+            }:
                 continue
             scan_base = base
-        elif sha == pr.get("merge_commit_sha"):
-            commit = client.get(f"commits/{sha}")
+        elif scanned_sha == pr.get("merge_commit_sha"):
+            if provenance["scanned_ref"] != f"refs/pull/{number}/merge":
+                continue
+            commit = client.get(f"commits/{scanned_sha}")
             parents = [item.get("sha") for item in commit.get("parents", [])]
             if (
-                commit.get("sha") != sha
+                commit.get("sha") != scanned_sha
                 or len(parents) != 2
                 or parents[1] != head
                 or not SHA1_PATTERN.fullmatch(str(parents[0]))
@@ -772,6 +1079,19 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             scan_base = parents[0]
         else:
             continue
+        filename = SCANNER_WORKFLOWS[run["name"]][0]
+        workflow_path = f".github/workflows/{filename}"
+        trusted_source = client.get(f"contents/{workflow_path}?ref={scan_base}")
+        scanned_source = client.get(f"contents/{workflow_path}?ref={scanned_sha}")
+        if (
+            trusted_source.get("type") != "file"
+            or scanned_source.get("type") != "file"
+            or trusted_source.get("path") != workflow_path
+            or scanned_source.get("path") != workflow_path
+            or not SHA1_PATTERN.fullmatch(str(trusted_source.get("sha", "")))
+            or scanned_source.get("sha") != trusted_source["sha"]
+        ):
+            raise GitHubApiError("scanner workflow differs from trusted base source")
         validation = validate_workflow_run(
             run,
             pr,
@@ -782,8 +1102,9 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             pr_number=number,
             head_sha=head,
             base_sha=scan_base,
-            scanned_sha=sha,
+            scanned_sha=scanned_sha,
             scanned_commit=commit,
+            workflow_run_head_sha=sha,
         )
         if not validation["valid"]:
             continue
@@ -791,7 +1112,10 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             {
                 "pr_number": number,
                 "pr_head_sha": head,
-                "scanned_sha": sha,
+                "scanned_sha": scanned_sha,
+                "workflow_run_head_sha": sha,
+                "scanned_ref": provenance["scanned_ref"],
+                "jobs": provenance["jobs"],
                 "base_sha": scan_base,
             }
         )
@@ -813,6 +1137,7 @@ def validate_workflow_run(
     base_sha: str,
     scanned_sha: str | None = None,
     scanned_commit: dict[str, Any] | None = None,
+    workflow_run_head_sha: str | None = None,
 ) -> dict[str, Any]:
     errors = []
     scanned_sha = scanned_sha or head_sha
@@ -828,8 +1153,10 @@ def validate_workflow_run(
         errors.append("unexpected event type")
     if run.get("status") != "completed" or run.get("conclusion") != "success":
         errors.append("run is not completed successfully")
-    if run.get("head_sha") != scanned_sha:
-        errors.append("run scanned SHA mismatch")
+    if run.get("head_sha") != (workflow_run_head_sha or scanned_sha):
+        errors.append("run metadata SHA mismatch")
+    if run.get("head_sha") not in {head_sha, pr.get("merge_commit_sha")}:
+        errors.append("run metadata is unrelated to the PR")
     if pr.get("number") != pr_number:
         errors.append("PR number mismatch")
     merged = pr.get("state") == "closed" and pr.get("merged") is True
@@ -930,6 +1257,14 @@ def validate_artifact_metadata(
     if metadata.get("expired") is True:
         errors.append("artifact expired")
     source = metadata.get("workflow_run", {})
+    if trusted_run is not None:
+        for field, expected in (
+            ("repository_id", trusted_run.get("repository", {}).get("id")),
+            ("head_repository_id", trusted_run.get("head_repository", {}).get("id")),
+            ("head_branch", trusted_run.get("head_branch")),
+        ):
+            if field in source and source[field] != expected:
+                errors.append(f"artifact source {field} mismatch")
     if source.get("id") != run_id:
         errors.append("artifact source run mismatch")
     source_attempt = source.get("run_attempt")
@@ -1106,6 +1441,7 @@ def main() -> int:
     parser.add_argument("--run-attempt", type=int)
     parser.add_argument("--pr-number", type=int)
     parser.add_argument("--head-sha")
+    parser.add_argument("--pr-head-sha")
     parser.add_argument("--base-sha")
     parser.add_argument("--scanner")
     parser.add_argument("--artifact-json", type=Path)
@@ -1198,6 +1534,7 @@ def main() -> int:
                 evidence = collect_required_evidence(
                     client,
                     head_sha=args.head_sha,
+                    pr_head_sha=args.pr_head_sha,
                     base_sha=args.base_sha,
                     repository=args.repository,
                     temp_root=Path(root),

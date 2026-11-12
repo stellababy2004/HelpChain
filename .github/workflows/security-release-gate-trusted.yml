@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       head_sha:
-        description: "PR head SHA to evaluate"
+        description: "Exact scanned commit SHA to evaluate"
         required: true
         type: string
       base_sha:
@@ -79,6 +79,7 @@ jobs:
               --run-attempt "$RUN_ATTEMPT" --workflow-id "$WORKFLOW_ID" \
               --head-sha "$HEAD_SHA" --output trusted-pr-identity.json
             BASE_SHA="$(python -c "import json; print(json.load(open('trusted-pr-identity.json'))['base_sha'])")"
+            SCANNED_SHA="$(python -c "import json; print(json.load(open('trusted-pr-identity.json'))['scanned_sha'])")"
             python - <<'PYTHON'
           import json
           import os
@@ -92,12 +93,13 @@ jobs:
           git cat-file -e "$BASE_SHA^{commit}"
           git show "${BASE_SHA}:docs/security/security-release-gate-baseline.json" > trusted-baseline.json
           echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
-          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "scanned_sha=${SCANNED_SHA:-$HEAD_SHA}" >> "$GITHUB_OUTPUT"
+          echo "workflow_run_head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Collect trusted API evidence
         env:
           GH_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          HEAD_SHA: ${{ steps.refs.outputs.scanned_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -112,14 +114,15 @@ jobs:
         id: evidence
         env:
           GH_TOKEN: ${{ github.token }}
-          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          HEAD_SHA: ${{ steps.refs.outputs.scanned_sha }}
+          PR_HEAD_SHA: ${{ steps.refs.outputs.pr_head_sha }}
           BASE_SHA: ${{ steps.refs.outputs.base_sha }}
         shell: bash
         run: |
           set +e
           python scripts/security_release_gate_collect.py collect-evidence \
             --token "$GH_TOKEN" --repository "$GITHUB_REPOSITORY" \
-            --head-sha "$HEAD_SHA" --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" --pr-head-sha "$PR_HEAD_SHA" --base-sha "$BASE_SHA" \
             --temp-root "$RUNNER_TEMP/security-release-gate-evidence" \
             --output .scanner-evidence-status.json \
             --findings-output .scanner-findings.json
@@ -150,7 +153,7 @@ jobs:
             --scanner-findings .scanner-findings.json \
             --output security-release-gate-report.json \
             --repository "$GITHUB_REPOSITORY" \
-            --head-sha "${{ steps.refs.outputs.head_sha }}" \
+            --head-sha "${{ steps.refs.outputs.scanned_sha }}" \
             --base-sha "${{ steps.refs.outputs.base_sha }}" \
             $api_arg | tee security-release-gate-summary.txt
           verdict_status=${PIPESTATUS[0]}
@@ -185,7 +188,8 @@ jobs:
           RUN_ID: ${{ github.event.workflow_run.id }}
           RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
           WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
-          SCANNED_SHA: ${{ steps.refs.outputs.head_sha }}
+          RUN_HEAD_SHA: ${{ steps.refs.outputs.workflow_run_head_sha }}
+          SCANNED_SHA: ${{ steps.refs.outputs.scanned_sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -196,7 +200,7 @@ jobs:
           python scripts/security_release_gate_collect.py resolve-pr \
             --repository "$GITHUB_REPOSITORY" --run-id "$RUN_ID" \
             --run-attempt "$RUN_ATTEMPT" --workflow-id "$WORKFLOW_ID" \
-            --head-sha "$SCANNED_SHA" --output current-pr-identity.json
+            --head-sha "$RUN_HEAD_SHA" --output current-pr-identity.json
           python -c "import json; assert json.load(open('current-pr-identity.json')) == json.load(open('trusted-pr-identity.json'))"
           conclusion="failure"
           if [[ "$REPORT_STATUS" == "success" ]] && [[ -s security-release-gate-report.json ]]; then
@@ -218,4 +222,4 @@ jobs:
             -f conclusion="$conclusion" \
             -f details_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
             -f 'output[title]=Trusted security verdict' \
-            -f "output[summary]=Published by the trusted evaluator for PR head ${HEAD_SHA}."
+            -f "output[summary]=Published by the trusted evaluator for PR head ${HEAD_SHA}, scanned commit ${SCANNED_SHA}."

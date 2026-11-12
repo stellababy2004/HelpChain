@@ -32,6 +32,10 @@ class Client:
             return copy.deepcopy(self.pr)
         if path == f"commits/{MERGE}":
             return self.commit
+        if path.startswith("actions/runs/"):
+            return copy.deepcopy(self.run)
+        if path.startswith("contents/"):
+            return {"type": "file", "path": path[9:].split("?")[0], "sha": "d" * 40}
         raise AssertionError(path)
 
     def get_paginated(self, path, key):
@@ -44,6 +48,7 @@ class TrustedIdentityTests(unittest.TestCase):
     def setUp(self):
         self.run = {
             "id": 43246159695,
+            "name": "Secret Scan",
             "workflow_id": 12,
             "run_attempt": 1,
             "repository": {"full_name": REPO},
@@ -63,6 +68,34 @@ class TrustedIdentityTests(unittest.TestCase):
             "merge_commit_sha": MERGE,
         }
         self.client = Client(self.run, self.pr)
+        # These tests isolate PR relationships. Full checkout/API proof is covered separately.
+        self.proof_patch = patch.object(
+            gate, "scanner_run_provenance", side_effect=self.proof
+        )
+        self.proof_patch.start()
+        self.addCleanup(self.proof_patch.stop)
+
+    def proof(self, client, run, pr):
+        scanned = run["head_sha"]
+        return {
+            "scanned_sha": scanned,
+            "scanned_ref": f"refs/pull/214/{'merge' if scanned == MERGE else 'head'}",
+            "jobs": [
+                {
+                    "artifacts": {"gitleaks-results.sarif": 99},
+                    "started_at": "2026-11-12T12:00:00Z",
+                    "completed_at": "2026-11-12T13:00:00Z",
+                    "steps": [
+                        {
+                            "name": "Perform CodeQL Analysis",
+                            "conclusion": "success",
+                            "started_at": "2026-11-12T12:00:00Z",
+                            "completed_at": "2026-11-12T13:00:00Z",
+                        }
+                    ],
+                }
+            ],
+        }
 
     def resolve(self):
         return gate.resolve_pr_identity(self.client, self.run)
@@ -78,7 +111,10 @@ class TrustedIdentityTests(unittest.TestCase):
         self.run["head_sha"] = MERGE
         identity = self.resolve()
         self.assertEqual(
-            identity,
+            {
+                key: identity[key]
+                for key in ("pr_number", "pr_head_sha", "scanned_sha", "base_sha")
+            },
             {
                 "pr_number": 214,
                 "pr_head_sha": HEAD,
@@ -147,7 +183,8 @@ class TrustedIdentityTests(unittest.TestCase):
             "tool": {"name": "CodeQL"},
             "ref": "refs/pull/214/merge",
             "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
-            "category": "python",
+            "category": "/language:python",
+            "created_at": "2026-11-12T12:30:00Z",
             "error": "",
         }
 

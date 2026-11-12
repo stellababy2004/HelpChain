@@ -3,7 +3,12 @@ name: Trusted Gate PR216 Diagnostic
 on:
   push:
     branches: [fix/trusted-gate-pr-context-20261112]
-    paths: [.github/workflows/security-release-gate-diagnostic.yml]
+    paths:
+      - .github/workflows/security-release-gate-diagnostic.yml
+      - .github/workflows/security-release-gate-trusted.yml
+      - scripts/security_release_gate_collect.py
+      - tests/test_trusted_gate_pr_identity.py
+      - tests/test_security_scanner_provenance.py
 
 permissions:
   contents: read
@@ -31,6 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           python -B -m unittest discover -s tests -p test_trusted_gate_pr_identity.py -v
+          python -B -m unittest discover -s tests -p test_security_scanner_provenance.py -v
 
       - name: Diagnose real PR identity and scanner evidence
         shell: bash
@@ -146,7 +152,7 @@ jobs:
                   evidence_root = Path(os.environ["RUNNER_TEMP"]) / "pr216-diagnostic-evidence"
                   evidence_root.mkdir()
                   evidence = collector.collect_required_evidence(
-                      client, head_sha=scanned_sha, base_sha=base_sha,
+                      client, head_sha=scanned_sha, pr_head_sha=expected_head, base_sha=base_sha,
                       repository=repo, temp_root=evidence_root,
                   )
                   report["scanner_statuses"] = evidence["statuses"]
