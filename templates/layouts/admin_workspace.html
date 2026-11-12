@@ -45,7 +45,7 @@
     {% set is_platform_active = current_path.startswith('/admin/structures') or current_path.startswith('/admin/organizations') or current_path.startswith('/admin/intervenants') or current_path.startswith('/admin/system-health') %}
     <div class="hc-admin-shellbar">
       <div class="hc-admin-shellbar__inner">
-        <div class="hc-admin-shellbar__brand">
+        <div class="hc-admin-shellbar__brand{% if current_user.is_authenticated and current_user.structure_id and current_user.structure %} hc-admin-shellbar__brand--organization{% endif %}">
           <span class="hc-admin-shellbar__brandlock">
             <img
               class="hc-admin-shellbar__logo"
@@ -55,13 +55,13 @@
             <span class="hc-admin-shellbar__eyebrow">HelpChain</span>
           </span>
           {% if current_user.is_authenticated and current_user.structure_id and current_user.structure %}
-          <span class="hc-admin-shellbar__title" aria-label="Organisation actuelle" style="display:flex;align-items:center;gap:12px;max-width:100%;min-width:0">
+          <span class="hc-admin-shellbar__title hc-admin-shellbar__title--organization" aria-label="Organisation actuelle">
             {% if has_organization_logo is defined and has_organization_logo() %}
-            <img src="{{ url_for('admin.admin_team_logo') }}" alt="" aria-hidden="true" width="112" height="56" style="display:block;width:auto;max-width:112px;height:56px;object-fit:contain;flex-shrink:0;border-radius:6px">
+            <img src="{{ url_for('admin.admin_team_logo') }}" alt="" aria-hidden="true" width="112" height="56" class="hc-admin-shellbar__organization-logo">
             {% else %}
             <span aria-hidden="true" style="flex-shrink:0">🏢</span>
             {% endif %}
-            <span style="min-width:0;overflow-wrap:anywhere">{{ current_user.structure.name }}</span>
+            <span class="hc-admin-shellbar__organization-name">{{ current_user.structure.name }}</span>
           </span>
           {% else %}
           <span class="hc-admin-shellbar__title">Centre de pilotage opérationnel</span>
