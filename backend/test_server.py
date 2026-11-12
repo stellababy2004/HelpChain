@@ -18,4 +18,4 @@ def chatbot():
 if __name__ == "__main__":
     print("Starting test server on http://localhost:5002")
     print("Test the chatbot at: http://localhost:5002/chatbot")
-    app.run(debug=True, host="127.0.0.1", port=5002, use_reloader=False)
+    app.run(debug=False, host="127.0.0.1", port=5002, use_reloader=False)
