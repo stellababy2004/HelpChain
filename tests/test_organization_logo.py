@@ -24,7 +24,11 @@ def test_normalizes_supported_images(format):
         assert image.size == (256, 256)
 
 
-@pytest.mark.parametrize("payload", [b"", b"not an image", b"x" * (MAX_LOGO_BYTES + 1)])
+@pytest.mark.parametrize(
+    "payload",
+    [b"", b"not an image", b"x" * (MAX_LOGO_BYTES + 1)],
+    ids=["empty", "invalid-image", "oversized-bytes"],
+)
 def test_rejects_invalid_payload(payload):
     with pytest.raises(InvalidOrganizationLogo):
         normalize_organization_logo(payload)
