@@ -33,3 +33,29 @@ def test_rejects_invalid_payload(payload):
 def test_rejects_oversized_dimensions():
     with pytest.raises(InvalidOrganizationLogo):
         normalize_organization_logo(_image(size=(4000, 3000)))
+
+
+def test_rejects_svg_even_if_named_like_image():
+    svg = b'<svg xmlns="http://www.w3.org/2000/svg"></svg>'
+    with pytest.raises(InvalidOrganizationLogo):
+        normalize_organization_logo(svg)
+
+
+def test_removes_exif_metadata_from_jpeg():
+    original = Image.new("RGB", (30, 20), "blue")
+    exif = Image.Exif()
+    exif[270] = "Private organization note"
+    source = BytesIO()
+    original.save(source, format="JPEG", exif=exif)
+    result = normalize_organization_logo(source.getvalue())
+    with Image.open(BytesIO(result)) as normalized:
+        assert normalized.getexif().get(270) is None
+        assert normalized.format == "PNG"
+
+
+def test_output_has_transparent_padding_and_preserves_aspect_ratio():
+    result = normalize_organization_logo(_image(size=(60, 30)))
+    with Image.open(BytesIO(result)) as normalized:
+        assert normalized.mode == "RGBA"
+        assert normalized.getpixel((0, 0))[3] == 0
+        assert normalized.getpixel((128, 128))[3] == 255
