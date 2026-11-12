@@ -6,8 +6,8 @@ Callers must separately enforce organization-scoped authorization.
 
 from __future__ import annotations
 
-from io import BytesIO
 import warnings
+from io import BytesIO
 
 from PIL import Image, ImageOps, UnidentifiedImageError
 
