@@ -57,7 +57,7 @@
           {% if current_user.is_authenticated and current_user.structure_id and current_user.structure %}
           <span class="hc-admin-shellbar__title" aria-label="Organisation actuelle">
             {% if has_organization_logo is defined and has_organization_logo() %}
-            <img src="{{ url_for('admin.admin_team_logo') }}" alt="" aria-hidden="true" width="28" height="28" style="width:28px;height:28px;object-fit:contain;vertical-align:middle;border-radius:4px">
+            <img src="{{ url_for('admin.admin_team_logo') }}" alt="" aria-hidden="true" width="112" height="56" style="width:auto;max-width:112px;height:56px;object-fit:contain;vertical-align:middle;border-radius:6px">
             {% else %}
             <span aria-hidden="true">🏢</span>
             {% endif %}
