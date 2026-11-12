@@ -5904,6 +5904,25 @@ def enforce_admin_onboarding():
     return redirect(url_for("admin.admin_onboarding"), code=303)
 
 
+@admin_bp.post("/team/organization-name")
+@admin_required
+def admin_team_organization_name():
+    """Update the current tenant's display name without changing its legal name."""
+    actor = _require_team_management_access()
+    from backend.models import Structure
+
+    name = " ".join((request.form.get("organization_name") or "").split())
+    if not name or len(name) > 120 or any(ord(char) < 32 for char in name):
+        abort(400)
+    structure = db.session.get(Structure, actor.structure_id)
+    if structure is None:
+        abort(404)
+    structure.name = name
+    db.session.commit()
+    flash("Nom de votre organisation mis à jour.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
 @admin_bp.get("/team/logo.png")
 @admin_required
 def admin_team_logo():
