@@ -54,7 +54,14 @@
             >
             <span class="hc-admin-shellbar__eyebrow">HelpChain</span>
           </span>
+          {% if current_user.is_authenticated and current_user.structure_id and current_user.structure %}
+          <span class="hc-admin-shellbar__title" aria-label="Organisation actuelle">
+            <span aria-hidden="true">🏢</span>
+            {{ current_user.structure.name }}
+          </span>
+          {% else %}
           <span class="hc-admin-shellbar__title">Centre de pilotage opérationnel</span>
+          {% endif %}
         </div>
 
         <div class="hc-admin-shellbar__navzone">
