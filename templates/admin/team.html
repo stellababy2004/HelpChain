@@ -17,7 +17,17 @@
   <section class="card mb-4" aria-labelledby="hc-org-branding-title">
     <div class="card-header"><strong id="hc-org-branding-title">Identité de votre organisation</strong></div>
     <div class="card-body">
-      <p class="mb-2">Nom de l'organisation : <strong>{{ current_user.structure.name if current_user.structure else '—' }}</strong></p>
+      <form method="post" action="{{ url_for('admin.admin_team_organization_name') }}" class="row g-2 align-items-end mb-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-8">
+          <label class="form-label" for="hc-org-display-name">Nom affiché de l'organisation</label>
+          <input class="form-control" id="hc-org-display-name" name="organization_name" type="text" maxlength="120" required value="{{ current_user.structure.name if current_user.structure else '' }}">
+          <div class="form-text">Le nom légal enregistré reste inchangé.</div>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-outline-primary" type="submit">Enregistrer le nom</button>
+        </div>
+      </form>
       <p class="text-muted small">Choisissez un logo et vérifiez son aperçu avant de l’enregistrer.</p>
       <form method="post" action="{{ url_for('admin.admin_team_logo_upload') }}" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
