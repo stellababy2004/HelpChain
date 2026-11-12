@@ -7,9 +7,9 @@ Callers must separately enforce organization-scoped authorization.
 from __future__ import annotations
 
 from io import BytesIO
+import warnings
 
 from PIL import Image, ImageOps, UnidentifiedImageError
-import warnings
 
 MAX_LOGO_BYTES = 2 * 1024 * 1024
 MAX_IMAGE_PIXELS = 8_000_000
@@ -33,7 +33,13 @@ def normalize_organization_logo(upload: bytes) -> bytes:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
             return _decode_and_normalize(upload)
-    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+    except (
+        UnidentifiedImageError,
+        OSError,
+        ValueError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ) as exc:
         if isinstance(exc, InvalidOrganizationLogo):
             raise
         raise InvalidOrganizationLogo("Le fichier image est invalide.") from exc
@@ -54,8 +60,10 @@ def _decode_and_normalize(upload: bytes) -> bytes:
         canvas = Image.new("RGBA", OUTPUT_SIZE, (255, 255, 255, 0))
         canvas.alpha_composite(
             image,
-            ((OUTPUT_SIZE[0] - image.width) // 2,
-             (OUTPUT_SIZE[1] - image.height) // 2),
+            (
+                (OUTPUT_SIZE[0] - image.width) // 2,
+                (OUTPUT_SIZE[1] - image.height) // 2,
+            ),
         )
         output = BytesIO()
         canvas.save(output, format="PNG", optimize=True)
