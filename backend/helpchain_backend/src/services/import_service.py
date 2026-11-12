@@ -529,7 +529,7 @@ def synthetic_email_for_row(*, payload: dict[str, str], batch_id: int, row_numbe
             _normalize_for_hash(payload.get("organization")),
         ]
     )
-    digest = hashlib.sha1(fingerprint.encode("utf-8")).hexdigest()[:16]
+    digest = hashlib.sha1(fingerprint.encode("utf-8"), usedforsecurity=False).hexdigest()[:16]
     return f"no-email+{digest}@{SYNTHETIC_EMAIL_DOMAIN}"
 
 
