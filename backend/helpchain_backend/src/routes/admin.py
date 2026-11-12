@@ -5959,7 +5959,7 @@ def admin_team_logo_upload():
     try:
         png_data = normalize_organization_logo(raw)
     except InvalidOrganizationLogo:
-        abort(400)
+        return "", 400
     logo = db.session.get(OrganizationLogo, actor.structure_id)
     if logo is None:
         logo = OrganizationLogo(structure_id=actor.structure_id, png_data=png_data)
