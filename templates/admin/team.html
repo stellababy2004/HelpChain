@@ -30,7 +30,10 @@
         <div class="col-md-4">
           <div style="width:144px;height:144px;max-width:100%;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center">
             <img id="hc-org-logo-preview" alt="Aperçu du logo" hidden style="width:100%;height:100%;object-fit:contain;cursor:grab;touch-action:none">
-            <span id="hc-org-logo-placeholder" aria-hidden="true" style="font-size:48px">🏢</span>
+            {% if organization_logo_exists %}
+            <img id="hc-org-logo-saved" src="{{ url_for('admin.admin_team_logo') }}" alt="Logo actuel de votre organisation" style="width:100%;height:100%;object-fit:contain">
+            {% endif %}
+            <span id="hc-org-logo-placeholder" aria-hidden="true" style="font-size:48px" {% if organization_logo_exists %}hidden{% endif %}>🏢</span>
           </div>
         </div>
         <div class="col-md-4">
@@ -54,6 +57,7 @@
       const file = document.getElementById('hc-org-logo-file');
       const img = document.getElementById('hc-org-logo-preview');
       const placeholder = document.getElementById('hc-org-logo-placeholder');
+      const saved = document.getElementById('hc-org-logo-saved');
       const zoom = document.getElementById('hc-org-logo-zoom');
       const reset = document.getElementById('hc-org-logo-reset');
       const error = document.getElementById('hc-org-logo-error');
@@ -65,7 +69,8 @@
         objectUrl = null;
         img.removeAttribute('src');
         img.hidden = true;
-        placeholder.hidden = false;
+        placeholder.hidden = Boolean(saved);
+        if (saved) saved.hidden = false;
         zoom.value = '100';
         zoom.disabled = true;
         reset.disabled = true;
@@ -85,6 +90,7 @@
         img.onload = () => {
           img.hidden = false;
           placeholder.hidden = true;
+          if (saved) saved.hidden = true;
           zoom.disabled = false;
           reset.disabled = false;
           error.textContent = 'Aperçu prêt. Cliquez sur Enregistrer le logo.';
