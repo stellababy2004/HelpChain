@@ -33,7 +33,10 @@ def send_notification_sms(phone, message):
         # Check if SMS is enabled in config
         sms_config = current_app.config.get("SMS_CONFIG", {})
         if not sms_config.get("enabled", False):
-            logger.info(f"SMS disabled, would send to {phone}: {message}")
+            logger.info(
+                "SMS disabled; delivery not attempted | message_length=%d",
+                len(message),
+            )
             return True  # Return True for testing when disabled
 
         # Choose SMS provider
@@ -50,7 +53,10 @@ def send_notification_sms(phone, message):
             return False
 
     except Exception as e:
-        logger.error(f"Failed to send SMS to {phone}: {e}")
+        logger.error(
+            "Failed to send SMS | error_type=%s",
+            type(e).__name__,
+        )
         return False
 
 
@@ -73,7 +79,10 @@ def _clean_phone_number(phone):
 
 def _send_mock_sms(phone, message):
     """Mock SMS sending for testing"""
-    logger.info(f"MOCK SMS to {phone}: {message}")
+    logger.info(
+        "MOCK SMS delivery | message_length=%d",
+        len(message),
+    )
 
     # Simulate success/failure randomly for testing
     import random
@@ -105,14 +114,16 @@ def _send_twilio_sms(phone, message, config):
 
         message = client.messages.create(body=message, from_=from_number, to=phone)
 
-        logger.info(f"Twilio SMS sent: {message.sid}")
+        logger.info(
+            "Twilio SMS sent",
+        )
         return True
 
     except ImportError:
         logger.error("Twilio not installed. Install with: pip install twilio")
         return False
     except Exception as e:
-        logger.error(f"Twilio SMS failed: {e}")
+        logger.error("Twilio SMS failed | error_type=%s", type(e).__name__)
         return False
 
 
@@ -141,14 +152,19 @@ def _send_nexmo_sms(phone, message, config):
         result = response.json()
 
         if result.get("messages", [{}])[0].get("status") == "0":
-            logger.info(f"Nexmo SMS sent successfully to {phone}")
+            logger.info(
+                "Nexmo SMS sent successfully",
+            )
             return True
         else:
-            logger.error(f"Nexmo SMS failed: {result}")
+            logger.error(
+                "Nexmo SMS failed | provider_status=%s",
+                result.get("messages", [{}])[0].get("status", "unknown"),
+            )
             return False
 
     except Exception as e:
-        logger.error(f"Nexmo SMS error: {e}")
+        logger.error("Nexmo SMS error | error_type=%s", type(e).__name__)
         return False
 
 

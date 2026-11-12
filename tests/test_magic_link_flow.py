@@ -1735,6 +1735,6 @@ def test_request_magic_link_smtp_failure_redacts_email_diagnostic(client, monkey
 
     email_log.assert_called_once_with("sent_emails.txt", "a", encoding="utf-8")
     diagnostic = "".join(call.args[0] for call in email_log().write.call_args_list)
-    assert "[Sensitive email body redacted]" in diagnostic
+    assert "[Email body redacted]" in diagnostic
     assert raw_token not in diagnostic + caplog.text
     assert magic_url not in diagnostic + caplog.text
