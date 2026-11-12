@@ -5886,6 +5886,69 @@ def enforce_admin_onboarding():
     return redirect(url_for("admin.admin_onboarding"), code=303)
 
 
+@admin_bp.get("/team/logo.png")
+@admin_required
+def admin_team_logo():
+    """Serve only the current actor's organization's logo."""
+    actor = _require_team_management_access()
+    from backend.models import OrganizationLogo
+
+    logo = db.session.get(OrganizationLogo, actor.structure_id)
+    if logo is None:
+        abort(404)
+    response = make_response(logo.png_data)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+@admin_bp.post("/team/logo")
+@admin_required
+def admin_team_logo_upload():
+    """Replace only the authenticated organization admin's logo."""
+    actor = _require_team_management_access()
+    from backend.models import OrganizationLogo
+    from ..services.organization_logo import (
+        InvalidOrganizationLogo,
+        MAX_LOGO_BYTES,
+        normalize_organization_logo,
+    )
+
+    uploaded = request.files.get("logo")
+    if uploaded is None:
+        abort(400)
+    raw = uploaded.stream.read(MAX_LOGO_BYTES + 1)
+    try:
+        png_data = normalize_organization_logo(raw)
+    except InvalidOrganizationLogo:
+        abort(400)
+    logo = db.session.get(OrganizationLogo, actor.structure_id)
+    if logo is None:
+        logo = OrganizationLogo(structure_id=actor.structure_id, png_data=png_data)
+        db.session.add(logo)
+    else:
+        logo.png_data = png_data
+    db.session.commit()
+    flash("Logo de votre organisation mis à jour.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
+@admin_bp.post("/team/logo/delete")
+@admin_required
+def admin_team_logo_delete():
+    """Remove only the current organization's logo."""
+    actor = _require_team_management_access()
+    from backend.models import OrganizationLogo
+
+    logo = db.session.get(OrganizationLogo, actor.structure_id)
+    if logo is not None:
+        db.session.delete(logo)
+        db.session.commit()
+    flash("Logo de votre organisation supprimé.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
 @admin_bp.get("/team")
 @admin_required
 def admin_team():
