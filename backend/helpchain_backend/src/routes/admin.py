@@ -1,26 +1,27 @@
 from __future__ import annotations
 
-from collections import Counter, defaultdict
 import csv
 import html
 import inspect
 import json
 import math
 import os
-from queue import Empty
+import re
 import secrets
 import threading
 import time
-import re
 import unicodedata
-from types import SimpleNamespace
-from pathlib import Path
+from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
 from io import BytesIO, StringIO
+from pathlib import Path
+from queue import Empty
+from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
+from babel.support import Translations
 from flask import (
     Blueprint,
     Response,
@@ -37,13 +38,13 @@ from flask import (
     stream_with_context,
     url_for,
 )
+from flask_babel import force_locale
+from flask_babel import gettext as _
 from flask_login import current_user, login_required, login_user, logout_user
-from flask_babel import force_locale, gettext as _
 from flask_mail import Message
-from babel.support import Translations
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy.exc import IntegrityError
 
 try:
     import psutil
@@ -53,32 +54,24 @@ except Exception:  # pragma: no cover - keep admin routes import-safe
 from backend.audit import log_activity
 from backend.extensions import db, limiter, mail
 from backend.system_sanity import run_system_checks
-from ..admin_actor import resolve_current_admin_actor
-from ..admin_policies import can_access_professional_leads
-from ..admin_policies import can_view_global_analytics
-from ..models.volunteer_interest import VolunteerInterest
-from ..observability import (
-    tenant_leak_get,
-    tenant_leak_inc,
-)
-from ..statuses import (
-    REQUEST_STATUS_ALLOWED,
-    normalize_request_status,
-)
 
+from ..admin_actor import resolve_current_admin_actor
+from ..admin_policies import can_access_professional_leads, can_view_global_analytics
 from ..config import Config
 from ..models import (
     AdminAuditEvent,
     AdminLoginAttempt,
-    ImportBatch,
     AdminUser,
     AdminUserInvitation,
     Assignment,
     Case,
+    CaseCollaborator,
     CaseEvent,
     CaseParticipant,
-    CaseCollaborator,
+    ImportBatch,
     IntegrationConnector,
+    Intervenant,
+    IntervenantActivity,
     MetricDefinition,
     MetricRun,
     Notification,
@@ -87,26 +80,33 @@ from ..models import (
     ProfessionalLead,
     ProfessionalLeadActivity,
     RelayEvent,
-    Intervenant,
-    IntervenantActivity,
     Request,
     RequestActivity,
     RequestLog,
     RequestMetric,
-    SecurityEvent,
     ScoreExplanation,
+    SecurityEvent,
+    Structure,
     UiLocaleLock,
-    UiTranslationFreeze,
     UiTranslation,
     UiTranslationEvent,
+    UiTranslationFreeze,
+    User,
     Volunteer,
     VolunteerAction,
     VolunteerInterest,
     VolunteerRequestState,
-    Structure,
-    User,
     current_structure,
     utc_now,
+)
+from ..models.volunteer_interest import VolunteerInterest
+from ..observability import (
+    tenant_leak_get,
+    tenant_leak_inc,
+)
+from ..statuses import (
+    REQUEST_STATUS_ALLOWED,
+    normalize_request_status,
 )
 
 INTEGRATION_CONNECTOR_STATUS_CHOICES = ("active", "paused", "revoked")
@@ -128,13 +128,17 @@ try:
 except ImportError:
     ProAccessRequest = None
 
-from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..constants.categories import (
     REQUEST_CATEGORY_CODES,
     normalize_request_category,
     request_category_choices,
     request_category_label,
 )
+from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
+from ..services.account_intelligence import (
+    build_account_intelligence,
+)
+from ..services.adaptive_experience import MODULE_REGISTRY, adaptive_modules, module_enabled
 from ..services.admin_team_invitations import (
     INVITATION_TTL_HOURS,
     InvitationAlreadyPending,
@@ -143,25 +147,56 @@ from ..services.admin_team_invitations import (
     create_admin_team_invitation,
     refresh_admin_team_invitation,
 )
-from ..services.volunteer_membership import VolunteerLinkError, link_volunteer_to_intervenant
 from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
-from ..services.adaptive_experience import MODULE_REGISTRY, adaptive_modules, module_enabled
-from ..services.enterprise_structure_intelligence import ORGANIZATION_TYPES, organization_type_definition
+from ..services.daily_founder_queue import (
+    build_daily_founder_queue,
+    summarize_daily_founder_queue,
+)
 from ..services.demo_data import (
     get_demo_case_signals,
     get_demo_cases,
     get_demo_kpis,
     get_demo_notification_channels,
-    get_demo_payload,
     get_demo_notification_summary,
     get_demo_notifications,
     get_demo_ops_priority_levels,
+    get_demo_payload,
     get_demo_queue_reasons,
     get_demo_requests,
     get_demo_sla_payload,
+)
+from ..services.display_safety import (
+    safe_organization,
+    safe_recommendation,
+    safe_summary,
+    safe_territory,
+    safe_unavailable,
+    safe_visitor,
+)
+from ..services.enterprise_structure_intelligence import ORGANIZATION_TYPES, organization_type_definition
+from ..services.founder_action_engine import (
+    build_founder_action_queue,
+)
+from ..services.founder_action_engine import (
+    summarize_founder_actions as summarize_founder_operational_actions,
+)
+from ..services.founder_cockpit import (
+    build_founder_alerts,
+    build_founder_priority_queue,
+    group_founder_signals_by_territory,
+    summarize_founder_actions,
+)
+from ..services.founder_memory_engine import (
+    build_founder_memory_timeline,
+    detect_stalled_opportunities,
+    summarize_founder_memory,
+)
+from ..services.founder_operational_state import (
+    build_founder_operational_state,
+    summarize_founder_operational_state,
 )
 from ..services.geocoding import request_address_display_text
 from ..services.import_service import (
@@ -193,90 +228,59 @@ from ..services.institutional_intent_engine import (
     build_territorial_opportunity_summary,
     summarize_profile_labels,
 )
-from ..services.account_intelligence import (
-    build_account_intelligence,
-)
-
 from ..services.relationship_memory import (
     build_relationship_memory,
-)
-from ..services.founder_action_engine import (
-    build_founder_action_queue,
-    summarize_founder_actions as summarize_founder_operational_actions,
-)
-from ..services.founder_memory_engine import (
-    build_founder_memory_timeline,
-    detect_stalled_opportunities,
-    summarize_founder_memory,
-)
-from ..services.founder_operational_state import (
-    build_founder_operational_state,
-    summarize_founder_operational_state,
-)
-
-from ..services.founder_cockpit import (
-    build_founder_alerts,
-    build_founder_priority_queue,
-    group_founder_signals_by_territory,
-    summarize_founder_actions,
-)
-from ..services.display_safety import (
-    safe_organization,
-    safe_recommendation,
-    safe_summary,
-    safe_territory,
-    safe_unavailable,
-    safe_visitor,
-)
-
-from ..services.daily_founder_queue import (
-    build_daily_founder_queue,
-    summarize_daily_founder_queue,
 )
 from ..services.revenue_signal_engine import (
     SIGNAL_LOOKBACK_DAYS,
     build_revenue_signal_profile,
     summarize_revenue_signal_profile,
 )
+from ..services.volunteer_membership import VolunteerLinkError, link_volunteer_to_intervenant
 
 summarize_founder_opportunity_actions = summarize_founder_actions
-from ..services.territorial_intelligence import (
-    detect_priority_territories,
-    normalize_territory_name,
+import csv
+from io import StringIO
+
+from ..security_logging import log_security_event
+from ..services.event_bus import (
+    publish as publish_admin_stream_event,
 )
-from ..services.pilotage_territorial_maps import build_territorial_snapshots
+from ..services.event_bus import (
+    subscribe as subscribe_admin_stream,
+)
+from ..services.event_bus import (
+    unsubscribe as unsubscribe_admin_stream,
+)
 from ..services.notification_jobs import (
     count_notification_job_buckets,
     notification_job_bucket_filter,
     notification_job_bucket_key,
 )
 from ..services.ops_priority import compute_ops_priority
+from ..services.pilotage_territorial_maps import build_territorial_snapshots
 from ..services.prospect_auto_capture import (
     append_audience_context_to_notes,
     captured_audience_session_targets,
     extract_audience_context,
     notes_without_audience_context,
 )
-from ..security_logging import log_security_event
+from ..services.quality_signals import compute_quality_signals
 from ..services.recommendation_engine import compute_recommendation
 from ..services.reporting.operations_report import build_operational_report
-import csv
-from io import StringIO
-from ..services.risk_alerts import evaluate_case_alerts
-from ..services.risk_engine import update_case_risk
 from ..services.request_sla import (
     build_request_inactivity_components,
     build_request_meaningful_activity_subquery,
     get_request_last_meaningful_activity,
     request_dashboard_actionable_filter,
 )
-from ..services.quality_signals import compute_quality_signals
-from ..services.event_bus import (
-    publish as publish_admin_stream_event,
-    subscribe as subscribe_admin_stream,
-    unsubscribe as unsubscribe_admin_stream,
-)
+from ..services.risk_alerts import evaluate_case_alerts
+from ..services.risk_engine import update_case_risk
 from ..services.structure_service import create_structure_with_admin
+from ..services.territorial_intelligence import (
+    detect_priority_territories,
+    normalize_territory_name,
+)
 
 GENERIC_ADMIN_LOGIN_FAIL_MSG = (
     "Identifiants invalides ou accès temporairement bloqué."
@@ -5946,9 +5950,10 @@ def admin_team_logo_upload():
     """Replace only the authenticated organization admin's logo."""
     actor = _require_team_management_access()
     from backend.models import OrganizationLogo
+
     from ..services.organization_logo import (
-        InvalidOrganizationLogo,
         MAX_LOGO_BYTES,
+        InvalidOrganizationLogo,
         normalize_organization_logo,
     )
 
@@ -6105,8 +6110,9 @@ def admin_team_member_reset(member_id):
     member = _team_member(actor, member_id)
     if not member.is_active:
         abort(409)
-    from ..services.admin_access_reset import create_access_reset, TTL_MINUTES
     from backend.mail_service import send_notification_email
+
+    from ..services.admin_access_reset import TTL_MINUTES, create_access_reset
 
     row, raw = create_access_reset(member, actor)
     # Fragments are not sent to servers, proxies or access logs.
@@ -6147,8 +6153,9 @@ def superadmin_user_reset_access(member_id):
     actor = current_user
     member = AdminUser.query.filter_by(id=member_id, is_active=True).first_or_404()
 
-    from ..services.admin_access_reset import create_access_reset, TTL_MINUTES
     from backend.mail_service import send_notification_email
+
+    from ..services.admin_access_reset import TTL_MINUTES, create_access_reset
 
     try:
         row, raw = create_access_reset(
@@ -7023,11 +7030,12 @@ def admin_forgot_password():
         user = _find_admin_user(identifier) if identifier else None
 
         if user is not None and user.is_active and user.email:
-            from ..services.admin_access_reset import (
-                create_self_access_reset,
-                TTL_MINUTES,
-            )
             from backend.mail_service import send_notification_email
+
+            from ..services.admin_access_reset import (
+                TTL_MINUTES,
+                create_self_access_reset,
+            )
 
             try:
                 row, raw = create_self_access_reset(user)
@@ -13552,8 +13560,8 @@ def admin_revenue():
     }
 
     try:
-        from .analytics import build_conversion_funnel_context
         from ..services.website_analytics import read_scope
+        from .analytics import build_conversion_funnel_context
 
         acquisition_context = build_conversion_funnel_context(
             read_scope(),
@@ -16185,12 +16193,12 @@ def admin_pro_access_reject(pro_id: int):
     active_sla_filter_label = SLA_QUEUE_KINDS.get(sla_kind, "") if active_sla_queue else ""
 
 
-from . import admin_requests as _admin_requests  # noqa: F401
-from . import admin_referrals as _admin_referrals  # noqa: F401
-from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
-from . import admin_cases as _admin_cases  # noqa: F401
-from . import admin_notifications as _admin_notifications  # noqa: F401
 from . import admin_calendar as _admin_calendar  # noqa: F401
+from . import admin_cases as _admin_cases  # noqa: F401
+from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
+from . import admin_notifications as _admin_notifications  # noqa: F401
+from . import admin_referrals as _admin_referrals  # noqa: F401
+from . import admin_requests as _admin_requests  # noqa: F401
 from . import admin_structures as _admin_structures  # noqa: F401
 
 build_requests_query = _admin_requests.build_requests_query
@@ -16198,8 +16206,8 @@ get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapsho
 
 
 def _build_operational_report_pdf_response(report: dict):
-    from io import BytesIO
     import os
+    from io import BytesIO
 
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
@@ -17519,8 +17527,9 @@ def admin_operations_report():
         raise
 
 # --- Ops Action Queue API v1 ---
-from flask import jsonify
 from datetime import datetime, timezone
+
+from flask import jsonify
 
 try:
     from backend.models import Request as OpsActionRequest
