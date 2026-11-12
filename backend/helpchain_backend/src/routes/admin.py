@@ -5973,8 +5973,11 @@ def admin_team():
         .all()
     )
 
+    from backend.models import OrganizationLogo
+
     return render_template(
         "admin/team.html",
+        organization_logo_exists=(db.session.get(OrganizationLogo, actor.structure_id) is not None),
         team_members=team_members,
         pending_invitations=pending_invitations,
     )
