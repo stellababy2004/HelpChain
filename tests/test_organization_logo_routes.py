@@ -4,7 +4,7 @@ from io import BytesIO
 
 from PIL import Image
 
-from backend.models import AdminUser, OrganizationLogo, Structure, db
+from backend.models import OrganizationLogo, Structure, db
 from tests.test_admin_team import _admin, _login
 
 
@@ -33,7 +33,7 @@ def test_organization_logo_lifecycle_and_tenant_isolation(client, app):
     assert uploaded.status_code == 303
     stored = db.session.get(OrganizationLogo, first.id)
     assert stored is not None
-    assert stored.png_data.startswith(b"\\x89PNG".decode("unicode_escape").encode("latin1"))
+    assert stored.png_data[:4] == bytes((137, 80, 78, 71))
     assert db.session.get(OrganizationLogo, second.id) is None
 
     own_logo = client.get("/admin/team/logo.png")
