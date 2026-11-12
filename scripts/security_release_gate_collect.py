@@ -125,9 +125,9 @@ class GitHubClient:
         while True:
             separator = "&" if "?" in path else "?"
             payload = self.get(f"{path}{separator}per_page=100&page={page}")
-            if isinstance(payload, list) and key in {"analyses", "alerts"}:
+            if isinstance(payload, list) and key in {"analyses", "alerts", "pulls"}:
                 values = payload
-            elif isinstance(payload, dict) and key not in {"analyses", "alerts"}:
+            elif isinstance(payload, dict) and key not in {"analyses", "alerts", "pulls"}:
                 values = payload.get(key)
             else:
                 values = None
@@ -306,12 +306,12 @@ def collect_required_evidence(
             for run in runs
             if run.get("head_sha") == head_sha
             and run.get("event") == "pull_request"
-            and any(
-                item.get("head", {}).get("sha") == head_sha
-                for item in run.get("pull_requests", [])
-            )
         ]
         run = select_latest_run(candidates)
+        if run and run.get("status") == "completed" and run.get("conclusion") == "success":
+            identity = resolve_pr_identity(client, run)
+            if identity["base_sha"] != base_sha:
+                raise GitHubApiError("scanner base SHA mismatch")
         if (
             not run
             or run.get("status") != "completed"
@@ -439,57 +439,22 @@ def collect_codeql_analysis(
     head_sha: str,
     repository: str,
 ) -> dict[str, Any]:
-    pull_requests = run.get("pull_requests", [])
-    if not isinstance(pull_requests, list) or len(pull_requests) != 1:
-        return {
-            "status": {
-                "name": "CodeQL analysis",
-                "status": "missing",
-                "report_present": False,
-                "report_valid": False,
-                "run_id": run.get("id"),
-                "run_attempt": run.get("run_attempt"),
-                "head_sha": head_sha,
-                "event": run.get("event"),
-                "reason": "CodeQL PR provenance is missing or ambiguous",
-            },
-            "findings": [],
-        }
-    pr_number = pull_requests[0].get("number")
-    expected_ref = (
-        f"refs/pull/{pr_number}/merge" if isinstance(pr_number, int) else None
-    )
-    pr = client.get(f"pulls/{pr_number}") if expected_ref else None
-    if (
-        not isinstance(pr, dict)
-        or pr.get("number") != pr_number
-        or pr.get("head", {}).get("sha") != head_sha
-        or pr.get("head", {}).get("repo", {}).get("full_name") != repository
-        or pr.get("base", {}).get("repo", {}).get("full_name") != repository
-        or not isinstance(pr.get("merge_commit_sha"), str)
-    ):
-        return {
-            "status": {
-                "name": "CodeQL analysis",
-                "status": "missing",
-                "report_present": False,
-                "report_valid": False,
-                "run_id": run.get("id"),
-                "run_attempt": run.get("run_attempt"),
-                "head_sha": head_sha,
-                "event": run.get("event"),
-                "reason": "CodeQL PR metadata is missing or mismatched",
-            },
-            "findings": [],
-        }
-    merge_commit_sha = pr["merge_commit_sha"]
+    identity = resolve_pr_identity(client, run)
+    if identity["scanned_sha"] != head_sha or client.repository != repository:
+        raise GitHubApiError("CodeQL scanned commit or repository mismatch")
+    pr_number = identity["pr_number"]
+    expected_ref = f"refs/pull/{pr_number}/merge"
+    pr = client.get(f"pulls/{pr_number}")
+    if pr.get("head", {}).get("sha") != identity["pr_head_sha"]:
+        raise GitHubApiError("PR head changed during collection")
+    scanned_sha = identity["scanned_sha"]
     analyses = client.get_paginated(
         f"code-scanning/analyses?ref={expected_ref}", "analyses"
     )
     matches = [
         analysis
         for analysis in analyses
-        if analysis.get("commit_sha") == merge_commit_sha
+        if analysis.get("commit_sha") == scanned_sha
         and analysis.get("tool", {}).get("name") == "CodeQL"
         and analysis.get("ref") == expected_ref
         and str(analysis.get("analysis_key", "")).startswith(
@@ -554,7 +519,8 @@ def collect_codeql_analysis(
             "analysis_id": analysis.get("id"),
             "analysis_key": analysis.get("analysis_key"),
             "ref": analysis.get("ref"),
-            "merge_commit_sha": merge_commit_sha,
+            "merge_commit_sha": pr.get("merge_commit_sha"),
+            "scanned_sha": scanned_sha,
             "findings_count": len(findings),
         },
         "findings": findings,
@@ -732,6 +698,78 @@ def write(path: Path, value) -> None:
     path.write_text(json.dumps(value), encoding="utf-8")
 
 
+def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, Any]:
+    """Resolve current PR metadata and prove its relationship to the scanned commit."""
+    sha = run.get("head_sha", "")
+    if not isinstance(sha, str) or not SHA1_PATTERN.fullmatch(sha):
+        raise GitHubApiError("invalid scanned SHA")
+    if (run.get("event") != "pull_request"
+            or run.get("repository", {}).get("full_name") != client.repository
+            or run.get("head_repository", {}).get("full_name") != client.repository
+            or run.get("status") != "completed" or run.get("conclusion") != "success"):
+        raise GitHubApiError("unsuccessful or mismatched upstream run")
+    attached = run.get("pull_requests")
+    if not isinstance(attached, list) or len(attached) > 1:
+        raise GitHubApiError("ambiguous upstream PR identity")
+    candidates = attached
+    if not candidates:
+        candidates = client.get_paginated(f"commits/{sha}/pulls", "pulls")
+    # Every candidate is re-read to reject stale list metadata and moved heads.
+    matches = []
+    for candidate in candidates:
+        number = candidate.get("number")
+        if type(number) is not int or number <= 0:
+            raise GitHubApiError("invalid PR number")
+        pr = client.get(f"pulls/{number}")
+        if pr.get("number") != number:
+            raise GitHubApiError("PR number mismatch")
+        head = pr.get("head", {}).get("sha", "")
+        base = pr.get("base", {}).get("sha", "")
+        if (pr.get("head", {}).get("repo", {}).get("full_name") != client.repository
+                or pr.get("base", {}).get("repo", {}).get("full_name") != client.repository
+                or not SHA1_PATTERN.fullmatch(str(head))
+                or not SHA1_PATTERN.fullmatch(str(base))):
+            continue
+        merged = pr.get("state") == "closed" and pr.get("merged") is True
+        if pr.get("state") != "open" and not merged:
+            continue
+        if attached:
+            snapshot_head = candidate.get("head", {}).get("sha")
+            snapshot_base = candidate.get("base", {}).get("sha")
+            if snapshot_head is not None and snapshot_head != head:
+                continue
+            if not merged and snapshot_base is not None and snapshot_base != base:
+                continue
+        commit = None
+        if sha == head:
+            if merged:
+                continue
+            scan_base = base
+        elif sha == pr.get("merge_commit_sha"):
+            commit = client.get(f"commits/{sha}")
+            parents = [item.get("sha") for item in commit.get("parents", [])]
+            if (commit.get("sha") != sha or len(parents) != 2
+                    or parents[1] != head or not SHA1_PATTERN.fullmatch(str(parents[0]))
+                    or parents[0] == head or (not merged and parents[0] != base)):
+                continue
+            scan_base = parents[0]
+        else:
+            continue
+        validation = validate_workflow_run(
+            run, pr, repository=client.repository, workflow_id=run.get("workflow_id"),
+            run_id=run.get("id"), run_attempt=run.get("run_attempt"),
+            pr_number=number, head_sha=head, base_sha=scan_base,
+            scanned_sha=sha, scanned_commit=commit,
+        )
+        if not validation["valid"]:
+            continue
+        matches.append({"pr_number": number, "pr_head_sha": head,
+                        "scanned_sha": sha, "base_sha": scan_base})
+    if len(matches) != 1:
+        raise GitHubApiError("missing, stale, or ambiguous PR identity")
+    return matches[0]
+
+
 def validate_workflow_run(
     run: dict[str, Any],
     pr: dict[str, Any],
@@ -743,8 +781,11 @@ def validate_workflow_run(
     pr_number: int,
     head_sha: str,
     base_sha: str,
+    scanned_sha: str | None = None,
+    scanned_commit: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     errors = []
+    scanned_sha = scanned_sha or head_sha
     if run.get("id") != run_id:
         errors.append("run ID mismatch")
     if run.get("workflow_id") != workflow_id:
@@ -757,11 +798,24 @@ def validate_workflow_run(
         errors.append("unexpected event type")
     if run.get("status") != "completed" or run.get("conclusion") != "success":
         errors.append("run is not completed successfully")
-    if run.get("head_sha") != head_sha:
-        errors.append("run head SHA mismatch")
+    if run.get("head_sha") != scanned_sha:
+        errors.append("run scanned SHA mismatch")
     if pr.get("number") != pr_number:
         errors.append("PR number mismatch")
-    if pr.get("base", {}).get("sha") != base_sha:
+    merged = pr.get("state") == "closed" and pr.get("merged") is True
+    if pr.get("state") != "open" and not merged:
+        errors.append("PR is closed without merging")
+    if pr.get("head", {}).get("repo", {}).get("full_name") != repository:
+        errors.append("head repository mismatch")
+    if scanned_sha != head_sha:
+        parents = [item.get("sha") for item in (scanned_commit or {}).get("parents", [])]
+        if (pr.get("merge_commit_sha") != scanned_sha
+                or (scanned_commit or {}).get("sha") != scanned_sha
+                or parents != [base_sha, head_sha]):
+            errors.append("scanned merge relationship mismatch")
+    elif merged:
+        errors.append("merged PR requires merge commit evidence")
+    if (not merged or scanned_sha == head_sha) and pr.get("base", {}).get("sha") != base_sha:
         errors.append("PR base SHA mismatch")
     if pr.get("head", {}).get("sha") != head_sha:
         errors.append("PR head SHA mismatch")
@@ -992,6 +1046,7 @@ def main() -> int:
             "runs",
             "pip-audit",
             "validate-run",
+            "resolve-pr",
             "validate-sarif",
             "validate-artifact",
             "zip-members",
@@ -1025,7 +1080,16 @@ def main() -> int:
     parser.add_argument("--temp-root", type=Path)
     parser.add_argument("--findings-output", type=Path)
     args = parser.parse_args()
-    if args.mode == "alerts":
+    if args.mode == "resolve-pr":
+        client = GitHubClient(args.token, args.repository)
+        run = client.get(f"actions/runs/{args.run_id}")
+        if (run.get("id") != args.run_id or run.get("run_attempt") != args.run_attempt
+                or run.get("workflow_id") != args.workflow_id
+                or run.get("head_sha") != args.head_sha):
+            raise GitHubApiError("upstream run identity mismatch")
+        identity = resolve_pr_identity(client, run)
+        write(args.output, identity)
+    elif args.mode == "alerts":
         collect_alerts(args.pages, args.output)
     elif args.mode == "runs":
         collect_runs(args.pages, args.output, args.expected_head_sha)
