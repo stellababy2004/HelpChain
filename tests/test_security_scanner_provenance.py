@@ -9,7 +9,6 @@ import zipfile
 import importlib.util
 from pathlib import Path
 import unittest
-from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location(
     "provenance_collector",
