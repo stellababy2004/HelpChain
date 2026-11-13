@@ -69,7 +69,8 @@ jobs:
       - name: Resolve trusted PR SHAs and baseline
         id: refs
         env:
-          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha || inputs.head_sha }}
+          EVENT_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.sha || inputs.head_sha }}
+          EVENT_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
           EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
         shell: bash
         run: |
@@ -84,7 +85,19 @@ jobs:
             printf '{"status":"INCOMPLETE","error":"trusted baseline is unavailable at the supplied base commit"}\n' > trusted-baseline.json
             echo "baseline_source=unavailable" >> "$GITHUB_OUTPUT"
           fi
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if ! [[ "$EVENT_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+              echo "::error::Invalid PR head SHA"
+              exit 1
+            fi
+            parents="$(git rev-list --parents -n 1 "$EVENT_HEAD_SHA")"
+            if [[ "$parents" != "$EVENT_HEAD_SHA $EVENT_BASE_SHA $EVENT_PR_HEAD_SHA" ]]; then
+              echo "::error::Scanned merge commit does not match the PR base and head"
+              exit 1
+            fi
+          fi
           echo "head_sha=$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
+          echo "pr_head_sha=$EVENT_PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
           echo "base_sha=$EVENT_BASE_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Collect current Code Scanning alerts
@@ -115,6 +128,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          PR_HEAD_SHA: ${{ steps.refs.outputs.pr_head_sha }}
           BASE_SHA: ${{ steps.refs.outputs.base_sha }}
         shell: bash
         run: |
@@ -122,9 +136,11 @@ jobs:
           evidence_status=1
           for attempt in {1..20}; do
             set +e
+            pr_head_args=()
+            if [[ -n "$PR_HEAD_SHA" ]]; then pr_head_args=(--pr-head-sha "$PR_HEAD_SHA"); fi
             python scripts/security_release_gate_collect.py collect-evidence \
               --token "$GH_TOKEN" --repository "$GITHUB_REPOSITORY" \
-              --head-sha "$HEAD_SHA" --base-sha "$BASE_SHA" \
+              --head-sha "$HEAD_SHA" "${pr_head_args[@]}" --base-sha "$BASE_SHA" \
               --temp-root "$RUNNER_TEMP/security-release-gate-evidence" \
               --output .required-scanner-status.json \
               --findings-output .scanner-findings.json
