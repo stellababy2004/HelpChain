@@ -17178,8 +17178,17 @@ from . import admin_referrals as _admin_referrals  # noqa: F401
 from . import admin_requests as _admin_requests  # noqa: F401
 from . import admin_structures as _admin_structures  # noqa: F401
 
-build_requests_query = _admin_requests.build_requests_query
-get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
+
+def build_requests_query(base_query, request_args, legacy: bool = False):
+    from .admin_requests import build_requests_query as implementation
+
+    return implementation(base_query, request_args, legacy=legacy)
+
+
+def get_system_health_snapshot_cached():
+    from .admin_diagnostics import get_system_health_snapshot_cached as implementation
+
+    return implementation()
 
 
 def _build_operational_report_pdf_response(report: dict):
