@@ -186,6 +186,16 @@ def validate_dispositions(
         ):
             errors.append("disposition evidence_ref is required")
             continue
+        evidence_path = entry["evidence_ref"].split("#", 1)[0]
+        normalized_evidence = normalize_finding_path(evidence_path)
+        if (
+            normalized_evidence is None
+            or not normalized_evidence.startswith("docs/security/")
+            or not normalized_evidence.endswith(".md")
+            or not Path(normalized_evidence).is_file()
+        ):
+            errors.append("disposition evidence document is missing or invalid")
+            continue
         try:
             expires_on = date.fromisoformat(str(entry.get("expires_on")))
         except ValueError:
