@@ -63,7 +63,9 @@ def test_organization_logo_lifecycle_and_tenant_isolation(client, app):
 
 
 def test_rejects_invalid_logo_without_persisting(client, app):
-    structure = Structure(name="Invalid Logo Tenant", slug="invalid-logo-tenant", status="active")
+    structure = Structure(
+        name="Invalid Logo Tenant", slug="invalid-logo-tenant", status="active"
+    )
     db.session.add(structure)
     db.session.flush()
     admin = _admin("invalid_logo_admin", structure.id)
@@ -79,16 +81,21 @@ def test_rejects_invalid_logo_without_persisting(client, app):
 
 
 def test_readonly_cannot_manage_organization_logo(client, app):
-    structure = Structure(name="Read Only Logo Tenant", slug="readonly-logo-tenant", status="active")
+    structure = Structure(
+        name="Read Only Logo Tenant", slug="readonly-logo-tenant", status="active"
+    )
     db.session.add(structure)
     db.session.flush()
     user = _admin("readonly_logo_user", structure.id, role="readonly")
     db.session.commit()
     _switch_admin(client, app, user)
     assert client.get("/admin/team/logo.png").status_code == 403
-    assert client.post(
-        "/admin/team/logo",
-        data={"logo": (_png(), "logo.png")},
-        content_type="multipart/form-data",
-    ).status_code == 403
+    assert (
+        client.post(
+            "/admin/team/logo",
+            data={"logo": (_png(), "logo.png")},
+            content_type="multipart/form-data",
+        ).status_code
+        == 403
+    )
     assert client.post("/admin/team/logo/delete").status_code == 403

@@ -20334,3 +20334,10 @@ msgstr "Save logo"
 
 msgid "Supprimer le logo"
 msgstr "Delete logo"
+
+msgid ""
+"La position et la taille du logo seront conservées après l’enregistrement."
+msgstr "The logo position and size will be preserved after saving."
+
+msgid "Invalid code. Attempts remaining: %(count)s."
+msgstr "Incorrect code. You have %(count)s attempts remaining."

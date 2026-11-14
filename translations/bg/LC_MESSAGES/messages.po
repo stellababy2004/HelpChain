@@ -20555,3 +20555,10 @@ msgstr "Запазване на логото"
 
 msgid "Supprimer le logo"
 msgstr "Изтриване на логото"
+
+msgid ""
+"La position et la taille du logo seront conservées après l’enregistrement."
+msgstr "Позицията и размерът на логото ще се запазят след записване."
+
+msgid "Invalid code. Attempts remaining: %(count)s."
+msgstr "Невалиден код. Оставащи опити: %(count)s."
