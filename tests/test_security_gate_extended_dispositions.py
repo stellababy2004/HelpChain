@@ -80,17 +80,13 @@ class ExtendedDispositionTests(unittest.TestCase):
 
     def test_blocking_severity_never_accepted(self):
         self.finding["severity"] = "high"
-        with (
-            patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()),
-            patch.object(
-                gate,
-                "finding_context_digest",
-                return_value=self.entry["context_digest"],
-            ),
-        ):
-            recognized, unresolved, _ = gate.apply_dispositions(
-                [self.finding], self.document, repository=REPOSITORY
-            )
+        with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
+            with patch.object(
+                gate, "finding_context_digest", return_value=self.entry["context_digest"]
+            ):
+                recognized, unresolved, _ = gate.apply_dispositions(
+                    [self.finding], self.document, repository=REPOSITORY
+                )
         self.assertFalse(recognized)
         self.assertEqual(
             unresolved[0]["reason"], "blocking severity cannot be dispositioned"
