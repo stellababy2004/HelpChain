@@ -1,0 +1,22 @@
+name: Security gate Black formatting diagnostic
+
+on:
+  push:
+    branches: [fix/security-gate-disposition-review-20261114]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  black-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c
+        with:
+          python-version: "3.11"
+      - name: Show exact Black diff
+        run: |
+          python -m pip install black==26.10.1
+          black --diff tests/test_security_gate_extended_dispositions.py || true
