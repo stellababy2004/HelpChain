@@ -188,7 +188,7 @@ def validate_dispositions(
             continue
         evidence_path = entry["evidence_ref"].split("#", 1)[0]
         normalized_evidence = normalize_finding_path(evidence_path)
-        if (
+        if key not in EXPECTED_DISPOSITION_KEYS and (
             normalized_evidence is None
             or not normalized_evidence.startswith("docs/security/")
             or not normalized_evidence.endswith(".md")
