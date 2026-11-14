@@ -2,13 +2,13 @@
 
 import copy
 import hashlib
+import importlib.util
 import io
 import json
 import tempfile
-import zipfile
-import importlib.util
-from pathlib import Path
 import unittest
+import zipfile
+from pathlib import Path
 
 spec = importlib.util.spec_from_file_location(
     "provenance_collector",
@@ -40,6 +40,7 @@ class ApiFixture:
             "merge_commit_sha": MERGE,
         }
         self.commit = {"sha": MERGE, "parents": [{"sha": BASE}, {"sha": HEAD}]}
+        self.trusted_bases = [BASE]
         definitions = [
             (
                 "CodeQL Advanced Security",
@@ -217,6 +218,22 @@ class ApiFixture:
         destination.write_bytes(self.archives[artifact_id])
 
     def get(self, path):
+        if path == "":
+            return {"full_name": REPO, "default_branch": "main"}
+        if path == "branches/main":
+            return {"commit": {"sha": self.trusted_bases[-1]}}
+        if path.startswith("compare/"):
+            older, newer = path[8:].split("...")
+            ahead = (
+                older in self.trusted_bases
+                and newer in self.trusted_bases
+                and self.trusted_bases.index(older) <= self.trusted_bases.index(newer)
+            )
+            return {
+                "status": "ahead" if ahead else "diverged",
+                "base_commit": {"sha": older},
+                "merge_base_commit": {"sha": older if ahead else "0" * 40},
+            }
         if path == "pulls/216":
             return copy.deepcopy(self.pr)
         if path == f"commits/{MERGE}":
@@ -323,6 +340,85 @@ class ScannerProvenanceTests(unittest.TestCase):
                 self.client.pr[field]["sha"] = "a" * 40
                 self.assert_identity_rejected()
                 self.client.pr = original
+
+    def test_event_and_pr_base_snapshot_can_lag_actual_merge_parent(self):
+        old_base = "1" * 40
+        self.client.trusted_bases.insert(0, old_base)
+        self.client.pr["base"]["sha"] = old_base
+        self.run["pull_requests"][0]["base"]["sha"] = old_base
+        identity = gate.resolve_pr_identity(self.client, self.run)
+        self.assertEqual(identity["base_sha"], BASE)
+        self.assertEqual(identity["scanned_sha"], MERGE)
+
+    def test_base_advances_after_event_with_same_verified_merge(self):
+        new_base = "2" * 40
+        self.client.trusted_bases.append(new_base)
+        self.client.pr["base"]["sha"] = new_base
+        identity = gate.resolve_pr_identity(self.client, self.run)
+        self.assertEqual(identity["base_sha"], BASE)
+        self.assertEqual(identity["pr_head_sha"], HEAD)
+        self.assertTrue(all(s["report_valid"] for s in self.collect()["statuses"]))
+
+    def test_unrelated_attached_base_snapshot_is_rejected(self):
+        self.run["pull_requests"][0]["base"]["sha"] = "3" * 40
+        with self.assertRaisesRegex(gate.GitHubApiError, "unrelated trusted ancestry"):
+            gate.resolve_pr_identity(self.client, self.run)
+
+    def test_untrusted_first_parent_is_rejected_even_if_pr_base_matches(self):
+        self.client.trusted_bases = ["4" * 40]
+        with self.assertRaisesRegex(
+            gate.GitHubApiError, "outside trusted default branch"
+        ):
+            gate.resolve_pr_identity(self.client, self.run)
+
+    def test_wrong_base_branch_is_rejected(self):
+        self.client.pr["base"]["ref"] = "untrusted"
+        with self.assertRaisesRegex(gate.GitHubApiError, "trusted default branch"):
+            gate.resolve_pr_identity(self.client, self.run)
+
+    def test_stale_head_has_specific_diagnostic(self):
+        self.run["pull_requests"][0]["head"]["sha"] = "5" * 40
+        with self.assertRaisesRegex(gate.GitHubApiError, "head snapshot changed"):
+            gate.resolve_pr_identity(self.client, self.run)
+
+    def test_missing_artifact_is_incomplete(self):
+        self.client.artifacts[43272899649] = []
+        result = self.collect()
+        self.assertFalse(
+            next(s for s in result["statuses"] if s["name"] == "trivy-iac-sarif")[
+                "report_valid"
+            ]
+        )
+
+    def test_invalid_report_evidence_is_rejected(self):
+        artifact = self.client.artifacts[43272899649][0]
+        payload = io.BytesIO()
+        with zipfile.ZipFile(payload, "w") as archive:
+            archive.writestr(
+                "invalid.sarif", json.dumps({"version": "2.1.0", "runs": []})
+            )
+        self.client.archives[artifact["id"]] = payload.getvalue()
+        artifact["digest"] = "sha256:" + hashlib.sha256(payload.getvalue()).hexdigest()
+        result = self.collect()
+        self.assertFalse(
+            next(s for s in result["statuses"] if s["name"] == "trivy-iac-sarif")[
+                "report_valid"
+            ]
+        )
+
+    def test_ambiguous_attached_pr_identity_is_rejected(self):
+        self.run["pull_requests"] *= 2
+        with self.assertRaisesRegex(
+            gate.GitHubApiError, "ambiguous upstream PR identity"
+        ):
+            gate.resolve_pr_identity(self.client, self.run)
+
+    def test_missing_or_invalid_run_sha_is_rejected(self):
+        for sha in (None, "", "a22ceef9", "g" * 40):
+            with self.subTest(sha=sha):
+                self.run["head_sha"] = sha
+                with self.assertRaisesRegex(gate.GitHubApiError, "invalid scanned SHA"):
+                    gate.resolve_pr_identity(self.client, self.run)
 
     def test_wrong_ordered_merge_parents(self):
         self.client.commit["parents"].reverse()
