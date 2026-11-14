@@ -73,7 +73,8 @@ class ExtendedDispositionTests(unittest.TestCase):
     def test_valid_reviewed_finding_is_recognized(self):
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
             with patch.object(
-                gate, "finding_context_digest",
+                gate,
+                "finding_context_digest",
                 return_value=self.entry["context_digest"],
             ):
                 with patch.object(Path, "is_file", return_value=True):
