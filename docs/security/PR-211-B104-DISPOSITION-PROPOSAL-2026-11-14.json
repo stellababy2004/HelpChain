@@ -1,0 +1,29 @@
+{
+  "status": "PROPOSED_FALSE_POSITIVE",
+  "approval_status": "PENDING_OWNER_REVIEW",
+  "repository": "stellababy2004/HelpChain",
+  "pr_number": 211,
+  "pr_head_sha": "a22ceef96c12317206f772a4c2deadca2c052229",
+  "scanned_sha": "9b860efd2726145d54f5b3ba6265cd58b876f9f2",
+  "finding_id": "bandit|b104|backend/helpchain_backend/src/routes/admin.py|2423",
+  "scanner": "Bandit",
+  "rule": "B104",
+  "path": "backend/helpchain_backend/src/routes/admin.py",
+  "line": 2423,
+  "expected_severity": "unclassified",
+  "context_digest": "sha256:8168a08e75fe76475215886ac7447558e07540a82ea3226f89cb18373813f385",
+  "source_line": "    return request.remote_addr or \"0.0.0.0\"",
+  "rationale": "The literal is returned only as a fallback client-IP string when request.remote_addr is absent. This function performs no socket creation, listen or bind operation.",
+  "evidence": {
+    "function": "_client_ip",
+    "ordered_source_comparison": "AST and literal source line identical between main 811550f6 at line 2148 and PR211 head a22ceef9 at line 2423",
+    "callers": "Admin metadata, rate-limit identity, risk and audit handling",
+    "existing_disposition": "docs/security/PR-203-FINDINGS-DISPOSITIONS-2026-11-11.json, identity ending |2148",
+    "existing_disposition_applies_exactly": false
+  },
+  "activation_requirements": [
+    "Owner review of this exact identity and source evidence",
+    "Explicit approved policy update preserving source/context and severity checks"
+  ],
+  "active_policy_modified": false
+}

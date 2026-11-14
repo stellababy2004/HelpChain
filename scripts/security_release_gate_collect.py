@@ -739,7 +739,7 @@ def collect_codeql_analysis(
         raise GitHubApiError("PR head changed during collection")
     scanned_sha = identity["scanned_sha"]
     analyses = client.get_paginated(
-        f"code-scanning/analyses?ref={expected_ref}", "analyses"
+        f"code-scanning/analyses?ref={quote(expected_ref, safe='')}", "analyses"
     )
     analysis_steps = [
         step
@@ -788,14 +788,18 @@ def collect_codeql_analysis(
     ):
         raise GitHubApiError("CodeQL analysis metadata is incomplete")
     alerts = client.get_paginated(
-        f"code-scanning/alerts?state=open&ref={head_sha}", "alerts"
+        f"code-scanning/alerts?state=open&ref={quote(expected_ref, safe='')}", "alerts"
     )
     findings = []
     for alert in alerts:
+        if alert.get("tool", {}).get("name") != "CodeQL":
+            continue
         instance = alert.get("most_recent_instance", {})
         if (
             instance.get("commit_sha") != head_sha
             or instance.get("ref") != expected_ref
+            or instance.get("analysis_key") != analysis["analysis_key"]
+            or instance.get("category") != analysis["category"]
         ):
             raise GitHubApiError("CodeQL alert instance is stale or mismatched")
         findings.append(
@@ -807,9 +811,14 @@ def collect_codeql_analysis(
                 ),
                 "path": instance.get("location", {}).get("path"),
                 "identity": alert.get("number"),
+                "line": instance.get("location", {}).get("start_line"),
                 "head_sha": head_sha,
                 "analysis_id": analysis.get("id"),
             }
+        )
+    if analysis.get("results_count", 0) and not findings:
+        raise GitHubApiError(
+            "non-empty CodeQL analysis has no open alert evidence; alert state requires reconciliation"
         )
     return {
         "status": {
