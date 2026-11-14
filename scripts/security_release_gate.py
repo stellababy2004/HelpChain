@@ -155,7 +155,10 @@ def validate_dispositions(
         # New findings may be reviewed explicitly, but never auto-approved.
         # Exact identity, source-context digest, severity, expiry, and evidence
         # checks below remain mandatory for every additional disposition.
-        if key not in EXPECTED_DISPOSITION_KEYS and entry.get("disposition") != "FALSE_POSITIVE":
+        if (
+            key not in EXPECTED_DISPOSITION_KEYS
+            and entry.get("disposition") != "FALSE_POSITIVE"
+        ):
             errors.append("new finding requires explicit false-positive review")
             continue
         if key in dispositions:
