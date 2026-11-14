@@ -59,7 +59,9 @@ def test_external_and_out_of_scope_next_urls_are_rejected(redirects, candidate):
     assert redirects(candidate) == ""
 
 
-@pytest.mark.parametrize("candidate", ["/admin", "/admin/dashboard", "/ops", "/ops/workspace"])
+@pytest.mark.parametrize(
+    "candidate", ["/admin", "/admin/dashboard", "/ops", "/ops/workspace"]
+)
 def test_allowed_local_admin_paths_remain_usable(redirects, candidate):
     assert redirects(candidate) == candidate
 
