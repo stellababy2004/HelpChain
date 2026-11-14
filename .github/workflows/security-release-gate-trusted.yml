@@ -1,0 +1,231 @@
+name: Security Release Gate (trusted evaluator)
+
+on:
+  workflow_run:
+    workflows:
+      - CodeQL Advanced Security
+      - Trivy Security Scan
+      - Security Scans (Bandit & pip-audit)
+      - Secret Scan
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: "Exact scanned commit SHA to evaluate"
+        required: true
+        type: string
+      base_sha:
+        description: "Trusted base SHA containing the baseline"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  security-events: read
+  actions: read
+  pull-requests: read
+  checks: write
+
+concurrency:
+  group: security-release-gate-trusted-${{ github.event.workflow_run.head_sha || inputs.head_sha }}
+  cancel-in-progress: true
+
+jobs:
+  evaluate:
+    name: Trusted security verdict
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trusted default branch only
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve and validate trusted refs
+        id: refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha || inputs.head_sha }}
+          INPUT_BASE_SHA: ${{ inputs.base_sha }}
+          TRUSTED_SHA: ${{ github.sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]]
+          [[ "$TRUSTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]
+
+          git fetch --no-tags origin "refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          git merge-base --is-ancestor "$TRUSTED_SHA" "refs/remotes/origin/${DEFAULT_BRANCH}"
+
+          gh api "repos/${GITHUB_REPOSITORY}/commits/${TRUSTED_SHA}" > trusted-commit.json
+          python -c "import json,os; d=json.load(open('trusted-commit.json')); assert d.get('sha') == os.environ['TRUSTED_SHA']; assert d.get('html_url','').startswith('https://github.com/'+os.environ['GITHUB_REPOSITORY']+'/commit/')"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            BASE_SHA="$INPUT_BASE_SHA"
+            [[ "$BASE_SHA" =~ ^[0-9a-fA-F]{40}$ ]]
+            echo "pr_number=" >> "$GITHUB_OUTPUT"
+          else
+            python scripts/security_release_gate_collect.py resolve-pr \
+              --repository "$GITHUB_REPOSITORY" --run-id "$RUN_ID" \
+              --run-attempt "$RUN_ATTEMPT" --workflow-id "$WORKFLOW_ID" \
+              --head-sha "$HEAD_SHA" --output trusted-pr-identity.json
+            BASE_SHA="$(python -c "import json; print(json.load(open('trusted-pr-identity.json'))['base_sha'])")"
+            SCANNED_SHA="$(python -c "import json; print(json.load(open('trusted-pr-identity.json'))['scanned_sha'])")"
+            python - <<'PYTHON'
+          import json
+          import os
+          identity = json.load(open("trusted-pr-identity.json", encoding="utf-8"))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"pr_number={identity['pr_number']}\n")
+              out.write(f"pr_head_sha={identity['pr_head_sha']}\n")
+          PYTHON
+          fi
+
+          git merge-base --is-ancestor "$BASE_SHA" "refs/remotes/origin/${DEFAULT_BRANCH}"
+          git cat-file -e "$BASE_SHA^{commit}"
+          git show "${BASE_SHA}:docs/security/security-release-gate-baseline.json" > trusted-baseline.json
+          echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "scanned_sha=${SCANNED_SHA:-$HEAD_SHA}" >> "$GITHUB_OUTPUT"
+          echo "workflow_run_head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Collect trusted API evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.refs.outputs.scanned_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&ref=${HEAD_SHA}&per_page=100" \
+            > .security-alert-pages.json
+          python scripts/security_release_gate_collect.py alerts \
+            --pages .security-alert-pages.json --output .security-alerts.json
+          python -c "import json, os; json.dump([{'name':'github-code-scanning-api','evidence_class':'code_scanning_api','status':'success','report_present':True,'report_valid':True,'run_id':'code-scanning-api:'+os.environ['HEAD_SHA'],'head_sha':os.environ['HEAD_SHA'],'event':'pull_request'}], open('.security-scan-status.json','w',encoding='utf-8'))"
+
+      - name: Collect scanner evidence from exact workflow runs
+        id: evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.refs.outputs.scanned_sha }}
+          PR_HEAD_SHA: ${{ steps.refs.outputs.pr_head_sha }}
+          BASE_SHA: ${{ steps.refs.outputs.base_sha }}
+        shell: bash
+        run: |
+          set +e
+          python scripts/security_release_gate_collect.py collect-evidence \
+            --token "$GH_TOKEN" --repository "$GITHUB_REPOSITORY" \
+            --head-sha "$HEAD_SHA" --pr-head-sha "$PR_HEAD_SHA" --base-sha "$BASE_SHA" \
+            --temp-root "$RUNNER_TEMP/security-release-gate-evidence" \
+            --output .scanner-evidence-status.json \
+            --findings-output .scanner-findings.json
+          evidence_status=$?
+          if [ ! -s .scanner-evidence-status.json ]; then
+            python -c "import json; json.dump([{'name':'scanner-evidence-collection','status':'missing','report_present':False,'report_valid':False,'run_id':None,'head_sha':None,'event':None,'reason':'collector failed'}], open('.scanner-evidence-status.json','w',encoding='utf-8'))"
+          fi
+          if [ ! -s .scanner-findings.json ]; then echo '[]' > .scanner-findings.json; fi
+          python scripts/security_release_gate_collect.py merge \
+            --api-status .security-scan-status.json \
+            --scanner-status .scanner-evidence-status.json \
+            --output .security-scan-status.json
+          echo "collector_exit_code=$evidence_status" >> "$GITHUB_OUTPUT"
+
+      - name: Evaluate trusted verdict
+        id: verdict
+        shell: bash
+        run: |
+          set +e
+          api_arg=""
+          if python -c "import json; s=json.load(open('.security-scan-status.json',encoding='utf-8')); raise SystemExit(0 if any(x.get('name') == 'CodeQL analysis' and x.get('status') == 'success' and x.get('report_valid') is True for x in s) else 1)"; then
+            api_arg="--api-ok"
+          fi
+          python scripts/security_release_gate.py \
+            --baseline trusted-baseline.json \
+            --alerts .security-alerts.json \
+            --scan-status .security-scan-status.json \
+            --scanner-findings .scanner-findings.json \
+            --output security-release-gate-report.json \
+            --repository "$GITHUB_REPOSITORY" \
+            --head-sha "${{ steps.refs.outputs.scanned_sha }}" \
+            --base-sha "${{ steps.refs.outputs.base_sha }}" \
+            $api_arg | tee security-release-gate-summary.txt
+          verdict_status=${PIPESTATUS[0]}
+          echo "technical_exit_code=$verdict_status" >> security-release-gate-summary.txt
+          exit "$verdict_status"
+
+      - name: Write summary
+        if: always()
+        run: |
+          {
+            echo '## Trusted Security Release Gate'
+            echo 'Evaluator source: default branch checkout, never PR checkout.'
+            cat security-release-gate-summary.txt 2>/dev/null || echo 'INCOMPLETE: no verdict report.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload minimal verdict artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: trusted-security-release-gate-verdict
+          retention-days: 7
+          path: |
+            security-release-gate-report.json
+            security-release-gate-summary.txt
+
+      - name: Publish PR-head security check
+        if: always() && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.refs.outputs.pr_head_sha }}
+          REPORT_STATUS: ${{ steps.verdict.outcome }}
+          REFS_STATUS: ${{ steps.refs.outcome }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          WORKFLOW_ID: ${{ github.event.workflow_run.workflow_id }}
+          RUN_HEAD_SHA: ${{ steps.refs.outputs.workflow_run_head_sha }}
+          SCANNED_SHA: ${{ steps.refs.outputs.scanned_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$REFS_STATUS" != "success" ]]; then
+            echo "::error::PR identity resolution failed. No PR-head verdict can be published. See Resolve and validate trusted refs."
+            exit 1
+          fi
+          if [[ ! "$HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo "::error::Missing or invalid validated PR head SHA after PR resolution"
+            exit 1
+          fi
+          python scripts/security_release_gate_collect.py resolve-pr \
+            --repository "$GITHUB_REPOSITORY" --run-id "$RUN_ID" \
+            --run-attempt "$RUN_ATTEMPT" --workflow-id "$WORKFLOW_ID" \
+            --head-sha "$RUN_HEAD_SHA" --output current-pr-identity.json
+          python -c "import json; assert json.load(open('current-pr-identity.json')) == json.load(open('trusted-pr-identity.json'))"
+          conclusion="failure"
+          if [[ "$REPORT_STATUS" == "success" ]] && [[ -s security-release-gate-report.json ]]; then
+            conclusion="$(python -c "import json; print({'PASS':'success','FAIL':'failure','REVIEW REQUIRED':'failure','INCOMPLETE':'failure'}.get(json.load(open('security-release-gate-report.json', encoding='utf-8')).get('status'), 'failure'))")"
+          fi
+          existing_id="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs?check_name=Trusted%20security%20verdict" \
+            --jq '[.check_runs[] | select(.name == "Trusted security verdict" and .app.slug == "github-actions")][0].id // empty')"
+          check_path="repos/${GITHUB_REPOSITORY}/check-runs"
+          check_method='POST'
+          if [[ -n "$existing_id" ]]; then
+            check_path="${check_path}/${existing_id}"
+            check_method='PATCH'
+          fi
+          gh api "$check_path" \
+            --method "$check_method" \
+            -f name='Trusted security verdict' \
+            -f head_sha="$HEAD_SHA" \
+            -f status='completed' \
+            -f conclusion="$conclusion" \
+            -f details_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            -f 'output[title]=Trusted security verdict' \
+            -f "output[summary]=Published by the trusted evaluator for PR head ${HEAD_SHA}, scanned commit ${SCANNED_SHA}."

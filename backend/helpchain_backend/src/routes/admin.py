@@ -672,7 +672,7 @@ _ADMIN_LOGIN_REQUIRED_TABLES = ("admin_users", "structures", "requests")
 _HELP_PS1_LOCAL_DATABASE_URL = "sqlite:///C:/dev/HelpChain/instance/hc_local_dev.db"
 _HELP_PS1_LOCAL_DB_PATH = r"C:\dev\HelpChain\instance\hc_local_dev.db"
 _CTRL_CHARS_RE = re.compile(r"[\x00-\x08\x0B\x0C\x0E-\x1F]")
-_ONBOARDING_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+# Validate onboarding emails with the linear parser below.
 _UI_KEYS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_keys.json"
 _UI_DOMAINS_PATH = Path(__file__).resolve().parents[4] / "i18n" / "ui_domains.json"
 _TERMINOLOGY_PATH = Path(__file__).resolve().parents[4] / "i18n" / "terminology.json"
@@ -2421,6 +2421,17 @@ def _client_ip() -> str:
     if xff:
         return xff.split(",")[0].strip()
     return request.remote_addr or "0.0.0.0"
+
+
+def _valid_onboarding_email(value: str) -> bool:
+    local, separator, domain = value.partition("@")
+    return bool(
+        local
+        and separator
+        and "@" not in domain
+        and "." in domain[1:-1]
+        and not any(character.isspace() for character in value)
+    )
 
 
 def _compute_case_signals(
@@ -7104,7 +7115,7 @@ def admin_onboarding_step():
             raw_email = (request.form.get(f"invite_email_{idx}") or "").strip().lower()
             if not raw_email:
                 continue
-            if not _ONBOARDING_EMAIL_RE.match(raw_email):
+            if not _valid_onboarding_email(raw_email):
                 flash("Au moins une adresse e-mail est invalide.", "warning")
                 return redirect(url_for("admin.admin_onboarding"), code=303)
             role = (
@@ -11624,7 +11635,7 @@ def _audience_source_label(referrer: str | None) -> str:
         return "Direct"
     if "google." in domain:
         return "Google"
-    if domain.endswith("linkedin.com") or "linkedin." in domain:
+    if domain == "linkedin.com" or domain.endswith(".linkedin.com"):
         return "LinkedIn"
     if domain == "chat.openai.com" or domain.endswith(".openai.com"):
         return "ChatGPT"

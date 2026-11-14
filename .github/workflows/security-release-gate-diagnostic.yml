@@ -1,0 +1,225 @@
+name: Security Gate Identity Validation
+
+on:
+  push:
+    branches: [fix/security-gate-identity-20261114]
+    paths:
+      - .github/workflows/security-release-gate-diagnostic.yml
+      - .github/workflows/security-release-gate-trusted.yml
+      - scripts/security_release_gate_collect.py
+      - tests/test_trusted_gate_pr_identity.py
+      - tests/test_security_scanner_provenance.py
+      - tests/test_security_gate_workflows.py
+      - .github/workflows/security-release-gate.yml
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  security-events: read
+
+concurrency:
+  group: security-gate-identity-validation
+  cancel-in-progress: true
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout diagnostic PR branch commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Run PR identity regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m unittest discover -s tests -p test_trusted_gate_pr_identity.py -v
+          python -B -m unittest discover -s tests -p test_security_scanner_provenance.py -v
+          python -B -m unittest discover -s tests -p test_security_gate_workflows.py -v
+
+      - name: Diagnose real PR identity and scanner evidence
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SOURCE: ${{ github.sha }}
+          EXPECTED_HEAD: a22ceef96c12317206f772a4c2deadca2c052229
+        run: |
+          set -euo pipefail
+          python -B - <<'PYTHON'
+          import base64
+          import importlib.util
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+          import time
+
+          spec = importlib.util.spec_from_file_location(
+              "collector", "scripts/security_release_gate_collect.py"
+          )
+          collector = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(collector)
+          repo = os.environ["GITHUB_REPOSITORY"]
+          expected_head = os.environ["EXPECTED_HEAD"]
+          client = collector.GitHubClient(os.environ["GH_TOKEN"], repo)
+          report = {"status": "INCOMPLETE", "pr_number": 211, "source_sha": os.environ["EXPECTED_SOURCE"]}
+          errors = []
+          try:
+              if subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip() != os.environ["EXPECTED_SOURCE"]:
+                  raise RuntimeError("diagnostic source commit mismatch")
+              workflows = client.get_paginated("actions/workflows", "workflows")
+              selected_workflows = {}
+              for name in collector.EXPECTED_WORKFLOWS:
+                  matches = [item for item in workflows if item.get("name") == name]
+                  if len(matches) != 1:
+                      raise RuntimeError(f"missing or ambiguous workflow: {name}")
+                  selected_workflows[name] = matches[0]
+
+              # Wait only for scans belonging to this exact, current PR revision.
+              deadline = time.monotonic() + 1200
+              while True:
+                  pr = client.get("pulls/211")
+                  if (pr.get("state") != "open" or pr.get("head", {}).get("sha") != expected_head
+                          or pr.get("head", {}).get("ref") != "feature/org-admin-dashboard-branding"
+                          or pr.get("head", {}).get("repo", {}).get("full_name") != repo
+                          or pr.get("base", {}).get("repo", {}).get("full_name") != repo):
+                      raise RuntimeError("PR211 identity is stale or mismatched")
+                  merge_sha = pr.get("merge_commit_sha")
+                  if not collector.SHA1_PATTERN.fullmatch(str(merge_sha)):
+                      raise RuntimeError("PR merge SHA is missing")
+                  selected = {}
+                  for name, workflow in selected_workflows.items():
+                      candidates = []
+                      for sha in (expected_head, merge_sha):
+                          candidates.extend(client.get_paginated(
+                              f"actions/workflows/{workflow['id']}/runs?head_sha={sha}&event=pull_request",
+                              "workflow_runs",
+                          ))
+                      run = collector.select_latest_run(candidates)
+                      if run:
+                          selected[name] = client.get(f"actions/runs/{run['id']}")
+                  pending = [name for name in selected_workflows
+                             if name not in selected or selected[name].get("status") != "completed"]
+                  print("Waiting for upstream scans:", pending, flush=True)
+                  if not pending:
+                      break
+                  if time.monotonic() >= deadline:
+                      raise RuntimeError(f"incomplete upstream scans: {pending}")
+                  time.sleep(30)
+
+              metadata_base = pr["base"]["sha"]
+              commit = client.get(f"commits/{merge_sha}")
+              parents = [item.get("sha") for item in commit.get("parents", [])]
+              if len(parents) != 2:
+                  raise RuntimeError("scanned merge requires two ordered parents")
+              base_sha = parents[0]
+              collector.verify_base_ancestry(client, pr, base_sha, metadata_base)
+              report.update(pr_head_sha=expected_head, base_sha=base_sha,
+                            merge_sha=merge_sha, ordered_parents=parents, upstream_runs=[])
+              if commit.get("sha") != merge_sha or parents != [base_sha, expected_head]:
+                  raise RuntimeError("PR merge SHA or ordered parents mismatch")
+
+              analyses = client.get_paginated(
+                  "code-scanning/analyses?ref=refs/pull/211/merge", "analyses"
+              )
+              report["codeql_analyses"] = [
+                  {key: item.get(key) for key in (
+                      "id", "commit_sha", "ref", "analysis_key", "category", "created_at", "error"
+                  )}
+                  for item in analyses
+                  if item.get("commit_sha") in (expected_head, merge_sha)
+                  and item.get("tool", {}).get("name") == "CodeQL"
+              ]
+              scanned_shas = set()
+              for name, run in selected.items():
+                  item = {key: run.get(key) for key in (
+                      "id", "workflow_id", "run_attempt", "event", "head_sha", "status", "conclusion"
+                  )}
+                  item["name"] = name
+                  report["upstream_runs"].append(item)
+                  if run.get("workflow_id") != selected_workflows[name]["id"]:
+                      errors.append(f"workflow ID mismatch: {name}")
+                  try:
+                      identity = collector.resolve_pr_identity(client, run)
+                      item["identity"] = identity
+                      if (identity["pr_number"] != 211 or identity["pr_head_sha"] != expected_head
+                              or identity["base_sha"] != base_sha):
+                          raise RuntimeError("resolved PR identity mismatch")
+                      scanned_shas.add(identity["scanned_sha"])
+                  except Exception as exc:
+                      errors.append(f"{name}: {type(exc).__name__}: {exc}")
+
+              if len(scanned_shas) != 1:
+                  errors.append("scanner runs do not identify one exact scanned commit")
+              elif not errors:
+                  scanned_sha = next(iter(scanned_shas))
+                  report["scanned_sha"] = scanned_sha
+                  evidence_root = Path(os.environ["RUNNER_TEMP"]) / "pr211-diagnostic-evidence"
+                  evidence_root.mkdir()
+                  evidence = collector.collect_required_evidence(
+                      client, head_sha=scanned_sha, pr_head_sha=expected_head, base_sha=base_sha,
+                      repository=repo, temp_root=evidence_root,
+                  )
+                  report["scanner_statuses"] = evidence["statuses"]
+                  expected_names = {"CodeQL analysis"}
+                  for name in collector.EXPECTED_WORKFLOWS:
+                      expected_names.update(item[0] for item in collector.EXPECTED_EVIDENCE.get(name, []))
+                  statuses = evidence["statuses"]
+                  if len(statuses) != len(expected_names) or {item.get("name") for item in statuses} != expected_names:
+                      errors.append("missing or ambiguous scanner evidence")
+                  for status in statuses:
+                      if (status.get("status") != "success" or status.get("report_valid") is not True
+                              or status.get("report_present") is not True
+                              or status.get("head_sha") != scanned_sha):
+                          errors.append(f"invalid or mismatched scanner evidence: {status}")
+                  evaluator_spec = importlib.util.spec_from_file_location(
+                      "evaluator", "scripts/security_release_gate.py"
+                  )
+                  evaluator = importlib.util.module_from_spec(evaluator_spec)
+                  evaluator_spec.loader.exec_module(evaluator)
+                  def trusted_json(path):
+                      source = client.get(f"contents/{path}?ref={base_sha}")
+                      if source.get("type") != "file" or source.get("path") != path:
+                          raise RuntimeError("invalid trusted policy source")
+                      return json.loads(base64.b64decode(source["content"]))
+                  baseline = trusted_json("docs/security/security-release-gate-baseline.json")
+                  dispositions = trusted_json("docs/security/PR-203-FINDINGS-DISPOSITIONS-2026-11-11.json")
+                  alerts = client.get_paginated(
+                      f"code-scanning/alerts?state=open&ref={scanned_sha}", "alerts"
+                  )
+                  verdict = evaluator.evaluate(
+                      baseline, alerts, api_ok=not errors, scanner_status=statuses,
+                      repository=repo, head_sha=scanned_sha, base_sha=base_sha,
+                      scanner_findings=evidence["findings"], dispositions=dispositions,
+                  )
+                  report["candidate_security_verdict"] = verdict
+                  report["authoritative"] = False
+                  final_pr = client.get("pulls/211")
+                  if (final_pr.get("state") != "open" or final_pr["head"]["sha"] != expected_head
+                          or final_pr["base"]["sha"] != metadata_base
+                          or final_pr.get("merge_commit_sha") != merge_sha):
+                      errors.append("PR changed during diagnostic collection")
+          except Exception as exc:
+              errors.append(f"{type(exc).__name__}: {exc}")
+          report["errors"] = errors
+          report["status"] = "INCOMPLETE" if errors else "IDENTITY VERIFIED"
+          Path("trusted-gate-diagnostic.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+          print(json.dumps(report, indent=2), flush=True)
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("## PR211 candidate-code validation (non-authoritative)\n\n```json\n")
+              summary.write(json.dumps(report, indent=2) + "\n```\n")
+          raise SystemExit(1 if errors else 0)
+          PYTHON
+
+      - name: Upload diagnostic metadata
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: security-gate-identity-validation
+          path: trusted-gate-diagnostic.json
+          if-no-files-found: error
+          retention-days: 7

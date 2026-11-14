@@ -11,14 +11,13 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $PGHost = "ep-floral-fog-agq8kl5i-pooler.c-2.eu-central-1.aws.neon.tech"
 $PGPort = 5432
 $PGUser = "neondb_owner"
-$PGPass = "npg_g6XPHW8tGQJZ"
+if ([string]::IsNullOrWhiteSpace($env:PGPASSWORD)) { throw "Set PGPASSWORD securely before running LeadEngine.ps1." }
 $PGDB   = "neondb"
 
 # 3) Функция за изпълнение на SQL query
 function Exec-PSQL {
     param([string]$Query)
     $psqlPath = "C:\Program Files\PostgreSQL\18\bin\psql.exe"
-    $env:PGPASSWORD = $PGPass
     $args = @(
         "-h", $PGHost
         "-U", $PGUser

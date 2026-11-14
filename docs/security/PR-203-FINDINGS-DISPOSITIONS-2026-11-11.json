@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "repository": "stellababy2004/HelpChain",
+  "approval_model": "solo_owner_review",
+  "independent_review": false,
+  "owner": {
+    "login": "stellababy2004",
+    "name": "Stella Stoyanova",
+    "decision_date": "2026-11-11"
+  },
+  "source_document": "docs/security/PR-203-FINDINGS-DISPOSITION-2026-11-11.md",
+  "dispositions": [
+    {
+      "finding_id": "bandit|b104|backend/helpchain_backend/src/extensions.py|23",
+      "scanner": "Bandit",
+      "rule": "B104",
+      "path": "backend/helpchain_backend/src/extensions.py",
+      "line": 23,
+      "context_digest": "sha256:e6052abdaeb4e0c0f56c32e0918826afe87652fb2a5516b4167721f511a345f1",
+      "expected_severity": "unclassified",
+      "disposition": "FALSE_POSITIVE",
+      "rationale": "The literal is a client-IP fallback used by rate-limiting/request identity handling, not a socket listener or bind address.",
+      "evidence_ref": "docs/security/PR-203-FINDINGS-DISPOSITION-2026-11-11.md#finding-1-bandit-b104",
+      "expires_on": "2027-11-11"
+    },
+    {
+      "finding_id": "bandit|b104|backend/helpchain_backend/src/routes/admin.py|2148",
+      "scanner": "Bandit",
+      "rule": "B104",
+      "path": "backend/helpchain_backend/src/routes/admin.py",
+      "line": 2148,
+      "context_digest": "sha256:455c6d5eaeac18bee73326755f390dfd370c1d248f5052ecc8aff663fdb3cb72",
+      "expected_severity": "unclassified",
+      "disposition": "FALSE_POSITIVE",
+      "rationale": "The literal is the fallback for request.remote_addr in admin metadata/risk/audit handling, not a network listener.",
+      "evidence_ref": "docs/security/PR-203-FINDINGS-DISPOSITION-2026-11-11.md#finding-2-bandit-b104",
+      "expires_on": "2027-11-11"
+    },
+    {
+      "finding_id": "gitleaks|secret-key-assignment|tests/test_sensitive_logging_remediation.py|140",
+      "scanner": "Gitleaks",
+      "rule": "secret-key-assignment",
+      "path": "tests/test_sensitive_logging_remediation.py",
+      "line": 140,
+      "identity": "secret-key-assignment:140",
+      "context_digest": "sha256:c107547c99d7f3864bcb241b968bba67c1443b6b48a6d286787648d514304622",
+      "expected_severity": "unclassified",
+      "disposition": "OWNER_REVIEWED_HISTORICAL_TEST_FIXTURE",
+      "historical_commit": "07fa68d170c91db30392b5322e756dbf09ef6529",
+      "rationale": "The finding is historical test-fixture data. The current fixture generates a runtime key; the owner reports no known production use, without claiming independent verification of historical environments.",
+      "evidence_ref": "docs/security/PR-203-FINDINGS-DISPOSITION-2026-11-11.md#finding-3-historical-gitleaks-test-fixture",
+      "expires_on": "2027-11-11"
+    }
+  ]
+}
