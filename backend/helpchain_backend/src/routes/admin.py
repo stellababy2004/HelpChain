@@ -1,26 +1,27 @@
 from __future__ import annotations
 
-from collections import Counter, defaultdict
 import csv
 import html
 import inspect
 import json
 import math
 import os
-from queue import Empty
+import re
 import secrets
 import threading
 import time
-import re
 import unicodedata
-from types import SimpleNamespace
-from pathlib import Path
+from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
 from io import BytesIO, StringIO
+from pathlib import Path
+from queue import Empty
+from types import SimpleNamespace
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
+from babel.support import Translations
 from flask import (
     Blueprint,
     Response,
@@ -37,13 +38,13 @@ from flask import (
     stream_with_context,
     url_for,
 )
+from flask_babel import force_locale
+from flask_babel import gettext as _
 from flask_login import current_user, login_required, login_user, logout_user
-from flask_babel import force_locale, gettext as _
 from flask_mail import Message
-from babel.support import Translations
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy.exc import IntegrityError
 
 try:
     import psutil
@@ -53,32 +54,24 @@ except Exception:  # pragma: no cover - keep admin routes import-safe
 from backend.audit import log_activity
 from backend.extensions import db, limiter, mail
 from backend.system_sanity import run_system_checks
-from ..admin_actor import resolve_current_admin_actor
-from ..admin_policies import can_access_professional_leads
-from ..admin_policies import can_view_global_analytics
-from ..models.volunteer_interest import VolunteerInterest
-from ..observability import (
-    tenant_leak_get,
-    tenant_leak_inc,
-)
-from ..statuses import (
-    REQUEST_STATUS_ALLOWED,
-    normalize_request_status,
-)
 
+from ..admin_actor import resolve_current_admin_actor
+from ..admin_policies import can_access_professional_leads, can_view_global_analytics
 from ..config import Config
 from ..models import (
     AdminAuditEvent,
     AdminLoginAttempt,
-    ImportBatch,
     AdminUser,
     AdminUserInvitation,
     Assignment,
     Case,
+    CaseCollaborator,
     CaseEvent,
     CaseParticipant,
-    CaseCollaborator,
+    ImportBatch,
     IntegrationConnector,
+    Intervenant,
+    IntervenantActivity,
     MetricDefinition,
     MetricRun,
     Notification,
@@ -87,26 +80,33 @@ from ..models import (
     ProfessionalLead,
     ProfessionalLeadActivity,
     RelayEvent,
-    Intervenant,
-    IntervenantActivity,
     Request,
     RequestActivity,
     RequestLog,
     RequestMetric,
-    SecurityEvent,
     ScoreExplanation,
+    SecurityEvent,
+    Structure,
     UiLocaleLock,
-    UiTranslationFreeze,
     UiTranslation,
     UiTranslationEvent,
+    UiTranslationFreeze,
+    User,
     Volunteer,
     VolunteerAction,
     VolunteerInterest,
     VolunteerRequestState,
-    Structure,
-    User,
     current_structure,
     utc_now,
+)
+from ..models.volunteer_interest import VolunteerInterest
+from ..observability import (
+    tenant_leak_get,
+    tenant_leak_inc,
+)
+from ..statuses import (
+    REQUEST_STATUS_ALLOWED,
+    normalize_request_status,
 )
 
 INTEGRATION_CONNECTOR_STATUS_CHOICES = ("active", "paused", "revoked")
@@ -128,12 +128,20 @@ try:
 except ImportError:
     ProAccessRequest = None
 
-from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
 from ..constants.categories import (
     REQUEST_CATEGORY_CODES,
     normalize_request_category,
     request_category_choices,
     request_category_label,
+)
+from ..notifications.inapp import NUDGE_COOLDOWN_HOURS, send_nudge_notification
+from ..services.account_intelligence import (
+    build_account_intelligence,
+)
+from ..services.adaptive_experience import (
+    MODULE_REGISTRY,
+    adaptive_modules,
+    module_enabled,
 )
 from ..services.admin_team_invitations import (
     INVITATION_TTL_HOURS,
@@ -143,25 +151,59 @@ from ..services.admin_team_invitations import (
     create_admin_team_invitation,
     refresh_admin_team_invitation,
 )
-from ..services.volunteer_membership import VolunteerLinkError, link_volunteer_to_intervenant
 from ..services.case_assistant import build_case_assistant_recommendation
 from ..services.case_matching import suggest_professional_leads_for_case
 from ..services.case_risk import risk_label_from_score, score_request_risk
 from ..services.case_summary import build_case_summary, build_case_summary_snippet
-from ..services.adaptive_experience import MODULE_REGISTRY, adaptive_modules, module_enabled
-from ..services.enterprise_structure_intelligence import ORGANIZATION_TYPES, organization_type_definition
+from ..services.daily_founder_queue import (
+    build_daily_founder_queue,
+    summarize_daily_founder_queue,
+)
 from ..services.demo_data import (
     get_demo_case_signals,
     get_demo_cases,
     get_demo_kpis,
     get_demo_notification_channels,
-    get_demo_payload,
     get_demo_notification_summary,
     get_demo_notifications,
     get_demo_ops_priority_levels,
+    get_demo_payload,
     get_demo_queue_reasons,
     get_demo_requests,
     get_demo_sla_payload,
+)
+from ..services.display_safety import (
+    safe_organization,
+    safe_recommendation,
+    safe_summary,
+    safe_territory,
+    safe_unavailable,
+    safe_visitor,
+)
+from ..services.enterprise_structure_intelligence import (
+    ORGANIZATION_TYPES,
+    organization_type_definition,
+)
+from ..services.founder_action_engine import (
+    build_founder_action_queue,
+)
+from ..services.founder_action_engine import (
+    summarize_founder_actions as summarize_founder_operational_actions,
+)
+from ..services.founder_cockpit import (
+    build_founder_alerts,
+    build_founder_priority_queue,
+    group_founder_signals_by_territory,
+    summarize_founder_actions,
+)
+from ..services.founder_memory_engine import (
+    build_founder_memory_timeline,
+    detect_stalled_opportunities,
+    summarize_founder_memory,
+)
+from ..services.founder_operational_state import (
+    build_founder_operational_state,
+    summarize_founder_operational_state,
 )
 from ..services.geocoding import request_address_display_text
 from ..services.import_service import (
@@ -193,94 +235,64 @@ from ..services.institutional_intent_engine import (
     build_territorial_opportunity_summary,
     summarize_profile_labels,
 )
-from ..services.account_intelligence import (
-    build_account_intelligence,
-)
-
 from ..services.relationship_memory import (
     build_relationship_memory,
-)
-from ..services.founder_action_engine import (
-    build_founder_action_queue,
-    summarize_founder_actions as summarize_founder_operational_actions,
-)
-from ..services.founder_memory_engine import (
-    build_founder_memory_timeline,
-    detect_stalled_opportunities,
-    summarize_founder_memory,
-)
-from ..services.founder_operational_state import (
-    build_founder_operational_state,
-    summarize_founder_operational_state,
-)
-
-from ..services.founder_cockpit import (
-    build_founder_alerts,
-    build_founder_priority_queue,
-    group_founder_signals_by_territory,
-    summarize_founder_actions,
-)
-from ..services.display_safety import (
-    safe_organization,
-    safe_recommendation,
-    safe_summary,
-    safe_territory,
-    safe_unavailable,
-    safe_visitor,
-)
-
-from ..services.daily_founder_queue import (
-    build_daily_founder_queue,
-    summarize_daily_founder_queue,
 )
 from ..services.revenue_signal_engine import (
     SIGNAL_LOOKBACK_DAYS,
     build_revenue_signal_profile,
     summarize_revenue_signal_profile,
 )
+from ..services.volunteer_membership import (
+    VolunteerLinkError,
+    link_volunteer_to_intervenant,
+)
 
 summarize_founder_opportunity_actions = summarize_founder_actions
-from ..services.territorial_intelligence import (
-    detect_priority_territories,
-    normalize_territory_name,
+import csv
+from io import StringIO
+
+from ..security_logging import log_security_event
+from ..services.event_bus import (
+    publish as publish_admin_stream_event,
 )
-from ..services.pilotage_territorial_maps import build_territorial_snapshots
+from ..services.event_bus import (
+    subscribe as subscribe_admin_stream,
+)
+from ..services.event_bus import (
+    unsubscribe as unsubscribe_admin_stream,
+)
 from ..services.notification_jobs import (
     count_notification_job_buckets,
     notification_job_bucket_filter,
     notification_job_bucket_key,
 )
 from ..services.ops_priority import compute_ops_priority
+from ..services.pilotage_territorial_maps import build_territorial_snapshots
 from ..services.prospect_auto_capture import (
     append_audience_context_to_notes,
     captured_audience_session_targets,
     extract_audience_context,
     notes_without_audience_context,
 )
-from ..security_logging import log_security_event
+from ..services.quality_signals import compute_quality_signals
 from ..services.recommendation_engine import compute_recommendation
 from ..services.reporting.operations_report import build_operational_report
-import csv
-from io import StringIO
-from ..services.risk_alerts import evaluate_case_alerts
-from ..services.risk_engine import update_case_risk
 from ..services.request_sla import (
     build_request_inactivity_components,
     build_request_meaningful_activity_subquery,
     get_request_last_meaningful_activity,
     request_dashboard_actionable_filter,
 )
-from ..services.quality_signals import compute_quality_signals
-from ..services.event_bus import (
-    publish as publish_admin_stream_event,
-    subscribe as subscribe_admin_stream,
-    unsubscribe as unsubscribe_admin_stream,
-)
+from ..services.risk_alerts import evaluate_case_alerts
+from ..services.risk_engine import update_case_risk
 from ..services.structure_service import create_structure_with_admin
-
-GENERIC_ADMIN_LOGIN_FAIL_MSG = (
-    "Identifiants invalides ou accès temporairement bloqué."
+from ..services.territorial_intelligence import (
+    detect_priority_territories,
+    normalize_territory_name,
 )
+
+GENERIC_ADMIN_LOGIN_FAIL_MSG = "Identifiants invalides ou accès temporairement bloqué."
 CATEGORY_CASE_STATUSES = (
     "new",
     "triaged",
@@ -386,26 +398,146 @@ AUDIENCE_DEPARTMENT_CODES = {
     "creteil": "94",
 }
 AUDIENCE_CITY_MARKERS = {
-    "paris": {"label": "Paris", "department": "Paris", "region": "Ile-de-France", "x": 285, "y": 135},
-    "boulogne billancourt": {"label": "Boulogne-Billancourt", "department": "Hauts-de-Seine", "region": "Ile-de-France", "x": 279, "y": 140},
-    "nanterre": {"label": "Nanterre", "department": "Hauts-de-Seine", "region": "Ile-de-France", "x": 276, "y": 137},
-    "versailles": {"label": "Versailles", "department": "Yvelines", "region": "Ile-de-France", "x": 272, "y": 146},
-    "lyon": {"label": "Lyon", "department": "Rhone", "region": "Auvergne-Rhone-Alpes", "x": 335, "y": 285},
-    "marseille": {"label": "Marseille", "department": "Bouches-du-Rhone", "region": "Provence-Alpes-Cote d'Azur", "x": 348, "y": 396},
-    "lille": {"label": "Lille", "department": "Nord", "region": "Hauts-de-France", "x": 295, "y": 55},
-    "nantes": {"label": "Nantes", "department": "Loire-Atlantique", "region": "Pays de la Loire", "x": 154, "y": 250},
-    "bordeaux": {"label": "Bordeaux", "department": "Gironde", "region": "Nouvelle-Aquitaine", "x": 188, "y": 355},
-    "toulouse": {"label": "Toulouse", "department": "Haute-Garonne", "region": "Occitanie", "x": 260, "y": 398},
-    "strasbourg": {"label": "Strasbourg", "department": "Bas-Rhin", "region": "Grand Est", "x": 440, "y": 164},
-    "rennes": {"label": "Rennes", "department": "Ille-et-Vilaine", "region": "Bretagne", "x": 146, "y": 202},
-    "montpellier": {"label": "Montpellier", "department": "Herault", "region": "Occitanie", "x": 312, "y": 395},
-    "nice": {"label": "Nice", "department": "Alpes-Maritimes", "region": "Provence-Alpes-Cote d'Azur", "x": 425, "y": 382},
-    "grenoble": {"label": "Grenoble", "department": "Isere", "region": "Auvergne-Rhone-Alpes", "x": 365, "y": 318},
-    "dijon": {"label": "Dijon", "department": "Cote-d'Or", "region": "Bourgogne-Franche-Comte", "x": 350, "y": 220},
-    "rouen": {"label": "Rouen", "department": "Seine-Maritime", "region": "Normandie", "x": 236, "y": 113},
-    "reims": {"label": "Reims", "department": "Marne", "region": "Grand Est", "x": 335, "y": 125},
-    "tours": {"label": "Tours", "department": "Indre-et-Loire", "region": "Centre-Val de Loire", "x": 236, "y": 226},
-    "orleans": {"label": "Orleans", "department": "Loiret", "region": "Centre-Val de Loire", "x": 275, "y": 190},
+    "paris": {
+        "label": "Paris",
+        "department": "Paris",
+        "region": "Ile-de-France",
+        "x": 285,
+        "y": 135,
+    },
+    "boulogne billancourt": {
+        "label": "Boulogne-Billancourt",
+        "department": "Hauts-de-Seine",
+        "region": "Ile-de-France",
+        "x": 279,
+        "y": 140,
+    },
+    "nanterre": {
+        "label": "Nanterre",
+        "department": "Hauts-de-Seine",
+        "region": "Ile-de-France",
+        "x": 276,
+        "y": 137,
+    },
+    "versailles": {
+        "label": "Versailles",
+        "department": "Yvelines",
+        "region": "Ile-de-France",
+        "x": 272,
+        "y": 146,
+    },
+    "lyon": {
+        "label": "Lyon",
+        "department": "Rhone",
+        "region": "Auvergne-Rhone-Alpes",
+        "x": 335,
+        "y": 285,
+    },
+    "marseille": {
+        "label": "Marseille",
+        "department": "Bouches-du-Rhone",
+        "region": "Provence-Alpes-Cote d'Azur",
+        "x": 348,
+        "y": 396,
+    },
+    "lille": {
+        "label": "Lille",
+        "department": "Nord",
+        "region": "Hauts-de-France",
+        "x": 295,
+        "y": 55,
+    },
+    "nantes": {
+        "label": "Nantes",
+        "department": "Loire-Atlantique",
+        "region": "Pays de la Loire",
+        "x": 154,
+        "y": 250,
+    },
+    "bordeaux": {
+        "label": "Bordeaux",
+        "department": "Gironde",
+        "region": "Nouvelle-Aquitaine",
+        "x": 188,
+        "y": 355,
+    },
+    "toulouse": {
+        "label": "Toulouse",
+        "department": "Haute-Garonne",
+        "region": "Occitanie",
+        "x": 260,
+        "y": 398,
+    },
+    "strasbourg": {
+        "label": "Strasbourg",
+        "department": "Bas-Rhin",
+        "region": "Grand Est",
+        "x": 440,
+        "y": 164,
+    },
+    "rennes": {
+        "label": "Rennes",
+        "department": "Ille-et-Vilaine",
+        "region": "Bretagne",
+        "x": 146,
+        "y": 202,
+    },
+    "montpellier": {
+        "label": "Montpellier",
+        "department": "Herault",
+        "region": "Occitanie",
+        "x": 312,
+        "y": 395,
+    },
+    "nice": {
+        "label": "Nice",
+        "department": "Alpes-Maritimes",
+        "region": "Provence-Alpes-Cote d'Azur",
+        "x": 425,
+        "y": 382,
+    },
+    "grenoble": {
+        "label": "Grenoble",
+        "department": "Isere",
+        "region": "Auvergne-Rhone-Alpes",
+        "x": 365,
+        "y": 318,
+    },
+    "dijon": {
+        "label": "Dijon",
+        "department": "Cote-d'Or",
+        "region": "Bourgogne-Franche-Comte",
+        "x": 350,
+        "y": 220,
+    },
+    "rouen": {
+        "label": "Rouen",
+        "department": "Seine-Maritime",
+        "region": "Normandie",
+        "x": 236,
+        "y": 113,
+    },
+    "reims": {
+        "label": "Reims",
+        "department": "Marne",
+        "region": "Grand Est",
+        "x": 335,
+        "y": 125,
+    },
+    "tours": {
+        "label": "Tours",
+        "department": "Indre-et-Loire",
+        "region": "Centre-Val de Loire",
+        "x": 236,
+        "y": 226,
+    },
+    "orleans": {
+        "label": "Orleans",
+        "department": "Loiret",
+        "region": "Centre-Val de Loire",
+        "x": 275,
+        "y": 190,
+    },
 }
 AUDIENCE_BUSINESS_MAP_POINTS = (
     {
@@ -486,6 +618,8 @@ def _is_screened_professional_lead_status(status: str | None) -> bool:
 
 def _professional_lead_is_business_pipeline(status: str | None) -> bool:
     return not _is_screened_professional_lead_status(status)
+
+
 CLOSED_STATUSES = {"done", "cancelled", "rejected"}
 REQUEST_KPI_CLOSED_STATUSES = CLOSED_STATUSES | {
     "canceled",
@@ -515,9 +649,7 @@ SLA_BREAKDOWN_TYPE_TO_KIND = {
     "owner_assign": "owner_assignment_overdue",
     "volunteer_assign": "volunteer_assignment_overdue",
 }
-SLA_KIND_TO_BREAKDOWN_TYPE = {
-    v: k for k, v in SLA_BREAKDOWN_TYPE_TO_KIND.items()
-}
+SLA_KIND_TO_BREAKDOWN_TYPE = {v: k for k, v in SLA_BREAKDOWN_TYPE_TO_KIND.items()}
 NOTSEEN_TIERS_HOURS = (24, 48, 72)
 PRO_ACCESS_STATUSES = ("new", "reviewed", "approved", "rejected")
 RISKY_ACTIONS = (
@@ -575,6 +707,8 @@ ONBOARDING_MAIN_NEED_OPTIONS = (
     "coordination equipe",
     "reporting",
 )
+
+
 def _table_has_column(table_name: str, column_name: str) -> bool:
     key = (table_name, column_name)
     cached = _SCHEMA_COLUMN_CACHE.get(key)
@@ -876,7 +1010,9 @@ def _intervenant_availability(intervenant: Intervenant) -> str:
     raw = getattr(intervenant, "availability", None)
     if raw:
         return _normalize_intervenant_availability(raw)
-    return "available" if bool(getattr(intervenant, "is_active", False)) else "unavailable"
+    return (
+        "available" if bool(getattr(intervenant, "is_active", False)) else "unavailable"
+    )
 
 
 def _intervenant_availability_label(value: str | None) -> str:
@@ -977,10 +1113,14 @@ def _intervenant_initials(intervenant: Intervenant) -> str:
 
 
 def _intervenant_display_name(intervenant: Intervenant) -> str:
-    return (getattr(intervenant, "name", None) or "").strip() or f"Intervenant #{intervenant.id}"
+    return (
+        getattr(intervenant, "name", None) or ""
+    ).strip() or f"Intervenant #{intervenant.id}"
 
 
-def _intervenant_or_403(intervenant_id: int, structure_id: int | None = None) -> Intervenant:
+def _intervenant_or_403(
+    intervenant_id: int, structure_id: int | None = None
+) -> Intervenant:
     intervenant = db.session.get(Intervenant, intervenant_id)
     if intervenant is None:
         abort(404)
@@ -1002,7 +1142,11 @@ def _intervenant_assignment_counts(intervenant: Intervenant) -> dict[str, int]:
         workload = (
             db.session.query(func.count(Assignment.id))
             .filter(Assignment.intervenant_id == intervenant.id)
-            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .filter(
+                func.lower(func.coalesce(Assignment.status, "")).in_(
+                    ACTIVE_ASSIGNMENT_STATUSES
+                )
+            )
             .scalar()
         )
     except Exception:
@@ -1013,7 +1157,11 @@ def _intervenant_assignment_counts(intervenant: Intervenant) -> dict[str, int]:
             db.session.query(func.count(func.distinct(Assignment.request_id)))
             .join(Request, Request.id == Assignment.request_id)
             .filter(Assignment.intervenant_id == intervenant.id)
-            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .filter(
+                func.lower(func.coalesce(Assignment.status, "")).in_(
+                    ACTIVE_ASSIGNMENT_STATUSES
+                )
+            )
             .filter(
                 or_(
                     Request.status.is_(None),
@@ -1040,7 +1188,11 @@ def _active_intervenant_assignments(intervenant: Intervenant) -> list[Assignment
             Assignment.query.join(Request, Request.id == Assignment.request_id)
             .filter(Assignment.intervenant_id == intervenant.id)
             .filter(Assignment.structure_id == intervenant.structure_id)
-            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .filter(
+                func.lower(func.coalesce(Assignment.status, "")).in_(
+                    ACTIVE_ASSIGNMENT_STATUSES
+                )
+            )
             .filter(
                 or_(
                     Request.status.is_(None),
@@ -1076,19 +1228,20 @@ def _intervenant_assignment_options(intervenant: Intervenant) -> list[Request]:
             )
         ]
         query = Request.query.filter(Request.structure_id == intervenant.structure_id)
-        query = (
-            query
-            .filter(
-                func.lower(func.coalesce(Request.status, "")).in_(
-                    list(INTERVENANT_ASSIGNABLE_REQUEST_STATUSES)
-                )
+        query = query.filter(
+            func.lower(func.coalesce(Request.status, "")).in_(
+                list(INTERVENANT_ASSIGNABLE_REQUEST_STATUSES)
             )
         )
         if hasattr(Request, "is_archived"):
             query = query.filter(Request.is_archived.is_(False))
         if active_request_ids:
             query = query.filter(~Request.id.in_(active_request_ids))
-        return query.order_by(Request.created_at.desc(), Request.id.desc()).limit(100).all()
+        return (
+            query.order_by(Request.created_at.desc(), Request.id.desc())
+            .limit(100)
+            .all()
+        )
     except Exception:
         db.session.rollback()
         return []
@@ -1160,8 +1313,12 @@ def _log_intervenant_profile_changes(
         _log_intervenant_activity(
             intervenant,
             "availability_changed",
-            old_value=_intervenant_availability_label(str(before.get("availability") or "")),
-            new_value=_intervenant_availability_label(str(after.get("availability") or "")),
+            old_value=_intervenant_availability_label(
+                str(before.get("availability") or "")
+            ),
+            new_value=_intervenant_availability_label(
+                str(after.get("availability") or "")
+            ),
         )
     if before.get("internal_notes") != after.get("internal_notes"):
         _log_intervenant_activity(intervenant, "notes_updated")
@@ -1186,7 +1343,10 @@ def _relative_timestamp(value: datetime | None) -> str:
     if value is None:
         return ""
     now = utc_now()
-    if getattr(value, "tzinfo", None) is None and getattr(now, "tzinfo", None) is not None:
+    if (
+        getattr(value, "tzinfo", None) is None
+        and getattr(now, "tzinfo", None) is not None
+    ):
         now = now.replace(tzinfo=None)
     delta = now - value
     seconds = max(0, int(delta.total_seconds()))
@@ -1217,7 +1377,9 @@ def _intervenant_activity_icon(event_type: str | None) -> str:
     }.get(event_type or "", "fa-stream")
 
 
-def _intervenant_activity_display_label(row: IntervenantActivity, req: Request | None) -> str:
+def _intervenant_activity_display_label(
+    row: IntervenantActivity, req: Request | None
+) -> str:
     event_type = row.event_type
     request_title = _request_operational_title(req) if req is not None else None
     if event_type in {"affectation_created", "assigned_to_request"} and request_title:
@@ -1226,7 +1388,11 @@ def _intervenant_activity_display_label(row: IntervenantActivity, req: Request |
         return f"Retire de {request_title}"
     if event_type == "availability_changed":
         next_value = (row.new_value or "").strip()
-        return f"Disponibilite changee -> {next_value}" if next_value else "Disponibilite changee"
+        return (
+            f"Disponibilite changee -> {next_value}"
+            if next_value
+            else "Disponibilite changee"
+        )
     if event_type == "competencies_updated":
         return "Competences mises a jour"
     if event_type == "notes_updated":
@@ -1242,7 +1408,9 @@ def _intervenant_activity_items(intervenant: Intervenant) -> list[dict[str, obje
     try:
         rows = (
             IntervenantActivity.query.filter_by(intervenant_id=intervenant.id)
-            .order_by(IntervenantActivity.created_at.desc(), IntervenantActivity.id.desc())
+            .order_by(
+                IntervenantActivity.created_at.desc(), IntervenantActivity.id.desc()
+            )
             .limit(30)
             .all()
         )
@@ -1269,7 +1437,9 @@ def _intervenant_activity_items(intervenant: Intervenant) -> list[dict[str, obje
     return items
 
 
-def _intervenant_operational_context(intervenant: Intervenant, city: str) -> dict[str, object]:
+def _intervenant_operational_context(
+    intervenant: Intervenant, city: str
+) -> dict[str, object]:
     counts = _intervenant_assignment_counts(intervenant)
     availability = _intervenant_availability(intervenant)
     activity_items = _intervenant_activity_items(intervenant)
@@ -1296,7 +1466,9 @@ def _intervenant_detail_form_data(intervenant: Intervenant) -> dict[str, object]
     availability = _intervenant_availability(intervenant)
     return {
         "name": getattr(intervenant, "name", "") or "",
-        "actor_type": _normalize_intervenant_actor_type(getattr(intervenant, "actor_type", "") or ""),
+        "actor_type": _normalize_intervenant_actor_type(
+            getattr(intervenant, "actor_type", "") or ""
+        ),
         "email": getattr(intervenant, "email", "") or "",
         "phone": getattr(intervenant, "phone", "") or "",
         "location": getattr(intervenant, "location", "") or "",
@@ -1304,7 +1476,9 @@ def _intervenant_detail_form_data(intervenant: Intervenant) -> dict[str, object]
         "longitude": getattr(intervenant, "longitude", None),
         "availability": availability,
         "internal_notes": getattr(intervenant, "internal_notes", "") or "",
-        "competencies": [item["value"] for item in _intervenant_competencies(intervenant)],
+        "competencies": [
+            item["value"] for item in _intervenant_competencies(intervenant)
+        ],
         "coverage_zones": getattr(intervenant, "coverage_zones", "") or "",
         "coverage_communes": getattr(intervenant, "coverage_communes", "") or "",
         "radius_km": getattr(intervenant, "radius_km", None),
@@ -1341,7 +1515,9 @@ def _intervenant_detail_template(
     volunteer_link_error = None
     if can_link_volunteer:
         if intervenant.legacy_volunteer_id is not None:
-            linked_volunteer = db.session.get(Volunteer, intervenant.legacy_volunteer_id)
+            linked_volunteer = db.session.get(
+                Volunteer, intervenant.legacy_volunteer_id
+            )
         else:
             preview_id = request.args.get("link_volunteer_id")
             if request.form.get("intervenant_action") == "link_volunteer":
@@ -1352,7 +1528,9 @@ def _intervenant_detail_template(
                 except (TypeError, ValueError):
                     pass
                 if volunteer_link_preview is None:
-                    volunteer_link_error = "Compte bénévole introuvable. Vérifiez l’identifiant."
+                    volunteer_link_error = (
+                        "Compte bénévole introuvable. Vérifiez l’identifiant."
+                    )
 
     return (
         render_template(
@@ -1369,7 +1547,9 @@ def _intervenant_detail_template(
             address=address,
             actor_type_options=INTERVENANT_ACTOR_TYPE_OPTIONS,
             availability_options=INTERVENANT_AVAILABILITY_OPTIONS,
-            actor_type_label=_intervenant_actor_type_label(getattr(intervenant, "actor_type", None)),
+            actor_type_label=_intervenant_actor_type_label(
+                getattr(intervenant, "actor_type", None)
+            ),
             availability=availability,
             availability_label=_intervenant_availability_label(availability),
             availability_badge_class=_intervenant_availability_badge(availability),
@@ -1385,7 +1565,8 @@ def _intervenant_detail_template(
             operational_summary=operational_context["summary_cards"],
             operational_timeline=operational_context["timeline_items"],
             form_data=form_data or _intervenant_detail_form_data(intervenant),
-            edit_panel_open=status_code >= 400 and request.form.get("intervenant_action") != "link_volunteer",
+            edit_panel_open=status_code >= 400
+            and request.form.get("intervenant_action") != "link_volunteer",
             has_coordinates=(
                 hasattr(intervenant, "latitude")
                 and hasattr(intervenant, "longitude")
@@ -1438,22 +1619,40 @@ def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
     intervenant.email = (request.form.get("email") or "").strip() or None
     intervenant.phone = (request.form.get("phone") or "").strip() or None
     intervenant.location = (request.form.get("location") or "").strip() or None
-    if hasattr(intervenant, "availability") and _table_has_column("intervenants", "availability"):
+    if hasattr(intervenant, "availability") and _table_has_column(
+        "intervenants", "availability"
+    ):
         intervenant.availability = availability
     intervenant.is_active = availability != "unavailable"
 
-    if hasattr(intervenant, "internal_notes") and _table_has_column("intervenants", "internal_notes"):
-        intervenant.internal_notes = (request.form.get("internal_notes") or "").strip() or None
+    if hasattr(intervenant, "internal_notes") and _table_has_column(
+        "intervenants", "internal_notes"
+    ):
+        intervenant.internal_notes = (
+            request.form.get("internal_notes") or ""
+        ).strip() or None
 
-    if hasattr(intervenant, "competencies_json") and _table_has_column("intervenants", "competencies_json"):
+    if hasattr(intervenant, "competencies_json") and _table_has_column(
+        "intervenants", "competencies_json"
+    ):
         intervenant.competencies_json = _encode_intervenant_competencies(
             request.form.getlist("competencies")
         )
-    if hasattr(intervenant, "coverage_zones") and _table_has_column("intervenants", "coverage_zones"):
-        intervenant.coverage_zones = (request.form.get("coverage_zones") or "").strip() or None
-    if hasattr(intervenant, "coverage_communes") and _table_has_column("intervenants", "coverage_communes"):
-        intervenant.coverage_communes = (request.form.get("coverage_communes") or "").strip() or None
-    if hasattr(intervenant, "radius_km") and _table_has_column("intervenants", "radius_km"):
+    if hasattr(intervenant, "coverage_zones") and _table_has_column(
+        "intervenants", "coverage_zones"
+    ):
+        intervenant.coverage_zones = (
+            request.form.get("coverage_zones") or ""
+        ).strip() or None
+    if hasattr(intervenant, "coverage_communes") and _table_has_column(
+        "intervenants", "coverage_communes"
+    ):
+        intervenant.coverage_communes = (
+            request.form.get("coverage_communes") or ""
+        ).strip() or None
+    if hasattr(intervenant, "radius_km") and _table_has_column(
+        "intervenants", "radius_km"
+    ):
         radius_raw = (request.form.get("radius_km") or "").strip()
         if radius_raw:
             try:
@@ -1463,7 +1662,9 @@ def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
         else:
             intervenant.radius_km = None
 
-    if hasattr(intervenant, "latitude") and _table_has_column("intervenants", "latitude"):
+    if hasattr(intervenant, "latitude") and _table_has_column(
+        "intervenants", "latitude"
+    ):
         lat_raw = (request.form.get("latitude") or "").strip()
         if lat_raw:
             try:
@@ -1473,7 +1674,9 @@ def _update_intervenant_from_form(intervenant: Intervenant) -> list[str]:
         else:
             intervenant.latitude = None
 
-    if hasattr(intervenant, "longitude") and _table_has_column("intervenants", "longitude"):
+    if hasattr(intervenant, "longitude") and _table_has_column(
+        "intervenants", "longitude"
+    ):
         lng_raw = (request.form.get("longitude") or "").strip()
         if lng_raw:
             try:
@@ -1524,14 +1727,20 @@ def _handle_intervenant_operational_action(
             db.session.rollback()
             flash(str(exc), "warning")
             return _intervenant_detail_template(
-                intervenant, structure_context_id=structure_context_id,
+                intervenant,
+                structure_context_id=structure_context_id,
                 status_code=exc.status_code,
             )
         except Exception:
             db.session.rollback()
             raise
-        flash("Compte bénévole lié." if changed else "Ce compte bénévole est déjà lié.", "success")
-        return redirect(_intervenant_detail_url(intervenant, structure_context_id), code=303)
+        flash(
+            "Compte bénévole lié." if changed else "Ce compte bénévole est déjà lié.",
+            "success",
+        )
+        return redirect(
+            _intervenant_detail_url(intervenant, structure_context_id), code=303
+        )
 
     if action == "assign_request":
         raw_request_id = (request.form.get("request_id") or "").strip()
@@ -1542,11 +1751,16 @@ def _handle_intervenant_operational_action(
             return redirect(_intervenant_detail_url(intervenant, structure_context_id))
 
         req = db.session.get(Request, request_id)
-        if req is None or int(getattr(req, "structure_id", 0) or 0) != int(intervenant.structure_id):
+        if req is None or int(getattr(req, "structure_id", 0) or 0) != int(
+            intervenant.structure_id
+        ):
             abort(403)
 
         status = (getattr(req, "status", None) or "").strip().lower()
-        if bool(getattr(req, "is_archived", False)) or status not in INTERVENANT_ASSIGNABLE_REQUEST_STATUSES:
+        if (
+            bool(getattr(req, "is_archived", False))
+            or status not in INTERVENANT_ASSIGNABLE_REQUEST_STATUSES
+        ):
             flash("Cette demande n'est plus active.", "warning")
             return redirect(_intervenant_detail_url(intervenant, structure_context_id))
 
@@ -1556,7 +1770,11 @@ def _handle_intervenant_operational_action(
                 intervenant_id=intervenant.id,
                 structure_id=intervenant.structure_id,
             )
-            .filter(func.lower(func.coalesce(Assignment.status, "")).in_(ACTIVE_ASSIGNMENT_STATUSES))
+            .filter(
+                func.lower(func.coalesce(Assignment.status, "")).in_(
+                    ACTIVE_ASSIGNMENT_STATUSES
+                )
+            )
             .first()
         )
         if existing is not None:
@@ -1593,7 +1811,8 @@ def _handle_intervenant_operational_action(
     if (
         assignment is None
         or int(getattr(assignment, "intervenant_id", 0) or 0) != int(intervenant.id)
-        or int(getattr(assignment, "structure_id", 0) or 0) != int(intervenant.structure_id)
+        or int(getattr(assignment, "structure_id", 0) or 0)
+        != int(intervenant.structure_id)
     ):
         abort(403)
 
@@ -1625,9 +1844,19 @@ def _assignment_workload_subquery():
     )
 
 
-def _resolve_intervenant_coordinates(intervenant: Intervenant) -> tuple[float, float, bool]:
-    lat = getattr(intervenant, "latitude", None) if hasattr(intervenant, "latitude") else None
-    lng = getattr(intervenant, "longitude", None) if hasattr(intervenant, "longitude") else None
+def _resolve_intervenant_coordinates(
+    intervenant: Intervenant,
+) -> tuple[float, float, bool]:
+    lat = (
+        getattr(intervenant, "latitude", None)
+        if hasattr(intervenant, "latitude")
+        else None
+    )
+    lng = (
+        getattr(intervenant, "longitude", None)
+        if hasattr(intervenant, "longitude")
+        else None
+    )
     if lat is not None and lng is not None:
         try:
             return float(lat), float(lng), True
@@ -1649,8 +1878,8 @@ def suggest_best_professional(request_row) -> dict[str, object] | None:
     request_city = _normalize_smart_assign_text(getattr(request_row, "city", None))
     category_code = getattr(request_row, "category", None)
     priority_flag = (
-        (getattr(request_row, "risk_level", None) or "").strip().lower() == "high"
-    )
+        getattr(request_row, "risk_level", None) or ""
+    ).strip().lower() == "high"
     now = datetime.now(UTC).replace(tzinfo=None)
 
     professionals_query = Intervenant.query.filter(Intervenant.is_active.is_(True))
@@ -1660,7 +1889,9 @@ def suggest_best_professional(request_row) -> dict[str, object] | None:
         )
 
     professionals = (
-        professionals_query.order_by(Intervenant.created_at.desc(), Intervenant.id.desc())
+        professionals_query.order_by(
+            Intervenant.created_at.desc(), Intervenant.id.desc()
+        )
         .limit(200)
         .all()
     )
@@ -1720,7 +1951,10 @@ def suggest_best_professional(request_row) -> dict[str, object] | None:
             capacity_score -= 15
         score += capacity_score
 
-        if request_structure_id is not None and getattr(pro, "structure_id", None) == request_structure_id:
+        if (
+            request_structure_id is not None
+            and getattr(pro, "structure_id", None) == request_structure_id
+        ):
             score += 10
 
         if priority_flag:
@@ -1870,7 +2104,7 @@ def _case_sla_snapshot(case_row: Case | None) -> dict:
             "detail": "—",
         }
 
-    priority = ((getattr(case_row, "priority", None) or "normal").strip().lower())
+    priority = (getattr(case_row, "priority", None) or "normal").strip().lower()
     target_map = {
         "critical": timedelta(hours=4),
         "high": timedelta(hours=24),
@@ -1878,7 +2112,9 @@ def _case_sla_snapshot(case_row: Case | None) -> dict:
         "low": timedelta(days=5),
     }
     target_delta = target_map.get(priority, timedelta(hours=72))
-    opened_ref = _as_aware_utc(getattr(case_row, "opened_at", None) or getattr(case_row, "created_at", None))
+    opened_ref = _as_aware_utc(
+        getattr(case_row, "opened_at", None) or getattr(case_row, "created_at", None)
+    )
     if not opened_ref:
         return {
             "target_label": _format_duration_compact(target_delta),
@@ -1920,10 +2156,28 @@ def _build_operational_blockages(
     blockages: list[str] = []
     now = _now_utc()
 
-    status_val = ((getattr(case_row, "status", None) if case_row else getattr(req, "status", None)) or "").strip().lower()
-    risk_level = ((getattr(req, "risk_level", None) or "").strip().lower())
-    case_priority = ((getattr(case_row, "priority", None) if case_row else "") or "").strip().lower()
-    high_risk = risk_level in {"critical", "attention"} or case_priority in {"high", "critical"}
+    status_val = (
+        (
+            (
+                getattr(case_row, "status", None)
+                if case_row
+                else getattr(req, "status", None)
+            )
+            or ""
+        )
+        .strip()
+        .lower()
+    )
+    risk_level = (getattr(req, "risk_level", None) or "").strip().lower()
+    case_priority = (
+        ((getattr(case_row, "priority", None) if case_row else "") or "")
+        .strip()
+        .lower()
+    )
+    high_risk = risk_level in {"critical", "attention"} or case_priority in {
+        "high",
+        "critical",
+    }
 
     def _case_has_owner(current_case: Case | None) -> bool:
         if not current_case:
@@ -1935,7 +2189,10 @@ def _build_operational_blockages(
         participants = getattr(current_case, "participants", None) or []
         return any(
             ((getattr(participant, "role", None) or "").strip().lower() == "owner")
-            and bool(getattr(participant, "user_id", None) or getattr(participant, "external_name", None))
+            and bool(
+                getattr(participant, "user_id", None)
+                or getattr(participant, "external_name", None)
+            )
             for participant in participants
         )
 
@@ -1948,8 +2205,12 @@ def _build_operational_blockages(
         return any(
             bool(getattr(participant, "professional_lead_id", None))
             and (
-                (getattr(participant, "role", None) or "").strip().lower() == "primary_professional"
-                or (getattr(participant, "participant_type", None) or "").strip().lower() == "professional_lead"
+                (getattr(participant, "role", None) or "").strip().lower()
+                == "primary_professional"
+                or (getattr(participant, "participant_type", None) or "")
+                .strip()
+                .lower()
+                == "professional_lead"
             )
             for participant in participants
         )
@@ -1965,17 +2226,29 @@ def _build_operational_blockages(
 
     activity_ref = _as_aware_utc(
         (getattr(case_row, "last_activity_at", None) if case_row else None)
-        or getattr(case_row, "updated_at", None) if case_row else None
+        or getattr(case_row, "updated_at", None)
+        if case_row
+        else None
         or getattr(req, "updated_at", None)
         or getattr(req, "created_at", None)
     )
     if activity_ref:
         inactive_for = now - activity_ref
         if inactive_for >= timedelta(hours=72):
-            blockages.append(f"Dernière activité il y a {_format_elapsed_compact(activity_ref)}")
+            blockages.append(
+                f"Dernière activité il y a {_format_elapsed_compact(activity_ref)}"
+            )
 
-    created_ref = _as_aware_utc(getattr(case_row, "created_at", None) if case_row else getattr(req, "created_at", None))
-    if created_ref and status_val in {"new", "open", "pending"} and (now - created_ref) >= timedelta(hours=48):
+    created_ref = _as_aware_utc(
+        getattr(case_row, "created_at", None)
+        if case_row
+        else getattr(req, "created_at", None)
+    )
+    if (
+        created_ref
+        and status_val in {"new", "open", "pending"}
+        and (now - created_ref) >= timedelta(hours=48)
+    ):
         blockages.append("Dossier encore en statut initial depuis trop longtemps")
 
     if case_row and high_risk and not has_professional:
@@ -2020,7 +2293,9 @@ def _append_case_event(
         actor_user_id=actor_user_id,
         event_type=normalized_event,
         message=(message or "").strip() or None,
-        metadata_json=json.dumps(metadata or {}, ensure_ascii=False) if metadata else None,
+        metadata_json=(
+            json.dumps(metadata or {}, ensure_ascii=False) if metadata else None
+        ),
         visibility=(visibility or "internal").strip().lower() or "internal",
         created_at=_now_utc(),
     )
@@ -2197,8 +2472,10 @@ def _compute_case_signals(
                 "cta_href": "#owner-actions",
             }
         )
-    elif owned_at and (now - owned_at) > timedelta(hours=24) and (
-        not last_activity_at or (now - last_activity_at) > timedelta(hours=24)
+    elif (
+        owned_at
+        and (now - owned_at) > timedelta(hours=24)
+        and (not last_activity_at or (now - last_activity_at) > timedelta(hours=24))
     ):
         signals.append(
             {
@@ -2351,7 +2628,9 @@ def _build_helpchain_recommendation(
     if activities:
         last_activity = getattr(activities[0], "created_at", None)
     if not last_activity:
-        last_activity = getattr(req, "updated_at", None) or getattr(req, "created_at", None)
+        last_activity = getattr(req, "updated_at", None) or getattr(
+            req, "created_at", None
+        )
     if isinstance(last_activity, datetime):
         if last_activity.tzinfo is None:
             last_activity = last_activity.replace(tzinfo=timezone.utc)
@@ -2435,7 +2714,9 @@ def _verify_admin_password(user: AdminUser | None, password: str) -> bool:
 
 def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
     role = _normalize_admin_role_value(
-        getattr(user, "role", None) if user is not None else getattr(current_user, "role", None)
+        getattr(user, "role", None)
+        if user is not None
+        else getattr(current_user, "role", None)
     )
     structure_id = (
         getattr(user, "structure_id", None)
@@ -2457,7 +2738,9 @@ def _default_admin_workspace_url(user: AdminUser | None = None) -> str:
 
 def _default_admin_landing_url(user: AdminUser | None = None) -> str:
     target = user if user is not None else current_user
-    if _is_global_superadmin(target) and bool(getattr(target, "must_change_password", False)):
+    if _is_global_superadmin(target) and bool(
+        getattr(target, "must_change_password", False)
+    ):
         return url_for("admin.admin_change_password")
     if _admin_onboarding_required(user):
         return url_for("admin.admin_onboarding")
@@ -2484,7 +2767,10 @@ def _admin_onboarding_columns_available() -> bool:
         "onboarding_completed_at",
         "onboarding_step",
     )
-    return all(_table_has_column("admin_users", column_name) for column_name in required_columns)
+    return all(
+        _table_has_column("admin_users", column_name)
+        for column_name in required_columns
+    )
 
 
 def _admin_onboarding_data_columns_available() -> bool:
@@ -2530,7 +2816,11 @@ def _temporary_admin_password_expired(user: AdminUser | None = None) -> bool:
 
 def _generate_temporary_admin_password() -> str:
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
-    required = [secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ"), secrets.choice("abcdefghijkmnopqrstuvwxyz"), secrets.choice("23456789")]
+    required = [
+        secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZ"),
+        secrets.choice("abcdefghijkmnopqrstuvwxyz"),
+        secrets.choice("23456789"),
+    ]
     required.extend(secrets.choice(alphabet) for _ in range(21))
     secrets.SystemRandom().shuffle(required)
     return "".join(required)
@@ -2823,18 +3113,18 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     if mfa_globally_enabled and role_requires_mfa and not user_has_mfa:
         session["mfa_required"] = True
         session.modified = True
-        current_app.logger.warning("[SESSION] %s", dict(session))
+
         flash(_("MFA setup is required for your role before continuing."), "warning")
         return redirect(
             url_for(
                 "admin.admin_mfa_setup",
                 next=next_url or _default_admin_landing_url(user),
             )
-    )
+        )
     if mfa_globally_enabled and user_has_mfa:
         session["mfa_required"] = True
         session.modified = True
-        current_app.logger.warning("[SESSION] %s", dict(session))
+
         return redirect(
             url_for(
                 "admin.admin_mfa_verify",
@@ -2906,7 +3196,11 @@ def _is_global_admin() -> bool:
 
 def _is_structure_admin() -> bool:
     actor = resolve_current_admin_actor()
-    return actor.is_authenticated and actor.role == "superadmin" and actor.is_structure_attached
+    return (
+        actor.is_authenticated
+        and actor.role == "superadmin"
+        and actor.is_structure_attached
+    )
 
 
 def _require_team_management_access():
@@ -2943,6 +3237,7 @@ def _require_onboarding_mutation_access() -> None:
         actor_role=actor.role,
     )
     abort(403)
+
 
 def _require_global_admin() -> None:
     # Platform-wide admin pages are gated by the canonical superadmin role.
@@ -3069,7 +3364,9 @@ def get_volunteer_engagement_score(
             for notified_at, seen_at in states:
                 if notified_at is None:
                     continue
-                if seen_at is not None and seen_at <= (notified_at + timedelta(hours=24)):
+                if seen_at is not None and seen_at <= (
+                    notified_at + timedelta(hours=24)
+                ):
                     seen_within_24h += 1
                 if seen_at is None and notified_at <= cutoff_72h:
                     not_seen_72h += 1
@@ -3089,7 +3386,9 @@ def get_volunteer_engagement_score(
             for created_at, read_at, is_read in notif_rows:
                 if created_at is None:
                     continue
-                if read_at is not None and read_at <= (created_at + timedelta(hours=24)):
+                if read_at is not None and read_at <= (
+                    created_at + timedelta(hours=24)
+                ):
                     seen_within_24h += 1
                 if (not bool(is_read)) and created_at <= cutoff_72h:
                     not_seen_72h += 1
@@ -3176,7 +3475,9 @@ def _integration_connector_allowed_fields(connector: IntegrationConnector) -> li
 
 
 def _normalize_connector_source_slug(raw_value: str | None) -> str:
-    source_slug = re.sub(r"[^a-z0-9._-]+", "-", (raw_value or "").strip().lower()).strip("._-")
+    source_slug = re.sub(
+        r"[^a-z0-9._-]+", "-", (raw_value or "").strip().lower()
+    ).strip("._-")
     if not source_slug:
         raise ValueError("Le slug source est requis.")
     if len(source_slug) > 120:
@@ -3225,7 +3526,11 @@ def _connector_event_count_map() -> dict[int, int]:
         .group_by(RelayEvent.connector_id)
         .all()
     )
-    return {int(connector_id): int(count) for connector_id, count in rows if connector_id is not None}
+    return {
+        int(connector_id): int(count)
+        for connector_id, count in rows
+        if connector_id is not None
+    }
 
 
 def _connector_last_event_map() -> dict[int, datetime]:
@@ -3266,11 +3571,7 @@ def _relay_event_metadata(relay_event: RelayEvent) -> dict:
         return {}
     if not isinstance(parsed, dict):
         return {}
-    return {
-        str(key): value
-        for key, value in parsed.items()
-        if str(key or "").strip()
-    }
+    return {str(key): value for key, value in parsed.items() if str(key or "").strip()}
 
 
 def _normalize_sla_kind(raw_kind: str | None) -> str | None:
@@ -3383,9 +3684,17 @@ def _sla_prediction_state(req, *, sla_kind: str, now: datetime) -> dict:
     warn_threshold = min(4.0, max(1.0, sla_hours / 5.0))
 
     if remaining_hours < 0:
-        return {"state": "breached", "remaining_hours": remaining_hours, "label": "Dépassement"}
+        return {
+            "state": "breached",
+            "remaining_hours": remaining_hours,
+            "label": "Dépassement",
+        }
     if remaining_hours <= warn_threshold:
-        return {"state": "due_soon", "remaining_hours": remaining_hours, "label": "Échéance proche"}
+        return {
+            "state": "due_soon",
+            "remaining_hours": remaining_hours,
+            "label": "Échéance proche",
+        }
     return {"state": "ok", "remaining_hours": remaining_hours, "label": "À temps"}
 
 
@@ -3582,6 +3891,25 @@ def inject_admin_category_helpers():
     }
 
 
+@admin_bp.app_context_processor
+def inject_organization_logo_status():
+    """Expose tenant-scoped logo availability for the admin workspace header."""
+
+    def has_organization_logo():
+        actor = resolve_current_admin_actor()
+        if (
+            not actor.is_authenticated
+            or actor.role != "admin"
+            or actor.structure_id is None
+        ):
+            return False
+        from backend.models import OrganizationLogo
+
+        return db.session.get(OrganizationLogo, actor.structure_id) is not None
+
+    return {"has_organization_logo": has_organization_logo}
+
+
 @admin_bp.before_request
 def require_admin_session():
     """
@@ -3628,7 +3956,11 @@ def _admin_idle_timeout_guard():
         return None
     if not session.get("admin_logged_in"):
         return None
-    if request.endpoint in {"admin.admin_login_legacy", "admin.ops_login", "admin.admin_ops_login"}:
+    if request.endpoint in {
+        "admin.admin_login_legacy",
+        "admin.ops_login",
+        "admin.admin_ops_login",
+    }:
         return None
 
     now = _utc_now()
@@ -3742,7 +4074,9 @@ def admin_translations_list():
     is_translation_frozen = bool(freeze_state and freeze_state.is_active)
     can_l10n_write = _can_l10n_write()
     can_l10n_delete = _can_l10n_delete()
-    can_l10n_write_effective = can_l10n_write and (not is_locale_locked or can_l10n_delete)
+    can_l10n_write_effective = can_l10n_write and (
+        not is_locale_locked or can_l10n_delete
+    )
 
     missing_registry = []
     pagination = None
@@ -3872,14 +4206,21 @@ def admin_translations_coverage():
     translations_count = (
         db.session.query(func.count(UiTranslation.id))
         .filter(UiTranslation.locale.in_(locales))
-        .filter(UiTranslation.key.in_(list(all_keys)) if all_keys else UiTranslation.key == "__no_registry_match__")
+        .filter(
+            UiTranslation.key.in_(list(all_keys))
+            if all_keys
+            else UiTranslation.key == "__no_registry_match__"
+        )
         .filter(UiTranslation.is_active.is_(True))
         .scalar()
         or 0
     )
     avg_coverage = (
         round(
-            (sum(float(coverage[lc]["total"]["ratio"]) for lc in locales) / float(len(locales)))
+            (
+                sum(float(coverage[lc]["total"]["ratio"]) for lc in locales)
+                / float(len(locales))
+            )
             * 100.0,
             1,
         )
@@ -3929,7 +4270,11 @@ def admin_translations_key(key: str):
     row = UiTranslation.query.filter_by(key=key, locale=locale).first()
     reg = _registry_index().get(key) or {}
     fallback_text = _fallback_preview(key, locale)
-    status = "db_override" if row and row.text else ("fallback" if fallback_text != key else "missing")
+    status = (
+        "db_override"
+        if row and row.text
+        else ("fallback" if fallback_text != key else "missing")
+    )
     history = []
     if _table_exists("ui_translation_events"):
         history = (
@@ -3948,7 +4293,9 @@ def admin_translations_key(key: str):
     is_translation_frozen = bool(freeze_state and freeze_state.is_active)
     can_l10n_write = _can_l10n_write()
     can_l10n_delete = _can_l10n_delete()
-    can_l10n_write_effective = can_l10n_write and (not is_locale_locked or can_l10n_delete)
+    can_l10n_write_effective = can_l10n_write and (
+        not is_locale_locked or can_l10n_delete
+    )
 
     return render_template(
         "admin/translations_key.html",
@@ -4007,7 +4354,9 @@ def admin_translations_upsert():
     if freeze_block is not None:
         return freeze_block
 
-    row, action, old_text, changed = _ui_translation_upsert(locale=locale, key=key, text=text)
+    row, action, old_text, changed = _ui_translation_upsert(
+        locale=locale, key=key, text=text
+    )
     if changed:
         _log_translation_event(
             action=action,
@@ -4020,7 +4369,10 @@ def admin_translations_upsert():
         )
 
     db.session.commit()
-    flash("Translation saved." if changed else "No changes.", "success" if changed else "info")
+    flash(
+        "Translation saved." if changed else "No changes.",
+        "success" if changed else "info",
+    )
     return redirect(url_for("admin.admin_translations_key", key=key, locale=locale))
 
 
@@ -4122,13 +4474,21 @@ def admin_translations_ai_suggest():
 def admin_translations_bulk_suggest_apply():
     _require_l10n_write()
     locale = (
-        request.form.get("locale")
-        or request.args.get("locale")
-        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
-    ).strip().lower()
-    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+        (
+            request.form.get("locale")
+            or request.args.get("locale")
+            or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+        )
+        .strip()
+        .lower()
+    )
+    view = (
+        (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    )
     dry_run = (request.form.get("dry_run") or request.args.get("dry_run") or "") == "1"
-    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    resp_format = (
+        (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    )
 
     try:
         limit = int(request.form.get("limit") or request.args.get("limit") or "120")
@@ -4162,7 +4522,9 @@ def admin_translations_bulk_suggest_apply():
             ).all()
         }
 
-    missing_entries = [e for e in entries if e.get("key") and e["key"] not in existing_keys]
+    missing_entries = [
+        e for e in entries if e.get("key") and e["key"] not in existing_keys
+    ]
     to_process = missing_entries[:limit]
 
     applied = 0
@@ -4171,7 +4533,9 @@ def admin_translations_bulk_suggest_apply():
         key = entry["key"]
         default = (entry.get("default") or "").strip()
         domain = (entry.get("domain") or "").strip()
-        suggestions = _rules_suggest(key=key, locale=locale, default=default, domain=domain)
+        suggestions = _rules_suggest(
+            key=key, locale=locale, default=default, domain=domain
+        )
         if not suggestions:
             skipped += 1
             continue
@@ -4180,7 +4544,9 @@ def admin_translations_bulk_suggest_apply():
             skipped += 1
             continue
         if not dry_run:
-            row, _action, old_text, changed = _ui_translation_upsert(locale=locale, key=key, text=best)
+            row, _action, old_text, changed = _ui_translation_upsert(
+                locale=locale, key=key, text=best
+            )
             if changed:
                 _log_translation_event(
                     action="bulk_rules",
@@ -4233,13 +4599,21 @@ def admin_translations_bulk_suggest_apply():
 def admin_translations_bootstrap_from_po():
     _require_l10n_write()
     locale = (
-        request.form.get("locale")
-        or request.args.get("locale")
-        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
-    ).strip().lower()
-    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+        (
+            request.form.get("locale")
+            or request.args.get("locale")
+            or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+        )
+        .strip()
+        .lower()
+    )
+    view = (
+        (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    )
     dry_run = (request.form.get("dry_run") or request.args.get("dry_run") or "") == "1"
-    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    resp_format = (
+        (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    )
 
     try:
         limit = int(request.form.get("limit") or request.args.get("limit") or "300")
@@ -4277,7 +4651,9 @@ def admin_translations_bootstrap_from_po():
             ).all()
         }
 
-    missing_entries = [e for e in entries if e.get("key") and e["key"] not in existing_keys]
+    missing_entries = [
+        e for e in entries if e.get("key") and e["key"] not in existing_keys
+    ]
     translations = _load_babel_translations(locale)
     to_process = missing_entries[:limit]
 
@@ -4296,7 +4672,9 @@ def admin_translations_bootstrap_from_po():
             skipped_not_found += 1
             continue
         if not dry_run:
-            row, _action, old_text, changed = _ui_translation_upsert(locale=locale, key=key, text=translated)
+            row, _action, old_text, changed = _ui_translation_upsert(
+                locale=locale, key=key, text=translated
+            )
             if changed:
                 _log_translation_event(
                     action="po_sync",
@@ -4350,14 +4728,24 @@ def admin_translations_bootstrap_from_po():
 def admin_translations_locale_lock():
     _require_l10n_delete()
     locale = (
-        request.form.get("locale")
-        or request.args.get("locale")
-        or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
-    ).strip().lower()
-    action = (request.form.get("action") or request.args.get("action") or "").strip().lower()
+        (
+            request.form.get("locale")
+            or request.args.get("locale")
+            or current_app.config.get("BABEL_DEFAULT_LOCALE", "fr")
+        )
+        .strip()
+        .lower()
+    )
+    action = (
+        (request.form.get("action") or request.args.get("action") or "").strip().lower()
+    )
     note = (request.form.get("note") or "").strip()
-    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
-    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    view = (
+        (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    )
+    resp_format = (
+        (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    )
 
     if locale not in _supported_locales():
         return jsonify({"ok": False, "error": "unsupported locale"}), 400
@@ -4406,11 +4794,15 @@ def admin_translations_locale_lock():
 @admin_bp.post("/translations/freeze")
 def admin_translations_freeze_toggle():
     _require_l10n_delete()
-    action = (request.form.get("action") or request.args.get("action") or "").strip().lower()
+    action = (
+        (request.form.get("action") or request.args.get("action") or "").strip().lower()
+    )
     release_tag = (request.form.get("release_tag") or "").strip()[:64]
     note = (request.form.get("note") or "").strip()[:255]
     next_url = (request.form.get("next") or "").strip()
-    resp_format = (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    resp_format = (
+        (request.form.get("format") or request.args.get("format") or "").strip().lower()
+    )
 
     if action not in {"activate", "deactivate"}:
         return jsonify({"ok": False, "error": "invalid action"}), 400
@@ -4505,7 +4897,9 @@ def _is_locale_locked(locale: str) -> bool:
 def _require_l10n_write() -> None:
     if _can_l10n_write():
         return
-    _audit_denied_action(required_roles={"ops", "superadmin"}, actor_role=_admin_role_value())
+    _audit_denied_action(
+        required_roles={"ops", "superadmin"}, actor_role=_admin_role_value()
+    )
     abort(403)
 
 
@@ -4522,15 +4916,15 @@ def _blocked_by_locale_lock(locale: str):
     if _can_l10n_delete():
         return None
     wants_json = (
-        (request.form.get("format") or request.args.get("format") or "").strip().lower()
-        == "json"
-        or request.accept_mimetypes.best == "application/json"
-    )
+        request.form.get("format") or request.args.get("format") or ""
+    ).strip().lower() == "json" or request.accept_mimetypes.best == "application/json"
     if wants_json:
         return jsonify({"ok": False, "error": "locale_locked", "locale": locale}), 423
     flash(f"Locale {locale.upper()} is locked.", "warning")
     next_url = (request.form.get("next") or "").strip()
-    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    view = (
+        (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    )
     return _redirect_to_safe_next(
         next_url,
         url_for("admin.admin_translations_list", locale=locale, view=view),
@@ -4542,10 +4936,8 @@ def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = Fa
     if allow or not _is_translation_frozen():
         return None
     wants_json = (
-        (request.form.get("format") or request.args.get("format") or "").strip().lower()
-        == "json"
-        or request.accept_mimetypes.best == "application/json"
-    )
+        request.form.get("format") or request.args.get("format") or ""
+    ).strip().lower() == "json" or request.accept_mimetypes.best == "application/json"
     freeze = _get_translation_freeze_state()
     payload = {
         "ok": False,
@@ -4561,7 +4953,9 @@ def _blocked_by_translation_freeze(*, locale: str, action: str, allow: bool = Fa
         msg = f"Translation freeze active ({freeze.release_tag})."
     flash(msg, "warning")
     next_url = (request.form.get("next") or "").strip()
-    view = (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    view = (
+        (request.form.get("view") or request.args.get("view") or "ops").strip().lower()
+    )
     return _redirect_to_safe_next(
         next_url,
         url_for("admin.admin_translations_list", locale=locale, view=view),
@@ -4653,7 +5047,9 @@ def _ui_registry_get(key: str) -> dict:
     return _registry_index().get((key or "").strip(), {})
 
 
-def _ui_translation_upsert(locale: str, key: str, text: str) -> tuple[UiTranslation, str, str | None, bool]:
+def _ui_translation_upsert(
+    locale: str, key: str, text: str
+) -> tuple[UiTranslation, str, str | None, bool]:
     row = UiTranslation.query.filter_by(key=key, locale=locale).first()
     if row is None:
         row = UiTranslation(key=key, locale=locale, text=text)
@@ -4703,7 +5099,9 @@ def _log_translation_event(
 
 
 def _load_babel_translations(locale: str) -> Translations | None:
-    raw_dirs = str(current_app.config.get("BABEL_TRANSLATION_DIRECTORIES") or "translations")
+    raw_dirs = str(
+        current_app.config.get("BABEL_TRANSLATION_DIRECTORIES") or "translations"
+    )
     candidates = [part.strip() for part in re.split(r"[;,]", raw_dirs) if part.strip()]
     if not candidates:
         candidates = ["translations"]
@@ -4769,7 +5167,10 @@ def _load_terminology() -> dict:
 
 def _infer_kind(key: str) -> str:
     k = (key or "").lower()
-    if any(p in k for p in ["btn_", "cta_", "action_", "submit_", "save_", "close_", "assign_"]):
+    if any(
+        p in k
+        for p in ["btn_", "cta_", "action_", "submit_", "save_", "close_", "assign_"]
+    ):
         return "button"
     if any(p in k for p in ["title_", "header_", "nav_", "menu_"]):
         return "title"
@@ -4821,7 +5222,11 @@ def _rules_suggest(key: str, locale: str, default: str, domain: str) -> list[dic
 
     if kind == "title":
         v1 = base
-        v2 = f"{base} — {t('dashboard', 'Dashboard')}" if ("dashboard" not in k and len(base) <= 24) else base
+        v2 = (
+            f"{base} — {t('dashboard', 'Dashboard')}"
+            if ("dashboard" not in k and len(base) <= 24)
+            else base
+        )
         v3 = f"{base} ({locale.upper()})" if (is_admin and len(base) <= 24) else base
         return [
             {"text": v1, "reason": f"Title. {reason_base}"},
@@ -4831,7 +5236,11 @@ def _rules_suggest(key: str, locale: str, default: str, domain: str) -> list[dic
 
     if kind == "helper":
         v1 = base
-        v2 = f"{base}. {t('status', 'Status')}." if ("status" not in k and len(base) <= 40) else base
+        v2 = (
+            f"{base}. {t('status', 'Status')}."
+            if ("status" not in k and len(base) <= 40)
+            else base
+        )
         v3 = f"{base}." if base and not base.endswith(".") else base
         return [
             {"text": v1, "reason": f"Helper text (concise). {reason_base}"},
@@ -5104,11 +5513,15 @@ def admin_required(view_func):
             current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
             abort(404)
-        if bool(getattr(current_user, "must_change_password", False)) and _temporary_admin_password_expired(current_user):
+        if bool(
+            getattr(current_user, "must_change_password", False)
+        ) and _temporary_admin_password_expired(current_user):
             logout_user()
             session.clear()
             return redirect(url_for("admin.admin_login_legacy"), code=303)
-        if bool(getattr(current_user, "must_change_password", False)) and request.endpoint not in {
+        if bool(
+            getattr(current_user, "must_change_password", False)
+        ) and request.endpoint not in {
             "admin.admin_onboarding",
             "admin.admin_onboarding_step",
             "admin.admin_change_password",
@@ -5131,11 +5544,13 @@ def operator_required(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
         if not (
-            current_user.is_authenticated
-            and getattr(current_user, "is_admin", False)
+            current_user.is_authenticated and getattr(current_user, "is_admin", False)
         ):
             return _redirect_protected_login("admin.ops_login")
-        if isinstance(current_user._get_current_object(), AdminUser) and not current_user.is_active:
+        if (
+            isinstance(current_user._get_current_object(), AdminUser)
+            and not current_user.is_active
+        ):
             abort(403)
         role = _admin_role_value()
         if role is None or role not in {"ops", "readonly", "admin", "superadmin"}:
@@ -5251,7 +5666,12 @@ def admin_system():
         return "warning", "No revision recorded"
 
     def deploy_version():
-        for key in ("GIT_SHA", "RENDER_GIT_COMMIT", "RENDER_GIT_COMMIT_SHA", "COMMIT_SHA"):
+        for key in (
+            "GIT_SHA",
+            "RENDER_GIT_COMMIT",
+            "RENDER_GIT_COMMIT_SHA",
+            "COMMIT_SHA",
+        ):
             value = (os.getenv(key) or "").strip()
             if value:
                 return "ok", f"{key}={value[:12]}"
@@ -5367,10 +5787,9 @@ def _render_operator_dashboard():
         stale_filter,
     )
 
-    workspace_query = (
-        base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
-        .filter(actionable_filter, priority_filter)
-    )
+    workspace_query = base_query.outerjoin(
+        activity_sq, activity_sq.c.request_id == Request.id
+    ).filter(actionable_filter, priority_filter)
 
     case_base_query, case_kpi_filters = _build_scoped_cases_base_query()
     workspace_case_counts = _case_queue_counts_for_filters(
@@ -5417,14 +5836,16 @@ def _render_operator_dashboard():
             activity_ref=last_activity_at,
             now=now_utc,
         )
-        scored_rows.append((int(result.get("ops_priority_score") or 0), r, result, last_activity_at))
+        scored_rows.append(
+            (int(result.get("ops_priority_score") or 0), r, result, last_activity_at)
+        )
     scored_rows.sort(key=lambda row: row[0], reverse=True)
     top_scored_rows = scored_rows[:5]
     queue_rows = [row[1] for row in top_scored_rows]
     ops_priority_levels = {}
     workspace_row_flags = {}
     workspace_last_activity_by_id = {}
-    for _, row, result, last_activity_at in top_scored_rows:
+    for _score, row, result, last_activity_at in top_scored_rows:
         workspace_last_activity_by_id[int(row.id)] = last_activity_at
         queue_reasons[int(row.id)] = result.get("ops_priority_reasons") or []
         ops_level = result.get("ops_priority_level") or "normal"
@@ -5438,11 +5859,11 @@ def _render_operator_dashboard():
                 is_stale_72h = activity_ref <= stale_threshold
         except Exception:
             is_stale_72h = False
-        updated_ref = getattr(row, "updated_at", None) or getattr(row, "created_at", None)
+        updated_ref = getattr(row, "updated_at", None) or getattr(
+            row, "created_at", None
+        )
         updated_today = (
-            1
-            if getattr(updated_ref, "date", lambda: None)() == now_utc.date()
-            else 0
+            1 if getattr(updated_ref, "date", lambda: None)() == now_utc.date() else 0
         )
         workspace_row_flags[int(row.id)] = {
             "critical": 1 if ops_level == "critique" else 0,
@@ -5510,7 +5931,9 @@ def admin_risk_map():
     active_case_count = 0
     critical_queue_count = 0
     try:
-        scoped_ids_subq = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+        scoped_ids_subq = _scope_requests(
+            Request.query.with_entities(Request.id)
+        ).subquery()
         city_like = f"%{zone_city.lower()}%"
         city_filter = or_(
             func.lower(func.coalesce(Request.city, "")).like(city_like),
@@ -5688,7 +6111,7 @@ def _finalize_admin_session(
     session.pop("email_2fa_code", None)
     session.pop("email_2fa_expires", None)
     session.modified = True
-    current_app.logger.warning("[SESSION] %s", dict(session))
+
     target = _next_url_for_admin_user(user, next_url)
     return redirect(target or fallback_url, code=303)
 
@@ -5774,7 +6197,7 @@ def _mfa_attempt_reset():
 def _generate_backup_codes(n: int = 10) -> list[str]:
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
     codes = []
-    for _ in range(n):
+    for code_index in range(n):
         code = "".join(secrets.choice(alphabet) for _ in range(10))
         codes.append(code)
     return codes
@@ -5890,11 +6313,97 @@ def enforce_admin_onboarding():
         if session_version is not None and int(session_version) != expected_version:
             logout_user()
             session.clear()
-            flash("Votre session administrateur a été renouvelée. Veuillez vous reconnecter.", "warning")
+            flash(
+                "Votre session administrateur a été renouvelée. Veuillez vous reconnecter.",
+                "warning",
+            )
             return redirect(url_for("admin.admin_login_legacy"), code=303)
     if not _admin_onboarding_required():
         return None
     return redirect(url_for("admin.admin_onboarding"), code=303)
+
+
+@admin_bp.post("/team/organization-name")
+@admin_required
+def admin_team_organization_name():
+    """Update the current tenant's display name without changing its legal name."""
+    actor = _require_team_management_access()
+    from backend.models import Structure
+
+    name = " ".join((request.form.get("organization_name") or "").split())
+    if not name or len(name) > 120 or any(ord(char) < 32 for char in name):
+        abort(400)
+    structure = db.session.get(Structure, actor.structure_id)
+    if structure is None:
+        abort(404)
+    structure.name = name
+    db.session.commit()
+    flash("Nom de votre organisation mis à jour.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
+@admin_bp.get("/team/logo.png")
+@admin_required
+def admin_team_logo():
+    """Serve only the current actor's organization's logo."""
+    actor = _require_team_management_access()
+    from backend.models import OrganizationLogo
+
+    logo = db.session.get(OrganizationLogo, actor.structure_id)
+    if logo is None:
+        abort(404)
+    response = make_response(logo.png_data)
+    response.headers["Content-Type"] = "image/png"
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+@admin_bp.post("/team/logo")
+@admin_required
+def admin_team_logo_upload():
+    """Replace only the authenticated organization admin's logo."""
+    actor = _require_team_management_access()
+    from backend.models import OrganizationLogo
+
+    from ..services.organization_logo import (
+        MAX_LOGO_BYTES,
+        InvalidOrganizationLogo,
+        normalize_organization_logo,
+    )
+
+    uploaded = request.files.get("logo")
+    if uploaded is None:
+        abort(400)
+    raw = uploaded.stream.read(MAX_LOGO_BYTES + 1)
+    try:
+        png_data = normalize_organization_logo(raw)
+    except InvalidOrganizationLogo:
+        return "", 400
+    logo = db.session.get(OrganizationLogo, actor.structure_id)
+    if logo is None:
+        logo = OrganizationLogo(structure_id=actor.structure_id, png_data=png_data)
+        db.session.add(logo)
+    else:
+        logo.png_data = png_data
+    db.session.commit()
+    flash("Logo de votre organisation mis à jour.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
+
+
+@admin_bp.post("/team/logo/delete")
+@admin_required
+def admin_team_logo_delete():
+    """Remove only the current organization's logo."""
+    actor = _require_team_management_access()
+    from backend.models import OrganizationLogo
+
+    logo = db.session.get(OrganizationLogo, actor.structure_id)
+    if logo is not None:
+        db.session.delete(logo)
+        db.session.commit()
+    flash("Logo de votre organisation supprimé.", "success")
+    return redirect(url_for("admin.admin_team"), code=303)
 
 
 @admin_bp.get("/team")
@@ -5904,15 +6413,13 @@ def admin_team():
     actor = _require_team_management_access()
 
     team_members = (
-        AdminUser.query
-        .filter(AdminUser.structure_id == actor.structure_id)
+        AdminUser.query.filter(AdminUser.structure_id == actor.structure_id)
         .order_by(AdminUser.username.asc(), AdminUser.id.asc())
         .all()
     )
 
     pending_invitations = (
-        AdminUserInvitation.query
-        .filter(
+        AdminUserInvitation.query.filter(
             AdminUserInvitation.structure_id == actor.structure_id,
             AdminUserInvitation.accepted_at.is_(None),
             AdminUserInvitation.revoked_at.is_(None),
@@ -5921,11 +6428,17 @@ def admin_team():
         .all()
     )
 
+    from backend.models import OrganizationLogo
+
     return render_template(
         "admin/team.html",
+        organization_logo_exists=(
+            db.session.get(OrganizationLogo, actor.structure_id) is not None
+        ),
         team_members=team_members,
         pending_invitations=pending_invitations,
     )
+
 
 def _team_member(actor, member_id):
     # Never resolve an unscoped ID, including for platform administrators.
@@ -5956,7 +6469,8 @@ def admin_team_member_role(member_id):
             AdminUser.role == "admin",
             AdminUser.is_active.is_(True),
             AdminUser.id != member.id,
-        ).count() == 0
+        ).count()
+        == 0
     ):
         abort(409)
     from ..services.admin_access_reset import invalidate_access_resets
@@ -5965,9 +6479,12 @@ def admin_team_member_role(member_id):
     member.role = role
     invalidate_access_resets(member.email)
     db.session.commit()
-    audit_admin_action(action="ADMIN_TEAM_ROLE_CHANGED", target_type="AdminUser",
-                       target_id=member.id, payload={"structure_id": actor.structure_id,
-                                                    "old": old_role, "new": role})
+    audit_admin_action(
+        action="ADMIN_TEAM_ROLE_CHANGED",
+        target_type="AdminUser",
+        target_id=member.id,
+        payload={"structure_id": actor.structure_id, "old": old_role, "new": role},
+    )
     flash("Rôle mis à jour.", "success")
     return redirect(url_for("admin.admin_team"), code=303)
 
@@ -5991,7 +6508,8 @@ def admin_team_member_status(member_id):
             AdminUser.role == "admin",
             AdminUser.is_active.is_(True),
             AdminUser.id != member.id,
-        ).count() == 0
+        ).count()
+        == 0
     ):
         abort(409)
     from ..services.admin_access_reset import invalidate_access_resets
@@ -5999,9 +6517,12 @@ def admin_team_member_status(member_id):
     member.is_active = status == "1"
     invalidate_access_resets(member.email)
     db.session.commit()
-    audit_admin_action(action="ADMIN_TEAM_STATUS_CHANGED", target_type="AdminUser",
-                       target_id=member.id, payload={"structure_id": actor.structure_id,
-                                                    "is_active": member.is_active})
+    audit_admin_action(
+        action="ADMIN_TEAM_STATUS_CHANGED",
+        target_type="AdminUser",
+        target_id=member.id,
+        payload={"structure_id": actor.structure_id, "is_active": member.is_active},
+    )
     flash("Statut mis à jour.", "success")
     return redirect(url_for("admin.admin_team"), code=303)
 
@@ -6013,22 +6534,27 @@ def admin_team_member_reset(member_id):
     member = _team_member(actor, member_id)
     if not member.is_active:
         abort(409)
-    from ..services.admin_access_reset import create_access_reset, TTL_MINUTES
     from backend.mail_service import send_notification_email
+
+    from ..services.admin_access_reset import TTL_MINUTES, create_access_reset
 
     row, raw = create_access_reset(member, actor)
     # Fragments are not sent to servers, proxies or access logs.
-    base_url = (current_app.config.get("PUBLIC_BASE_URL") or request.url_root).rstrip("/")
+    base_url = (current_app.config.get("PUBLIC_BASE_URL") or request.url_root).rstrip(
+        "/"
+    )
     reset_url = base_url + url_for("main.admin_access_reset") + "#" + raw
     # Mail telemetry may commit the shared session. Persist deliberately and
     # explicitly invalidate on failure rather than relying on rollback.
     db.session.commit()
     try:
         sent = send_notification_email(
-            member.email, "Réinitialiser votre accès HelpChain",
+            member.email,
+            "Réinitialiser votre accès HelpChain",
             "emails/admin_access_reset.html",
             {"magic_link_url": reset_url, "ttl_minutes": TTL_MINUTES},
-            purpose="admin_access_reset", structure_id=actor.structure_id,
+            purpose="admin_access_reset",
+            structure_id=actor.structure_id,
         )
     except Exception:
         sent = False
@@ -6039,9 +6565,12 @@ def admin_team_member_reset(member_id):
         db.session.commit()
         flash("Impossible d'envoyer le lien. Veuillez réessayer.", "danger")
     else:
-        audit_admin_action(action="ADMIN_TEAM_ACCESS_RESET", target_type="AdminUser",
-                           target_id=member.id,
-                           payload={"structure_id": actor.structure_id})
+        audit_admin_action(
+            action="ADMIN_TEAM_ACCESS_RESET",
+            target_type="AdminUser",
+            target_id=member.id,
+            payload={"structure_id": actor.structure_id},
+        )
         flash("Lien de réinitialisation envoyé.", "success")
     return redirect(url_for("admin.admin_team"), code=303)
 
@@ -6055,9 +6584,12 @@ def superadmin_user_reset_access(member_id):
     actor = current_user
     member = AdminUser.query.filter_by(id=member_id, is_active=True).first_or_404()
 
-    from ..services.admin_access_reset import create_access_reset, TTL_MINUTES
     from backend.mail_service import send_notification_email
 
+    from ..services.admin_access_reset import TTL_MINUTES, create_access_reset
+
+    row = None
+    raw = None
     try:
         row, raw = create_access_reset(
             member,
@@ -6067,15 +6599,10 @@ def superadmin_user_reset_access(member_id):
     except ValueError:
         abort(403)
 
-    base_url = (
-        current_app.config.get("PUBLIC_BASE_URL") or request.url_root
-    ).rstrip("/")
-    reset_url = (
-        base_url
-        + url_for("main.admin_access_reset")
-        + "#"
-        + raw
+    base_url = (current_app.config.get("PUBLIC_BASE_URL") or request.url_root).rstrip(
+        "/"
     )
+    reset_url = base_url + url_for("main.admin_access_reset") + "#" + raw
 
     db.session.commit()
 
@@ -6112,10 +6639,7 @@ def superadmin_user_reset_access(member_id):
         )
         flash("Lien de réinitialisation envoyé.", "success")
 
-    return redirect(
-        request.referrer or _default_admin_landing_url(actor),
-        code=303,
-    )
+    return redirect(_default_admin_landing_url(actor), code=303)
 
 
 @admin_bp.post("/platform/users/<int:member_id>/reset-mfa")
@@ -6150,10 +6674,7 @@ def superadmin_user_reset_mfa(member_id):
 
     flash("MFA réinitialisée. L’administrateur devra l’activer à nouveau.", "success")
 
-    return redirect(
-        request.referrer or _default_admin_landing_url(actor),
-        code=303,
-    )
+    return redirect(_default_admin_landing_url(actor), code=303)
 
 
 @admin_bp.post("/platform/users/<int:member_id>/temporary-access")
@@ -6175,10 +6696,13 @@ def superadmin_user_temporary_access(member_id):
     delivery_channel = (request.form.get("delivery_channel") or "").strip()
     if len(reason) < 10 or len(reason) > 500:
         flash("Une raison brève et précise est requise.", "warning")
-        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+        return redirect(_default_admin_landing_url(actor), code=303)
     if not identity_confirmed or delivery_channel not in TEMPORARY_ACCESS_CHANNELS:
-        flash("Confirmez l’identité et le canal de remise préalablement validé.", "warning")
-        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+        flash(
+            "Confirmez l’identité et le canal de remise préalablement validé.",
+            "warning",
+        )
+        return redirect(_default_admin_landing_url(actor), code=303)
     if not nonce or nonce != session.get("temporary_access_nonce"):
         abort(400)
 
@@ -6218,15 +6742,17 @@ def superadmin_user_temporary_access(member_id):
         db.session.rollback()
         current_app.logger.exception("Temporary admin access generation failed")
         flash("Impossible de générer l’accès temporaire.", "danger")
-        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+        return redirect(_default_admin_landing_url(actor), code=303)
 
     response = make_response(
         render_template(
             "admin/temporary_access.html",
             target=member,
-            organization=db.session.get(Structure, member.structure_id)
-            if member.structure_id
-            else None,
+            organization=(
+                db.session.get(Structure, member.structure_id)
+                if member.structure_id
+                else None
+            ),
             temporary_password=temporary_password,
             expires_at=expires_at,
             delivery_channel_label=TEMPORARY_ACCESS_CHANNELS[delivery_channel],
@@ -6331,20 +6857,17 @@ def admin_team_invite():
     )
     return redirect(url_for("admin.admin_team"), code=303)
 
+
 @admin_bp.post("/team/invitations/<int:invitation_id>/revoke")
 @admin_required
 def admin_team_invitation_revoke(invitation_id):
     admin_required_404()
     actor = _require_team_management_access()
 
-    invitation = (
-        AdminUserInvitation.query
-        .filter(
-            AdminUserInvitation.id == invitation_id,
-            AdminUserInvitation.structure_id == actor.structure_id,
-        )
-        .first()
-    )
+    invitation = AdminUserInvitation.query.filter(
+        AdminUserInvitation.id == invitation_id,
+        AdminUserInvitation.structure_id == actor.structure_id,
+    ).first()
 
     if invitation is None:
         abort(404)
@@ -6381,14 +6904,10 @@ def admin_team_invitation_resend(invitation_id):
     admin_required_404()
     actor = _require_team_management_access()
 
-    invitation = (
-        AdminUserInvitation.query
-        .filter(
-            AdminUserInvitation.id == invitation_id,
-            AdminUserInvitation.structure_id == actor.structure_id,
-        )
-        .first()
-    )
+    invitation = AdminUserInvitation.query.filter(
+        AdminUserInvitation.id == invitation_id,
+        AdminUserInvitation.structure_id == actor.structure_id,
+    ).first()
 
     if invitation is None:
         abort(404)
@@ -6506,7 +7025,9 @@ def admin_onboarding():
         onboarding_main_needs=ONBOARDING_MAIN_NEED_OPTIONS,
         onboarding_plan_url=_admin_onboarding_plan_url(),
         onboarding_request_new_url=url_for("admin.admin_request_new"),
-        onboarding_password_done=not bool(getattr(current_user, "must_change_password", False)),
+        onboarding_password_done=not bool(
+            getattr(current_user, "must_change_password", False)
+        ),
     )
 
 
@@ -6541,7 +7062,9 @@ def admin_onboarding_step():
                 return redirect(url_for("admin.admin_onboarding"), code=303)
             current_user.must_change_password = False
             current_user.temporary_password_expires_at = None
-            session["admin_auth_version"] = int(getattr(current_user, "auth_version", 1) or 1)
+            session["admin_auth_version"] = int(
+                getattr(current_user, "auth_version", 1) or 1
+            )
         _admin_onboarding_set_step(current_user, "structure_setup")
         db.session.commit()
         return redirect(url_for("admin.admin_onboarding"), code=303)
@@ -6551,7 +7074,9 @@ def admin_onboarding_step():
         city = (request.form.get("city") or "").strip()
         team_size = (request.form.get("team_size") or "").strip()
         main_need = (request.form.get("main_need") or "").strip().lower()
-        organization_type = (request.form.get("organization_type") or "").strip().lower()
+        organization_type = (
+            (request.form.get("organization_type") or "").strip().lower()
+        )
         if not structure_name:
             flash("Le nom de la structure est requis.", "warning")
             return redirect(url_for("admin.admin_onboarding"), code=303)
@@ -6589,9 +7114,14 @@ def admin_onboarding_step():
             if not _valid_onboarding_email(raw_email):
                 flash("Au moins une adresse e-mail est invalide.", "warning")
                 return redirect(url_for("admin.admin_onboarding"), code=303)
-            role = (request.form.get(f"invite_role_{idx}") or "readonly").strip().lower()
+            role = (
+                (request.form.get(f"invite_role_{idx}") or "readonly").strip().lower()
+            )
             if role not in {"readonly", "ops"}:
-                flash("Le rôle sélectionné n'est pas autorisé pour l'onboarding.", "warning")
+                flash(
+                    "Le rôle sélectionné n'est pas autorisé pour l'onboarding.",
+                    "warning",
+                )
                 return redirect(url_for("admin.admin_onboarding"), code=303)
             invitations.append({"email": raw_email, "role": role})
 
@@ -6605,7 +7135,12 @@ def admin_onboarding_step():
                         email=item["email"],
                         role=item["role"],
                     )
-                except (InvitationEmailAlreadyUsed, InvitationAlreadyPending, InvitationRoleNotAllowed, ValueError) as exc:
+                except (
+                    InvitationEmailAlreadyUsed,
+                    InvitationAlreadyPending,
+                    InvitationRoleNotAllowed,
+                    ValueError,
+                ) as exc:
                     invitation_errors.append(f"{item['email']}:{exc}")
             if invitation_errors and len(invitation_errors) == len(invitations):
                 db.session.rollback()
@@ -6617,7 +7152,9 @@ def admin_onboarding_step():
             "emails": emails[:3],
             "roles": {item["email"]: item["role"] for item in invitations[:3]},
             "sent": False,
-            "prepared": invite_action == "send" and bool(emails) and not invitation_errors,
+            "prepared": invite_action == "send"
+            and bool(emails)
+            and not invitation_errors,
             "skipped": invite_action == "skip",
             "errors": invitation_errors,
         }
@@ -6627,15 +7164,21 @@ def admin_onboarding_step():
         return redirect(url_for("admin.admin_onboarding"), code=303)
 
     if step == "first_win":
-        first_win_action = (request.form.get("first_win_action") or "create").strip().lower()
+        first_win_action = (
+            (request.form.get("first_win_action") or "create").strip().lower()
+        )
         default_city = (
             ((payload.get("structure_setup") or {}).get("city") or "").strip()
             or getattr(structure, "city", None)
             or ""
         )
-        request_title = (request.form.get("request_title") or "Premiere situation test").strip()
+        request_title = (
+            request.form.get("request_title") or "Premiere situation test"
+        ).strip()
         request_city = (request.form.get("request_city") or default_city).strip()
-        request_priority = (request.form.get("request_priority") or "normal").strip().lower()
+        request_priority = (
+            (request.form.get("request_priority") or "normal").strip().lower()
+        )
         if not request_title:
             flash("Le titre de la premiere situation est requis.", "warning")
             return redirect(url_for("admin.admin_onboarding"), code=303)
@@ -6865,7 +7408,9 @@ def admin_ops_login():
     ).strip()
     next_url = _safe_next_url(next_candidate)
     redirect_code = 303 if request.method == "POST" else 302
-    return redirect(url_for("admin.admin_login_legacy", next=next_url), code=redirect_code)
+    return redirect(
+        url_for("admin.admin_login_legacy", next=next_url), code=redirect_code
+    )
 
 
 @admin_bp.route("/change-password", methods=["GET", "POST"])
@@ -6874,7 +7419,9 @@ def admin_ops_login():
 def admin_change_password():
     user = current_user
 
-    if bool(getattr(user, "must_change_password", False)) and _temporary_admin_password_expired(user):
+    if bool(
+        getattr(user, "must_change_password", False)
+    ) and _temporary_admin_password_expired(user):
         logout_user()
         session.clear()
         return redirect(url_for("admin.admin_login_legacy"), code=303)
@@ -6893,9 +7440,12 @@ def admin_change_password():
                 user.set_password(new_password)
                 user.must_change_password = False
                 user.temporary_password_expires_at = None
-                session["admin_auth_version"] = int(getattr(user, "auth_version", 1) or 1)
+                session["admin_auth_version"] = int(
+                    getattr(user, "auth_version", 1) or 1
+                )
 
                 from ..services.admin_access_reset import invalidate_access_resets
+
                 invalidate_access_resets(user.email)
 
                 db.session.commit()
@@ -6916,9 +7466,7 @@ def admin_change_password():
                 db.session.rollback()
                 flash(str(exc), "danger")
 
-    response = make_response(
-        render_template("admin/change_password.html")
-    )
+    response = make_response(render_template("admin/change_password.html"))
     response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -6931,26 +7479,21 @@ def admin_forgot_password():
         user = _find_admin_user(identifier) if identifier else None
 
         if user is not None and user.is_active and user.email:
-            from ..services.admin_access_reset import (
-                create_self_access_reset,
-                TTL_MINUTES,
-            )
             from backend.mail_service import send_notification_email
+
+            from ..services.admin_access_reset import (
+                TTL_MINUTES,
+                create_self_access_reset,
+            )
 
             try:
                 row, raw = create_self_access_reset(user)
 
                 base_url = (
-                    current_app.config.get("PUBLIC_BASE_URL")
-                    or request.url_root
+                    current_app.config.get("PUBLIC_BASE_URL") or request.url_root
                 ).rstrip("/")
 
-                reset_url = (
-                    base_url
-                    + url_for("main.admin_access_reset")
-                    + "#"
-                    + raw
-                )
+                reset_url = base_url + url_for("main.admin_access_reset") + "#" + raw
 
                 db.session.commit()
 
@@ -6992,9 +7535,7 @@ def admin_forgot_password():
             code=303,
         )
 
-    response = make_response(
-        render_template("admin/forgot_password.html")
-    )
+    response = make_response(render_template("admin/forgot_password.html"))
     response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -7005,7 +7546,6 @@ def admin_forgot_password():
     methods=["POST"],
     on_breach=_admin_auth_rate_limit_response,
 )
-
 @admin_bp.route("/login", methods=["GET", "POST"], endpoint="admin_login")
 def admin_login_legacy():
     """Legacy admin login endpoint kept for backward-compatible tests/clients."""
@@ -7031,7 +7571,10 @@ def admin_login_legacy():
                 route_context="login",
                 attempted_identifier=username_norm,
                 next_url=next_url,
-                extra_payload={"reason": "lockout", "retry_after_seconds": int(retry_after)},
+                extra_payload={
+                    "reason": "lockout",
+                    "retry_after_seconds": int(retry_after),
+                },
             )
             return _lockout_response(retry_after, next_url=next_url)
 
@@ -7049,7 +7592,9 @@ def admin_login_legacy():
             )
             flash(GENERIC_ADMIN_LOGIN_FAIL_MSG, "danger")
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
-        if bool(getattr(user, "must_change_password", False)) and _temporary_admin_password_expired(user):
+        if bool(
+            getattr(user, "must_change_password", False)
+        ) and _temporary_admin_password_expired(user):
             _log_admin_attempt(username=username_norm, ip=ip, success=False)
             _audit_admin_auth_event(
                 "admin_login_failure",
@@ -7059,7 +7604,10 @@ def admin_login_legacy():
                 next_url=next_url,
                 extra_payload={"reason": "temporary_password_expired"},
             )
-            flash("Cet accès temporaire a expiré. Demandez une nouvelle récupération.", "danger")
+            flash(
+                "Cet accès temporaire a expiré. Demandez une nouvelle récupération.",
+                "danger",
+            )
             return redirect(url_for("admin.admin_login_legacy", next=next_url))
         _log_admin_attempt(username=username_norm, ip=ip, success=True)
         _audit_admin_auth_event(
@@ -7321,9 +7869,7 @@ def admin_mfa_verify():
         and getattr(current_user, "totp_secret", None)
     ):
         flash(_("MFA setup is required for your role before verification."), "warning")
-        return redirect(
-            url_for("admin.admin_mfa_setup", next=next_url)
-        )
+        return redirect(url_for("admin.admin_mfa_setup", next=next_url))
 
     if not (
         getattr(current_user, "mfa_enabled", False)
@@ -7363,9 +7909,7 @@ def admin_mfa_verify():
         flash(
             f"Твърде много опити. Опитай след {max(1, remaining // 60)} мин.", "danger"
         )
-        return redirect(
-            url_for("admin.admin_mfa_verify", next=next_url)
-        )
+        return redirect(url_for("admin.admin_mfa_verify", next=next_url))
 
     code = (request.form.get("code") or "").strip().replace(" ", "").upper()
     totp_ok = False
@@ -7430,16 +7974,23 @@ def admin_mfa_verify():
         },
     )
     if locked:
-        flash(_("Invalid code. Locked for about %(minutes)s min.", minutes=max(1, remaining // 60)), "danger")
+        flash(
+            _(
+                "Invalid code. Locked for about %(minutes)s min.",
+                minutes=max(1, remaining // 60),
+            ),
+            "danger",
+        )
     else:
         left = current_app.config.get("MFA_VERIFY_MAX_ATTEMPTS", 8) - int(
             session.get("mfa_attempts", 0)
         )
-        flash(_("Invalid code. Attempts remaining: %(count)s.", count=max(left, 0)), "danger")
+        flash(
+            _("Invalid code. Attempts remaining: %(count)s.", count=max(left, 0)),
+            "danger",
+        )
 
-    return redirect(
-        url_for("admin.admin_mfa_verify", next=next_url)
-    )
+    return redirect(url_for("admin.admin_mfa_verify", next=next_url))
 
 
 @admin_bp.route("/mfa/backup-codes", methods=["GET", "POST"])
@@ -7651,8 +8202,9 @@ def admin_api_dashboard():
             ),
             200,
         )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Admin KPI retrieval failed")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 SLA_HOURS_DEFAULT = 12
@@ -7764,13 +8316,15 @@ def _sla_kpis(
             "schema_warning": "volunteer_request_states.seen_at_missing",
         }
 
-    base_states_q = db.session.query(
-        VolunteerRequestState.request_id.label("req_id"),
-        VolunteerRequestState.volunteer_id.label("vol_id"),
-        VolunteerRequestState.notified_at.label("notified_at"),
-        VolunteerRequestState.seen_at.label("seen_at"),
-    ).join(Request, Request.id == VolunteerRequestState.request_id).filter(
-        VolunteerRequestState.notified_at.isnot(None)
+    base_states_q = (
+        db.session.query(
+            VolunteerRequestState.request_id.label("req_id"),
+            VolunteerRequestState.volunteer_id.label("vol_id"),
+            VolunteerRequestState.notified_at.label("notified_at"),
+            VolunteerRequestState.seen_at.label("seen_at"),
+        )
+        .join(Request, Request.id == VolunteerRequestState.request_id)
+        .filter(VolunteerRequestState.notified_at.isnot(None))
     )
     tenant_filter = _structure_scope_filter()
     base_states_q = _apply_tenant_filter(base_states_q, tenant_filter)
@@ -7933,7 +8487,8 @@ def admin_risk_kpis():
         if has_vrs_notified_at:
             cnt = (
                 _apply_tenant_filter(
-                    db.session.query(func.count(VolunteerRequestState.id)), tenant_filter
+                    db.session.query(func.count(VolunteerRequestState.id)),
+                    tenant_filter,
                 )
                 .join(Request, Request.id == VolunteerRequestState.request_id)
                 .filter(VolunteerRequestState.notified_at.isnot(None))
@@ -8004,7 +8559,9 @@ def admin_risk_kpis():
             cutoff = now - timedelta(hours=24)
             not_seen_rows = (
                 _apply_tenant_filter(
-                    db.session.query(Notification.request_id, func.count(Notification.id)),
+                    db.session.query(
+                        Notification.request_id, func.count(Notification.id)
+                    ),
                     tenant_filter,
                 )
                 .join(Request, Request.id == Notification.request_id)
@@ -8273,11 +8830,11 @@ def admin_territorial_kpis():
             .filter(Case.structure_id == Request.structure_id)
         )
         if not _is_global_admin():
-            base_cases = base_cases.filter(Request.structure_id == _current_structure_id())
+            base_cases = base_cases.filter(
+                Request.structure_id == _current_structure_id()
+            )
 
-        active_cases = (
-            base_cases.filter(func.lower(Case.status) != "closed").count()
-        )
+        active_cases = base_cases.filter(func.lower(Case.status) != "closed").count()
         new_cases_week = base_cases.filter(Case.created_at >= since).count()
         resolved_cases = base_cases.filter(func.lower(Case.status) == "closed").count()
 
@@ -8286,7 +8843,9 @@ def admin_territorial_kpis():
             .group_by(Case.status)
             .all()
         )
-        status_map = {str(status or "").lower(): int(count) for status, count in status_rows}
+        status_map = {
+            str(status or "").lower(): int(count) for status, count in status_rows
+        }
         cases_by_status = {
             "new": status_map.get("new", 0),
             "in_progress": status_map.get("in_progress", 0),
@@ -8322,7 +8881,9 @@ def admin_territorial_kpis():
         open_filter = func.lower(Case.status) != "closed"
         oldest_open_query = (
             db.session.query(
-                func.max((func.julianday(now) - func.julianday(Case.created_at)) * 86400.0)
+                func.max(
+                    (func.julianday(now) - func.julianday(Case.created_at)) * 86400.0
+                )
             )
             .join(Request, Case.request_id == Request.id)
             .filter(Case.structure_id == Request.structure_id)
@@ -8365,7 +8926,9 @@ def admin_territorial_kpis():
 def admin_create_structure():
     admin_required_404()
     if _admin_role_value() != "superadmin":
-        _audit_denied_action(required_roles={"superadmin"}, actor_role=_admin_role_value())
+        _audit_denied_action(
+            required_roles={"superadmin"}, actor_role=_admin_role_value()
+        )
         abort(403)
 
     payload = request.get_json(silent=True) or {}
@@ -8384,7 +8947,8 @@ def admin_create_structure():
         msg = str(exc)
         if msg in {"structure_name_exists", "admin_email_exists"}:
             return jsonify({"error": msg}), 400
-        raise
+        current_app.logger.exception("Unexpected structure creation error")
+        return jsonify({"error": "internal_error"}), 500
 
     return jsonify(
         {
@@ -8656,10 +9220,16 @@ def admin_home():
     unassigned_filter = Request.owner_id.is_(None)
     attention_filter = or_(urgent_filter, unassigned_filter, stale_filter)
 
-    dashboard_query = base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+    dashboard_query = base_query.outerjoin(
+        activity_sq, activity_sq.c.request_id == Request.id
+    )
 
-    attention_count = dashboard_query.filter(actionable_filter, attention_filter).count()
-    unassigned_count = dashboard_query.filter(actionable_filter, unassigned_filter).count()
+    attention_count = dashboard_query.filter(
+        actionable_filter, attention_filter
+    ).count()
+    unassigned_count = dashboard_query.filter(
+        actionable_filter, unassigned_filter
+    ).count()
     followup_count = dashboard_query.filter(actionable_filter, stale_filter).count()
     stale_count = followup_count
 
@@ -8667,7 +9237,9 @@ def admin_home():
         dashboard_query.filter(actionable_filter, attention_filter)
         .options(joinedload(Request.owner))
         .order_by(
-            case((urgent_filter, 0), (unassigned_filter, 1), (stale_filter, 2), else_=3),
+            case(
+                (urgent_filter, 0), (unassigned_filter, 1), (stale_filter, 2), else_=3
+            ),
             activity_expr.asc().nullslast(),
             Request.created_at.desc().nullslast(),
             Request.id.desc(),
@@ -8677,7 +9249,9 @@ def admin_home():
     )
     dashboard_last_activity_by_id = {}
     for row in attention_rows:
-        dashboard_last_activity_by_id[int(row.id)] = get_request_last_meaningful_activity(row)
+        dashboard_last_activity_by_id[int(row.id)] = (
+            get_request_last_meaningful_activity(row)
+        )
 
     queue_summary = {
         "pending": 0,
@@ -8687,7 +9261,9 @@ def admin_home():
         "failed": 0,
     }
     if _table_exists("notification_jobs"):
-        queue_summary = count_notification_job_buckets(_scoped_notification_jobs_query())
+        queue_summary = count_notification_job_buckets(
+            _scoped_notification_jobs_query()
+        )
 
     security_summary = {
         "failed_logins_24h": 0,
@@ -8762,14 +9338,22 @@ def admin_home():
             if int(row.get("institutional_intent_score") or 0) <= 0:
                 continue
             institutional_signal_preview = {
-                "institutional_intent_score": int(row.get("institutional_intent_score") or 0),
+                "institutional_intent_score": int(
+                    row.get("institutional_intent_score") or 0
+                ),
                 "intent_level": str(row.get("priority_level") or "").strip().lower(),
                 "recurrence_level": str(row.get("recurrence_level") or "").strip(),
-                "deployment_probability": str(row.get("deployment_probability") or "").strip(),
-                "probable_organization_profiles": list(row.get("probable_organization_profiles") or []),
+                "deployment_probability": str(
+                    row.get("deployment_probability") or ""
+                ).strip(),
+                "probable_organization_profiles": list(
+                    row.get("probable_organization_profiles") or []
+                ),
                 "recommendation_reasons": list(row.get("recommendation_reasons") or []),
                 "recommended_next_action": str(
-                    row.get("recommended_next_action") or row.get("recommended_action") or ""
+                    row.get("recommended_next_action")
+                    or row.get("recommended_action")
+                    or ""
                 ).strip(),
                 "territorial_opportunity_summary": dict(
                     row.get("territorial_opportunity_summary") or {}
@@ -8808,7 +9392,9 @@ def admin_integrations():
     recent_rows = []
     connector_rows = []
     structure_options = []
-    can_manage_connectors = _normalize_admin_role_value(getattr(current_user, "role", None)) in {
+    can_manage_connectors = _normalize_admin_role_value(
+        getattr(current_user, "role", None)
+    ) in {
         "admin",
         "superadmin",
     }
@@ -8819,21 +9405,26 @@ def admin_integrations():
         connectors = (
             _integration_connector_scope_query()
             .options(joinedload(IntegrationConnector.structure))
-            .order_by(IntegrationConnector.created_at.desc(), IntegrationConnector.id.desc())
+            .order_by(
+                IntegrationConnector.created_at.desc(), IntegrationConnector.id.desc()
+            )
             .all()
         )
         connector_rows = [
             SimpleNamespace(
                 connector=connector,
                 event_count=connector_counts.get(int(connector.id), 0),
-                last_event_at=connector_last_events.get(int(connector.id)) or connector.last_event_at,
+                last_event_at=connector_last_events.get(int(connector.id))
+                or connector.last_event_at,
             )
             for connector in connectors
         ]
 
     if can_manage_connectors:
         if _is_global_admin():
-            structure_options = Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).all()
+            structure_options = Structure.query.order_by(
+                Structure.name.asc(), Structure.id.asc()
+            ).all()
         else:
             current_structure_id = _current_structure_id()
             structure = db.session.get(Structure, current_structure_id)
@@ -8842,10 +9433,18 @@ def admin_integrations():
     if relay_available:
         relay_query = _relay_event_scope_query()
         total_events = relay_query.count()
-        received_count = relay_query.filter(RelayEvent.sync_status == "received").count()
-        processed_count = relay_query.filter(RelayEvent.sync_status == "processed").count()
-        rejected_count = relay_query.filter(RelayEvent.sync_status == "rejected").count()
-        latest_received_at = relay_query.with_entities(func.max(RelayEvent.created_at)).scalar()
+        received_count = relay_query.filter(
+            RelayEvent.sync_status == "received"
+        ).count()
+        processed_count = relay_query.filter(
+            RelayEvent.sync_status == "processed"
+        ).count()
+        rejected_count = relay_query.filter(
+            RelayEvent.sync_status == "rejected"
+        ).count()
+        latest_received_at = relay_query.with_entities(
+            func.max(RelayEvent.created_at)
+        ).scalar()
 
         recent_events = (
             relay_query.options(joinedload(RelayEvent.structure))
@@ -8887,7 +9486,10 @@ def admin_create_integration_connector():
     admin_required_404()
 
     if not _table_exists("integration_connectors"):
-        flash("La table des connecteurs n'est pas encore disponible. Exécutez d'abord les migrations.", "warning")
+        flash(
+            "La table des connecteurs n'est pas encore disponible. Exécutez d'abord les migrations.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_integrations"), code=303)
 
     try:
@@ -8917,10 +9519,14 @@ def admin_create_integration_connector():
         if structure is None:
             raise ValueError("La structure sélectionnée est introuvable.")
 
-        if IntegrationConnector.query.filter(IntegrationConnector.source_slug == source_slug).first():
+        if IntegrationConnector.query.filter(
+            IntegrationConnector.source_slug == source_slug
+        ).first():
             raise ValueError("Ce slug source est déjà utilisé.")
 
-        allowed_fields = _parse_connector_allowed_fields(request.form.get("allowed_fields"))
+        allowed_fields = _parse_connector_allowed_fields(
+            request.form.get("allowed_fields")
+        )
         notes = str(request.form.get("notes") or "").strip()
         if len(notes) > 4000:
             raise ValueError("Les notes du connecteur sont trop longues.")
@@ -8932,7 +9538,11 @@ def admin_create_integration_connector():
             source_slug=source_slug,
             api_key_hash=generate_password_hash(raw_secret),
             status=status,
-            allowed_fields_json=json.dumps(allowed_fields, ensure_ascii=True) if allowed_fields else None,
+            allowed_fields_json=(
+                json.dumps(allowed_fields, ensure_ascii=True)
+                if allowed_fields
+                else None
+            ),
             notes=notes or None,
         )
         db.session.add(connector)
@@ -8946,7 +9556,10 @@ def admin_create_integration_connector():
         "connector_id": int(connector.id),
         "secret": raw_secret,
     }
-    flash("Connecteur créé. Conservez la clé affichée ci-dessous: elle ne sera plus montrée ensuite.", "success")
+    flash(
+        "Connecteur créé. Conservez la clé affichée ci-dessous: elle ne sera plus montrée ensuite.",
+        "success",
+    )
     return redirect(
         url_for("admin.admin_integration_connector_detail", connector_id=connector.id),
         code=303,
@@ -9047,13 +9660,10 @@ def admin_intervenants():
     per_page = max(min(int(request.args.get("per_page") or 25), 100), 10)
 
     workload_sq = _assignment_workload_subquery()
-    query = (
-        db.session.query(
-            Intervenant,
-            func.coalesce(workload_sq.c.workload, 0).label("workload"),
-        )
-        .outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
-    )
+    query = db.session.query(
+        Intervenant,
+        func.coalesce(workload_sq.c.workload, 0).label("workload"),
+    ).outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
     if not _is_global_admin():
         query = query.filter(Intervenant.structure_id == _current_structure_id())
     if search:
@@ -9081,7 +9691,11 @@ def admin_intervenants():
         query = query.order_by(sort_col.desc(), Intervenant.id.desc())
 
     total_intervenants = query.count()
-    total_pages = max(1, int(math.ceil(total_intervenants / float(per_page)))) if total_intervenants else 1
+    total_pages = (
+        max(1, int(math.ceil(total_intervenants / float(per_page))))
+        if total_intervenants
+        else 1
+    )
     if page > total_pages:
         page = total_pages
 
@@ -9155,7 +9769,9 @@ def admin_intervenant_detail(intervenant_id: int):
         _log_intervenant_profile_changes(intervenant, before)
         db.session.commit()
         flash("Intervenant mis à jour.", "success")
-        return redirect(url_for("admin.admin_intervenant_detail", intervenant_id=intervenant.id))
+        return redirect(
+            url_for("admin.admin_intervenant_detail", intervenant_id=intervenant.id)
+        )
 
     return _intervenant_detail_template(intervenant)
 
@@ -9220,9 +9836,13 @@ def admin_intervenants_new():
     selected_structure_id = getattr(current_user, "structure_id", None)
     if _is_global_admin():
         structures = (
-            Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).limit(500).all()
+            Structure.query.order_by(Structure.name.asc(), Structure.id.asc())
+            .limit(500)
+            .all()
         )
-        raw_structure_id = (request.form.get("structure_id") or request.args.get("structure_id") or "").strip()
+        raw_structure_id = (
+            request.form.get("structure_id") or request.args.get("structure_id") or ""
+        ).strip()
         if raw_structure_id:
             try:
                 selected_structure_id = int(raw_structure_id)
@@ -9243,7 +9863,9 @@ def admin_intervenants_new():
         profession = _normalize_intervenant_actor_type(request.form.get("profession"))
         city = (request.form.get("city") or "").strip()
         address = (request.form.get("address") or "").strip()
-        availability = _normalize_intervenant_availability(request.form.get("availability"))
+        availability = _normalize_intervenant_availability(
+            request.form.get("availability")
+        )
 
         errors: list[str] = []
         if not selected_structure_id:
@@ -9276,18 +9898,26 @@ def admin_intervenants_new():
             email=email,
             phone=(request.form.get("phone") or "").strip() or None,
             location=_join_intervenant_location(city, address),
-            availability=availability if _table_has_column("intervenants", "availability") else None,
+            availability=(
+                availability
+                if _table_has_column("intervenants", "availability")
+                else None
+            ),
             is_active=availability != "unavailable",
         )
 
-        if hasattr(intervenant, "latitude") and _table_has_column("intervenants", "latitude"):
+        if hasattr(intervenant, "latitude") and _table_has_column(
+            "intervenants", "latitude"
+        ):
             lat_raw = (request.form.get("latitude") or "").strip()
             if lat_raw:
                 try:
                     intervenant.latitude = float(lat_raw)
                 except Exception:
                     flash("Latitude ignorée: valeur invalide.", "warning")
-        if hasattr(intervenant, "longitude") and _table_has_column("intervenants", "longitude"):
+        if hasattr(intervenant, "longitude") and _table_has_column(
+            "intervenants", "longitude"
+        ):
             lng_raw = (request.form.get("longitude") or "").strip()
             if lng_raw:
                 try:
@@ -9398,7 +10028,10 @@ def admin_professionals_map():
         scope_structure = db.session.get(Structure, scope_structure_id)
         if not scope_structure:
             abort(404)
-        if not _is_global_admin() and int(_current_structure_id() or 0) != scope_structure.id:
+        if (
+            not _is_global_admin()
+            and int(_current_structure_id() or 0) != scope_structure.id
+        ):
             abort(403)
 
     map_api_url = url_for("admin.admin_api_professionals")
@@ -9410,8 +10043,12 @@ def admin_professionals_map():
             structure_id=scope_structure.id,
             include_inactive=1,
         )
-        list_url = url_for("admin.admin_structure_intervenants", structure_id=scope_structure.id)
-        add_url = url_for("admin.admin_intervenants_new", structure_id=scope_structure.id)
+        list_url = url_for(
+            "admin.admin_structure_intervenants", structure_id=scope_structure.id
+        )
+        add_url = url_for(
+            "admin.admin_intervenants_new", structure_id=scope_structure.id
+        )
 
     return render_template(
         "admin/professionals_map.html",
@@ -9444,17 +10081,17 @@ def admin_api_professionals():
         scope_structure = db.session.get(Structure, scope_structure_id)
         if not scope_structure:
             return jsonify({"status": "error", "message": "structure_not_found"}), 404
-        if not _is_global_admin() and int(_current_structure_id() or 0) != scope_structure.id:
+        if (
+            not _is_global_admin()
+            and int(_current_structure_id() or 0) != scope_structure.id
+        ):
             return jsonify({"status": "error", "message": "forbidden"}), 403
 
     workload_sq = _assignment_workload_subquery()
-    query = (
-        db.session.query(
-            Intervenant,
-            func.coalesce(workload_sq.c.workload, 0).label("workload"),
-        )
-        .outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
-    )
+    query = db.session.query(
+        Intervenant,
+        func.coalesce(workload_sq.c.workload, 0).label("workload"),
+    ).outerjoin(workload_sq, workload_sq.c.intervenant_id == Intervenant.id)
     if not include_inactive:
         query = query.filter(Intervenant.is_active.is_(True))
     if scope_structure is not None:
@@ -9481,9 +10118,7 @@ def admin_api_professionals():
                 "latitude": lat,
                 "longitude": lng,
                 "availability": availability,
-                "availability_label": _intervenant_availability_label(
-                    availability
-                ),
+                "availability_label": _intervenant_availability_label(availability),
                 "workload": int(workload or 0),
                 "has_exact_coordinates": has_exact_coordinates,
                 "is_active": bool(getattr(intervenant, "is_active", False)),
@@ -9551,6 +10186,7 @@ def admin_api_professionals_map_alias():
 def admin_volunteers():
     admin_required_404()
     return redirect(url_for("admin.admin_intervenants"), code=302)
+
 
 @admin_bp.route("/admin_volunteers", methods=["GET"])
 @admin_required
@@ -9625,9 +10261,12 @@ def edit_volunteer(id):
 
     if not actor.is_platform_global:
         # Ownership survives inactivity. Missing/ambiguous links confer no scope.
-        memberships = db.session.query(Intervenant.structure_id).filter(
-            Intervenant.legacy_volunteer_id == volunteer.id
-        ).limit(2).all()
+        memberships = (
+            db.session.query(Intervenant.structure_id)
+            .filter(Intervenant.legacy_volunteer_id == volunteer.id)
+            .limit(2)
+            .all()
+        )
         if (
             actor.structure_id is None
             or len(memberships) != 1
@@ -9635,22 +10274,13 @@ def edit_volunteer(id):
         ):
             abort(403)
 
-    import logging
-
     if request.method == "POST":
-        logging.warning(f"[DEBUG] POST data: {request.form}")
         volunteer.name = request.form["name"]
         volunteer.email = request.form["email"]
         volunteer.phone = request.form["phone"]
         volunteer.location = request.form["location"]
         volunteer.skills = request.form.get("skills", "")
-        logging.warning(
-            f"[DEBUG] Before commit: name={volunteer.name}, email={volunteer.email}, phone={volunteer.phone}, location={volunteer.location}, skills={volunteer.skills}"
-        )
         db.session.commit()
-        logging.warning(
-            f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}"
-        )
         flash(_("Changes saved!"), "success")
         return redirect(url_for("admin.admin_volunteers"))
 
@@ -9888,7 +10518,9 @@ def admin_pilotage():
             quality_signal_counts=pilotage.get("quality_signal_counts", {}),
             quality_signal_items=pilotage.get("quality_signal_items", []),
             critical_no_owner_count=pilotage.get("critical_without_owner_count", 0),
-            critical_without_owner_count=pilotage.get("critical_without_owner_count", 0),
+            critical_without_owner_count=pilotage.get(
+                "critical_without_owner_count", 0
+            ),
             assign_immediately_count=pilotage.get("assign_immediately_count", 0),
             manager_review_today_count=pilotage.get("manager_review_today_count", 0),
             priority_items=pilotage.get("priority_items", []),
@@ -9928,22 +10560,26 @@ def admin_pilotage():
     attention_count = 0
     standard_count = 0
     if has_risk_level:
-        critical_count = (
-            base_query.filter(func.lower(func.coalesce(Request.risk_level, "")) == "critical").count()
-        )
-        attention_count = (
-            base_query.filter(func.lower(func.coalesce(Request.risk_level, "")) == "attention").count()
-        )
-        standard_count = (
-            base_query.filter(func.lower(func.coalesce(Request.risk_level, "standard")) == "standard").count()
-        )
+        critical_count = base_query.filter(
+            func.lower(func.coalesce(Request.risk_level, "")) == "critical"
+        ).count()
+        attention_count = base_query.filter(
+            func.lower(func.coalesce(Request.risk_level, "")) == "attention"
+        ).count()
+        standard_count = base_query.filter(
+            func.lower(func.coalesce(Request.risk_level, "standard")) == "standard"
+        ).count()
     elif has_risk_score:
-        critical_count = base_query.filter(func.coalesce(Request.risk_score, 0) >= 70).count()
+        critical_count = base_query.filter(
+            func.coalesce(Request.risk_score, 0) >= 70
+        ).count()
         attention_count = base_query.filter(
             func.coalesce(Request.risk_score, 0) >= 40,
             func.coalesce(Request.risk_score, 0) < 70,
         ).count()
-        standard_count = base_query.filter(func.coalesce(Request.risk_score, 0) < 40).count()
+        standard_count = base_query.filter(
+            func.coalesce(Request.risk_score, 0) < 40
+        ).count()
 
     no_owner_count = 0
     not_seen_72h_count = 0
@@ -9956,7 +10592,9 @@ def admin_pilotage():
     )
     stale_threshold = _now_utc() - timedelta(hours=72)
     if has_risk_signals:
-        no_owner_filter = func.lower(func.coalesce(Request.risk_signals, "")).like("%no_owner%")
+        no_owner_filter = func.lower(func.coalesce(Request.risk_signals, "")).like(
+            "%no_owner%"
+        )
         no_owner_count = base_query.filter(no_owner_filter).count()
         if has_risk_level:
             critical_no_owner_count = base_query.filter(
@@ -9976,9 +10614,11 @@ def admin_pilotage():
         "high_attention": 0,
     }
     quality_signal_items = []
-    quality_rows = base_query.outerjoin(
-        activity_sq, activity_sq.c.request_id == Request.id
-    ).with_entities(Request, activity_sq.c.last_activity_at).all()
+    quality_rows = (
+        base_query.outerjoin(activity_sq, activity_sq.c.request_id == Request.id)
+        .with_entities(Request, activity_sq.c.last_activity_at)
+        .all()
+    )
     quality_now = _to_utc_naive(_now_utc())
     for request_obj, last_activity_at in quality_rows:
         signal_result = compute_quality_signals(
@@ -10065,7 +10705,7 @@ def admin_pilotage():
         risk_score,
         created_at,
     ) in priority_rows:
-        risk_level_norm = (str(risk_level or "standard").strip().lower() or "standard")
+        risk_level_norm = str(risk_level or "standard").strip().lower() or "standard"
         if risk_level_norm not in {"standard", "attention", "critical"}:
             risk_level_norm = "standard"
         signals_text = _signals_text(risk_signals)
@@ -10076,7 +10716,9 @@ def admin_pilotage():
         try:
             rec_action = (
                 compute_recommendation(
-                    SimpleNamespace(risk_level=risk_level_norm, risk_signals=risk_signals)
+                    SimpleNamespace(
+                        risk_level=risk_level_norm, risk_signals=risk_signals
+                    )
                 ).get("recommended_action")
                 or "routine_queue"
             )
@@ -10175,9 +10817,7 @@ def admin_pilotage():
             return ""
         return norm.replace("_", " ")
 
-    category_expr = func.lower(
-        func.trim(func.coalesce(Request.category, ""))
-    )
+    category_expr = func.lower(func.trim(func.coalesce(Request.category, "")))
 
     top_category_row = (
         active_query.with_entities(
@@ -10201,9 +10841,7 @@ def admin_pilotage():
         top_category_count = int(getattr(row, "cnt", 0) or 0)
         break
     if top_category and top_category_count >= 2:
-        category_trend_text = (
-            f"La catégorie la plus fréquente actuellement concerne {_category_label(top_category)}."
-        )
+        category_trend_text = f"La catégorie la plus fréquente actuellement concerne {_category_label(top_category)}."
     else:
         category_trend_text = "Aucune tendance catégorielle significative à ce stade."
 
@@ -10216,7 +10854,9 @@ def admin_pilotage():
             .all()
         )
         for created_at, owned_at in assignment_rows:
-            if not isinstance(created_at, datetime) or not isinstance(owned_at, datetime):
+            if not isinstance(created_at, datetime) or not isinstance(
+                owned_at, datetime
+            ):
                 continue
             delta_sec = (owned_at - created_at).total_seconds()
             if delta_sec < 0:
@@ -10224,28 +10864,27 @@ def admin_pilotage():
             assignment_delay_hours.append(delta_sec / 3600.0)
     if len(assignment_delay_hours) >= 3:
         avg_hours = round(sum(assignment_delay_hours) / len(assignment_delay_hours))
-        assignment_delay_text = (
-            f"Le délai moyen avant affectation est actuellement de {int(avg_hours)} heures."
-        )
+        assignment_delay_text = f"Le délai moyen avant affectation est actuellement de {int(avg_hours)} heures."
     else:
         assignment_delay_text = (
             "Données insuffisantes pour estimer le délai moyen avant affectation."
         )
 
     if int(critical_no_owner_count or 0) > 0:
-        vigilance_text = (
-            "Les situations critiques sans responsable nécessitent une vigilance renforcée."
-        )
+        vigilance_text = "Les situations critiques sans responsable nécessitent une vigilance renforcée."
     elif int(not_seen_72h_count or 0) > 0:
         vigilance_text = (
             "Les situations sans action récente nécessitent une vigilance renforcée."
         )
-    elif int(attention_count or 0) > int(critical_count or 0) and int(attention_count or 0) > 0:
-        vigilance_text = (
-            "Une part importante des situations est au niveau attention et appelle un suivi rapproché."
-        )
+    elif (
+        int(attention_count or 0) > int(critical_count or 0)
+        and int(attention_count or 0) > 0
+    ):
+        vigilance_text = "Une part importante des situations est au niveau attention et appelle un suivi rapproché."
     else:
-        vigilance_text = "Aucun signal de vigilance particulier n’est identifié à ce stade."
+        vigilance_text = (
+            "Aucun signal de vigilance particulier n’est identifié à ce stade."
+        )
 
     return render_template(
         "admin/pilotage.html",
@@ -10366,11 +11005,19 @@ def _build_case_kpi_filters(
         "grossesse",
         "enceinte",
     )
-    essential_filter = or_(*[text_expr.like(f"%{keyword}%") for keyword in essential_keywords])
-    vulnerability_filter = or_(*[text_expr.like(f"%{keyword}%") for keyword in vulnerability_keywords])
-    text_points = case((essential_filter, 20), else_=0) + case((vulnerability_filter, 10), else_=0)
+    essential_filter = or_(
+        *[text_expr.like(f"%{keyword}%") for keyword in essential_keywords]
+    )
+    vulnerability_filter = or_(
+        *[text_expr.like(f"%{keyword}%") for keyword in vulnerability_keywords]
+    )
+    text_points = case((essential_filter, 20), else_=0) + case(
+        (vulnerability_filter, 10), else_=0
+    )
 
-    ops_priority_score = priority_points + risk_points + owner_points + stale_points + text_points
+    ops_priority_score = (
+        priority_points + risk_points + owner_points + stale_points + text_points
+    )
     critical_filter = ops_priority_score >= 80
     attention_filter = and_(ops_priority_score >= 50, ops_priority_score < 80)
     normal_filter = and_(ops_priority_score >= 30, ops_priority_score < 50)
@@ -10388,7 +11035,9 @@ def _build_case_kpi_filters(
     }
 
 
-def _apply_cases_risk_filter(query, risk_value: str, *, case_filters: dict[str, object] | None = None):
+def _apply_cases_risk_filter(
+    query, risk_value: str, *, case_filters: dict[str, object] | None = None
+):
     risk = _normalize_cases_risk_filter(risk_value)
     case_filters = case_filters or _build_case_kpi_filters()
     if risk == "critical":
@@ -10404,7 +11053,9 @@ def _apply_cases_risk_filter(query, risk_value: str, *, case_filters: dict[str, 
 
 def _build_scoped_cases_base_query():
     scoped_request_ids_query = _scope_requests(Request.query.with_entities(Request.id))
-    scoped_request_ids_query = scoped_request_ids_query.filter(Request.deleted_at.is_(None))
+    scoped_request_ids_query = scoped_request_ids_query.filter(
+        Request.deleted_at.is_(None)
+    )
     try:
         scoped_request_ids_query = scoped_request_ids_query.filter(
             Request.is_archived.is_(False)
@@ -10673,7 +11324,9 @@ def _render_cases_list():
         )
 
     if not _cases_enabled():
-        flash("Case system tables are not available yet. Run migrations first.", "warning")
+        flash(
+            "Case system tables are not available yet. Run migrations first.", "warning"
+        )
         return render_template(
             "admin/cases.html",
             cases=[],
@@ -10697,12 +11350,13 @@ def _render_cases_list():
     priority = (request.args.get("priority") or "").strip().lower()
     owner = (request.args.get("owner") or "").strip()
     category = normalize_request_category((request.args.get("category") or "").strip())
-    risk = _normalize_cases_risk_filter((request.args.get("risk") or "").strip().lower())
+    risk = _normalize_cases_risk_filter(
+        (request.args.get("risk") or "").strip().lower()
+    )
     city = (request.args.get("city") or "").strip()
     stale_72h = (
-        (request.args.get("stale_72h") or request.args.get("stale") or "").strip()
-        == "1"
-    )
+        request.args.get("stale_72h") or request.args.get("stale") or ""
+    ).strip() == "1"
 
     base_query, case_kpi_filters = _build_scoped_cases_base_query()
     activity_expr = case_kpi_filters["activity_expr"]
@@ -10773,7 +11427,9 @@ def _render_cases_list():
     now_utc = _now_utc()
     case_last_activity_by_id = {}
     for c in case_rows:
-        last_activity_at = get_request_last_meaningful_activity(getattr(c, "request", None))
+        last_activity_at = get_request_last_meaningful_activity(
+            getattr(c, "request", None)
+        )
         case_last_activity_by_id[int(c.id)] = last_activity_at
         result = compute_ops_priority(
             case_row=c,
@@ -10846,7 +11502,10 @@ def _render_notifications_list():
         )
 
     if not _table_exists("notification_jobs"):
-        flash("Notification jobs table is not available yet. Run migrations first.", "warning")
+        flash(
+            "Notification jobs table is not available yet. Run migrations first.",
+            "warning",
+        )
         return render_template(
             "admin/notifications_operational.html",
             jobs=[],
@@ -11014,11 +11673,23 @@ def _audience_score_session(
 
 def _audience_temperature_for_score(score: int) -> dict:
     if score >= 25:
-        return {"label": "Tres chaud", "class": "text-bg-danger", "action": "Priorite haute"}
+        return {
+            "label": "Tres chaud",
+            "class": "text-bg-danger",
+            "action": "Priorite haute",
+        }
     if score >= 16:
-        return {"label": "Chaud", "class": "text-bg-warning text-dark", "action": "A suivre aujourd'hui"}
+        return {
+            "label": "Chaud",
+            "class": "text-bg-warning text-dark",
+            "action": "A suivre aujourd'hui",
+        }
     if score >= 8:
-        return {"label": "Tiede", "class": "text-bg-info text-dark", "action": "Nurture"}
+        return {
+            "label": "Tiede",
+            "class": "text-bg-info text-dark",
+            "action": "Nurture",
+        }
     return {"label": "Froid", "class": "text-bg-light border", "action": "Observation"}
 
 
@@ -11105,7 +11776,9 @@ def _territorial_priority_label(value: str | None) -> str:
     return "Observation"
 
 
-def _territorial_summary_lookup(territory_summaries: list[dict[str, object]]) -> dict[str, dict[str, object]]:
+def _territorial_summary_lookup(
+    territory_summaries: list[dict[str, object]],
+) -> dict[str, dict[str, object]]:
     lookup: dict[str, dict[str, object]] = {}
     for row in territory_summaries or []:
         territory = normalize_territory_name(row.get("territory"))
@@ -11169,7 +11842,9 @@ def _audience_title_from_domain(value: str | None) -> str:
     tokens = [token for token in re.split(r"[-_]+", root) if token]
     if not tokens:
         return root.title()
-    return " ".join(token.upper() if token.upper() == "CCAS" else token.title() for token in tokens)
+    return " ".join(
+        token.upper() if token.upper() == "CCAS" else token.title() for token in tokens
+    )
 
 
 def _build_audience_map_context() -> dict:
@@ -11235,7 +11910,11 @@ def _build_audience_map_context() -> dict:
     def visitor_key(row) -> str:
         return (row.user_session or row.user_ip or f"event-{id(row)}").strip()
 
-    visitors_24h = {visitor_key(row) for row in event_rows if row.created_at and row.created_at >= since_24h}
+    visitors_24h = {
+        visitor_key(row)
+        for row in event_rows
+        if row.created_at and row.created_at >= since_24h
+    }
     visitors_7d = {visitor_key(row) for row in event_rows}
     page_counts: Counter[str] = Counter()
     source_counts: Counter[str] = Counter()
@@ -11265,7 +11944,10 @@ def _build_audience_map_context() -> dict:
         session_bucket["paths"].append(path)
         if row.created_at:
             session_bucket["day_counts"][row.created_at.date()] += 1
-            if session_bucket["last_activity"] is None or row.created_at > session_bucket["last_activity"]:
+            if (
+                session_bucket["last_activity"] is None
+                or row.created_at > session_bucket["last_activity"]
+            ):
                 session_bucket["last_activity"] = row.created_at
         source_label = _audience_source_label(row.referrer)
         session_bucket["referrers"][source_label] += 1
@@ -11288,7 +11970,9 @@ def _build_audience_map_context() -> dict:
             if city:
                 location_counts[city] += 1
                 if _session_id:
-                    marker = AUDIENCE_CITY_MARKERS.get(_audience_normalize_text(city), {})
+                    marker = AUDIENCE_CITY_MARKERS.get(
+                        _audience_normalize_text(city), {}
+                    )
                     session_locations[str(_session_id).strip()] = {
                         "territory": city,
                         "department": _audience_department_code(city),
@@ -11306,7 +11990,11 @@ def _build_audience_map_context() -> dict:
         if marker:
             department_counts[marker["department"]] += count
             region_counts[marker["region"]] += count
-            intensity = 1 if max_city_count <= 0 else max(1, min(5, math.ceil((count / max_city_count) * 5)))
+            intensity = (
+                1
+                if max_city_count <= 0
+                else max(1, min(5, math.ceil((count / max_city_count) * 5)))
+            )
             markers.append({**marker, "count": count, "intensity": intensity})
         else:
             unmapped.append({"label": city, "count": count})
@@ -11325,9 +12013,14 @@ def _build_audience_map_context() -> dict:
             estimated_demands = max(int(point["default_demands"]), observed)
             structures = max(
                 int(point["default_structures"]),
-                min(int(point["default_structures"]) + 2, max(1, math.ceil(estimated_demands * 0.6))),
+                min(
+                    int(point["default_structures"]) + 2,
+                    max(1, math.ceil(estimated_demands * 0.6)),
+                ),
             )
-            intelligence_source = "demo_seeded" if not observed else "observed_demo_enriched"
+            intelligence_source = (
+                "demo_seeded" if not observed else "observed_demo_enriched"
+            )
             priority_label = point["priority"]
             recommendation_label = point["recommendation"]
         else:
@@ -11338,7 +12031,9 @@ def _build_audience_map_context() -> dict:
             intelligence_source = "observed"
             priority_label = "Observation"
             recommendation_label = "No priority recommendation available."
-        department_name = AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("department", "Ile-de-France")
+        department_name = AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get(
+            "department", "Ile-de-France"
+        )
         department_code = _audience_department_code(point["label"]) or "--"
         business_points.append(
             {
@@ -11351,11 +12046,17 @@ def _build_audience_map_context() -> dict:
                 "department_code": department_code,
                 "departmentNumber": department_code,
                 "departmentName": department_name,
-                "region": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get("region", "Ile-de-France"),
+                "region": AUDIENCE_CITY_MARKERS.get(normalized_label, {}).get(
+                    "region", "Ile-de-France"
+                ),
                 "estimated_demands": estimated_demands,
                 "needs": estimated_demands,
                 "structures": structures,
-                "structures_label": structures if structures is not None else "No organization structure data linked.",
+                "structures_label": (
+                    structures
+                    if structures is not None
+                    else "No organization structure data linked."
+                ),
                 "priority": priority_label,
                 "recommendation": recommendation_label,
                 "observed_signals": observed,
@@ -11457,11 +12158,19 @@ def _build_audience_map_context() -> dict:
                     "territory_source": "behavior_location",
                     "source_kind": "anonymous_session",
                     "session_id": session_id,
-                    "paths": list(dict.fromkeys(intent_summary["top_paths"] or bucket["paths"])),
+                    "paths": list(
+                        dict.fromkeys(intent_summary["top_paths"] or bucket["paths"])
+                    ),
                     "intent_tier": intent_summary["tier"],
                     "primary_interest": intent_summary["primary_interest"],
-                    "trust_friction_detected": bool(intent_summary["trust_friction_detected"]),
-                    "repeat_visit": bool(repeated_same_day or page_count > 1 or len(bucket["day_counts"]) > 1),
+                    "trust_friction_detected": bool(
+                        intent_summary["trust_friction_detected"]
+                    ),
+                    "repeat_visit": bool(
+                        repeated_same_day
+                        or page_count > 1
+                        or len(bucket["day_counts"]) > 1
+                    ),
                 }
             )
         revenue_rows.append(
@@ -11473,7 +12182,9 @@ def _build_audience_map_context() -> dict:
                 "temperature_class": temperature["class"],
                 "pages_count": page_count,
                 "last_activity": bucket["last_activity"],
-                "last_activity_label": _audience_relative_time(bucket["last_activity"], now),
+                "last_activity_label": _audience_relative_time(
+                    bucket["last_activity"], now
+                ),
                 "source": source,
                 "action": intent_summary["recommended_action"],
                 "captured_label": captured_sessions.get(session_id),
@@ -11481,7 +12192,9 @@ def _build_audience_map_context() -> dict:
                 "intent_tier": intent_summary["tier"],
                 "intent_label": intent_summary["label"],
                 "primary_interest": intent_summary["primary_interest"],
-                "trust_friction_detected": bool(intent_summary["trust_friction_detected"]),
+                "trust_friction_detected": bool(
+                    intent_summary["trust_friction_detected"]
+                ),
                 "friction_reason": intent_summary["friction_reason"],
                 "territory": territory,
                 "department": location_meta.get("department") or "",
@@ -11489,11 +12202,19 @@ def _build_audience_map_context() -> dict:
             }
         )
         qualified_paths = [
-            path for path in bucket["paths"] if _audience_label_page(path) in AUDIENCE_QUALIFIED_PAGE_WEIGHTS
+            path
+            for path in bucket["paths"]
+            if _audience_label_page(path) in AUDIENCE_QUALIFIED_PAGE_WEIGHTS
         ]
-        if not location_meta or not bucket["has_external_referrer"] or not qualified_paths:
+        if (
+            not location_meta
+            or not bucket["has_external_referrer"]
+            or not qualified_paths
+        ):
             continue
-        qualified_counts = Counter(_audience_label_page(path) for path in qualified_paths)
+        qualified_counts = Counter(
+            _audience_label_page(path) for path in qualified_paths
+        )
         for page, count in qualified_counts.items():
             key = (
                 location_meta["territory"],
@@ -11518,7 +12239,9 @@ def _build_audience_map_context() -> dict:
                 },
             )
             row["count"] = int(row["count"]) + int(count)
-            row["unique_pages_seen"] = max(int(row["unique_pages_seen"]), len(set(bucket["paths"])))
+            row["unique_pages_seen"] = max(
+                int(row["unique_pages_seen"]), len(set(bucket["paths"]))
+            )
             if repeated_same_day:
                 row["repeat_sessions"] = int(row["repeat_sessions"]) + 1
             last_seen_at = row["last_seen_at"]
@@ -11526,7 +12249,10 @@ def _build_audience_map_context() -> dict:
                 last_seen_at is None or bucket["last_activity"] > last_seen_at
             ):
                 row["last_seen_at"] = bucket["last_activity"]
-    revenue_rows.sort(key=lambda row: (row["score"], row["last_activity"] or datetime.min), reverse=True)
+    revenue_rows.sort(
+        key=lambda row: (row["score"], row["last_activity"] or datetime.min),
+        reverse=True,
+    )
     context["revenue_radar_rows"] = revenue_rows[:12]
     qualified_rows = []
     for row in qualified_rollup.values():
@@ -11556,7 +12282,9 @@ def _build_audience_map_context() -> dict:
             .all()
         )
         for row in access_rows:
-            audience_context = extract_audience_context(getattr(row, "internal_notes", None))
+            audience_context = extract_audience_context(
+                getattr(row, "internal_notes", None)
+            )
             intent_summary = (
                 audience_context.get("institutional_intent")
                 if isinstance(audience_context, dict)
@@ -11566,7 +12294,11 @@ def _build_audience_map_context() -> dict:
             if isinstance(audience_context, dict):
                 raw_paths = audience_context.get("pages_viewed") or []
                 if isinstance(raw_paths, list):
-                    paths = [path for path in raw_paths if isinstance(path, str) and path.strip()]
+                    paths = [
+                        path
+                        for path in raw_paths
+                        if isinstance(path, str) and path.strip()
+                    ]
             territory = normalize_territory_name(
                 getattr(row, "city", None)
                 or (audience_context or {}).get("territory_hint")
@@ -11584,13 +12316,19 @@ def _build_audience_map_context() -> dict:
             territory_rows.append(
                 {
                     "territory": territory,
-                    "territory_source": "access_request_city" if getattr(row, "city", None) else "organization_hint",
+                    "territory_source": (
+                        "access_request_city"
+                        if getattr(row, "city", None)
+                        else "organization_hint"
+                    ),
                     "source_kind": "access_request",
                     "session_id": (audience_context or {}).get("session_id"),
                     "paths": list(intent_summary.get("top_paths") or paths),
                     "intent_tier": intent_summary.get("tier"),
                     "primary_interest": intent_summary.get("primary_interest"),
-                    "trust_friction_detected": bool(intent_summary.get("trust_friction_detected")),
+                    "trust_friction_detected": bool(
+                        intent_summary.get("trust_friction_detected")
+                    ),
                     "repeat_visit": bool((audience_context or {}).get("repeat_visit")),
                     "phase1_intelligence": phase1_intelligence,
                 }
@@ -11614,7 +12352,9 @@ def _build_audience_map_context() -> dict:
             .filter(
                 or_(
                     ProfessionalLead.status.is_(None),
-                    ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+                    ~func.lower(ProfessionalLead.status).in_(
+                        SCREENED_PROFESSIONAL_LEAD_STATUSES
+                    ),
                 )
             )
             .order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc())
@@ -11627,7 +12367,9 @@ def _build_audience_map_context() -> dict:
             audience_context = extract_audience_context(getattr(row, "notes", None))
             if not isinstance(audience_context, dict):
                 continue
-            organization_intelligence = audience_context.get("organization_intelligence")
+            organization_intelligence = audience_context.get(
+                "organization_intelligence"
+            )
             if not isinstance(organization_intelligence, dict):
                 organization_intelligence = {}
             lead_score = int(
@@ -11653,27 +12395,23 @@ def _build_audience_map_context() -> dict:
                 or "Lead qualifie"
             )
             organization_name = (
-                (organization_intelligence.get("probable_name") or "").strip()
-                or display_identity
-            )
+                organization_intelligence.get("probable_name") or ""
+            ).strip() or display_identity
             organization_domain = (
-                (organization_intelligence.get("domain") or "").strip().lower()
-                or (audience_context.get("organization_domain") or "").strip().lower()
-            )
+                organization_intelligence.get("domain") or ""
+            ).strip().lower() or (
+                audience_context.get("organization_domain") or ""
+            ).strip().lower()
             organization_type = (
-                (organization_intelligence.get("type") or "").strip()
-                or (audience_context.get("organization_type") or "").strip()
-            )
+                organization_intelligence.get("type") or ""
+            ).strip() or (audience_context.get("organization_type") or "").strip()
             territory_hint = (
-                (organization_intelligence.get("territory_hint") or "").strip()
-            )
+                organization_intelligence.get("territory_hint") or ""
+            ).strip()
             organization_confidence = (
-                (organization_intelligence.get("confidence") or "").strip()
-                or (audience_context.get("organization_confidence") or "").strip()
-            )
-            sales_note = (
-                (organization_intelligence.get("sales_note") or "").strip()
-            )
+                organization_intelligence.get("confidence") or ""
+            ).strip() or (audience_context.get("organization_confidence") or "").strip()
+            sales_note = (organization_intelligence.get("sales_note") or "").strip()
             email_value = (getattr(row, "email", None) or "").strip()
             lead_territory = normalize_territory_name(territory_hint or territory)
             intent_summary = audience_context.get("institutional_intent")
@@ -11689,13 +12427,19 @@ def _build_audience_map_context() -> dict:
                 territory_rows.append(
                     {
                         "territory": lead_territory,
-                        "territory_source": "professional_lead_city" if getattr(row, "city", None) else "organization_hint",
+                        "territory_source": (
+                            "professional_lead_city"
+                            if getattr(row, "city", None)
+                            else "organization_hint"
+                        ),
                         "source_kind": "professional_lead",
                         "session_id": audience_context.get("session_id"),
                         "paths": list(intent_summary.get("top_paths") or pages_viewed),
                         "intent_tier": intent_summary.get("tier"),
                         "primary_interest": intent_summary.get("primary_interest"),
-                        "trust_friction_detected": bool(intent_summary.get("trust_friction_detected")),
+                        "trust_friction_detected": bool(
+                            intent_summary.get("trust_friction_detected")
+                        ),
                         "repeat_visit": bool(audience_context.get("repeat_visit")),
                         "phase1_intelligence": phase1_intelligence,
                     }
@@ -11719,19 +12463,28 @@ def _build_audience_map_context() -> dict:
                     "territory_hint": territory_hint,
                     "organization_confidence": organization_confidence,
                     "sales_note": sales_note,
-                    "institutional_intent_score": int(phase1_intelligence.get("institutional_intent_score") or 0),
+                    "institutional_intent_score": int(
+                        phase1_intelligence.get("institutional_intent_score") or 0
+                    ),
                     "intent_level": phase1_intelligence.get("intent_level"),
                     "recurrence_level": phase1_intelligence.get("recurrence_level"),
-                    "deployment_probability": phase1_intelligence.get("deployment_probability"),
+                    "deployment_probability": phase1_intelligence.get(
+                        "deployment_probability"
+                    ),
                     "probable_organization_profiles": [
                         str(item.get("label") or "").strip()
-                        for item in list(phase1_intelligence.get("probable_organization_profiles") or [])
+                        for item in list(
+                            phase1_intelligence.get("probable_organization_profiles")
+                            or []
+                        )
                         if str(item.get("label") or "").strip()
                     ],
                     "territorial_opportunity_summary": dict(
                         phase1_intelligence.get("territorial_opportunity_summary") or {}
                     ),
-                    "recommendation_reasons": list(phase1_intelligence.get("recommendation_reasons") or []),
+                    "recommendation_reasons": list(
+                        phase1_intelligence.get("recommendation_reasons") or []
+                    ),
                     "recommended_next_action": str(
                         phase1_intelligence.get("recommended_next_action") or ""
                     ).strip(),
@@ -11742,12 +12495,16 @@ def _build_audience_map_context() -> dict:
             if organization_domain:
                 group_key = f"domain:{organization_domain}"
             else:
-                normalized_org = _audience_normalize_text(getattr(row, "organization", None))
+                normalized_org = _audience_normalize_text(
+                    getattr(row, "organization", None)
+                )
                 if normalized_org:
                     group_key = f"organization:{normalized_org}"
                 elif email_value and "@" in email_value:
                     email_domain = email_value.rsplit("@", 1)[-1].strip().lower()
-                    if email_domain and not _audience_is_personal_email_domain(email_domain):
+                    if email_domain and not _audience_is_personal_email_domain(
+                        email_domain
+                    ):
                         group_key = f"email-domain:{email_domain}"
                         if not organization_domain:
                             organization_domain = email_domain
@@ -11761,7 +12518,9 @@ def _build_audience_map_context() -> dict:
                     "organization_type": organization_type,
                     "territory_hint": territory_hint,
                     "confidence": organization_confidence or "low",
-                    "confidence_rank": _audience_confidence_rank(organization_confidence),
+                    "confidence_rank": _audience_confidence_rank(
+                        organization_confidence
+                    ),
                     "lead_count": 0,
                     "emails": [],
                     "email_set": set(),
@@ -11771,18 +12530,20 @@ def _build_audience_map_context() -> dict:
                     "score_total": 0,
                     "score_count": 0,
                     "last_activity_at": None,
-                    "focus_slug": _audience_focus_slug(territory_hint or territory) or "paris",
+                    "focus_slug": _audience_focus_slug(territory_hint or territory)
+                    or "paris",
                     "sales_note": sales_note,
                 },
             )
-            probable_name = (organization_intelligence.get("probable_name") or "").strip()
+            probable_name = (
+                organization_intelligence.get("probable_name") or ""
+            ).strip()
             if probable_name and not account_row["account_name"]:
                 account_row["account_name"] = probable_name
             elif not account_row["account_name"]:
                 account_row["account_name"] = (
-                    (getattr(row, "organization", None) or "").strip()
-                    or _audience_title_from_domain(organization_domain)
-                )
+                    getattr(row, "organization", None) or ""
+                ).strip() or _audience_title_from_domain(organization_domain)
             if organization_domain and not account_row["domain"]:
                 account_row["domain"] = organization_domain
             if organization_type and not account_row["organization_type"]:
@@ -11804,8 +12565,12 @@ def _build_audience_map_context() -> dict:
             for page in pages_viewed:
                 if isinstance(page, str) and page.strip():
                     account_row["pages_viewed"].add(page.strip())
-            account_row["best_score"] = max(int(account_row["best_score"]), max(0, min(100, lead_score)))
-            account_row["score_total"] = int(account_row["score_total"]) + max(0, int(lead_score))
+            account_row["best_score"] = max(
+                int(account_row["best_score"]), max(0, min(100, lead_score))
+            )
+            account_row["score_total"] = int(account_row["score_total"]) + max(
+                0, int(lead_score)
+            )
             account_row["score_count"] = int(account_row["score_count"]) + 1
             candidate_last_activity = last_seen_at or getattr(row, "created_at", None)
             if candidate_last_activity and (
@@ -11835,9 +12600,13 @@ def _build_audience_map_context() -> dict:
             last_activity_at = row.get("last_activity_at")
             founder_queue_account_rows.append(
                 {
-                    "account_name": str(row.get("account_name") or row.get("domain") or "Compte detecte").strip(),
+                    "account_name": str(
+                        row.get("account_name") or row.get("domain") or "Compte detecte"
+                    ).strip(),
                     "domain": str(row.get("domain") or "").strip(),
-                    "organization_type": str(row.get("organization_type") or "").strip(),
+                    "organization_type": str(
+                        row.get("organization_type") or ""
+                    ).strip(),
                     "territory_hint": str(row.get("territory_hint") or "").strip(),
                     "confidence": str(row.get("confidence") or "low").strip() or "low",
                     "lead_count": int(row.get("lead_count") or 0),
@@ -11880,14 +12649,18 @@ def _build_audience_map_context() -> dict:
                 territory_profile_rows[territory_key].append(profile)
     for summary in territory_summaries:
         territory_key = _audience_normalize_text(summary.get("territory"))
-        probable_profiles = summarize_profile_labels(territory_profile_rows.get(territory_key) or [])
+        probable_profiles = summarize_profile_labels(
+            territory_profile_rows.get(territory_key) or []
+        )
         territorial_opportunity = build_territorial_opportunity_summary(
             summary,
             probable_profiles=probable_profiles,
         )
         summary["institutional_intent_score"] = int(summary.get("score") or 0)
         summary["recurrence_level"] = territorial_opportunity.get("recurrence_level")
-        summary["deployment_probability"] = territorial_opportunity.get("deployment_probability")
+        summary["deployment_probability"] = territorial_opportunity.get(
+            "deployment_probability"
+        )
         summary["probable_organization_profiles"] = list(
             territorial_opportunity.get("probable_organization_profiles") or []
         )
@@ -11896,12 +12669,16 @@ def _build_audience_map_context() -> dict:
             territorial_opportunity.get("recommendation_reasons") or []
         )
         summary["recommended_next_action"] = str(
-            territorial_opportunity.get("recommended_next_action") or summary.get("recommended_action") or ""
+            territorial_opportunity.get("recommended_next_action")
+            or summary.get("recommended_action")
+            or ""
         ).strip()
     territory_lookup = _territorial_summary_lookup(territory_summaries)
     context["territory_summaries"] = territory_summaries[:12]
     context["priority_territories"] = [
-        row for row in territory_summaries if row.get("priority_level") in {"Strategic", "High"}
+        row
+        for row in territory_summaries
+        if row.get("priority_level") in {"Strategic", "High"}
     ][:6]
     for point in context["map_locations"]:
         summary = territory_lookup.get(_audience_normalize_text(point.get("city")))
@@ -11912,23 +12689,33 @@ def _build_audience_map_context() -> dict:
             int(summary.get("observed_signal_count") or 0),
         )
         point["observed_signals"] = observed_signals
-        point["estimated_demands"] = max(int(point.get("estimated_demands") or 0), observed_signals)
+        point["estimated_demands"] = max(
+            int(point.get("estimated_demands") or 0), observed_signals
+        )
         point["needs"] = max(int(point.get("needs") or 0), observed_signals)
         point["priority"] = _territorial_priority_label(summary.get("priority_level"))
-        point["recommendation"] = str(summary.get("recommended_action") or point.get("recommendation") or "").strip()
+        point["recommendation"] = str(
+            summary.get("recommended_action") or point.get("recommendation") or ""
+        ).strip()
         point["territorial_intensity"] = summary.get("intensity")
         point["priority_level"] = summary.get("priority_level")
         point["confidence"] = summary.get("confidence")
         point["dominant_interest"] = summary.get("dominant_interest")
         point["possible_friction"] = summary.get("possible_friction")
         point["pilot_readiness_estimate"] = summary.get("pilot_readiness_estimate")
-        point["repeated_engagement_detected"] = bool(summary.get("repeated_engagement_detected"))
+        point["repeated_engagement_detected"] = bool(
+            summary.get("repeated_engagement_detected")
+        )
         point["intelligence_source"] = "observed_summary"
         point["institutional_intent_score"] = summary.get("institutional_intent_score")
         point["recurrence_level"] = summary.get("recurrence_level")
         point["deployment_probability"] = summary.get("deployment_probability")
-        point["probable_organization_profiles"] = summary.get("probable_organization_profiles")
-        point["territorial_opportunity_summary"] = summary.get("territorial_opportunity_summary")
+        point["probable_organization_profiles"] = summary.get(
+            "probable_organization_profiles"
+        )
+        point["territorial_opportunity_summary"] = summary.get(
+            "territorial_opportunity_summary"
+        )
         point["recommendation_reasons"] = summary.get("recommendation_reasons")
         point["recommended_next_action"] = summary.get("recommended_next_action")
     for row in context["revenue_radar_rows"]:
@@ -11942,16 +12729,24 @@ def _build_audience_map_context() -> dict:
         row["possible_friction"] = summary.get("possible_friction")
         row["pilot_readiness_estimate"] = summary.get("pilot_readiness_estimate")
         row["recommended_action"] = summary.get("recommended_action")
-        row["repeated_engagement_detected"] = bool(summary.get("repeated_engagement_detected"))
+        row["repeated_engagement_detected"] = bool(
+            summary.get("repeated_engagement_detected")
+        )
         row["institutional_intent_score"] = summary.get("institutional_intent_score")
         row["recurrence_level"] = summary.get("recurrence_level")
         row["deployment_probability"] = summary.get("deployment_probability")
-        row["probable_organization_profiles"] = summary.get("probable_organization_profiles")
-        row["territorial_opportunity_summary"] = summary.get("territorial_opportunity_summary")
+        row["probable_organization_profiles"] = summary.get(
+            "probable_organization_profiles"
+        )
+        row["territorial_opportunity_summary"] = summary.get(
+            "territorial_opportunity_summary"
+        )
         row["recommendation_reasons"] = summary.get("recommendation_reasons")
         row["recommended_next_action"] = summary.get("recommended_next_action")
     for row in context["founder_queue_lead_rows"]:
-        summary = territory_lookup.get(_audience_normalize_text(row.get("territory") or row.get("territory_hint")))
+        summary = territory_lookup.get(
+            _audience_normalize_text(row.get("territory") or row.get("territory_hint"))
+        )
         if not summary:
             continue
         row["priority_level"] = summary.get("priority_level")
@@ -11960,12 +12755,16 @@ def _build_audience_map_context() -> dict:
         row["pilot_readiness_estimate"] = summary.get("pilot_readiness_estimate")
         row["possible_friction"] = summary.get("possible_friction")
         row["recommended_action"] = summary.get("recommended_action")
-        row["territorial_opportunity_summary"] = summary.get("territorial_opportunity_summary")
-        row["recommended_next_action"] = (
-            row.get("recommended_next_action") or summary.get("recommended_next_action")
+        row["territorial_opportunity_summary"] = summary.get(
+            "territorial_opportunity_summary"
         )
+        row["recommended_next_action"] = row.get(
+            "recommended_next_action"
+        ) or summary.get("recommended_next_action")
     for row in context["founder_queue_account_rows"]:
-        summary = territory_lookup.get(_audience_normalize_text(row.get("territory_hint")))
+        summary = territory_lookup.get(
+            _audience_normalize_text(row.get("territory_hint"))
+        )
         if not summary:
             continue
         row["priority_level"] = summary.get("priority_level")
@@ -11977,8 +12776,12 @@ def _build_audience_map_context() -> dict:
         row["institutional_intent_score"] = summary.get("institutional_intent_score")
         row["recurrence_level"] = summary.get("recurrence_level")
         row["deployment_probability"] = summary.get("deployment_probability")
-        row["probable_organization_profiles"] = summary.get("probable_organization_profiles")
-        row["territorial_opportunity_summary"] = summary.get("territorial_opportunity_summary")
+        row["probable_organization_profiles"] = summary.get(
+            "probable_organization_profiles"
+        )
+        row["territorial_opportunity_summary"] = summary.get(
+            "territorial_opportunity_summary"
+        )
         row["recommendation_reasons"] = summary.get("recommendation_reasons")
         row["recommended_next_action"] = summary.get("recommended_next_action")
     context["kpis"] = {
@@ -12022,7 +12825,9 @@ def _build_audience_map_context() -> dict:
     hot_24h = [
         row
         for row in revenue_rows
-        if row["last_activity"] and row["last_activity"] >= since_24h and row["score"] >= 16
+        if row["last_activity"]
+        and row["last_activity"] >= since_24h
+        and row["score"] >= 16
     ]
     if hot_24h:
         context["revenue_radar_insights"].append(
@@ -12035,7 +12840,9 @@ def _build_audience_map_context() -> dict:
     offre_24h = sum(
         1
         for row in event_rows
-        if row.created_at and row.created_at >= since_24h and _audience_label_page(row.page_url).startswith("/offre")
+        if row.created_at
+        and row.created_at >= since_24h
+        and _audience_label_page(row.page_url).startswith("/offre")
     )
     offre_previous_24h = sum(
         1
@@ -12092,19 +12899,21 @@ def _build_audience_map_context() -> dict:
             row["followup_priority"] = followup.get("followup_priority")
             row["relationship_reason"] = followup.get("reason")
 
-            row["recommended_relationship_action"] = (
-                relationship_memory.get("recommended_relationship_action")
+            row["recommended_relationship_action"] = relationship_memory.get(
+                "recommended_relationship_action"
             )
 
-            row["timeline_size"] = len(
-                relationship_memory.get("timeline") or []
-            )
+            row["timeline_size"] = len(relationship_memory.get("timeline") or [])
 
         except Exception:
             continue
-    context["founder_priority_queue"] = build_founder_priority_queue(founder_signal_rows)[:12]
+    context["founder_priority_queue"] = build_founder_priority_queue(
+        founder_signal_rows
+    )[:12]
     context["founder_alerts"] = build_founder_alerts(founder_signal_rows)
-    context["founder_territory_groups"] = group_founder_signals_by_territory(founder_signal_rows)[:8]
+    context["founder_territory_groups"] = group_founder_signals_by_territory(
+        founder_signal_rows
+    )[:8]
     context["founder_action_summary"] = summarize_founder_actions(founder_signal_rows)
     return context
 
@@ -12243,10 +13052,14 @@ def _persist_metric_registry_entry(
     if not _table_exists("metric_definitions") or not _table_exists("metric_runs"):
         return
     try:
-        source_tables_json = json.dumps(source_tables, ensure_ascii=True, sort_keys=True)
+        source_tables_json = json.dumps(
+            source_tables, ensure_ascii=True, sort_keys=True
+        )
         definition = MetricDefinition.query.filter_by(metric_key=metric_key).first()
         if definition is None:
-            definition = MetricDefinition(metric_key=metric_key, display_name=display_name)
+            definition = MetricDefinition(
+                metric_key=metric_key, display_name=display_name
+            )
             db.session.add(definition)
         definition.display_name = display_name
         definition.formula_version = REVENUE_METRIC_FORMULA_VERSION
@@ -12255,12 +13068,16 @@ def _persist_metric_registry_entry(
         definition.confidence = confidence
         definition.source_tables_json = source_tables_json
         definition.query_origin = query_origin
-        definition.description = str((value_payload.get("meta") or {}).get("explain") or "")
+        definition.description = str(
+            (value_payload.get("meta") or {}).get("explain") or ""
+        )
 
         run = MetricRun(
             metric_key=metric_key,
             formula_version=REVENUE_METRIC_FORMULA_VERSION,
-            value_json=json.dumps(value_payload.get("value"), ensure_ascii=True, sort_keys=True),
+            value_json=json.dumps(
+                value_payload.get("value"), ensure_ascii=True, sort_keys=True
+            ),
             status="available" if value_payload.get("available") else "unavailable",
             unavailable_reason=str(value_payload.get("reason") or ""),
             source_tables_json=source_tables_json,
@@ -12281,7 +13098,7 @@ def _revenue_has_followup_fields(table_name: str) -> bool:
 
 
 def _revenue_stage(raw_status: str | None, item_type: str) -> str:
-    status = ((raw_status or "").strip().lower() or "new")
+    status = (raw_status or "").strip().lower() or "new"
     if item_type == "access_request":
         return {
             "new": "new",
@@ -12344,7 +13161,10 @@ def _revenue_city_relevance(city: str | None) -> int:
     normalized = _audience_normalize_text(city)
     if not normalized:
         return 0
-    if any(token in normalized for token in ("boulogne", "nanterre", "hauts de seine", "92")):
+    if any(
+        token in normalized
+        for token in ("boulogne", "nanterre", "hauts de seine", "92")
+    ):
         return 10
     if "paris" in normalized or "ile de france" in normalized or "idf" in normalized:
         return 8
@@ -12368,7 +13188,9 @@ def _revenue_stage_score(stage: str) -> int:
     }.get(stage, 5)
 
 
-def _score_component(code: str, label: str, points: int, evidence: dict[str, object]) -> dict[str, object]:
+def _score_component(
+    code: str, label: str, points: int, evidence: dict[str, object]
+) -> dict[str, object]:
     return {
         "code": code,
         "label": label,
@@ -12406,7 +13228,11 @@ def _revenue_score_payload(
                 "Captured audience intent",
                 audience_points,
                 {
-                    "source_field": "notes" if item_type == "professional_lead" else "internal_notes",
+                    "source_field": (
+                        "notes"
+                        if item_type == "professional_lead"
+                        else "internal_notes"
+                    ),
                     "intent_tier": (audience_context or {}).get("lead_intent_tier"),
                     "intent_score": (audience_context or {}).get("lead_intent_score"),
                 },
@@ -12420,7 +13246,13 @@ def _revenue_score_payload(
                 "recent_activity",
                 "Recent activity",
                 recency_points,
-                {"last_activity": last_activity.isoformat() if isinstance(last_activity, datetime) else None},
+                {
+                    "last_activity": (
+                        last_activity.isoformat()
+                        if isinstance(last_activity, datetime)
+                        else None
+                    )
+                },
             )
         )
 
@@ -12437,7 +13269,11 @@ def _revenue_score_payload(
 
     total = min(100, sum(int(component["points"]) for component in components))
     evidence = {
-        "source_table": "professional_leads" if item_type == "professional_lead" else "organization_access_requests",
+        "source_table": (
+            "professional_leads"
+            if item_type == "professional_lead"
+            else "organization_access_requests"
+        ),
         "source_id": int(getattr(row, "id", 0) or 0),
         "formula_version": REVENUE_SCORE_FORMULA_VERSION,
     }
@@ -12456,7 +13292,9 @@ def _revenue_audience_score(notes: str | None) -> tuple[int, dict | None]:
         return 0, None
     intent_summary = context.get("institutional_intent")
     if isinstance(intent_summary, dict):
-        tier = (intent_summary.get("tier") or context.get("lead_intent_tier") or "").strip()
+        tier = (
+            intent_summary.get("tier") or context.get("lead_intent_tier") or ""
+        ).strip()
         tier_points = {
             "cold": 0,
             "curious": 4,
@@ -12468,11 +13306,7 @@ def _revenue_audience_score(notes: str | None) -> tuple[int, dict | None]:
         if tier in tier_points:
             return tier_points[tier], context
     try:
-        raw = int(
-            context.get("lead_intent_score")
-            or context.get("score")
-            or 0
-        )
+        raw = int(context.get("lead_intent_score") or context.get("score") or 0)
     except Exception:
         raw = 0
     return max(0, min(25, int(raw / 2))), context
@@ -12494,7 +13328,9 @@ def _phase1_intelligence_from_context(
         territory_name = str(territorial_summary.get("territory") or "").strip() or None
     if not isinstance(top_paths, list):
         raw_paths = audience_context.get("pages_viewed") or []
-        top_paths = [path for path in raw_paths if isinstance(path, str) and path.strip()]
+        top_paths = [
+            path for path in raw_paths if isinstance(path, str) and path.strip()
+        ]
     return build_institutional_intent_phase1(
         top_paths,
         has_submit=has_submit or bool(audience_context.get("has_submit")),
@@ -12519,12 +13355,15 @@ def _revenue_audience_metadata(audience_context: dict | None) -> dict[str, objec
     top_paths = intent_summary.get("top_paths")
     if not isinstance(top_paths, list):
         raw_paths = audience_context.get("pages_viewed") or []
-        top_paths = [path for path in raw_paths if isinstance(path, str) and path.strip()]
+        top_paths = [
+            path for path in raw_paths if isinstance(path, str) and path.strip()
+        ]
     phase1 = _phase1_intelligence_from_context(
         audience_context,
         intent_summary=intent_summary,
         territorial_summary=territorial_summary,
-        territory_hint=territorial_summary.get("territory") or audience_context.get("territory_hint"),
+        territory_hint=territorial_summary.get("territory")
+        or audience_context.get("territory_hint"),
     )
     return {
         "intent_score": int(
@@ -12533,9 +13372,7 @@ def _revenue_audience_metadata(audience_context: dict | None) -> dict[str, objec
             or 0
         ),
         "intent_tier": str(
-            intent_summary.get("tier")
-            or audience_context.get("lead_intent_tier")
-            or ""
+            intent_summary.get("tier") or audience_context.get("lead_intent_tier") or ""
         ).strip(),
         "intent_label": str(
             intent_summary.get("label")
@@ -12565,7 +13402,10 @@ def _revenue_audience_metadata(audience_context: dict | None) -> dict[str, objec
             territorial_summary.get("repeated_engagement_detected")
             or audience_context.get("repeat_visit")
         ),
-        "priority_level": str(territorial_summary.get("priority_level") or "Low").strip() or "Low",
+        "priority_level": str(
+            territorial_summary.get("priority_level") or "Low"
+        ).strip()
+        or "Low",
         "territorial_intensity": str(
             territorial_summary.get("intensity")
             or territorial_summary.get("priority_level")
@@ -12587,10 +13427,14 @@ def _revenue_audience_metadata(audience_context: dict | None) -> dict[str, objec
             str(territorial_summary.get("recommended_action") or "").strip() or None
         ),
         "phase1_intelligence": phase1,
-        "institutional_intent_score": int(phase1.get("institutional_intent_score") or 0),
+        "institutional_intent_score": int(
+            phase1.get("institutional_intent_score") or 0
+        ),
         "intent_level": str(phase1.get("intent_level") or "").strip(),
         "recurrence_level": str(phase1.get("recurrence_level") or "").strip(),
-        "deployment_probability": str(phase1.get("deployment_probability") or "").strip(),
+        "deployment_probability": str(
+            phase1.get("deployment_probability") or ""
+        ).strip(),
         "probable_organization_profiles": [
             str(item.get("label") or "").strip()
             for item in list(phase1.get("probable_organization_profiles") or [])
@@ -12606,12 +13450,15 @@ def _revenue_audience_metadata(audience_context: dict | None) -> dict[str, objec
     }
 
 
-def _revenue_founder_activity_map(rows: list[dict[str, object]]) -> dict[str, list[dict[str, object]]]:
+def _revenue_founder_activity_map(
+    rows: list[dict[str, object]],
+) -> dict[str, list[dict[str, object]]]:
     lead_ids = sorted(
         {
             int(row.get("id") or 0)
             for row in rows
-            if str(row.get("kind") or "") == "professional_lead" and int(row.get("id") or 0) > 0
+            if str(row.get("kind") or "") == "professional_lead"
+            and int(row.get("id") or 0) > 0
         }
     )
     if not lead_ids or not _professional_lead_activity_enabled():
@@ -12645,10 +13492,9 @@ def _revenue_founder_activity_map(rows: list[dict[str, object]]) -> dict[str, li
                 parsed = {}
             if isinstance(parsed, dict):
                 payload = parsed
-        note = (
-            str(payload.get("note") or payload.get("message") or "").strip()
-            or _professional_lead_activity_label(getattr(row, "action", None))
-        )
+        note = str(
+            payload.get("note") or payload.get("message") or ""
+        ).strip() or _professional_lead_activity_label(getattr(row, "action", None))
         output[f"professional_lead:{lead_id}"].append(
             {
                 "timestamp": getattr(row, "created_at", None),
@@ -12660,7 +13506,9 @@ def _revenue_founder_activity_map(rows: list[dict[str, object]]) -> dict[str, li
     return output
 
 
-def _build_founder_operational_context(rows: list[dict[str, object]]) -> dict[str, object]:
+def _build_founder_operational_context(
+    rows: list[dict[str, object]],
+) -> dict[str, object]:
     manual_notes_by_uid = _revenue_founder_activity_map(rows)
     current_time = _now_utc()
     operational_rows: list[dict[str, object]] = []
@@ -12671,18 +13519,24 @@ def _build_founder_operational_context(rows: list[dict[str, object]]) -> dict[st
             manual_notes=manual_notes_by_uid.get(str(payload.get("uid") or ""), []),
             now=current_time,
         )
-        memory_summary = summarize_founder_memory(timeline, row=payload, now=current_time)
+        memory_summary = summarize_founder_memory(
+            timeline, row=payload, now=current_time
+        )
         operational_rows.append(
             {
                 **payload,
                 **memory_summary,
                 "timeline_events": timeline,
                 "last_founder_touch": memory_summary.get("last_founder_touch"),
-                "founder_action_state": dict(memory_summary.get("founder_action_state") or {}),
+                "founder_action_state": dict(
+                    memory_summary.get("founder_action_state") or {}
+                ),
             }
         )
 
-    action_queue = build_founder_action_queue(operational_rows, now=current_time, limit=8)
+    action_queue = build_founder_action_queue(
+        operational_rows, now=current_time, limit=8
+    )
     founder_operational_state = [
         build_founder_operational_state(
             item,
@@ -12697,7 +13551,9 @@ def _build_founder_operational_context(rows: list[dict[str, object]]) -> dict[st
         )
         for item in action_queue
     ]
-    state_summary = summarize_founder_operational_state(founder_operational_state, now=current_time)
+    state_summary = summarize_founder_operational_state(
+        founder_operational_state, now=current_time
+    )
     stalled = detect_stalled_opportunities(action_queue, now=current_time)[:6]
     temperature_rows = sorted(
         action_queue,
@@ -12712,7 +13568,9 @@ def _build_founder_operational_context(rows: list[dict[str, object]]) -> dict[st
         {
             "uid": str(item.get("uid") or ""),
             "organization": safe_organization(item.get("organization")),
-            "relationship_temperature": str(item.get("relationship_temperature") or "cold"),
+            "relationship_temperature": str(
+                item.get("relationship_temperature") or "cold"
+            ),
             "timeline_events": list(item.get("timeline_events") or [])[:4],
             "last_timeline_event": item.get("last_timeline_event"),
         }
@@ -12728,7 +13586,9 @@ def _build_founder_operational_context(rows: list[dict[str, object]]) -> dict[st
         "pilot_progression_summary": state_summary["pilot_progression_summary"],
         "state_transitions": state_summary["state_transitions"],
         "next_founder_actions": state_summary["next_founder_actions"],
-        "action_summary": summarize_founder_operational_actions(operational_rows, now=current_time, limit=8),
+        "action_summary": summarize_founder_operational_actions(
+            operational_rows, now=current_time, limit=8
+        ),
     }
 
 
@@ -12753,8 +13613,12 @@ def _build_founder_cockpit_context(rows: list[SimpleNamespace]) -> dict[str, obj
         "territory_acceleration": telemetry_summary["territory_acceleration"],
         "stalled_opportunities": operational_context["stalled_opportunities"],
         "recommended_founder_actions": operational_context["action_queue"],
-        "relationship_temperature_rows": operational_context["relationship_temperature_rows"],
-        "institutional_memory_timeline": operational_context["institutional_memory_timeline"],
+        "relationship_temperature_rows": operational_context[
+            "relationship_temperature_rows"
+        ],
+        "institutional_memory_timeline": operational_context[
+            "institutional_memory_timeline"
+        ],
         "founder_operational_state": operational_context["founder_operational_state"],
         "relationship_state_summary": operational_context["relationship_state_summary"],
         "pilot_progression_summary": operational_context["pilot_progression_summary"],
@@ -12777,7 +13641,9 @@ def _build_revenue_signal_profiles(
     if not _table_exists("analytics_events"):
         return []
 
-    since = _now_utc() - timedelta(days=max(1, int(lookback_days or SIGNAL_LOOKBACK_DAYS)))
+    since = _now_utc() - timedelta(
+        days=max(1, int(lookback_days or SIGNAL_LOOKBACK_DAYS))
+    )
     event_rows = (
         db.session.query(AnalyticsEvent)
         .filter(AnalyticsEvent.created_at >= since)
@@ -12875,7 +13741,9 @@ def _revenue_next_action_state(next_action_at: datetime | None) -> str:
     return "scheduled"
 
 
-def _revenue_next_action_label(next_action_at: datetime | None, note: str | None) -> str:
+def _revenue_next_action_label(
+    next_action_at: datetime | None, note: str | None
+) -> str:
     due = _as_aware_utc(next_action_at)
     if not due:
         return "No follow-up set"
@@ -12900,7 +13768,9 @@ def _revenue_last_activity(row, item_type: str) -> datetime | None:
 
 def _revenue_row_from_professional_lead(lead: ProfessionalLead) -> SimpleNamespace:
     stage = _revenue_stage(getattr(lead, "status", None), "professional_lead")
-    audience_points, audience_context = _revenue_audience_score(getattr(lead, "notes", None))
+    audience_points, audience_context = _revenue_audience_score(
+        getattr(lead, "notes", None)
+    )
     last_activity = _revenue_last_activity(lead, "professional_lead")
     score_payload = _revenue_score_payload(
         lead,
@@ -12913,15 +13783,31 @@ def _revenue_row_from_professional_lead(lead: ProfessionalLead) -> SimpleNamespa
     score = int(score_payload["total"])
     bucket = _revenue_score_bucket(score)
     has_followup_fields = _revenue_has_followup_fields("professional_leads")
-    next_action_at = getattr(lead, "next_action_at", None) if has_followup_fields else None
-    next_action_note = getattr(lead, "next_action_note", None) if has_followup_fields else None
+    next_action_at = (
+        getattr(lead, "next_action_at", None) if has_followup_fields else None
+    )
+    next_action_note = (
+        getattr(lead, "next_action_note", None) if has_followup_fields else None
+    )
     next_action_state = _revenue_next_action_state(next_action_at)
     value = _revenue_amount(lead, "professional_lead")
-    value_payload = _metric_available(value) if value is not None else _unavailable_revenue_amount()
-    organization = (getattr(lead, "organization", None) or getattr(lead, "profession", None) or "Professional lead").strip()
-    contact = (getattr(lead, "full_name", None) or getattr(lead, "email", None) or "-").strip()
+    value_payload = (
+        _metric_available(value) if value is not None else _unavailable_revenue_amount()
+    )
+    organization = (
+        getattr(lead, "organization", None)
+        or getattr(lead, "profession", None)
+        or "Professional lead"
+    ).strip()
+    contact = (
+        getattr(lead, "full_name", None) or getattr(lead, "email", None) or "-"
+    ).strip()
     reasons = []
-    intent_summary = audience_context.get("institutional_intent") if isinstance(audience_context, dict) else None
+    intent_summary = (
+        audience_context.get("institutional_intent")
+        if isinstance(audience_context, dict)
+        else None
+    )
     if audience_context:
         audience_label = (
             (intent_summary or {}).get("label")
@@ -12932,7 +13818,13 @@ def _revenue_row_from_professional_lead(lead: ProfessionalLead) -> SimpleNamespa
         reasons.append(f"{audience_label} audience")
     if next_action_state == "overdue":
         reasons.append("follow-up due")
-    if stage in {"qualified", "demo_booked", "demo_done", "pilot_proposed", "negotiation"}:
+    if stage in {
+        "qualified",
+        "demo_booked",
+        "demo_done",
+        "pilot_proposed",
+        "negotiation",
+    }:
         reasons.append(_revenue_stage_label(stage))
     if not reasons:
         reasons.append("new professional signal")
@@ -12975,10 +13867,16 @@ def _revenue_row_from_professional_lead(lead: ProfessionalLead) -> SimpleNamespa
         next_action_state=next_action_state,
         next_action_label=_revenue_next_action_label(next_action_at, next_action_note),
         estimated_value=value,
-        estimated_value_display=value if value is not None else "No CRM opportunity linked.",
+        estimated_value_display=(
+            value if value is not None else "No CRM opportunity linked."
+        ),
         estimated_value_available=value is not None,
         estimated_value_reason=value_payload.get("reason", ""),
-        weighted_value=int(value * REVENUE_STAGE_WEIGHTS.get(stage, 0.05)) if value is not None else None,
+        weighted_value=(
+            int(value * REVENUE_STAGE_WEIGHTS.get(stage, 0.05))
+            if value is not None
+            else None
+        ),
         action_url=url_for("admin.admin_professional_lead_detail", lead_id=lead.id),
         why_hot=", ".join(reasons),
         next_best_action=next_best_action,
@@ -13015,7 +13913,9 @@ def _revenue_row_from_professional_lead(lead: ProfessionalLead) -> SimpleNamespa
 
 def _revenue_row_from_access_request(row: OrganizationAccessRequest) -> SimpleNamespace:
     stage = _revenue_stage(getattr(row, "status", None), "access_request")
-    audience_points, audience_context = _revenue_audience_score(getattr(row, "internal_notes", None))
+    audience_points, audience_context = _revenue_audience_score(
+        getattr(row, "internal_notes", None)
+    )
     last_activity = _revenue_last_activity(row, "access_request")
     score_payload = _revenue_score_payload(
         row,
@@ -13028,13 +13928,23 @@ def _revenue_row_from_access_request(row: OrganizationAccessRequest) -> SimpleNa
     score = int(score_payload["total"])
     bucket = _revenue_score_bucket(score)
     has_followup_fields = _revenue_has_followup_fields("organization_access_requests")
-    next_action_at = getattr(row, "next_action_at", None) if has_followup_fields else None
-    next_action_note = getattr(row, "next_action_note", None) if has_followup_fields else None
+    next_action_at = (
+        getattr(row, "next_action_at", None) if has_followup_fields else None
+    )
+    next_action_note = (
+        getattr(row, "next_action_note", None) if has_followup_fields else None
+    )
     next_action_state = _revenue_next_action_state(next_action_at)
     value = _revenue_amount(row, "access_request")
-    value_payload = _metric_available(value) if value is not None else _unavailable_revenue_amount()
+    value_payload = (
+        _metric_available(value) if value is not None else _unavailable_revenue_amount()
+    )
     reasons = ["access request submitted"]
-    intent_summary = audience_context.get("institutional_intent") if isinstance(audience_context, dict) else None
+    intent_summary = (
+        audience_context.get("institutional_intent")
+        if isinstance(audience_context, dict)
+        else None
+    )
     if audience_context:
         audience_label = (
             (intent_summary or {}).get("label")
@@ -13068,7 +13978,9 @@ def _revenue_row_from_access_request(row: OrganizationAccessRequest) -> SimpleNa
         kind="access_request",
         type_label="Access Request",
         organization=getattr(row, "organization_name", None) or "Access request",
-        contact=getattr(row, "contact_name", None) or getattr(row, "email", None) or "-",
+        contact=getattr(row, "contact_name", None)
+        or getattr(row, "email", None)
+        or "-",
         city=getattr(row, "city", None) or "-",
         source="/demander-acces",
         stage=stage,
@@ -13078,7 +13990,8 @@ def _revenue_row_from_access_request(row: OrganizationAccessRequest) -> SimpleNa
         score_class=bucket["class"],
         created_at=getattr(row, "created_at", None),
         contacted_at=None,
-        last_touched_at=getattr(row, "reviewed_at", None) or getattr(row, "updated_at", None),
+        last_touched_at=getattr(row, "reviewed_at", None)
+        or getattr(row, "updated_at", None),
         last_activity=last_activity,
         last_activity_label=_format_demo_touch_elapsed(last_activity),
         next_action_at=next_action_at,
@@ -13086,11 +13999,19 @@ def _revenue_row_from_access_request(row: OrganizationAccessRequest) -> SimpleNa
         next_action_state=next_action_state,
         next_action_label=_revenue_next_action_label(next_action_at, next_action_note),
         estimated_value=value,
-        estimated_value_display=value if value is not None else "No CRM opportunity linked.",
+        estimated_value_display=(
+            value if value is not None else "No CRM opportunity linked."
+        ),
         estimated_value_available=value is not None,
         estimated_value_reason=value_payload.get("reason", ""),
-        weighted_value=int(value * REVENUE_STAGE_WEIGHTS.get(stage, 0.05)) if value is not None else None,
-        action_url=url_for("admin.admin_organization_access_request_detail", req_id=row.id),
+        weighted_value=(
+            int(value * REVENUE_STAGE_WEIGHTS.get(stage, 0.05))
+            if value is not None
+            else None
+        ),
+        action_url=url_for(
+            "admin.admin_organization_access_request_detail", req_id=row.id
+        ),
         why_hot=", ".join(reasons),
         next_best_action=next_best_action,
         score_components=score_payload["components"],
@@ -13186,7 +14107,8 @@ def _build_revenue_pipeline_rows() -> list[SimpleNamespace]:
         key=lambda item: (
             item.score,
             1 if item.next_action_state == "overdue" else 0,
-            _as_aware_utc(item.last_activity) or datetime.min.replace(tzinfo=timezone.utc),
+            _as_aware_utc(item.last_activity)
+            or datetime.min.replace(tzinfo=timezone.utc),
         ),
         reverse=True,
     )
@@ -13225,7 +14147,10 @@ def _persist_revenue_score_explanations(rows: list[SimpleNamespace]) -> None:
                 originating_event_ids_json="[]",
             )
             payload.total_score = int(getattr(row, "score", 0) or 0)
-            payload.formula_version = str(getattr(row, "score_formula_version", None) or REVENUE_SCORE_FORMULA_VERSION)
+            payload.formula_version = str(
+                getattr(row, "score_formula_version", None)
+                or REVENUE_SCORE_FORMULA_VERSION
+            )
             payload.confidence = str(getattr(row, "score_confidence", None) or "low")
             payload.component_list_json = json.dumps(
                 list(getattr(row, "score_components", None) or []),
@@ -13250,7 +14175,9 @@ def _persist_revenue_score_explanations(rows: list[SimpleNamespace]) -> None:
         db.session.rollback()
 
 
-def _filter_revenue_rows(rows: list[SimpleNamespace], filters: dict) -> list[SimpleNamespace]:
+def _filter_revenue_rows(
+    rows: list[SimpleNamespace], filters: dict
+) -> list[SimpleNamespace]:
     result = rows
     if filters["type"]:
         result = [row for row in result if row.kind == filters["type"]]
@@ -13268,7 +14195,9 @@ def _filter_revenue_rows(rows: list[SimpleNamespace], filters: dict) -> list[Sim
     if filters["followup"] == "overdue":
         result = [row for row in result if row.next_action_state == "overdue"]
     elif filters["followup"] == "this_week":
-        result = [row for row in result if row.next_action_state in {"overdue", "this_week"}]
+        result = [
+            row for row in result if row.next_action_state in {"overdue", "this_week"}
+        ]
     elif filters["followup"] == "none":
         result = [row for row in result if row.next_action_state == "none"]
     if filters["active_week"]:
@@ -13276,7 +14205,11 @@ def _filter_revenue_rows(rows: list[SimpleNamespace], filters: dict) -> list[Sim
         result = [
             row
             for row in result
-            if (_as_aware_utc(row.last_activity) or datetime.min.replace(tzinfo=timezone.utc)) >= cutoff
+            if (
+                _as_aware_utc(row.last_activity)
+                or datetime.min.replace(tzinfo=timezone.utc)
+            )
+            >= cutoff
         ]
     if filters["q"]:
         needle = filters["q"].lower()
@@ -13305,7 +14238,12 @@ def _revenue_metrics(rows: list[SimpleNamespace]) -> dict:
         ),
         "hot_leads": _metric_payload(
             "revenue.hot_leads",
-            sum(1 for row in rows if row.score_bucket in {"Hot", "Very Hot"} and row.stage not in {"won", "lost"}),
+            sum(
+                1
+                for row in rows
+                if row.score_bucket in {"Hot", "Very Hot"}
+                and row.stage not in {"won", "lost"}
+            ),
             display_name="Hot Leads",
             source_tables=source_tables + ["score_explanations"],
             query_origin="_build_revenue_pipeline_rows + explained revenue_priority score bucket",
@@ -13460,8 +14398,8 @@ def admin_revenue():
     }
 
     try:
-        from .analytics import build_conversion_funnel_context
         from ..services.website_analytics import read_scope
+        from .analytics import build_conversion_funnel_context
 
         acquisition_context = build_conversion_funnel_context(
             read_scope(),
@@ -13517,8 +14455,14 @@ def admin_revenue_quick_action(item_type: str, item_id: int):
             _record_professional_lead_touch(row, action="revenue_mark_lost")
         elif action in {"tomorrow", "next_week"}:
             if _revenue_has_followup_fields(table_name):
-                row.next_action_at = now + (timedelta(days=1) if action == "tomorrow" else timedelta(days=7))
-                row.next_action_note = note or ("Follow up tomorrow" if action == "tomorrow" else "Follow up next week")
+                row.next_action_at = now + (
+                    timedelta(days=1) if action == "tomorrow" else timedelta(days=7)
+                )
+                row.next_action_note = note or (
+                    "Follow up tomorrow"
+                    if action == "tomorrow"
+                    else "Follow up next week"
+                )
             _record_professional_lead_touch(row, action=f"revenue_followup_{action}")
         else:
             flash("Unknown revenue action.", "warning")
@@ -13535,8 +14479,14 @@ def admin_revenue_quick_action(item_type: str, item_id: int):
             row.reviewed_at = row.reviewed_at or now
         elif action in {"tomorrow", "next_week"}:
             if _revenue_has_followup_fields(table_name):
-                row.next_action_at = now + (timedelta(days=1) if action == "tomorrow" else timedelta(days=7))
-                row.next_action_note = note or ("Follow up tomorrow" if action == "tomorrow" else "Follow up next week")
+                row.next_action_at = now + (
+                    timedelta(days=1) if action == "tomorrow" else timedelta(days=7)
+                )
+                row.next_action_note = note or (
+                    "Follow up tomorrow"
+                    if action == "tomorrow"
+                    else "Follow up next week"
+                )
         else:
             flash("Unknown revenue action.", "warning")
             return redirect(url_for("admin.admin_revenue"), code=303)
@@ -13546,10 +14496,6 @@ def admin_revenue_quick_action(item_type: str, item_id: int):
     db.session.commit()
     flash("Revenue pipeline updated.", "success")
     return redirect(url_for("admin.admin_revenue"), code=303)
-
-
-
-
 
 
 @admin_bp.get("/api/high-intent-sessions")
@@ -13665,37 +14611,51 @@ def admin_high_intent_sessions():
 
         territory = location_lookup.get(str(session_id).strip(), "")
         if territory:
-            territory_rows.append({
-                "territory": territory,
-                "territory_source": "behavior_location",
-                "source_kind": "anonymous_session",
-                "session_id": session_id,
-                "paths": list(intent_summary["top_paths"]),
-                "intent_tier": intent_summary["tier"],
+            territory_rows.append(
+                {
+                    "territory": territory,
+                    "territory_source": "behavior_location",
+                    "source_kind": "anonymous_session",
+                    "session_id": session_id,
+                    "paths": list(intent_summary["top_paths"]),
+                    "intent_tier": intent_summary["tier"],
+                    "primary_interest": intent_summary["primary_interest"],
+                    "trust_friction_detected": bool(
+                        intent_summary["trust_friction_detected"]
+                    ),
+                    "repeat_visit": len(deduped) > 1,
+                }
+            )
+
+        sessions.append(
+            {
+                "uid": safe_visitor(session_id),
+                "session_id": safe_visitor(str(session_id)[:16]),
+                "score": score,
+                "intent": intent,
+                "tier": intent_summary["tier"],
+                "label": intent_summary["label"],
                 "primary_interest": intent_summary["primary_interest"],
-                "trust_friction_detected": bool(intent_summary["trust_friction_detected"]),
-                "repeat_visit": len(deduped) > 1,
-            })
+                "trust_friction_detected": bool(
+                    intent_summary["trust_friction_detected"]
+                ),
+                "friction_reason": intent_summary["friction_reason"],
+                "session_type": intent_summary["label"],
+                "recommendation": safe_recommendation(
+                    intent_summary["recommended_action"], confidence="low"
+                ),
+                "path": deduped[:10],
+                "events": public_event_count,
+                "last_seen": str(events[-1].created_at),
+                "territory": (
+                    safe_territory(territory) if territory else "Unknown territory"
+                ),
+            }
+        )
 
-        sessions.append({
-            "uid": safe_visitor(session_id),
-            "session_id": safe_visitor(str(session_id)[:16]),
-            "score": score,
-            "intent": intent,
-            "tier": intent_summary["tier"],
-            "label": intent_summary["label"],
-            "primary_interest": intent_summary["primary_interest"],
-            "trust_friction_detected": bool(intent_summary["trust_friction_detected"]),
-            "friction_reason": intent_summary["friction_reason"],
-            "session_type": intent_summary["label"],
-            "recommendation": safe_recommendation(intent_summary["recommended_action"], confidence="low"),
-            "path": deduped[:10],
-            "events": public_event_count,
-            "last_seen": str(events[-1].created_at),
-            "territory": safe_territory(territory) if territory else "Unknown territory",
-        })
-
-    territory_lookup = _territorial_summary_lookup(detect_priority_territories(territory_rows))
+    territory_lookup = _territorial_summary_lookup(
+        detect_priority_territories(territory_rows)
+    )
     for row in sessions:
         summary = territory_lookup.get(_audience_normalize_text(row.get("territory")))
         if not summary:
@@ -13726,10 +14686,7 @@ def admin_high_intent_sessions():
 
     sessions.sort(key=lambda x: x["score"], reverse=True)
 
-    return jsonify({
-        "sessions": sessions[:25]
-    })
-
+    return jsonify({"sessions": sessions[:25]})
 
 
 @admin_bp.get("/audience-map")
@@ -13761,7 +14718,10 @@ def _admin_import_tables_ready() -> bool:
         _table_exists("professional_leads")
         and _table_exists("import_batches")
         and _table_exists("professional_lead_activities")
-        and all(_table_has_column("import_batches", column_name) for column_name in required_batch_columns)
+        and all(
+            _table_has_column("import_batches", column_name)
+            for column_name in required_batch_columns
+        )
         and _professional_lead_activity_enabled()
     )
 
@@ -13771,7 +14731,9 @@ def _admin_import_preview_state() -> dict[str, object]:
     return state if isinstance(state, dict) else {}
 
 
-def _set_admin_import_preview_state(*, batch_id: int, preview_path: str, filename: str) -> None:
+def _set_admin_import_preview_state(
+    *, batch_id: int, preview_path: str, filename: str
+) -> None:
     session[ADMIN_IMPORT_PREVIEW_SESSION_KEY] = {
         "batch_id": int(batch_id),
         "preview_path": str(preview_path),
@@ -13831,7 +14793,9 @@ def _record_professional_lead_import_activity(
     db.session.add(
         ProfessionalLeadActivity(
             professional_lead_id=int(lead.id),
-            admin_user_id=int(current_user.id) if getattr(current_user, "id", None) else None,
+            admin_user_id=(
+                int(current_user.id) if getattr(current_user, "id", None) else None
+            ),
             action=action,
             payload_json=encode_json_payload(activity_payload),
             created_at=imported_at,
@@ -13875,7 +14839,10 @@ def admin_import_express():
 @admin_required
 def admin_import_preview():
     if not _admin_import_tables_ready():
-        flash("Import Express indisponible tant que la migration n'est pas appliquée.", "warning")
+        flash(
+            "Import Express indisponible tant que la migration n'est pas appliquée.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_import_express"), code=303)
 
     target_type = (request.form.get("target_type") or "").strip()
@@ -13903,7 +14870,9 @@ def admin_import_preview():
     try:
         parsed_file = parse_csv_bytes(raw_bytes)
     except Exception:
-        flash("Impossible de lire ce CSV. Vérifiez l'encodage et les en-têtes.", "danger")
+        flash(
+            "Impossible de lire ce CSV. Vérifiez l'encodage et les en-têtes.", "danger"
+        )
         return redirect(url_for("admin.admin_import_express"), code=303)
 
     if not parsed_file.headers:
@@ -13976,7 +14945,10 @@ def admin_import_preview():
 @admin_required
 def admin_import_confirm():
     if not _admin_import_tables_ready():
-        flash("Import Express indisponible tant que la migration n'est pas appliquée.", "warning")
+        flash(
+            "Import Express indisponible tant que la migration n'est pas appliquée.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_import_express"), code=303)
 
     state = _admin_import_preview_state()
@@ -13986,7 +14958,10 @@ def admin_import_confirm():
         batch_id = 0
 
     if not state or int(state.get("batch_id") or 0) != batch_id:
-        flash("La prévisualisation a expiré. Rechargez le fichier avant import.", "warning")
+        flash(
+            "La prévisualisation a expiré. Rechargez le fichier avant import.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_import_express"), code=303)
 
     batch = ImportBatch.query.filter_by(
@@ -14001,11 +14976,17 @@ def admin_import_confirm():
     except Exception:
         batch.status = "failed"
         batch.errors_json = encode_json_payload(
-            [{"message": "Le fichier temporaire de prévisualisation n'est plus disponible."}]
+            [
+                {
+                    "message": "Le fichier temporaire de prévisualisation n'est plus disponible."
+                }
+            ]
         )
         db.session.commit()
         _clear_admin_import_preview_state(remove_file=True)
-        flash("Le fichier temporaire n'est plus disponible. Rechargez le CSV.", "warning")
+        flash(
+            "Le fichier temporaire n'est plus disponible. Rechargez le CSV.", "warning"
+        )
         return redirect(url_for("admin.admin_import_express"), code=303)
 
     mapping = _read_admin_import_mapping_from_form(parsed_file.headers)
@@ -14122,7 +15103,10 @@ def admin_import_history():
 @admin_required
 def admin_import_rollback(batch_id: int):
     if not _admin_import_tables_ready():
-        flash("Import Express indisponible tant que la migration n'est pas appliquée.", "warning")
+        flash(
+            "Import Express indisponible tant que la migration n'est pas appliquée.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_import_history"), code=303)
 
     batch = ImportBatch.query.filter_by(id=batch_id).first_or_404()
@@ -14130,11 +15114,9 @@ def admin_import_rollback(batch_id: int):
         flash("Rollback non disponible pour cette cible d'import.", "warning")
         return redirect(url_for("admin.admin_import_history"), code=303)
 
-    deleted_count = (
-        ProfessionalLead.query.filter(
-            ProfessionalLead.source == import_batch_source(int(batch.id))
-        ).delete(synchronize_session=False)
-    )
+    deleted_count = ProfessionalLead.query.filter(
+        ProfessionalLead.source == import_batch_source(int(batch.id))
+    ).delete(synchronize_session=False)
     batch.status = "rolled_back"
     db.session.commit()
 
@@ -14206,7 +15188,9 @@ def admin_professional_leads():
         query = query.filter(
             or_(
                 ProfessionalLead.status.is_(None),
-                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+                ~func.lower(ProfessionalLead.status).in_(
+                    SCREENED_PROFESSIONAL_LEAD_STATUSES
+                ),
             )
         )
 
@@ -14233,8 +15217,12 @@ def admin_professional_leads():
     professions = [p[0] for p in professions if p and p[0]]
 
     now_utc = datetime.now(UTC)
-    has_first_followup = _table_has_column("professional_leads", "first_followup_sent_at")
-    has_second_followup = _table_has_column("professional_leads", "second_followup_sent_at")
+    has_first_followup = _table_has_column(
+        "professional_leads", "first_followup_sent_at"
+    )
+    has_second_followup = _table_has_column(
+        "professional_leads", "second_followup_sent_at"
+    )
     has_last_touched = _table_has_column("professional_leads", "last_touched_at")
     lead_metrics = dict(empty_metrics)
     lead_metrics["total"] = len(leads)
@@ -14254,7 +15242,10 @@ def admin_professional_leads():
                     ("import_created", "import_updated", "import_skipped_duplicate")
                 )
             )
-            .order_by(ProfessionalLeadActivity.created_at.desc(), ProfessionalLeadActivity.id.desc())
+            .order_by(
+                ProfessionalLeadActivity.created_at.desc(),
+                ProfessionalLeadActivity.id.desc(),
+            )
             .all()
         )
         for row in activity_rows:
@@ -14266,7 +15257,7 @@ def admin_professional_leads():
             if action not in bucket:
                 bucket[action] = _as_aware_utc(getattr(row, "created_at", None))
     for lead in leads:
-        status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+        status_key = (getattr(lead, "status", None) or "").strip().lower() or "new"
         created_at = _as_aware_utc(getattr(lead, "created_at", None))
         contacted_at = _as_aware_utc(getattr(lead, "contacted_at", None))
         last_touched_at = (
@@ -14329,18 +15320,28 @@ def admin_professional_leads():
         if "import_skipped_duplicate" in import_events:
             import_badges.append("Duplicate skipped")
         lead_insights[int(lead.id)] = {
-            "urgency": "prioritaire" if has_urgent_signal or is_followup_due else "standard",
-            "urgency_label": "Prioritaire" if has_urgent_signal or is_followup_due else "Standard",
+            "urgency": (
+                "prioritaire" if has_urgent_signal or is_followup_due else "standard"
+            ),
+            "urgency_label": (
+                "Prioritaire" if has_urgent_signal or is_followup_due else "Standard"
+            ),
             "next_action": (
                 "Relancer"
                 if is_followup_due
-                else "Qualifier"
-                if is_uncontacted
-                else "Suivre"
-                if status_key in {"contacted", "qualified"}
-                else "Archiver"
-                if status_key in {"rejected", "invalid", "spam"}
-                else "Ouvrir"
+                else (
+                    "Qualifier"
+                    if is_uncontacted
+                    else (
+                        "Suivre"
+                        if status_key in {"contacted", "qualified"}
+                        else (
+                            "Archiver"
+                            if status_key in {"rejected", "invalid", "spam"}
+                            else "Ouvrir"
+                        )
+                    )
+                )
             ),
             "last_activity_label": _format_demo_touch_elapsed(last_activity_at),
             "import_badges": import_badges,
@@ -14399,7 +15400,9 @@ def _send_due_demo_lead_followups() -> None:
         if not email:
             continue
 
-        normalized_status = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+        normalized_status = (
+            getattr(lead, "status", None) or ""
+        ).strip().lower() or "new"
         if normalized_status == "new":
             followup_field = ProfessionalLead.first_followup_sent_at
             followup_label = "first"
@@ -14428,14 +15431,12 @@ def _send_due_demo_lead_followups() -> None:
             continue
 
         sent_at = datetime.now(UTC)
-        reserved = (
-            ProfessionalLead.query.filter(
-                ProfessionalLead.id == lead.id,
-                ProfessionalLead.source == "demo_page",
-                func.lower(ProfessionalLead.status) == normalized_status,
-                followup_field.is_(None),
-            ).update({followup_field: sent_at}, synchronize_session=False)
-        )
+        reserved = ProfessionalLead.query.filter(
+            ProfessionalLead.id == lead.id,
+            ProfessionalLead.source == "demo_page",
+            func.lower(ProfessionalLead.status) == normalized_status,
+            followup_field.is_(None),
+        ).update({followup_field: sent_at}, synchronize_session=False)
         if reserved != 1:
             db.session.rollback()
             continue
@@ -14446,7 +15447,9 @@ def _send_due_demo_lead_followups() -> None:
             msg = Message(subject=subject, sender=sender, recipients=[email])
             msg.body = body
             mail.send(msg)
-            current_app.logger.info("Lead %s %s follow-up sent", lead.id, followup_label)
+            current_app.logger.info(
+                "Lead %s %s follow-up sent", lead.id, followup_label
+            )
         except Exception:
             current_app.logger.exception(
                 "Lead %s %s follow-up failed",
@@ -14560,7 +15563,9 @@ def _record_professional_lead_touch(
 
     payload_json = None
     if payload:
-        payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
+        payload_json = json.dumps(
+            payload, ensure_ascii=False, sort_keys=True, default=str
+        )
 
     db.session.add(
         ProfessionalLeadActivity(
@@ -14618,8 +15623,12 @@ def _attach_demo_lead_activity_state(
             admin_ids.add(int(admin_user_id))
         bucket.append(
             {
-                "label": _professional_lead_activity_label(getattr(row, "action", None)),
-                "created_label": _format_demo_touch_elapsed(getattr(row, "created_at", None)),
+                "label": _professional_lead_activity_label(
+                    getattr(row, "action", None)
+                ),
+                "created_label": _format_demo_touch_elapsed(
+                    getattr(row, "created_at", None)
+                ),
             }
         )
 
@@ -14637,20 +15646,24 @@ def _attach_demo_lead_activity_state(
         touch_admin_id = getattr(lead, "last_touched_by_admin_id", None)
         touch_admin_label = None
         if touch_admin_id is not None:
-            touch_admin_label = admin_labels.get(int(touch_admin_id), f"#{touch_admin_id}")
+            touch_admin_label = admin_labels.get(
+                int(touch_admin_id), f"#{touch_admin_id}"
+            )
         setattr(
             lead,
             "last_touch_label",
-            _format_demo_touch_elapsed(getattr(lead, "last_touched_at", None))
-            if getattr(lead, "last_touched_at", None)
-            else None,
+            (
+                _format_demo_touch_elapsed(getattr(lead, "last_touched_at", None))
+                if getattr(lead, "last_touched_at", None)
+                else None
+            ),
         )
         setattr(lead, "last_touch_admin_label", touch_admin_label)
         setattr(lead, "activity_preview", activity_preview_map.get(int(lead.id), []))
 
 
 def _demo_lead_is_stale(lead: ProfessionalLead, *, threshold_hours: int = 24) -> bool:
-    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    status_key = (getattr(lead, "status", None) or "").strip().lower() or "new"
     if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return False
 
@@ -14662,7 +15675,7 @@ def _demo_lead_is_stale(lead: ProfessionalLead, *, threshold_hours: int = 24) ->
 
 
 def _demo_lead_priority(lead: ProfessionalLead) -> str:
-    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    status_key = (getattr(lead, "status", None) or "").strip().lower() or "new"
     if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return "normal"
 
@@ -14678,7 +15691,7 @@ def _demo_lead_priority(lead: ProfessionalLead) -> str:
 
 
 def _demo_lead_queue(lead: ProfessionalLead) -> str:
-    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    status_key = (getattr(lead, "status", None) or "").strip().lower() or "new"
     if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return "done"
 
@@ -14687,13 +15700,16 @@ def _demo_lead_queue(lead: ProfessionalLead) -> str:
 
     if priority == "high":
         return "needs_action"
-    if status_key in {"contacted", "demo_scheduled", "pilot_discussion"} and not is_stale:
+    if (
+        status_key in {"contacted", "demo_scheduled", "pilot_discussion"}
+        and not is_stale
+    ):
         return "waiting"
     return "active"
 
 
 def _demo_lead_next_action(lead: ProfessionalLead) -> str | None:
-    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    status_key = (getattr(lead, "status", None) or "").strip().lower() or "new"
     if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return None
 
@@ -14716,7 +15732,7 @@ def _demo_lead_next_action(lead: ProfessionalLead) -> str | None:
 
 
 def _demo_lead_sla_state(lead: ProfessionalLead) -> str | None:
-    status_key = ((getattr(lead, "status", None) or "").strip().lower() or "new")
+    status_key = (getattr(lead, "status", None) or "").strip().lower() or "new"
     if status_key == "closed" or _is_screened_professional_lead_status(status_key):
         return None
 
@@ -14761,6 +15777,7 @@ def _demo_lead_sla_state(lead: ProfessionalLead) -> str | None:
 @admin_role_required("superadmin")
 def admin_demo_leads():
     _require_professional_lead_access()
+
     def _lead_age_meta(created_at, status_value: str | None):
         now_utc = datetime.now(UTC)
         if created_at is None:
@@ -14771,7 +15788,7 @@ def admin_demo_leads():
                 created_dt = created_dt.replace(tzinfo=UTC)
             age_days = max(0, (now_utc.date() - created_dt.astimezone(UTC).date()).days)
 
-        normalized_status = ((status_value or "").strip().lower() or "new")
+        normalized_status = (status_value or "").strip().lower() or "new"
         if normalized_status == "closed" or _is_screened_professional_lead_status(
             normalized_status
         ):
@@ -14851,7 +15868,9 @@ def admin_demo_leads():
         query = query.filter(
             or_(
                 ProfessionalLead.status.is_(None),
-                ~func.lower(ProfessionalLead.status).in_(SCREENED_PROFESSIONAL_LEAD_STATUSES),
+                ~func.lower(ProfessionalLead.status).in_(
+                    SCREENED_PROFESSIONAL_LEAD_STATUSES
+                ),
             )
         )
 
@@ -14889,9 +15908,13 @@ def admin_demo_leads():
     if status:
         query = query.filter(func.lower(ProfessionalLead.status) == status)
 
-    leads = query.order_by(ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc()).all()
+    leads = query.order_by(
+        ProfessionalLead.created_at.desc(), ProfessionalLead.id.desc()
+    ).all()
     for lead in leads:
-        age_meta = _lead_age_meta(getattr(lead, "created_at", None), getattr(lead, "status", None))
+        age_meta = _lead_age_meta(
+            getattr(lead, "created_at", None), getattr(lead, "status", None)
+        )
         setattr(lead, "age_days", age_meta["age_days"])
         setattr(lead, "age_label", age_meta["age_label"])
         setattr(lead, "urgency", age_meta["urgency"])
@@ -14930,7 +15953,11 @@ def admin_demo_leads():
         sla_state = _demo_lead_sla_state(lead)
         is_stale = _demo_lead_is_stale(lead)
         last_touched_at = _as_aware_utc(getattr(lead, "last_touched_at", None))
-        sort_touch = last_touched_at or _as_aware_utc(getattr(lead, "created_at", None)) or _now_utc()
+        sort_touch = (
+            last_touched_at
+            or _as_aware_utc(getattr(lead, "created_at", None))
+            or _now_utc()
+        )
         setattr(lead, "priority_level", priority_level)
         setattr(lead, "queue_key", queue_key)
         setattr(lead, "next_action", next_action)
@@ -15005,7 +16032,7 @@ def admin_professional_lead_update_status(lead_id: int):
         return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
-    old_status = ((lead.status or "").strip() or "new")
+    old_status = (lead.status or "").strip() or "new"
     new_status = (request.form.get("lead_status") or "").strip().lower()
 
     if new_status not in allowed_statuses:
@@ -15060,7 +16087,10 @@ def admin_professional_lead_update_notes(lead_id: int):
         current_app.logger.warning(
             "Lead notes update skipped: professional_leads.notes unavailable"
         )
-        flash("Lead notes are not available until the latest migration is applied.", "warning")
+        flash(
+            "Lead notes are not available until the latest migration is applied.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
@@ -15110,7 +16140,10 @@ def admin_professional_lead_update_owner(lead_id: int):
         current_app.logger.warning(
             "Lead owner update skipped: professional_leads.owner_admin_id unavailable"
         )
-        flash("Lead ownership is not available until the latest migration is applied.", "warning")
+        flash(
+            "Lead ownership is not available until the latest migration is applied.",
+            "warning",
+        )
         return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
 
     lead = ProfessionalLead.query.get_or_404(lead_id)
@@ -15122,12 +16155,16 @@ def admin_professional_lead_update_owner(lead_id: int):
             new_owner_id = int(raw_owner_id)
         except ValueError:
             flash("Invalid owner selection.", "warning")
-            return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+            return redirect(
+                url_for("admin.admin_demo_leads", **redirect_kwargs), code=303
+            )
 
         owner = db.session.get(AdminUser, new_owner_id)
         if owner is None:
             flash("Selected admin user was not found.", "warning")
-            return redirect(url_for("admin.admin_demo_leads", **redirect_kwargs), code=303)
+            return redirect(
+                url_for("admin.admin_demo_leads", **redirect_kwargs), code=303
+            )
     else:
         new_owner_id = None
 
@@ -15193,7 +16230,9 @@ def _professional_lead_intervenant_name(lead: ProfessionalLead) -> str:
         return full_name
     email = (getattr(lead, "email", None) or "").strip()
     if email and "@" in email:
-        return email.split("@", 1)[0].replace(".", " ").replace("_", " ").strip().title()
+        return (
+            email.split("@", 1)[0].replace(".", " ").replace("_", " ").strip().title()
+        )
     return f"Professional lead #{lead.id}"
 
 
@@ -15219,10 +16258,17 @@ def admin_professional_lead_convert_intervenant(lead_id: int):
         return redirect(url_for("admin.admin_professional_leads"), code=303)
     if not _table_exists("intervenants"):
         flash("Intervenants table is not available.", "warning")
-        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead_id), code=303)
+        return redirect(
+            url_for("admin.admin_professional_lead_detail", lead_id=lead_id), code=303
+        )
     if not _table_has_column("professional_leads", "intervenant_id"):
-        flash("Professional lead conversion is not available until migrations are applied.", "warning")
-        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead_id), code=303)
+        flash(
+            "Professional lead conversion is not available until migrations are applied.",
+            "warning",
+        )
+        return redirect(
+            url_for("admin.admin_professional_lead_detail", lead_id=lead_id), code=303
+        )
 
     lead = (
         ProfessionalLead.query.filter(ProfessionalLead.id == lead_id)
@@ -15234,13 +16280,18 @@ def admin_professional_lead_convert_intervenant(lead_id: int):
         intervenant = db.session.get(Intervenant, int(existing_intervenant_id))
         if intervenant is None:
             flash("The linked intervenant could not be found.", "warning")
-            return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+            return redirect(
+                url_for("admin.admin_professional_lead_detail", lead_id=lead.id),
+                code=303,
+            )
         flash("Lead already converted to an intervenant.", "info")
         return redirect(_intervenant_detail_url(intervenant, None), code=303)
 
     if (lead.status or "").strip().lower() != "qualified":
         flash("Qualification required before conversion.", "warning")
-        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+        return redirect(
+            url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303
+        )
 
     raw_structure_id = (request.form.get("structure_id") or "").strip()
     try:
@@ -15250,7 +16301,9 @@ def admin_professional_lead_convert_intervenant(lead_id: int):
     structure = db.session.get(Structure, structure_id) if structure_id else None
     if structure is None:
         flash("Target structure is required for conversion.", "warning")
-        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+        return redirect(
+            url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303
+        )
 
     normalized_email = (lead.email or "").strip().lower()
     if normalized_email:
@@ -15260,8 +16313,14 @@ def admin_professional_lead_convert_intervenant(lead_id: int):
             .first()
         )
         if duplicate is not None:
-            flash("An intervenant with this email already exists in the selected structure.", "warning")
-            return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+            flash(
+                "An intervenant with this email already exists in the selected structure.",
+                "warning",
+            )
+            return redirect(
+                url_for("admin.admin_professional_lead_detail", lead_id=lead.id),
+                code=303,
+            )
 
     actor_type = _normalize_intervenant_actor_type(getattr(lead, "profession", None))
     if actor_type not in INTERVENANT_ACTOR_TYPE_LABELS:
@@ -15275,10 +16334,14 @@ def admin_professional_lead_convert_intervenant(lead_id: int):
         email=(lead.email or "").strip() or None,
         phone=(lead.phone or "").strip() or None,
         location=(lead.city or "").strip() or None,
-        availability=availability if _table_has_column("intervenants", "availability") else None,
+        availability=(
+            availability if _table_has_column("intervenants", "availability") else None
+        ),
         is_active=False,
     )
-    if hasattr(intervenant, "internal_notes") and _table_has_column("intervenants", "internal_notes"):
+    if hasattr(intervenant, "internal_notes") and _table_has_column(
+        "intervenants", "internal_notes"
+    ):
         intervenant.internal_notes = _professional_lead_conversion_note(lead)
 
     try:
@@ -15296,8 +16359,13 @@ def admin_professional_lead_convert_intervenant(lead_id: int):
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
-        flash("Conversion failed because the lead is already linked or a duplicate exists.", "warning")
-        return redirect(url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303)
+        flash(
+            "Conversion failed because the lead is already linked or a duplicate exists.",
+            "warning",
+        )
+        return redirect(
+            url_for("admin.admin_professional_lead_detail", lead_id=lead.id), code=303
+        )
 
     flash("Lead converted to intervenant.", "success")
     return redirect(_intervenant_detail_url(intervenant, None), code=303)
@@ -15346,7 +16414,11 @@ def admin_professional_lead_detail(lead_id: int):
             "admin/professional_lead_detail.html",
             lead=lead,
             status_choices=status_choices,
-            structures=Structure.query.order_by(Structure.name.asc(), Structure.id.asc()).limit(500).all(),
+            structures=Structure.query.order_by(
+                Structure.name.asc(), Structure.id.asc()
+            )
+            .limit(500)
+            .all(),
             converted_intervenant=converted_intervenant,
             audience_context=extract_audience_context(lead.notes),
             lead_notes=notes_without_audience_context(lead.notes),
@@ -15636,10 +16708,7 @@ def admin_security():
         .subquery()
     )
     lockout_buckets_24h = (
-        db.session.query(func.count())
-        .select_from(fail_buckets)
-        .scalar()
-        or 0
+        db.session.query(func.count()).select_from(fail_buckets).scalar() or 0
     )
 
     risky_actions_24h = (
@@ -15672,7 +16741,9 @@ def admin_security():
     avg_denied_hourly = (float(denied_24h) / 24.0) if denied_24h else 0.0
 
     top_denied_ips = (
-        db.session.query(AdminAuditEvent.ip, func.count(AdminAuditEvent.id).label("cnt"))
+        db.session.query(
+            AdminAuditEvent.ip, func.count(AdminAuditEvent.id).label("cnt")
+        )
         .filter(
             AdminAuditEvent.created_at >= since_24h,
             AdminAuditEvent.action == "security.denied_action",
@@ -15771,9 +16842,7 @@ def admin_security():
     top_denied_ip_count = int(top_denied_ip[1] or 0)
     top_denied_username_count = int(top_denied_username[1] or 0)
     denied_spike_on = int(denied_1h) >= max(5.0, 3.0 * avg_denied_hourly)
-    repeated_denied_on = (top_denied_ip_count >= 10) or (
-        top_denied_username_count >= 8
-    )
+    repeated_denied_on = (top_denied_ip_count >= 10) or (top_denied_username_count >= 8)
     anomalies = {
         "spike_failed_logins": float(failed_1h) > spike_threshold,
         "repeated_fails_by_ip": any(int(fails) >= 20 for _, fails in top_ips),
@@ -15852,9 +16921,9 @@ def admin_security_events():
                         "actor_type": row.actor_type,
                         "ip": row.ip,
                         "email_hash": row.email_hash,
-                        "created_at": row.created_at.isoformat()
-                        if row.created_at
-                        else None,
+                        "created_at": (
+                            row.created_at.isoformat() if row.created_at else None
+                        ),
                         "meta_json": row.meta_json,
                     }
                     for row in rows
@@ -15903,13 +16972,19 @@ def admin_security_summary():
 @admin_role_required("superadmin")
 def admin_roles():
     _require_global_admin()
-    admins = AdminUser.query.filter(or_(
-        AdminUser.structure_id.is_(None),
-        AdminUser.role.in_(["superadmin", "super_admin", "super-admin"]),
-    )).order_by(
-        AdminUser.username.asc(), AdminUser.id.asc()
-    ).all()
-    superadmin_ids = [u.id for u in admins if _is_superadmin_role(getattr(u, "role", None))]
+    admins = (
+        AdminUser.query.filter(
+            or_(
+                AdminUser.structure_id.is_(None),
+                AdminUser.role.in_(["superadmin", "super_admin", "super-admin"]),
+            )
+        )
+        .order_by(AdminUser.username.asc(), AdminUser.id.asc())
+        .all()
+    )
+    superadmin_ids = [
+        u.id for u in admins if _is_superadmin_role(getattr(u, "role", None))
+    ]
     last_superadmin_id = superadmin_ids[0] if len(superadmin_ids) == 1 else None
     role_options = [
         ("readonly", "readonly"),
@@ -15970,7 +17045,11 @@ def admin_roles_set_role(admin_id: int):
     )
 
     # Prevent lockout by downgrading the last superadmin.
-    if old_role == "superadmin" and requested_role != "superadmin" and int(superadmin_count) <= 1:
+    if (
+        old_role == "superadmin"
+        and requested_role != "superadmin"
+        and int(superadmin_count) <= 1
+    ):
         flash("Cannot downgrade the last superadmin.", "danger")
         return redirect(url_for("admin.admin_roles"), code=303)
 
@@ -16089,25 +17168,32 @@ def admin_pro_access_reject(pro_id: int):
     db.session.commit()
     flash("Rejected.", "success")
     return redirect(url_for("admin.admin_pro_access_detail", pro_id=pro_id), code=303)
-    active_sla_queue = bool(queue == "sla" and sla_kind)
-    active_sla_filter_label = SLA_QUEUE_KINDS.get(sla_kind, "") if active_sla_queue else ""
 
 
-from . import admin_requests as _admin_requests  # noqa: F401
-from . import admin_referrals as _admin_referrals  # noqa: F401
-from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
-from . import admin_cases as _admin_cases  # noqa: F401
-from . import admin_notifications as _admin_notifications  # noqa: F401
 from . import admin_calendar as _admin_calendar  # noqa: F401
+from . import admin_cases as _admin_cases  # noqa: F401
+from . import admin_diagnostics as _admin_diagnostics  # noqa: F401
+from . import admin_notifications as _admin_notifications  # noqa: F401
+from . import admin_referrals as _admin_referrals  # noqa: F401
+from . import admin_requests as _admin_requests  # noqa: F401
 from . import admin_structures as _admin_structures  # noqa: F401
 
-build_requests_query = _admin_requests.build_requests_query
-get_system_health_snapshot_cached = _admin_diagnostics.get_system_health_snapshot_cached
+
+def build_requests_query(base_query, request_args, legacy: bool = False):
+    from .admin_requests import build_requests_query as implementation
+
+    return implementation(base_query, request_args, legacy=legacy)
+
+
+def get_system_health_snapshot_cached():
+    from .admin_diagnostics import get_system_health_snapshot_cached as implementation
+
+    return implementation()
 
 
 def _build_operational_report_pdf_response(report: dict):
-    from io import BytesIO
     import os
+    from io import BytesIO
 
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
@@ -16115,7 +17201,14 @@ def _build_operational_report_pdf_response(report: dict):
     from reportlab.lib.units import mm
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import (
+        PageBreak,
+        Paragraph,
+        SimpleDocTemplate,
+        Spacer,
+        Table,
+        TableStyle,
+    )
 
     def _register_pdf_font(font_name: str, candidates: list[str]) -> str:
         for candidate in candidates:
@@ -16177,34 +17270,50 @@ def _build_operational_report_pdf_response(report: dict):
         canvas.circle(center_x, center_y, outer_radius, stroke=1, fill=0)
         canvas.setFillColor(stroke_color)
         for x_factor, y_factor in dot_positions:
-            canvas.circle(x + (size * x_factor), y + (size * y_factor), dot_radius, stroke=0, fill=1)
+            canvas.circle(
+                x + (size * x_factor),
+                y + (size * y_factor),
+                dot_radius,
+                stroke=0,
+                fill=1,
+            )
 
     def _pdf_metric_table(metric, body_style):
         summary = _pdf_esc(_ops_report_clean_text(metric.get("summary") or ""))
         card = Table(
-            [[
-                Paragraph(
-                    (
-                        f"<font size='7' color='#5b7089'><b>{_pdf_esc(_ops_report_clean_text(metric.get('severity_label')))}</b></font><br/>"
-                        f"<font size='18' color='#10243d'><b>{_pdf_esc(metric.get('value'))}</b></font><br/>"
-                        f"<font size='9' color='#243a55'><b>{_pdf_esc(_ops_report_clean_text(metric.get('label')))}</b></font><br/>"
-                        f"<font size='7' color='#60748d'>{_pdf_esc(_ops_report_clean_text(metric.get('delta_text')))}</font>"
-                        + (f"<br/><font size='7' color='#60748d'>{summary}</font>" if summary else "")
-                    ),
-                    body_style,
-                )
-            ]],
+            [
+                [
+                    Paragraph(
+                        (
+                            f"<font size='7' color='#5b7089'><b>{_pdf_esc(_ops_report_clean_text(metric.get('severity_label')))}</b></font><br/>"
+                            f"<font size='18' color='#10243d'><b>{_pdf_esc(metric.get('value'))}</b></font><br/>"
+                            f"<font size='9' color='#243a55'><b>{_pdf_esc(_ops_report_clean_text(metric.get('label')))}</b></font><br/>"
+                            f"<font size='7' color='#60748d'>{_pdf_esc(_ops_report_clean_text(metric.get('delta_text')))}</font>"
+                            + (
+                                f"<br/><font size='7' color='#60748d'>{summary}</font>"
+                                if summary
+                                else ""
+                            )
+                        ),
+                        body_style,
+                    )
+                ]
+            ],
             colWidths=[58 * mm],
         )
-        card.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fbfdff")),
-            ("BOX", (0, 0), (-1, -1), 0.7, colors.HexColor("#d6e0ec")),
-            ("LEFTPADDING", (0, 0), (-1, -1), 9),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 9),
-            ("TOPPADDING", (0, 0), (-1, -1), 9),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ]))
+        card.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fbfdff")),
+                    ("BOX", (0, 0), (-1, -1), 0.7, colors.HexColor("#d6e0ec")),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 9),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+                    ("TOPPADDING", (0, 0), (-1, -1), 9),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 9),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
         return card
 
     buffer = BytesIO()
@@ -16218,129 +17327,161 @@ def _build_operational_report_pdf_response(report: dict):
     )
 
     styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(
-        name="OpsSection",
-        parent=styles["Heading2"],
-        fontName=pdf_font_bold,
-        fontSize=13,
-        leading=16,
-        textColor=colors.HexColor("#10243d"),
-        spaceAfter=6,
-        keepWithNext=1,
-    ))
-    styles.add(ParagraphStyle(
-        name="OpsKicker",
-        parent=styles["BodyText"],
-        fontName=pdf_font_bold,
-        fontSize=8,
-        leading=10,
-        textColor=colors.HexColor("#60748d"),
-        spaceAfter=3,
-        keepWithNext=1,
-    ))
-    styles.add(ParagraphStyle(
-        name="OpsBody",
-        parent=styles["BodyText"],
-        fontName=pdf_font_regular,
-        fontSize=9,
-        leading=13,
-        textColor=colors.HexColor("#243a55"),
-    ))
-    styles.add(ParagraphStyle(
-        name="OpsMeta",
-        parent=styles["BodyText"],
-        fontName=pdf_font_regular,
-        fontSize=8,
-        leading=11,
-        textColor=colors.HexColor("#60748d"),
-    ))
+    styles.add(
+        ParagraphStyle(
+            name="OpsSection",
+            parent=styles["Heading2"],
+            fontName=pdf_font_bold,
+            fontSize=13,
+            leading=16,
+            textColor=colors.HexColor("#10243d"),
+            spaceAfter=6,
+            keepWithNext=1,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="OpsKicker",
+            parent=styles["BodyText"],
+            fontName=pdf_font_bold,
+            fontSize=8,
+            leading=10,
+            textColor=colors.HexColor("#60748d"),
+            spaceAfter=3,
+            keepWithNext=1,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="OpsBody",
+            parent=styles["BodyText"],
+            fontName=pdf_font_regular,
+            fontSize=9,
+            leading=13,
+            textColor=colors.HexColor("#243a55"),
+        )
+    )
+    styles.add(
+        ParagraphStyle(
+            name="OpsMeta",
+            parent=styles["BodyText"],
+            fontName=pdf_font_regular,
+            fontSize=8,
+            leading=11,
+            textColor=colors.HexColor("#60748d"),
+        )
+    )
     story = []
     scope_name = _ops_report_clean_text(_scope_label())
 
     hero_table = Table(
-        [[
-            Paragraph(
-                "HELPCHAIN<br/><font size='7' color='#60748d'>Coordination opérationnelle</font>",
-                ParagraphStyle(
-                    "OpsBrand",
-                    parent=styles["BodyText"],
-                    fontName=pdf_font_bold,
-                    fontSize=10,
-                    leading=12,
-                    textColor=colors.HexColor("#10243d"),
+        [
+            [
+                Paragraph(
+                    "HELPCHAIN<br/><font size='7' color='#60748d'>Coordination opérationnelle</font>",
+                    ParagraphStyle(
+                        "OpsBrand",
+                        parent=styles["BodyText"],
+                        fontName=pdf_font_bold,
+                        fontSize=10,
+                        leading=12,
+                        textColor=colors.HexColor("#10243d"),
+                    ),
                 ),
-            ),
-            Paragraph(
-                (
-                    "<font size='8' color='#60748d'><b>Usage interne</b></font><br/>"
-                    "<font size='17' color='#10243d'><b>Rapport opérationnel</b></font><br/>"
-                    f"<font size='9' color='#243a55'>{_pdf_esc(scope_name)}</font><br/>"
-                    f"<font size='8' color='#60748d'>Période : {report['period']['days']} jours | "
-                    f"Généré le : {_pdf_esc(report['generated_at'][:16].replace('T', ' '))} | "
-                    "Confidentialité : interne</font>"
+                Paragraph(
+                    (
+                        "<font size='8' color='#60748d'><b>Usage interne</b></font><br/>"
+                        "<font size='17' color='#10243d'><b>Rapport opérationnel</b></font><br/>"
+                        f"<font size='9' color='#243a55'>{_pdf_esc(scope_name)}</font><br/>"
+                        f"<font size='8' color='#60748d'>Période : {report['period']['days']} jours | "
+                        f"Généré le : {_pdf_esc(report['generated_at'][:16].replace('T', ' '))} | "
+                        "Confidentialité : interne</font>"
+                    ),
+                    styles["OpsBody"],
                 ),
-                styles["OpsBody"],
-            ),
-        ]],
+            ]
+        ],
         colWidths=[36 * mm, 144 * mm],
     )
-    hero_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fbfdff")),
-        ("BOX", (0, 0), (-1, -1), 0.8, colors.HexColor("#d6e0ec")),
-        ("LINEAFTER", (0, 0), (0, 0), 0.6, colors.HexColor("#d6e0ec")),
-        ("LEFTPADDING", (0, 0), (-1, -1), 11),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 11),
-        ("TOPPADDING", (0, 0), (-1, -1), 11),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 11),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-    ]))
+    hero_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fbfdff")),
+                ("BOX", (0, 0), (-1, -1), 0.8, colors.HexColor("#d6e0ec")),
+                ("LINEAFTER", (0, 0), (0, 0), 0.6, colors.HexColor("#d6e0ec")),
+                ("LEFTPADDING", (0, 0), (-1, -1), 11),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 11),
+                ("TOPPADDING", (0, 0), (-1, -1), 11),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 11),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]
+        )
+    )
     story.append(hero_table)
     story.append(Spacer(1, 3 * mm))
 
     metadata_table = Table(
-        [[
-            Paragraph(f"<b>Périmètre</b><br/>{_pdf_esc(scope_name)}", styles["OpsMeta"]),
-            Paragraph(f"<b>Stabilité</b><br/>{_pdf_esc(_ops_report_clean_text(report.get('operational_conclusion', {}).get('stability', '-')))}", styles["OpsMeta"]),
-            Paragraph(
-                (
-                    f"<b>Score opérationnel</b><br/>"
-                    f"{_pdf_esc(report.get('operational_health_score', {}).get('score', '-'))}/100"
+        [
+            [
+                Paragraph(
+                    f"<b>Périmètre</b><br/>{_pdf_esc(scope_name)}", styles["OpsMeta"]
                 ),
-                styles["OpsMeta"],
-            ),
-        ]],
+                Paragraph(
+                    f"<b>Stabilité</b><br/>{_pdf_esc(_ops_report_clean_text(report.get('operational_conclusion', {}).get('stability', '-')))}",
+                    styles["OpsMeta"],
+                ),
+                Paragraph(
+                    (
+                        f"<b>Score opérationnel</b><br/>"
+                        f"{_pdf_esc(report.get('operational_health_score', {}).get('score', '-'))}/100"
+                    ),
+                    styles["OpsMeta"],
+                ),
+            ]
+        ],
         colWidths=[62 * mm, 58 * mm, 58 * mm],
     )
-    metadata_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.white),
-        ("BOX", (0, 0), (-1, -1), 0.45, colors.HexColor("#dde5ef")),
-        ("INNERGRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#e3eaf3")),
-        ("LEFTPADDING", (0, 0), (-1, -1), 9),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 9),
-        ("TOPPADDING", (0, 0), (-1, -1), 7),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-    ]))
+    metadata_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+                ("BOX", (0, 0), (-1, -1), 0.45, colors.HexColor("#dde5ef")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#e3eaf3")),
+                ("LEFTPADDING", (0, 0), (-1, -1), 9),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 9),
+                ("TOPPADDING", (0, 0), (-1, -1), 7),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]
+        )
+    )
     story.append(metadata_table)
     story.append(Spacer(1, 7 * mm))
 
     story.append(Paragraph("SYNTHÈSE EXÉCUTIVE", styles["OpsKicker"]))
     story.append(Paragraph("Synthèse exécutive", styles["OpsSection"]))
     story.append(Paragraph(_pdf_text(report["executive_summary"]), styles["OpsBody"]))
-    story.append(Paragraph(
-        _pdf_text(
-            f"Nouvelles demandes sur la période : {report['requests'].get('new', 0)}. "
-            "Demandes créées pendant la période sélectionnée."
-        ),
-        styles["OpsMeta"],
-    ))
-    story.append(Paragraph(
-        f"Niveau: {_pdf_esc(_ops_report_clean_text(report['operational_severity']['label']))} - {_pdf_esc(_ops_report_clean_text(report['operational_severity']['message']))}",
-        styles["OpsMeta"],
-    ))
+    story.append(
+        Paragraph(
+            _pdf_text(
+                f"Nouvelles demandes sur la période : {report['requests'].get('new', 0)}. "
+                "Demandes créées pendant la période sélectionnée."
+            ),
+            styles["OpsMeta"],
+        )
+    )
+    story.append(
+        Paragraph(
+            f"Niveau: {_pdf_esc(_ops_report_clean_text(report['operational_severity']['label']))} - {_pdf_esc(_ops_report_clean_text(report['operational_severity']['message']))}",
+            styles["OpsMeta"],
+        )
+    )
     story.append(Spacer(1, 5 * mm))
 
-    snapshot_cards = [_pdf_metric_table(metric, styles["OpsBody"]) for metric in report.get("executive_snapshot", [])[:6]]
+    snapshot_cards = [
+        _pdf_metric_table(metric, styles["OpsBody"])
+        for metric in report.get("executive_snapshot", [])[:6]
+    ]
     while len(snapshot_cards) < 6:
         snapshot_cards.append(Table([[""]], colWidths=[58 * mm]))
     snapshot_grid = Table(
@@ -16348,64 +17489,91 @@ def _build_operational_report_pdf_response(report: dict):
         colWidths=[58 * mm, 58 * mm, 58 * mm],
         hAlign="LEFT",
     )
-    snapshot_grid.setStyle(TableStyle([
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-    ]))
+    snapshot_grid.setStyle(
+        TableStyle(
+            [
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ]
+        )
+    )
     story.append(snapshot_grid)
     story.append(Spacer(1, 5 * mm))
 
     story.append(Paragraph("DÉCISIONS PRIORITAIRES", styles["OpsKicker"]))
     story.append(Paragraph("Actions prioritaires", styles["OpsSection"]))
     for item in report.get("priority_actions", []):
-        story.append(Paragraph(
-            f"<b>{_pdf_esc(_ops_report_clean_text(item['title']))}</b> - {_pdf_esc(_ops_report_clean_text(item['severity_label']))}",
-            styles["OpsBody"],
-        ))
-        story.append(Paragraph(
-            _pdf_text(f"{item['reason']} Impact: {item['impact']} Horizon: {item['horizon']}"),
-            styles["OpsMeta"],
-        ))
+        story.append(
+            Paragraph(
+                f"<b>{_pdf_esc(_ops_report_clean_text(item['title']))}</b> - {_pdf_esc(_ops_report_clean_text(item['severity_label']))}",
+                styles["OpsBody"],
+            )
+        )
+        story.append(
+            Paragraph(
+                _pdf_text(
+                    f"{item['reason']} Impact: {item['impact']} Horizon: {item['horizon']}"
+                ),
+                styles["OpsMeta"],
+            )
+        )
         story.append(Spacer(1, 2 * mm))
 
     story.append(PageBreak())
     story.append(Paragraph("PRESSION TERRITORIALE", styles["OpsKicker"]))
     story.append(Paragraph("Zones sous tension", styles["OpsSection"]))
-    story.append(Paragraph(_pdf_text(report["territorial_pressure"]["summary"]), styles["OpsBody"]))
+    story.append(
+        Paragraph(
+            _pdf_text(report["territorial_pressure"]["summary"]), styles["OpsBody"]
+        )
+    )
 
-    zones_rows = [["Zone", "Couverture", "Ouvertes", "Actifs", "Disponibles", "Densité"]]
+    zones_rows = [
+        ["Zone", "Couverture", "Ouvertes", "Actifs", "Disponibles", "Densité"]
+    ]
     for zone in report.get("territorial_pressure", {}).get("zones", [])[:5]:
-        zones_rows.append([
-            zone["city"],
-            _ops_report_clean_text(zone["coverage_label"]),
-            str(zone["open_requests"]),
-            str(zone["active_intervenants"]),
-            str(zone["available_intervenants"]),
-            str(zone["density"]),
-        ])
+        zones_rows.append(
+            [
+                zone["city"],
+                _ops_report_clean_text(zone["coverage_label"]),
+                str(zone["open_requests"]),
+                str(zone["active_intervenants"]),
+                str(zone["available_intervenants"]),
+                str(zone["density"]),
+            ]
+        )
     if len(zones_rows) > 1:
         zones_table = Table(
             zones_rows,
             colWidths=[42 * mm, 38 * mm, 24 * mm, 24 * mm, 28 * mm, 24 * mm],
             repeatRows=1,
         )
-        zones_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
-            ("FONTNAME", (0, 0), (-1, 0), pdf_font_bold),
-            ("FONTNAME", (0, 1), (-1, -1), pdf_font_regular),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("LEADING", (0, 0), (-1, -1), 10),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f6f8fb")]),
-            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-            ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ]))
+        zones_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
+                    ("FONTNAME", (0, 0), (-1, 0), pdf_font_bold),
+                    ("FONTNAME", (0, 1), (-1, -1), pdf_font_regular),
+                    ("FONTSIZE", (0, 0), (-1, -1), 8),
+                    ("LEADING", (0, 0), (-1, -1), 10),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor("#f6f8fb")],
+                    ),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]
+            )
+        )
         story.append(Spacer(1, 2 * mm))
         story.append(zones_table)
 
@@ -16413,31 +17581,41 @@ def _build_operational_report_pdf_response(report: dict):
     story.append(Paragraph("ANALYSE AUTOMATIQUE", styles["OpsKicker"]))
     story.append(Paragraph("Analyse automatique", styles["OpsSection"]))
     for item in report.get("automatic_analysis", []):
-        story.append(Paragraph(
-            f"<b>{_pdf_esc(_ops_report_clean_text(item['title']))}</b> - {_pdf_esc(_ops_report_clean_text(item['risk']))}",
-            styles["OpsBody"],
-        ))
-        story.append(Paragraph(
-            _pdf_text(f"{item['text']} Horizon: {item['horizon']}."),
-            styles["OpsMeta"],
-        ))
+        story.append(
+            Paragraph(
+                f"<b>{_pdf_esc(_ops_report_clean_text(item['title']))}</b> - {_pdf_esc(_ops_report_clean_text(item['risk']))}",
+                styles["OpsBody"],
+            )
+        )
+        story.append(
+            Paragraph(
+                _pdf_text(f"{item['text']} Horizon: {item['horizon']}."),
+                styles["OpsMeta"],
+            )
+        )
         story.append(Spacer(1, 2 * mm))
 
     story.append(Spacer(1, 4 * mm))
     story.append(Paragraph("RECOMMANDATIONS", styles["OpsKicker"]))
-    story.append(Paragraph("Recommandations de direction opérationnelle", styles["OpsSection"]))
+    story.append(
+        Paragraph("Recommandations de direction opérationnelle", styles["OpsSection"])
+    )
     for item in report["recommendations"]:
-        story.append(Paragraph(
-            f"<b>{_pdf_esc(_ops_report_clean_text(item['title']))}</b> - {_pdf_esc(_ops_report_clean_text(item['priority']))}",
-            styles["OpsBody"],
-        ))
-        story.append(Paragraph(
-            _pdf_text(
-                f"{item['description']} Impact potentiel: {item['impact']} "
-                f"Niveau de risque: {item['risk']} Horizon: {item['horizon']}"
-            ),
-            styles["OpsMeta"],
-        ))
+        story.append(
+            Paragraph(
+                f"<b>{_pdf_esc(_ops_report_clean_text(item['title']))}</b> - {_pdf_esc(_ops_report_clean_text(item['priority']))}",
+                styles["OpsBody"],
+            )
+        )
+        story.append(
+            Paragraph(
+                _pdf_text(
+                    f"{item['description']} Impact potentiel: {item['impact']} "
+                    f"Niveau de risque: {item['risk']} Horizon: {item['horizon']}"
+                ),
+                styles["OpsMeta"],
+            )
+        )
         story.append(Spacer(1, 2 * mm))
 
     story.append(Spacer(1, 4 * mm))
@@ -16445,35 +17623,43 @@ def _build_operational_report_pdf_response(report: dict):
     story.append(Paragraph("Conclusion opérationnelle", styles["OpsSection"]))
     conclusion = report.get("operational_conclusion", {})
     story.append(Paragraph(_pdf_text(conclusion.get("summary", "")), styles["OpsBody"]))
-    story.append(Paragraph(
-        _pdf_text(
-            f"Stabilité : {conclusion.get('stability', 'Stable')} | "
-            f"Risques: {', '.join(conclusion.get('main_risks', []))} | "
-            f"Recommandation principale : {conclusion.get('primary_recommendation', '')}"
-        ),
-        styles["OpsMeta"],
-    ))
+    story.append(
+        Paragraph(
+            _pdf_text(
+                f"Stabilité : {conclusion.get('stability', 'Stable')} | "
+                f"Risques: {', '.join(conclusion.get('main_risks', []))} | "
+                f"Recommandation principale : {conclusion.get('primary_recommendation', '')}"
+            ),
+            styles["OpsMeta"],
+        )
+    )
 
     story.append(Spacer(1, 5 * mm))
-    story.append(Paragraph("Détail des demandes créées sur la période", styles["OpsSection"]))
-    story.append(Paragraph(
-        _pdf_text(
-            "Ce tableau présente les demandes créées pendant la période sélectionnée. "
-            "Il ne représente pas nécessairement toutes les situations actuellement ouvertes."
-        ),
-        styles["OpsMeta"],
-    ))
+    story.append(
+        Paragraph("Détail des demandes créées sur la période", styles["OpsSection"])
+    )
+    story.append(
+        Paragraph(
+            _pdf_text(
+                "Ce tableau présente les demandes créées pendant la période sélectionnée. "
+                "Il ne représente pas nécessairement toutes les situations actuellement ouvertes."
+            ),
+            styles["OpsMeta"],
+        )
+    )
 
     rows = [["ID", "Titre", "Ville", "Statut", "Priorité", "Créée le"]]
     for item in report["items"][:80]:
-        rows.append([
-            f"#{item['id']}",
-            _ops_report_clean_text(item["title"][:42]),
-            _ops_report_clean_text(item["city"] or "-"),
-            _ops_report_clean_text(item["status"] or "-"),
-            _ops_report_clean_text(item["priority"] or "-"),
-            item["created_at"][:10] if item["created_at"] else "-",
-        ])
+        rows.append(
+            [
+                f"#{item['id']}",
+                _ops_report_clean_text(item["title"][:42]),
+                _ops_report_clean_text(item["city"] or "-"),
+                _ops_report_clean_text(item["status"] or "-"),
+                _ops_report_clean_text(item["priority"] or "-"),
+                item["created_at"][:10] if item["created_at"] else "-",
+            ]
+        )
 
     if len(rows) > 1:
         items_table = Table(
@@ -16481,43 +17667,62 @@ def _build_operational_report_pdf_response(report: dict):
             colWidths=[15 * mm, 62 * mm, 28 * mm, 28 * mm, 25 * mm, 28 * mm],
             repeatRows=1,
         )
-        items_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
-            ("FONTNAME", (0, 0), (-1, 0), pdf_font_bold),
-            ("FONTNAME", (0, 1), (-1, -1), pdf_font_regular),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("LEADING", (0, 0), (-1, -1), 10),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f6f8fb")]),
-            ("LEFTPADDING", (0, 0), (-1, -1), 6),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-            ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ]))
+        items_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0f2742")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8e2ee")),
+                    ("FONTNAME", (0, 0), (-1, 0), pdf_font_bold),
+                    ("FONTNAME", (0, 1), (-1, -1), pdf_font_regular),
+                    ("FONTSIZE", (0, 0), (-1, -1), 8),
+                    ("LEADING", (0, 0), (-1, -1), 10),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    (
+                        "ROWBACKGROUNDS",
+                        (0, 1),
+                        (-1, -1),
+                        [colors.white, colors.HexColor("#f6f8fb")],
+                    ),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                ]
+            )
+        )
         story.append(items_table)
     else:
         empty_table = Table(
-            [[Paragraph(
-                "Aucune situation n'est intégrée à cette édition du rapport pour le périmètre et la période retenus.",
-                styles["OpsBody"],
-            )]],
+            [
+                [
+                    Paragraph(
+                        "Aucune situation n'est intégrée à cette édition du rapport pour le périmètre et la période retenus.",
+                        styles["OpsBody"],
+                    )
+                ]
+            ],
             colWidths=[186 * mm],
         )
-        empty_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fbfdff")),
-            ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#d8e2ee")),
-            ("LEFTPADDING", (0, 0), (-1, -1), 12),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 12),
-            ("TOPPADDING", (0, 0), (-1, -1), 12),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
-        ]))
+        empty_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fbfdff")),
+                    ("BOX", (0, 0), (-1, -1), 0.6, colors.HexColor("#d8e2ee")),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 12),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+                    ("TOPPADDING", (0, 0), (-1, -1), 12),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 12),
+                ]
+            )
+        )
         story.append(empty_table)
 
     def _add_footer(canvas, doc):
         canvas.saveState()
-        _draw_brand_mark(canvas, 171 * mm, 270.5 * mm, 8 * mm, colors.HexColor("#9aabbb"))
+        _draw_brand_mark(
+            canvas, 171 * mm, 270.5 * mm, 8 * mm, colors.HexColor("#9aabbb")
+        )
         _draw_brand_mark(canvas, 94 * mm, 138 * mm, 22 * mm, colors.HexColor("#f2f5f8"))
 
         canvas.setStrokeColor(colors.HexColor("#d8e2ee"))
@@ -16547,7 +17752,7 @@ def _build_operational_report_pdf_response(report: dict):
         pdf_data,
         mimetype="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename=\"{filename}\"',
+            "Content-Disposition": f'attachment; filename="{filename}"',
             "Cache-Control": "no-store",
         },
     )
@@ -16659,8 +17864,7 @@ def _ops_report_clean_text(value: str) -> str:
     if chr(0xFFFD) not in repaired and repaired != text:
         text = repaired
     return (
-        text
-        .replace(" a ", " à ")
+        text.replace(" a ", " à ")
         .replace("Aucune evolution", "Aucune évolution")
         .replace("Analyse automatique", "Analyse automatique")
         .replace("Elevee", "Élevée")
@@ -16764,7 +17968,10 @@ def _ops_report_clean_text(value: str) -> str:
         .replace("insuffisanté", "insuffisante")
         .replace("stabilite", "stabilité")
         .replace("Stabilite", "Stabilité")
-        .replace("Situations en d?pass?ment de jalons de suivi.", "Situations en dépassement de jalons de suivi.")
+        .replace(
+            "Situations en d?pass?ment de jalons de suivi.",
+            "Situations en dépassement de jalons de suivi.",
+        )
         .replace("23 d?pass?ment(s) SLA", "23 dépassement(s) SLA")
         .replace("classee couverture faible", "classée « couverture faible »")
         .replace("Classee couverture faible", "Classée « couverture faible »")
@@ -16791,12 +17998,38 @@ def _ops_report_indicator_rows(report: dict) -> list[list[str]]:
         return str(row.get("delta_text") or fallback)
 
     rows = [
-        ["Situations ouvertes", _ops_report_format_number(requests_data.get("open", 0)), _lecture("open_requests", "Volume de suivi en cours.")],
-        ["Non assignées", _ops_report_format_number(requests_data.get("unassigned", 0)), _lecture("unassigned_requests", "Situations sans référent opérationnel.")],
-        ["SLA dépassés", _ops_report_format_number(sla_data.get("breach_count", 0)), _lecture("sla_breaches", "Jalons de suivi à surveiller.")],
-        ["Temps moyen de résolution", f"{_ops_report_format_number(sla_data.get('avg_resolution_hours', 0.0))} h", _lecture("avg_resolution_hours", "Délai moyen observé sur les clôtures.")],
-        ["Situations critiques", _ops_report_format_number(requests_data.get("critical", 0)), _lecture("critical_requests", "Cas prioritaires ouverts.")],
-        ["Charge opérationnelle", _ops_report_format_number((snapshot_map.get("operational_load") or {}).get("raw_value", 0)), _lecture("operational_load", "Situations ouvertes par intervenant actif.")],
+        [
+            "Situations ouvertes",
+            _ops_report_format_number(requests_data.get("open", 0)),
+            _lecture("open_requests", "Volume de suivi en cours."),
+        ],
+        [
+            "Non assignées",
+            _ops_report_format_number(requests_data.get("unassigned", 0)),
+            _lecture("unassigned_requests", "Situations sans référent opérationnel."),
+        ],
+        [
+            "SLA dépassés",
+            _ops_report_format_number(sla_data.get("breach_count", 0)),
+            _lecture("sla_breaches", "Jalons de suivi à surveiller."),
+        ],
+        [
+            "Temps moyen de résolution",
+            f"{_ops_report_format_number(sla_data.get('avg_resolution_hours', 0.0))} h",
+            _lecture("avg_resolution_hours", "Délai moyen observé sur les clôtures."),
+        ],
+        [
+            "Situations critiques",
+            _ops_report_format_number(requests_data.get("critical", 0)),
+            _lecture("critical_requests", "Cas prioritaires ouverts."),
+        ],
+        [
+            "Charge opérationnelle",
+            _ops_report_format_number(
+                (snapshot_map.get("operational_load") or {}).get("raw_value", 0)
+            ),
+            _lecture("operational_load", "Situations ouvertes par intervenant actif."),
+        ],
     ]
     return [
         [
@@ -16823,7 +18056,11 @@ def _ops_report_sla_level(item: dict) -> str:
     if reference is None:
         return "A surveiller"
     now_naive = datetime.now(UTC).replace(tzinfo=None)
-    ref_naive = reference.astimezone(UTC).replace(tzinfo=None) if getattr(reference, "tzinfo", None) else reference
+    ref_naive = (
+        reference.astimezone(UTC).replace(tzinfo=None)
+        if getattr(reference, "tzinfo", None)
+        else reference
+    )
     age_hours = (now_naive - ref_naive).total_seconds() / 3600.0
     if age_hours >= 72:
         return "Dépassé"
@@ -16887,7 +18124,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
             ws["A2"].alignment = Alignment(horizontal="left", vertical="center")
 
     def _style_section_row(ws, row_idx: int, label: str, end_col: int = 7):
-        ws.merge_cells(start_row=row_idx, start_column=1, end_row=row_idx, end_column=end_col)
+        ws.merge_cells(
+            start_row=row_idx, start_column=1, end_row=row_idx, end_column=end_col
+        )
         cell = ws.cell(row=row_idx, column=1)
         cell.value = label
         cell.fill = section_fill
@@ -16910,14 +18149,18 @@ def _build_operational_report_xlsx_bytes(report: dict):
             for cell in column_cells:
                 value = "" if cell.value is None else str(cell.value)
                 max_len = max(max_len, len(value))
-            ws.column_dimensions[get_column_letter(col_idx)].width = min(max(12, max_len + 2), max_width)
+            ws.column_dimensions[get_column_letter(col_idx)].width = min(
+                max(12, max_len + 2), max_width
+            )
 
     scope_name = report["scope"]["structure_name"] or "Structures supervisées"
     generated_label = _ops_report_format_datetime(report["generated_at"])
 
     ws = wb.active
     ws.title = "Synthèse exécutive"
-    _style_title(ws, "HelpChain - Rapport opérationnel", "Synthèse institutionnelle de pilotage")
+    _style_title(
+        ws, "HelpChain - Rapport opérationnel", "Synthèse institutionnelle de pilotage"
+    )
     ws["A4"] = "Période"
     ws["B4"] = f"{report['period']['days']} jours"
     ws["D4"] = "Périmètre"
@@ -16959,7 +18202,11 @@ def _build_operational_report_xlsx_bytes(report: dict):
     ws.cell(row=row_idx, column=2, value=str(zones_count))
     ws.cell(row=row_idx, column=3, value="Lecture territoriale")
     ws.cell(row=row_idx, column=4, value="Vigilance" if zones_count else "Stable")
-    ws.cell(row=row_idx, column=5, value=report.get("territorial_pressure", {}).get("summary", ""))
+    ws.cell(
+        row=row_idx,
+        column=5,
+        value=report.get("territorial_pressure", {}).get("summary", ""),
+    )
     for col_idx in range(1, 6):
         cell = ws.cell(row=row_idx, column=col_idx)
         cell.border = border
@@ -16984,7 +18231,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
     row_idx += 1
     for item in report.get("priority_actions", [])[:3]:
         values = [
-            _ops_report_labelize(item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS),
+            _ops_report_labelize(
+                item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS
+            ),
             item.get("title", ""),
             item.get("impact", ""),
             item.get("horizon", ""),
@@ -16996,7 +18245,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
             cell.font = body_font
             cell.alignment = Alignment(vertical="top", wrap_text=True)
             if col_idx == 1:
-                cell.fill = _severity_fill(str(item.get("severity") or item.get("severity_label") or "stable"))
+                cell.fill = _severity_fill(
+                    str(item.get("severity") or item.get("severity_label") or "stable")
+                )
         row_idx += 1
     ws.freeze_panes = "A9"
     ws.auto_filter.ref = f"A9:E{max(10, row_idx - 1)}"
@@ -17004,7 +18255,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
 
     ws = wb.create_sheet("Indicateurs opérationnels")
     _style_title(ws, "Indicateurs opérationnels", scope_name)
-    _style_header_row(ws, 4, ["Indicateur", "Valeur", "Évolution", "Lecture opérationnelle"])
+    _style_header_row(
+        ws, 4, ["Indicateur", "Valeur", "Évolution", "Lecture opérationnelle"]
+    )
     row_idx = 5
     for item in _ops_report_indicator_rows(report):
         for col_idx, value in enumerate(item, start=1):
@@ -17015,9 +18268,24 @@ def _build_operational_report_xlsx_bytes(report: dict):
             cell.alignment = Alignment(vertical="top", wrap_text=True)
         row_idx += 1
     extra_rows = [
-        ["Taux d’assignation", f"{_ops_report_format_number(report.get('sla', {}).get('assignment_rate', 0.0))} %", "", "Part des situations ouvertes déjà attribuées."],
-        ["Résolues <24h", f"{_ops_report_format_number(report.get('sla', {}).get('resolved_under_24h_rate', 0.0))} %", "", "Part des situations clôturées rapidement sur la période."],
-        ["Délai moyen d’assignation", f"{_ops_report_format_number(report.get('sla', {}).get('avg_assignment_hours', 0.0))} h", "", "Temps moyen entre la création et l’attribution."],
+        [
+            "Taux d’assignation",
+            f"{_ops_report_format_number(report.get('sla', {}).get('assignment_rate', 0.0))} %",
+            "",
+            "Part des situations ouvertes déjà attribuées.",
+        ],
+        [
+            "Résolues <24h",
+            f"{_ops_report_format_number(report.get('sla', {}).get('resolved_under_24h_rate', 0.0))} %",
+            "",
+            "Part des situations clôturées rapidement sur la période.",
+        ],
+        [
+            "Délai moyen d’assignation",
+            f"{_ops_report_format_number(report.get('sla', {}).get('avg_assignment_hours', 0.0))} h",
+            "",
+            "Temps moyen entre la création et l’attribution.",
+        ],
     ]
     for item in extra_rows:
         for col_idx, value in enumerate(item, start=1):
@@ -17033,7 +18301,16 @@ def _build_operational_report_xlsx_bytes(report: dict):
 
     ws = wb.create_sheet("Tensions territoriales")
     _style_title(ws, "Tensions territoriales", "Lecture territoriale consolidée")
-    territorial_headers = ["Zone", "Couverture", "Ouvertes", "Intervenants actifs", "Disponibles", "Niveau tension", "Score pression", "Lecture"]
+    territorial_headers = [
+        "Zone",
+        "Couverture",
+        "Ouvertes",
+        "Intervenants actifs",
+        "Disponibles",
+        "Niveau tension",
+        "Score pression",
+        "Lecture",
+    ]
     _style_header_row(ws, 4, territorial_headers)
     row_idx = 5
     for zone in report.get("territorial_pressure", {}).get("zones", []):
@@ -17063,7 +18340,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
 
     ws = wb.create_sheet("Actions prioritaires")
     _style_title(ws, "Actions prioritaires", "Pilotage et arbitrages recommandés")
-    _style_header_row(ws, 4, ["Priorité", "Action", "Impact", "Horizon", "Responsable recommandé"])
+    _style_header_row(
+        ws, 4, ["Priorité", "Action", "Impact", "Horizon", "Responsable recommandé"]
+    )
     row_idx = 5
     for item in report.get("priority_actions", []):
         horizon = item.get("horizon", "")
@@ -17074,7 +18353,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
         else:
             owner_hint = "Pilotage structure"
         values = [
-            _ops_report_labelize(item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS),
+            _ops_report_labelize(
+                item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS
+            ),
             item.get("title", ""),
             item.get("impact", ""),
             horizon,
@@ -17087,7 +18368,9 @@ def _build_operational_report_xlsx_bytes(report: dict):
             cell.font = body_font
             cell.alignment = Alignment(vertical="top", wrap_text=True)
             if col_idx == 1:
-                cell.fill = _severity_fill(str(item.get("severity") or item.get("severity_label") or "stable"))
+                cell.fill = _severity_fill(
+                    str(item.get("severity") or item.get("severity_label") or "stable")
+                )
         row_idx += 1
     ws.freeze_panes = "A4"
     ws.auto_filter.ref = f"A4:E{max(4, row_idx - 1)}"
@@ -17095,7 +18378,17 @@ def _build_operational_report_xlsx_bytes(report: dict):
 
     ws = wb.create_sheet("Situations opérationnelles")
     _style_title(ws, "Situations opérationnelles", "Liste de travail institutionnelle")
-    situation_headers = ["ID", "Titre métier", "Ville", "Statut lisible", "Priorité lisible", "Créée le", "Dernière activité", "Référent", "Niveau SLA"]
+    situation_headers = [
+        "ID",
+        "Titre métier",
+        "Ville",
+        "Statut lisible",
+        "Priorité lisible",
+        "Créée le",
+        "Dernière activité",
+        "Référent",
+        "Niveau SLA",
+    ]
     _style_header_row(ws, 4, situation_headers)
     row_idx = 5
     for item in report.get("items", []):
@@ -17105,8 +18398,16 @@ def _build_operational_report_xlsx_bytes(report: dict):
             item.get("city") or "-",
             _ops_report_labelize(item.get("status"), OPS_REPORT_STATUS_LABELS),
             _ops_report_labelize(item.get("priority"), OPS_REPORT_PRIORITY_LABELS),
-            _ops_report_format_datetime(item.get("created_at")) if item.get("created_at") else "-",
-            _ops_report_format_datetime(item.get("updated_at")) if item.get("updated_at") else "-",
+            (
+                _ops_report_format_datetime(item.get("created_at"))
+                if item.get("created_at")
+                else "-"
+            ),
+            (
+                _ops_report_format_datetime(item.get("updated_at"))
+                if item.get("updated_at")
+                else "-"
+            ),
             "Attribué" if item.get("owner_id") else "Non assigné",
             _ops_report_sla_level(item),
         ]
@@ -17130,7 +18431,11 @@ def _build_operational_report_xlsx_bytes(report: dict):
     for item in report.get("automatic_analysis", []):
         values = [
             item.get("title", ""),
-            _ops_report_labelize(item.get("severity"), OPS_REPORT_PRIORITY_LABELS) if item.get("severity") else "Stable",
+            (
+                _ops_report_labelize(item.get("severity"), OPS_REPORT_PRIORITY_LABELS)
+                if item.get("severity")
+                else "Stable"
+            ),
             item.get("risk", ""),
             item.get("horizon", ""),
             item.get("text", ""),
@@ -17162,9 +18467,18 @@ def _build_operational_report_xlsx_bytes(report: dict):
             cell.alignment = Alignment(vertical="top", wrap_text=True)
         row_idx += 1
     extra_defs = [
-        ("Couverture territoriale", "Niveau de présence opérationnelle visible sur une zone donnée."),
-        ("Charge opérationnelle", "Volume de situations ouvertes rapporté aux moyens mobilisables."),
-        ("SLA dépassé", "Situation dont le jalon de suivi attendu n’est plus respecté."),
+        (
+            "Couverture territoriale",
+            "Niveau de présence opérationnelle visible sur une zone donnée.",
+        ),
+        (
+            "Charge opérationnelle",
+            "Volume de situations ouvertes rapporté aux moyens mobilisables.",
+        ),
+        (
+            "SLA dépassé",
+            "Situation dont le jalon de suivi attendu n’est plus respecté.",
+        ),
     ]
     for label, definition in extra_defs:
         ws.cell(row=row_idx, column=1, value=label)
@@ -17212,14 +18526,18 @@ def _build_operational_report_csv_response(report: dict):
     writer = csv.writer(output, delimiter=";")
 
     writer.writerow(["Rapport opérationnel HelpChain"])
-    writer.writerow(["Périmètre", report["scope"]["structure_name"] or "Structures supervisées"])
+    writer.writerow(
+        ["Périmètre", report["scope"]["structure_name"] or "Structures supervisées"]
+    )
     writer.writerow(["Période", f'{report["period"]["days"]} jours'])
     writer.writerow(["Généré le", _ops_report_format_datetime(report["generated_at"])])
     writer.writerow(["Confidentialité", "Usage interne"])
     writer.writerow([])
 
     writer.writerow(["Synthèse exécutive"])
-    writer.writerow(["Niveau opérationnel", report["operational_conclusion"]["stability"]])
+    writer.writerow(
+        ["Niveau opérationnel", report["operational_conclusion"]["stability"]]
+    )
     writer.writerow(["Lecture exécutive courte", report["executive_summary"]])
     writer.writerow([])
 
@@ -17232,19 +18550,23 @@ def _build_operational_report_csv_response(report: dict):
     writer.writerow(["Répartition par catégorie"])
     writer.writerow(["Catégorie", "Volume"])
     for row in report["breakdowns"]["by_category"]:
-        writer.writerow([
-            _ops_report_labelize(row["category"], OPS_REPORT_CATEGORY_LABELS),
-            row["count"],
-        ])
+        writer.writerow(
+            [
+                _ops_report_labelize(row["category"], OPS_REPORT_CATEGORY_LABELS),
+                row["count"],
+            ]
+        )
     writer.writerow([])
 
     writer.writerow(["Répartition par statut"])
     writer.writerow(["Statut", "Volume"])
     for row in report["breakdowns"]["by_status"]:
-        writer.writerow([
-            _ops_report_labelize(row["status"], OPS_REPORT_STATUS_LABELS),
-            row["count"],
-        ])
+        writer.writerow(
+            [
+                _ops_report_labelize(row["status"], OPS_REPORT_STATUS_LABELS),
+                row["count"],
+            ]
+        )
     writer.writerow([])
 
     writer.writerow(["Définitions des indicateurs"])
@@ -17257,17 +18579,20 @@ def _build_operational_report_csv_response(report: dict):
         writer.writerow(["Actions prioritaires"])
         writer.writerow(["Priorité", "Action", "Impact", "Horizon"])
         for item in report["priority_actions"]:
-            writer.writerow([
-                _ops_report_labelize(item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS),
-                item.get("title", ""),
-                item.get("impact", ""),
-                item.get("horizon", ""),
-            ])
+            writer.writerow(
+                [
+                    _ops_report_labelize(
+                        item.get("severity_label"), OPS_REPORT_PRIORITY_LABELS
+                    ),
+                    item.get("title", ""),
+                    item.get("impact", ""),
+                    item.get("horizon", ""),
+                ]
+            )
 
     csv_body = output.getvalue()
     csv_body = (
-        csv_body
-        .replace(" a ", " à ")
+        csv_body.replace(" a ", " à ")
         .replace("Confidentialite", "Confidentialité")
         .replace("Synthese", "Synthèse")
         .replace("executive", "exécutive")
@@ -17314,8 +18639,6 @@ def _build_operational_report_csv_response(report: dict):
     )
 
 
-
-
 # --- Operational reports ---
 @admin_bp.get("/reports/operations/export.csv")
 @admin_required
@@ -17357,6 +18680,8 @@ def admin_operations_report_xlsx():
     )
 
     return _build_operational_report_xlsx_response(report)
+
+
 @admin_bp.get("/reports/operations/export.pdf")
 @admin_required
 @admin_role_required("readonly", "ops", "admin", "superadmin")
@@ -17390,6 +18715,7 @@ def admin_operations_report_pdf():
     )
 
     return _build_operational_report_pdf_response(report)
+
 
 @admin_bp.get("/reports/operations")
 @admin_required
@@ -17426,9 +18752,11 @@ def admin_operations_report():
         current_app.logger.exception("[OPS_REPORT] failed")
         raise
 
+
 # --- Ops Action Queue API v1 ---
-from flask import jsonify
 from datetime import datetime, timezone
+
+from flask import jsonify
 
 try:
     from backend.models import Request as OpsActionRequest
@@ -17456,22 +18784,24 @@ def admin_ops_action_queue_v1():
         score = int(getattr(r, "risk_score", 0) or 0)
         owner = getattr(r, "owner_id", None)
 
-        items.append({
-            "id": r.id,
-            "title": getattr(r, "title", None) or f"Demande #{r.id}",
-            "city": getattr(r, "city", None) or "",
-            "priority": getattr(r, "priority", None) or "",
-            "status": getattr(r, "status", None) or "open",
-            "risk_score": score,
-            "risk_level": getattr(r, "risk_level", None) or "",
-            "category": getattr(r, "category", None) or "",
-            "owner_id": owner,
-            "recommendation": (
-                "Escalader" if score >= 85 else
-                "Assigner / relancer" if not owner else
-                "Suivre"
-            ),
-        })
+        items.append(
+            {
+                "id": r.id,
+                "title": getattr(r, "title", None) or f"Demande #{r.id}",
+                "city": getattr(r, "city", None) or "",
+                "priority": getattr(r, "priority", None) or "",
+                "status": getattr(r, "status", None) or "open",
+                "risk_score": score,
+                "risk_level": getattr(r, "risk_level", None) or "",
+                "category": getattr(r, "category", None) or "",
+                "owner_id": owner,
+                "recommendation": (
+                    "Escalader"
+                    if score >= 85
+                    else "Assigner / relancer" if not owner else "Suivre"
+                ),
+            }
+        )
 
     return jsonify({"ok": True, "items": items})
 
@@ -17499,12 +18829,16 @@ def admin_ops_stream_v1():
 @admin_required
 @admin_role_required("ops", "admin", "superadmin")
 def admin_ops_action_queue_assign_v1(request_id):
-    r = _scope_requests(OpsActionRequest.query).filter(
-        OpsActionRequest.id == int(request_id)
-    ).first_or_404()
+    r = (
+        _scope_requests(OpsActionRequest.query)
+        .filter(OpsActionRequest.id == int(request_id))
+        .first_or_404()
+    )
 
     current_admin_id = session.get("admin_user_id") or session.get("user_id")
-    current_admin_name = session.get("admin_username") or session.get("username") or "admin"
+    current_admin_name = (
+        session.get("admin_username") or session.get("username") or "admin"
+    )
 
     if hasattr(r, "owner_id"):
         r.owner_id = current_admin_id
@@ -17518,19 +18852,23 @@ def admin_ops_action_queue_assign_v1(request_id):
     db.session.commit()
 
     try:
-        publish_admin_stream_event({
-            "type": "request_assigned",
-            "request_id": r.id,
-        })
+        publish_admin_stream_event(
+            {
+                "type": "request_assigned",
+                "request_id": r.id,
+            }
+        )
     except Exception:
         current_app.logger.exception(
             "admin_ops_action_queue_assign_publish_failed request_id=%s",
             r.id,
         )
 
-    return jsonify({
-        "ok": True,
-        "request_id": r.id,
-        "assignee": current_admin_name,
-        "status": getattr(r, "status", None),
-    })
+    return jsonify(
+        {
+            "ok": True,
+            "request_id": r.id,
+            "assignee": current_admin_name,
+            "status": getattr(r, "status", None),
+        }
+    )
