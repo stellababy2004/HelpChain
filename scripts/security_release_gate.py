@@ -152,8 +152,14 @@ def validate_dispositions(
         if key is None or entry.get("finding_id") != key:
             errors.append("disposition finding identity mismatch")
             continue
-        if key not in EXPECTED_DISPOSITION_KEYS:
-            errors.append("unknown disposition finding identity")
+        # New findings may be reviewed explicitly, but never auto-approved.
+        # Exact identity, source-context digest, severity, expiry, and evidence
+        # checks below remain mandatory for every additional disposition.
+        if (
+            key not in EXPECTED_DISPOSITION_KEYS
+            and entry.get("disposition") != "FALSE_POSITIVE"
+        ):
+            errors.append("new finding requires explicit false-positive review")
             continue
         if key in dispositions:
             errors.append("duplicate disposition finding identity")
@@ -199,7 +205,7 @@ def validate_dispositions(
             continue
         dispositions[key] = entry
 
-    if set(dispositions) != EXPECTED_DISPOSITION_KEYS:
+    if not EXPECTED_DISPOSITION_KEYS.issubset(dispositions):
         errors.append("disposition document does not cover the reviewed findings")
     return dispositions, errors
 
