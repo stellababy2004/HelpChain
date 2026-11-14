@@ -90,9 +90,7 @@ class ExtendedDispositionTests(unittest.TestCase):
                 _, errors = gate.validate_dispositions(
                     self.document, repository=REPOSITORY
                 )
-        self.assertIn(
-            "disposition evidence document is missing or invalid", errors
-        )
+        self.assertIn("disposition evidence document is missing or invalid", errors)
 
     def test_new_finding_cannot_use_historical_fixture_disposition(self):
         self.entry["disposition"] = "OWNER_REVIEWED_HISTORICAL_TEST_FIXTURE"
