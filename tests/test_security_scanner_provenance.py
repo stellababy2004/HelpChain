@@ -470,6 +470,105 @@ class ScannerProvenanceTests(unittest.TestCase):
                 self.assertFalse(result["status"]["report_valid"])
                 self.client.analyses = original
 
+    def codeql_alerts(self, alerts):
+        original = self.client.get_paginated
+        self.alert_paths = []
+
+        def pages(path, key):
+            if key == "alerts":
+                self.alert_paths.append(path)
+                if "ref=refs%2Fpull%2F216%2Fmerge" not in path:
+                    return []
+                return copy.deepcopy(alerts)
+            return original(path, key)
+
+        self.client.get_paginated = pages
+
+    def codeql_result(self):
+        return gate.collect_codeql_analysis(
+            self.client, run=self.run, head_sha=MERGE, repository=REPO
+        )
+
+    def codeql_alert(self):
+        return {
+            "number": 3857,
+            "tool": {"name": "CodeQL"},
+            "rule": {"id": "py/polynomial-redos", "security_severity_level": "high"},
+            "most_recent_instance": {
+                "commit_sha": MERGE,
+                "ref": "refs/pull/216/merge",
+                "analysis_key": ".github/workflows/codeql-analysis.yml:analyze",
+                "category": "/language:python",
+                "location": {"path": "sample.py", "start_line": 12},
+            },
+        }
+
+    def test_codeql_alerts_use_verified_ref_instead_of_sha(self):
+        self.client.analyses[0]["results_count"] = 1
+        self.codeql_alerts([self.codeql_alert()])
+        result = self.codeql_result()
+        self.assertEqual(result["status"]["findings_count"], 1)
+        self.assertEqual(result["findings"][0]["severity"], "high")
+        self.assertEqual(result["findings"][0]["line"], 12)
+        self.assertEqual(len(self.alert_paths), 1)
+
+    def test_collected_codeql_high_cannot_produce_pass(self):
+        self.codeql_alerts([self.codeql_alert()])
+        result = self.codeql_result()
+        spec = importlib.util.spec_from_file_location(
+            "gate_evaluator",
+            Path(__file__).resolve().parents[1] / "scripts/security_release_gate.py",
+        )
+        evaluator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(evaluator)
+        baseline = json.loads(
+            (
+                Path(__file__).resolve().parents[1]
+                / "docs/security/security-release-gate-baseline.json"
+            ).read_text()
+        )
+        result["status"]["evidence_class"] = "workflow_artifact"
+        report = evaluator.evaluate(
+            baseline,
+            [],
+            api_ok=True,
+            scanner_status=[result["status"]],
+            repository=REPO,
+            head_sha=MERGE,
+            base_sha=BASE,
+            scanner_findings=result["findings"],
+        )
+        self.assertEqual(report["status"], "FAIL")
+        self.assertEqual(report["blocking_scanner_finding_count"], 1)
+
+    def test_positive_codeql_analysis_cannot_accept_empty_evidence(self):
+        self.client.analyses[0]["results_count"] = 1
+        self.codeql_alerts([])
+        with self.assertRaisesRegex(gate.GitHubApiError, "no open alert evidence"):
+            self.codeql_result()
+
+    def test_other_scanner_alerts_are_not_codeql_findings(self):
+        other = self.codeql_alert()
+        other["tool"]["name"] = "Bandit"
+        self.codeql_alerts([other])
+        self.assertEqual(self.codeql_result()["findings"], [])
+
+    def test_codeql_alert_provenance_mismatch_is_rejected(self):
+        for field, value in (
+            ("commit_sha", HEAD),
+            ("ref", "refs/pull/999/merge"),
+            ("analysis_key", ".github/workflows/other.yml:analyze"),
+            ("category", "/language:javascript"),
+        ):
+            with self.subTest(field=field):
+                alert = self.codeql_alert()
+                alert["most_recent_instance"][field] = value
+                original = self.client.get_paginated
+                self.codeql_alerts([alert])
+                with self.assertRaisesRegex(gate.GitHubApiError, "stale or mismatched"):
+                    self.codeql_result()
+                self.client.get_paginated = original
+
     def test_ambiguous_codeql_analyses(self):
         self.client.analyses *= 2
         result = gate.collect_codeql_analysis(
