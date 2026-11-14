@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import csv
 import html
@@ -6588,6 +6588,8 @@ def superadmin_user_reset_access(member_id):
 
     from ..services.admin_access_reset import TTL_MINUTES, create_access_reset
 
+    row = None
+    raw = None
     try:
         row, raw = create_access_reset(
             member,
@@ -8945,7 +8947,8 @@ def admin_create_structure():
         msg = str(exc)
         if msg in {"structure_name_exists", "admin_email_exists"}:
             return jsonify({"error": msg}), 400
-        raise
+        current_app.logger.exception("Unexpected structure creation error")
+        return jsonify({"error": "internal_error"}), 500
 
     return jsonify(
         {
@@ -17165,10 +17168,6 @@ def admin_pro_access_reject(pro_id: int):
     db.session.commit()
     flash("Rejected.", "success")
     return redirect(url_for("admin.admin_pro_access_detail", pro_id=pro_id), code=303)
-    active_sla_queue = bool(queue == "sla" and sla_kind)
-    active_sla_filter_label = (
-        SLA_QUEUE_KINDS.get(sla_kind, "") if active_sla_queue else ""
-    )
 
 
 from . import admin_calendar as _admin_calendar  # noqa: F401
