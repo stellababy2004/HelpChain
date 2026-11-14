@@ -10276,22 +10276,13 @@ def edit_volunteer(id):
         ):
             abort(403)
 
-    import logging
-
     if request.method == "POST":
-        logging.warning(f"[DEBUG] POST data: {request.form}")
         volunteer.name = request.form["name"]
         volunteer.email = request.form["email"]
         volunteer.phone = request.form["phone"]
         volunteer.location = request.form["location"]
         volunteer.skills = request.form.get("skills", "")
-        logging.warning(
-            f"[DEBUG] Before commit: name={volunteer.name}, email={volunteer.email}, phone={volunteer.phone}, location={volunteer.location}, skills={volunteer.skills}"
-        )
         db.session.commit()
-        logging.warning(
-            f"[DEBUG] After commit: id={volunteer.id}, email={volunteer.email}"
-        )
         flash(_("Changes saved!"), "success")
         return redirect(url_for("admin.admin_volunteers"))
 
