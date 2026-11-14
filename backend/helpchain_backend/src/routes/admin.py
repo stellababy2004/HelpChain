@@ -6637,10 +6637,7 @@ def superadmin_user_reset_access(member_id):
         )
         flash("Lien de réinitialisation envoyé.", "success")
 
-    return redirect(
-        request.referrer or _default_admin_landing_url(actor),
-        code=303,
-    )
+    return redirect(_default_admin_landing_url(actor), code=303)
 
 
 @admin_bp.post("/platform/users/<int:member_id>/reset-mfa")
@@ -6675,10 +6672,7 @@ def superadmin_user_reset_mfa(member_id):
 
     flash("MFA réinitialisée. L’administrateur devra l’activer à nouveau.", "success")
 
-    return redirect(
-        request.referrer or _default_admin_landing_url(actor),
-        code=303,
-    )
+    return redirect(_default_admin_landing_url(actor), code=303)
 
 
 @admin_bp.post("/platform/users/<int:member_id>/temporary-access")
