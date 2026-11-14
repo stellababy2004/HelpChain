@@ -78,7 +78,10 @@ class ExtendedDispositionTests(unittest.TestCase):
         self.assertTrue(
             any(
                 x["reason"]
-                in {"finding context changed", "trustworthy finding context unavailable"}
+                in {
+                    "finding context changed",
+                    "trustworthy finding context unavailable",
+                }
                 for x in unresolved
             )
         )
