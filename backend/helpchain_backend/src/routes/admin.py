@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import csv
 import html
@@ -3113,7 +3113,7 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     if mfa_globally_enabled and role_requires_mfa and not user_has_mfa:
         session["mfa_required"] = True
         session.modified = True
-        current_app.logger.warning("[SESSION] %s", dict(session))
+
         flash(_("MFA setup is required for your role before continuing."), "warning")
         return redirect(
             url_for(
@@ -3124,7 +3124,7 @@ def _complete_admin_login(user: AdminUser, next_url: str, *, via: str):
     if mfa_globally_enabled and user_has_mfa:
         session["mfa_required"] = True
         session.modified = True
-        current_app.logger.warning("[SESSION] %s", dict(session))
+
         return redirect(
             url_for(
                 "admin.admin_mfa_verify",
@@ -6111,7 +6111,7 @@ def _finalize_admin_session(
     session.pop("email_2fa_code", None)
     session.pop("email_2fa_expires", None)
     session.modified = True
-    current_app.logger.warning("[SESSION] %s", dict(session))
+
     target = _next_url_for_admin_user(user, next_url)
     return redirect(target or fallback_url, code=303)
 
@@ -6700,13 +6700,13 @@ def superadmin_user_temporary_access(member_id):
     delivery_channel = (request.form.get("delivery_channel") or "").strip()
     if len(reason) < 10 or len(reason) > 500:
         flash("Une raison brève et précise est requise.", "warning")
-        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+        return redirect(_default_admin_landing_url(actor), code=303)
     if not identity_confirmed or delivery_channel not in TEMPORARY_ACCESS_CHANNELS:
         flash(
             "Confirmez l’identité et le canal de remise préalablement validé.",
             "warning",
         )
-        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+        return redirect(_default_admin_landing_url(actor), code=303)
     if not nonce or nonce != session.get("temporary_access_nonce"):
         abort(400)
 
@@ -6746,7 +6746,7 @@ def superadmin_user_temporary_access(member_id):
         db.session.rollback()
         current_app.logger.exception("Temporary admin access generation failed")
         flash("Impossible de générer l’accès temporaire.", "danger")
-        return redirect(request.referrer or _default_admin_landing_url(actor), code=303)
+        return redirect(_default_admin_landing_url(actor), code=303)
 
     response = make_response(
         render_template(
@@ -8206,8 +8206,9 @@ def admin_api_dashboard():
             ),
             200,
         )
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        current_app.logger.exception("Admin KPI retrieval failed")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 SLA_HOURS_DEFAULT = 12
