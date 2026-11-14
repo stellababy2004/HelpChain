@@ -1,14 +1,16 @@
-name: Trusted Gate PR216 Diagnostic
+name: Security Gate Identity Validation
 
 on:
   push:
-    branches: [fix/trusted-gate-pr-context-20261112]
+    branches: [fix/security-gate-identity-20261114]
     paths:
       - .github/workflows/security-release-gate-diagnostic.yml
       - .github/workflows/security-release-gate-trusted.yml
       - scripts/security_release_gate_collect.py
       - tests/test_trusted_gate_pr_identity.py
       - tests/test_security_scanner_provenance.py
+      - tests/test_security_gate_workflows.py
+      - .github/workflows/security-release-gate.yml
 
 permissions:
   contents: read
@@ -17,7 +19,7 @@ permissions:
   security-events: read
 
 concurrency:
-  group: trusted-gate-pr216-diagnostic
+  group: security-gate-identity-validation
   cancel-in-progress: true
 
 jobs:
@@ -37,15 +39,18 @@ jobs:
           set -euo pipefail
           python -B -m unittest discover -s tests -p test_trusted_gate_pr_identity.py -v
           python -B -m unittest discover -s tests -p test_security_scanner_provenance.py -v
+          python -B -m unittest discover -s tests -p test_security_gate_workflows.py -v
 
       - name: Diagnose real PR identity and scanner evidence
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          EXPECTED_HEAD: ${{ github.sha }}
+          EXPECTED_SOURCE: ${{ github.sha }}
+          EXPECTED_HEAD: a22ceef96c12317206f772a4c2deadca2c052229
         run: |
           set -euo pipefail
           python -B - <<'PYTHON'
+          import base64
           import importlib.util
           import json
           import os
@@ -61,10 +66,10 @@ jobs:
           repo = os.environ["GITHUB_REPOSITORY"]
           expected_head = os.environ["EXPECTED_HEAD"]
           client = collector.GitHubClient(os.environ["GH_TOKEN"], repo)
-          report = {"status": "FAIL", "pr_number": 216, "source_sha": expected_head}
+          report = {"status": "INCOMPLETE", "pr_number": 211, "source_sha": os.environ["EXPECTED_SOURCE"]}
           errors = []
           try:
-              if subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip() != expected_head:
+              if subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip() != os.environ["EXPECTED_SOURCE"]:
                   raise RuntimeError("diagnostic source commit mismatch")
               workflows = client.get_paginated("actions/workflows", "workflows")
               selected_workflows = {}
@@ -77,12 +82,12 @@ jobs:
               # Wait only for scans belonging to this exact, current PR revision.
               deadline = time.monotonic() + 1200
               while True:
-                  pr = client.get("pulls/216")
+                  pr = client.get("pulls/211")
                   if (pr.get("state") != "open" or pr.get("head", {}).get("sha") != expected_head
-                          or pr.get("head", {}).get("ref") != "fix/trusted-gate-pr-context-20261112"
+                          or pr.get("head", {}).get("ref") != "feature/org-admin-dashboard-branding"
                           or pr.get("head", {}).get("repo", {}).get("full_name") != repo
                           or pr.get("base", {}).get("repo", {}).get("full_name") != repo):
-                      raise RuntimeError("PR216 identity is stale or mismatched")
+                      raise RuntimeError("PR211 identity is stale or mismatched")
                   merge_sha = pr.get("merge_commit_sha")
                   if not collector.SHA1_PATTERN.fullmatch(str(merge_sha)):
                       raise RuntimeError("PR merge SHA is missing")
@@ -106,16 +111,20 @@ jobs:
                       raise RuntimeError(f"incomplete upstream scans: {pending}")
                   time.sleep(30)
 
-              base_sha = pr["base"]["sha"]
+              metadata_base = pr["base"]["sha"]
               commit = client.get(f"commits/{merge_sha}")
               parents = [item.get("sha") for item in commit.get("parents", [])]
+              if len(parents) != 2:
+                  raise RuntimeError("scanned merge requires two ordered parents")
+              base_sha = parents[0]
+              collector.verify_base_ancestry(client, pr, base_sha, metadata_base)
               report.update(pr_head_sha=expected_head, base_sha=base_sha,
                             merge_sha=merge_sha, ordered_parents=parents, upstream_runs=[])
               if commit.get("sha") != merge_sha or parents != [base_sha, expected_head]:
                   raise RuntimeError("PR merge SHA or ordered parents mismatch")
 
               analyses = client.get_paginated(
-                  "code-scanning/analyses?ref=refs/pull/216/merge", "analyses"
+                  "code-scanning/analyses?ref=refs/pull/211/merge", "analyses"
               )
               report["codeql_analyses"] = [
                   {key: item.get(key) for key in (
@@ -137,7 +146,7 @@ jobs:
                   try:
                       identity = collector.resolve_pr_identity(client, run)
                       item["identity"] = identity
-                      if (identity["pr_number"] != 216 or identity["pr_head_sha"] != expected_head
+                      if (identity["pr_number"] != 211 or identity["pr_head_sha"] != expected_head
                               or identity["base_sha"] != base_sha):
                           raise RuntimeError("resolved PR identity mismatch")
                       scanned_shas.add(identity["scanned_sha"])
@@ -149,7 +158,7 @@ jobs:
               elif not errors:
                   scanned_sha = next(iter(scanned_shas))
                   report["scanned_sha"] = scanned_sha
-                  evidence_root = Path(os.environ["RUNNER_TEMP"]) / "pr216-diagnostic-evidence"
+                  evidence_root = Path(os.environ["RUNNER_TEMP"]) / "pr211-diagnostic-evidence"
                   evidence_root.mkdir()
                   evidence = collector.collect_required_evidence(
                       client, head_sha=scanned_sha, pr_head_sha=expected_head, base_sha=base_sha,
@@ -167,19 +176,41 @@ jobs:
                               or status.get("report_present") is not True
                               or status.get("head_sha") != scanned_sha):
                           errors.append(f"invalid or mismatched scanner evidence: {status}")
-                  final_pr = client.get("pulls/216")
+                  evaluator_spec = importlib.util.spec_from_file_location(
+                      "evaluator", "scripts/security_release_gate.py"
+                  )
+                  evaluator = importlib.util.module_from_spec(evaluator_spec)
+                  evaluator_spec.loader.exec_module(evaluator)
+                  def trusted_json(path):
+                      source = client.get(f"contents/{path}?ref={base_sha}")
+                      if source.get("type") != "file" or source.get("path") != path:
+                          raise RuntimeError("invalid trusted policy source")
+                      return json.loads(base64.b64decode(source["content"]))
+                  baseline = trusted_json("docs/security/security-release-gate-baseline.json")
+                  dispositions = trusted_json("docs/security/PR-203-FINDINGS-DISPOSITIONS-2026-11-11.json")
+                  alerts = client.get_paginated(
+                      f"code-scanning/alerts?state=open&ref={scanned_sha}", "alerts"
+                  )
+                  verdict = evaluator.evaluate(
+                      baseline, alerts, api_ok=not errors, scanner_status=statuses,
+                      repository=repo, head_sha=scanned_sha, base_sha=base_sha,
+                      scanner_findings=evidence["findings"], dispositions=dispositions,
+                  )
+                  report["candidate_security_verdict"] = verdict
+                  report["authoritative"] = False
+                  final_pr = client.get("pulls/211")
                   if (final_pr.get("state") != "open" or final_pr["head"]["sha"] != expected_head
-                          or final_pr["base"]["sha"] != base_sha
+                          or final_pr["base"]["sha"] != metadata_base
                           or final_pr.get("merge_commit_sha") != merge_sha):
                       errors.append("PR changed during diagnostic collection")
           except Exception as exc:
               errors.append(f"{type(exc).__name__}: {exc}")
           report["errors"] = errors
-          report["status"] = "FAIL" if errors else "PASS"
+          report["status"] = "INCOMPLETE" if errors else "IDENTITY VERIFIED"
           Path("trusted-gate-diagnostic.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
           print(json.dumps(report, indent=2), flush=True)
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
-              summary.write("## PR216 Trusted Gate diagnostic\n\n```json\n")
+              summary.write("## PR211 candidate-code validation (non-authoritative)\n\n```json\n")
               summary.write(json.dumps(report, indent=2) + "\n```\n")
           raise SystemExit(1 if errors else 0)
           PYTHON
@@ -188,7 +219,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: trusted-gate-pr216-diagnostic
+          name: security-gate-identity-validation
           path: trusted-gate-diagnostic.json
           if-no-files-found: error
           retention-days: 7

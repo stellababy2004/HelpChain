@@ -2,8 +2,8 @@
 
 import copy
 import importlib.util
-from pathlib import Path
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location(
@@ -28,6 +28,14 @@ class Client:
         self.commit = {"sha": MERGE, "parents": [{"sha": BASE}, {"sha": HEAD}]}
 
     def get(self, path):
+        if path == "":
+            return {"full_name": REPO, "default_branch": "main"}
+        if path == "branches/main":
+            return {"commit": {"sha": BASE}}
+        if path.startswith("compare/"):
+            older, newer = path[8:].split("...")
+            # Only BASE is trusted in these relationship fixtures.
+            return {"status": "diverged", "base_commit": {"sha": older}}
         if path == "pulls/214":
             return copy.deepcopy(self.pr)
         if path == f"commits/{MERGE}":
@@ -64,7 +72,7 @@ class TrustedIdentityTests(unittest.TestCase):
             "state": "open",
             "merged": False,
             "head": {"sha": HEAD, "repo": {"full_name": REPO}},
-            "base": {"sha": BASE, "repo": {"full_name": REPO}},
+            "base": {"sha": BASE, "ref": "main", "repo": {"full_name": REPO}},
             "merge_commit_sha": MERGE,
         }
         self.client = Client(self.run, self.pr)
@@ -127,6 +135,20 @@ class TrustedIdentityTests(unittest.TestCase):
         self.run["head_sha"] = MERGE
         self.pr.update(state="closed", merged=True)
         self.pr["base"]["sha"] = MERGE
+        original = self.client.get
+
+        def get(path):
+            if path == "branches/main":
+                return {"commit": {"sha": MERGE}}
+            if path == f"compare/{BASE}...{MERGE}":
+                return {
+                    "status": "ahead",
+                    "base_commit": {"sha": BASE},
+                    "merge_base_commit": {"sha": BASE},
+                }
+            return original(path)
+
+        self.client.get = get
         self.assertEqual(self.resolve()["base_sha"], BASE)
 
     def test_closed_unmerged_pr(self):

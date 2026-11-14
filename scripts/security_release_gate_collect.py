@@ -16,6 +16,7 @@ import zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 
 SCANNERS = (
     "CodeQL Advanced Security",
@@ -124,7 +125,8 @@ class GitHubClient:
 
     def get(self, path: str):
         request = urllib.request.Request(
-            f"https://api.github.com/repos/{self.repository}/{path.lstrip('/')}",
+            f"https://api.github.com/repos/{self.repository}"
+            + (f"/{path.lstrip('/')}" if path else ""),
             headers={
                 "Authorization": f"Bearer {self.token}",
                 "Accept": "application/vnd.github+json",
@@ -1003,6 +1005,48 @@ def write(path: Path, value) -> None:
     path.write_text(json.dumps(value), encoding="utf-8")
 
 
+def verify_base_ancestry(
+    client: GitHubClient, pr: dict[str, Any], scan_base: str, snapshot_base: str | None
+) -> None:
+    """Anchor the scan parent and PR snapshots to the repository default branch."""
+    repository = client.get("")
+    branch = repository.get("default_branch")
+    if (
+        repository.get("full_name") != client.repository
+        or not isinstance(branch, str)
+        or not branch
+        or pr.get("base", {}).get("ref") != branch
+    ):
+        raise GitHubApiError("PR base is not the trusted default branch")
+    trusted = (
+        client.get(f"branches/{quote(branch, safe='')}").get("commit", {}).get("sha")
+    )
+    if not isinstance(trusted, str) or not SHA1_PATTERN.fullmatch(trusted):
+        raise GitHubApiError("missing or invalid trusted branch SHA")
+
+    def ancestor(older: str, newer: str) -> bool:
+        if older == newer:
+            return True
+        comparison = client.get(f"compare/{older}...{newer}")
+        return (
+            comparison.get("status") in {"ahead", "identical"}
+            and comparison.get("merge_base_commit", {}).get("sha") == older
+            and comparison.get("base_commit", {}).get("sha") == older
+        )
+
+    if not ancestor(scan_base, trusted):
+        raise GitHubApiError("scanned base is outside trusted default branch ancestry")
+    for base in dict.fromkeys([pr["base"]["sha"], snapshot_base]):
+        if base is None:
+            continue
+        if not isinstance(base, str) or not SHA1_PATTERN.fullmatch(base):
+            raise GitHubApiError("invalid PR base snapshot SHA")
+        if not ancestor(base, trusted) or not (
+            ancestor(base, scan_base) or ancestor(scan_base, base)
+        ):
+            raise GitHubApiError("PR base snapshot has unrelated trusted ancestry")
+
+
 def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, Any]:
     """Resolve current PR metadata and prove its relationship to the scanned commit."""
     sha = run.get("head_sha", "")
@@ -1024,6 +1068,7 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
         candidates = client.get_paginated(f"commits/{sha}/pulls", "pulls")
     # Every candidate is re-read to reject stale list metadata and moved heads.
     matches = []
+    rejections = []
     for candidate in candidates:
         number = candidate.get("number")
         if type(number) is not int or number <= 0:
@@ -1039,18 +1084,23 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             or not SHA1_PATTERN.fullmatch(str(head))
             or not SHA1_PATTERN.fullmatch(str(base))
         ):
+            rejections.append(f"PR #{number}: repository or SHA mismatch")
             continue
         merged = pr.get("state") == "closed" and pr.get("merged") is True
         if pr.get("state") != "open" and not merged:
+            rejections.append(f"PR #{number}: closed without merging")
             continue
+        snapshot_base = None
         if attached:
             snapshot_head = candidate.get("head", {}).get("sha")
             snapshot_base = candidate.get("base", {}).get("sha")
             if snapshot_head is not None and snapshot_head != head:
-                continue
-            if not merged and snapshot_base is not None and snapshot_base != base:
+                rejections.append(f"PR #{number}: attached PR head snapshot changed")
                 continue
         if sha not in {head, pr.get("merge_commit_sha")}:
+            rejections.append(
+                f"PR #{number}: run metadata SHA is unrelated to current PR"
+            )
             continue
         provenance = scanner_run_provenance(client, run, pr)
         scanned_sha = provenance["scanned_sha"]
@@ -1064,6 +1114,7 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             scan_base = base
         elif scanned_sha == pr.get("merge_commit_sha"):
             if provenance["scanned_ref"] != f"refs/pull/{number}/merge":
+                rejections.append(f"PR #{number}: merge checkout ref mismatch")
                 continue
             commit = client.get(f"commits/{scanned_sha}")
             parents = [item.get("sha") for item in commit.get("parents", [])]
@@ -1073,12 +1124,16 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
                 or parents[1] != head
                 or not SHA1_PATTERN.fullmatch(str(parents[0]))
                 or parents[0] == head
-                or (not merged and parents[0] != base)
             ):
+                rejections.append(f"PR #{number}: scanned merge parents mismatch")
                 continue
             scan_base = parents[0]
         else:
+            rejections.append(
+                f"PR #{number}: checkout commit is unrelated to current PR"
+            )
             continue
+        verify_base_ancestry(client, pr, scan_base, snapshot_base)
         filename = SCANNER_WORKFLOWS[run["name"]][0]
         workflow_path = f".github/workflows/{filename}"
         trusted_source = client.get(f"contents/{workflow_path}?ref={scan_base}")
@@ -1105,8 +1160,10 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             scanned_sha=scanned_sha,
             scanned_commit=commit,
             workflow_run_head_sha=sha,
+            base_ancestry_verified=True,
         )
         if not validation["valid"]:
+            rejections.append(f"PR #{number}: " + ", ".join(validation["errors"]))
             continue
         matches.append(
             {
@@ -1120,7 +1177,8 @@ def resolve_pr_identity(client: GitHubClient, run: dict[str, Any]) -> dict[str, 
             }
         )
     if len(matches) != 1:
-        raise GitHubApiError("missing, stale, or ambiguous PR identity")
+        detail = "; ".join(rejections) or f"{len(matches)} valid PR matches"
+        raise GitHubApiError(f"missing, stale, or ambiguous PR identity: {detail}")
     return matches[0]
 
 
@@ -1138,6 +1196,7 @@ def validate_workflow_run(
     scanned_sha: str | None = None,
     scanned_commit: dict[str, Any] | None = None,
     workflow_run_head_sha: str | None = None,
+    base_ancestry_verified: bool = False,
 ) -> dict[str, Any]:
     errors = []
     scanned_sha = scanned_sha or head_sha
@@ -1176,9 +1235,11 @@ def validate_workflow_run(
             errors.append("scanned merge relationship mismatch")
     elif merged:
         errors.append("merged PR requires merge commit evidence")
-    if (not merged or scanned_sha == head_sha) and pr.get("base", {}).get(
-        "sha"
-    ) != base_sha:
+    if (
+        not base_ancestry_verified
+        and (not merged or scanned_sha == head_sha)
+        and pr.get("base", {}).get("sha") != base_sha
+    ):
         errors.append("PR base SHA mismatch")
     if pr.get("head", {}).get("sha") != head_sha:
         errors.append("PR head SHA mismatch")

@@ -72,29 +72,69 @@ jobs:
           EVENT_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.sha || inputs.head_sha }}
           EVENT_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
           EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_NAME: ${{ github.event_name }}
         shell: bash
         run: |
-          set -uo pipefail
-          valid=true
+          set -euo pipefail
           for value in "$EVENT_HEAD_SHA" "$EVENT_BASE_SHA"; do
-            if ! [[ "$value" =~ ^[0-9a-fA-F]{40}$ ]]; then valid=false; fi
+            if ! [[ "$value" =~ ^[0-9a-fA-F]{40}$ ]]; then
+              echo "::error::Invalid scanned or event base SHA"
+              exit 1
+            fi
           done
-          if [[ "$valid" == true ]] && git cat-file -e "$EVENT_BASE_SHA^{commit}" 2>/dev/null && git show "$EVENT_BASE_SHA:docs/security/security-release-gate-baseline.json" > trusted-baseline.json; then
-            echo "baseline_source=trusted-base-commit" >> "$GITHUB_OUTPUT"
-          else
-            printf '{"status":"INCOMPLETE","error":"trusted baseline is unavailable at the supplied base commit"}\n' > trusted-baseline.json
-            echo "baseline_source=unavailable" >> "$GITHUB_OUTPUT"
-          fi
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
             if ! [[ "$EVENT_PR_HEAD_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
               echo "::error::Invalid PR head SHA"
               exit 1
             fi
-            parents="$(git rev-list --parents -n 1 "$EVENT_HEAD_SHA")"
-            if [[ "$parents" != "$EVENT_HEAD_SHA $EVENT_BASE_SHA $EVENT_PR_HEAD_SHA" ]]; then
-              echo "::error::Scanned merge commit does not match the PR base and head"
+            [[ "$(git rev-parse HEAD)" == "$EVENT_HEAD_SHA" ]]
+            read -r scanned scan_base scan_head extra <<< "$(git rev-list --parents -n 1 "$EVENT_HEAD_SHA")"
+            if [[ "$scanned" != "$EVENT_HEAD_SHA" || -n "${extra:-}" || "$scan_head" != "$EVENT_PR_HEAD_SHA" || ! "$scan_base" =~ ^[0-9a-fA-F]{40}$ || "$scan_base" == "$scan_head" ]]; then
+              echo "::error::Scanned merge has invalid ordered base/head parents"
               exit 1
             fi
+            gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" > reporting-pr.json
+            python - <<'PYTHON'
+          import json
+          import os
+          pr = json.load(open("reporting-pr.json", encoding="utf-8"))
+          assert pr.get("number") == int(os.environ["PR_NUMBER"]), "PR number mismatch"
+          assert pr.get("state") == "open", "PR is no longer open"
+          assert pr.get("head", {}).get("sha") == os.environ["EVENT_PR_HEAD_SHA"], "PR head changed"
+          assert pr.get("merge_commit_sha") == os.environ["EVENT_HEAD_SHA"], "PR merge commit changed"
+          assert pr.get("base", {}).get("ref") == os.environ["DEFAULT_BRANCH"], "PR targets a different branch"
+          assert pr.get("base", {}).get("repo", {}).get("full_name") == os.environ["GITHUB_REPOSITORY"], "PR base repository mismatch"
+          PYTHON
+            current_base="$(python -c "import json; print(json.load(open('reporting-pr.json'))['base']['sha'])")"
+            [[ "$current_base" =~ ^[0-9a-fA-F]{40}$ ]]
+            git fetch --no-tags origin "refs/heads/${DEFAULT_BRANCH}"
+            trusted_base="$(git rev-parse FETCH_HEAD)"
+            if ! git merge-base --is-ancestor "$scan_base" "$trusted_base" || ! git merge-base --is-ancestor "$EVENT_BASE_SHA" "$trusted_base"; then
+              echo "::error::Merge parent or event base is outside trusted default branch ancestry"
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$EVENT_BASE_SHA" "$scan_base" && ! git merge-base --is-ancestor "$scan_base" "$EVENT_BASE_SHA"; then
+              echo "::error::Event base and scanned base have unrelated ancestry"
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$current_base" "$trusted_base"; then
+              echo "::error::Current PR base is outside trusted default branch ancestry"
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$current_base" "$scan_base" && ! git merge-base --is-ancestor "$scan_base" "$current_base"; then
+              echo "::error::Current PR base and scanned base have unrelated ancestry"
+              exit 1
+            fi
+            EVENT_BASE_SHA="$scan_base"
+          fi
+          if git show "$EVENT_BASE_SHA:docs/security/security-release-gate-baseline.json" > trusted-baseline.json; then
+            echo "baseline_source=trusted-base-commit" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Trusted baseline is unavailable at verified base commit"
+            exit 1
           fi
           echo "head_sha=$EVENT_HEAD_SHA" >> "$GITHUB_OUTPUT"
           echo "pr_head_sha=$EVENT_PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
