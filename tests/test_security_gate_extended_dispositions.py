@@ -1,4 +1,4 @@
-"""Fail-closed regression tests for extensible finding dispositions."""
+"""Fail-closed regression tests for additional finding dispositions."""
 
 import importlib.util
 import unittest
@@ -13,12 +13,13 @@ SPEC = importlib.util.spec_from_file_location(
 gate = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(gate)
 
+REPOSITORY = "stellababy2004/HelpChain"
+
 
 class ExtendedDispositionTests(unittest.TestCase):
     def setUp(self):
-        self.key = "codeql|py/unused-import|backend/models.py|1"
         self.entry = {
-            "finding_id": self.key,
+            "finding_id": "codeql|py/unused-import|backend/models.py|1",
             "scanner": "CodeQL",
             "rule": "py/unused-import",
             "path": "backend/models.py",
@@ -26,13 +27,13 @@ class ExtendedDispositionTests(unittest.TestCase):
             "disposition": "FALSE_POSITIVE",
             "expected_severity": "unclassified",
             "context_digest": "sha256:" + "a" * 64,
-            "rationale": "Explicit owner review; illustrative test evidence only.",
+            "rationale": "Explicit owner review; test evidence only.",
             "evidence_ref": "docs/security/PR-224-SECURITY-GATE-REVIEW-2026-11-14.md",
             "expires_on": "2027-11-14",
         }
         self.document = {
             "schema_version": 1,
-            "repository": "stellababy2004/HelpChain",
+            "repository": REPOSITORY,
             "approval_model": "solo_owner_review",
             "independent_review": False,
             "owner": {
@@ -42,73 +43,53 @@ class ExtendedDispositionTests(unittest.TestCase):
             },
             "dispositions": [self.entry],
         }
-
-    def test_unreviewed_finding_remains_unresolved(self):
-        with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
-            recognized, unresolved, errors = gate.apply_dispositions(
-                [
-                    {
-                        "scanner": "CodeQL",
-                        "rule": "py/unused-import",
-                        "path": "backend/models.py",
-                        "line": 1,
-                        "severity": "unclassified",
-                    }
-                ],
-                {**self.document, "dispositions": []},
-                repository="stellababy2004/HelpChain",
-            )
-        self.assertFalse(recognized)
-        self.assertTrue(unresolved)
-        self.assertTrue(errors)
-
-    def test_additional_review_requires_exact_source_digest(self):
-        finding = {
+        self.finding = {
             "scanner": "CodeQL",
             "rule": "py/unused-import",
             "path": "backend/models.py",
             "line": 1,
             "severity": "unclassified",
         }
+
+    def test_unreviewed_finding_remains_unresolved(self):
+        self.document["dispositions"] = []
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
             recognized, unresolved, errors = gate.apply_dispositions(
-                [finding], self.document, repository="stellababy2004/HelpChain"
+                [self.finding], self.document, repository=REPOSITORY
             )
         self.assertFalse(recognized)
-        self.assertTrue(
-            any(
-                x["reason"]
-                in {
-                    "finding context changed",
-                    "trustworthy finding context unavailable",
-                }
-                for x in unresolved
+        self.assertTrue(unresolved)
+        self.assertTrue(errors)
+
+    def test_additional_review_requires_exact_source_digest(self):
+        with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
+            recognized, unresolved, errors = gate.apply_dispositions(
+                [self.finding], self.document, repository=REPOSITORY
             )
-        )
+        self.assertFalse(recognized)
+        self.assertTrue(unresolved)
         self.assertFalse(errors)
 
     def test_new_finding_cannot_use_historical_fixture_disposition(self):
         self.entry["disposition"] = "OWNER_REVIEWED_HISTORICAL_TEST_FIXTURE"
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
             _, errors = gate.validate_dispositions(
-                self.document, repository="stellababy2004/HelpChain"
+                self.document, repository=REPOSITORY
             )
         self.assertIn("new finding requires explicit false-positive review", errors)
 
     def test_blocking_severity_never_accepted(self):
-        self.entry["expected_severity"] = "unclassified"
-        finding = {
-            "scanner": "CodeQL",
-            "rule": "py/unused-import",
-            "path": "backend/models.py",
-            "line": 1,
-            "severity": "high",
-        }
-        with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()), patch.object(
-            gate, "finding_context_digest", return_value=self.entry["context_digest"]
+        self.finding["severity"] = "high"
+        with (
+            patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()),
+            patch.object(
+                gate,
+                "finding_context_digest",
+                return_value=self.entry["context_digest"],
+            ),
         ):
             recognized, unresolved, _ = gate.apply_dispositions(
-                [finding], self.document, repository="stellababy2004/HelpChain"
+                [self.finding], self.document, repository=REPOSITORY
             )
         self.assertFalse(recognized)
         self.assertEqual(
@@ -119,7 +100,7 @@ class ExtendedDispositionTests(unittest.TestCase):
         self.document["dispositions"].append(dict(self.entry))
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
             _, errors = gate.validate_dispositions(
-                self.document, repository="stellababy2004/HelpChain"
+                self.document, repository=REPOSITORY
             )
         self.assertIn("duplicate disposition finding identity", errors)
 
@@ -127,8 +108,7 @@ class ExtendedDispositionTests(unittest.TestCase):
         self.entry["expires_on"] = "2026-01-01"
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
             _, errors = gate.validate_dispositions(
-                self.document, repository="stellababy2004/HelpChain",
-                today=date(2026, 11, 14),
+                self.document, repository=REPOSITORY, today=date(2026, 11, 14)
             )
         self.assertIn("disposition is expired", errors)
 
