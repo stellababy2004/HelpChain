@@ -11,8 +11,7 @@ import pytest
 from flask import Flask, request
 
 ADMIN_SOURCE = (
-    Path(__file__).resolve().parents[1]
-    / "backend/helpchain_backend/src/routes/admin.py"
+    Path(__file__).resolve().parents[1] / "backend/helpchain_backend/src/routes/admin.py"
 )
 
 
@@ -60,7 +59,8 @@ def test_external_and_out_of_scope_next_urls_are_rejected(redirects, candidate):
 
 
 @pytest.mark.parametrize(
-    "candidate", ["/admin", "/admin/dashboard", "/ops", "/ops/workspace"]
+    "candidate",
+    ["/admin", "/admin/dashboard", "/ops", "/ops/workspace"],
 )
 def test_allowed_local_admin_paths_remain_usable(redirects, candidate):
     assert redirects(candidate) == candidate
