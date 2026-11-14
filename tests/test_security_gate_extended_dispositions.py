@@ -70,6 +70,30 @@ class ExtendedDispositionTests(unittest.TestCase):
         self.assertTrue(unresolved)
         self.assertFalse(errors)
 
+    def test_valid_reviewed_finding_is_recognized(self):
+        with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
+            with patch.object(
+                gate, "finding_context_digest",
+                return_value=self.entry["context_digest"],
+            ):
+                with patch.object(Path, "is_file", return_value=True):
+                    recognized, unresolved, errors = gate.apply_dispositions(
+                        [self.finding], self.document, repository=REPOSITORY
+                    )
+        self.assertEqual(len(recognized), 1)
+        self.assertFalse(unresolved)
+        self.assertFalse(errors)
+
+    def test_missing_evidence_document_is_rejected(self):
+        with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
+            with patch.object(Path, "is_file", return_value=False):
+                _, errors = gate.validate_dispositions(
+                    self.document, repository=REPOSITORY
+                )
+        self.assertIn(
+            "disposition evidence document is missing or invalid", errors
+        )
+
     def test_new_finding_cannot_use_historical_fixture_disposition(self):
         self.entry["disposition"] = "OWNER_REVIEWED_HISTORICAL_TEST_FIXTURE"
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
