@@ -73,16 +73,16 @@ class ExtendedDispositionTests(unittest.TestCase):
     def test_new_finding_cannot_use_historical_fixture_disposition(self):
         self.entry["disposition"] = "OWNER_REVIEWED_HISTORICAL_TEST_FIXTURE"
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
-            _, errors = gate.validate_dispositions(
-                self.document, repository=REPOSITORY
-            )
+            _, errors = gate.validate_dispositions(self.document, repository=REPOSITORY)
         self.assertIn("new finding requires explicit false-positive review", errors)
 
     def test_blocking_severity_never_accepted(self):
         self.finding["severity"] = "high"
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
             with patch.object(
-                gate, "finding_context_digest", return_value=self.entry["context_digest"]
+                gate,
+                "finding_context_digest",
+                return_value=self.entry["context_digest"],
             ):
                 recognized, unresolved, _ = gate.apply_dispositions(
                     [self.finding], self.document, repository=REPOSITORY
@@ -95,9 +95,7 @@ class ExtendedDispositionTests(unittest.TestCase):
     def test_duplicate_review_identity_is_rejected(self):
         self.document["dispositions"].append(dict(self.entry))
         with patch.object(gate, "EXPECTED_DISPOSITION_KEYS", set()):
-            _, errors = gate.validate_dispositions(
-                self.document, repository=REPOSITORY
-            )
+            _, errors = gate.validate_dispositions(self.document, repository=REPOSITORY)
         self.assertIn("duplicate disposition finding identity", errors)
 
     def test_expired_review_is_rejected(self):
