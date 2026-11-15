@@ -57,7 +57,8 @@ def main():
         lines.append("- None")
     lines += ["", "## Failed or incomplete recent workflow runs (first 100)"]
     problematic = [
-        r for r in runs
+        r
+        for r in runs
         if r["status"] != "completed"
         or r["conclusion"] not in ("success", "skipped", "neutral")
     ]
