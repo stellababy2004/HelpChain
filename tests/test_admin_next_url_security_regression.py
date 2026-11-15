@@ -3,6 +3,7 @@
 Extract only the function definitions from admin.py so these checks do not
 require initializing the database or importing the entire admin blueprint.
 """
+
 import ast
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
