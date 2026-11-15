@@ -1,6 +1,10 @@
-﻿import pytest
+from types import SimpleNamespace
+import pytest
 
-from backend.helpchain_backend.src.routes.admin import _safe_next_url
+from backend.helpchain_backend.src.routes.admin import (
+    _next_url_for_admin_user,
+    _safe_next_url,
+)
 
 
 @pytest.mark.parametrize(
@@ -27,13 +31,6 @@ def test_unsafe_admin_next_urls_are_rejected(app, candidate):
 def test_valid_internal_next_urls_are_allowed(app, candidate):
     with app.test_request_context("/admin/login"):
         assert _safe_next_url(candidate) == candidate
-
-
-from types import SimpleNamespace
-
-from backend.helpchain_backend.src.routes.admin import (
-    _next_url_for_admin_user,
-)
 
 
 @pytest.mark.parametrize(
