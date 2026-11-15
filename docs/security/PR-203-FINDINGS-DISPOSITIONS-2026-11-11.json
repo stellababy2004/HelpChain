@@ -87,7 +87,7 @@
       "expected_severity": "unclassified",
       "disposition": "FALSE_POSITIVE",
       "rationale": "Owner-approved 2026-11-15: request.remote_addr fallback literal is returned as an IP identity string for admin audit and lockout; it does not bind a listening socket. Residual risk: missing remote_addr groups requests under one fallback identity; review this behavior separately.",
-      "evidence_ref": "docs/security/PR-211-B104-DISPOSITION-PROPOSAL-2026-11-14.json",
+      "evidence_ref": "docs/security/PR-229-ADMIN-B104-OWNER-REVIEW-2026-11-15.md#decision-2026-11-15",
       "expires_on": "2027-11-15"
     }
   ]
