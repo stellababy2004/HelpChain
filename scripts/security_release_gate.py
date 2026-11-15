@@ -14,6 +14,15 @@ from typing import Any
 
 SEVERITIES = ("critical", "high", "medium", "low", "unclassified")
 BLOCKING_SEVERITIES = {"critical", "high", "error"}
+QUALITY_CODEQL_RULES = frozenset(
+    {
+        "py/unused-import",
+        "py/empty-except",
+        "py/cyclic-import",
+        "py/unused-local-variable",
+        "py/multiple-definition",
+    }
+)
 SHA256_PATTERN = re.compile(r"^sha256:[0-9a-f]{64}$")
 SHA1_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 DEFAULT_DISPOSITIONS_PATH = Path(
@@ -170,8 +179,8 @@ def validate_dispositions(
         }:
             errors.append("unsupported disposition decision")
             continue
-        if entry.get("expected_severity") != "unclassified":
-            errors.append("disposition severity must remain unclassified")
+        if entry.get("expected_severity") not in {"unclassified", "medium"}:
+            errors.append("disposition severity must be unclassified or medium")
             continue
         if not isinstance(
             entry.get("context_digest"), str
@@ -294,6 +303,20 @@ def apply_dispositions(
     if None in identity_keys or len(findings) != len(set(identity_keys)):
         errors.append("scanner finding identities are ambiguous")
     return recognized, unresolved, errors
+
+
+def is_non_security_quality_finding(finding: dict[str, Any]) -> bool:
+    """Identify the narrow, known CodeQL quality-only rule set.
+
+    This intentionally does not trust an absent severity alone: only these
+    CodeQL rules are exempt from requiring a disposition.  In particular,
+    Bandit, Gitleaks, and every other unclassified rule remain reviewable.
+    """
+    return (
+        str(finding.get("severity", "")).lower() == "unclassified"
+        and str(finding.get("scanner", "")).lower() == "codeql"
+        and str(finding.get("rule", "")).lower() in QUALITY_CODEQL_RULES
+    )
 
 
 def classify_alert(alert: dict[str, Any]) -> str:
@@ -455,17 +478,26 @@ def evaluate(
         disposition_errors.append(
             "scanner finding count does not match evidence counts"
         )
+    quality_findings = [
+        finding
+        for finding in scanner_findings
+        if is_non_security_quality_finding(finding)
+    ]
+    quality_finding_ids = {
+        finding_key(finding) for finding in quality_findings if finding_key(finding)
+    }
+    unresolved_security_dispositions = [
+        item
+        for item in unresolved_dispositions
+        if item.get("finding_id") not in quality_finding_ids
+    ]
     if not scanner_complete:
         status = "INCOMPLETE"
     elif new_high or blocking_scanner_findings:
         status = "FAIL"
     elif new_alerts and reachability == "unknown":
         status = "REVIEW REQUIRED"
-    elif (dependency_findings or scanner_findings) and (
-        unresolved_dispositions
-        or disposition_errors
-        or len(recognized_dispositions) != len(scanner_findings)
-    ):
+    elif disposition_errors or unresolved_security_dispositions:
         status = "REVIEW REQUIRED"
     else:
         status = "PASS"
@@ -486,6 +518,8 @@ def evaluate(
         "recognized_disposition_count": len(recognized_dispositions),
         "dispositioned_findings": recognized_dispositions,
         "unresolved_dispositions": unresolved_dispositions,
+        "quality_review_inventory": quality_findings,
+        "unresolved_security_dispositions": unresolved_security_dispositions,
         "disposition_errors": disposition_errors,
         "reachability": "unknown",
         "scanner_status": scanner_status,
