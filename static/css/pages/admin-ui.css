@@ -22900,3 +22900,52 @@ body.hc-page-admin .hc-admin-shellbar__logout{
     grid-row: 3;
   }
 }
+
+
+/* Organization branding: override legacy narrow shell title constraints. */
+body.hc-page-admin .hc-admin-shellbar__brand--organization,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__brand--organization {
+  width: auto;
+  inline-size: auto;
+  flex: 0 1 auto !important;
+  max-width: min(100%, 620px) !important;
+  min-width: 0;
+}
+body.hc-page-admin .hc-admin-shellbar__title--organization,
+body[data-hc-page^="/ops"] .hc-admin-shellbar__title--organization {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: 100% !important;
+  min-width: 0;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  font-size: .98rem !important;
+  line-height: 1.2 !important;
+  text-wrap: auto;
+}
+.hc-admin-shellbar__organization-logo {
+  display: block;
+  width: auto;
+  max-width: 112px;
+  height: 56px;
+  object-fit: contain;
+  flex: 0 0 auto;
+  border-radius: 6px;
+}
+.hc-admin-shellbar__organization-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  body.hc-page-admin .hc-admin-shellbar__brand--organization,
+  body[data-hc-page^="/ops"] .hc-admin-shellbar__brand--organization {
+    max-width: 100% !important;
+  }
+  .hc-admin-shellbar__organization-logo {
+    max-width: 76px;
+    height: 44px;
+  }
+}

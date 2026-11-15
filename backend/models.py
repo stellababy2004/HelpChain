@@ -964,6 +964,23 @@ class Structure(db.Model):
     )
 
 
+
+
+class OrganizationLogo(db.Model):
+    """Persist a small, sanitized organization logo in PostgreSQL."""
+
+    __tablename__ = "organization_logos"
+
+    structure_id = db.Column(
+        db.Integer,
+        db.ForeignKey("structures.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    png_data = db.Column(db.LargeBinary, nullable=False)
+    updated_at = db.Column(db.DateTime, nullable=False, default=utc_now, onupdate=utc_now)
+
+
+
 class StructureService(db.Model):
     __tablename__ = "structure_services"
 

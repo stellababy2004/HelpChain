@@ -14,6 +14,56 @@
     </div>
   </div>
 
+  <section class="card mb-4" aria-labelledby="hc-org-branding-title">
+    <div class="card-header"><strong id="hc-org-branding-title">{{ _('Identité de votre organisation') }}</strong></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('admin.admin_team_organization_name') }}" class="row g-2 align-items-end mb-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-8">
+          <label class="form-label" for="hc-org-display-name">{{ _('Nom affiché de l\'organisation') }}</label>
+          <input class="form-control" id="hc-org-display-name" name="organization_name" type="text" maxlength="120" required value="{{ current_user.structure.name if current_user.structure else '' }}">
+          <div class="form-text">{{ _('Le nom légal enregistré reste inchangé.') }}</div>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-outline-primary" type="submit">{{ _('Enregistrer le nom') }}</button>
+        </div>
+      </form>
+      <p class="text-muted small">{{ _('Choisissez un logo et vérifiez son aperçu avant de l’enregistrer.') }}</p>
+      <form method="post" action="{{ url_for('admin.admin_team_logo_upload') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3 align-items-start">
+        <div class="col-md-4">
+          <label class="form-label" for="hc-org-logo-file">{{ _('Choisir un logo (PNG, JPG ou WebP)') }}</label>
+          <input class="form-control" id="hc-org-logo-file" name="logo" required type="file" accept="image/png,image/jpeg,image/webp">
+          <div class="form-text" id="hc-org-logo-error" role="status" aria-live="polite">{{ _('Maximum 2 Mo.') }}</div>
+        </div>
+        <div class="col-md-4">
+          <div style="width:144px;height:144px;max-width:100%;border:1px solid #cbd5e1;border-radius:12px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center">
+            <img id="hc-org-logo-preview" alt="Aperçu du logo" hidden style="width:100%;height:100%;object-fit:contain;cursor:grab;touch-action:none">
+            {% if organization_logo_exists %}
+            <img id="hc-org-logo-saved" src="{{ url_for('admin.admin_team_logo') }}" alt="Logo actuel de votre organisation" style="width:100%;height:100%;object-fit:contain">
+            {% endif %}
+            <span id="hc-org-logo-placeholder" aria-hidden="true" style="font-size:48px" {% if organization_logo_exists %}hidden{% endif %}>🏢</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label" for="hc-org-logo-zoom">{{ _('Taille du logo') }}</label>
+          <input class="form-range" id="hc-org-logo-zoom" type="range" min="50" max="150" value="100" disabled>
+          <button type="button" class="btn btn-outline-secondary btn-sm" id="hc-org-logo-reset" disabled>{{ _('Réinitialiser') }}</button>
+          <p class="small text-muted mt-2">{{ _('Glissez le logo pour le centrer dans le cadre.') }}</p>
+          <p class="small text-muted mt-2 mb-0">{{ _('La position et la taille du logo seront conservées après l’enregistrement.') }}</p>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm mt-3" type="submit">{{ _('Enregistrer le logo') }}</button>
+      </form>
+      <form method="post" action="{{ url_for('admin.admin_team_logo_delete') }}" class="mt-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-danger btn-sm">{{ _('Supprimer le logo') }}</button>
+      </form>
+    </div>
+  </section>
+  <script defer src="{{ url_for('static', filename='js/organization-logo-preview.js') }}"></script>
+
   <section class="card mb-4">
     <div class="card-header">
       <strong>Inviter un membre</strong>

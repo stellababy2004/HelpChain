@@ -20519,3 +20519,46 @@ msgstr "Европейска рамка за хостинг"
 
 msgid "Cadre RGPD"
 msgstr "Рамка за съответствие с GDPR"
+
+msgid "Identité de votre organisation"
+msgstr "Идентичност на вашата организация"
+
+msgid "Nom affiché de l'organisation"
+msgstr "Показвано име на организацията"
+
+msgid "Le nom légal enregistré reste inchangé."
+msgstr "Регистрираното юридическо наименование остава непроменено."
+
+msgid "Enregistrer le nom"
+msgstr "Запазване на името"
+
+msgid "Choisissez un logo et vérifiez son aperçu avant de l’enregistrer."
+msgstr "Изберете лого и проверете визуализацията му, преди да го запазите."
+
+msgid "Choisir un logo (PNG, JPG ou WebP)"
+msgstr "Изберете лого (PNG, JPG или WebP)"
+
+msgid "Maximum 2 Mo."
+msgstr "Максимум 2 MB."
+
+msgid "Taille du logo"
+msgstr "Размер на логото"
+
+msgid "Glissez le logo pour le centrer dans le cadre."
+msgstr "Плъзнете логото, за да го центрирате в рамката."
+
+msgid "Le déplacement dans l’aperçu n’est pas conservé après l’enregistrement."
+msgstr "Позицията във визуализацията не се запазва."
+
+msgid "Enregistrer le logo"
+msgstr "Запазване на логото"
+
+msgid "Supprimer le logo"
+msgstr "Изтриване на логото"
+
+msgid ""
+"La position et la taille du logo seront conservées après l’enregistrement."
+msgstr "Позицията и размерът на логото ще се запазят след записване."
+
+msgid "Invalid code. Attempts remaining: %(count)s."
+msgstr "Невалиден код. Оставащи опити: %(count)s."

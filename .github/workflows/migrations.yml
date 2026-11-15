@@ -1,4 +1,4 @@
-﻿name: Migration Safety
+name: Migration Safety
 
 on:
   push:
@@ -40,6 +40,11 @@ jobs:
             BASE="${{ github.event.pull_request.base.sha }}"
           else
             BASE="${{ github.event.before }}"
+            if [[ -z "$BASE" || "$BASE" =~ ^0+$ ]]; then
+              echo "Initial branch push: compare against main"
+              git fetch origin main
+              BASE="$(git merge-base HEAD origin/main)"
+            fi
           fi
 
           git diff --name-only --diff-filter=AM "$BASE" "${{ github.sha }}" -- "migrations/versions/*.py" > changed_migrations.txt

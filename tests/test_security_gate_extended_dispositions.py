@@ -149,7 +149,7 @@ class ExtendedDispositionTests(unittest.TestCase):
             "scanner": "Bandit",
             "rule": "B104",
             "path": "backend/helpchain_backend/src/routes/admin.py",
-            "line": 2148,
+            "line": 2423,
             "severity": "unclassified",
         }
         recognized, unresolved, errors = gate.apply_dispositions(
