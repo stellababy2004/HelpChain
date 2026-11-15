@@ -2417,9 +2417,9 @@ def require_admin_fresh_auth(minutes: int = ADMIN_FRESH_AUTH_MIN):
 
 
 def _client_ip() -> str:
-    xff = (request.headers.get("X-Forwarded-For") or "").strip()
-    if xff:
-        return xff.split(",")[0].strip()
+    # ProxyFix normalizes remote_addr only when proxy trust is explicitly enabled.
+    # Never read X-Forwarded-For directly: direct clients can forge it.
+    # This keeps audit and lockout identity aligned with Flask-Limiter.
     return request.remote_addr or "0.0.0.0"
 
 

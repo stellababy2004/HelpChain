@@ -37,4 +37,32 @@ Source locations are from the scanner report; line numbers may move after subseq
 4. Review the policy change independently before merging to `main`; then rerun authoritative trusted evaluation for PR #224.
 5. Do not merge PR #224 or deploy to Render until the trusted verdict is successful and the priority findings are resolved.
 
-This review is **not** a security approval.
+This review is **not** a security approval for findings other than the two narrowly scoped redirect dispositions below.
+
+## Redirect finding 1: helper fallback
+
+Finding: CodeQL `py/url-redirection` at `backend/helpchain_backend/src/routes/admin.py:5422` (Medium).
+
+`_redirect_to_safe_next` sends a request-derived value to `_safe_next_url` before calling `redirect`. `_safe_next_url` rejects absolute and protocol-relative URLs, backslashes, non-`/admin` or `/ops` paths, and values that fail `is_safe_url`'s HTTP(S) same-origin check. The fallback URL is selected by the calling server route, not by the candidate. The regression suite covers external targets, protocol-relative targets, a backslash bypass, an encoded scheme-like target, and disallowed paths.
+
+Exact source-context digest: `sha256:24c544afa262c65429125368f20ec2d3b7b976e2417e3e3b736e1a960d476923`.
+
+## Redirect finding 2: MFA role authorization
+
+Finding: CodeQL `py/url-redirection` at `backend/helpchain_backend/src/routes/admin.py:6116` (Medium).
+
+`_finalize_admin_session` obtains its target only from `_next_url_for_admin_user`. That function repeats `_safe_next_url` validation, then `_is_next_url_authorized_for_admin_user` permits `/ops` only for a defined admin role and permits `/admin` only when the Flask route resolves and the route's allowed-role decorator includes the authenticated user. Failed validation or authorization selects the caller's server-defined fallback URL. The regression suite verifies rejected external/protocol-relative and unauthorized candidates plus allowed role-specific `/ops` paths.
+
+Exact source-context digest: `sha256:1b2c26bf2424a92da21dd635c52a55ff2848340ef107868b5a310c668e65d54b`.
+
+## Bandit B104: client-IP fallback
+
+Finding: Bandit `B104` at `backend/helpchain_backend/src/routes/admin.py:2423` (unclassified).
+
+`_client_ip` returns the literal only when `request.remote_addr` is absent. Its direct consumers record audit/security metadata and, during login, use the returned string as the `AdminLoginAttempt.ip` key for lockout lookup and logging. Forwarded headers are trusted only through the existing opt-in ProxyFix boundary, which normalizes `request.remote_addr`; raw `X-Forwarded-For` is not read by this helper. There is no socket creation, bind, listen, host configuration, or network exposure on this source-to-sink path. The scanner's hardcoded-bind heuristic therefore does not apply.
+
+The fallback remains an exact string rather than changing the login-attempt/audit contract merely to suppress the scanner. The disposition expires on 2027-11-14 and is bound to the source-context digest below.
+
+Exact source-context digest: `sha256:8168a08e75fe76475215886ac7447558e07540a82ea3226f89cb18373813f385`.
+
+Residual deployment requirement: a deployment that enables `TRUST_PROXY_HEADERS` must restrict ingress to its configured reverse proxy and set the correct ProxyFix hop count. ProxyFix cannot establish network provenance when an application is directly exposed to untrusted clients.

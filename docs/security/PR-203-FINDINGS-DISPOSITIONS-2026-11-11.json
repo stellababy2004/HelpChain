@@ -50,6 +50,45 @@
       "rationale": "The finding is historical test-fixture data. The current fixture generates a runtime key; the owner reports no known production use, without claiming independent verification of historical environments.",
       "evidence_ref": "docs/security/PR-203-FINDINGS-DISPOSITION-2026-11-11.md#finding-3-historical-gitleaks-test-fixture",
       "expires_on": "2027-11-11"
+    },
+    {
+      "finding_id": "codeql|py/url-redirection|backend/helpchain_backend/src/routes/admin.py|5422",
+      "scanner": "CodeQL",
+      "rule": "py/url-redirection",
+      "path": "backend/helpchain_backend/src/routes/admin.py",
+      "line": 5422,
+      "context_digest": "sha256:24c544afa262c65429125368f20ec2d3b7b976e2417e3e3b736e1a960d476923",
+      "expected_severity": "medium",
+      "disposition": "FALSE_POSITIVE",
+      "rationale": "The redirect helper accepts only _safe_next_url output; it rejects absolute and protocol-relative URLs, backslashes, non-admin/ops paths, and failed same-origin checks before falling back to the server-selected URL.",
+      "evidence_ref": "docs/security/PR-224-SECURITY-GATE-REVIEW-2026-11-14.md#redirect-finding-1-helper-fallback",
+      "expires_on": "2027-11-14"
+    },
+    {
+      "finding_id": "codeql|py/url-redirection|backend/helpchain_backend/src/routes/admin.py|6116",
+      "scanner": "CodeQL",
+      "rule": "py/url-redirection",
+      "path": "backend/helpchain_backend/src/routes/admin.py",
+      "line": 6116,
+      "context_digest": "sha256:1b2c26bf2424a92da21dd635c52a55ff2848340ef107868b5a310c668e65d54b",
+      "expected_severity": "medium",
+      "disposition": "FALSE_POSITIVE",
+      "rationale": "After MFA, _next_url_for_admin_user repeats _safe_next_url validation and authorizes the matched endpoint for the authenticated user's role; rejected values use the server-selected fallback URL.",
+      "evidence_ref": "docs/security/PR-224-SECURITY-GATE-REVIEW-2026-11-14.md#redirect-finding-2-mfa-role-authorization",
+      "expires_on": "2027-11-14"
+    },
+    {
+      "finding_id": "bandit|b104|backend/helpchain_backend/src/routes/admin.py|2423",
+      "scanner": "Bandit",
+      "rule": "B104",
+      "path": "backend/helpchain_backend/src/routes/admin.py",
+      "line": 2423,
+      "context_digest": "sha256:8168a08e75fe76475215886ac7447558e07540a82ea3226f89cb18373813f385",
+      "expected_severity": "unclassified",
+      "disposition": "FALSE_POSITIVE",
+      "rationale": "The literal is returned only as an audit and rate-limit identity fallback when request.remote_addr is absent; forwarded headers are normalized only by configured ProxyFix, and _client_ip performs no socket creation, listen, or bind operation.",
+      "evidence_ref": "docs/security/PR-224-SECURITY-GATE-REVIEW-2026-11-14.md#bandit-b104-client-ip-fallback",
+      "expires_on": "2027-11-14"
     }
   ]
 }

@@ -180,6 +180,16 @@ class GateWorkflowTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Missing or invalid validated PR head SHA", result.stdout)
 
+    def test_trusted_workflow_keeps_scanner_evidence_and_default_dispositions(self):
+        source = (
+            ROOT / ".github/workflows/security-release-gate-trusted.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("--scanner-findings", source)
+        gate_source = (ROOT / "scripts/security_release_gate.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("DEFAULT_DISPOSITIONS_PATH", gate_source)
+
 
 if __name__ == "__main__":
     unittest.main()
