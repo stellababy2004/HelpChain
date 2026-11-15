@@ -10,7 +10,10 @@ from datetime import UTC, datetime
 REPO = os.environ.get("GITHUB_REPOSITORY", "stellababy2004/HelpChain")
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
 API = "https://api.github.com/repos/" + REPO
-HEADERS = {"Accept": "application/vnd.github+json", "User-Agent": "helpchain-readonly-digest"}
+HEADERS = {
+    "Accept": "application/vnd.github+json",
+    "User-Agent": "helpchain-readonly-digest",
+}
 if TOKEN:
     HEADERS["Authorization"] = "Bearer " + TOKEN
 
@@ -39,29 +42,43 @@ def main():
     ]
     for pr in prs:
         lines.append(
-            "- #" + str(pr["number"]) + " " + pr["title"].replace("\n", " ")[:120]
-            + " | " + ("DRAFT" if pr["draft"] else "OPEN")
-            + " | head " + pr["head"]["sha"][:12]
-            + " | " + pr["html_url"]
+            "- #"
+            + str(pr["number"])
+            + " "
+            + pr["title"].replace("\n", " ")[:120]
+            + " | "
+            + ("DRAFT" if pr["draft"] else "OPEN")
+            + " | head "
+            + pr["head"]["sha"][:12]
+            + " | "
+            + pr["html_url"]
         )
     if not prs:
         lines.append("- None")
     lines += ["", "## Failed or incomplete recent workflow runs (first 100)"]
     problematic = [
         r for r in runs
-        if r["status"] != "completed" or r["conclusion"] not in ("success", "skipped", "neutral")
+        if r["status"] != "completed"
+        or r["conclusion"] not in ("success", "skipped", "neutral")
     ]
     for run in problematic:
         lines.append(
-            "- " + run["name"][:90] + " | " + run["status"]
-            + "/" + str(run["conclusion"]) + " | SHA "
+            "- "
+            + run["name"][:90]
+            + " | "
+            + run["status"]
+            + "/"
+            + str(run["conclusion"])
+            + " | SHA "
             + (run.get("head_sha") or "unknown")[:12]
-            + " | " + run["html_url"]
+            + " | "
+            + run["html_url"]
         )
     if not problematic:
         lines.append("- None in fetched window (not proof of all checks PASS)")
     lines += [
-        "", "## Interpretation",
+        "",
+        "## Interpretation",
         "- This report does NOT establish PR mergeability, required checks, scan evidence, or production deployment.",
         "- No auto-merge, deploy, risk acceptance, Notion edits, or outbound messages.",
         "- Verify head SHA, required checks, trusted verdict and scan provenance before merge.",
