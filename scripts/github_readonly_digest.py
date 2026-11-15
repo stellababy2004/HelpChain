@@ -4,9 +4,8 @@ import json
 import os
 import sys
 import urllib.error
-import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 REPO = os.environ.get("GITHUB_REPOSITORY", "stellababy2004/HelpChain")
 TOKEN = os.environ.get("GITHUB_TOKEN", "")
@@ -33,7 +32,7 @@ def main():
     lines = [
         "# HelpChain — GitHub read-only digest",
         "",
-        "Generated UTC: " + datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"),
+        "Generated UTC: " + datetime.now(UTC).strftime("%Y-%m-%d %H:%M"),
         "Repository: " + REPO,
         "",
         "## Open PRs (first 100; truncated if more)",
