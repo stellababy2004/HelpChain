@@ -120,7 +120,9 @@ def finding_context_digest(
                 # Read the exact scanned tree as data; never checkout or execute PR code.
                 source_text = subprocess.run(
                     ["git", "show", f"{source_ref}:{path}"],
-                    check=True, capture_output=True, encoding="utf-8"
+                    check=True,
+                    capture_output=True,
+                    encoding="utf-8",
                 ).stdout
             context["source_line"] = source_text.splitlines()[line - 1]
         except (OSError, UnicodeError, IndexError, subprocess.CalledProcessError):
@@ -571,7 +573,9 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--scanner-findings", type=Path)
     parser.add_argument("--dispositions", type=Path, default=DEFAULT_DISPOSITIONS_PATH)
-    parser.add_argument("--source-ref", help="Verified scanned commit SHA for source context")
+    parser.add_argument(
+        "--source-ref", help="Verified scanned commit SHA for source context"
+    )
     args = parser.parse_args()
 
     try:

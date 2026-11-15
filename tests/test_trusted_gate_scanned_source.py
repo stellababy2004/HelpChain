@@ -25,30 +25,38 @@ FINDING = {
 class ScannedSourceContextTests(unittest.TestCase):
     def test_exact_commit_source_is_used_not_worktree(self):
         scanned_sha = "a" * 40
-        with patch.object(gate.subprocess, "run", return_value=SimpleNamespace(
-            stdout="unrelated\n    return redirect(target or fallback_url, code=303)\n"
-        )) as run:
+        with patch.object(
+            gate.subprocess,
+            "run",
+            return_value=SimpleNamespace(
+                stdout="unrelated\n    return redirect(target or fallback_url, code=303)\n"
+            ),
+        ) as run:
             digest = gate.finding_context_digest(FINDING, source_ref=scanned_sha)
         self.assertTrue(digest.startswith("sha256:"))
         run.assert_called_once_with(
             ["git", "show", f"{scanned_sha}:{FINDING['path']}"],
-            check=True, capture_output=True, encoding="utf-8"
+            check=True,
+            capture_output=True,
+            encoding="utf-8",
         )
 
     def test_invalid_commit_ref_fails_closed(self):
         with patch.object(gate.subprocess, "run") as run:
-            self.assertIsNone(gate.finding_context_digest(
-                FINDING, source_ref="main;touch /tmp/unsafe"
-            ))
+            self.assertIsNone(
+                gate.finding_context_digest(
+                    FINDING, source_ref="main;touch /tmp/unsafe"
+                )
+            )
         run.assert_not_called()
 
     def test_missing_scanned_file_fails_closed(self):
-        with patch.object(gate.subprocess, "run", side_effect=subprocess.CalledProcessError(
-            128, ["git", "show"]
-        )):
-            self.assertIsNone(gate.finding_context_digest(
-                FINDING, source_ref="b" * 40
-            ))
+        with patch.object(
+            gate.subprocess,
+            "run",
+            side_effect=subprocess.CalledProcessError(128, ["git", "show"]),
+        ):
+            self.assertIsNone(gate.finding_context_digest(FINDING, source_ref="b" * 40))
 
 
 if __name__ == "__main__":
