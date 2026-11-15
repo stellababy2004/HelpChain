@@ -8945,8 +8945,10 @@ def admin_create_structure():
         )
     except ValueError as exc:
         msg = str(exc)
-        if msg in {"structure_name_exists", "admin_email_exists"}:
-            return jsonify({"error": msg}), 400
+        if msg == "structure_name_exists":
+            return jsonify({"error": "structure_name_exists"}), 400
+        if msg == "admin_email_exists":
+            return jsonify({"error": "admin_email_exists"}), 400
         current_app.logger.exception("Unexpected structure creation error")
         return jsonify({"error": "internal_error"}), 500
 
