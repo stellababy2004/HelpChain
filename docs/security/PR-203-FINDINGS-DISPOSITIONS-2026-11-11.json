@@ -86,9 +86,9 @@
       "context_digest": "sha256:8168a08e75fe76475215886ac7447558e07540a82ea3226f89cb18373813f385",
       "expected_severity": "unclassified",
       "disposition": "FALSE_POSITIVE",
-      "rationale": "The literal is returned only as an audit and rate-limit identity fallback when request.remote_addr is absent; forwarded headers are normalized only by configured ProxyFix, and _client_ip performs no socket creation, listen, or bind operation.",
-      "evidence_ref": "docs/security/PR-224-SECURITY-GATE-REVIEW-2026-11-14.md#bandit-b104-client-ip-fallback",
-      "expires_on": "2027-11-14"
+      "rationale": "Owner-approved 2026-11-15: request.remote_addr fallback literal is returned as an IP identity string for admin audit and lockout; it does not bind a listening socket. Residual risk: missing remote_addr groups requests under one fallback identity; review this behavior separately.",
+      "evidence_ref": "docs/security/PR-229-ADMIN-B104-OWNER-REVIEW-2026-11-15.md#decision-2026-11-15",
+      "expires_on": "2027-11-15"
     }
   ]
 }
