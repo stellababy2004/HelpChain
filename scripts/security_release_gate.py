@@ -7,6 +7,7 @@ import hashlib
 import json
 import posixpath
 import re
+import subprocess
 from collections import Counter
 from datetime import date, datetime
 from pathlib import Path
@@ -83,7 +84,9 @@ def finding_identity_key(finding: dict[str, Any]) -> str | None:
     return key
 
 
-def finding_context_digest(finding: dict[str, Any]) -> str | None:
+def finding_context_digest(
+    finding: dict[str, Any], *, source_ref: str | None = None
+) -> str | None:
     """Return a stable digest of trustworthy scanner/source context."""
     key = finding_key(finding)
     if key is None:
@@ -109,9 +112,20 @@ def finding_context_digest(finding: dict[str, Any]) -> str | None:
             context["evidence_fingerprint"] = evidence_fingerprint
     else:
         try:
-            source_lines = Path(path).read_text(encoding="utf-8").splitlines()
-            context["source_line"] = source_lines[line - 1]
-        except (OSError, UnicodeError, IndexError):
+            if source_ref is None:
+                source_text = Path(path).read_text(encoding="utf-8")
+            else:
+                if not SHA1_PATTERN.fullmatch(source_ref.lower()):
+                    return None
+                # Read the exact scanned tree as data; never checkout or execute PR code.
+                source_text = subprocess.run(
+                    ["git", "show", f"{source_ref}:{path}"],
+                    check=True,
+                    capture_output=True,
+                    encoding="utf-8",
+                ).stdout
+            context["source_line"] = source_text.splitlines()[line - 1]
+        except (OSError, UnicodeError, IndexError, subprocess.CalledProcessError):
             return None
     encoded = json.dumps(context, ensure_ascii=False, sort_keys=True).encode("utf-8")
     return "sha256:" + hashlib.sha256(encoded).hexdigest()
@@ -234,6 +248,7 @@ def apply_dispositions(
     document: Any,
     *,
     repository: str,
+    source_ref: str | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
     dispositions, errors = (
         validate_dispositions(document, repository=repository)
@@ -268,7 +283,7 @@ def apply_dispositions(
                     }
                 )
             else:
-                context_digest = finding_context_digest(finding)
+                context_digest = finding_context_digest(finding, source_ref=source_ref)
                 if context_digest is None:
                     unresolved.append(
                         {
@@ -418,6 +433,7 @@ def evaluate(
     base_sha: str | None = None,
     scanner_findings: list[dict[str, Any]] | None = None,
     dispositions: Any = None,
+    source_ref: str | None = None,
 ) -> dict[str, Any]:
     baseline_errors = validate_baseline(baseline, repository)
     baseline_numbers = {int(number) for number in baseline.get("alert_numbers", [])}
@@ -472,6 +488,7 @@ def evaluate(
             scanner_findings,
             dispositions,
             repository=repository,
+            source_ref=source_ref,
         )
     )
     if dependency_findings != len(scanner_findings):
@@ -556,6 +573,9 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--scanner-findings", type=Path)
     parser.add_argument("--dispositions", type=Path, default=DEFAULT_DISPOSITIONS_PATH)
+    parser.add_argument(
+        "--source-ref", help="Verified scanned commit SHA for source context"
+    )
     args = parser.parse_args()
 
     try:
@@ -584,6 +604,7 @@ def main() -> int:
             base_sha=args.base_sha,
             scanner_findings=scanner_findings,
             dispositions=dispositions,
+            source_ref=args.source_ref,
         )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         report = {"status": "INCOMPLETE", "error": str(exc)}
