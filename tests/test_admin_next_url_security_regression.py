@@ -10,9 +10,7 @@ from urllib.parse import urljoin, urlparse
 import pytest
 from flask import Flask, request
 
-ADMIN_SOURCE = (
-    Path(__file__).resolve().parents[1] / "backend/helpchain_backend/src/routes/admin.py"
-)
+ADMIN_SOURCE = Path(__file__).resolve().parents[1] / "backend/helpchain_backend/src/routes/admin.py"
 
 
 @pytest.fixture
