@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import jwt
-from flask import g, has_request_context, request, session
+from flask import current_app, g, has_request_context, request, session
 from flask_login import current_user
 
 from .extensions import db
@@ -103,6 +103,15 @@ def _build_actor(admin_user: AdminUser | None, *, auth_source: str) -> AdminActo
     )
 
 
+def _bearer_actor_requires_mfa(actor: AdminActor) -> bool:
+    """Fail closed: bearer JWTs do not carry an MFA proof."""
+    return bool(
+        current_app.config.get("MFA_ENABLED", False)
+        and current_app.config.get("REQUIRE_ADMIN_MFA", True)
+        and actor.role in {"admin", "superadmin"}
+    )
+
+
 def resolve_session_admin_actor() -> AdminActor:
     cached = getattr(g, "_session_admin_actor", None)
     if cached is not None:
@@ -153,6 +162,8 @@ def resolve_bearer_admin_actor() -> AdminActor:
 
     g.api_user_id = claims.get("sub")
     actor = _build_actor(_load_admin_user(claims.get("sub")), auth_source="bearer")
+    if actor.is_authenticated and _bearer_actor_requires_mfa(actor):
+        raise BearerActorResolutionError("MFA required", 401)
     g._bearer_admin_actor = actor
     return actor
 

@@ -383,6 +383,8 @@ def test_api_export_passes_scoped_actor_to_controller(app, session, monkeypatch,
 
     monkeypatch.setattr(api_routes.controller, "export_requests", _fake_export)
 
+    monkeypatch.setitem(app.config, "REQUIRE_ADMIN_MFA", False)
+
     with app.app_context():
         token = encode_access_token(admin_a.id)
 
@@ -425,6 +427,8 @@ def test_api_export_passes_platform_global_actor_to_controller(
         return str(export_path), "text/plain", "global-export.txt"
 
     monkeypatch.setattr(api_routes.controller, "export_requests", _fake_export)
+
+    monkeypatch.setitem(app.config, "REQUIRE_ADMIN_MFA", False)
 
     with app.app_context():
         token = encode_access_token(global_superadmin.id)

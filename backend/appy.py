@@ -39,6 +39,8 @@ else:
             )
 
 from backend.extensions import db  # bound SQLAlchemy instance
+from backend.helpchain_backend.src.admin_actor import resolve_current_admin_actor
+from backend.helpchain_backend.src.admin_policies import can_access_professional_leads
 from backend.helpchain_backend.src.app import create_app
 from backend.routes.lead_capture import lead_capture_bp
 
@@ -46,6 +48,13 @@ from backend.routes.lead_capture import lead_capture_bp
 # Create Flask app
 # --------------------------------------------------
 app = create_app()
+
+
+def _require_proposal_access():
+    if not can_access_professional_leads(resolve_current_admin_actor()):
+        from flask import abort
+
+        abort(404)
 
 try:
     from backend.proposal_engine import register_proposal_engine
@@ -113,8 +122,11 @@ __all__ = ["app", "db", "mail", "send_email_2fa_code", "get_app"]
 # Local/demo-safe proposal generator for admin leads.
 try:
     from datetime import datetime
-    from flask import render_template_string, abort
-    from sqlalchemy import inspect, text as sa_text
+
+    from flask import abort, render_template_string
+    from sqlalchemy import inspect
+    from sqlalchemy import text as sa_text
+
     from backend.extensions import db
 
     def _hc_find_lead_table():
@@ -134,6 +146,7 @@ try:
 
     @app.route("/admin/proposal/<int:lead_id>")
     def hc_admin_generate_proposal(lead_id):
+        _require_proposal_access()
         table = _hc_find_lead_table()
         if not table:
             abort(404)
@@ -388,13 +401,18 @@ except Exception as exc:
 
 
 # --- Proposal Engine Direct Route Fix ---
-from flask import render_template_string, abort
-from sqlalchemy import inspect, text as sa_text
 from datetime import datetime
+
+from flask import abort, render_template_string
+from sqlalchemy import inspect
+from sqlalchemy import text as sa_text
+
 from backend.extensions import db
+
 
 @app.get("/admin/proposal/<int:lead_id>")
 def proposal_engine_direct_route(lead_id):
+    _require_proposal_access()
     inspector = inspect(db.engine)
     lead_table = None
 

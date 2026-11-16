@@ -269,6 +269,9 @@ def test_cross_tenant_legacy_api_export_is_scoped(app, session):
     from backend.helpchain_backend.src.jwt_utils import encode_access_token
     from openpyxl import load_workbook
 
+    # This test exercises tenant export scoping. MFA-required bearer access is
+    # intentionally denied until an API MFA protocol exists.
+    app.config["MFA_ENABLED"] = False
     structure_a, structure_b, admin, user_a, user_b = _seed_scoped_admin(
         session, prefix="legacy_api_export_scope"
     )
