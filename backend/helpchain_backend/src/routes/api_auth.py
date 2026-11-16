@@ -14,6 +14,7 @@ from ..authz import require_access_token
 from ..extensions import csrf, db, limiter
 from ..models import AdminUser, RefreshToken
 from ..security_logging import log_security_event
+from .admin import is_mfa_required
 
 api_auth_bp = Blueprint("api_auth", __name__, url_prefix="/api/auth")
 csrf.exempt(api_auth_bp)
@@ -36,6 +37,18 @@ def api_login():
             "auth_api_login_failed", meta={"reason": "invalid_credentials"}
         )
         return jsonify({"error": "invalid_credentials"}), 401
+
+    # This password-only endpoint cannot establish the interactive MFA proof
+    # required for admin roles. Deny token issuance rather than minting a JWT
+    # that bypasses the admin blueprint's MFA gate.
+    if current_app.config.get("MFA_ENABLED", False) and is_mfa_required(user):
+        log_security_event(
+            "auth_api_login_denied",
+            actor_type="admin",
+            actor_id=user.id,
+            meta={"reason": "mfa_required"},
+        )
+        return jsonify({"error": "mfa_required"}), 403
 
     access = encode_access_token(user.id)
 
@@ -81,6 +94,20 @@ def api_refresh():
             actor_type="admin",
             actor_id=user_id,
             meta={"reason": "revoked_or_expired"},
+        )
+        return jsonify({"error": "refresh_revoked"}), 401
+
+    user = db.session.get(AdminUser, user_id)
+    if (
+        user is None
+        or not getattr(user, "is_active", False)
+        or (current_app.config.get("MFA_ENABLED", False) and is_mfa_required(user))
+    ):
+        log_security_event(
+            "auth_api_refresh_denied",
+            actor_type="admin",
+            actor_id=user_id,
+            meta={"reason": "mfa_required_or_inactive"},
         )
         return jsonify({"error": "refresh_revoked"}), 401
 

@@ -1549,10 +1549,15 @@ def create_app(config_object=None) -> Flask:
     # --- Proposal Engine V1 route ---
     @app.get("/admin/proposal/<int:lead_id>")
     def proposal_engine_v1(lead_id):
+        from .admin_actor import resolve_current_admin_actor
+        from .admin_policies import can_access_professional_leads
         from datetime import datetime
         from flask import render_template_string, abort
         from sqlalchemy import inspect, text as sa_text
         from backend.extensions import db
+
+        if not can_access_professional_leads(resolve_current_admin_actor()):
+            abort(404)
 
         inspector = inspect(db.engine)
         lead_table = None
@@ -1702,10 +1707,15 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
     # --- Proposal Engine Clean V2 ---
     @app.get("/admin/proposal-clean/<int:lead_id>")
     def proposal_engine_clean_v2(lead_id):
+        from .admin_actor import resolve_current_admin_actor
+        from .admin_policies import can_access_professional_leads
         from datetime import datetime
         from flask import render_template_string, abort
         from sqlalchemy import inspect, text as sa_text
         from backend.extensions import db
+
+        if not can_access_professional_leads(resolve_current_admin_actor()):
+            abort(404)
 
         inspector = inspect(db.engine)
         tables = inspector.get_table_names()

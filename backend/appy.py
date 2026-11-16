@@ -40,12 +40,21 @@ else:
 
 from backend.extensions import db  # bound SQLAlchemy instance
 from backend.helpchain_backend.src.app import create_app
+from backend.helpchain_backend.src.admin_actor import resolve_current_admin_actor
+from backend.helpchain_backend.src.admin_policies import can_access_professional_leads
 from backend.routes.lead_capture import lead_capture_bp
 
 # --------------------------------------------------
 # Create Flask app
 # --------------------------------------------------
 app = create_app()
+
+
+def _require_proposal_access():
+    if not can_access_professional_leads(resolve_current_admin_actor()):
+        from flask import abort
+
+        abort(404)
 
 try:
     from backend.proposal_engine import register_proposal_engine
@@ -134,6 +143,7 @@ try:
 
     @app.route("/admin/proposal/<int:lead_id>")
     def hc_admin_generate_proposal(lead_id):
+        _require_proposal_access()
         table = _hc_find_lead_table()
         if not table:
             abort(404)
@@ -395,6 +405,7 @@ from backend.extensions import db
 
 @app.get("/admin/proposal/<int:lead_id>")
 def proposal_engine_direct_route(lead_id):
+    _require_proposal_access()
     inspector = inspect(db.engine)
     lead_table = None
 
