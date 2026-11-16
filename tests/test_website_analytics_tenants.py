@@ -324,9 +324,10 @@ def test_first_party_page_views_have_explicit_structure(client, tenants):
     assert AnalyticsEvent.query.filter_by(page_url="/offre").one().structure_id == default.id
 
 
-def test_bearer_actor_is_scoped_and_cannot_select_foreign_site(app, client, tenants):
+def test_bearer_actor_is_scoped_and_cannot_select_foreign_site(app, client, tenants, monkeypatch):
     from backend.helpchain_backend.src.jwt_utils import encode_access_token
 
+    monkeypatch.setitem(app.config, "REQUIRE_ADMIN_MFA", False)
     token = encode_access_token(tenants["users"]["admin"].id)
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get(READ_ENDPOINTS[0], headers=headers)
