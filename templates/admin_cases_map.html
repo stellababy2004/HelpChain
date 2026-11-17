@@ -25,36 +25,8 @@
   <div id="cases-map" style="height:600px;"></div>
 </div>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script>
-  function riskColor(level) {
-    if (level === "high") return "red";
-    if (level === "medium") return "orange";
-    return "green";
-  }
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+<script src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin-cases-map.js') }}"></script>
 
-  const map = L.map("cases-map").setView([48.8566, 2.3522], 12);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors"
-  }).addTo(map);
-
-  fetch("/admin/api/cases/map")
-    .then((resp) => resp.json())
-    .then((data) => {
-      const cases = data.cases || [];
-      cases.forEach(function (c) {
-        const marker = L.circleMarker([c.lat, c.lng], {
-          radius: 8,
-          color: riskColor(c.risk_level)
-        });
-        marker.bindPopup(
-          "Case #" + c.id +
-          "<br>Status: " + c.status +
-          "<br>Risk: " + c.risk_level
-        );
-        marker.addTo(map);
-      });
-    });
-</script>
 {% endblock %}
