@@ -64,10 +64,10 @@ def test_email_context_rejects_unknown_template_and_keys():
             raise AssertionError("uncontracted email input was accepted")
 
 
-def test_legacy_chat_upload_requires_authentication(client):
+def test_legacy_chat_upload_is_fail_closed_for_unauthenticated_callers(client):
     response = client.post(
         "/api/chat/chat/upload",
         data={"file": (BytesIO(b"HC-CMPP-11-FILE"), "demo.txt")},
         content_type="multipart/form-data",
     )
-    assert response.status_code in {302, 401, 403, 404}
+    assert response.status_code == 404

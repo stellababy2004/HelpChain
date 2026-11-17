@@ -30,7 +30,7 @@ def _default_structure(session) -> Structure:
     return structure
 
 
-def _ensure_public_intake_route(session) -> None:
+def _ensure_public_intake_route(session, *, postcode: str = "92100") -> None:
     structure = _default_structure(session)
     structure.status = "active"
 
@@ -38,7 +38,7 @@ def _ensure_public_intake_route(session) -> None:
         session.query(StructureCoverageArea)
         .filter_by(
             structure_id=structure.id,
-            postal_code="92100",
+            postal_code=postcode,
             is_active=True,
         )
         .first()
@@ -49,7 +49,7 @@ def _ensure_public_intake_route(session) -> None:
                 structure_id=structure.id,
                 area_type="city",
                 name="Boulogne-Billancourt",
-                postal_code="92100",
+                postal_code=postcode,
                 is_active=True,
             )
         )
@@ -516,7 +516,156 @@ def test_submit_request_confirm_creates_hashed_magic_link_row(client, session, m
     assert raw_token not in caplog.text
     assert magic_url not in caplog.text
     assert "request.magic@test.local" not in caplog.text
-    assert "r***@test.local" in caplog.text
+
+
+def test_submit_request_logs_do_not_contain_submitted_personal_data(
+    client, session, monkeypatch, caplog
+):
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session)
+    caplog.set_level("INFO")
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email", lambda *args, **kwargs: True
+    )
+    payload = {
+        "name": "RGPD P0 Test Person",
+        "email": "rgpd-p0-private@example.test",
+        "phone": "+33601020304",
+        "category": "admin_help",
+        "urgency": "normal",
+        "title": "Private intake title",
+        "description": "Private social-care intake details.",
+        "location_text": "RGPD P0 Private Location",
+        "postcode": "92100",
+        "city": "RGPD P0 Private City",
+        "privacy_consent": "1",
+        "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
+    }
+
+    response = client.post("/submit_request", data=payload, follow_redirects=False)
+
+    assert response.status_code == 200
+    confirmed = client.post("/submit_request/confirm", data={}, follow_redirects=False)
+    assert confirmed.status_code in (302, 303)
+    logs = caplog.text
+    for value in (
+        payload["name"],
+        payload["email"],
+        payload["phone"],
+        payload["title"],
+        payload["description"],
+        payload["location_text"],
+        payload["postcode"],
+        payload["city"],
+    ):
+        assert value not in logs
+    assert "submit_request_validated" in logs
+
+
+def test_submit_request_honeypot_value_is_not_logged(client, caplog):
+    caplog.set_level("INFO")
+    honeypot_value = "rgpd-p0-honeypot@example.test"
+
+    response = client.post(
+        "/submit_request",
+        data={"website": honeypot_value},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 200
+    assert honeypot_value not in caplog.text
+    assert "submit_request_honeypot_triggered" in caplog.text
+
+
+def test_submit_request_persistence_failure_does_not_log_submitted_data(
+    client, session, monkeypatch, caplog
+):
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session, postcode="92300")
+    caplog.set_level("INFO")
+    payload = {
+        "name": "RGPD P0 Failure Person",
+        "email": "rgpd-p0-failure@example.test",
+        "phone": "+33605060708",
+        "category": "admin_help",
+        "urgency": "normal",
+        "title": "Private persistence failure title",
+        "description": "Private persistence failure details.",
+        "location_text": "RGPD P0 Failure Location",
+        "postcode": "92300",
+        "city": "RGPD P0 Failure City",
+        "privacy_consent": "1",
+        "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
+    }
+    preview = client.post("/submit_request", data=payload, follow_redirects=False)
+    assert preview.status_code == 200
+
+    def _raise_with_submitted_data():
+        raise RuntimeError(
+            f"database rejected {payload['email']} {payload['description']}"
+        )
+
+    with monkeypatch.context() as scoped_patch:
+        scoped_patch.setattr(
+            main_routes.db.session, "commit", _raise_with_submitted_data
+        )
+        response = client.post(
+            "/submit_request/confirm", data={}, follow_redirects=False
+        )
+
+    assert response.status_code in (302, 303)
+    for value in (
+        payload["name"],
+        payload["email"],
+        payload["phone"],
+        payload["title"],
+        payload["description"],
+        payload["location_text"],
+        payload["postcode"],
+        payload["city"],
+    ):
+        assert value not in caplog.text
+    assert "request_persist_failed error_type=RuntimeError" in caplog.text
+    assert "request_confirmation_failed error_type=RuntimeError" in caplog.text
+
+
+def test_submit_request_email_failure_does_not_log_submitted_data(
+    client, session, monkeypatch, caplog
+):
+    _reset_magic_link_rate_limits()
+    _ensure_public_intake_route(session, postcode="92400")
+    caplog.set_level("INFO")
+    payload = {
+        "name": "RGPD P0 Email Failure Person",
+        "email": "rgpd-p0-email-failure@example.test",
+        "phone": "+33609080706",
+        "category": "admin_help",
+        "urgency": "normal",
+        "title": "Private email failure title",
+        "description": "Private email failure details.",
+        "location_text": "RGPD P0 Email Failure Location",
+        "postcode": "92400",
+        "city": "RGPD P0 Email Failure City",
+        "privacy_consent": "1",
+        "started_at": str(int(datetime.now(UTC).timestamp() * 1000) - 5000),
+    }
+    preview = client.post("/submit_request", data=payload, follow_redirects=False)
+    assert preview.status_code == 200
+
+    def _raise_with_submitted_data(*args, **kwargs):
+        raise RuntimeError(
+            f"mail failed for {payload['email']} {payload['description']}"
+        )
+
+    monkeypatch.setattr(
+        "backend.mail_service.send_notification_email", _raise_with_submitted_data
+    )
+    response = client.post("/submit_request/confirm", data={}, follow_redirects=False)
+
+    assert response.status_code in (302, 303)
+    for value in (payload["email"], payload["description"], payload["title"]):
+        assert value not in caplog.text
+    assert "request_magic_link_send_failed error_type=RuntimeError" in caplog.text
 
 
 def test_submit_request_confirm_dev_magic_link_uses_request_host(
