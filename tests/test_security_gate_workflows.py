@@ -190,6 +190,12 @@ class GateWorkflowTests(unittest.TestCase):
         )
         self.assertIn("DEFAULT_DISPOSITIONS_PATH", gate_source)
 
+    def test_trusted_workflow_uses_bounded_scanner_wait(self):
+        source = (
+            ROOT / ".github/workflows/security-release-gate-trusted.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("--wait-attempts 20 --wait-seconds 30", source)
+
 
 if __name__ == "__main__":
     unittest.main()
