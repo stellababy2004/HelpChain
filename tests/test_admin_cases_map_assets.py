@@ -3,6 +3,11 @@ from pathlib import Path
 
 template = Path("templates/admin_cases_map.html")
 script = Path("static/js/admin-cases-map.js")
+admin_map_scripts = (
+    Path("static/js/pages/admin-command-map.js"),
+    Path("static/js/admin-risk-map.js"),
+    Path("static/js/admin-professionals-map.js"),
+)
 app = Path("backend/helpchain_backend/src/app.py")
 
 
@@ -21,6 +26,13 @@ def test_admin_map_uses_osm_and_safe_popups():
     assert "textContent" in js
     assert "innerHTML" not in js
     assert "bindPopup(popup)" in js
+
+
+def test_admin_maps_use_the_csp_allowed_osm_tile_host():
+    for script in admin_map_scripts:
+        js = script.read_text(encoding="utf-8")
+        assert "https://tile.openstreetmap.org/{z}/{x}/{y}.png" in js
+        assert "{s}.tile.openstreetmap.org" not in js
 
 
 def test_csp_does_not_allow_unpkg():

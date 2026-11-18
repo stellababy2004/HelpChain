@@ -1388,7 +1388,7 @@
     state.groups.structures = L.layerGroup().addTo(state.map);
     state.groups.alerts = L.layerGroup().addTo(state.map);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(state.map);
