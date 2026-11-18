@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Read-only GitHub PR/CI digest. No external writes, secrets or PII in output."""
+
 import json
 import os
 import sys
