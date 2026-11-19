@@ -4,6 +4,8 @@ from flask import render_template_string, abort
 from sqlalchemy import inspect, text as sa_text
 
 from backend.extensions import db
+from backend.helpchain_backend.src.admin_actor import resolve_current_admin_actor
+from backend.helpchain_backend.src.admin_policies import can_access_professional_leads
 
 
 def register_proposal_engine(app):
@@ -24,6 +26,9 @@ def register_proposal_engine(app):
 
     @app.route("/admin/proposal/<int:lead_id>")
     def admin_proposal_engine(lead_id):
+        if not can_access_professional_leads(resolve_current_admin_actor()):
+            abort(404)
+
         table = find_lead_table()
         if not table:
             abort(404)

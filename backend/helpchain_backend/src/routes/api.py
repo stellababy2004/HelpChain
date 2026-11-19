@@ -13,7 +13,11 @@ from werkzeug.security import check_password_hash
 
 from backend.ai_service import ai_service
 
-from ..admin_actor import resolve_bearer_admin_actor, resolve_current_admin_actor
+from ..admin_actor import (
+    BearerActorResolutionError,
+    resolve_bearer_admin_actor,
+    resolve_current_admin_actor,
+)
 from ..admin_policies import can_mutate_request
 from ..controllers.helpchain_controller import HelpChainController
 from ..extensions import csrf
@@ -1088,6 +1092,14 @@ def delete_request():
 @require_roles("admin")
 def get_nearby_volunteers():
     try:
+        # Volunteer records have no structure_id. Returning them to a
+        # tenant-scoped admin would disclose another tenant's PII/location.
+        # Keep this legacy global directory available only to a platform-global
+        # bearer admin until membership-backed tenant scoping is available.
+        actor = getattr(g, "admin_actor", None)
+        if not actor or not actor.is_platform_global:
+            return jsonify({"error": "Forbidden"}), 403
+
         lat = float(request.args.get("lat", 0))
         lng = float(request.args.get("lng", 0))
         radius_km = float(request.args.get("radius", 10))  # default 10km
@@ -1163,13 +1175,6 @@ def get_nearby_volunteers():
 @api_bp.route("/volunteers/<int:volunteer_id>/location", methods=["PUT"])
 def update_volunteer_location(volunteer_id):
     try:
-        if not (
-            getattr(g, "api_is_admin", False)
-            or getattr(current_user, "is_authenticated", False)
-            or session.get("volunteer_logged_in")
-        ):
-            return jsonify({"error": "Unauthorized"}), 401
-
         data = request.get_json(silent=True) or {}
         lat = data.get("latitude")
         lng = data.get("longitude")
@@ -1183,6 +1188,20 @@ def update_volunteer_location(volunteer_id):
         vol = db.session.get(Volunteer, volunteer_id)
         if not vol:
             return jsonify({"error": "Volunteer not found"}), 404
+
+        bearer_actor = getattr(g, "admin_actor", None)
+        if bearer_actor is None and request.headers.get("Authorization"):
+            try:
+                bearer_actor = resolve_bearer_admin_actor()
+            except BearerActorResolutionError as exc:
+                return jsonify({"error": exc.message}), exc.status_code
+        is_global_bearer_admin = bool(bearer_actor and bearer_actor.is_platform_global)
+        is_own_volunteer_session = bool(
+            session.get("volunteer_logged_in")
+            and str(session.get("volunteer_id")) == str(volunteer_id)
+        )
+        if not (is_global_bearer_admin or is_own_volunteer_session):
+            return jsonify({"error": "Forbidden"}), 403
 
         vol.latitude = float(lat)
         vol.longitude = float(lng)

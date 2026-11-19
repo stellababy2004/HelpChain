@@ -2,6 +2,7 @@
 
 import copy
 import hashlib
+import http.client
 import importlib.util
 import io
 import json
@@ -295,7 +296,7 @@ class ScannerProvenanceTests(unittest.TestCase):
         self.assertTrue(result["status"]["report_valid"], result)
         self.assertEqual(result["status"]["head_sha"], MERGE)
 
-    def collect(self):
+    def collect(self, **kwargs):
         with tempfile.TemporaryDirectory() as root:
             return gate.collect_required_evidence(
                 self.client,
@@ -304,6 +305,7 @@ class ScannerProvenanceTests(unittest.TestCase):
                 base_sha=BASE,
                 repository=REPO,
                 temp_root=Path(root),
+                **kwargs,
             )
 
     def test_all_six_reports_and_findings_use_verified_merge(self):
@@ -600,6 +602,168 @@ class ScannerProvenanceTests(unittest.TestCase):
         self.run["conclusion"] = "failure"
         result = self.collect()
         self.assertFalse(result["statuses"][0]["report_valid"])
+
+    def test_waits_for_running_codeql_before_collecting_evidence(self):
+        codeql = self.client.runs[43272899532]
+        codeql["status"] = "in_progress"
+        codeql["conclusion"] = None
+        sleeps = []
+
+        ready = gate.wait_for_required_workflows(
+            self.client,
+            head_sha=MERGE,
+            pr_head_sha=HEAD,
+            attempts=2,
+            wait_seconds=3,
+            sleep_fn=sleeps.append,
+        )
+
+        self.assertFalse(ready)
+        self.assertEqual(sleeps, [3])
+
+    def test_codeql_completion_during_wait_is_accepted(self):
+        codeql = self.client.runs[43272899532]
+        codeql["status"] = "in_progress"
+        codeql["conclusion"] = None
+        sleeps = []
+
+        def complete_codeql(seconds):
+            sleeps.append(seconds)
+            codeql["status"] = "completed"
+            codeql["conclusion"] = "success"
+
+        ready = gate.wait_for_required_workflows(
+            self.client,
+            head_sha=MERGE,
+            pr_head_sha=HEAD,
+            attempts=2,
+            wait_seconds=3,
+            sleep_fn=complete_codeql,
+        )
+
+        self.assertTrue(ready)
+        self.assertEqual(sleeps, [3])
+        self.assertTrue(
+            next(
+                item
+                for item in self.collect()["statuses"]
+                if item["name"] == "CodeQL analysis"
+            )["report_valid"]
+        )
+
+    def test_wait_timeout_remains_incomplete(self):
+        codeql = self.client.runs[43272899532]
+        codeql["status"] = "in_progress"
+        codeql["conclusion"] = None
+
+        result = self.collect(wait_attempts=2, wait_seconds=0, sleep_fn=lambda _: None)
+
+        status = next(
+            item
+            for item in result["statuses"]
+            if item["name"] == "CodeQL Advanced Security"
+        )
+        self.assertEqual(status["status"], "incomplete")
+        self.assertFalse(status["report_valid"])
+
+    def test_transient_artifact_failure_retries_the_same_artifact(self):
+        artifact = copy.deepcopy(self.client.artifacts[43272899649][0])
+        archive = self.client.archives[artifact["id"]]
+
+        class Client:
+            def __init__(self):
+                self.calls = []
+
+            def download_artifact(self, artifact_id, destination):
+                self.calls.append(artifact_id)
+                if len(self.calls) == 1:
+                    raise gate.ArtifactDownloadTransportError("temporary transport")
+                destination.write_bytes(archive)
+
+        client = Client()
+        with tempfile.TemporaryDirectory() as root:
+            result = gate.download_and_validate_artifact(
+                client,
+                artifact=artifact,
+                scanner="Trivy",
+                head_sha=MERGE,
+                temp_root=Path(root),
+            )
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(client.calls, [artifact["id"], artifact["id"]])
+
+    def test_persistent_or_invalid_artifact_is_not_retried(self):
+        artifact = copy.deepcopy(self.client.artifacts[43272899649][0])
+
+        class PermanentFailureClient:
+            def __init__(self):
+                self.calls = []
+
+            def download_artifact(self, artifact_id, destination):
+                self.calls.append(artifact_id)
+                raise gate.GitHubApiError("artifact metadata rejected")
+
+        permanent = PermanentFailureClient()
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(gate.GitHubApiError, "metadata rejected"):
+                gate.download_and_validate_artifact(
+                    permanent,
+                    artifact=artifact,
+                    scanner="Trivy",
+                    head_sha=MERGE,
+                    temp_root=Path(root),
+                )
+        self.assertEqual(permanent.calls, [artifact["id"]])
+
+        class InvalidArchiveClient:
+            def __init__(self):
+                self.calls = []
+
+            def download_artifact(self, artifact_id, destination):
+                self.calls.append(artifact_id)
+                destination.write_bytes(b"not-a-verified-archive")
+
+        invalid = InvalidArchiveClient()
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaisesRegex(gate.GitHubApiError, "digest"):
+                gate.download_and_validate_artifact(
+                    invalid,
+                    artifact=artifact,
+                    scanner="Trivy",
+                    head_sha=MERGE,
+                    temp_root=Path(root),
+                )
+        self.assertEqual(invalid.calls, [artifact["id"]])
+
+    def test_remote_disconnect_is_classified_as_transient(self):
+        self.assertTrue(
+            gate.is_transient_artifact_download_error(
+                http.client.RemoteDisconnected("connection closed")
+            )
+        )
+
+    def test_artifact_run_attempt_or_sha_mismatch_is_rejected_before_download(self):
+        run = self.client.runs[43272899649]
+        with self.assertRaisesRegex(
+            gate.GitHubApiError, "workflow run identity mismatch"
+        ):
+            gate.discover_run_artifact(
+                self.client,
+                run_id=run["id"],
+                run_attempt=2,
+                artifact_name="trivy-iac-sarif",
+                repository=REPO,
+            )
+        with self.assertRaisesRegex(gate.GitHubApiError, "workflow run SHA mismatch"):
+            gate.discover_run_artifact(
+                self.client,
+                run_id=run["id"],
+                run_attempt=run["run_attempt"],
+                artifact_name="trivy-iac-sarif",
+                repository=REPO,
+                expected_head_sha=MERGE,
+            )
 
     def test_empty_pr_array_uses_real_commit_association(self):
         self.run["pull_requests"] = []

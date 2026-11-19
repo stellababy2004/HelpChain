@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
+import http.client
 import json
 import os
 import posixpath
 import re
 import shutil
 import tempfile
+import time
 import urllib.error
 import urllib.request
 import zipfile
@@ -72,7 +75,13 @@ class GitHubApiError(RuntimeError):
     pass
 
 
+class ArtifactDownloadTransportError(GitHubApiError):
+    """A retryable failure while downloading one already-verified artifact."""
+
+
 SHA1_PATTERN = re.compile(r"^[0-9a-fA-F]{40}$")
+ARTIFACT_DOWNLOAD_ATTEMPTS = 3
+ARTIFACT_DOWNLOAD_BACKOFF_SECONDS = 1
 
 
 class SafeArtifactRedirectHandler(urllib.request.HTTPRedirectHandler):
@@ -212,10 +221,61 @@ class GitHubClient:
             raise GitHubApiError(
                 f"artifact download failed: HTTP {exc.code} ({exc.reason})"
             ) from exc
-        except (urllib.error.URLError, OSError) as exc:
+        except (urllib.error.URLError, OSError, http.client.HTTPException) as exc:
+            if is_transient_artifact_download_error(exc):
+                raise ArtifactDownloadTransportError(
+                    "artifact download transport failure"
+                ) from exc
             raise GitHubApiError(
                 f"artifact download failed: {type(exc).__name__}"
             ) from exc
+
+
+def is_transient_artifact_download_error(exc: BaseException) -> bool:
+    if isinstance(exc, urllib.error.URLError):
+        return is_transient_artifact_download_error(exc.reason)
+    if isinstance(
+        exc,
+        (
+            http.client.IncompleteRead,
+            http.client.RemoteDisconnected,
+            TimeoutError,
+            ConnectionAbortedError,
+            ConnectionResetError,
+        ),
+    ):
+        return True
+    if isinstance(exc, OSError):
+        return exc.errno in {
+            errno.EAGAIN,
+            errno.ECONNABORTED,
+            errno.ECONNRESET,
+            errno.ETIMEDOUT,
+        }
+    return False
+
+
+def download_artifact_with_retry(
+    client: GitHubClient,
+    artifact_id: int,
+    destination: Path,
+    *,
+    attempts: int = ARTIFACT_DOWNLOAD_ATTEMPTS,
+    backoff_seconds: int = ARTIFACT_DOWNLOAD_BACKOFF_SECONDS,
+    sleep_fn=time.sleep,
+) -> None:
+    if attempts < 1:
+        raise ValueError("artifact download attempts must be positive")
+    partial_path = destination.with_name(f"{destination.name}.partial")
+    for attempt in range(1, attempts + 1):
+        try:
+            client.download_artifact(artifact_id, partial_path)
+            partial_path.replace(destination)
+            return
+        except ArtifactDownloadTransportError:
+            if attempt == attempts:
+                raise
+            sleep_fn(backoff_seconds * (2 ** (attempt - 1)))
 
 
 def api_time(value: str) -> datetime:
@@ -461,7 +521,7 @@ def download_and_validate_artifact(
     temp_root: Path,
 ) -> dict[str, Any]:
     zip_path = temp_root / f"{artifact['id']}.zip"
-    client.download_artifact(artifact["id"], zip_path)
+    download_artifact_with_retry(client, artifact["id"], zip_path)
     digest = artifact.get("digest", "")
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", digest) or hashlib.sha256(
         zip_path.read_bytes()
@@ -525,7 +585,18 @@ def collect_required_evidence(
     repository: str,
     temp_root: Path,
     pr_head_sha: str | None = None,
+    wait_attempts: int = 1,
+    wait_seconds: int = 0,
+    sleep_fn=time.sleep,
 ) -> dict[str, Any]:
+    wait_for_required_workflows(
+        client,
+        head_sha=head_sha,
+        pr_head_sha=pr_head_sha,
+        attempts=wait_attempts,
+        wait_seconds=wait_seconds,
+        sleep_fn=sleep_fn,
+    )
     workflows = client.get_paginated("actions/workflows", "workflows")
     statuses = []
     findings = []
@@ -693,6 +764,47 @@ def collect_required_evidence(
         "head_sha": head_sha,
         "base_sha": base_sha,
     }
+
+
+def wait_for_required_workflows(
+    client: GitHubClient,
+    *,
+    head_sha: str,
+    pr_head_sha: str | None,
+    attempts: int,
+    wait_seconds: int,
+    sleep_fn=time.sleep,
+) -> bool:
+    """Wait only for the latest exact-head scanner runs to become terminal."""
+    if attempts < 1 or wait_seconds < 0:
+        raise ValueError("invalid workflow wait bounds")
+    for attempt in range(1, attempts + 1):
+        workflows = client.get_paginated("actions/workflows", "workflows")
+        terminal = True
+        for workflow_name in EXPECTED_WORKFLOWS:
+            matching = [item for item in workflows if item.get("name") == workflow_name]
+            if len(matching) != 1:
+                terminal = False
+                continue
+            runs = {}
+            for metadata_sha in dict.fromkeys([pr_head_sha or head_sha, head_sha]):
+                for run in client.get_paginated(
+                    f"actions/workflows/{matching[0]['id']}/runs?head_sha={metadata_sha}&event=pull_request",
+                    "workflow_runs",
+                ):
+                    if (
+                        run.get("head_sha") == metadata_sha
+                        and run.get("event") == "pull_request"
+                    ):
+                        runs[run["id"]] = run
+            latest = select_latest_run(list(runs.values()))
+            if latest is None or latest.get("status") != "completed":
+                terminal = False
+        if terminal:
+            return True
+        if attempt < attempts:
+            sleep_fn(wait_seconds)
+    return False
 
 
 def select_latest_run(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -1521,6 +1633,8 @@ def main() -> int:
     parser.add_argument("--token", default=os.environ.get("GH_TOKEN"))
     parser.add_argument("--temp-root", type=Path)
     parser.add_argument("--findings-output", type=Path)
+    parser.add_argument("--wait-attempts", type=int, default=1)
+    parser.add_argument("--wait-seconds", type=int, default=0)
     args = parser.parse_args()
     if args.mode == "resolve-pr":
         client = GitHubClient(args.token, args.repository)
@@ -1608,6 +1722,8 @@ def main() -> int:
                     base_sha=args.base_sha,
                     repository=args.repository,
                     temp_root=Path(root),
+                    wait_attempts=args.wait_attempts,
+                    wait_seconds=args.wait_seconds,
                 )
         except (
             GitHubApiError,

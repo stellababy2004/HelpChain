@@ -232,16 +232,11 @@ def add_security_headers(app: Flask):
         img_src = ["'self'", "data:"]
         frame_src = ["'self'"]
         # Allow restrained map assets for admin territorial risk map.
-        map_script_origin = "https://unpkg.com"
         map_tile_origin = "https://*.tile.openstreetmap.org"
         osm_tile_origin = "https://tile.openstreetmap.org"
         carto_tile_origin = "https://*.basemaps.cartocdn.com"
         turnstile_enabled = bool(app.config.get("HC_TURNSTILE_ENABLED", False))
         turnstile_origin = "https://challenges.cloudflare.com"
-        if map_script_origin not in script_src:
-            script_src.append(map_script_origin)
-        if map_script_origin not in style_src:
-            style_src.append(map_script_origin)
         if map_tile_origin not in img_src:
             img_src.append(map_tile_origin)
         if osm_tile_origin not in img_src:
@@ -249,7 +244,7 @@ def add_security_headers(app: Flask):
         if carto_tile_origin not in img_src:
             img_src.append(carto_tile_origin)
         if is_dev_csp:
-            for origin in ("https://fonts.googleapis.com", "https://unpkg.com"):
+            for origin in ("https://fonts.googleapis.com",):
                 if origin not in style_src:
                     style_src.append(origin)
             if "'unsafe-inline'" not in script_src:
@@ -1549,10 +1544,15 @@ def create_app(config_object=None) -> Flask:
     # --- Proposal Engine V1 route ---
     @app.get("/admin/proposal/<int:lead_id>")
     def proposal_engine_v1(lead_id):
+        from .admin_actor import resolve_current_admin_actor
+        from .admin_policies import can_access_professional_leads
         from datetime import datetime
         from flask import render_template_string, abort
         from sqlalchemy import inspect, text as sa_text
         from backend.extensions import db
+
+        if not can_access_professional_leads(resolve_current_admin_actor()):
+            abort(404)
 
         inspector = inspect(db.engine)
         lead_table = None
@@ -1702,10 +1702,15 @@ button,a{display:inline-flex;align-items:center;justify-content:center;border:1p
     # --- Proposal Engine Clean V2 ---
     @app.get("/admin/proposal-clean/<int:lead_id>")
     def proposal_engine_clean_v2(lead_id):
+        from .admin_actor import resolve_current_admin_actor
+        from .admin_policies import can_access_professional_leads
         from datetime import datetime
         from flask import render_template_string, abort
         from sqlalchemy import inspect, text as sa_text
         from backend.extensions import db
+
+        if not can_access_professional_leads(resolve_current_admin_actor()):
+            abort(404)
 
         inspector = inspect(db.engine)
         tables = inspector.get_table_names()

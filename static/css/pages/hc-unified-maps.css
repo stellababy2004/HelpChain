@@ -667,3 +667,106 @@ body.hc-admin-command-map-page .hc-command-map-stageChip,
     min-height: clamp(30rem, 65vh, 42rem);
   }
 }
+
+/* Keep the live summaries in the page flow so they cannot cover map controls or popups. */
+@media (max-width: 767.98px) {
+  body.hc-admin-command-map-page .hc-command-map-shell > .hc-command-map-overlay,
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-shell > .hc-map-command-panel,
+  body.hc-admin-professionals-map-page .hc-map-page .hc-risk-map-shell > .hc-map-command-panel {
+    position: relative;
+    inset: auto;
+    width: auto;
+    max-width: none;
+    margin: 0.75rem;
+  }
+
+  body.hc-admin-command-map-page .hc-command-map-shell.hc-map-surface > .hc-command-map-legend {
+    position: relative;
+    inset: auto;
+    width: fit-content;
+    max-width: calc(100% - 1.5rem);
+    margin: 0.75rem;
+  }
+}
+
+
+/* Mobile-first territorial maps: keep the geographic surface visible before
+   secondary commentary, without changing Leaflet data or desktop layouts. */
+@media (max-width: 767.98px) {
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-toolbar-card {
+    padding: 0.65rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-toolbar-card .hc-section-subtitle,
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-toolbar-card .hc-risk-map-kpi__hint,
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-queue-note,
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-card > .hc-card__header .hc-section-subtitle {
+    display: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-kpis {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-kpi {
+    min-width: 0;
+    min-height: 0;
+    padding: 0.5rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-contextbar {
+    padding: 0.5rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-contextbar__secondary {
+    display: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-shell {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-shell > .hc-risk-map-canvas {
+    order: -1;
+    flex: 0 0 auto;
+    width: 100%;
+    height: 350px;
+    min-height: 350px;
+    border-radius: 12px;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-shell > .hc-map-command-panel {
+    order: 1;
+    margin: 0.5rem;
+    padding: 0.65rem;
+    box-shadow: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-map-command-panel__copy {
+    display: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-actionstrip {
+    padding: 0.65rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-actionstrip__content > .hc-risk-map-actionstrip__meta:last-child {
+    display: none;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-actionstrip__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
+  }
+
+  body.hc-admin-risk-map-page .hc-map-page .hc-risk-map-actionstrip__actions .btn {
+    white-space: normal;
+    min-height: 44px;
+  }
+}

@@ -1,25 +1,33 @@
-# Code Owners
+# HelpChain code owners
 # https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/managing-repository-settings/about-code-owners
+#
+# Each matching rule names an explicit owner. CODEOWNERS only requests reviews
+# when the repository's branch protection or ruleset requires code-owner review.
+# A PR author cannot approve their own PR.
 
-# Global owners (must review all changes)
+# Default owner for all files
 * @stellababy2004
 
-# Security-related files (require security review)
-backend/appy.py
-.github/workflows/security-scans.yml
-.github/workflows/zap-baseline.yml
-.github/workflows/codeql-analysis.yml
-.github/workflows/trivy-scan.yml
-requirements.txt
-SECURITY.md
-.zap/
-.gitignore
+# GitHub automation and security release gate
+/.github/workflows/ @stellababy2004
+/scripts/security_release_gate.py @stellababy2004
+/scripts/security_release_gate_collect.py @stellababy2004
+/docs/security/ @stellababy2004
+/SECURITY.md @stellababy2004
+/.zap/ @stellababy2004
+/.gitignore @stellababy2004
 
-# Database and models
-backend/models*.py
-migrations/
+# Application security and backend
+/backend/ @stellababy2004
+/requirements.txt @stellababy2004
 
-# Configuration files
-render.yaml
-babel.cfg
-pytest.ini
+# Database and migrations
+/migrations/ @stellababy2004
+
+# Deployment and project configuration
+/render.yaml @stellababy2004
+/babel.cfg @stellababy2004
+/pytest.ini @stellababy2004
+
+# Protect the ownership policy itself
+/CODEOWNERS @stellababy2004

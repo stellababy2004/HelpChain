@@ -3977,17 +3977,15 @@ def submit_request():
                 ),
                 200,
             )
-        current_app.logger.warning("SUBMIT_REQUEST POST hit")
-        current_app.logger.warning("Form keys=%s", list(request.form.keys()))
-        current_app.logger.warning(
-            "website(honeypot)='%s'", (request.form.get("website") or "").strip()
+        current_app.logger.info(
+            "submit_request_received field_count=%s honeypot_present=%s",
+            len(request.form),
+            bool((request.form.get("website") or "").strip()),
         )
         # Honeypot anti-bot field (ако се задейства, искам да го ВИДИШ)
         website = (request.form.get("website") or "").strip()
         if website:
-            current_app.logger.warning(
-                "Honeypot triggered on submit_request: website=%r", website
-            )
+            current_app.logger.warning("submit_request_honeypot_triggered")
             # Pretend success to avoid bot feedback loops
             return (
                 render_template(
@@ -3999,18 +3997,16 @@ def submit_request():
 
         errors, cleaned = validate_submit_request_form(request.form)
 
-        logger.warning(
-            "Parsed: name=%r(len=%s) phone=%r(len=%s) email=%r(len=%s) category=%r urgency=%r desc_len=%s title=%r",
-            cleaned["name"],
+        logger.info(
+            "submit_request_validated name_length=%s phone_present=%s email_present=%s "
+            "category=%s urgency=%s description_length=%s title_length=%s",
             len(cleaned["name"] or ""),
-            cleaned["phone"],
-            len(cleaned["phone"] or ""),
-            _mask_email_for_log(cleaned["email"]),
-            len(cleaned["email"] or ""),
+            bool(cleaned["phone"]),
+            bool(cleaned["email"]),
             cleaned["category"],
             cleaned["urgency"],
             len(cleaned["description"] or ""),
-            cleaned["title"],
+            len(cleaned["title"] or ""),
         )
 
         if errors:
@@ -4244,10 +4240,9 @@ def submit_request_confirm():
 
         if matched_structure is None or matched_service is None:
             current_app.logger.info(
-                "[PUBLIC INTAKE ROUTING] no destination category=%r postcode=%r city=%r",
-                draft.get("category"),
-                draft.get("postcode"),
-                draft.get("city"),
+                "public_intake_routing_no_destination postcode_present=%s city_present=%s",
+                bool(draft.get("postcode")),
+                bool(draft.get("city")),
             )
             flash(
                 _(
@@ -4286,20 +4281,20 @@ def submit_request_confirm():
         except Exception as exc:
             db.session.rollback()
             orig = getattr(exc, "orig", None)
-            current_app.logger.exception(
-                "REQUEST PERSIST FAILED type=%s db_type=%s db_error=%s",
+            current_app.logger.error(
+                "request_persist_failed error_type=%s database_error_type=%s",
                 type(exc).__name__,
                 type(orig).__name__ if orig is not None else None,
-                str(orig) if orig is not None else None,
             )
             raise
         current_app.logger.info(
-            "[REQUEST GEO] request_id=%s status=%s normalized_address=%r lat=%r lng=%r",
+            "request_geocoding_completed request_id=%s status=%s "
+            "address_normalized=%s coordinates_present=%s",
             req.id,
             getattr(req, "geocoding_status", None),
-            getattr(req, "normalized_address", None),
-            getattr(req, "latitude", None),
-            getattr(req, "longitude", None),
+            bool(getattr(req, "normalized_address", None)),
+            getattr(req, "latitude", None) is not None
+            and getattr(req, "longitude", None) is not None,
         )
 
         # Pending intake identity for check-email/resend, not profile authorization.
@@ -4417,8 +4412,10 @@ def submit_request_confirm():
                 current_app.logger.info(
                     "[MAGIC LINK] send suppressed (antibot/rate-limit)"
                 )
-        except Exception as e:
-            current_app.logger.warning("[EMAIL] magic link send failed: %s", e)
+        except Exception as exc:
+            current_app.logger.warning(
+                "request_magic_link_send_failed error_type=%s", type(exc).__name__
+            )
 
         session.pop("request_draft", None)
         session.pop("request_draft_consent", None)
@@ -4462,8 +4459,10 @@ def submit_request_confirm():
             return redirect(url_for("main.dashboard"))
         return redirect(url_for("main.submit_request_check_email"))
 
-    except Exception as e:
-        current_app.logger.exception("CONFIRM FAILED: %s", e)
+    except Exception as exc:
+        current_app.logger.error(
+            "request_confirmation_failed error_type=%s", type(exc).__name__
+        )
         db.session.rollback()
         flash(_("Save failed. Please try again."), "error")
         return redirect(url_for("main.submit_request"))
