@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only GitHub PR/CI digest. No external writes, secrets or PII in output."""
+"""Read-only GitHub PR/CI digest. Does not make external writes or expose secrets. PR titles are included verbatim, so treat the report as internal operational data."""
 
 import json
 import os
