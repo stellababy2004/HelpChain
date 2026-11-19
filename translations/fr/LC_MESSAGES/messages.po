@@ -21011,3 +21011,105 @@ msgstr ""
 
 msgid "Invalid code. Attempts remaining: %(count)s."
 msgstr "Code invalide. Tentatives restantes : %(count)s."
+
+msgid "Analyse des conversions | HelpChain"
+msgstr "Analyse des conversions | HelpChain"
+
+msgid "Conversions"
+msgstr "Conversions"
+
+msgid "Période analysée"
+msgstr "Période analysée"
+
+msgid "7 derniers jours"
+msgstr "7 derniers jours"
+
+msgid "30 derniers jours"
+msgstr "30 derniers jours"
+
+msgid "90 derniers jours"
+msgstr "90 derniers jours"
+
+msgid "Événements mesurés"
+msgstr "Événements mesurés"
+
+msgid "Pages vues"
+msgstr "Pages vues"
+
+msgid "Clics sur CTA"
+msgstr "Clics sur CTA"
+
+msgid "Pages vues → CTA"
+msgstr "Pages vues → CTA"
+
+msgid "CTA → formulaire"
+msgstr "CTA → formulaire"
+
+msgid "Données insuffisantes"
+msgstr "Données insuffisantes"
+
+msgid "Performance par acquisition"
+msgstr "Performance par acquisition"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Campagne"
+msgstr "Campagne"
+
+msgid "Sessions"
+msgstr "Sessions"
+
+msgid "Formulaires"
+msgstr "Formulaires"
+
+msgid "Chargement des données…"
+msgstr "Chargement des données…"
+
+msgid "Performance par page"
+msgstr "Performance par page"
+
+msgid "Page"
+msgstr "Page"
+
+msgid "Vues"
+msgstr "Vues"
+
+msgid "Vues → CTA"
+msgstr "Vues → CTA"
+
+msgid "Abandons après CTA"
+msgstr "Abandons après CTA"
+
+msgid "Alertes de conversion"
+msgstr "Alertes de conversion"
+
+msgid "Chargement des alertes…"
+msgstr "Chargement des alertes…"
+
+msgid "Intelligence revenu"
+msgstr "Intelligence revenu"
+
+msgid "Revenu estimé :"
+msgstr "Revenu estimé :"
+
+msgid "Potentiel non converti :"
+msgstr "Potentiel non converti :"
+
+msgid "Visiteur"
+msgstr "Visiteur"
+
+msgid "Niveau"
+msgstr "Niveau"
+
+msgid "Montant"
+msgstr "Montant"
+
+msgid "Pages consultées"
+msgstr "Pages consultées"
+
+msgid "Actions recommandées"
+msgstr "Actions recommandées"
+
+msgid "Suivez les parcours mesurés, des pages vues aux formulaires envoyés, pour identifier les points de friction."
+msgstr "Suivez les parcours mesurés, des pages vues aux formulaires envoyés, pour identifier les points de friction."

@@ -13621,7 +13621,7 @@ msgstr ""
 
 #: admin/revenue_dashboard.html:412
 msgid "Score"
-msgstr ""
+msgstr "Lead score"
 
 #: admin/revenue_dashboard.html:421
 msgid "Aucune action commerciale urgente"
@@ -13669,7 +13669,7 @@ msgstr ""
 
 #: admin/revenue_dashboard.html:488 admin/revenue_dashboard.html:523
 msgid "CTA"
-msgstr ""
+msgstr "Call to action"
 
 #: admin/revenue_dashboard.html:493
 msgid "FORMULAIRES"
@@ -14182,7 +14182,7 @@ msgstr ""
 
 #: admin/translations_key.html:162
 msgid "Source"
-msgstr ""
+msgstr "Traffic source"
 
 #: admin/translations_key.html:164
 msgid "Change"
@@ -15351,7 +15351,7 @@ msgstr "Why   %(pct)s %%?"
 
 #: layouts/admin_workspace.html:93
 msgid "Conversion"
-msgstr ""
+msgstr "Conversion rate"
 
 #: layouts/admin_workspace.html:99
 msgid "Rapports"
@@ -20341,3 +20341,105 @@ msgstr "The logo position and size will be preserved after saving."
 
 msgid "Invalid code. Attempts remaining: %(count)s."
 msgstr "Incorrect code. You have %(count)s attempts remaining."
+
+msgid "Analyse des conversions | HelpChain"
+msgstr "Conversion Analytics | HelpChain"
+
+msgid "Conversions"
+msgstr "Conversion metrics"
+
+msgid "Période analysée"
+msgstr "Analysis period"
+
+msgid "7 derniers jours"
+msgstr "Last 7 days"
+
+msgid "30 derniers jours"
+msgstr "Last 30 days"
+
+msgid "90 derniers jours"
+msgstr "Last 90 days"
+
+msgid "Événements mesurés"
+msgstr "Tracked events"
+
+msgid "Pages vues"
+msgstr "Page views"
+
+msgid "Clics sur CTA"
+msgstr "CTA clicks"
+
+msgid "Pages vues → CTA"
+msgstr "Page views to CTA"
+
+msgid "CTA → formulaire"
+msgstr "CTA to form"
+
+msgid "Données insuffisantes"
+msgstr "Insufficient data"
+
+msgid "Performance par acquisition"
+msgstr "Acquisition performance"
+
+msgid "Support"
+msgstr "Medium"
+
+msgid "Campagne"
+msgstr "Campaign"
+
+msgid "Sessions"
+msgstr "Visits"
+
+msgid "Formulaires"
+msgstr "Forms"
+
+msgid "Chargement des données…"
+msgstr "Loading data..."
+
+msgid "Performance par page"
+msgstr "Page performance"
+
+msgid "Page"
+msgstr "Web page"
+
+msgid "Vues"
+msgstr "Views"
+
+msgid "Vues → CTA"
+msgstr "Views to CTA"
+
+msgid "Abandons après CTA"
+msgstr "Drop-offs after CTA"
+
+msgid "Alertes de conversion"
+msgstr "Conversion alerts"
+
+msgid "Chargement des alertes…"
+msgstr "Loading alerts..."
+
+msgid "Intelligence revenu"
+msgstr "Revenue intelligence"
+
+msgid "Revenu estimé :"
+msgstr "Estimated revenue:"
+
+msgid "Potentiel non converti :"
+msgstr "Unconverted potential:"
+
+msgid "Visiteur"
+msgstr "Visitor"
+
+msgid "Niveau"
+msgstr "Tier"
+
+msgid "Montant"
+msgstr "Amount"
+
+msgid "Pages consultées"
+msgstr "Pages visited"
+
+msgid "Actions recommandées"
+msgstr "Recommended actions"
+
+msgid "Suivez les parcours mesurés, des pages vues aux formulaires envoyés, pour identifier les points de friction."
+msgstr "Track journeys from page views to submitted forms to identify friction points."

@@ -13712,7 +13712,7 @@ msgstr ""
 
 #: admin/revenue_dashboard.html:412
 msgid "Score"
-msgstr ""
+msgstr "Оценка"
 
 #: admin/revenue_dashboard.html:421
 msgid "Aucune action commerciale urgente"
@@ -13760,7 +13760,7 @@ msgstr ""
 
 #: admin/revenue_dashboard.html:488 admin/revenue_dashboard.html:523
 msgid "CTA"
-msgstr ""
+msgstr "Призив към действие"
 
 #: admin/revenue_dashboard.html:493
 msgid "FORMULAIRES"
@@ -14269,7 +14269,7 @@ msgstr ""
 
 #: admin/translations_key.html:162
 msgid "Source"
-msgstr ""
+msgstr "Източник"
 
 #: admin/translations_key.html:164
 msgid "Change"
@@ -15438,7 +15438,7 @@ msgstr "Какво ще кажеш за това?"
 
 #: layouts/admin_workspace.html:93
 msgid "Conversion"
-msgstr ""
+msgstr "Конверсия"
 
 #: layouts/admin_workspace.html:99
 msgid "Rapports"
@@ -20562,3 +20562,105 @@ msgstr "Позицията и размерът на логото ще се за�
 
 msgid "Invalid code. Attempts remaining: %(count)s."
 msgstr "Невалиден код. Оставащи опити: %(count)s."
+
+msgid "Analyse des conversions | HelpChain"
+msgstr "Анализ на конверсиите | HelpChain"
+
+msgid "Conversions"
+msgstr "Конверсии"
+
+msgid "Période analysée"
+msgstr "Анализиран период"
+
+msgid "7 derniers jours"
+msgstr "Последните 7 дни"
+
+msgid "30 derniers jours"
+msgstr "Последните 30 дни"
+
+msgid "90 derniers jours"
+msgstr "Последните 90 дни"
+
+msgid "Événements mesurés"
+msgstr "Отчетени събития"
+
+msgid "Pages vues"
+msgstr "Прегледи на страници"
+
+msgid "Clics sur CTA"
+msgstr "Кликвания върху CTA"
+
+msgid "Pages vues → CTA"
+msgstr "Прегледи към CTA"
+
+msgid "CTA → formulaire"
+msgstr "CTA към формуляр"
+
+msgid "Données insuffisantes"
+msgstr "Недостатъчно данни"
+
+msgid "Performance par acquisition"
+msgstr "Ефективност по източник"
+
+msgid "Support"
+msgstr "Канал"
+
+msgid "Campagne"
+msgstr "Кампания"
+
+msgid "Sessions"
+msgstr "Сесии"
+
+msgid "Formulaires"
+msgstr "Формуляри"
+
+msgid "Chargement des données…"
+msgstr "Зареждане на данните..."
+
+msgid "Performance par page"
+msgstr "Ефективност по страници"
+
+msgid "Page"
+msgstr "Страница"
+
+msgid "Vues"
+msgstr "Прегледи"
+
+msgid "Vues → CTA"
+msgstr "Прегледи към CTA"
+
+msgid "Abandons après CTA"
+msgstr "Отпадания след CTA"
+
+msgid "Alertes de conversion"
+msgstr "Сигнали за конверсии"
+
+msgid "Chargement des alertes…"
+msgstr "Зареждане на сигналите..."
+
+msgid "Intelligence revenu"
+msgstr "Анализ на приходите"
+
+msgid "Revenu estimé :"
+msgstr "Прогнозни приходи:"
+
+msgid "Potentiel non converti :"
+msgstr "Нереализиран потенциал:"
+
+msgid "Visiteur"
+msgstr "Посетител"
+
+msgid "Niveau"
+msgstr "Ниво"
+
+msgid "Montant"
+msgstr "Сума"
+
+msgid "Pages consultées"
+msgstr "Посетени страници"
+
+msgid "Actions recommandées"
+msgstr "Препоръчани действия"
+
+msgid "Suivez les parcours mesurés, des pages vues aux formulaires envoyés, pour identifier les points de friction."
+msgstr "Проследявайте пътя от прегледите до изпратените формуляри."
