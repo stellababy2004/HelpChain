@@ -1,4 +1,5 @@
-﻿import json
+﻿from sqlalchemy.exc import IntegrityError
+import json
 import os
 import time
 import urllib.request
@@ -98,15 +99,53 @@ def collect_website_event():
     sid = payload.get("session_id", "")
     if not isinstance(sid, str) or len(sid) > 128:
         abort(400, description="Invalid session_id")
+    event_id = payload.get("event_id")
+    if event_id is not None:
+        if not isinstance(event_id, str) or not 1 <= len(event_id) <= 128:
+            abort(400, description="Invalid event_id")
+        existing = AnalyticsEvent.query.filter_by(
+            structure_id=structure.id, event_id=event_id
+        ).first()
+        if existing is not None:
+            return jsonify({"ok": True, "duplicate": True}), 200
     event = AnalyticsEvent(
         structure_id=structure.id, event_type=event_type,
         event_category="website", event_action=event_type,
         page_url=path.split("?", 1)[0].split("#", 1)[0],
-        user_session=sid, user_type="guest",
+        user_session=sid, user_type="guest", event_id=event_id,
     )
     try:
         db.session.add(event)
         db.session.commit()
+    except IntegrityError as exc:
+        db.session.rollback()
+        original = exc.orig
+        sqlstate = getattr(original, "sqlstate", None) or getattr(
+            original, "pgcode", None
+        )
+        constraint = getattr(
+            getattr(original, "diag", None), "constraint_name", None
+        )
+        sqlite_message = str(original).lower()
+        expected_sqlite_conflict = (
+            "unique constraint failed:" in sqlite_message
+            and "analytics_events.structure_id" in sqlite_message
+            and "analytics_events.event_id" in sqlite_message
+        )
+        expected_pg_conflict = (
+            sqlstate == "23505"
+            and constraint == "uq_analytics_events_structure_event"
+        )
+        if event_id is not None and (
+            expected_pg_conflict or expected_sqlite_conflict
+        ):
+            existing = AnalyticsEvent.query.filter_by(
+                structure_id=structure.id, event_id=event_id
+            ).first()
+            if existing is not None:
+                return jsonify({"ok": True, "duplicate": True}), 200
+        current_app.logger.exception("Website analytics integrity conflict")
+        return jsonify({"ok": False}), 500
     except Exception:
         db.session.rollback()
         current_app.logger.exception("Website analytics collection failed")
@@ -478,7 +517,7 @@ def collect_event():
             user_session=str(
                 payload.get("session_id")
                 or props.get("session_id")
-                or request.cookies.get("session")
+
                 or ""
             )[:128],
             user_type="admin" if session.get("admin_logged_in") else "guest",

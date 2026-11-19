@@ -565,3 +565,172 @@ def test_global_acquisition_can_see_both_scoped_sources(app, client, tenants, se
     assert "linkedin" in sources
     assert "google" in sources
 
+
+def test_first_party_event_does_not_store_flask_session_cookie(client, tenants):
+    """Authentication session cookies must not become analytics identifiers."""
+    with client.session_transaction() as sess:
+        sess["analytics_regression_marker"] = "private-session"
+
+    response = client.post(
+        "/events",
+        json={
+            "event": "cta_click",
+            "page_url": "/offre",
+            "props": {"category": "conversion"},
+        },
+        headers={"User-Agent": "Mozilla/5.0"},
+        environ_overrides={"REMOTE_ADDR": "203.0.113.10"},
+    )
+
+    assert response.status_code == 201
+    row = AnalyticsEvent.query.order_by(AnalyticsEvent.id.desc()).first()
+    assert row is not None
+    assert row.event_type == "cta_click"
+    assert row.user_session == ""
+
+
+def test_website_event_idempotency(client, tenants):
+    """Retrying an event must not create duplicate analytics rows."""
+    payload = {
+        "site_id": tenants["a"].slug,
+        "event": "cta_click",
+        "page_url": "/offre",
+        "event_id": "demo-event-123",
+    }
+    headers = {"X-Analytics-Key": tenants["key_a"]}
+
+    first = client.post("/api/website/events", json=payload, headers=headers)
+    second = client.post("/api/website/events", json=payload, headers=headers)
+
+    assert first.status_code == 201
+    assert second.status_code == 200
+    assert second.json["duplicate"] is True
+    assert AnalyticsEvent.query.filter_by(
+        structure_id=tenants["a"].id,
+        event_id="demo-event-123",
+    ).count() == 1
+
+
+def test_same_event_id_allowed_for_different_tenants(client, tenants):
+    """Event IDs must be unique within a tenant, not globally."""
+    for tenant in ("a", "b"):
+        response = client.post(
+            "/api/website/events",
+            headers={"X-Analytics-Key": tenants[f"key_{tenant}"]},
+            json={
+                "site_id": tenants[tenant].slug,
+                "event": "page_view",
+                "page_url": "/offre",
+                "event_id": "shared-event-123",
+            },
+        )
+        assert response.status_code == 201
+
+    assert AnalyticsEvent.query.filter_by(
+        event_id="shared-event-123"
+    ).count() == 2
+
+
+def test_invalid_event_ids_are_rejected(client, tenants):
+    """Malformed event IDs must not be persisted."""
+    for value in ("", 123, [], "x" * 129):
+        response = client.post(
+            "/api/website/events",
+            headers={"X-Analytics-Key": tenants["key_a"]},
+            json={
+                "site_id": tenants["a"].slug,
+                "event": "page_view",
+                "page_url": "/offre",
+                "event_id": value,
+            },
+        )
+        assert response.status_code == 400
+
+
+def test_website_event_integrity_conflict_returns_duplicate(
+    client, tenants, monkeypatch
+):
+    """A concurrent duplicate must return 200 instead of 500."""
+    from backend.extensions import db
+    from sqlalchemy.exc import IntegrityError
+
+    payload = {
+        "site_id": tenants["a"].slug,
+        "event": "page_view",
+        "page_url": "/concurrent",
+        "event_id": "concurrent-event-123",
+    }
+    headers = {"X-Analytics-Key": tenants["key_a"]}
+
+    original_commit = db.session.commit
+    triggered = False
+
+    def concurrent_commit():
+        nonlocal triggered
+        if not triggered:
+            triggered = True
+            db.session.flush()
+            original_commit()
+            raise IntegrityError(
+                "simulated concurrent duplicate",
+                {},
+                Exception(
+                    "UNIQUE constraint failed: "
+                    "analytics_events.structure_id, analytics_events.event_id"
+                ),
+            )
+        return original_commit()
+
+    monkeypatch.setattr(db.session, "commit", concurrent_commit)
+
+    response = client.post(
+        "/api/website/events", json=payload, headers=headers
+    )
+
+    assert response.status_code == 200
+    assert response.json["duplicate"] is True
+    assert AnalyticsEvent.query.filter_by(
+        structure_id=tenants["a"].id,
+        event_id="concurrent-event-123",
+    ).count() == 1
+
+
+def test_unrelated_integrity_conflict_is_not_duplicate(
+    client, tenants, monkeypatch
+):
+    """Unrelated database integrity failures must not be hidden."""
+    from backend.extensions import db
+    from sqlalchemy.exc import IntegrityError
+
+    payload = {
+        "site_id": tenants["a"].slug,
+        "event": "page_view",
+        "page_url": "/unrelated-conflict",
+        "event_id": "unrelated-event-123",
+    }
+    headers = {"X-Analytics-Key": tenants["key_a"]}
+
+    original_commit = db.session.commit
+    triggered = False
+
+    def unrelated_commit():
+        nonlocal triggered
+        if not triggered:
+            triggered = True
+            db.session.flush()
+            original_commit()
+            raise IntegrityError(
+                "simulated unrelated constraint",
+                {},
+                Exception("FOREIGN KEY constraint failed"),
+            )
+        return original_commit()
+
+    monkeypatch.setattr(db.session, "commit", unrelated_commit)
+
+    response = client.post(
+        "/api/website/events", json=payload, headers=headers
+    )
+
+    assert response.status_code == 500
+    assert response.json["ok"] is False
