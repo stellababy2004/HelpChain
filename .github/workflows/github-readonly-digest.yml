@@ -1,0 +1,31 @@
+name: Read-only GitHub Operations Digest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 8 * * 1,2,4,5'
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate read-only report
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python scripts/github_readonly_digest.py
+      - name: Attach report to workflow summary
+        run: cat reports/github-digest.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload digest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-readonly-digest
+          path: reports/github-digest.md
+          retention-days: 7
