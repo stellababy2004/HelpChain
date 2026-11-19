@@ -8,49 +8,60 @@
   const data = await res.json();
   if (!res.ok) {
     document.getElementById("pagesBody").innerHTML =
-      '<tr><td colspan="7">Analytics unavailable.</td></tr>';
+      '<tr><td colspan="7" class="hc-conv-empty">Données indisponibles.</td></tr>';
     document.getElementById("acquisitionBody").innerHTML =
-      '<tr><td colspan="7">Analytics unavailable.</td></tr>';
+      '<tr><td colspan="7" class="hc-conv-empty">Données indisponibles.</td></tr>';
     return;
   }
 
   const s = data.summary || {};
-  document.getElementById("events").textContent = s.events ?? 0;
-  document.getElementById("views").textContent = s.page_views ?? 0;
-  document.getElementById("clicks").textContent = s.cta_clicks ?? 0;
-  document.getElementById("v2c").textContent = (s.view_to_click ?? 0) + "%";
-  document.getElementById("c2s").textContent = (s.click_to_submit ?? 0) + "%";
+  document.getElementById("events").textContent = displayCount(s.events);
+  document.getElementById("views").textContent = displayCount(s.page_views);
+  document.getElementById("clicks").textContent = displayCount(s.cta_clicks);
+  document.getElementById("v2c").textContent = displayRate(s.view_to_click, s.page_views);
+  document.getElementById("c2s").textContent = displayRate(s.click_to_submit, s.cta_clicks);
 
   const rows = (data.pages || []).map(row => `
     <tr>
       <td><strong>${hcAnalyticsEscape(row.page)}</strong></td>
-      <td>${row.views}</td>
-      <td>${row.clicks}</td>
-      <td>${row.submits}</td>
-      <td>${row.view_to_click}%</td>
-      <td>${row.click_to_submit}%</td>
-      <td>${row.dropoff_after_click}</td>
+      <td>${displayCount(row.views)}</td>
+      <td>${displayCount(row.clicks)}</td>
+      <td>${displayCount(row.submits)}</td>
+      <td>${displayRate(row.view_to_click, row.views)}</td>
+      <td>${displayRate(row.click_to_submit, row.clicks)}</td>
+      <td>${displayCount(row.dropoff_after_click)}</td>
     </tr>
   `).join("");
 
   document.getElementById("pagesBody").innerHTML =
-    rows || '<tr><td colspan="7" class="text-muted">No conversion data.</td></tr>';
+    rows || '<tr><td colspan="7" class="hc-conv-empty">Données insuffisantes pour analyser les conversions.</td></tr>';
 
   const acquisitionRows = (data.acquisition || []).map(row => `
     <tr>
       <td><strong>${hcAnalyticsEscape(row.source)}</strong></td>
       <td>${hcAnalyticsEscape(row.medium)}</td>
       <td>${hcAnalyticsEscape(row.campaign)}</td>
-      <td>${row.sessions ?? 0}</td>
-      <td>${row.cta_clicks ?? 0}</td>
-      <td>${row.form_submits ?? 0}</td>
-      <td><strong>${row.conversion_rate ?? 0}%</strong></td>
+      <td>${displayCount(row.sessions)}</td>
+      <td>${displayCount(row.cta_clicks)}</td>
+      <td>${displayCount(row.form_submits)}</td>
+      <td><strong>${displayRate(row.conversion_rate, row.sessions)}</strong></td>
     </tr>
   `).join("");
 
   document.getElementById("acquisitionBody").innerHTML =
     acquisitionRows ||
-    '<tr><td colspan="7" class="text-muted">No acquisition data.</td></tr>';
+    '<tr><td colspan="7" class="hc-conv-empty">Données insuffisantes pour analyser l’acquisition.</td></tr>';
+}
+
+function displayCount(value) {
+  return Number.isFinite(Number(value)) ? String(value) : "Données insuffisantes";
+}
+
+function displayRate(value, denominator) {
+  if (!Number.isFinite(Number(value)) || !Number.isFinite(Number(denominator)) || Number(denominator) <= 0) {
+    return "Données insuffisantes";
+  }
+  return String(value) + "%";
 }
 
 function hcAnalyticsUrl(path) {

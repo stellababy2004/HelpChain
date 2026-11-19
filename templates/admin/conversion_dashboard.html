@@ -1,0 +1,121 @@
+{% extends "layouts/admin_workspace.html" %}
+{% block title %}Analyse des conversions | HelpChain{% endblock %}
+{% block admin_body_class %} hc-conversion-page{% endblock %}
+{% block admin_workspace_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/admin-conversion.css') }}">
+{% endblock %}
+{% block admin_content %}
+<div class="hc-conv-wrap">
+
+    <section class="hc-conv-hero">
+      <div>
+        <h1 class="hc-conv-title">Conversions</h1>
+        <p id="analyticsScope">{{ analytics_scope_label }}</p>
+        <p class="hc-conv-subtitle">
+          Suivez les parcours mesurés, des pages vues aux formulaires envoyés, pour identifier les points de friction.
+        </p>
+      </div>
+      <select id="days" class="form-select form-select-sm" style="width:160px" aria-label="Période analysée">
+        <option value="7">7 derniers jours</option>
+        <option value="30" selected>30 derniers jours</option>
+        <option value="90">90 derniers jours</option>
+      </select>
+    </section>
+
+    <section class="hc-conv-grid">
+      <article class="hc-conv-card"><div class="hc-conv-label">Événements mesurés</div><div id="events" class="hc-conv-value" aria-live="polite">—</div></article>
+      <article class="hc-conv-card"><div class="hc-conv-label">Pages vues</div><div id="views" class="hc-conv-value" aria-live="polite">—</div></article>
+      <article class="hc-conv-card"><div class="hc-conv-label">Clics sur CTA</div><div id="clicks" class="hc-conv-value" aria-live="polite">—</div></article>
+      <article class="hc-conv-card"><div class="hc-conv-label">Pages vues → CTA</div><div id="v2c" class="hc-conv-value" aria-live="polite">Données insuffisantes</div></article>
+      <article class="hc-conv-card"><div class="hc-conv-label">CTA → formulaire</div><div id="c2s" class="hc-conv-value" aria-live="polite">Données insuffisantes</div></article>
+    </section>
+
+    <section class="hc-conv-table" style="margin-bottom:20px">
+      <h5 style="padding:16px">Performance par acquisition</h5>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>Support</th>
+              <th>Campagne</th>
+              <th>Sessions</th>
+              <th>CTA</th>
+              <th>Formulaires</th>
+              <th>Conversion</th>
+            </tr>
+          </thead>
+          <tbody id="acquisitionBody">
+            <tr>
+              <td colspan="7" class="hc-conv-empty">Chargement des données…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="hc-conv-table">
+      <h5>Performance par page</h5>
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Page</th>
+            <th>Vues</th>
+            <th>CTA</th>
+            <th>Formulaires</th>
+            <th>Vues → CTA</th>
+            <th>CTA → formulaire</th>
+            <th>Abandons après CTA</th>
+          </tr>
+        </thead>
+        <tbody id="pagesBody">
+          <tr><td colspan="7" class="hc-conv-empty">Chargement des données…</td></tr>
+        </tbody>
+      </table>
+    </section>
+          <section class="hc-conv-table" style="margin-top:20px">
+      <h5 style="padding:16px">Alertes de conversion</h5>
+      <div id="revAlerts" style="padding:0 16px 16px">
+        <div class="hc-alert-empty">Chargement des alertes…</div>
+      </div>
+    </section>
+    <section class="hc-conv-table" style="margin-top:20px">
+      <h5 style="padding:16px">Intelligence revenu</h5>
+
+      <div style="padding:0 16px 12px">
+        <strong>Revenu estimé :</strong>
+        <span id="revTotal">Données insuffisantes</span>
+<div style="padding:0 16px 12px; color:#b45309; font-weight:600">
+  Potentiel non converti : <span id="revLost">Données insuffisantes</span>
+</div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Visiteur</th>
+            <th>Score</th>
+            <th>Niveau</th>
+            <th>Montant</th>
+            <th>Pages consultées</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="revBody"></tbody>
+      </table>
+    </section>
+  
+<section class="hc-conv-table" style="margin-top:20px">
+  <h5 style="padding:16px">Actions recommandées</h5>
+
+  <div id="revActions" style="padding:0 16px 16px"></div>
+</section>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ super() }}
+<script defer src="{{ url_for('static', filename='js/conversion-dashboard.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/revenue-intelligence.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/revenue-alerts.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/revenue-alert-dispatch.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/revenue-actions.js') }}"></script>
+{% endblock %}

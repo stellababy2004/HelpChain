@@ -1,5 +1,4 @@
-﻿from sqlalchemy.exc import IntegrityError
-import json
+﻿import json
 import os
 import time
 import urllib.request
@@ -13,14 +12,17 @@ from flask import (
     g,
     jsonify,
     redirect,
+    render_template,
     request,
     session,
     url_for,
 )
 from flask_babel import gettext as _
 from markupsafe import escape
+from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import HTTPException
 
+from ..admin_policies import can_view_global_analytics
 from ..extensions import csrf
 from ..services.telemetry_policy import (
     classify_public_telemetry_request,
@@ -28,10 +30,15 @@ from ..services.telemetry_policy import (
     get_client_ip,
 )
 from ..services.website_analytics import (
-    analytics_actor, first_party_structure, ingestion_structure, ingestion_token,
-    read_scope, scope_description, scoped_events, validate_selectors,
+    analytics_actor,
+    first_party_structure,
+    ingestion_structure,
+    ingestion_token,
+    read_scope,
+    scope_description,
+    scoped_events,
+    validate_selectors,
 )
-from ..admin_policies import can_view_global_analytics
 
 analytics_bp = Blueprint(
     "analytics",
@@ -41,9 +48,12 @@ analytics_bp = Blueprint(
 csrf.exempt(analytics_bp)
 
 _CONVERSION_ENDPOINTS = {
-    "analytics.admin_conversion_dashboard", "analytics.admin_conversion_funnel_api",
-    "analytics.admin_revenue_intelligence", "analytics.admin_revenue_alerts",
-    "analytics.admin_revenue_alert_dispatch", "analytics.website_tracking_config",
+    "analytics.admin_conversion_dashboard",
+    "analytics.admin_conversion_funnel_api",
+    "analytics.admin_revenue_intelligence",
+    "analytics.admin_revenue_alerts",
+    "analytics.admin_revenue_alert_dispatch",
+    "analytics.website_tracking_config",
 }
 
 
@@ -51,7 +61,10 @@ _CONVERSION_ENDPOINTS = {
 def authorize_website_analytics():
     if request.endpoint in _CONVERSION_ENDPOINTS:
         g.website_analytics_structure = read_scope()
-    elif request.endpoint not in {"analytics.collect_event", "analytics.collect_website_event"}:
+    elif request.endpoint not in {
+        "analytics.collect_event",
+        "analytics.collect_website_event",
+    }:
         # Legacy dashboards/bookmarks contain global data, not scoped event queries.
         if not can_view_global_analytics(analytics_actor()):
             abort(403)
@@ -73,12 +86,14 @@ def website_tracking_config():
     structure = g.website_analytics_structure
     if structure is None:
         abort(400, description="Select a site_id or structure_id")
-    return jsonify({
-        "site_id": structure.slug,
-        "ingestion_key": ingestion_token(structure),
-        "endpoint": url_for("analytics.collect_website_event"),
-        "transport": "server-to-server",
-    })
+    return jsonify(
+        {
+            "site_id": structure.slug,
+            "ingestion_key": ingestion_token(structure),
+            "endpoint": url_for("analytics.collect_website_event"),
+            "transport": "server-to-server",
+        }
+    )
 
 
 @analytics_bp.route("/api/website/events", methods=["POST"])
@@ -95,7 +110,10 @@ def collect_website_event():
         abort(400, description="Unsupported website event")
     path = payload.get("page_url")
     if not isinstance(path, str) or not path.startswith("/") or len(path) > 500:
-        abort(400, description="page_url must be a site-relative path of at most 500 characters")
+        abort(
+            400,
+            description="page_url must be a site-relative path of at most 500 characters",
+        )
     sid = payload.get("session_id", "")
     if not isinstance(sid, str) or len(sid) > 128:
         abort(400, description="Invalid session_id")
@@ -109,10 +127,14 @@ def collect_website_event():
         if existing is not None:
             return jsonify({"ok": True, "duplicate": True}), 200
     event = AnalyticsEvent(
-        structure_id=structure.id, event_type=event_type,
-        event_category="website", event_action=event_type,
+        structure_id=structure.id,
+        event_type=event_type,
+        event_category="website",
+        event_action=event_type,
         page_url=path.split("?", 1)[0].split("#", 1)[0],
-        user_session=sid, user_type="guest", event_id=event_id,
+        user_session=sid,
+        user_type="guest",
+        event_id=event_id,
     )
     try:
         db.session.add(event)
@@ -123,9 +145,7 @@ def collect_website_event():
         sqlstate = getattr(original, "sqlstate", None) or getattr(
             original, "pgcode", None
         )
-        constraint = getattr(
-            getattr(original, "diag", None), "constraint_name", None
-        )
+        constraint = getattr(getattr(original, "diag", None), "constraint_name", None)
         sqlite_message = str(original).lower()
         expected_sqlite_conflict = (
             "unique constraint failed:" in sqlite_message
@@ -133,12 +153,9 @@ def collect_website_event():
             and "analytics_events.event_id" in sqlite_message
         )
         expected_pg_conflict = (
-            sqlstate == "23505"
-            and constraint == "uq_analytics_events_structure_event"
+            sqlstate == "23505" and constraint == "uq_analytics_events_structure_event"
         )
-        if event_id is not None and (
-            expected_pg_conflict or expected_sqlite_conflict
-        ):
+        if event_id is not None and (expected_pg_conflict or expected_sqlite_conflict):
             existing = AnalyticsEvent.query.filter_by(
                 structure_id=structure.id, event_id=event_id
             ).first()
@@ -232,7 +249,11 @@ def _explain_legacy_revenue_session(events):
                 "form_submit",
                 "Form submitted",
                 form_submits * 100,
-                {"event_type": "form_submit", "event_type_suffix": "_form_submit", "count": form_submits},
+                {
+                    "event_type": "form_submit",
+                    "event_type_suffix": "_form_submit",
+                    "count": form_submits,
+                },
             )
         )
     if demo_page_views:
@@ -290,8 +311,12 @@ def _persist_legacy_revenue_score(session_id, explanation):
         row.total_score = int(explanation["total_score"])
         row.formula_version = REVENUE_VISITOR_SCORE_FORMULA_VERSION
         row.confidence = str(explanation.get("confidence") or "low")
-        row.component_list_json = json.dumps(explanation.get("components") or [], sort_keys=True)
-        row.evidence_json = json.dumps(explanation.get("evidence") or {}, sort_keys=True)
+        row.component_list_json = json.dumps(
+            explanation.get("components") or [], sort_keys=True
+        )
+        row.evidence_json = json.dumps(
+            explanation.get("evidence") or {}, sort_keys=True
+        )
         row.originating_event_ids_json = json.dumps(
             explanation.get("originating_event_ids") or [],
             sort_keys=True,
@@ -350,8 +375,12 @@ def _persist_legacy_revenue_scores(scored_sessions):
             row.total_score = int(explanation["total_score"])
             row.formula_version = REVENUE_VISITOR_SCORE_FORMULA_VERSION
             row.confidence = str(explanation.get("confidence") or "low")
-            row.component_list_json = json.dumps(explanation.get("components") or [], sort_keys=True)
-            row.evidence_json = json.dumps(explanation.get("evidence") or {}, sort_keys=True)
+            row.component_list_json = json.dumps(
+                explanation.get("components") or [], sort_keys=True
+            )
+            row.evidence_json = json.dumps(
+                explanation.get("evidence") or {}, sort_keys=True
+            )
             row.originating_event_ids_json = json.dumps(
                 explanation.get("originating_event_ids") or [],
                 sort_keys=True,
@@ -448,6 +477,8 @@ def analytics_stream():
             "message": _("No analytics events available yet."),
         }
     )
+
+
 from hashlib import sha256
 
 
@@ -455,7 +486,7 @@ def _hash_ip(value: str | None) -> str | None:
     if not value:
         return None
     salt = current_app.config.get("SECRET_KEY", "helpchain-local-dev")
-    return sha256(f"{salt}:{value}".encode("utf-8")).hexdigest()[:24]
+    return sha256(f"{salt}:{value}".encode()).hexdigest()[:24]
 
 
 @analytics_bp.route("/events", methods=["POST"])
@@ -479,8 +510,11 @@ def collect_event():
             if field in payload and not isinstance(payload[field], dict):
                 abort(400)
         selectors = {"site_id", "tracking_id", "structure_id", "organization_id"}
-        if (selectors.intersection(payload) or selectors.intersection(request.args)
-                or request.headers.get("X-Analytics-Key")):
+        if (
+            selectors.intersection(payload)
+            or selectors.intersection(request.args)
+            or request.headers.get("X-Analytics-Key")
+        ):
             return collect_website_event()
         structure = first_party_structure()
         validate_selectors(structure, payload)
@@ -515,10 +549,7 @@ def collect_event():
             event_action=str(props.get("action") or event_name)[:100],
             event_label=str(props.get("label") or "")[:255],
             user_session=str(
-                payload.get("session_id")
-                or props.get("session_id")
-
-                or ""
+                payload.get("session_id") or props.get("session_id") or ""
             )[:128],
             user_type="admin" if session.get("admin_logged_in") else "guest",
             user_ip=None,
@@ -546,6 +577,8 @@ def collect_event():
         db.session.rollback()
         current_app.logger.warning("analytics event collection failed: %s", exc)
         return jsonify({"ok": False}), 500
+
+
 from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta
 
@@ -582,17 +615,12 @@ def build_conversion_funnel_context(
 
     page_views = by_type.get("page_view", 0)
     cta_clicks = sum(
-        count
-        for event_type, count in by_type.items()
-        if event_type.startswith("cta_")
+        count for event_type, count in by_type.items() if event_type.startswith("cta_")
     )
     form_submits = sum(
         count
         for event_type, count in by_type.items()
-        if (
-            event_type == "form_submit"
-            or event_type.endswith("_form_submit")
-        )
+        if (event_type == "form_submit" or event_type.endswith("_form_submit"))
     )
 
     page_stats = defaultdict(
@@ -615,9 +643,8 @@ def build_conversion_funnel_context(
         elif event.event_type.startswith("cta_"):
             row["clicks"] += 1
             cta_stats[event.event_type] += 1
-        elif (
-            event.event_type == "form_submit"
-            or event.event_type.endswith("_form_submit")
+        elif event.event_type == "form_submit" or event.event_type.endswith(
+            "_form_submit"
         ):
             row["submits"] += 1
 
@@ -669,33 +696,21 @@ def build_conversion_funnel_context(
     # is only attached when a raw session id maps to exactly one scoped
     # analytics session in this result set. Ambiguous raw ids stay direct.
     raw_session_counts = Counter(
-        item["session_id"]
-        for item in scoped_sessions.values()
+        item["session_id"] for item in scoped_sessions.values()
     )
 
     safe_raw_session_ids = {
-        session_id
-        for session_id, count in raw_session_counts.items()
-        if count == 1
+        session_id for session_id, count in raw_session_counts.items() if count == 1
     }
 
     behavior_by_session = {}
 
     if safe_raw_session_ids:
-        behaviors = (
-            UserBehavior.query
-            .filter(
-                UserBehavior.session_id.in_(
-                    safe_raw_session_ids
-                )
-            )
-            .all()
-        )
+        behaviors = UserBehavior.query.filter(
+            UserBehavior.session_id.in_(safe_raw_session_ids)
+        ).all()
 
-        behavior_by_session = {
-            behavior.session_id: behavior
-            for behavior in behaviors
-        }
+        behavior_by_session = {behavior.session_id: behavior for behavior in behaviors}
 
     acquisition_buckets = {}
 
@@ -703,19 +718,12 @@ def build_conversion_funnel_context(
         behavior = behavior_by_session.get(session_id)
 
         source = (
-            (behavior.utm_source or "").strip()
-            if behavior else ""
+            (behavior.utm_source or "").strip() if behavior else ""
         ) or "Direct / unattributed"
 
-        medium = (
-            (behavior.utm_medium or "").strip()
-            if behavior else ""
-        ) or "-"
+        medium = ((behavior.utm_medium or "").strip() if behavior else "") or "-"
 
-        campaign = (
-            (behavior.utm_campaign or "").strip()
-            if behavior else ""
-        ) or "-"
+        campaign = ((behavior.utm_campaign or "").strip() if behavior else "") or "-"
 
         return source, medium, campaign
 
@@ -745,18 +753,15 @@ def build_conversion_funnel_context(
 
         source, medium, campaign = acquisition_key(session_id)
 
-        bucket = acquisition_buckets.get(
-            (source, medium, campaign)
-        )
+        bucket = acquisition_buckets.get((source, medium, campaign))
 
         if bucket is None:
             continue
 
         if event.event_type.startswith("cta_"):
             bucket["cta_clicks"] += 1
-        elif (
-            event.event_type == "form_submit"
-            or event.event_type.endswith("_form_submit")
+        elif event.event_type == "form_submit" or event.event_type.endswith(
+            "_form_submit"
         ):
             bucket["form_submits"] += 1
 
@@ -799,8 +804,7 @@ def build_conversion_funnel_context(
         },
         "pages": pages[:20],
         "top_ctas": [
-            {"event": key, "count": value}
-            for key, value in cta_stats.most_common(10)
+            {"event": key, "count": value} for key, value in cta_stats.most_common(10)
         ],
         "acquisition": acquisition[:50],
     }
@@ -827,206 +831,29 @@ def admin_conversion_funnel_api():
             "conversion funnel API failed: %s",
             exc,
         )
-        return jsonify(
-            {"error": "Failed to load conversion funnel"}
-        ), 500
+        return jsonify({"error": "Failed to load conversion funnel"}), 500
 
 
 @analytics_bp.route("/admin/conversion-dashboard")
 def admin_conversion_dashboard():
     scope = scope_description(g.website_analytics_structure)
-    label = " / ".join(str(value) for value in (scope["name"], scope["site_id"], scope["website"]) if value)
-    html = _conversion_dashboard_html().replace("<!-- analytics-scope -->", str(escape(label)))
-    return current_app.response_class(html, mimetype="text/html")
+    label = " / ".join(
+        str(value)
+        for value in (scope["name"], scope["site_id"], scope["website"])
+        if value
+    )
+    return render_template(
+        "admin/conversion_dashboard.html",
+        analytics_scope_label=label,
+    )
 
 
-def _conversion_dashboard_html():
-    return """
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <title>HelpChain - Conversion Engine</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="/static/vendor/jsdelivr/bootstrap-5.3.0.min.css">
-  <link rel="stylesheet" href="/static/css/design-system.css">
-  <link rel="stylesheet" href="/static/css/styles.css?v=20260214-reqcards">
-  <style>
-    body { background:#f6f8fb; }
-    .hc-conv-wrap { max-width:1180px; margin:32px auto; padding:0 18px; }
-    .hc-conv-hero { display:flex; justify-content:space-between; gap:18px; align-items:flex-start; margin-bottom:18px; }
-    .hc-conv-title { font-size:28px; font-weight:800; margin:0; color:#0f172a; }
-    .hc-conv-subtitle { color:#64748b; margin-top:6px; max-width:760px; }
-    .hc-conv-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin:18px 0; }
-    .hc-conv-card { background:#fff; border:1px solid #e5e7eb; border-radius:18px; padding:16px; box-shadow:0 10px 30px rgba(15,23,42,.05); }
-    .hc-conv-label { color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
-    .hc-conv-value { font-size:26px; font-weight:800; color:#0f172a; margin-top:5px; }
-    .hc-conv-table { background:#fff; border:1px solid #e5e7eb; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,.05); }
-    .hc-conv-table table { margin:0; }
-    @media (max-width:900px){ .hc-conv-grid{grid-template-columns:1fr 1fr;} .hc-conv-hero{display:block;} }
-      .hc-rev-session { display:inline-flex; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:12px; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; border-radius:999px; padding:4px 8px; }
-    .hc-rev-tier { display:inline-flex; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:800; letter-spacing:.04em; }
-    .hc-rev-tier--cold { background:#f1f5f9; color:#475569; }
-    .hc-rev-tier--warm { background:#fef3c7; color:#92400e; }
-    .hc-rev-tier--hot { background:#ffedd5; color:#c2410c; }
-    .hc-rev-tier--ready { background:#dcfce7; color:#166534; }
-    .hc-rev-pages { display:flex; flex-wrap:wrap; gap:6px; max-width:520px; }
-    .hc-rev-chip { display:inline-flex; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:4px 8px; font-size:12px; font-weight:700; }
-      .hc-rev-value { font-weight:800; font-size:16px; color:#0f172a; }
-    .hc-rev-row-hot { background:linear-gradient(90deg, rgba(255,237,213,0.5), transparent); }
-    .hc-rev-tier--hot { background:#fed7aa; color:#9a3412; }
-    .hc-rev-tier--ready { background:#bbf7d0; color:#166534; }
-      .hc-hot-alert { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; border:1px solid #fed7aa; background:#fff7ed; border-radius:16px; padding:14px 16px; margin-bottom:10px; }
-    .hc-hot-alert strong { display:inline-flex; margin-right:8px; color:#9a3412; }
-    .hc-hot-alert span { color:#0f172a; }
-    .hc-hot-alert small { display:block; margin-top:6px; color:#64748b; }
-    .hc-hot-alert__pages { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; max-width:480px; }
-    .hc-hot-alert__pages span { border:1px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; border-radius:999px; padding:4px 8px; font-size:12px; font-weight:700; }
-    .hc-alert-empty { color:#64748b; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:14px; padding:14px; }
-      .hc-rev-row--hot { background:linear-gradient(90deg, rgba(255,237,213,.8), #fff); }
-    .hc-rev-row--warm { background:linear-gradient(90deg, rgba(254,243,199,.65), #fff); }
-    .hc-rev-row--cold { opacity:.82; }
-    .hc-conv-table table td { padding:14px 10px; vertical-align:middle; }
-    .hc-conv-table table th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:#475569; }
-  #revTotal {
-  font-size: 28px;
-  font-weight: 700;
-  color: #16a34a;
-  margin-left: 6px;
-}
-.hc-rev-tier--hot {
-  background: #fed7aa;
-  color: #9a3412;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
-    .hc-rev-actions { display:flex; flex-wrap:wrap; gap:6px; }
-    .hc-rev-action { border:1px solid #cbd5e1; background:#fff; color:#334155; border-radius:999px; padding:5px 9px; font-size:12px; font-weight:800; text-decoration:none; cursor:pointer; }
-    .hc-rev-action:hover { background:#f8fafc; color:#0f172a; }
-    .hc-rev-action--primary { border-color:#2563eb; background:#eff6ff; color:#1d4ed8; }
-    .hc-rev-row--dismissed { opacity:.45; filter:grayscale(.25); }
-      .hc-rev-actions--muted { opacity:.45; }
-  </style>
-</head>
-<body>
-  <main class="hc-conv-wrap">
-    <section class="hc-conv-hero">
-      <div>
-        <h1 class="hc-conv-title">Conversion Engine</h1>
-        <p id="analyticsScope"><!-- analytics-scope --></p>
-        <p class="hc-conv-subtitle">
-          Lecture reelle des evenements collectes par HelpChain : pages vues, clics CTA, formulaires soumis et points de friction.
-        </p>
-      </div>
-      <select id="days" class="form-select form-select-sm" style="width:160px">
-        <option value="7">7 jours</option>
-        <option value="30" selected>30 jours</option>
-        <option value="90">90 jours</option>
-      </select>
-    </section>
-
-    <section class="hc-conv-grid">
-      <article class="hc-conv-card"><div class="hc-conv-label">Events</div><div id="events" class="hc-conv-value">-</div></article>
-      <article class="hc-conv-card"><div class="hc-conv-label">Page views</div><div id="views" class="hc-conv-value">-</div></article>
-      <article class="hc-conv-card"><div class="hc-conv-label">CTA clicks</div><div id="clicks" class="hc-conv-value">-</div></article>
-      <article class="hc-conv-card"><div class="hc-conv-label">View to click</div><div id="v2c" class="hc-conv-value">-</div></article>
-      <article class="hc-conv-card"><div class="hc-conv-label">Click to submit</div><div id="c2s" class="hc-conv-value">-</div></article>
-    </section>
-
-    <section class="hc-conv-table" style="margin-bottom:20px">
-      <h5 style="padding:16px">Acquisition Performance</h5>
-      <div class="table-responsive">
-        <table class="table table-hover align-middle">
-          <thead>
-            <tr>
-              <th>Source</th>
-              <th>Medium</th>
-              <th>Campaign</th>
-              <th>Sessions</th>
-              <th>CTA</th>
-              <th>Forms</th>
-              <th>Conversion</th>
-            </tr>
-          </thead>
-          <tbody id="acquisitionBody">
-            <tr>
-              <td colspan="7" class="text-muted">Chargement...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="hc-conv-table">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Page</th>
-            <th>Views</th>
-            <th>CTA clicks</th>
-            <th>Submits</th>
-            <th>View to click</th>
-            <th>Click to submit</th>
-            <th>Drop-off</th>
-          </tr>
-        </thead>
-        <tbody id="pagesBody">
-          <tr><td colspan="7" class="text-muted">Chargement...</td></tr>
-        </tbody>
-      </table>
-    </section>
-          <section class="hc-conv-table" style="margin-top:20px">
-      <h5 style="padding:16px">Hot Revenue Alerts</h5>
-      <div id="revAlerts" style="padding:0 16px 16px">
-        <div class="hc-alert-empty">Loading alerts...</div>
-      </div>
-    </section>
-    <section class="hc-conv-table" style="margin-top:20px">
-      <h5 style="padding:16px">Revenue Intelligence</h5>
-
-      <div style="padding:0 16px 12px">
-        <strong>Total estimated:</strong>
-        <span id="revTotal">-</span>
-<div style="padding:0 16px 12px; color:#b45309; font-weight:600">
-  Potential lost: <span id="revLost">-</span>
-</div>
-      </div>
-
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Session</th>
-            <th>Score</th>
-            <th>Tier</th>
-            <th>EUR</th>
-            <th>Pages</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="revBody"></tbody>
-      </table>
-    </section>
-  </main>
-
-  <script src="/static/js/conversion-dashboard.js"></script>
-  <script src="/static/js/revenue-intelligence.js"></script>
-  <script src="/static/js/revenue-alerts.js"></script>
-  <script src="/static/js/revenue-alert-dispatch.js"></script>
-<section class="hc-conv-table" style="margin-top:20px">
-  <h5 style="padding:16px">Recommended Actions</h5>
-
-  <div id="revActions" style="padding:0 16px 16px"></div>
-</section>
-
-<script src="/static/js/revenue-actions.js"></script>
-</body>
-</html>
-"""
 @analytics_bp.route("/admin/api/revenue-intelligence")
 def admin_revenue_intelligence():
 
-    from backend.models_with_analytics import AnalyticsEvent
     from collections import defaultdict
+
+    from backend.models_with_analytics import AnalyticsEvent
 
     events = (
         scoped_events(g.website_analytics_structure)
@@ -1058,42 +885,49 @@ def admin_revenue_intelligence():
         else:
             tier = "COLD"
 
-        results.append({
-            "session": evts[0].user_session or "anon",
-            "structure_id": evts[0].structure_id,
-            "score": score,
-            "tier": tier,
-            "value": None,
-            "value_available": False,
-            "value_label": "Not enough data available",
-            "value_reason": "No CRM opportunity amount is linked to this analytics session.",
-            "score_components": explanation["components"],
-            "score_evidence": explanation["evidence"],
-            "originating_event_ids": explanation["originating_event_ids"],
-            "score_confidence": explanation["confidence"],
-            "score_formula_version": REVENUE_VISITOR_SCORE_FORMULA_VERSION,
-            "pages": explanation["pages"],
-        })
+        results.append(
+            {
+                "session": evts[0].user_session or "anon",
+                "structure_id": evts[0].structure_id,
+                "score": score,
+                "tier": tier,
+                "value": None,
+                "value_available": False,
+                "value_label": "Not enough data available",
+                "value_reason": "No CRM opportunity amount is linked to this analytics session.",
+                "score_components": explanation["components"],
+                "score_evidence": explanation["evidence"],
+                "originating_event_ids": explanation["originating_event_ids"],
+                "score_confidence": explanation["confidence"],
+                "score_formula_version": REVENUE_VISITOR_SCORE_FORMULA_VERSION,
+                "pages": explanation["pages"],
+            }
+        )
 
     _persist_legacy_revenue_scores(score_explanations)
 
-    return jsonify({
-        "sessions": results,
-        "total_estimated_revenue": None,
-        "total_estimated_revenue_label": "Not enough data available",
-        "total_estimated_revenue_reason": "No CRM opportunity amount table/field is available for analytics sessions.",
-        "source_tables": ["analytics_events", "score_explanations", "crm_opportunities"],
-        "confidence": "low",
-    })
-
-
+    return jsonify(
+        {
+            "sessions": results,
+            "total_estimated_revenue": None,
+            "total_estimated_revenue_label": "Not enough data available",
+            "total_estimated_revenue_reason": "No CRM opportunity amount table/field is available for analytics sessions.",
+            "source_tables": [
+                "analytics_events",
+                "score_explanations",
+                "crm_opportunities",
+            ],
+            "confidence": "low",
+        }
+    )
 
 
 @analytics_bp.route("/admin/api/revenue-alerts")
 def admin_revenue_alerts():
 
-    from backend.models_with_analytics import AnalyticsEvent
     from collections import defaultdict
+
+    from backend.models_with_analytics import AnalyticsEvent
 
     events = (
         scoped_events(g.website_analytics_structure)
@@ -1118,38 +952,32 @@ def admin_revenue_alerts():
         has_submit = "form_submit" in components
 
         if score >= 40 or (has_demo and has_cta and not has_submit):
-            alerts.append({
-                "session": (evts[0].user_session or "anon")[:12],
-                "structure_id": evts[0].structure_id,
-                "score": score,
-                "level": "HOT" if score < 80 else "READY",
-                "message": "Visitor proche conversion: demo/CTA detecte sans formulaire soumis.",
-                "estimated_value": None,
-                "estimated_value_label": "Not enough data available",
-                "estimated_value_reason": "No CRM opportunity amount is linked to this analytics session.",
-                "score_components": explanation["components"],
-                "score_evidence": explanation["evidence"],
-                "originating_event_ids": explanation["originating_event_ids"],
-                "score_confidence": explanation["confidence"],
-                "pages": explanation["pages"][:5],
-            })
+            alerts.append(
+                {
+                    "session": (evts[0].user_session or "anon")[:12],
+                    "structure_id": evts[0].structure_id,
+                    "score": score,
+                    "level": "HOT" if score < 80 else "READY",
+                    "message": "Visitor proche conversion: demo/CTA detecte sans formulaire soumis.",
+                    "estimated_value": None,
+                    "estimated_value_label": "Not enough data available",
+                    "estimated_value_reason": "No CRM opportunity amount is linked to this analytics session.",
+                    "score_components": explanation["components"],
+                    "score_evidence": explanation["evidence"],
+                    "originating_event_ids": explanation["originating_event_ids"],
+                    "score_confidence": explanation["confidence"],
+                    "pages": explanation["pages"][:5],
+                }
+            )
 
     alerts.sort(key=lambda a: a["score"], reverse=True)
 
-    return jsonify({
-        "count": len(alerts),
-        "alerts": alerts[:10],
-    })
-
-
-
-
-
-
-
-
-
-
+    return jsonify(
+        {
+            "count": len(alerts),
+            "alerts": alerts[:10],
+        }
+    )
 
 
 _SENT_REVENUE_ALERTS = set()
@@ -1184,13 +1012,15 @@ class _RejectSlackWebhookRedirects(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
+
 @analytics_bp.route("/admin/api/revenue-alert-dispatch", methods=["POST"])
 def admin_revenue_alert_dispatch():
 
     import smtplib
-    from email.message import EmailMessage
-    from backend.models_with_analytics import AnalyticsEvent
     from collections import defaultdict
+    from email.message import EmailMessage
+
+    from backend.models_with_analytics import AnalyticsEvent
 
     slack_webhook = os.getenv("HC_REVENUE_ALERT_SLACK_WEBHOOK")
     email_to = os.getenv("HC_REVENUE_ALERT_EMAIL_TO")
@@ -1254,9 +1084,9 @@ def admin_revenue_alert_dispatch():
                         data=payload,
                         headers={"Content-Type": "application/json"},
                     )
-                    urllib.request.build_opener(
-                        _RejectSlackWebhookRedirects()
-                    ).open(req, timeout=5)
+                    urllib.request.build_opener(_RejectSlackWebhookRedirects()).open(
+                        req, timeout=5
+                    )
                 except Exception as exc:
                     current_app.logger.warning(
                         "Revenue Slack alert failed (%s).", type(exc).__name__
@@ -1278,16 +1108,16 @@ def admin_revenue_alert_dispatch():
                 current_app.logger.warning("Revenue email alert failed: %s", exc)
 
         _SENT_REVENUE_ALERTS.add(alert_key)
-        dispatched.append({
-            "session": (evts[0].user_session or "anon")[:12],
-            "structure_id": evts[0].structure_id,
-            "level": level,
-            "score": score,
-            "value": None,
-            "value_label": "Not enough data available",
-            "score_components": explanation["components"],
-        })
+        dispatched.append(
+            {
+                "session": (evts[0].user_session or "anon")[:12],
+                "structure_id": evts[0].structure_id,
+                "level": level,
+                "score": score,
+                "value": None,
+                "value_label": "Not enough data available",
+                "score_components": explanation["components"],
+            }
+        )
 
     return jsonify({"ok": True, "dispatched": dispatched, "count": len(dispatched)})
-
-
