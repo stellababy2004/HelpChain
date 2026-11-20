@@ -92,8 +92,13 @@ def test_global_admin_can_read_all_and_select_one_site(app, client, tenants, end
     response = client.get(endpoint)
     assert response.status_code == 200
     assert response.json["scope"]["structure_id"] is None
-    assert "analytics-a" in response.get_data(as_text=True)
-    assert "analytics-b" in response.get_data(as_text=True)
+    if endpoint == "/admin/api/revenue-alerts":
+        # Both tenants have submitted forms: no false no-form alerts.
+        assert response.json["count"] == 0
+        assert response.json["alerts"] == []
+    else:
+        assert "analytics-a" in response.get_data(as_text=True)
+        assert "analytics-b" in response.get_data(as_text=True)
     selected = client.get(endpoint, query_string={"site_id": tenants["b"].slug})
     assert selected.status_code == 200
     assert "analytics-a" not in selected.get_data(as_text=True)
@@ -387,9 +392,9 @@ def test_revenue_alerts_score_without_creating_persistence(app, client, tenants)
     login(client, app, tenants["users"]["global"])
     response = client.get("/admin/api/revenue-alerts")
     assert response.status_code == 200
-    assert response.json["count"] == 2
-    assert sorted(alert["score"] for alert in response.json["alerts"]) == [111, 111]
-    assert {alert["structure_id"] for alert in response.json["alerts"]} == {tenants["a"].id, tenants["b"].id}
+    # Both sessions contain form_submit; they must not raise no-form alerts.
+    assert response.json["count"] == 0
+    assert response.json["alerts"] == []
     rows = ScoreExplanation.query.filter_by(subject_type="website_analytics_session").all()
     assert rows == []
 
