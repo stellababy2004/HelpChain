@@ -280,10 +280,10 @@ def _log_email_event(
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logger.warning("EmailSendEvent logging failed: %s", e)
+        logger.warning("EmailSendEvent logging failed | error_type=%s", type(e).__name__)
     except Exception as e:
         db.session.rollback()
-        logger.warning("EmailSendEvent logging unexpected error: %s", e)
+        logger.warning("EmailSendEvent logging unexpected error | error_type=%s", type(e).__name__)
 
 
 def _recent_sent(email_h: str, purpose: str, minutes: int) -> bool:
@@ -301,7 +301,7 @@ def _recent_sent(email_h: str, purpose: str, minutes: int) -> bool:
         )
         return row is not None
     except Exception as e:
-        logger.warning("Email dedupe check failed; continuing send path: %s", e)
+        logger.warning("Email dedupe check failed; continuing send path | error_type=%s", type(e).__name__)
         return False
 
 
@@ -317,7 +317,7 @@ def _count_sent(email_h: str, purpose: str, window_minutes: int) -> int:
             ).count()
         )
     except Exception as e:
-        logger.warning("Email rate-limit check failed; continuing send path: %s", e)
+        logger.warning("Email rate-limit check failed; continuing send path | error_type=%s", type(e).__name__)
         return 0
 
 
@@ -394,12 +394,11 @@ def _send_via_resend(
         if resp.status_code in (200, 201, 202):
             return True
         logger.error(
-            "Resend send failed: status=%s body=%s",
+            "Resend send failed | status=%s | response_body_redacted=true",
             resp.status_code,
-            (resp.text or "")[:300],
         )
     except Exception as e:
-        logger.error("Resend request failed: %s", e)
+        logger.error("Resend request failed | error_type=%s", type(e).__name__)
     return False
 
 
@@ -523,7 +522,7 @@ def send_notification_email(
         try:
             html_content = render_template(template, **context)
         except Exception as e:
-            logger.warning("Email template render failed (%s). Using fallback HTML.", e)
+            logger.warning("Email template render failed | error_type=%s | using fallback HTML", type(e).__name__)
             html_content = _fallback_email_html(subject, context)
 
         # Generate unique message ID
