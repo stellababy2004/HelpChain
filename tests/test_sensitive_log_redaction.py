@@ -13,10 +13,10 @@ def test_disabled_sms_does_not_log_recipient_or_body(caplog):
     with app.app_context(), caplog.at_level(
         logging.INFO, logger=sms_service.logger.name
     ):
-        assert (
-            sms_service.send_notification_sms("+359899123456", "FIXTURE-SECRET-SMS")
-            is True
+        sent = sms_service.send_notification_sms(
+            "+359899123456", "FIXTURE-SECRET-SMS"
         )
+        assert sent is True
     assert "+359899123456" not in caplog.text
     assert "FIXTURE-SECRET-SMS" not in caplog.text
     assert "message_length=" in caplog.text
