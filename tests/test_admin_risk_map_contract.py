@@ -85,7 +85,9 @@ def _make_request(
 
 def test_admin_risk_map_returns_canonical_territorial_contract(client, app):
     with app.app_context():
-        structure = _make_structure(name="Risk Contract Alpha", slug="risk-contract-alpha")
+        structure = _make_structure(
+            name="Risk Contract Alpha", slug="risk-contract-alpha"
+        )
         ops_admin = _make_ops_admin(
             username="risk_contract_ops",
             email="risk_contract_ops@test.local",
@@ -286,7 +288,9 @@ def test_admin_risk_map_territorial_contract_respects_tenant_scope(client, app):
 
 def test_admin_risk_map_city_variants_keep_professional_coverage(client, app):
     with app.app_context():
-        structure = _make_structure(name="Risk Variant Alpha", slug="risk-variant-alpha")
+        structure = _make_structure(
+            name="Risk Variant Alpha", slug="risk-variant-alpha"
+        )
         ops_admin = _make_ops_admin(
             username="risk_variant_ops",
             email="risk_variant_ops@test.local",
@@ -371,9 +375,13 @@ def test_admin_risk_map_returns_empty_territories_when_no_visible_data(client, a
     assert payload["territories"] == []
 
 
-def test_admin_professionals_api_keeps_existing_fields_and_adds_territories(client, app):
+def test_admin_professionals_api_keeps_existing_fields_and_adds_territories(
+    client, app
+):
     with app.app_context():
-        structure = _make_structure(name="Pro Contract Alpha", slug="pro-contract-alpha")
+        structure = _make_structure(
+            name="Pro Contract Alpha", slug="pro-contract-alpha"
+        )
         ops_admin = _make_ops_admin(
             username="pro_contract_ops",
             email="pro_contract_ops@test.local",
@@ -457,7 +465,9 @@ def test_admin_professionals_api_territories_respect_tenant_scope(client, app):
     assert "Lyon" not in visible_cities
 
 
-def test_admin_professionals_api_returns_empty_territories_when_no_visible_data(client, app):
+def test_admin_professionals_api_returns_empty_territories_when_no_visible_data(
+    client, app
+):
     with app.app_context():
         structure = _make_structure(name="Pro Empty Alpha", slug="pro-empty-alpha")
         ops_admin = _make_ops_admin(
@@ -514,7 +524,9 @@ def test_admin_professionals_api_city_normalization_is_consistent(client, app):
 
 def test_admin_command_map_keeps_existing_fields_and_adds_territories(client, app):
     with app.app_context():
-        structure = _make_structure(name="Command Contract Alpha", slug="command-contract-alpha")
+        structure = _make_structure(
+            name="Command Contract Alpha", slug="command-contract-alpha"
+        )
         ops_admin = _make_ops_admin(
             username="command_contract_ops",
             email="command_contract_ops@test.local",
@@ -588,8 +600,12 @@ def test_admin_command_map_keeps_existing_fields_and_adds_territories(client, ap
 
 def test_admin_command_map_territories_respect_tenant_scope(client, app):
     with app.app_context():
-        structure_a = _make_structure(name="Command Scope Alpha", slug="command-scope-alpha")
-        structure_b = _make_structure(name="Command Scope Beta", slug="command-scope-beta")
+        structure_a = _make_structure(
+            name="Command Scope Alpha", slug="command-scope-alpha"
+        )
+        structure_b = _make_structure(
+            name="Command Scope Beta", slug="command-scope-beta"
+        )
         ops_admin = _make_ops_admin(
             username="command_scope_ops",
             email="command_scope_ops@test.local",
@@ -692,7 +708,9 @@ def test_admin_command_map_territories_respect_tenant_scope(client, app):
 
 def test_admin_command_map_returns_empty_territories_when_no_visible_data(client, app):
     with app.app_context():
-        structure = _make_structure(name="Command Empty Alpha", slug="command-empty-alpha")
+        structure = _make_structure(
+            name="Command Empty Alpha", slug="command-empty-alpha"
+        )
         ops_admin = _make_ops_admin(
             username="command_empty_ops",
             email="command_empty_ops@test.local",
@@ -711,7 +729,9 @@ def test_admin_command_map_returns_empty_territories_when_no_visible_data(client
 
 def test_admin_command_map_city_normalization_is_consistent(client, app):
     with app.app_context():
-        structure = _make_structure(name="Command Variant Alpha", slug="command-variant-alpha")
+        structure = _make_structure(
+            name="Command Variant Alpha", slug="command-variant-alpha"
+        )
         ops_admin = _make_ops_admin(
             username="command_variant_ops",
             email="command_variant_ops@test.local",
@@ -773,3 +793,71 @@ def test_admin_command_map_city_normalization_is_consistent(client, app):
     territory = payload["territories"][0]
     assert territory["city"] == "Saint-Denis"
     assert territory["available_intervenants"] == 1
+
+
+def test_risk_map_case_scope_fails_closed_without_tenant(app, session, monkeypatch):
+    from types import SimpleNamespace
+    from backend.helpchain_backend.src.routes import admin_map
+
+    with app.app_context():
+        monkeypatch.setattr(admin_map, "_is_global_admin", lambda: False)
+        monkeypatch.setattr(
+            admin_map,
+            "_current_structure_id",
+            lambda: (_ for _ in ()).throw(RuntimeError("tenant unavailable")),
+        )
+        monkeypatch.setattr(
+            admin_map,
+            "current_user",
+            SimpleNamespace(structure_id=None),
+        )
+
+        scoped_query = admin_map._scope_case_query(Case.query)
+
+        # No valid tenant means no permission to query any cases.
+        assert str(scoped_query.statement) != str(
+            Case.query.statement
+        ), "SECURITY: tenant resolution failure returned an unscoped query"
+
+
+def test_risk_map_api_rejects_missing_tenant(client, app, monkeypatch):
+    from backend.helpchain_backend.src.routes import admin_map
+
+    with app.app_context():
+        structure = _make_structure(
+            name="Risk Missing Tenant",
+            slug="risk-missing-tenant",
+        )
+        admin = _make_ops_admin(
+            username="risk_missing_tenant_ops",
+            email="risk_missing_tenant_ops@test.local",
+            structure_id=structure.id,
+        )
+        db.session.commit()
+        admin_id = admin.id
+
+    _login_admin(client, app, _admin_stub(admin_id))
+
+    monkeypatch.setattr(admin_map, "_is_global_admin", lambda: False)
+    monkeypatch.setattr(
+        admin_map,
+        "_current_structure_id",
+        lambda: (_ for _ in ()).throw(RuntimeError("tenant unavailable")),
+    )
+
+    def forbidden_professional_lookup(**kwargs):
+        raise AssertionError("Unscoped professional lookup attempted")
+
+    monkeypatch.setattr(
+        admin_map,
+        "load_professional_map_rows",
+        forbidden_professional_lookup,
+    )
+
+    response = client.get("/admin/api/risk-map")
+
+    assert response.status_code == 500
+    payload = response.get_json()
+    assert payload["status"] == "error"
+    assert payload["items"] == []
+    assert payload["territories"] == []
