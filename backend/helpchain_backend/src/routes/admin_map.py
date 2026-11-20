@@ -17,21 +17,29 @@ from backend.helpchain_backend.src.services.pilotage_territorial_maps import (
     load_professional_map_rows,
 )
 from backend.helpchain_backend.src.services.risk_engine import compute_case_risk
+
 from .admin import (
     _current_structure_id,
-    _require_cases_capability,
     _is_global_admin,
+    _require_cases_capability,
     _scope_requests,
     admin_required,
     admin_required_404,
     admin_role_required,
 )
 
-
 admin_map_bp = Blueprint("admin_map_api", __name__, url_prefix="/admin")
 
 _ACTIVE_CASE_STATUSES = {"new", "open", "triaged", "assigned", "in_progress", "pending"}
-_ACTIVE_REQUEST_STATUSES = {"new", "open", "pending", "in_progress", "assigned", "contacted", "triaged"}
+_ACTIVE_REQUEST_STATUSES = {
+    "new",
+    "open",
+    "pending",
+    "in_progress",
+    "assigned",
+    "contacted",
+    "triaged",
+}
 _STALE_HOURS = 72
 
 
@@ -67,7 +75,9 @@ def _safe_dt(value) -> datetime | None:
     return None
 
 
-def _recommended_action(*, risk_score: int, has_assignment: bool, is_stale: bool) -> str:
+def _recommended_action(
+    *, risk_score: int, has_assignment: bool, is_stale: bool
+) -> str:
     if int(risk_score or 0) >= 80:
         return "Prioriser une reprise immediate."
     if not has_assignment:
@@ -98,7 +108,8 @@ def _scope_case_query(query):
         current_structure = getattr(current_user, "structure_id", None)
         if current_structure is not None:
             return query.filter(Case.structure_id == int(current_structure))
-        return query
+        # Fail closed: never return an unscoped case query.
+        return query.filter(Case.id == -1)
 
 
 def _city_filter_expr(city: str | None):
@@ -147,7 +158,8 @@ def _serialize_risk_map_item(case: Case) -> dict[str, object]:
         or getattr(request_row, "created_at", None)
     )
     has_assignment = bool(
-        getattr(case, "owner_user_id", None) or getattr(case, "assigned_professional_lead_id", None)
+        getattr(case, "owner_user_id", None)
+        or getattr(case, "assigned_professional_lead_id", None)
     )
     stale = _is_stale(last_activity)
     title = (
@@ -165,7 +177,9 @@ def _serialize_risk_map_item(case: Case) -> dict[str, object]:
         "risk_score": risk_score,
         "category": str(getattr(request_row, "category", None) or ""),
         "status": str(getattr(case, "status", None) or ""),
-        "updated_at": _safe_iso(getattr(case, "updated_at", None) or getattr(case, "created_at", None)),
+        "updated_at": _safe_iso(
+            getattr(case, "updated_at", None) or getattr(case, "created_at", None)
+        ),
         "last_activity": _safe_iso(last_activity),
         "city": str(getattr(request_row, "city", None) or ""),
         "source_type": "case",
@@ -189,9 +203,7 @@ def _serialize_request_risk_map_item(req: Request) -> dict[str, object]:
         return {}
 
     triage = score_request_risk(req)
-    risk_score = int(
-        getattr(req, "risk_score", None) or triage.get("score") or 0
-    )
+    risk_score = int(getattr(req, "risk_score", None) or triage.get("score") or 0)
     last_activity = getattr(req, "updated_at", None) or getattr(req, "created_at", None)
     has_assignment = bool(
         getattr(req, "owner_id", None) or getattr(req, "assigned_volunteer_id", None)
@@ -227,25 +239,30 @@ def _serialize_request_risk_map_item(req: Request) -> dict[str, object]:
     }
 
 
-def _load_request_only_risk_items(limit: int = 1000, city: str | None = None) -> list[dict[str, object]]:
-    query = (
-        _scope_requests(
-            Request.query.outerjoin(Case, Case.request_id == Request.id)
-            .filter(Case.id.is_(None))
-            .filter(Request.latitude.isnot(None), Request.longitude.isnot(None))
-            .filter(Request.latitude.between(-90, 90))
-            .filter(Request.longitude.between(-180, 180))
-            .filter(func.lower(func.coalesce(Request.status, "")).in_(tuple(_ACTIVE_REQUEST_STATUSES)))
-            .order_by(Request.updated_at.desc(), Request.id.desc())
+def _load_request_only_risk_items(
+    limit: int = 1000, city: str | None = None
+) -> list[dict[str, object]]:
+    query = _scope_requests(
+        Request.query.outerjoin(Case, Case.request_id == Request.id)
+        .filter(Case.id.is_(None))
+        .filter(Request.latitude.isnot(None), Request.longitude.isnot(None))
+        .filter(Request.latitude.between(-90, 90))
+        .filter(Request.longitude.between(-180, 180))
+        .filter(
+            func.lower(func.coalesce(Request.status, "")).in_(
+                tuple(_ACTIVE_REQUEST_STATUSES)
+            )
         )
-        .options(joinedload(Request.structure))
-    )
+        .order_by(Request.updated_at.desc(), Request.id.desc())
+    ).options(joinedload(Request.structure))
     city_filter = _city_filter_expr(city)
     if city_filter is not None:
         query = query.filter(city_filter)
     return [
         item
-        for item in (_serialize_request_risk_map_item(req) for req in query.limit(limit).all())
+        for item in (
+            _serialize_request_risk_map_item(req) for req in query.limit(limit).all()
+        )
         if item
     ]
 
@@ -287,7 +304,11 @@ def admin_risk_map_api():
             Case.query.options(joinedload(Case.request))
             .join(Request, Case.request_id == Request.id)
             .filter(Case.structure_id == Request.structure_id)
-            .filter(func.lower(func.coalesce(Case.status, "")).in_(tuple(_ACTIVE_CASE_STATUSES)))
+            .filter(
+                func.lower(func.coalesce(Case.status, "")).in_(
+                    tuple(_ACTIVE_CASE_STATUSES)
+                )
+            )
             .filter(
                 or_(
                     (
@@ -325,10 +346,9 @@ def admin_risk_map_api():
         )
         structure_scope_id = None
         if not _is_global_admin():
-            try:
-                structure_scope_id = int(_current_structure_id() or 0) or None
-            except Exception:
-                structure_scope_id = None
+            structure_scope_id = int(_current_structure_id() or 0)
+            if structure_scope_id <= 0:
+                raise RuntimeError("tenant_scope_unavailable")
 
         professional_items = load_professional_map_rows(
             structure_id=structure_scope_id,
@@ -356,9 +376,9 @@ def admin_risk_map_api():
                     "semantics": "territorial_operational_intelligence",
                 },
                 "default_center": {"lat": 46.603354, "lng": 1.888334, "zoom": 6},
-                "generated_at": datetime.now(UTC).replace(tzinfo=None).isoformat(
-                    timespec="seconds"
-                ),
+                "generated_at": datetime.now(UTC)
+                .replace(tzinfo=None)
+                .isoformat(timespec="seconds"),
             }
         )
     except Exception:
@@ -383,7 +403,9 @@ def admin_risk_map_api():
 def admin_cases_map_api():
     admin_required_404()
     _require_cases_capability()
-    scoped_request_ids = _scope_requests(Request.query.with_entities(Request.id)).subquery()
+    scoped_request_ids = _scope_requests(
+        Request.query.with_entities(Request.id)
+    ).subquery()
     visible_case_ids = {
         int(case_id)
         for (case_id,) in (
@@ -395,7 +417,9 @@ def admin_cases_map_api():
         )
     }
     rows = [
-        row for row in _load_cases_with_geo() if int(getattr(row, "id", 0) or 0) in visible_case_ids
+        row
+        for row in _load_cases_with_geo()
+        if int(getattr(row, "id", 0) or 0) in visible_case_ids
     ]
     payload = []
     for row in rows:
