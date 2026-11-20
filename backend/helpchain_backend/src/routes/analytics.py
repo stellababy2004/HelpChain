@@ -951,14 +951,14 @@ def admin_revenue_alerts():
         has_cta = "cta_events" in components
         has_submit = "form_submit" in components
 
-        if score >= 40 or (has_demo and has_cta and not has_submit):
+        if not has_submit and (score >= 40 or (has_demo and has_cta)):
             alerts.append(
                 {
                     "session": (evts[0].user_session or "anon")[:12],
                     "structure_id": evts[0].structure_id,
                     "score": score,
                     "level": "HOT" if score < 80 else "READY",
-                    "message": "Visitor proche conversion: demo/CTA detecte sans formulaire soumis.",
+                    "message": "Activité détectée sans formulaire envoyé.",
                     "estimated_value": None,
                     "estimated_value_label": "Not enough data available",
                     "estimated_value_reason": "No CRM opportunity amount is linked to this analytics session.",
