@@ -33,7 +33,9 @@ def send_notification_sms(phone, message):
         # Check if SMS is enabled in config
         sms_config = current_app.config.get("SMS_CONFIG", {})
         if not sms_config.get("enabled", False):
-            logger.info("SMS disabled; delivery not attempted | message_length=%d", len(message))
+            logger.info(
+                "SMS disabled; delivery not attempted | message_length=%d", len(message)
+            )
             return True  # Return True for testing when disabled
 
         # Choose SMS provider
@@ -144,7 +146,10 @@ def _send_nexmo_sms(phone, message, config):
             logger.info("Nexmo SMS sent successfully")
             return True
         else:
-            logger.error("Nexmo SMS failed | provider_status=%s", result.get("messages", [{}])[0].get("status", "unknown"))
+            logger.error(
+                "Nexmo SMS failed | provider_status=%s",
+                result.get("messages", [{}])[0].get("status", "unknown"),
+            )
             return False
 
     except Exception as e:
