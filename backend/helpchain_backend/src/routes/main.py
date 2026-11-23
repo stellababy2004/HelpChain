@@ -3084,8 +3084,12 @@ def volunteer_dashboard():
     my_interests = (
         db.session.query(VolunteerInterest, Request)
         .join(Request, Request.id == VolunteerInterest.request_id)
-        # Existing interests grant personal access independently of new discovery.
-        .filter(VolunteerInterest.volunteer_id == volunteer.id)
+        # Existing interests remain visible only within the authorized structure.
+        .filter(
+            VolunteerInterest.volunteer_id == volunteer.id,
+            Request.structure_id == volunteer_structure_id,
+            volunteer_structure_id is not None,
+        )
         .order_by(VolunteerInterest.created_at.desc())
         .limit(30)
         .all()
@@ -3479,8 +3483,7 @@ def volunteer_help(req_id: int):
     current_app.logger.info("VOL_HELP req_id=%s", req_id)
 
     req = Request.query.filter(Request.id == req_id).first_or_404()
-    is_assigned = getattr(req, "assigned_volunteer_id", None) == volunteer.id
-    if not (is_assigned or can_express_interest(volunteer, req)):
+    if not can_express_interest(volunteer, req):
         abort(404)
 
     interest = VolunteerInterest.query.filter_by(
