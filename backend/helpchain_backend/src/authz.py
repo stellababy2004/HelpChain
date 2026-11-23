@@ -65,6 +65,13 @@ def can_view_request(user, req, db):
     if not user or not req or not getattr(user, "id", None):
         return False
 
+    # SEC-02: enforce tenant membership before assignment/interest checks.
+    from .services.matching_v1 import volunteer_authorized_structure_id
+
+    structure_id = volunteer_authorized_structure_id(user)
+    if structure_id is None or getattr(req, "structure_id", None) != structure_id:
+        return False
+
     # Assigned volunteer
     if getattr(req, "assigned_volunteer_id", None) == getattr(user, "id", None):
         return True
