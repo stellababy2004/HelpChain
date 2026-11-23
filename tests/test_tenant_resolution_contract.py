@@ -148,6 +148,7 @@ def test_request_insert_falls_back_to_default_structure_when_resolver_fails(
 
     assert row.structure_id == default_structure.id
 
+
 def test_current_structure_id_rejects_default_when_fallback_disabled(
     app, session, monkeypatch
 ):
