@@ -427,8 +427,58 @@ class TestVolunteerIntegration:
         session.commit()
         dashboard = client.get("/volunteer/dashboard")
         assert dashboard.status_code == 200
-        assert req.title in dashboard.get_data(as_text=True)
+        assert req.title not in dashboard.get_data(as_text=True)
+        assert client.get(f"/volunteer/requests/{req.id}").status_code == 404
+
+    def test_volunteer_cannot_resubmit_interest_after_request_closes(
+        self,
+        authenticated_volunteer_client,
+        init_test_data,
+        session,
+        linked_intervenant,
+    ):
+        """Viewing an existing interest must not authorize another help action."""
+        from backend.models import Request
+        from backend.helpchain_backend.src.models.volunteer_interest import (
+            VolunteerInterest,
+        )
+
+        client = authenticated_volunteer_client
+        volunteer = init_test_data["volunteer"]
+
+        req = Request(
+            title="Closed interest regression test",
+            description="SEC-02 authorization regression",
+            status="open",
+            structure_id=linked_intervenant.structure_id,
+        )
+        session.add(req)
+        session.commit()
+
+        url = f"/volunteer/requests/{req.id}/help"
+
+        assert client.post(url, follow_redirects=False).status_code == 303
+
+        interest = VolunteerInterest.query.filter_by(
+            volunteer_id=volunteer.id,
+            request_id=req.id,
+        ).one()
+
+        interest.status = "approved"
+        req.status = "in_progress"
+        session.commit()
+
         assert client.get(f"/volunteer/requests/{req.id}").status_code == 200
+        assert client.post(url, follow_redirects=False).status_code == 404
+
+        session.expire_all()
+
+        saved_interest = VolunteerInterest.query.filter_by(
+            volunteer_id=volunteer.id,
+            request_id=req.id,
+        ).one()
+
+        assert saved_interest.status == "approved"
 
     def test_assigned_volunteer_can_view_request_from_another_structure(
         self, authenticated_volunteer_client, init_test_data, session
@@ -457,7 +507,7 @@ class TestVolunteerIntegration:
 
         response = authenticated_volunteer_client.get(f"/volunteer/requests/{req.id}")
 
-        assert response.status_code == 200
+        assert response.status_code == 404
 
     @pytest.mark.parametrize(
         "action_path",
@@ -497,7 +547,7 @@ class TestVolunteerIntegration:
             follow_redirects=False,
         )
 
-        assert response.status_code == 303
+        assert response.status_code == 404
 
     def test_assigned_volunteer_can_help_cross_structure_request(
         self, authenticated_volunteer_client, init_test_data, session
@@ -529,4 +579,14 @@ class TestVolunteerIntegration:
             follow_redirects=False,
         )
 
-        assert response.status_code == 303
+        assert response.status_code == 404
+        from backend.helpchain_backend.src.models.volunteer_interest import (
+            VolunteerInterest,
+        )
+
+        assert (
+            VolunteerInterest.query.filter_by(
+                volunteer_id=volunteer.id, request_id=req.id
+            ).first()
+            is None
+        )

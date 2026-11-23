@@ -550,3 +550,26 @@ def test_legacy_admin_delete_request_stays_tenant_scoped(app, session):
     assert denied_event.meta["decision"] == "denied"
     assert denied_event.meta["reason"] == "tenant_scope_mismatch"
     assert denied_event.meta["request_path"] == "/api/admin/delete_request"
+
+def test_api_dashboard_rejects_admin_without_tenant(app, session, monkeypatch):
+    admin = _make_admin(
+        session,
+        username="sec02_admin_without_tenant",
+        email="sec02_admin_without_tenant@test.local",
+        role="admin",
+        structure_id=None,
+    )
+
+    monkeypatch.setitem(app.config, "REQUIRE_ADMIN_MFA", False)
+    monkeypatch.setitem(app.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
+
+    with app.app_context():
+        token = encode_access_token(admin.id)
+
+    client = app.test_client()
+    response = client.get(
+        "/api/dashboard",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 403, response.get_data(as_text=True)

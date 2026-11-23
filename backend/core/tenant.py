@@ -110,5 +110,8 @@ def current_structure_id() -> int:
         g.structure_id = int(g.user.structure_id)
         return int(g.structure_id)
 
+    if not current_app.config.get("ALLOW_DEFAULT_TENANT_FALLBACK", False):
+        raise RuntimeError("Tenant resolution failed: fallback disabled")
+
     g.structure_id = _load_default_structure_id()
     return int(g.structure_id)

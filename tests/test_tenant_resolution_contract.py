@@ -147,3 +147,23 @@ def test_request_insert_falls_back_to_default_structure_when_resolver_fails(
     session.commit()
 
     assert row.structure_id == default_structure.id
+
+
+def test_current_structure_id_rejects_default_when_fallback_disabled(
+    app, session, monkeypatch
+):
+    structure = session.query(Structure).filter_by(slug="default").first()
+    assert structure is not None
+
+    monkeypatch.setitem(app.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
+    monkeypatch.setattr(tenant, "_DEFAULT_STRUCTURE_ID", None)
+
+    with app.test_request_context("/"):
+        monkeypatch.setattr(
+            tenant,
+            "current_user",
+            SimpleNamespace(is_authenticated=False, structure_id=None),
+        )
+
+        with pytest.raises(RuntimeError, match="fallback disabled"):
+            tenant.current_structure_id()

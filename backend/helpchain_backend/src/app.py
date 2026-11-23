@@ -978,6 +978,12 @@ def create_app(config_object=None) -> Flask:
 
         try:
             current_structure_id()
+        except RuntimeError as exc:
+            if str(exc) != "Tenant resolution failed: fallback disabled":
+                raise
+            app.logger.debug(
+                "[TENANT] No ambient tenant; route must enforce its own scope."
+            )
         except (OperationalError, ProgrammingError):
             try:
                 app.logger.warning(

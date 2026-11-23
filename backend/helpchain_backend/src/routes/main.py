@@ -388,8 +388,15 @@ def _current_structure_id():
         return None
 
 
+def _tenant_request_filter():
+    structure_id = _current_structure_id()
+    if structure_id is None:
+        return Request.id.is_(None)
+    return Request.structure_id == structure_id
+
+
 def _scope_requests(query):
-    return query.filter(Request.structure_id == _current_structure_id())
+    return query.filter(_tenant_request_filter())
 
 
 def scoped_requests_query():
@@ -1676,7 +1683,7 @@ def index():
         )
         active_count = (
             db.session.query(func.count(Request.id))
-            .filter(Request.structure_id == _current_structure_id())
+            .filter(_tenant_request_filter())
             .filter(Request.deleted_at.is_(None))
             .filter(Request.is_archived.is_(False))
             .scalar()
@@ -1803,7 +1810,7 @@ def dashboard():
         counts = dict(
             ((s or "open"), c)
             for s, c in db.session.query(Request.status, func.count(Request.id))
-            .filter(Request.structure_id == _current_structure_id())
+            .filter(_tenant_request_filter())
             .filter(Request.user_id == current_user.id)
             .group_by(Request.status)
             .all()
@@ -1835,7 +1842,7 @@ def dashboard():
         counts = dict(
             ((s or "open"), c)
             for s, c in db.session.query(Request.status, func.count(Request.id))
-            .filter(Request.structure_id == _current_structure_id())
+            .filter(_tenant_request_filter())
             .filter(Request.owner_id == current_user.id)
             .group_by(Request.status)
             .all()
@@ -3077,8 +3084,12 @@ def volunteer_dashboard():
     my_interests = (
         db.session.query(VolunteerInterest, Request)
         .join(Request, Request.id == VolunteerInterest.request_id)
-        # Existing interests grant personal access independently of new discovery.
-        .filter(VolunteerInterest.volunteer_id == volunteer.id)
+        # Existing interests remain visible only within the authorized structure.
+        .filter(
+            VolunteerInterest.volunteer_id == volunteer.id,
+            Request.structure_id == volunteer_structure_id,
+            volunteer_structure_id is not None,
+        )
         .order_by(VolunteerInterest.created_at.desc())
         .limit(30)
         .all()
@@ -3472,8 +3483,7 @@ def volunteer_help(req_id: int):
     current_app.logger.info("VOL_HELP req_id=%s", req_id)
 
     req = Request.query.filter(Request.id == req_id).first_or_404()
-    is_assigned = getattr(req, "assigned_volunteer_id", None) == volunteer.id
-    if not (is_assigned or can_express_interest(volunteer, req)):
+    if not can_express_interest(volunteer, req):
         abort(404)
 
     interest = VolunteerInterest.query.filter_by(
@@ -4507,7 +4517,7 @@ def pilot_dashboard():
     week_ago = now - timedelta(days=7)
     since_14d = now - timedelta(days=14)
 
-    tenant_filter = Request.structure_id == _current_structure_id()
+    tenant_filter = _tenant_request_filter()
     not_deleted = Request.deleted_at.is_(None)
 
     total_requests = (
@@ -4667,7 +4677,7 @@ def pilot_dashboard():
 
 @main_bp.get("/api/pilot/metrics")
 def pilot_metrics():
-    tenant_filter = Request.structure_id == _current_structure_id()
+    tenant_filter = _tenant_request_filter()
     not_deleted = Request.deleted_at.is_(None)
 
     total_requests = (
@@ -4729,9 +4739,10 @@ def pilot_kpi_api():
         Request.status.in_(["done", "cancelled"]),
     )
 
-    if structure_id is not None:
-        helped_query = helped_query.filter(Request.structure_id == structure_id)
-        closed_query = closed_query.filter(Request.structure_id == structure_id)
+    # SEC-02: never aggregate requests across tenants when scope is absent.
+    tenant_filter = _tenant_request_filter()
+    helped_query = helped_query.filter(tenant_filter)
+    closed_query = closed_query.filter(tenant_filter)
 
     helped_requests = helped_query.scalar() or 0
     closed_requests = closed_query.scalar() or 0

@@ -665,3 +665,101 @@ def test_cross_tenant_operational_report_export_is_scoped(app, session):
 
     assert "tenant-a-report-visible" in values
     assert "tenant-b-report-hidden" not in values
+
+def test_scoped_requests_fail_closed_without_tenant(app, session, monkeypatch):
+    from backend.helpchain_backend.src.routes import main as main_routes
+
+    monkeypatch.setattr(main_routes, "_current_structure_id", lambda: None)
+
+    with app.app_context():
+        query = main_routes._scope_requests(session.query(Request))
+        assert query.count() == 0
+
+
+def test_pilot_kpi_does_not_count_requests_without_tenant(app, session, monkeypatch):
+    from backend.helpchain_backend.src.routes import main as main_routes
+
+    monkeypatch.setattr(main_routes, "_current_structure_id", lambda: None)
+
+    with app.test_client() as client:
+        response = client.get("/api/pilot-kpi")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["helped"] == 0
+    assert data["closed"] == 0
+
+
+def test_pilot_kpi_isolates_two_structures(app, session, monkeypatch):
+    from backend.helpchain_backend.src.routes import main as main_routes
+
+    a = _make_structure(
+        session, name="SEC02 KPI Alpha", slug="sec02-kpi-alpha"
+    )
+    b = _make_structure(
+        session, name="SEC02 KPI Beta", slug="sec02-kpi-beta"
+    )
+
+    user_a = _make_user(
+        session, username="sec02_kpi_a",
+        email="sec02_kpi_a@test.local", structure_id=a.id
+    )
+    user_b = _make_user(
+        session, username="sec02_kpi_b",
+        email="sec02_kpi_b@test.local", structure_id=b.id
+    )
+
+    _make_request(
+        session, title="SEC02 Alpha done",
+        user_id=user_a.id, structure_id=a.id, status="done"
+    )
+
+    for i in range(2):
+        _make_request(
+            session, title=f"SEC02 Beta done {i}",
+            user_id=user_b.id, structure_id=b.id, status="done"
+        )
+
+    session.flush()
+
+    monkeypatch.setattr(
+        main_routes, "_current_structure_id", lambda: a.id
+    )
+
+    with app.test_client() as client:
+        response = client.get("/api/pilot-kpi")
+
+    assert response.status_code == 200
+    assert response.get_json()["helped"] == 1
+    assert response.get_json()["closed"] == 1
+
+    monkeypatch.setattr(
+        main_routes, "_current_structure_id", lambda: None
+    )
+
+    with app.test_client() as client:
+        response = client.get("/api/pilot-kpi")
+
+    assert response.status_code == 200
+    assert response.get_json()["helped"] == 0
+    assert response.get_json()["closed"] == 0
+
+
+def test_can_view_request_rejects_cross_tenant_assignment(app, monkeypatch):
+    from types import SimpleNamespace
+    from backend.helpchain_backend.src.authz import can_view_request
+    from backend.helpchain_backend.src.services import matching_v1
+
+    volunteer = SimpleNamespace(id=101, structure_id=1)
+    foreign_request = SimpleNamespace(
+        id=202, structure_id=2, assigned_volunteer_id=101
+    )
+
+    monkeypatch.setattr(
+        matching_v1,
+        "volunteer_authorized_structure_id",
+        lambda actor: 1,
+    )
+
+    with app.app_context():
+        assert can_view_request(volunteer, foreign_request, None) is False

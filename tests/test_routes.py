@@ -341,3 +341,18 @@ class TestErrorHandlers:
         pass
 
 
+
+
+
+def test_public_home_with_tenant_fallback_disabled(client, app, monkeypatch):
+    monkeypatch.setitem(app.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+def test_api_dashboard_rejects_anonymous_without_tenant(client, app, monkeypatch):
+    monkeypatch.setitem(app.config, "ALLOW_DEFAULT_TENANT_FALLBACK", False)
+
+    response = client.get("/api/dashboard")
+
+    assert response.status_code in (401, 403)
