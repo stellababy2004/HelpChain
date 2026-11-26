@@ -5794,20 +5794,12 @@ def contact():
             if not notify_ok:
                 if is_demo:
                     current_app.logger.warning(
-                        "Demo notification failed | lead_id=%s | type_structure=%s | taille=%s | role=%s | nom=%s | email=%s | organisation=%s | telephone=%s | contexte_present=%s | source=%s",
+                        "Demo notification failed | lead_id=%s | context_present=%s",
                         lead.id,
-                        demo_ctx.get("type_structure"),
-                        demo_ctx.get("organization_size"),
-                        demo_ctx.get("role_name"),
-                        demo_ctx.get("full_name"),
-                        demo_ctx.get("email"),
-                        demo_ctx.get("organization"),
-                        demo_ctx.get("phone"),
                         bool(
                             demo_ctx.get("message")
                             and demo_ctx.get("message") != "Non renseigné"
                         ),
-                        demo_ctx.get("source"),
                     )
                 else:
                     current_app.logger.error(
