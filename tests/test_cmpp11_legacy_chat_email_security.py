@@ -1,3 +1,4 @@
+import logging
 from io import BytesIO
 
 from backend import mail_service
@@ -71,3 +72,46 @@ def test_legacy_chat_upload_is_fail_closed_for_unauthenticated_callers(client):
         content_type="multipart/form-data",
     )
     assert response.status_code == 404
+
+
+def test_demo_notification_failure_log_redacts_form_values(
+    app, client, caplog, monkeypatch
+):
+    from backend.helpchain_backend.src.routes import main as main_routes
+
+    fake_name = "HC-DEMO-LOG-NAME"
+    fake_email = "hc-demo-log@example.test"
+    fake_organisation = "HC-DEMO-LOG-ORGANISATION"
+    fake_phone = "+35970070123"
+
+    monkeypatch.setattr(main_routes, "_verify_turnstile_token", lambda **_: True)
+    monkeypatch.setattr(mail_service, "send_notification_email", lambda **_: False)
+    monkeypatch.setattr(main_routes.mail, "send", lambda *_args, **_kwargs: None)
+    caplog.set_level(logging.WARNING)
+
+    response = client.post(
+        "/demo",
+        data={
+            "full_name": fake_name,
+            "email": fake_email,
+            "organisation": fake_organisation,
+            "phone": fake_phone,
+            "structure_type": "association",
+            "organization_size": "small",
+            "fonction": "test-role",
+            "message": "Local-only demo notification test.",
+        },
+    )
+
+    assert response.status_code == 303
+    failure_logs = [
+        record.getMessage()
+        for record in caplog.records
+        if record.levelno == logging.WARNING
+        and record.getMessage().startswith("Demo notification failed | lead_id=")
+    ]
+    assert len(failure_logs) == 1
+    failure_log = failure_logs[0]
+    assert "context_present=True" in failure_log
+    for value in (fake_name, fake_email, fake_organisation, fake_phone):
+        assert value not in failure_log
